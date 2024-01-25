@@ -522,7 +522,11 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(PIInstanceIbmiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(PIInstanceIbmiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
 		d.Set(PIInstanceIbmiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
-		d.Set(PIInstanceIbmiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		if *powervmdata.SoftwareLicenses.IbmiRDS {
+			d.Set(PIInstanceIbmiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		} else {
+			d.Set(PIInstanceIbmiRDSUsers, 0)
+		}
 	}
 	return nil
 }
@@ -814,7 +818,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+		_, err = isWaitForPIInstanceSoftwareLicenses(ctx, client, instanceID, sl)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -917,6 +921,59 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 		}
 
 		return pvm, helpers.PIInstanceBuilding, nil
+	}
+}
+
+func isWaitForPIInstanceSoftwareLicenses(ctx context.Context, client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) (interface{}, error) {
+	log.Printf("Waiting for PIInstance Software Licenses (%s) to be updated ", id)
+
+	queryTimeOut := activeTimeOut
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"notdone"},
+		Target:     []string{"done"},
+		Refresh:    isPIInstanceSoftwareLicensesRefreshFunc(client, id, softwareLicenses),
+		Delay:      90 * time.Second,
+		MinTimeout: queryTimeOut,
+		Timeout:    120 * time.Minute,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceSoftwareLicensesRefreshFunc(client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+
+		// Check that each software license we modified has been updated
+		if softwareLicenses.IbmiCSS != nil {
+			if *softwareLicenses.IbmiCSS != *pvm.SoftwareLicenses.IbmiCSS {
+				return pvm, "notdone", nil
+			}
+		}
+
+		if softwareLicenses.IbmiPHA != nil {
+			if *softwareLicenses.IbmiPHA != *pvm.SoftwareLicenses.IbmiPHA {
+				return pvm, "notdone", nil
+			}
+		}
+
+		if softwareLicenses.IbmiRDS != nil {
+			// If the update set IBMiRDS to false, don't check IBMiRDSUsers as it will be updated on the terraform side on the read
+			if !*softwareLicenses.IbmiRDS {
+				if *pvm.SoftwareLicenses.IbmiRDS != *softwareLicenses.IbmiRDS {
+					return pvm, "notdone", nil
+				}
+			} else if (*pvm.SoftwareLicenses.IbmiRDS != *softwareLicenses.IbmiRDS) || (pvm.SoftwareLicenses.IbmiRDSUsers != softwareLicenses.IbmiRDSUsers) {
+				return pvm, "notdone", nil
+			}
+		}
+
+		return pvm, "done", nil
 	}
 }
 
