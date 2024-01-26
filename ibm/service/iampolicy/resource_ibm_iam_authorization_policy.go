@@ -250,7 +250,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 
 			if operator == "" && value == "*" && name == "resourceGroupId" {
 				at := iampolicymanagementv1.V2PolicySubjectAttribute{
-					Key:     &name,
+					Key:      &name,
 					Value:    true,
 					Operator: core.StringPtr("stringExists"),
 				}
@@ -265,7 +265,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 					return fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", value)
 				}
 				at := iampolicymanagementv1.V2PolicySubjectAttribute{
-					Key:     &name,
+					Key:      &name,
 					Value:    &resourceValue,
 					Operator: &operator,
 				}
@@ -275,7 +275,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 					operator = "stringEquals"
 				}
 				at := iampolicymanagementv1.V2PolicySubjectAttribute{
-					Key:     &name,
+					Key:      &name,
 					Value:    &value,
 					Operator: &operator,
 				}
@@ -288,8 +288,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 			sourceServiceName = name.(string)
 
 			serviceNameSubjectAttribute := &iampolicymanagementv1.V2PolicySubjectAttribute{
-				Key:  core.StringPtr("serviceName"),
-				Value: &sourceServiceName,
+				Key:      core.StringPtr("serviceName"),
+				Value:    &sourceServiceName,
 				Operator: core.StringPtr("stringEquals"),
 			}
 			policySubject.Attributes = append(policySubject.Attributes, *serviceNameSubjectAttribute)
@@ -301,8 +301,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		}
 
 		accountIdSubjectAttribute := &iampolicymanagementv1.V2PolicySubjectAttribute{
-			Key:  core.StringPtr("accountId"),
-			Value: &sourceServiceAccount,
+			Key:      core.StringPtr("accountId"),
+			Value:    &sourceServiceAccount,
 			Operator: core.StringPtr("stringEquals"),
 		}
 
@@ -310,8 +310,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 
 		if sID, ok := d.GetOk("source_resource_instance_id"); ok {
 			serviceInstanceSubjectAttribute := iampolicymanagementv1.V2PolicySubjectAttribute{
-				Key:  core.StringPtr("serviceInstance"),
-				Value: core.StringPtr(sID.(string)),
+				Key:      core.StringPtr("serviceInstance"),
+				Value:    core.StringPtr(sID.(string)),
 				Operator: core.StringPtr("stringEquals"),
 			}
 			policySubject.Attributes = append(policySubject.Attributes, serviceInstanceSubjectAttribute)
@@ -319,8 +319,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 
 		if sType, ok := d.GetOk("source_resource_type"); ok {
 			resourceTypeSubjectAttribute := iampolicymanagementv1.V2PolicySubjectAttribute{
-				Key:  core.StringPtr("resourceType"),
-				Value: core.StringPtr(sType.(string)),
+				Key:      core.StringPtr("resourceType"),
+				Value:    core.StringPtr(sType.(string)),
 				Operator: core.StringPtr("stringEquals"),
 			}
 			policySubject.Attributes = append(policySubject.Attributes, resourceTypeSubjectAttribute)
@@ -329,15 +329,15 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		if sResGrpID, ok := d.GetOk("source_resource_group_id"); ok {
 			if sResGrpID == "*" {
 				resourceGroupSubjectAttribute := iampolicymanagementv1.V2PolicySubjectAttribute{
-					Key:  core.StringPtr("resourceGroupId"),
-					Value: true,
+					Key:      core.StringPtr("resourceGroupId"),
+					Value:    true,
 					Operator: core.StringPtr("stringExists"),
 				}
 				policySubject.Attributes = append(policySubject.Attributes, resourceGroupSubjectAttribute)
 			} else {
 				resourceGroupSubjectAttribute := iampolicymanagementv1.V2PolicySubjectAttribute{
-					Key:  core.StringPtr("resourceGroupId"),
-					Value: core.StringPtr(sResGrpID.(string)),
+					Key:      core.StringPtr("resourceGroupId"),
+					Value:    core.StringPtr(sResGrpID.(string)),
 					Operator: core.StringPtr("stringEquals"),
 				}
 				policySubject.Attributes = append(policySubject.Attributes, resourceGroupSubjectAttribute)
@@ -366,14 +366,14 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 					resourceValue = false
 				}
 				at := iampolicymanagementv1.V2PolicyResourceAttribute{
-					Key:     &name,
+					Key:      &name,
 					Value:    &resourceValue,
 					Operator: &operator,
 				}
 				policyResource.Attributes = append(policyResource.Attributes, at)
 			} else {
 				at := iampolicymanagementv1.V2PolicyResourceAttribute{
-					Key:     &name,
+					Key:      &name,
 					Value:    &value,
 					Operator: &operator,
 				}
@@ -384,7 +384,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		if name, ok := d.GetOk("target_service_name"); ok {
 			targetServiceName = name.(string)
 			serviceNameResourceAttribute := &iampolicymanagementv1.V2PolicyResourceAttribute{
-				Key:     core.StringPtr("serviceName"),
+				Key:      core.StringPtr("serviceName"),
 				Value:    core.StringPtr(targetServiceName),
 				Operator: core.StringPtr("stringEquals"),
 			}
@@ -392,7 +392,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		}
 
 		accountIDResourceAttribute := &iampolicymanagementv1.V2PolicyResourceAttribute{
-			Key:     core.StringPtr("accountId"),
+			Key:      core.StringPtr("accountId"),
 			Value:    core.StringPtr(userDetails.UserAccount),
 			Operator: core.StringPtr("stringEquals"),
 		}
@@ -401,8 +401,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 
 		if tID, ok := d.GetOk("target_resource_instance_id"); ok {
 			serviceInstanceResourceAttribute := iampolicymanagementv1.V2PolicyResourceAttribute{
-				Key:  core.StringPtr("serviceInstance"),
-				Value: core.StringPtr(tID.(string)),
+				Key:      core.StringPtr("serviceInstance"),
+				Value:    core.StringPtr(tID.(string)),
 				Operator: core.StringPtr("stringEquals"),
 			}
 			policyResource.Attributes = append(policyResource.Attributes, serviceInstanceResourceAttribute)
@@ -410,8 +410,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 
 		if tType, ok := d.GetOk("target_resource_type"); ok {
 			resourceTypeResourceAttribute := iampolicymanagementv1.V2PolicyResourceAttribute{
-				Key:  core.StringPtr("resourceType"),
-				Value: core.StringPtr(tType.(string)),
+				Key:      core.StringPtr("resourceType"),
+				Value:    core.StringPtr(tType.(string)),
 				Operator: core.StringPtr("stringEquals"),
 			}
 			policyResource.Attributes = append(policyResource.Attributes, resourceTypeResourceAttribute)
@@ -422,8 +422,8 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 
 		if tResGrpID, ok := d.GetOk("target_resource_group_id"); ok {
 			resourceGroupResourceAttribute := iampolicymanagementv1.V2PolicyResourceAttribute{
-				Key:  core.StringPtr("resourceGroupId"),
-				Value: core.StringPtr(tResGrpID.(string)),
+				Key:      core.StringPtr("resourceGroupId"),
+				Value:    core.StringPtr(tResGrpID.(string)),
 				Operator: core.StringPtr("stringEquals"),
 			}
 			policyResource.Attributes = append(policyResource.Attributes, resourceGroupResourceAttribute)
@@ -617,7 +617,7 @@ func setAuthorizationResourceAttributes(list iampolicymanagementv1.V2PolicyResou
 func setAuthorizationSubjectAttributes(list iampolicymanagementv1.V2PolicySubject, a *schema.Set) []map[string]interface{} {
 	previousOperators := make([]string, 0)
 
-	for _, item  := range a.List() {
+	for _, item := range a.List() {
 		i := item.(map[string]interface{})
 
 		previousOperators = append(previousOperators, i["operator"].(string))
@@ -631,15 +631,15 @@ func setAuthorizationSubjectAttributes(list iampolicymanagementv1.V2PolicySubjec
 				"name":  attribute.Key,
 				"value": "*",
 			}
-    } else if previousOperators[i] == "" {
+		} else if previousOperators[i] == "" {
 			l = map[string]interface{}{
 				"name":  attribute.Key,
 				"value": fmt.Sprintf("%v", attribute.Value),
 			}
 		} else {
 			l = map[string]interface{}{
-				"name":  attribute.Key,
-				"value": fmt.Sprintf("%v", attribute.Value),
+				"name":     attribute.Key,
+				"value":    fmt.Sprintf("%v", attribute.Value),
 				"operator": attribute.Operator,
 			}
 		}
