@@ -195,23 +195,22 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"ibmi_css": {
+			PIInstanceIbmiCSS: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "IBMi Cloud Storage Solution",
 			},
-			"ibmi_pha": {
+			PIInstanceIbmiPHA: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "IBMi Power High Availability",
 			},
-			"ibmi_rds": {
+			PIInstanceIbmiRDS: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "IBMi Rational Dev Studio",
 			},
-			"ibmi_rds_users": {
+			PIInstanceIbmiRDSUsers: {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "IBMi Rational Dev Studio Number of User Licenses",
@@ -284,10 +283,14 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if powervmdata.SoftwareLicenses != nil {
-		d.Set("ibmi_css", powervmdata.SoftwareLicenses.IbmiCSS)
-		d.Set("ibmi_pha", powervmdata.SoftwareLicenses.IbmiPHA)
-		d.Set("ibmi_rds", powervmdata.SoftwareLicenses.IbmiRDS)
-		d.Set("ibmi_rds_users", powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		d.Set(PIInstanceIbmiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
+		d.Set(PIInstanceIbmiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(PIInstanceIbmiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		if *powervmdata.SoftwareLicenses.IbmiRDS {
+			d.Set(PIInstanceIbmiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		} else {
+			d.Set(PIInstanceIbmiRDSUsers, 0)
+		}
 	}
 
 	return nil
