@@ -965,10 +965,10 @@ func isPIInstanceSoftwareLicensesRefreshFunc(client *st.IBMPIInstanceClient, id 
 		if softwareLicenses.IbmiRDS != nil {
 			// If the update set IBMiRDS to false, don't check IBMiRDSUsers as it will be updated on the terraform side on the read
 			if !*softwareLicenses.IbmiRDS {
-				if *pvm.SoftwareLicenses.IbmiRDS != *softwareLicenses.IbmiRDS {
+				if *softwareLicenses.IbmiRDS != *pvm.SoftwareLicenses.IbmiRDS {
 					return pvm, "notdone", nil
 				}
-			} else if (*pvm.SoftwareLicenses.IbmiRDS != *softwareLicenses.IbmiRDS) || (pvm.SoftwareLicenses.IbmiRDSUsers != softwareLicenses.IbmiRDSUsers) {
+			} else if (*softwareLicenses.IbmiRDS != *pvm.SoftwareLicenses.IbmiRDS) || (softwareLicenses.IbmiRDSUsers != pvm.SoftwareLicenses.IbmiRDSUsers) {
 				return pvm, "notdone", nil
 			}
 		}

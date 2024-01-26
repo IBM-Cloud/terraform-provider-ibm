@@ -141,11 +141,6 @@ func testAccCheckIBMPIInstanceDeploymentTypeConfig(name, instanceHealthStatus st
 
 func testAccCheckIBMPIInstanceIBMiLicense(name, instanceHealthStatus string, IBMiCSS bool, IBMiRDSUsers int) string {
 	return fmt.Sprintf(`
-		resource "ibm_pi_key" "key" {
-			pi_cloud_instance_id = "%[1]s"
-			pi_key_name          = "%[2]s"
-			pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEArb2aK0mekAdbYdY9rwcmeNSxqVCwez3WZTYEq+1Nwju0x5/vQFPSD2Kp9LpKBbxx3OVLN4VffgGUJznz9DAr7veLkWaf3iwEil6U4rdrhBo32TuDtoBwiczkZ9gn1uJzfIaCJAJdnO80Kv9k0smbQFq5CSb9H+F5VGyFue/iVd5/b30MLYFAz6Jg1GGWgw8yzA4Gq+nO7HtyuA2FnvXdNA3yK/NmrTiPCdJAtEPZkGu9LcelkQ8y90ArlKfjtfzGzYDE4WhOufFxyWxciUePh425J2eZvElnXSdGha+FCfYjQcvqpCVoBAG70U4fJBGjB+HL/GpCXLyiYXPrSnzC9w=="
-		  }
 		  data "ibm_pi_image" "power_image" {
 			pi_cloud_instance_id = "%[1]s"
 			pi_image_name        = "%[3]s"
@@ -388,7 +383,6 @@ func TestAccIBMPIInstanceIBMiLicense(t *testing.T) {
 					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_rds", "false"),
 					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_rds_users", "0"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
