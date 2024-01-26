@@ -67,10 +67,9 @@ Review the argument references that you can specify for your resource.
 - `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC`.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
  **Notes** Ibmi software licenses for IBMi virtual server instances --software licenses currently only supports IBMi instances. Default to `false` and `0` if no values provided
-- `pi_ibm_css` - (Optional, Bool) IBMi Cloud Storage Solution.
-- `pi_ibmi_pha` - (Optional, Bool) IBMi Power High Availability.
-- `pi_ibmi_rds` - (Optional, Bool) IBMi Rational Dev Studio.
-- `pi_ibmi_rds_users` - (Optional, Integer) IBMi Rational Dev Studio Number of User Licenses. Required if `pi_ibmi_rds` is provided
+- `pi_ibmi_css` - (Optional, Boolean) IBMi Cloud Storage Solution.
+- `pi_ibmi_pha` - (Optional, Boolean) IBMi Power High Availability.
+- `pi_ibmi_rds_users` - (Optional, Integer) IBMi Rational Dev Studio Number of User Licenses.
 - `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
   - **Note**: only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
@@ -79,7 +78,7 @@ Review the argument references that you can specify for your resource.
   - **Note**: Provisioning VTL instances is temporarily disabled.
 - `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in gigabytes.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
-- `pi_migratable`- (Optional, Bool) Indicates the VM is migrated or not.
+- `pi_migratable`- (Optional, Boolean) Indicates the VM is migrated or not.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
   The `pi_network` block supports:
@@ -99,7 +98,7 @@ Review the argument references that you can specify for your resource.
 - `pi_sap_deployment_type` - (Optional, String) Custom SAP deployment type information (For Internal Use Only).
 - `pi_shared_processor_pool` - (Optional, String) The shared processor pool for instance deployment. Conflicts with `pi_sap_profile_id`.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` will be ignored; Only valid when you deploy one of the IBM supplied stock images. Storage pool for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage pool the image was created in.
-- `pi_storage_pool_affinity` - (Optional, Bool) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
+- `pi_storage_pool_affinity` - (Optional, Boolean) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment; If storage type is not provided the storage type will default to `tier3`.
 - `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Only supported value is `vSCSI`.
 - `pi_sys_type` - (Optional, String) The type of system on which to create the VM (s922/e880/e980/s1022).
@@ -132,10 +131,10 @@ In addition to all argument reference list, you can access the following attribu
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.
-- `ibm_css` - (Boolean) IBMi Cloud Storage Solution.
-- `ibmi_pha` - (Boolean) IBMi Power High Availability.
-- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
-- `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
+- `pi_ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
+- `pi_ibmi_pha` - (Boolean) IBMi Power High Availability.
+- `pi_ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
+- `pi_ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
 ## Import
 
 The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.
