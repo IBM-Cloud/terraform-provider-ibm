@@ -232,7 +232,7 @@ func resourceIBMSatelliteClusterWorkerPoolCreate(d *schema.ResourceData, meta in
 	hostLabels := make(map[string]string)
 	if v, ok := d.GetOk("host_labels"); ok {
 		hl := v.(*schema.Set)
-		hostLabels = flex.FlattenHostLabels(hl.List())
+		hostLabels = flex.FlattenKeyValues(hl.List())
 		createWorkerPoolOptions.HostLabels = hostLabels
 	} else {
 		createWorkerPoolOptions.HostLabels = hostLabels

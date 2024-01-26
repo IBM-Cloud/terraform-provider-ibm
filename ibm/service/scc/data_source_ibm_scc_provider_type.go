@@ -17,7 +17,7 @@ import (
 )
 
 func DataSourceIbmSccProviderType() *schema.Resource {
-	return &schema.Resource{
+	return AddSchemaData(&schema.Resource{
 		ReadContext: dataSourceIbmSccProviderTypeRead,
 
 		Schema: map[string]*schema.Schema{
@@ -109,7 +109,7 @@ func DataSourceIbmSccProviderType() *schema.Resource {
 				Description: "Time at which resource was updated.",
 			},
 		},
-	}
+	})
 }
 
 func dataSourceIbmSccProviderTypeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -120,6 +120,7 @@ func dataSourceIbmSccProviderTypeRead(context context.Context, d *schema.Resourc
 
 	getProviderTypeByIdOptions := &securityandcompliancecenterapiv3.GetProviderTypeByIdOptions{}
 
+	getProviderTypeByIdOptions.SetInstanceID(d.Get("instance_id").(string))
 	getProviderTypeByIdOptions.SetProviderTypeID(d.Get("provider_type_id").(string))
 
 	providerTypeItem, response, err := securityAndComplianceCenterApIsClient.GetProviderTypeByIDWithContext(context, getProviderTypeByIdOptions)

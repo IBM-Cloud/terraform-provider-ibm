@@ -40,5 +40,6 @@ In addition to all argument reference list, you can access the following attribu
 - `extensions` - (String) The extended metadata as a map associated with the resource instance.
 - `guid`- (String) The GUID of the resource instance.
 - `id` - (String) The unique identifier of the resource instance.
+- `parameters_json` - (String) The parameters associated with the instance in json format.
 - `plan` - (String) The plan for the service offering used by this resource instance.
 - `status` - (String) The status of resource instance.
