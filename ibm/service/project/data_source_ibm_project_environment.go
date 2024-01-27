@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project
@@ -95,15 +95,15 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 				Description: "The environment definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the environment.  It is unique within the account across projects and regions.",
-						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The description of the environment.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the environment.  It is unique within the account across projects and regions.",
 						},
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
@@ -262,10 +262,10 @@ func dataSourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model *proje
 
 func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(model *projectv1.EnvironmentDefinitionRequiredProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
+	modelMap["name"] = model.Name
 	if model.Authorizations != nil {
 		authorizationsMap, err := dataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
