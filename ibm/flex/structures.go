@@ -1628,7 +1628,11 @@ func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []
 	if len(customAttributes) > 0 {
 		out := make(map[string]string)
 		for _, a := range customAttributes {
-			out[*a.Key] = fmt.Sprint(a.Value)
+			if *a.Operator == "stringExists" && a.Value == true {
+				out[*a.Key] = fmt.Sprint("*")
+			} else if *a.Operator == "stringMatch" || *a.Operator == "stringEquals" {
+				out[*a.Key] = fmt.Sprint(a.Value)
+			}
 		}
 		l["attributes"] = out
 	}
