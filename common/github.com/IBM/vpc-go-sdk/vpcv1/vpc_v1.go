@@ -38,6 +38,14 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
+// API Version: 2023-12-05
+const (
+	YYYYMMDD = "2006-01-02"
+)
+
+// VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
+// server instances, along with subnets, volumes, load balancers, and more.
+//
 // API Version: 2023-10-10
 type VpcV1 struct {
 	Service *core.BaseService
@@ -121,8 +129,9 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 		}
 	}
 
+	now := time.Now().UTC()
 	if options.Version == nil {
-		options.Version = core.StringPtr("2023-09-20")
+		options.Version = core.StringPtr(now.Format(YYYYMMDD))
 	}
 
 	service = &VpcV1{
@@ -16672,7 +16681,7 @@ func (vpc *VpcV1) ListSecurityGroupsWithContext(ctx context.Context, listSecurit
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 	if listSecurityGroupsOptions.Start != nil {
@@ -16753,7 +16762,7 @@ func (vpc *VpcV1) CreateSecurityGroupWithContext(ctx context.Context, createSecu
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
@@ -16886,7 +16895,7 @@ func (vpc *VpcV1) GetSecurityGroupWithContext(ctx context.Context, getSecurityGr
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
@@ -16952,7 +16961,7 @@ func (vpc *VpcV1) UpdateSecurityGroupWithContext(ctx context.Context, updateSecu
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
@@ -17022,7 +17031,7 @@ func (vpc *VpcV1) ListSecurityGroupRulesWithContext(ctx context.Context, listSec
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
@@ -17091,7 +17100,7 @@ func (vpc *VpcV1) CreateSecurityGroupRuleWithContext(ctx context.Context, create
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
@@ -17213,7 +17222,7 @@ func (vpc *VpcV1) GetSecurityGroupRuleWithContext(ctx context.Context, getSecuri
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
@@ -17280,7 +17289,7 @@ func (vpc *VpcV1) UpdateSecurityGroupRuleWithContext(ctx context.Context, update
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
-
+	builder.AddQuery("maturity", "development")
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
 
