@@ -38,57 +38,12 @@ func TestAccIbmSchematicsAgentPrsBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmSchematicsAgentPrsAllArgs(t *testing.T) {
-	var conf *schematicsv1.AgentDataRecentPrsJob
-	agentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
-	force := "false"
-	forceUpdate := "true"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmSchematicsAgentPrsDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentPrsConfig(agentID, force),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmSchematicsAgentPrsExists("ibm_schematics_agent_prs.schematics_agent_prs_instance", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_prs.schematics_agent_prs_instance", "agent_id", agentID),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_prs.schematics_agent_prs_instance", "force", force),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentPrsConfig(agentID, forceUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_schematics_agent_prs.schematics_agent_prs_instance", "agent_id", agentID),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_prs.schematics_agent_prs_instance", "force", forceUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_schematics_agent_prs.schematics_agent_prs_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func testAccCheckIbmSchematicsAgentPrsConfigBasic(agentID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
 			agent_id = "%s"
 		}
 	`, agentID)
-}
-
-func testAccCheckIbmSchematicsAgentPrsConfig(agentID string, force string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
-			agent_id = "%s"
-			force = %s
-		}
-	`, agentID, force)
 }
 
 func testAccCheckIbmSchematicsAgentPrsExists(n string, obj *schematicsv1.AgentDataRecentPrsJob) resource.TestCheckFunc {
@@ -105,7 +60,6 @@ func testAccCheckIbmSchematicsAgentPrsExists(n string, obj *schematicsv1.AgentDa
 		}
 
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			// XFeatureAgents: core.BoolPtr(true),
 			Profile: core.StringPtr("detailed"),
 		}
 
@@ -137,13 +91,8 @@ func testAccCheckIbmSchematicsAgentPrsDestroy(s *terraform.State) error {
 		}
 
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			// XFeatureAgents: core.BoolPtr(true),
 			Profile: core.StringPtr("detailed"),
 		}
-		ff := map[string]string{
-			"X-Feature-Agents": "true",
-		}
-		getAgentDataOptions.Headers = ff
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
