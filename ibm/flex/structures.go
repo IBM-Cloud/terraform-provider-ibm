@@ -561,9 +561,9 @@ func FlattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	return vlans
 }
 
-func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
-	groups := make([]map[string]interface{}, len(grouplist.Groups))
-	for i, group := range grouplist.Groups {
+func FlattenIcdGroups(groupResponse *clouddatabasesv5.ListDeploymentScalingGroupsResponse) []map[string]interface{} {
+	groups := make([]map[string]interface{}, len(groupResponse.Groups))
+	for i, group := range groupResponse.Groups {
 		memorys := make([]map[string]interface{}, 1)
 		memory := make(map[string]interface{})
 		memory["units"] = group.Memory.Units
@@ -576,12 +576,12 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 
 		cpus := make([]map[string]interface{}, 1)
 		cpu := make(map[string]interface{})
-		cpu["units"] = group.Cpu.Units
-		cpu["allocation_count"] = group.Cpu.AllocationCount
-		cpu["minimum_count"] = group.Cpu.MinimumCount
-		cpu["step_size_count"] = group.Cpu.StepSizeCount
-		cpu["is_adjustable"] = group.Cpu.IsAdjustable
-		cpu["can_scale_down"] = group.Cpu.CanScaleDown
+		cpu["units"] = group.CPU.Units
+		cpu["allocation_count"] = group.CPU.AllocationCount
+		cpu["minimum_count"] = group.CPU.MinimumCount
+		cpu["step_size_count"] = group.CPU.StepSizeCount
+		cpu["is_adjustable"] = group.CPU.IsAdjustable
+		cpu["can_scale_down"] = group.CPU.CanScaleDown
 		cpus[0] = cpu
 
 		disks := make([]map[string]interface{}, 1)
@@ -594,12 +594,23 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 		disk["can_scale_down"] = group.Disk.CanScaleDown
 		disks[0] = disk
 
+		hostflavors := make([]map[string]interface{}, 0)
+		if group.HostFlavor != nil {
+			hostflavors = make([]map[string]interface{}, 1)
+			hostflavor := make(map[string]interface{})
+			hostflavor["id"] = group.HostFlavor.ID
+			hostflavor["name"] = group.HostFlavor.Name
+			hostflavor["hosting_size"] = group.HostFlavor.HostingSize
+			hostflavors[0] = hostflavor
+		}
+
 		l := map[string]interface{}{
-			"group_id": group.Id,
-			"count":    group.Count,
-			"memory":   memorys,
-			"cpu":      cpus,
-			"disk":     disks,
+			"group_id":    group.ID,
+			"count":       group.Count,
+			"memory":      memorys,
+			"cpu":         cpus,
+			"disk":        disks,
+			"host_flavor": hostflavors,
 		}
 		groups[i] = l
 	}
