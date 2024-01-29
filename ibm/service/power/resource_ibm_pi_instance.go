@@ -792,25 +792,23 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		var licenseCSS bool
-		var licensePHA bool
-		var licenseRDS bool
+		var license bool
 		sl := &models.SoftwareLicenses{}
 
 		ibmiCSS := d.Get(PIInstanceIbmiCSS)
-		licenseCSS = ibmiCSS.(bool)
-		sl.IbmiCSS = &licenseCSS
+		license = ibmiCSS.(bool)
+		sl.IbmiCSS = &license
 
 		ibmiPHA := d.Get(PIInstanceIbmiPHA)
-		licensePHA = ibmiPHA.(bool)
-		sl.IbmiPHA = &licensePHA
+		license = ibmiPHA.(bool)
+		sl.IbmiPHA = &license
 
 		ibmrdsUsers := d.Get(PIInstanceIbmiRDSUsers)
 		if ibmrdsUsers.(int) < 0 {
 			return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
 		}
-		licenseRDS = ibmrdsUsers.(int) > 0
-		sl.IbmiRDS = &licenseRDS
+		license = ibmrdsUsers.(int) > 0
+		sl.IbmiRDS = &license
 		sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
 
 		updatebody := &models.PVMInstanceUpdate{SoftwareLicenses: sl}
@@ -1423,7 +1421,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		}
 	}
 
-	if imageData.Specifications.OperatingSystem == "ibmi" {
+	if imageData.Specifications.OperatingSystem == OS_IBMI {
 		// Default value
 		falseBool := false
 		var license bool

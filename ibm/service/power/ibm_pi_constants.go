@@ -51,6 +51,7 @@ const (
 	PIInstanceIbmiPHA           = "pi_ibmi_pha"
 	PIInstanceIbmiRDS           = "pi_ibmi_rds"
 	PIInstanceIbmiRDSUsers      = "pi_ibmi_rds_users"
+	OS_IBMI                     = "ibmi"
 
 	Attr_Status       = "status"
 	Attr_Progress     = "progress"
