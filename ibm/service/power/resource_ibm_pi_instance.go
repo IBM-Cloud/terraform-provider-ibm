@@ -792,24 +792,15 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		var license bool
 		sl := &models.SoftwareLicenses{}
-
-		ibmiCSS := d.Get(PIInstanceIbmiCSS)
-		license = ibmiCSS.(bool)
-		sl.IbmiCSS = &license
-
-		ibmiPHA := d.Get(PIInstanceIbmiPHA)
-		license = ibmiPHA.(bool)
-		sl.IbmiPHA = &license
-
-		ibmrdsUsers := d.Get(PIInstanceIbmiRDSUsers)
-		if ibmrdsUsers.(int) < 0 {
+		sl.IbmiCSS = flex.PtrToBool(d.Get(PIInstanceIbmiCSS).(bool))
+		sl.IbmiPHA = flex.PtrToBool(d.Get(PIInstanceIbmiPHA).(bool))
+		ibmrdsUsers := d.Get(PIInstanceIbmiRDSUsers).(int)
+		if ibmrdsUsers < 0 {
 			return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
 		}
-		license = ibmrdsUsers.(int) > 0
-		sl.IbmiRDS = &license
-		sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
+		sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
+		sl.IbmiRDSUsers = int64(ibmrdsUsers)
 
 		updatebody := &models.PVMInstanceUpdate{SoftwareLicenses: sl}
 		_, err = client.Update(instanceID, updatebody)
@@ -1424,7 +1415,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 	if imageData.Specifications.OperatingSystem == OS_IBMI {
 		// Default value
 		falseBool := false
-		var license bool
 		sl := &models.SoftwareLicenses{
 			IbmiCSS:      &falseBool,
 			IbmiPHA:      &falseBool,
@@ -1432,19 +1422,16 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 			IbmiRDSUsers: 0,
 		}
 		if ibmiCSS, ok := d.GetOk(PIInstanceIbmiCSS); ok {
-			license = ibmiCSS.(bool)
-			sl.IbmiCSS = &license
+			sl.IbmiCSS = flex.PtrToBool(ibmiCSS.(bool))
 		}
 		if ibmiPHA, ok := d.GetOk(PIInstanceIbmiPHA); ok {
-			license = ibmiPHA.(bool)
-			sl.IbmiPHA = &license
+			sl.IbmiPHA = flex.PtrToBool(ibmiPHA.(bool))
 		}
 		if ibmrdsUsers, ok := d.GetOk(PIInstanceIbmiRDSUsers); ok {
 			if ibmrdsUsers.(int) < 0 {
 				return nil, fmt.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
 			}
-			license = ibmrdsUsers.(int) > 0
-			sl.IbmiRDS = &license
+			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers.(int) > 0)
 			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
 		}
 		body.SoftwareLicenses = sl
