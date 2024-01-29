@@ -90,6 +90,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `rules`:
   - `rule_id`-  (String) ID of the rule.
   - `direction` - (String) Direction of traffic to enforce, either inbound or outbound.
+  - `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
   - `ip_version` - (String) IP version: IPv4
   - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
   - `type` - (String) The traffic type to allow.
