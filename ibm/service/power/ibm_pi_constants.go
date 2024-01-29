@@ -74,15 +74,20 @@ const (
 	PIPlacementGroupMembers = "members"
 
 	// Volume
+	PIVolumeIds             = "pi_volume_ids"
 	PIAffinityPolicy        = "pi_affinity_policy"
 	PIAffinityVolume        = "pi_affinity_volume"
 	PIAffinityInstance      = "pi_affinity_instance"
 	PIAntiAffinityInstances = "pi_anti_affinity_instances"
 	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
 
+	// Volume Clone
+	PIVolumeCloneName   = "pi_volume_clone_name"
+	PIVolumeCloneTaskID = "pi_volume_clone_task_id"
+	PITargetStorageTier = "pi_target_storage_tier"
+
 	// IBM PI Volume Group
 	PIVolumeGroupName                 = "pi_volume_group_name"
-	PIVolumeGroupsVolumeIds           = "pi_volume_ids"
 	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
 	PIVolumeGroupID                   = "pi_volume_group_id"
 	PIVolumeGroupAction               = "pi_volume_group_action"
@@ -149,6 +154,10 @@ const (
 	SctionStart   = "start"
 	SctionStop    = "stop"
 
+	// volume clone task status
+	VolumeCloneCompleted = "completed"
+	VolumeCloneRunning   = "running"
+
 	// Workspaces
 	Attr_WorkspaceCapabilities = "pi_workspace_capabilities"
 	Attr_WorkspaceDetails      = "pi_workspace_details"
@@ -165,4 +174,10 @@ const (
 	Attr_DatacenterStatus       = "pi_datacenter_status"
 	Attr_DatacenterType         = "pi_datacenter_type"
 	Attr_DatacenterHref         = "pi_datacenter_href"
+
+	// IBM PI Workspace
+	PIWorkspaceName          = "pi_name"
+	PIWorkspaceDatacenter    = "pi_datacenter"
+	PIWorkspaceResourceGroup = "pi_resource_group_id"
+	PIWorkspacePlan          = "pi_plan"
 )

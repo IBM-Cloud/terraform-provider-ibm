@@ -15,13 +15,12 @@ Create, update, and delete cd_tekton_pipeline_triggers with this resource.
 ```hcl
 resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
   event_listener = "pr-listener"
-  events = ["push", "pull_request" ]
   max_concurrent_runs = 3
   name = "Manual Trigger"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   type = "manual"
   worker {
-		id = "public"
+    id = "public"
   }
 }
 ```

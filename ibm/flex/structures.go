@@ -251,6 +251,15 @@ func FlattenUsersSet(userList *schema.Set) []string {
 	return users
 }
 
+func FlattenSet(set *schema.Set) []string {
+	setList := set.List()
+	elems := make([]string, 0, len(setList))
+	for _, elem := range setList {
+		elems = append(elems, elem.(string))
+	}
+	return elems
+}
+
 func ExpandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
 	members := make([]datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo, 0, len(configured))
 	for _, lRaw := range configured {
@@ -429,6 +438,19 @@ func FlattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interf
 	return zones
 }
 
+func FlattenZonesv2(list []containerv2.ZoneResp) []map[string]interface{} {
+	zones := make([]map[string]interface{}, len(list))
+	for i, zone := range list {
+		l := map[string]interface{}{
+			"zone":         zone.ID,
+			"subnets":      zone.Subnets,
+			"worker_count": zone.WorkerCount,
+		}
+		zones[i] = l
+	}
+	return zones
+}
+
 func FlattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
@@ -539,9 +561,9 @@ func FlattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	return vlans
 }
 
-func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
-	groups := make([]map[string]interface{}, len(grouplist.Groups))
-	for i, group := range grouplist.Groups {
+func FlattenIcdGroups(groupResponse *clouddatabasesv5.ListDeploymentScalingGroupsResponse) []map[string]interface{} {
+	groups := make([]map[string]interface{}, len(groupResponse.Groups))
+	for i, group := range groupResponse.Groups {
 		memorys := make([]map[string]interface{}, 1)
 		memory := make(map[string]interface{})
 		memory["units"] = group.Memory.Units
@@ -554,12 +576,12 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 
 		cpus := make([]map[string]interface{}, 1)
 		cpu := make(map[string]interface{})
-		cpu["units"] = group.Cpu.Units
-		cpu["allocation_count"] = group.Cpu.AllocationCount
-		cpu["minimum_count"] = group.Cpu.MinimumCount
-		cpu["step_size_count"] = group.Cpu.StepSizeCount
-		cpu["is_adjustable"] = group.Cpu.IsAdjustable
-		cpu["can_scale_down"] = group.Cpu.CanScaleDown
+		cpu["units"] = group.CPU.Units
+		cpu["allocation_count"] = group.CPU.AllocationCount
+		cpu["minimum_count"] = group.CPU.MinimumCount
+		cpu["step_size_count"] = group.CPU.StepSizeCount
+		cpu["is_adjustable"] = group.CPU.IsAdjustable
+		cpu["can_scale_down"] = group.CPU.CanScaleDown
 		cpus[0] = cpu
 
 		disks := make([]map[string]interface{}, 1)
@@ -572,12 +594,23 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 		disk["can_scale_down"] = group.Disk.CanScaleDown
 		disks[0] = disk
 
+		hostflavors := make([]map[string]interface{}, 0)
+		if group.HostFlavor != nil {
+			hostflavors = make([]map[string]interface{}, 1)
+			hostflavor := make(map[string]interface{})
+			hostflavor["id"] = group.HostFlavor.ID
+			hostflavor["name"] = group.HostFlavor.Name
+			hostflavor["hosting_size"] = group.HostFlavor.HostingSize
+			hostflavors[0] = hostflavor
+		}
+
 		l := map[string]interface{}{
-			"group_id": group.Id,
-			"count":    group.Count,
-			"memory":   memorys,
-			"cpu":      cpus,
-			"disk":     disks,
+			"group_id":    group.ID,
+			"count":       group.Count,
+			"memory":      memorys,
+			"cpu":         cpus,
+			"disk":        disks,
+			"host_flavor": hostflavors,
 		}
 		groups[i] = l
 	}
@@ -1171,6 +1204,10 @@ func PtrToString(s string) *string {
 	return &s
 }
 
+func PtrToBool(b bool) *bool {
+	return &b
+}
+
 func IntValue(i64 *int64) (i int) {
 	if i64 != nil {
 		i = int(*i64)
@@ -1641,42 +1678,55 @@ func FlattenV2PolicyResourceTags(resource iampolicymanagementv1.V2PolicyResource
 	return result
 }
 
+func getConditionValues(v interface{}) []string {
+	var values []string
+	switch value := v.(type) {
+	case string:
+		values = append(values, value)
+	case []interface{}:
+		for _, v := range value {
+			values = append(values, fmt.Sprint(v))
+		}
+	case nil:
+	default:
+		values = append(values, fmt.Sprintf("%v", value))
+	}
+	return values
+}
+
 func FlattenRuleConditions(rule iampolicymanagementv1.V2PolicyRule) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0)
 	if len(rule.Conditions) > 0 {
-		for _, c := range rule.Conditions {
-			var values []string
-			switch value := c.Value.(type) {
-			case string:
-				values = append(values, value)
-			case []interface{}:
-				for _, v := range value {
-					values = append(values, fmt.Sprint(v))
+		for _, cIntf := range rule.Conditions {
+			c := cIntf.(*iampolicymanagementv1.NestedCondition)
+			if len(c.Conditions) > 0 {
+				nestedConditions := make([]map[string]interface{}, 0)
+				for _, nc := range c.Conditions {
+					values := getConditionValues(nc.Value)
+					nestedCondition := map[string]interface{}{
+						"key":      nc.Key,
+						"value":    values,
+						"operator": nc.Operator,
+					}
+					nestedConditions = append(nestedConditions, nestedCondition)
 				}
-			default:
-				values = append(values, value.(string))
+				condition := map[string]interface{}{
+					"operator":   c.Operator,
+					"conditions": nestedConditions,
+				}
+				result = append(result, condition)
+			} else {
+				values := getConditionValues(c.Value)
+				condition := map[string]interface{}{
+					"key":      c.Key,
+					"value":    values,
+					"operator": c.Operator,
+				}
+				result = append(result, condition)
 			}
-
-			condition := map[string]interface{}{
-				"key":      c.Key,
-				"value":    values,
-				"operator": c.Operator,
-			}
-			result = append(result, condition)
 		}
 	} else {
-		var values []string
-		switch value := rule.Value.(type) {
-		case string:
-			values = append(values, value)
-		case []interface{}:
-			for _, v := range value {
-				values = append(values, fmt.Sprint(v))
-			}
-		default:
-			values = append(values, value.(string))
-		}
-
+		values := getConditionValues(rule.Value)
 		condition := map[string]interface{}{
 			"key":      rule.Key,
 			"value":    values,
@@ -3229,13 +3279,13 @@ func FlattenOpaqueSecret(fields containerv2.Fields) []map[string]interface{} {
 	return flattenedOpaqueSecret
 }
 
-// flattenHostLabels ..
-func FlattenHostLabels(hostLabels []interface{}) map[string]string {
+// flatten the provided key-value pairs
+func FlattenKeyValues(keyValues []interface{}) map[string]string {
 	labels := make(map[string]string)
-	for _, v := range hostLabels {
+	for _, v := range keyValues {
 		parts := strings.Split(v.(string), ":")
 		if len(parts) != 2 {
-			log.Fatal("Entered label " + v.(string) + "is in incorrect format.")
+			log.Fatal("Entered key-value " + v.(string) + "is in incorrect format.")
 		}
 		labels[parts[0]] = parts[1]
 	}
@@ -3932,39 +3982,64 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 	return iampolicymanagementv1.CreateV2PolicyOptions{Control: policyControl, Resource: &policyResource}, nil
 }
 
+func generatePolicyRuleCondition(c map[string]interface{}) iampolicymanagementv1.RuleAttribute {
+	key := c["key"].(string)
+	operator := c["operator"].(string)
+	r := iampolicymanagementv1.RuleAttribute{
+		Key:      &key,
+		Operator: &operator,
+	}
+
+	interfaceValues := c["value"].([]interface{})
+	values := make([]string, len(interfaceValues))
+	for i, v := range interfaceValues {
+		values[i] = fmt.Sprint(v)
+	}
+
+	if len(values) > 1 {
+		r.Value = &values
+	} else if operator == "stringExists" && values[0] == "true" {
+		r.Value = true
+	} else if operator == "stringExists" && values[0] == "false" {
+		r.Value = false
+	} else {
+		r.Value = &values[0]
+	}
+	return r
+}
+
 func GeneratePolicyRule(d *schema.ResourceData, ruleConditions interface{}) *iampolicymanagementv1.V2PolicyRule {
-	conditions := []iampolicymanagementv1.RuleAttribute{}
+	conditions := []iampolicymanagementv1.NestedConditionIntf{}
 
-	for _, condition := range ruleConditions.(*schema.Set).List() {
-		c := condition.(map[string]interface{})
-		key := c["key"].(string)
-		operator := c["operator"].(string)
-		r := iampolicymanagementv1.RuleAttribute{
-			Key:      &key,
-			Operator: &operator,
-		}
-
-		interfaceValues := c["value"].([]interface{})
-		values := make([]string, len(interfaceValues))
-		for i, v := range interfaceValues {
-			values[i] = fmt.Sprint(v)
-		}
-
-		if len(values) > 1 {
-			r.Value = &values
-		} else if operator == "stringExists" && values[0] == "true" {
-			r.Value = true
+	for _, ruleCondition := range ruleConditions.(*schema.Set).List() {
+		rc := ruleCondition.(map[string]interface{})
+		con := rc["conditions"].([]interface{})
+		if len(con) > 0 {
+			nestedConditions := []iampolicymanagementv1.RuleAttribute{}
+			for _, nc := range con {
+				nestedConditions = append(nestedConditions, generatePolicyRuleCondition(nc.(map[string]interface{})))
+			}
+			nestedCondition := &iampolicymanagementv1.NestedCondition{}
+			nestedConditionsOperator := rc["operator"].(string)
+			nestedCondition.Operator = &nestedConditionsOperator
+			nestedCondition.Conditions = nestedConditions
+			conditions = append(conditions, nestedCondition)
 		} else {
-			r.Value = &values[0]
+			ruleAttribute := generatePolicyRuleCondition(rc)
+			nestedCondition := &iampolicymanagementv1.NestedCondition{
+				Key:      ruleAttribute.Key,
+				Operator: ruleAttribute.Operator,
+				Value:    ruleAttribute.Value,
+			}
+			conditions = append(conditions, nestedCondition)
 		}
-
-		conditions = append(conditions, r)
 	}
 	rule := new(iampolicymanagementv1.V2PolicyRule)
 	if len(conditions) == 1 {
-		rule.Key = conditions[0].Key
-		rule.Operator = conditions[0].Operator
-		rule.Value = conditions[0].Value
+		ruleCondition := conditions[0].(*iampolicymanagementv1.NestedCondition)
+		rule.Key = ruleCondition.Key
+		rule.Operator = ruleCondition.Operator
+		rule.Value = ruleCondition.Value
 	} else {
 		ruleOperator := d.Get("rule_operator").(string)
 		rule.Operator = &ruleOperator

@@ -122,38 +122,37 @@ func ResourceIBMContainerCluster() *schema.Resource {
 							Default:     false,
 							Description: "Specify this option to use the KMS public service endpoint.",
 						},
+						"account_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Account ID of KMS instance holder - if not provided, defaults to the account in use",
+						},
 					},
 				},
 			},
 
-			"worker_num": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      0,
-				Description:  "Number of worker nodes",
-				ValidateFunc: validate.ValidateWorkerNum,
-				Deprecated:   "This field is deprecated",
-			},
-
 			"default_pool_size": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      1,
-				Description:  "The size of the default worker pool",
-				ValidateFunc: validate.ValidateWorkerNum,
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Default:          1,
+				Description:      "The size of the default worker pool",
+				DiffSuppressFunc: flex.ApplyOnce,
+				ValidateFunc:     validate.ValidateWorkerNum,
 			},
 
 			"labels": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "list of labels to the default worker pool",
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Description:      "list of labels to the default worker pool",
 			},
 			"taints": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "WorkerPool Taints",
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "WorkerPool Taints",
+				DiffSuppressFunc: flex.ApplyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -204,11 +203,11 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"disk_encryption": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "disc encryption done, if set to true.",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Default:          true,
+				Description:      "disc encryption done, if set to true.",
 			},
 
 			"kube_version": {
@@ -250,58 +249,34 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"machine_type": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "Machine type",
+				Type:             schema.TypeString,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Optional:         true,
+				Description:      "Machine type",
 			},
 
 			"hardware": {
-				Type:         schema.TypeString,
-				ForceNew:     true,
-				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{hardwareShared, hardwareDedicated}),
-				Description:  "Hardware type",
+				Type:             schema.TypeString,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Required:         true,
+				ValidateFunc:     validate.ValidateAllowedStringValues([]string{hardwareShared, hardwareDedicated}),
+				Description:      "Hardware type",
 			},
 
-			"billing": {
+			"public_vlan_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Deprecated:       "This field is deprecated",
+				Default:          nil,
 				DiffSuppressFunc: flex.ApplyOnce,
-			},
-			"public_vlan_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  nil,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if o == "" {
-						return false
-					}
-					if o != "" && n == "" {
-						return true
-					}
-					return false
-				},
-				Description: "Public VLAN ID",
+				Description:      "Public VLAN ID",
 			},
 
 			"private_vlan_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Default:  nil,
-				DiffSuppressFunc: func(k, o, n string, d *schema.ResourceData) bool {
-					if o == "" {
-						return false
-					}
-					if o != "" && n == "" {
-						return true
-					}
-					return false
-				},
-				Description: "Private VLAN ID",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          nil,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Private VLAN ID",
 			},
 
 			"entitlement": {
@@ -312,11 +287,11 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			},
 
 			"operating_system": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The operating system of the workers in the default worker pool.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Computed:         true,
+				Description:      "The operating system of the workers in the default worker pool.",
 			},
 
 			"wait_for_worker_update": {
@@ -366,12 +341,7 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Boolean value set to true when subnet creation is not required.",
 			},
-			"is_trusted": {
-				Type:             schema.TypeBool,
-				Optional:         true,
-				Deprecated:       "This field is deprecated",
-				DiffSuppressFunc: flex.ApplyOnce,
-			},
+
 			"server_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -421,29 +391,6 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 
-			"org_guid": {
-				Description: "The bluemix organization guid this cluster belongs to",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Deprecated:  "This field is deprecated",
-			},
-			"space_guid": {
-				Description: "The bluemix space guid this cluster belongs to",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Deprecated:  "This field is deprecated",
-			},
-			"account_guid": {
-				Description: "The bluemix account guid this cluster belongs to",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Deprecated:  "This field is deprecated",
-			},
-			"wait_time_minutes": {
-				Type:       schema.TypeInt,
-				Optional:   true,
-				Deprecated: "This field is deprecated",
-			},
 			"tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -776,6 +723,37 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 
 	d.Set("force_delete_storage", d.Get("force_delete_storage").(bool))
 
+	//labels
+	workerPoolsAPI := csClient.WorkerPools()
+	workerPools, err := workerPoolsAPI.ListWorkerPools(cls.ID, targetEnv)
+	if err != nil {
+		return err
+	}
+
+	if len(workerPools) == 0 || !workerPoolContains(workerPools, defaultWorkerPool) {
+		return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
+	}
+
+	labels := make(map[string]string)
+	if l, ok := d.GetOk("labels"); ok {
+		for k, v := range l.(map[string]interface{}) {
+			labels[k] = v.(string)
+		}
+	}
+	err = workerPoolsAPI.UpdateLabelsWorkerPool(cls.ID, defaultWorkerPool, labels, targetEnv)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error updating the labels %s", err)
+	}
+
+	//taints
+	var taints []interface{}
+	if taintRes, ok := d.GetOk("taints"); ok {
+		taints = taintRes.(*schema.Set).List()
+	}
+	if err := updateWorkerpoolTaints(d, meta, cls.ID, defaultWorkerPool, taints); err != nil {
+		return err
+	}
+
 	return resourceIBMContainerClusterUpdate(d, meta)
 }
 
@@ -816,8 +794,6 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			workerCount = workerCount + 1
 		}
 	}
-
-	d.Set("worker_num", workerCount)
 
 	workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
 	if err != nil {
@@ -1047,6 +1023,12 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 					endpoint := privateEndpoint.(bool)
 					kmsConfig.PrivateEndpoint = endpoint
 				}
+
+				//Read optional account id
+				if accountid := kmsMap["account_id"]; accountid != nil {
+					accountid_string := accountid.(string)
+					kmsConfig.AccountID = accountid_string
+				}
 			}
 		}
 
@@ -1064,149 +1046,6 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			forceDeleteStorage = v.(bool)
 		}
 		d.Set("force_delete_storage", forceDeleteStorage)
-	}
-
-	if d.HasChange("default_pool_size") && !d.IsNewResource() {
-		workerPoolsAPI := csClient.WorkerPools()
-		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
-		if err != nil {
-			return err
-		}
-		var poolName string
-		var poolContains bool
-
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
-
-			poolContains = true
-		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
-			poolName = computeWorkerPool
-			poolContains = true
-		}
-		if poolContains {
-			poolSize := d.Get("default_pool_size").(int)
-			err = workerPoolsAPI.ResizeWorkerPool(clusterID, poolName, poolSize, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating the default_pool_size %d: %s", poolSize, err)
-			}
-
-			_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-			}
-		} else {
-			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
-		}
-	}
-
-	if d.HasChange("labels") {
-		workerPoolsAPI := csClient.WorkerPools()
-		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
-		if err != nil {
-			return err
-		}
-		var poolName string
-		var poolContains bool
-
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
-			poolContains = true
-		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
-			poolName = computeWorkerPool
-			poolContains = true
-		}
-		if poolContains {
-			labels := make(map[string]string)
-			if l, ok := d.GetOk("labels"); ok {
-				for k, v := range l.(map[string]interface{}) {
-					labels[k] = v.(string)
-				}
-			}
-			err = workerPoolsAPI.UpdateLabelsWorkerPool(clusterID, poolName, labels, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating the labels %s", err)
-			}
-
-			_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-			}
-		} else {
-			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
-		}
-	}
-
-	if d.HasChange("taints") {
-		workerPoolsAPI := csClient.WorkerPools()
-		workerPools, err := workerPoolsAPI.ListWorkerPools(clusterID, targetEnv)
-		if err != nil {
-			return err
-		}
-		var poolName string
-		var poolContains bool
-
-		if len(workerPools) > 0 && workerPoolContains(workerPools, defaultWorkerPool) {
-			poolName = defaultWorkerPool
-			poolContains = true
-		} else if len(workerPools) > 0 && workerPoolContains(workerPools, computeWorkerPool) && workerPoolContains(workerPools, gatewayWorkerpool) {
-			poolName = computeWorkerPool
-			poolContains = true
-		}
-		if poolContains {
-			var taints []interface{}
-			if taintRes, ok := d.GetOk("taints"); ok {
-				taints = taintRes.(*schema.Set).List()
-			}
-			if err := updateWorkerpoolTaints(d, meta, clusterID, poolName, taints); err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("[ERROR] The default worker pool does not exist. Use ibm_container_worker_pool and ibm_container_worker_pool_zone attachment resources to make changes to your cluster, such as adding zones, adding worker nodes, or updating worker nodes")
-		}
-	}
-
-	if d.HasChange("worker_num") {
-		old, new := d.GetChange("worker_num")
-		oldCount := old.(int)
-		newCount := new.(int)
-		if newCount > oldCount {
-			count := newCount - oldCount
-			machineType := d.Get("machine_type").(string)
-			publicVlanID := d.Get("public_vlan_id").(string)
-			privateVlanID := d.Get("private_vlan_id").(string)
-			hardware := d.Get("hardware").(string)
-			switch strings.ToLower(hardware) {
-			case hardwareDedicated:
-				hardware = isolationPrivate
-			case hardwareShared:
-				hardware = isolationPublic
-			}
-			params := v1.WorkerParam{
-				WorkerNum:   count,
-				MachineType: machineType,
-				PublicVlan:  publicVlanID,
-				PrivateVlan: privateVlanID,
-				Isolation:   hardware,
-			}
-			wrkAPI.Add(clusterID, params, targetEnv)
-		} else if oldCount > newCount {
-			count := oldCount - newCount
-			workerFields, err := wrkAPI.List(clusterID, targetEnv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
-			}
-			for i := 0; i < count; i++ {
-				err := wrkAPI.Delete(clusterID, workerFields[i].ID, targetEnv)
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error deleting workers of cluster (%s): %s", d.Id(), err)
-				}
-			}
-		}
-
-		_, err = WaitForWorkerAvailable(d, meta, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error waiting for workers of cluster (%s) to become ready: %s", d.Id(), err)
-		}
 	}
 
 	if d.HasChange("workers_info") {

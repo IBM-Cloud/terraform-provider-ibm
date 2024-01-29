@@ -34,10 +34,10 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "name", testName),
 					resource.TestCheckResourceAttr(dataName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(dataName, "plan", "standard"),
-					resource.TestCheckResourceAttr(dataName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(dataName, "location", acc.Region()),
 					resource.TestCheckResourceAttr(dataName, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(dataName, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(dataName, "members_disk_allocation_mb", "10240"),
+					resource.TestCheckResourceAttr(dataName, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(dataName, "groups.0.disk.0.allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(dataName, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(dataName, "tags.#", "1"),
 				),
@@ -66,5 +66,5 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 		tags              = ["one:two"]
 	}
 
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }

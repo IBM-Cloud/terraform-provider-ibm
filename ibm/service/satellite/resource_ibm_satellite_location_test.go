@@ -29,7 +29,7 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled, "", ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
@@ -54,7 +54,7 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled, "", ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
@@ -65,6 +65,34 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 				ResourceName:      "ibm_satellite_location.location",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccSatelliteLocation_PodAndServiceSubnet(t *testing.T) {
+	var instance string
+	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	managed_from := "wdc04"
+	coreos_enabled := "true"
+	pod_subnet := "10.69.0.0/16"
+	service_subnet := "192.168.42.0/24"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled, pod_subnet, service_subnet),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "managed_from", managed_from),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "coreos_enabled", coreos_enabled),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "pod_subnet", pod_subnet),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "service_subnet", service_subnet),
+				),
 			},
 		},
 	})
@@ -126,7 +154,7 @@ func testAccCheckSatelliteLocationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSatelliteLocationCreate(name, managed_from string, coreos_enabled string) string {
+func testAccCheckSatelliteLocationCreate(name, managed_from string, coreos_enabled string, pod_subnet, service_subnet string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "res_group" {
@@ -141,7 +169,9 @@ func testAccCheckSatelliteLocationCreate(name, managed_from string, coreos_enabl
 		zones = ["us-east-1", "us-east-2", "us-east-3"]
 		resource_group_id = data.ibm_resource_group.res_group.id
 		tags = ["env:dev"]
+		pod_subnet = "%s"
+		service_subnet = "%s"
 	}
 	  
-`, name, managed_from, coreos_enabled)
+`, name, managed_from, coreos_enabled, pod_subnet, service_subnet)
 }

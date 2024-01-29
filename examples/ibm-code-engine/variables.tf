@@ -119,6 +119,12 @@ variable "code_engine_binding_prefix" {
   default     = "MY_PREFIX"
 }
 
+// Resource arguments for code_engine_domain_mapping
+variable "code_engine_domain_mapping_name" {
+  description = "The name of the domain mapping."
+  type        = string
+}
+
 // Data source arguments for code_engine_project
 variable "code_engine_project_id" {
   description = "The ID of the project."
