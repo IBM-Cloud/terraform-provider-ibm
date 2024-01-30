@@ -25,25 +25,6 @@ func TestAccIbmSchematicsAgentHealthDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "agent_id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmSchematicsAgentHealthDataSourceAllArgs(t *testing.T) {
-	agentHealthJobAgentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
-	agentHealthJobForce := "false"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentHealthDataSourceConfig(agentHealthJobAgentID, agentHealthJobForce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "agent_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_health.schematics_agent_health_instance", "updated_by"),
@@ -59,25 +40,8 @@ func TestAccIbmSchematicsAgentHealthDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmSchematicsAgentHealthDataSourceConfigBasic(agentHealthJobAgentID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_schematics_agent_health" "schematics_agent_health_instance" {
-			agent_id = "%s"
-		}
-
 		data "ibm_schematics_agent_health" "schematics_agent_health_instance" {
-			agent_id = ibm_schematics_agent_health.schematics_agent_health.agent_id
+			agent_id = "%s"
 		}
 	`, agentHealthJobAgentID)
-}
-
-func testAccCheckIbmSchematicsAgentHealthDataSourceConfig(agentHealthJobAgentID string, agentHealthJobForce string) string {
-	return fmt.Sprintf(`
-		resource "ibm_schematics_agent_health" "schematics_agent_health_instance" {
-			agent_id = "%s"
-			force = %s
-		}
-
-		data "ibm_schematics_agent_health" "schematics_agent_health_instance" {
-			agent_id = ibm_schematics_agent_health.schematics_agent_health.agent_id
-		}
-	`, agentHealthJobAgentID, agentHealthJobForce)
 }

@@ -14,6 +14,7 @@ Create, update, and delete mqcloud_truststore_certificates with this resource.
 
 ```hcl
 resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_instance" {
+  certificate_file = filebase64("certificate_file.data")
   label = "label"
   queue_manager_id = var.queue_manager_id
   service_instance_guid = var.service_instance_guid
@@ -24,7 +25,9 @@ resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_in
 
 You can specify the following arguments for this resource.
 
-* `label` - (Required, Forces new resource, String) Certificate label in queue manager store.
+* `certificate_file` - (Required, Forces new resource, String) The filename and path of the certificate to be uploaded.
+  * Constraints: The maximum length is `65537` characters. The minimum length is `1500` characters.
+* `label` - (Required, Forces new resource, String) The label to use for the certificate to be uploaded.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_.]*$/`.
 * `queue_manager_id` - (Required, Forces new resource, String) The id of the queue manager to retrieve its full details.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-fA-F]{32}$/`.
@@ -63,6 +66,10 @@ The `id` property can be formed from `service_instance_guid`, `queue_manager_id`
 * `service_instance_guid`: A string in the format `a2b4d4bc-dadb-4637-bcec-9b7d1e723af8`. The GUID that uniquely identifies the MQ on Cloud service instance.
 * `queue_manager_id`: A string in the format `b8e1aeda078009cf3db74e90d5d42328`. The id of the queue manager to retrieve its full details.
 * `certificate_id`: A string. Id of the certificate.
+
+> ### Important Note
+> When configuring the `ibm_mqcloud_keystore_certificate` resource in the root module:
+> Ensure to set the `certificate_file` value to an empty string (`certificate_file=""`). This step is crucial as we are not downloading the certificate to the local system.
 
 # Syntax
 <pre>
