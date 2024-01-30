@@ -90,9 +90,8 @@ func resourceIbmSchematicsAgentPrsCreate(context context.Context, d *schema.Reso
 
 	prsAgentJobOptions := &schematicsv1.PrsAgentJobOptions{}
 	ff := map[string]string{
-		"X-Feature-Agents": "true",
-		"Authorization":    iamAccessToken,
-		"refresh_token":    iamRefreshToken,
+		"Authorization": iamAccessToken,
+		"refresh_token": iamRefreshToken,
 	}
 	prsAgentJobOptions.Headers = ff
 	prsAgentJobOptions.SetAgentID(d.Get("agent_id").(string))
@@ -123,8 +122,7 @@ func resourceIbmSchematicsAgentPrsRead(context context.Context, d *schema.Resour
 	}
 
 	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-		XFeatureAgents: core.BoolPtr(true),
-		Profile:        core.StringPtr("detailed"),
+		Profile: core.StringPtr("detailed"),
 	}
 
 	getAgentDataOptions.SetAgentID(parts[0])
@@ -183,9 +181,8 @@ func resourceIbmSchematicsAgentPrsUpdate(context context.Context, d *schema.Reso
 
 	prsAgentJobOptions := &schematicsv1.PrsAgentJobOptions{}
 	ff := map[string]string{
-		"X-Feature-Agents": "true",
-		"Authorization":    iamAccessToken,
-		"refresh_token":    iamRefreshToken,
+		"Authorization": iamAccessToken,
+		"refresh_token": iamRefreshToken,
 	}
 	prsAgentJobOptions.Headers = ff
 

@@ -43,6 +43,7 @@ resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
 
 ```terraform
 resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
   region        = "us-south"
   name 			= "secret-name"
   source_service {
@@ -89,11 +90,11 @@ Nested scheme for **rotation**:
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
   * Constraints: The maximum length is `36` characters. The minimum length is `7` characters. The value must match regular expression `/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|default)$/`.
-* `source_service` - (Optional, List) The properties required for creating the service credentials for the specified source service instance.
+* `source_service` - (Required, List) The properties required for creating the service credentials for the specified source service instance.
 Nested scheme for **source_service**:
-    * `instance` - (Optional, List) The source service instance identifier.
+    * `instance` - (Required, List) The source service instance identifier.
       Nested scheme for **instance**:
-          * `crn` - (Optional, String) A CRN that uniquely identifies a service credentials source.
+          * `crn` - (Required, String) A CRN that uniquely identifies a service credentials source.
     * `role` - (Optional, List) The service-specific custom role object, CRN role is accepted. Refer to the service’s documentation for supported roles.
       Nested scheme for **role**:
           * `crn` - (Optional, String) The service role CRN.
