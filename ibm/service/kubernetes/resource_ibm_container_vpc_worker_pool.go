@@ -100,6 +100,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "WorkerPool Taints",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -207,10 +208,26 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
 
+			"import_on_create": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Import an existing WorkerPool from the cluster, instead of creating a new",
+			},
+
 			"autoscale_enabled": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Autoscaling is enabled on the workerpool",
+			},
+
+			"security_groups": {
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "Allow user to set which security groups added to their workers",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              flex.ResourceIBMVPCHash,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 		},
 	}
@@ -249,12 +266,34 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 
 func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
+	clusterNameorID := d.Get("cluster").(string)
+
 	wpClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
 	}
 
-	clusterNameorID := d.Get("cluster").(string)
+	if ioc, ok := d.GetOk("import_on_create"); ok && ioc.(bool) {
+		log.Printf("Importing workerpool from cluster %s", clusterNameorID)
+
+		//read to get ID for default and d.Set!
+
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+
+		wp, err := wpClient.WorkerPools().GetWorkerPool(clusterNameorID, "default", targetEnv)
+		if err != nil {
+			return err
+		}
+
+		d.SetId(fmt.Sprintf("%s/%s", clusterNameorID, wp.ID))
+
+		return resourceIBMContainerVpcWorkerPoolRead(d, meta)
+
+	}
+
 	var zonei []interface{}
 
 	zone := []v2.Zone{}
@@ -281,6 +320,11 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 			WorkerCount: d.Get("worker_count").(int),
 			Zones:       zone,
 		},
+	}
+
+	if v, ok := d.GetOk("security_groups"); ok {
+		securityGroups := flex.FlattenSet(v.(*schema.Set))
+		params.SecurityGroupIDs = securityGroups
 	}
 
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {

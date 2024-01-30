@@ -4,6 +4,7 @@
 package resourcecontroller
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -82,6 +83,12 @@ func DataSourceIBMResourceInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Guid of resource instance",
+			},
+
+			"parameters_json": {
+				Description: "Parameters asociated with instance in json string",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 
 			flex.ResourceName: {
@@ -246,6 +253,15 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
 	d.Set(flex.ResourceStatus, instance.State)
+	if instance.Parameters != nil {
+		params, err := json.Marshal(instance.Parameters)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error marshalling instance parameters: %s", err)
+		}
+		if err = d.Set("parameters_json", string(params)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting instance parameters json: %s", err)
+		}
+	}
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err

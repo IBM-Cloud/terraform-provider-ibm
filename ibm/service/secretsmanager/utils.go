@@ -2,6 +2,7 @@ package secretsmanager
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -181,4 +182,14 @@ func getSecretByIdOrByName(context context.Context, d *schema.ResourceData, meta
 	}
 
 	return nil, "", "", diag.FromErr(fmt.Errorf("Missing required arguments. Please make sure that either \"secret_id\" or \"name\" and \"secret_group_name\" are provided\n"))
+}
+
+func secretVersionMetadataAsPatchFunction(secretVersionMetadataPatch *secretsmanagerv2.SecretVersionMetadataPatch) (_patch map[string]interface{}, err error) {
+	jsonData, err := json.Marshal(struct {
+		VersionCustomMetadata map[string]interface{} `json:"version_custom_metadata"`
+	}{VersionCustomMetadata: secretVersionMetadataPatch.VersionCustomMetadata})
+	if err == nil {
+		err = json.Unmarshal(jsonData, &_patch)
+	}
+	return
 }

@@ -141,7 +141,10 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 10240
 			}
 		}
@@ -175,7 +178,10 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 			memory {
 				allocation_mb = 2048
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 10240
 			}
 		}
@@ -217,7 +223,10 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 10240
 			}
 		}
