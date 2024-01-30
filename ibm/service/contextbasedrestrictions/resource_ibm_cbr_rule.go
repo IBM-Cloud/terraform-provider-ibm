@@ -35,7 +35,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 			},
 			"contexts": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The contexts this rule applies to.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -122,6 +122,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "The operations this rule applies to.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -144,7 +145,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 			"enforcement_mode": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "enabled",
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cbr_rule", "enforcement_mode"),
 				Description:  "The rule enforcement mode: * `enabled` - The restrictions are enforced and reported. This is the default. * `disabled` - The restrictions are disabled. Nothing is enforced or reported. * `report` - The restrictions are evaluated and reported, but not enforced.",
 			},
@@ -252,8 +253,8 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("description"); ok {
 		createRuleOptions.SetDescription(d.Get("description").(string))
 	}
+	contexts := []contextbasedrestrictionsv1.RuleContext{}
 	if _, ok := d.GetOk("contexts"); ok {
-		var contexts []contextbasedrestrictionsv1.RuleContext
 		for _, e := range d.Get("contexts").([]interface{}) {
 			value := e.(map[string]interface{})
 			contextsItem, err := resourceIBMCbrRuleMapToRuleContext(value)
@@ -262,8 +263,8 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 			}
 			contexts = append(contexts, *contextsItem)
 		}
-		createRuleOptions.SetContexts(contexts)
 	}
+	createRuleOptions.SetContexts(contexts)
 	if _, ok := d.GetOk("resources"); ok {
 		var resources []contextbasedrestrictionsv1.Resource
 		for _, e := range d.Get("resources").([]interface{}) {
@@ -408,8 +409,8 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("description"); ok {
 		replaceRuleOptions.SetDescription(d.Get("description").(string))
 	}
+	contexts := []contextbasedrestrictionsv1.RuleContext{}
 	if _, ok := d.GetOk("contexts"); ok {
-		var contexts []contextbasedrestrictionsv1.RuleContext
 		for _, e := range d.Get("contexts").([]interface{}) {
 			value := e.(map[string]interface{})
 			contextsItem, err := resourceIBMCbrRuleMapToRuleContext(value)
@@ -418,8 +419,8 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 			}
 			contexts = append(contexts, *contextsItem)
 		}
-		replaceRuleOptions.SetContexts(contexts)
 	}
+	replaceRuleOptions.SetContexts(contexts)
 	if _, ok := d.GetOk("resources"); ok {
 		var resources []contextbasedrestrictionsv1.Resource
 		for _, e := range d.Get("resources").([]interface{}) {
