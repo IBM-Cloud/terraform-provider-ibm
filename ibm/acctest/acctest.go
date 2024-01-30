@@ -105,6 +105,8 @@ var (
 	DedicatedHostGroupFamily        string
 	DedicatedHostGroupClass         string
 	ShareProfileName                string
+	SourceShareCRN                  string
+	ShareEncryptionKey              string
 	VNIId                           string
 	VolumeProfileName               string
 	VSIUnattachedBootVolumeID       string
@@ -123,6 +125,18 @@ var (
 	HpcsInstanceID                  string
 )
 
+// MQ on Cloud
+var (
+	MqcloudConfigEndpoint            string
+	MqcloudInstanceID                string
+	MqcloudQueueManagerID            string
+	MqcloudKSCertFilePath            string
+	MqcloudTSCertFilePath            string
+	MqCloudQueueManagerLocation      string
+	MqCloudQueueManagerVersion       string
+	MqCloudQueueManagerVersionUpdate string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                     string
@@ -139,6 +153,7 @@ var (
 	SecretsManagerPublicCertificateCommonName                    string
 	SecretsManagerValidateManualDnsCisZoneId                     string
 	SecretsManagerImportedCertificatePathToCertificate           string
+	SecretsManagerServiceCredentialsCosCrn                       string
 	SecretsManagerSecretType                                     string
 	SecretsManagerSecretID                                       string
 )
@@ -200,6 +215,9 @@ var (
 	PiStoragePool                   string
 	PiStorageType                   string
 	Pi_shared_processor_pool_id     string
+	Pi_target_storage_tier          string
+	Pi_volume_clone_task_id         string
+	Pi_resource_group_id            string
 )
 
 var (
@@ -251,9 +269,13 @@ var Snapshot_month string
 // Secuity and Complinace Center
 var (
 	SccApiEndpoint            string
-	SccProviderTypeAttributes string
-	SccReportID               string
+	SccEventNotificationsCRN  string
 	SccInstanceID             string
+	SccObjectStorageCRN       string
+	SccObjectStorageBucket    string
+	SccProviderTypeAttributes string
+	SccProviderTypeID         string
+	SccReportID               string
 )
 
 // ROKS Cluster
@@ -511,7 +533,7 @@ func init() {
 
 	KubeVersion = os.Getenv("IBM_KUBE_VERSION")
 	if KubeVersion == "" {
-		KubeVersion = "1.18"
+		KubeVersion = "1.25.9"
 		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.18.14'")
 	}
 
@@ -850,6 +872,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value 'tier-3iops'")
 	}
 
+	SourceShareCRN = os.Getenv("IS_SOURCE_SHARE_CRN")
+	if SourceShareCRN == "" {
+		SourceShareCRN = "crn:v1:staging:public:is:us-east-1:a/efe5afc483594adaa8325e2b4d1290df::share:r142-a106f162-86e4-4d7f-be75-193cc55a93e9" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
+	ShareEncryptionKey = os.Getenv("IS_SHARE_ENCRYPTION_KEY")
+	if ShareEncryptionKey == "" {
+		ShareEncryptionKey = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_SHARE_PROFILE for testing ibm_is_instance resource else it is set to default value")
+	}
+
 	VolumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
 	if VolumeProfileName == "" {
 		VolumeProfileName = "general-purpose"
@@ -1076,6 +1110,24 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
 
+	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
+	if Pi_target_storage_tier == "" {
+		Pi_target_storage_tier = "terraform-test-tier"
+		fmt.Println("[INFO] Set the environment variable PI_TARGET_STORAGE_TIER for testing Pi_target_storage_tier resource else it is set to default value 'terraform-test-tier'")
+	}
+
+	Pi_volume_clone_task_id = os.Getenv("PI_VOLUME_CLONE_TASK_ID")
+	if Pi_volume_clone_task_id == "" {
+		Pi_volume_clone_task_id = "terraform-test-volume-clone-task-id"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_CLONE_TASK_ID for testing Pi_volume_clone_task_id resource else it is set to default value 'terraform-test-volume-clone-task-id'")
+	}
+
+	Pi_resource_group_id = os.Getenv("PI_RESOURCE_GROUP_ID")
+	if Pi_resource_group_id == "" {
+		Pi_resource_group_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
+	}
+
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if WorkspaceID == "" {
 		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -1222,6 +1274,11 @@ func init() {
 	SecretsManagerImportedCertificatePathToCertificate = os.Getenv("SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE")
 	if SecretsManagerImportedCertificatePathToCertificate == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_IMPORTED_CERTIFICATE_PATH_TO_CERTIFICATE for testing imported certificate's tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
+	if SecretsManagerServiceCredentialsCosCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
 	}
 
 	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
@@ -1372,6 +1429,26 @@ func init() {
 	SccProviderTypeAttributes = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES")
 	if SccProviderTypeAttributes == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC PROVIDER TYPE ATTRIBUTE")
+	}
+
+	SccProviderTypeID = os.Getenv("IBMCLOUD_SCC_PROVIDER_TYPE_ID")
+	if SccProviderTypeID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC PROVIDER TYPE ID")
+	}
+
+	SccEventNotificationsCRN = os.Getenv("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
+	if SccEventNotificationsCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN")
+	}
+
+	SccObjectStorageCRN = os.Getenv("IBMCLOUD_SCC_OBJECT_STORAGE_CRN")
+	if SccObjectStorageCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid cloud object storage crn")
+	}
+
+	SccObjectStorageBucket = os.Getenv("IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET")
+	if SccObjectStorageBucket == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid cloud object storage bucket")
 	}
 
 	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
@@ -1567,6 +1644,40 @@ func init() {
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
 	}
+
+	MqcloudConfigEndpoint = os.Getenv("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT")
+	if MqcloudConfigEndpoint == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT for ibm_mqcloud service else tests will fail if this is not set correctly")
+	}
+
+	MqcloudInstanceID = os.Getenv("IBM_MQCLOUD_INSTANCE_ID")
+	if MqcloudInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_INSTANCE_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudQueueManagerID = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_ID")
+	if MqcloudQueueManagerID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudKSCertFilePath = os.Getenv("IBM_MQCLOUD_KS_CERT_PATH")
+	if MqcloudKSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_KS_CERT_PATH for ibm_mqcloud_keystore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudTSCertFilePath = os.Getenv("IBM_MQCLOUD_TS_CERT_PATH")
+	if MqcloudTSCertFilePath == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TS_CERT_PATH for ibm_mqcloud_truststore_certificate resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerLocation = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_LOCATION"))
+	if MqCloudQueueManagerLocation == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_LOCATION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerVersion = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSION"))
+	if MqCloudQueueManagerVersion == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
+	if MqCloudQueueManagerVersionUpdate == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
 }
 
 var (
@@ -1759,7 +1870,11 @@ func TestAccPreCheckScc(t *testing.T) {
 	}
 
 	if SccProviderTypeAttributes == "" {
-		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID ATTRIBUTE")
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ATTRIBUTES with a VALID SCC provider_type JSON object")
+	}
+
+	if SccProviderTypeID == "" {
+		t.Fatal("IBMCLOUD_SCC_PROVIDER_TYPE_ID missing. Set the environment variable IBMCLOUD_SCC_PROVIDER_TYPE_ID with a VALID SCC provider_type ID")
 	}
 
 	if SccInstanceID == "" {
@@ -1767,7 +1882,19 @@ func TestAccPreCheckScc(t *testing.T) {
 	}
 
 	if SccReportID == "" {
-		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID REPORT_ID")
+		t.Fatal("IBMCLOUD_SCC_REPORT_ID missing. Set the environment variable IBMCLOUD_SCC_REPORT_ID with a VALID SCC REPORT_ID")
+	}
+
+	if SccEventNotificationsCRN == "" {
+		t.Fatal("IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN missing. Set the environment variable IBMCLOUD_SCC_EVENT_NOTIFICATION_CRN with a valid EN CRN")
+	}
+
+	if SccObjectStorageCRN == "" {
+		t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_CRN with a valid COS CRN")
+	}
+
+	if SccObjectStorageBucket == "" {
+		t.Fatal("IBMCLOUD_SCC_OBJECT_STORAGE_CRN missing. Set the environment variable IBMCLOUD_SCC_OBJECT_STORAGE_BUCKET with a valid COS bucket")
 	}
 }
 
@@ -1775,6 +1902,34 @@ func TestAccPreCheckSatelliteSSH(t *testing.T) {
 	TestAccPreCheck(t)
 	if SatelliteSSHPubKey == "" {
 		t.Fatal("IBM_SATELLITE_SSH_PUB_KEY missing. Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a VALID ssh public key")
+	}
+}
+
+func TestAccPreCheckMqcloud(t *testing.T) {
+	TestAccPreCheck(t)
+	if MqcloudConfigEndpoint == "" {
+		t.Fatal("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT must be set for acceptance tests")
+	}
+	if MqcloudInstanceID == "" {
+		t.Fatal("IBM_MQCLOUD_INSTANCE_ID must be set for acceptance tests")
+	}
+	if MqcloudQueueManagerID == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_ID must be set for acceptance tests")
+	}
+	if MqcloudTSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_TS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqcloudKSCertFilePath == "" {
+		t.Fatal("IBM_MQCLOUD_KS_CERT_PATH must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerLocation == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_LOCATION must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerVersion == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSION must be set for acceptance tests")
+	}
+	if MqCloudQueueManagerVersionUpdate == "" {
+		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE must be set for acceptance tests")
 	}
 }
 

@@ -31,7 +31,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -51,7 +51,7 @@ resource "ibm_database" "<your_database>" {
 
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
     type     = "database"
   }
 
@@ -83,7 +83,7 @@ resource "ibm_database" "<your_database>" {
   resource_group_id = data.ibm_resource_group.group.id
   tags              = ["tag1", "tag2"]
 
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -98,6 +98,53 @@ resource "ibm_database" "<your_database>" {
 
     cpu {
       allocation_count = 3
+    }
+  }
+
+  users {
+    name     = "user123"
+    password = "password12345678"
+  }
+
+  allowlist {
+    address     = "172.168.1.1/32"
+    description = "desc"
+  }
+}
+
+output "ICD Etcd database connection string" {
+  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+}
+
+```
+
+### Sample database instance by using `host_flavor` attribute
+An example to configure and deploy database by using `host_flavor` attribute.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "<your_database>" {
+  name              = "<your_database_name>"
+  plan              = "standard"
+  location          = "eu-gb"
+  service           = "databases-for-etcd"
+  resource_group_id = data.ibm_resource_group.group.id
+  tags              = ["tag1", "tag2"]
+
+  adminpassword                = "password12"
+
+  group {
+    group_id = "member"
+
+    host_flavor {
+      id = "b3c.8x32.encrypted"
+    }
+
+    disk {
+      allocation_mb = 256000
     }
   }
 
@@ -187,7 +234,7 @@ resource "ibm_database" "cassandra" {
   service                      = "databases-for-cassandra"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -207,7 +254,7 @@ resource "ibm_database" "cassandra" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -239,7 +286,7 @@ resource "ibm_database" "mongodb" {
   service                      = "databases-for-mongodb"
   plan                         = "enterprise"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -261,7 +308,7 @@ resource "ibm_database" "mongodb" {
 
   users {
     name      = "dbuser"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -300,7 +347,7 @@ resource "ibm_database" "mongodb_enterprise" {
   service           = "databases-for-mongodb"
   plan              = "enterprise"
   location          = "us-south"
-  adminpassword     = "password12"
+  adminpassword     = "password12345678"
   tags              = ["one:two"]
 
   group {
@@ -375,7 +422,7 @@ resource "ibm_database" "edb" {
   service                      = "databases-for-enterprisedb"
   plan                         = "standard"
   location                     = "us-south"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
 
   group {
     group_id = "member"
@@ -397,7 +444,7 @@ resource "ibm_database" "edb" {
 
   users {
     name      = "user123"
-    password  = "password12"
+    password  = "password12345678"
     type      = "database"
   }
 
@@ -427,7 +474,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "enterprise"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   version                      = "7.17"
   group {
     group_id = "member"
@@ -446,7 +493,7 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -473,7 +520,7 @@ resource "ibm_database" "es" {
   service                      = "databases-for-elasticsearch"
   plan                         = "platinum"
   location                     = "eu-gb"
-  adminpassword                = "password12"
+  adminpassword                = "password12345678"
   group {
     group_id = "member"
     members {
@@ -491,7 +538,7 @@ resource "ibm_database" "es" {
   }
   users {
     name     = "user123"
-    password = "password12"
+    password = "password12345678"
   }
   allowlist {
     address     = "172.168.1.2/32"
@@ -556,7 +603,7 @@ resource "ibm_database" "db" {
 
   users {
     name     = "repl"
-    password = "repl123456"
+    password = "repl12345password"
   }
 
   configuration                = <<CONFIGURATION
@@ -602,7 +649,7 @@ ICD create instance typically takes between 30 minutes to 45 minutes. Delete and
 ## Argument reference
 Review the argument reference that you can specify for your resource.
 
-- `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
+- `adminpassword` - (Optional, String)  The password for the database administrator. Password must be between 15 and 32 characters in length and contain a letter and a number. The only special characters allowed are `-_`.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
    - Nested scheme for `auto_scaling`:
@@ -667,6 +714,16 @@ Review the argument reference that you can specify for your resource.
       - Nested scheme for `cpu`:
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
+    - `host_flavor` (Set, Optional)
+      - Nested scheme for `host_flavor`:
+        - `id` - (Optional, String) **Beta feature:** The hosting infrastructure identifier. Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants.
+          - `b3c.4x16.encrypted`
+          - `b3c.8x32.encrypted`
+          - `m3c.8x64.encrypted`
+          - `b3c.16x64.encrypted`
+          - `b3c.32x128.encrypted`
+          - `m3c.30x240.encrypted`
+
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
 - `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`), cassandra (`databases-for-cassandra`), and mongodb(`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
@@ -682,9 +739,9 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for `users`:
   - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
-  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users
+  - `password` - (Required, String) The password for the user. Passwords must be between 15 and 32 characters in length and contain a letter and a number. Users with an `ops_manager` user type must have a password containing a special character `~!@#$%^&*()=+[]{}|;:,.<>/?_-` as well as a letter and a number. Other user types may only use special characters `-_`.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
-  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
+  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type or Redis 6.0 and above. Example roles for `ops_manager`: `group_read_only`, `group_data_access_admin`. For, Redis 6.0 and above, `role` must be in Redis ACL syntax for adding and removing command categories i.e. `+@category` or  `-@category`. Allowed command categories are `all`, `admin`, `read`, `write`. Example Redis `role`: `-@all +@read`
 
 - `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 

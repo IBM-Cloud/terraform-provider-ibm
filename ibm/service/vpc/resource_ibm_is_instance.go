@@ -625,7 +625,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							ForceNew:      true,
 							Computed:      true,
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
 						},
@@ -3543,6 +3543,30 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					return err
 				}
 			}
+		}
+	}
+	bootVolName := "boot_volume.0.name"
+	if d.HasChange(bootVolName) && !d.IsNewResource() {
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		volName := d.Get(bootVolName).(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Name: &volName,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume name update of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while updating name of boot volume of instance %s/n%s", err, res))
 		}
 	}
 	bootVolAutoDel := "boot_volume.0.auto_delete_volume"

@@ -36,7 +36,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
@@ -56,7 +56,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "98304"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
@@ -79,7 +79,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -110,11 +110,11 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 20480
@@ -123,7 +123,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		tags                         = ["one:two"]
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -150,28 +150,25 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 2048
+			host_flavor {
+				id = "b3c.8x32.encrypted"
 			}
 			disk {
 			  allocation_mb = 30720
-			}
-			cpu {
-				allocation_count = 4
 			}
 		}
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -202,11 +199,11 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 30720

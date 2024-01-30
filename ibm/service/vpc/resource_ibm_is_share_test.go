@@ -38,6 +38,28 @@ func TestAccIbmIsShareBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareCrossRegionReplication(t *testing.T) {
+	var conf vpcv1.Share
+	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareCrossRegionReplicaConfig(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "source_share_crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "encryption_key"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "encryption", "user_managed"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIbmIsShareAllArgs(t *testing.T) {
 	var conf vpcv1.Share
 
@@ -157,7 +179,18 @@ func testAccCheckIbmIsShareConfigBasic(name string) string {
 		}
 	`, name, acc.ShareProfileName)
 }
-
+func testAccCheckIbmIsShareCrossRegionReplicaConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_share" "is_share" {
+			zone = "us-south-2"
+			encryption_key = "%s"
+			source_share_crn = "%s"
+			replication_cron_spec = "0 */5 * * *"
+			name = "%s"
+			profile = "%s"
+		}
+	`, acc.ShareEncryptionKey, acc.SourceShareCRN, name, acc.ShareProfileName)
+}
 func testAccCheckIbmIsShareConfig(vpcName, name string, size int, shareTergetName string) string {
 	return fmt.Sprintf(`
 

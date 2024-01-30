@@ -25,25 +25,6 @@ func TestAccIbmSchematicsAgentPrsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "agent_id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmSchematicsAgentPrsDataSourceAllArgs(t *testing.T) {
-	agentPRSJobAgentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
-	agentPRSJobForce := "false"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentPrsDataSourceConfig(agentPRSJobAgentID, agentPRSJobForce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "agent_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_prs.schematics_agent_prs_instance", "updated_by"),
@@ -59,25 +40,8 @@ func TestAccIbmSchematicsAgentPrsDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmSchematicsAgentPrsDataSourceConfigBasic(agentPRSJobAgentID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
-			agent_id = "%s"
-		}
-
 		data "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
-			agent_id = ibm_schematics_agent_prs.schematics_agent_prs_instance.agent_id
+			agent_id = "%s"
 		}
 	`, agentPRSJobAgentID)
-}
-
-func testAccCheckIbmSchematicsAgentPrsDataSourceConfig(agentPRSJobAgentID string, agentPRSJobForce string) string {
-	return fmt.Sprintf(`
-		resource "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
-			agent_id = "%s"
-			force = %s
-		}
-
-		data "ibm_schematics_agent_prs" "schematics_agent_prs_instance" {
-			agent_id = ibm_schematics_agent_prs.schematics_agent_prs_instance.agent_id
-		}
-	`, agentPRSJobAgentID, agentPRSJobForce)
 }

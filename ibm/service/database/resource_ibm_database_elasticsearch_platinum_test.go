@@ -65,7 +65,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -80,7 +80,7 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -118,10 +118,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "5120"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -139,10 +135,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -157,10 +149,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -174,10 +162,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "node_count", "4"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -214,10 +198,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "5120"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -235,14 +215,10 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -257,14 +233,10 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -278,14 +250,10 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "platinum"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "node_count", "4"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "4"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "65536"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "24576"),
-					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "16"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -351,12 +319,12 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
@@ -364,7 +332,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -393,14 +361,21 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -434,7 +409,14 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 
 		timeouts {
 			create = "120m"
@@ -458,13 +440,13 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
 
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
@@ -493,26 +475,23 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
 			  allocation_count = 3
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 5120
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -541,29 +520,26 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
 			  allocation_count = 3
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
 			}
-			cpu {
-			  allocation_count = 3
-			}
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -596,20 +572,17 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
 			  allocation_count = 3
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 
@@ -635,20 +608,17 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
 			  allocation_count = 4
 			}
-			memory {
-			  allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 6144
-			}
-			cpu {
-			  allocation_count = 3
 			}
 		}
 
@@ -674,27 +644,24 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
 			members {
 				allocation_count = 3
 			}
-			memory {
-				allocation_mb = 1024
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 				allocation_mb = 5120
-			}
-			cpu {
-				allocation_count = 3
 			}
 		}
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -723,30 +690,27 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
 		  members {
 		    allocation_count = 3
 		  }
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
 		  }
-		  cpu {
-		    allocation_count = 3
-		  }
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -780,21 +744,18 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
 		  members {
 		    allocation_count = 3
 		  }
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
-		  }
-		  cpu {
-		    allocation_count = 3
 		  }
 		}
 
@@ -820,21 +781,18 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
 		  members {
 		    allocation_count = 4
 		  }
-		  memory {
-		    allocation_mb = 1024
+		  host_flavor {
+			id = "b3c.4x16.encrypted"
 		  }
 		  disk {
 		    allocation_mb = 6144
-		  }
-		  cpu {
-		    allocation_count = 3
 		  }
 		}
 		timeouts {

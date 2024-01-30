@@ -55,7 +55,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-etcd"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "18432"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "193536"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
@@ -131,11 +131,14 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 		service                      = "databases-for-etcd"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
 			  allocation_mb = 3072
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 			disk {
 			  allocation_mb = 61440
@@ -143,7 +146,7 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -166,11 +169,11 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 		service                      = "databases-for-etcd"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
-			memory {
-			  allocation_mb = 6144
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
 			disk {
 			  allocation_mb = 64512
@@ -178,11 +181,11 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -210,11 +213,14 @@ func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, na
 		service                      = "databases-for-etcd"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
 			  allocation_mb = 3072
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 			disk {
 			  allocation_mb = 64512

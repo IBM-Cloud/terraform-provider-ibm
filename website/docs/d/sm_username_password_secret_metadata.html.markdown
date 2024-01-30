@@ -69,7 +69,6 @@ Nested scheme for **rotation**:
 	* `auto_rotate` - (Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
 	* `interval` - (Integer) The length of the secret rotation time interval.
 	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 	* `unit` - (String) The units for the secret rotation time interval.
 	  * Constraints: Allowable values are: `day`, `month`.
 

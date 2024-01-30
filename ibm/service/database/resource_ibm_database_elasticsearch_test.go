@@ -78,7 +78,7 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -316,14 +316,24 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
+		}
+
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 2048
+			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 
 		timeouts {
@@ -348,14 +358,14 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -364,6 +374,16 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
+		}
+
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 2048
+			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 
 		timeouts {
@@ -389,7 +409,17 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
+
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 2048
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+		}
 
 		timeouts {
 			create = "120m"
@@ -413,13 +443,16 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResource
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
 
 		  memory {
-		    allocation_mb = 1024
+		    allocation_mb = 2048
+		  }
+		  host_flavor {
+			  id = "multitenant"
 		  }
 		  disk {
 		    allocation_mb = 6144
@@ -448,7 +481,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -464,10 +497,13 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 			cpu {
 			  allocation_count = 3
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -496,7 +532,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -511,14 +547,17 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 			cpu {
 			  allocation_count = 3
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -551,7 +590,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -565,6 +604,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 			}
 			cpu {
 			  allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 
@@ -590,7 +632,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -604,6 +646,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 			}
 			cpu {
 			  allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 
@@ -629,7 +674,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -645,11 +690,14 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 			cpu {
 				allocation_count = 3
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -678,7 +726,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
@@ -694,14 +742,17 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		  cpu {
 		    allocation_count = 3
 		  }
+		  host_flavor {
+			  id = "multitenant"
+		  }
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -735,7 +786,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
@@ -750,6 +801,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 		  }
 		  cpu {
 		    allocation_count = 3
+		  }
+		  host_flavor {
+			  id = "multitenant"
 		  }
 		}
 
@@ -775,7 +829,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 		service                      = "databases-for-elasticsearch"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
@@ -790,6 +844,9 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 		  }
 		  cpu {
 		    allocation_count = 3
+		  }
+		  host_flavor {
+			  id = "multitenant"
 		  }
 		}
 		timeouts {

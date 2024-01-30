@@ -135,19 +135,22 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 10240
 			}
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -169,23 +172,26 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
 				allocation_mb = 2048
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 10240
 			}
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -211,13 +217,16 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 10240
 			}
 		}

@@ -127,8 +127,8 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "20480"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "6"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
@@ -149,8 +149,8 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4608"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "28672"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2304"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "14336"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "6"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
@@ -174,8 +174,8 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "4096"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "28672"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "14336"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "6"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -192,8 +192,8 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "21504"),
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "9"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -415,11 +415,14 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
 			  allocation_mb = 2048
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 			disk {
 			  allocation_mb = 10240
@@ -428,7 +431,7 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -462,7 +465,7 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -474,20 +477,23 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 			cpu {
 			  allocation_count = 6
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "repl"
-			password = "repl123456"
+			password = "repl123456password"
 		}
 		configuration                   = <<CONFIGURATION
 		{
@@ -530,7 +536,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
@@ -540,16 +546,19 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			disk {
 				allocation_mb = 5120
 			}
 			cpu {
 				allocation_count = 3
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -571,7 +580,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		group {
@@ -582,20 +591,23 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 			memory {
 				allocation_mb = 1152
 			}
-			 disk {
+			disk {
 				allocation_mb = 7168
 			}
 			cpu {
 				allocation_count = 3
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 		}
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -621,7 +633,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 		group {
@@ -632,11 +644,14 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			disk {
 				allocation_mb = 7168
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 	}
@@ -655,7 +670,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup 
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -664,11 +679,14 @@ func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup 
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
+			disk {
 				allocation_mb = 7168
 			}
 			cpu {
 				allocation_count = 3
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		service_endpoints            = "public"

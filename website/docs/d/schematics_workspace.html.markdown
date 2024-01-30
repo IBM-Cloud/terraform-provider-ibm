@@ -45,6 +45,7 @@ Nested scheme for **catalog_ref**:
 	* `item_url` - (String) The URL to the software template in the IBM Cloud catalog.
 	* `launch_url` - (String) The URL to the dashboard to access your software.
 	* `offering_version` - (String) The version of the software template that you chose to install from the IBM Cloud catalog.
+	* `service_extensions` - (String) Service extensions defined as string of json
 
 * `created_at` - (String) The timestamp when the workspace was created.
 
@@ -123,8 +124,19 @@ Nested scheme for **env_values**:
 		* `required` - (Boolean) If the variable required?.
 		* `secure` - (Boolean) Is the variable secure or sensitive ?.
 		* `source` - (String) The source of this meta-data.
+		* `value` - (String) The value of the variable. Applicable for the integer type.
 		* `type` - (String) Type of the variable.
-		  * Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
+			* Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
+		* `metadata` - (List) List of service data
+	Nested scheme for **metadata**:
+		* `default_value` - (String) Default value for the variable only if the override value is not specified.
+		* `description` - (String) The description of the meta data.
+		* `hidden` - (Boolean) If **true**, the variable is not displayed on UI or Command line.
+		* `options` - (List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
+		* `required` - (Boolean) If the variable required?.
+		* `secure` - (Boolean) Is the variable secure or sensitive ?.
+		* `type` - (String) Type of the variable.
+			* Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
 
 * `template_inputs` - (List) Information about the input variables that your template uses.
 Nested scheme for **variablestore**:
