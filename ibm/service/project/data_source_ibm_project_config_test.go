@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project_test
@@ -27,6 +27,7 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "is_draft"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "modified_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "outputs.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "href"),
