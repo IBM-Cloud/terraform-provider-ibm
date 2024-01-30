@@ -113,12 +113,6 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 							Description:      "The units for the secret rotation time interval.",
 							DiffSuppressFunc: rotationAttributesDiffSuppress,
 						},
-						"rotate_keys": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.",
-						},
 					},
 				},
 			},
@@ -132,7 +126,6 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 			"version_custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The secret version metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -414,6 +407,24 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 
+	// Call get version metadata API to get the current version_custom_metadata
+	getVersionMetdataOptions := &secretsmanagerv2.GetSecretVersionMetadataOptions{}
+	getVersionMetdataOptions.SetSecretID(secretId)
+	getVersionMetdataOptions.SetID("current")
+
+	versionMetadataIntf, response, err := secretsManagerClient.GetSecretVersionMetadataWithContext(context, getVersionMetdataOptions)
+	if err != nil {
+		log.Printf("[DEBUG] GetSecretVersionMetadataWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response))
+	}
+
+	versionMetadata := versionMetadataIntf.(*secretsmanagerv2.IAMCredentialsSecretVersionMetadata)
+	if versionMetadata.VersionCustomMetadata != nil {
+		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -478,6 +489,27 @@ func resourceIbmSmIamCredentialsSecretUpdate(context context.Context, d *schema.
 		if err != nil {
 			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	if d.HasChange("version_custom_metadata") {
+		// Apply change to version_custom_metadata in current version
+		secretVersionMetadataPatchModel := new(secretsmanagerv2.SecretVersionMetadataPatch)
+		secretVersionMetadataPatchModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
+		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataAsPatchFunction(secretVersionMetadataPatchModel)
+
+		updateSecretVersionOptions := &secretsmanagerv2.UpdateSecretVersionMetadataOptions{}
+		updateSecretVersionOptions.SetSecretID(secretId)
+		updateSecretVersionOptions.SetID("current")
+		updateSecretVersionOptions.SetSecretVersionMetadataPatch(secretVersionMetadataPatchModelAsPatch)
+		_, response, err := secretsManagerClient.UpdateSecretVersionMetadataWithContext(context, updateSecretVersionOptions)
+		if err != nil {
+			if hasChange {
+				// Call the read function to update the Terraform state with the change already applied to the metadata
+				resourceIbmSmIamCredentialsSecretRead(context, d, meta)
+			}
+			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -576,9 +608,6 @@ func resourceIbmSmIamCredentialsSecretMapToRotationPolicy(modelMap map[string]in
 	if modelMap["unit"] != nil && modelMap["unit"].(string) != "" {
 		model.Unit = core.StringPtr(modelMap["unit"].(string))
 	}
-	if modelMap["rotate_keys"] != nil {
-		model.RotateKeys = core.BoolPtr(modelMap["rotate_keys"].(bool))
-	}
 	return model, nil
 }
 
@@ -593,9 +622,6 @@ func resourceIbmSmIamCredentialsSecretRotationPolicyToMap(modelIntf secretsmanag
 	}
 	if model.Unit != nil {
 		modelMap["unit"] = model.Unit
-	}
-	if model.RotateKeys != nil {
-		modelMap["rotate_keys"] = model.RotateKeys
 	}
 	return modelMap, nil
 }

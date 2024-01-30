@@ -37,7 +37,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -57,7 +57,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "86016"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "98304"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
@@ -81,7 +81,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -122,7 +122,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceGroupBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "43008"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
@@ -210,10 +210,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 20480
 			}
 		}
@@ -251,14 +251,11 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 28672
+			host_flavor {
+				id = "b3c.8x32.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 40960
-			}
-			cpu {
-				allocation_count = 9
 			}
 		}
 		users {
@@ -305,10 +302,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseReduced(databaseResourceGro
 		tags                         = ["one:two"]
 		group {
 			group_id = "member"
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 40960
 			}
 		}
@@ -339,10 +336,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 		group {
 			group_id = "member"
 
-			memory {
-				allocation_mb = 14336
+			host_flavor {
+				id = "b3c.4x16.encrypted"
 			}
-			 disk {
+			disk {
 				allocation_mb = 20480
 			}
 		}
@@ -385,6 +382,13 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGro
 		plan                         = "enterprise"
 		location                     = "%[3]s"
 
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 		timeouts {
 			create = "4h"
 			update = "4h"
@@ -412,7 +416,15 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResour
 		location                              = "%[3]s"
 		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
 		point_in_time_recovery_time           = ""
-    offline_restore                       = true
+    	offline_restore                       = true
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "b3c.4x16.encrypted"
+			}
+		}
 
 		timeouts {
 			create = "4h"

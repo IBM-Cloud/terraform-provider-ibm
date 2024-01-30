@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 const (
@@ -195,94 +197,103 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 	if err != nil {
 		return err
 	}
+	startSub := ""
 	listTransitGatewayConnectionsOptions := &transitgatewayapisv1.ListTransitGatewayConnectionsOptions{}
 	tgGatewayId := d.Id()
 	log.Println("tgGatewayId: ", tgGatewayId)
 
 	listTransitGatewayConnectionsOptions.SetTransitGatewayID(tgGatewayId)
-	listTGConnections, response, err := client.ListTransitGatewayConnections(listTransitGatewayConnectionsOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error while listing transit gateway connections %s\n%s", err, response)
-	}
 	connections := make([]map[string]interface{}, 0)
+	for {
 
-	for _, instance := range listTGConnections.Connections {
-		tgConn := map[string]interface{}{}
+		if startSub != "" {
+			listTransitGatewayConnectionsOptions.Start = &startSub
+		}
+		listTGConnections, response, err := client.ListTransitGatewayConnections(listTransitGatewayConnectionsOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while listing transit gateway connections %s\n%s", err, response)
+		}
+		for _, instance := range listTGConnections.Connections {
+			tgConn := map[string]interface{}{}
 
-		if instance.ID != nil {
-			tgConn[ID] = *instance.ID
-		}
-		if instance.Name != nil {
-			tgConn[tgConnName] = *instance.Name
-		}
-		if instance.NetworkType != nil {
-			tgConn[tgNetworkType] = *instance.NetworkType
-		}
+			if instance.ID != nil {
+				tgConn[ID] = *instance.ID
+			}
+			if instance.Name != nil {
+				tgConn[tgConnName] = *instance.Name
+			}
+			if instance.NetworkType != nil {
+				tgConn[tgNetworkType] = *instance.NetworkType
+			}
 
-		if instance.NetworkID != nil {
-			tgConn[tgNetworkId] = *instance.NetworkID
-		}
-		if instance.NetworkAccountID != nil {
-			tgConn[tgNetworkAccountID] = *instance.NetworkAccountID
-		}
+			if instance.NetworkID != nil {
+				tgConn[tgNetworkId] = *instance.NetworkID
+			}
+			if instance.NetworkAccountID != nil {
+				tgConn[tgNetworkAccountID] = *instance.NetworkAccountID
+			}
 
-		if instance.BaseConnectionID != nil {
-			tgConn[tgBaseConnectionId] = *instance.BaseConnectionID
+			if instance.BaseConnectionID != nil {
+				tgConn[tgBaseConnectionId] = *instance.BaseConnectionID
+			}
+
+			if instance.BaseNetworkType != nil {
+				tgConn[tgBaseNetworkType] = *instance.BaseNetworkType
+			}
+
+			if instance.LocalBgpAsn != nil {
+				tgConn[tgLocalBgpAsn] = *instance.LocalBgpAsn
+			}
+
+			if instance.LocalGatewayIp != nil {
+				tgConn[tgLocalGatewayIp] = *instance.LocalGatewayIp
+			}
+
+			if instance.LocalTunnelIp != nil {
+				tgConn[tgLocalTunnelIp] = *instance.LocalTunnelIp
+			}
+
+			if instance.RemoteBgpAsn != nil {
+				tgConn[tgRemoteBgpAsn] = *instance.RemoteBgpAsn
+			}
+
+			if instance.RemoteGatewayIp != nil {
+				tgConn[tgRemoteGatewayIp] = *instance.RemoteGatewayIp
+			}
+
+			if instance.RemoteTunnelIp != nil {
+				tgConn[tgRemoteTunnelIp] = *instance.RemoteTunnelIp
+			}
+
+			if instance.Zone != nil {
+				tgConn[tgZone] = *instance.Zone.Name
+			}
+
+			if instance.Mtu != nil {
+				tgConn[tgMtu] = *instance.Mtu
+			}
+
+			if instance.CreatedAt != nil {
+				tgConn[tgConectionCreatedAt] = instance.CreatedAt.String()
+
+			}
+			if instance.UpdatedAt != nil {
+				tgConn[tgUpdatedAt] = instance.UpdatedAt.String()
+
+			}
+			if instance.Status != nil {
+				tgConn[tgConnectionStatus] = *instance.Status
+			}
+
+			connections = append(connections, tgConn)
+
 		}
-
-		if instance.BaseNetworkType != nil {
-			tgConn[tgBaseNetworkType] = *instance.BaseNetworkType
+		startSub = flex.GetNext(listTGConnections.Next)
+		if startSub == "" {
+			break
 		}
-
-		if instance.LocalBgpAsn != nil {
-			tgConn[tgLocalBgpAsn] = *instance.LocalBgpAsn
-		}
-
-		if instance.LocalGatewayIp != nil {
-			tgConn[tgLocalGatewayIp] = *instance.LocalGatewayIp
-		}
-
-		if instance.LocalTunnelIp != nil {
-			tgConn[tgLocalTunnelIp] = *instance.LocalTunnelIp
-		}
-
-		if instance.RemoteBgpAsn != nil {
-			tgConn[tgRemoteBgpAsn] = *instance.RemoteBgpAsn
-		}
-
-		if instance.RemoteGatewayIp != nil {
-			tgConn[tgRemoteGatewayIp] = *instance.RemoteGatewayIp
-		}
-
-		if instance.RemoteTunnelIp != nil {
-			tgConn[tgRemoteTunnelIp] = *instance.RemoteTunnelIp
-		}
-
-		if instance.Zone != nil {
-			tgConn[tgZone] = *instance.Zone.Name
-		}
-
-		if instance.Mtu != nil {
-			tgConn[tgMtu] = *instance.Mtu
-		}
-
-		if instance.CreatedAt != nil {
-			tgConn[tgConectionCreatedAt] = instance.CreatedAt.String()
-
-		}
-		if instance.UpdatedAt != nil {
-			tgConn[tgUpdatedAt] = instance.UpdatedAt.String()
-
-		}
-		if instance.Status != nil {
-			tgConn[tgConnectionStatus] = *instance.Status
-		}
-
-		connections = append(connections, tgConn)
-
 	}
 	d.Set(tgConnections, connections)
-
 	return nil
 
 }

@@ -20,7 +20,7 @@ func TestAccIbmSccProviderTypeInstanceDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(acc.SccInstanceID, providerTypeInstanceName, acc.SccProviderTypeAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(acc.SccInstanceID, providerTypeInstanceName, acc.SccProviderTypeAttributes, acc.SccProviderTypeID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "provider_type_id"),
@@ -39,7 +39,7 @@ func TestAccIbmSccProviderTypeInstanceDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(acc.SccInstanceID, providerTypeInstanceName, acc.SccProviderTypeAttributes),
+				Config: testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(acc.SccInstanceID, providerTypeInstanceName, acc.SccProviderTypeAttributes, acc.SccProviderTypeID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type_instance.scc_provider_type_instance_tf", "provider_type_id"),
@@ -55,11 +55,11 @@ func TestAccIbmSccProviderTypeInstanceDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(instanceID string, providerTypeInstanceName string, providerTypeInstanceAttributes string) string {
+func testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(instanceID, providerTypeInstanceName, providerTypeInstanceAttributes, providerTypeInstanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance" {
 			instance_id = "%s"
-			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
+			provider_type_id = "%s"
 			name = "%s"
 			attributes = %s
 		}
@@ -69,14 +69,14 @@ func testAccCheckIbmSccProviderTypeInstanceDataSourceConfigBasic(instanceID stri
 			provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
 			provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_instance_id
 		}
-	`, instanceID, providerTypeInstanceName, providerTypeInstanceAttributes)
+	`, instanceID, providerTypeInstanceID, providerTypeInstanceName, providerTypeInstanceAttributes)
 }
 
-func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(instanceID string, providerTypeInstanceName string, providerTypeInstanceAttributes string) string {
+func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(instanceID, providerTypeInstanceName, providerTypeInstanceAttributes, providerTypeInstanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_provider_type_instance" "scc_provider_type_instance" {
 			instance_id = "%s"
-			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
+			provider_type_id = "%s"
 			name = "%s"
 			attributes = %s
 		}
@@ -86,5 +86,5 @@ func testAccCheckIbmSccProviderTypeInstanceDataSourceConfig(instanceID string, p
 			provider_type_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_id
 			provider_type_instance_id = ibm_scc_provider_type_instance.scc_provider_type_instance.provider_type_instance_id
 		}
-	`, instanceID, providerTypeInstanceName, providerTypeInstanceAttributes)
+	`, instanceID, providerTypeInstanceID, providerTypeInstanceName, providerTypeInstanceAttributes)
 }

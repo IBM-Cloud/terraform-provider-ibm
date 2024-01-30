@@ -45,11 +45,7 @@ Nested scheme for **catalog_ref**:
 	* `item_url` - (String) The URL to the software template in the IBM Cloud catalog.
 	* `launch_url` - (String) The URL to the dashboard to access your software.
 	* `offering_version` - (String) The version of the software template that you chose to install from the IBM Cloud catalog.
-	* `service_extensions` - (List) List of service data
-Nested scheme for **service_extensions**:
-	* `name` - (String) Name of the Service Data.
-	* `value` - (String) Value of the Service Data.
-	* `type` - (String) Type of the value string, int, bool.
+	* `service_extensions` - (String) Service extensions defined as string of json
 
 * `created_at` - (String) The timestamp when the workspace was created.
 

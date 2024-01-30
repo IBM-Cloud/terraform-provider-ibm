@@ -30,8 +30,8 @@ You can specify the following arguments for this resource.
 
 * `definition` - (Required, List) The definition of the project.
 Nested schema for **definition**:
-	* `description` - (Optional, String) A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.
-	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+	* `description` - (Required, String) A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.
+	  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `destroy_on_delete` - (Required, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.
 	* `name` - (Required, String) The name of the project.  It is unique within the account across regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
@@ -52,9 +52,11 @@ Nested schema for **configs**:
 	* `definition` - (List) The name and description of a project configuration.
 	Nested schema for **definition**:
 		* `description` - (String) A project configuration description.
-		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+		  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 		* `name` - (String) The configuration name. It is unique within the account across projects and regions.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
+	* `deployment_model` - (String) The configuration type.
+	  * Constraints: Allowable values are: `project_deployed`, `user_deployed`.
 	* `href` - (String) A URL.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.
@@ -73,7 +75,7 @@ Nested schema for **configs**:
 		* `id` - (String) The unique ID.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `state` - (String) The state of the configuration.
-	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`.
+	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
 	* `version` - (Integer) The version of the configuration.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
 * `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
@@ -97,7 +99,7 @@ Nested schema for **environments**:
 	* `definition` - (List) The environment definition used in the project collection.
 	Nested schema for **definition**:
 		* `description` - (String) The description of the environment.
-		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+		  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 		* `name` - (String) The name of the environment.  It is unique within the account across projects and regions.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
 	* `href` - (String) A URL.
@@ -118,6 +120,8 @@ Nested schema for **environments**:
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `event_notifications_crn` - (String) The CRN of the event notifications instance if one is connected to this project.
   * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^crn:v[0-9](:([A-Za-z0-9\\-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
+* `href` - (String) A URL.
+  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 * `resource_group_id` - (String) The resource group id where the project's data and tools are created.
   * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/^[0-9a-zA-Z]+$/`.
 * `state` - (String) The project status value.

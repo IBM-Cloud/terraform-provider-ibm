@@ -9,11 +9,11 @@ import (
 
 	"time"
 
-	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 )
 
 func DataSourceIbmMqcloudApplication() *schema.Resource {
@@ -128,7 +128,7 @@ func dataSourceIbmMqcloudApplicationRead(context context.Context, d *schema.Reso
 
 	if suppliedFilter {
 		if len(allItems) == 0 {
-			return diag.FromErr(fmt.Errorf("No Applications found with name %s", name))
+			return diag.FromErr(fmt.Errorf("No Application found with name: \"%s\"", name))
 		}
 		d.SetId(name)
 	} else {
@@ -146,7 +146,7 @@ func dataSourceIbmMqcloudApplicationRead(context context.Context, d *schema.Reso
 	}
 
 	if err = d.Set("applications", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting applications %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting applications: %s", err))
 	}
 
 	return nil

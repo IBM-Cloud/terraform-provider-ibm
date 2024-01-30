@@ -81,7 +81,6 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			"version_custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The secret version metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -124,7 +123,6 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Sensitive:   true,
 				Description: "The password that is assigned to the secret.",
 			},
@@ -356,6 +354,24 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting password: %s", err))
 	}
 
+	// Call get version metadata API to get the current version_custom_metadata
+	getVersionMetdataOptions := &secretsmanagerv2.GetSecretVersionMetadataOptions{}
+	getVersionMetdataOptions.SetSecretID(secretId)
+	getVersionMetdataOptions.SetID("current")
+
+	versionMetadataIntf, response, err := secretsManagerClient.GetSecretVersionMetadataWithContext(context, getVersionMetdataOptions)
+	if err != nil {
+		log.Printf("[DEBUG] GetSecretVersionMetadataWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response))
+	}
+
+	versionMetadata := versionMetadataIntf.(*secretsmanagerv2.UsernamePasswordSecretVersionMetadata)
+	if versionMetadata.VersionCustomMetadata != nil {
+		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -431,6 +447,51 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 		if err != nil {
 			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	// Apply change in payload (if changed)
+	if d.HasChange("password") {
+		versionModel := &secretsmanagerv2.UsernamePasswordSecretVersionPrototype{}
+		versionModel.Password = core.StringPtr(d.Get("password").(string))
+		if _, ok := d.GetOk("version_custom_metadata"); ok {
+			versionModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
+		}
+		if _, ok := d.GetOk("custom_metadata"); ok {
+			versionModel.CustomMetadata = d.Get("custom_metadata").(map[string]interface{})
+		}
+
+		createSecretVersionOptions := &secretsmanagerv2.CreateSecretVersionOptions{}
+		createSecretVersionOptions.SetSecretID(secretId)
+		createSecretVersionOptions.SetSecretVersionPrototype(versionModel)
+		_, response, err := secretsManagerClient.CreateSecretVersionWithContext(context, createSecretVersionOptions)
+		if err != nil {
+			if hasChange {
+				// Before returning an error, call the read function to update the Terraform state with the change
+				// that was already applied to the metadata
+				resourceIbmSmUsernamePasswordSecretRead(context, d, meta)
+			}
+			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
+		}
+	} else if d.HasChange("version_custom_metadata") {
+		// Apply change to version_custom_metadata in current version
+		secretVersionMetadataPatchModel := new(secretsmanagerv2.SecretVersionMetadataPatch)
+		secretVersionMetadataPatchModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
+		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataAsPatchFunction(secretVersionMetadataPatchModel)
+
+		updateSecretVersionOptions := &secretsmanagerv2.UpdateSecretVersionMetadataOptions{}
+		updateSecretVersionOptions.SetSecretID(secretId)
+		updateSecretVersionOptions.SetID("current")
+		updateSecretVersionOptions.SetSecretVersionMetadataPatch(secretVersionMetadataPatchModelAsPatch)
+		_, response, err := secretsManagerClient.UpdateSecretVersionMetadataWithContext(context, updateSecretVersionOptions)
+		if err != nil {
+			if hasChange {
+				// Call the read function to update the Terraform state with the change already applied to the metadata
+				resourceIbmSmUsernamePasswordSecretRead(context, d, meta)
+			}
+			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))
 		}
 	}
 

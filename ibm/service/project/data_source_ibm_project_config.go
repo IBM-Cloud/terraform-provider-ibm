@@ -1,11 +1,10 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -82,9 +81,12 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Description: "A short explanation of the output value.",
 						},
 						"value": &schema.Schema{
-							Type:        schema.TypeString,
+							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Can be any value - a string, number, boolean, array, or object.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 					},
 				},
@@ -295,52 +297,16 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The flag that indicates whether a configuration update is available.",
 			},
-			"definition": &schema.Schema{
-				Type:        schema.TypeList,
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name and description of a project configuration.",
+				Description: "A URL.",
+			},
+			"definition": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The configuration name. It is unique within the account across projects and regions.",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A project configuration description.",
-						},
-						"environment_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the project environment.",
-						},
-						"authorizations": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"trusted_profile_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The trusted profile ID.",
-									},
-									"method": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.",
-									},
-									"api_key": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Sensitive:   true,
-										Description: "The IBM Cloud API Key.",
-									},
-								},
-							},
-						},
 						"compliance_profile": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -380,6 +346,46 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "A unique concatenation of catalogID.versionID that identifies the DA in the catalog. Either schematics.workspace_crn, definition.locator_id, or both must be specified.",
 						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A project configuration description.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The configuration name. It is unique within the account across projects and regions.",
+						},
+						"environment_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the project environment.",
+						},
+						"authorizations": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"trusted_profile_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The trusted profile ID.",
+									},
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.",
+									},
+									"api_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Sensitive:   true,
+										Description: "The IBM Cloud API Key.",
+									},
+								},
+							},
+						},
 						"inputs": &schema.Schema{
 							Type:        schema.TypeMap,
 							Computed:    true,
@@ -392,6 +398,14 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Type:        schema.TypeMap,
 							Computed:    true,
 							Description: "Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"resource_crns": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The CRNs of resources associated with this configuration.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -428,10 +442,6 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	if err = d.Set("is_draft", projectConfig.IsDraft); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting is_draft: %s", err))
-	}
-
-	if err = d.Set("needs_attention_state", projectConfig.NeedsAttentionState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting needs_attention_state: %s", err))
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(projectConfig.CreatedAt)); err != nil {
@@ -492,6 +502,10 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting update_available: %s", err))
 	}
 
+	if err = d.Set("href", projectConfig.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
 	definition := []map[string]interface{}{}
 	if projectConfig.Definition != nil {
 		modelMap, err := dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(projectConfig.Definition)
@@ -514,7 +528,11 @@ func dataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (m
 		modelMap["description"] = model.Description
 	}
 	if model.Value != nil {
-		modelMap["value"] = model.Value
+		value := make(map[string]interface{})
+		for k, v := range model.Value {
+			value[k] = fmt.Sprintf("%v", v)
+		}
+		modelMap["value"] = value
 	}
 	return modelMap, nil
 }
@@ -602,67 +620,59 @@ func dataSourceIbmProjectConfigScriptToMap(model *projectv1.Script) (map[string]
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model *projectv1.ProjectConfigResponseDefinition) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Description != nil {
-		modelMap["description"] = model.Description
-	}
-	if model.EnvironmentID != nil {
-		modelMap["environment_id"] = model.EnvironmentID
-	}
-	if model.Authorizations != nil {
-		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
-	}
-	if model.ComplianceProfile != nil {
-		complianceProfileMap, err := dataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
-	}
-	modelMap["locator_id"] = model.LocatorID
-	if model.Inputs != nil {
-		inputs := make(map[string]interface{})
-		for k, v := range model.Inputs {
-			bytes, err := json.Marshal(v)
+func dataSourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model projectv1.ProjectConfigResponseDefinitionIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*projectv1.ProjectConfigResponseDefinitionDAConfigDefinitionProperties); ok {
+		return dataSourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPropertiesToMap(model.(*projectv1.ProjectConfigResponseDefinitionDAConfigDefinitionProperties))
+	} else if _, ok := model.(*projectv1.ProjectConfigResponseDefinitionResourceConfigDefinitionProperties); ok {
+		return dataSourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefinitionPropertiesToMap(model.(*projectv1.ProjectConfigResponseDefinitionResourceConfigDefinitionProperties))
+	} else if _, ok := model.(*projectv1.ProjectConfigResponseDefinition); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*projectv1.ProjectConfigResponseDefinition)
+		if model.ComplianceProfile != nil {
+			complianceProfileMap, err := dataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
 			if err != nil {
 				return modelMap, err
 			}
-			inputs[k] = string(bytes)
+			modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
 		}
-		modelMap["inputs"] = inputs
-	}
-	if model.Settings != nil {
-		settings := make(map[string]interface{})
-		for k, v := range model.Settings {
-			bytes, err := json.Marshal(v)
+		if model.LocatorID != nil {
+			modelMap["locator_id"] = model.LocatorID
+		}
+		if model.Description != nil {
+			modelMap["description"] = model.Description
+		}
+		modelMap["name"] = model.Name
+		if model.EnvironmentID != nil {
+			modelMap["environment_id"] = model.EnvironmentID
+		}
+		if model.Authorizations != nil {
+			authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
 			if err != nil {
 				return modelMap, err
 			}
-			settings[k] = string(bytes)
+			modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
 		}
-		modelMap["settings"] = settings
+		if model.Inputs != nil {
+			inputs := make(map[string]interface{})
+			for k, v := range model.Inputs {
+				inputs[k] = fmt.Sprintf("%v", v)
+			}
+			modelMap["inputs"] = inputs
+		}
+		if model.Settings != nil {
+			settings := make(map[string]interface{})
+			for k, v := range model.Settings {
+				settings[k] = fmt.Sprintf("%v", v)
+			}
+			modelMap["settings"] = settings
+		}
+		if model.ResourceCrns != nil {
+			modelMap["resource_crns"] = model.ResourceCrns
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized projectv1.ProjectConfigResponseDefinitionIntf subtype encountered")
 	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.TrustedProfileID != nil {
-		modelMap["trusted_profile_id"] = model.TrustedProfileID
-	}
-	if model.Method != nil {
-		modelMap["method"] = model.Method
-	}
-	if model.ApiKey != nil {
-		modelMap["api_key"] = model.ApiKey
-	}
-	return modelMap, nil
 }
 
 func dataSourceIbmProjectConfigProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
@@ -681,6 +691,103 @@ func dataSourceIbmProjectConfigProjectComplianceProfileToMap(model *projectv1.Pr
 	}
 	if model.ProfileName != nil {
 		modelMap["profile_name"] = model.ProfileName
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TrustedProfileID != nil {
+		modelMap["trusted_profile_id"] = model.TrustedProfileID
+	}
+	if model.Method != nil {
+		modelMap["method"] = model.Method
+	}
+	if model.ApiKey != nil {
+		modelMap["api_key"] = model.ApiKey
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPropertiesToMap(model *projectv1.ProjectConfigResponseDefinitionDAConfigDefinitionProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ComplianceProfile != nil {
+		complianceProfileMap, err := dataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+	}
+	if model.LocatorID != nil {
+		modelMap["locator_id"] = model.LocatorID
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.EnvironmentID != nil {
+		modelMap["environment_id"] = model.EnvironmentID
+	}
+	if model.Authorizations != nil {
+		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+	}
+	if model.Inputs != nil {
+		inputs := make(map[string]interface{})
+		for k, v := range model.Inputs {
+			inputs[k] = fmt.Sprintf("%v", v)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Settings != nil {
+		settings := make(map[string]interface{})
+		for k, v := range model.Settings {
+			settings[k] = fmt.Sprintf("%v", v)
+		}
+		modelMap["settings"] = settings
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefinitionPropertiesToMap(model *projectv1.ProjectConfigResponseDefinitionResourceConfigDefinitionProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ResourceCrns != nil {
+		modelMap["resource_crns"] = model.ResourceCrns
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.EnvironmentID != nil {
+		modelMap["environment_id"] = model.EnvironmentID
+	}
+	if model.Authorizations != nil {
+		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+	}
+	if model.Inputs != nil {
+		inputs := make(map[string]interface{})
+		for k, v := range model.Inputs {
+			inputs[k] = fmt.Sprintf("%v", v)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Settings != nil {
+		settings := make(map[string]interface{})
+		for k, v := range model.Settings {
+			settings[k] = fmt.Sprintf("%v", v)
+		}
+		modelMap["settings"] = settings
 	}
 	return modelMap, nil
 }
