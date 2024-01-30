@@ -47,7 +47,7 @@ Review the argument reference that you can specify for your resource.
 * `account_id` - (Optional, String) The id of the account owning this zone.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\-]+$/`.
 * `addresses` - (Optional, List) The list of addresses in the zone.
-  * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
+  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 Nested scheme for **addresses**:
 	* `ref` - (Optional, List) A service reference value.
 	Nested scheme for **ref**:
