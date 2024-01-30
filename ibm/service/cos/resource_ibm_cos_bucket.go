@@ -1565,7 +1565,7 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		fmt.Println(fmt.Errorf("[WARN] Error getting resource instance from cos bucket: %s with resp code: %s", err, resp))
+		return false, fmt.Errorf("[WARN] Error getting resource instance from cos bucket: %s with resp code: %s", err, resp)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, "pending_reclamation")) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state from the cos bucket resource")
