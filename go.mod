@@ -9,7 +9,7 @@ require (
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
-	github.com/IBM/cloud-databases-go-sdk v0.4.0
+	github.com/IBM/cloud-databases-go-sdk v0.5.0
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752
 	github.com/IBM/container-registry-go-sdk v1.1.0
@@ -24,8 +24,8 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
 	github.com/IBM/networking-go-sdk v0.44.0
-	github.com/IBM/platform-services-go-sdk v0.56.2
-	github.com/IBM/project-go-sdk v0.1.6
+	github.com/IBM/platform-services-go-sdk v0.56.3
+	github.com/IBM/project-go-sdk v0.2.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.4
 	github.com/IBM/schematics-go-sdk v0.2.3
