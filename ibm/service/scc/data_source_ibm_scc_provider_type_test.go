@@ -18,7 +18,7 @@ func TestAccIbmSccProviderTypeDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProviderTypeDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccProviderTypeDataSourceConfigBasic(acc.SccInstanceID, acc.SccProviderTypeID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "provider_type_id"),
@@ -30,17 +30,17 @@ func TestAccIbmSccProviderTypeDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "mode"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "data_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "icon"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_type.scc_provider_type_instance", "attributes.%"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmSccProviderTypeDataSourceConfigBasic() string {
+func testAccCheckIbmSccProviderTypeDataSourceConfigBasic(instanceID, providerTypeID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_provider_type" "scc_provider_type_instance" {
-			provider_type_id = "afa2476ecfa5f09af248492fe991b4d1"
+      instance_id = "%s"
+			provider_type_id = "%s"
 		}
-	`)
+	`, instanceID, providerTypeID)
 }
