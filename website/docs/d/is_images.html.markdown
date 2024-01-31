@@ -36,11 +36,11 @@ data "ibm_is_images" "ds_images" {
 
 Review the argument references that you can specify for your data source. 
 
-* `catalog_managed` - (Optional, bool) Lists only those images which are managed as part of a catalog offering.
-* `resource_group` - (Optional, string) The id of the resource group.
-* `name` - (Optional, string) The name of the image.
-* `visibility` - (Optional, string) Visibility of the image.
-* `status` - (Optional, string) Status of the image.
+- `catalog_managed` - (Optional, bool) Lists only those images which are managed as part of a catalog offering.
+- `resource_group` - (Optional, string) The id of the resource group.
+- `name` - (Optional, string) The name of the image.
+- `visibility` - (Optional, string) Visibility of the image. Accepted values : **private**, **public**
+- `status` - (Optional, string) Status of the image. Accepted value : **available**, **deleting**, **deprecated**, **failed**, **obsolete**, **pending**, **unusable**
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
