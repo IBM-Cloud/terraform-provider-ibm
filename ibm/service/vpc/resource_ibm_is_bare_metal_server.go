@@ -696,8 +696,8 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	options := &vpcv1.CreateBareMetalServerOptions{}
-	bareMetalServerPrototype := &vpcv1.BareMetalServerPrototype{}
+	createbmsoptions := &vpcv1.CreateBareMetalServerOptions{}
+	options := &vpcv1.BareMetalServerPrototype{}
 	var imageStr string
 	if image, ok := d.GetOk(isBareMetalServerImage); ok {
 		imageStr = image.(string)
@@ -706,8 +706,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	// enable secure boot
 
 	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
-		enableSecureBoot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
-		bareMetalServerPrototype.EnableSecureBoot = &enableSecureBoot
+		options.EnableSecureBoot = core.BoolPtr(d.Get(isBareMetalServerEnableSecureBoot).(bool))
 	}
 
 	// trusted_platform_module
@@ -729,7 +728,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 				ID: &keystr,
 			}
 		}
-		bareMetalServerPrototype.Initialization = &vpcv1.BareMetalServerInitializationPrototype{
+		options.Initialization = &vpcv1.BareMetalServerInitializationPrototype{
 			Image: &vpcv1.ImageIdentity{
 				ID: &imageStr,
 			},
@@ -737,13 +736,13 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		}
 		if userdata, ok := d.GetOk(isBareMetalServerUserData); ok {
 			userdatastr := userdata.(string)
-			bareMetalServerPrototype.Initialization.UserData = &userdatastr
+			options.Initialization.UserData = &userdatastr
 		}
 	}
 
 	if name, ok := d.GetOk(isBareMetalServerName); ok {
 		nameStr := name.(string)
-		bareMetalServerPrototype.Name = &nameStr
+		options.Name = &nameStr
 	}
 
 	if primnicintf, ok := d.GetOk(isBareMetalServerPrimaryNetworkInterface); ok && len(primnicintf.([]interface{})) > 0 {
@@ -838,7 +837,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 			interfaceType := "pci"
 			primnicobj.InterfaceType = &interfaceType
 		}
-		bareMetalServerPrototype.PrimaryNetworkInterface = primnicobj
+		options.PrimaryNetworkInterface = primnicobj
 	}
 
 	if nicsintf, ok := d.GetOk(isBareMetalServerNetworkInterfaces); ok {
@@ -1272,33 +1271,33 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 				inlinenicobj = append(inlinenicobj, nicobj)
 			}
 		}
-		bareMetalServerPrototype.NetworkInterfaces = inlinenicobj
+		options.NetworkInterfaces = inlinenicobj
 	}
 
 	if rgrp, ok := d.GetOk(isBareMetalServerResourceGroup); ok {
 		rg := rgrp.(string)
-		bareMetalServerPrototype.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
 	}
 
 	if p, ok := d.GetOk(isBareMetalServerProfile); ok {
 		profile := p.(string)
-		bareMetalServerPrototype.Profile = &vpcv1.BareMetalServerProfileIdentity{
+		options.Profile = &vpcv1.BareMetalServerProfileIdentity{
 			Name: &profile,
 		}
 	}
 
 	if z, ok := d.GetOk(isBareMetalServerZone); ok {
 		zone := z.(string)
-		bareMetalServerPrototype.Zone = &vpcv1.ZoneIdentity{
+		options.Zone = &vpcv1.ZoneIdentity{
 			Name: &zone,
 		}
 	}
 
 	if v, ok := d.GetOk(isBareMetalServerVPC); ok {
 		vpc := v.(string)
-		bareMetalServerPrototype.VPC = &vpcv1.VPCIdentity{
+		options.VPC = &vpcv1.VPCIdentity{
 			ID: &vpc,
 		}
 	}
