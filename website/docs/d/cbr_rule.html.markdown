@@ -31,7 +31,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cbr_rule.
 * `contexts` - (List) The contexts this rule applies to.
-  * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
+  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 Nested scheme for **contexts**:
 	* `attributes` - (List) The attributes.
 	  * Constraints: The minimum length is `1` item.
