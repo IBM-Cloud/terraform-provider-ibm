@@ -146,9 +146,9 @@ func volumeConfig(name, cloud_instance_id string) string {
 	pi_volume_size         = 2
 	pi_volume_name         = "%[1]s-${count.index}"
 	pi_volume_shareable    = true
-	pi_volume_pool         = "Tier1-Flash-1"
+	pi_volume_pool         = "%[3]s"
 	pi_cloud_instance_id   = "%[2]s"
 	pi_replication_enabled = true
 	 }
-	`, name, cloud_instance_id)
+	`, name, cloud_instance_id, acc.PiStoragePool)
 }
