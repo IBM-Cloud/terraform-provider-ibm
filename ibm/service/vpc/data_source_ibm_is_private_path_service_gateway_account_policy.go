@@ -134,9 +134,9 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.C
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-	}
+	// if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	// }
 
 	return nil
 }

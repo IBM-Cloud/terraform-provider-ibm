@@ -157,9 +157,9 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Con
 	if err = d.Set("resource_type", privatePathServiceGatewayAccountPolicy.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-	}
+	// if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	// }
 	if err = d.Set("private_path_service_gateway_account_policy", privatePathServiceGatewayAccountPolicy.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateway_account_policy_id: %s", err))
 	}

@@ -143,11 +143,11 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingRead(context 
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
-	if privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt != nil {
-		if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-		}
-	}
+	// if privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt != nil {
+	// 	if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayEndpointGatewayBinding.UpdatedAt)); err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	// 	}
+	// }
 
 	return nil
 }

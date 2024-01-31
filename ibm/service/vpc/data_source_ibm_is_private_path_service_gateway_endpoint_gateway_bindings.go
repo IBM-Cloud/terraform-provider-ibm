@@ -176,9 +176,9 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsPrivatePathS
 	if model.Status != nil {
 		modelMap["status"] = *model.Status
 	}
-	if model.UpdatedAt != nil {
-		modelMap["updated_at"] = model.UpdatedAt.String()
-	}
+	// if model.UpdatedAt != nil {
+	// 	modelMap["updated_at"] = model.UpdatedAt.String()
+	// }
 	return modelMap, nil
 }
 

@@ -160,9 +160,9 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPoliciesPrivatePathServiceGa
 	if model.ResourceType != nil {
 		modelMap["resource_type"] = *model.ResourceType
 	}
-	if model.UpdatedAt != nil {
-		modelMap["updated_at"] = flex.DateTimeToString(model.UpdatedAt)
-	}
+	// if model.UpdatedAt != nil {
+	// 	modelMap["updated_at"] = flex.DateTimeToString(model.UpdatedAt)
+	// }
 	return modelMap, nil
 }
 
