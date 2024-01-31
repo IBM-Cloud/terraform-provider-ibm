@@ -187,6 +187,21 @@ const (
 	Attr_SharedProcessorPoolPlacementGroups          = "spp_placement_groups"
 	Attr_SharedProcessorPoolStatus                   = "status"
 	Attr_SharedProcessorPools                        = "shared_processor_pools"
+	Attr_SharedProcessorPoolName                     = "name"
+	Attr_SharedProcessorPoolHostID                   = "host_id"
+	Attr_SharedProcessorPoolReservedCores            = "reserved_cores"
+	Attr_SharedProcessorPoolAvailableCores           = "available_cores"
+	Attr_SharedProcessorPoolAllocatedCores           = "allocated_cores"
+	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
+	Attr_SharedProcessorPoolInstances                = "instances"
+	Attr_SharedProcessorPoolInstanceCpus             = "cpus"
+	Attr_SharedProcessorPoolInstanceUncapped         = "uncapped"
+	Attr_SharedProcessorPoolInstanceAvailabilityZone = "availability_zone"
+	Attr_SharedProcessorPoolInstanceId               = "id"
+	Attr_SharedProcessorPoolInstanceMemory           = "memory"
+	Attr_SharedProcessorPoolInstanceName             = "name"
+	Attr_SharedProcessorPoolInstanceStatus           = "status"
+	Attr_SharedProcessorPoolInstanceVcpus            = "vcpus"
 	Attr_Size                                        = "size"
 	Attr_SourceVolumeName                            = "source_volume_name"
 	Attr_Speed                                       = "speed"
@@ -233,21 +248,6 @@ const (
 	Attr_Volumes                                     = "volumes"
 	Attr_WWN                                         = "wwn"
 	Attr_Workspaces                                  = "workspaces"
-	Attr_SharedProcessorPoolName                     = "name"
-	Attr_SharedProcessorPoolHostID                   = "host_id"
-	Attr_SharedProcessorPoolReservedCores            = "reserved_cores"
-	Attr_SharedProcessorPoolAvailableCores           = "available_cores"
-	Attr_SharedProcessorPoolAllocatedCores           = "allocated_cores"
-	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
-	Attr_SharedProcessorPoolInstances                = "instances"
-	Attr_SharedProcessorPoolInstanceCpus             = "cpus"
-	Attr_SharedProcessorPoolInstanceUncapped         = "uncapped"
-	Attr_SharedProcessorPoolInstanceAvailabilityZone = "availability_zone"
-	Attr_SharedProcessorPoolInstanceId               = "id"
-	Attr_SharedProcessorPoolInstanceMemory           = "memory"
-	Attr_SharedProcessorPoolInstanceName             = "name"
-	Attr_SharedProcessorPoolInstanceStatus           = "status"
-	Attr_SharedProcessorPoolInstanceVcpus            = "vcpus"
 
 	// TODO: Second Half Cleanup, remove extra variables
 
@@ -283,8 +283,6 @@ const (
 	Arg_PVMInstanceHealthStatus       = "pi_health_status"
 	Arg_PIInstanceSharedProcessorPool = "pi_shared_processor_pool"
 
-	ConsoleLanguageCode = "Code"
-
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
 
@@ -295,6 +293,13 @@ const (
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 
 	PIConsoleLanguageCode               = "pi_language_code"
+	PICloudConnectionId                 = "cloud_connection_id"
+	PICloudConnectionStatus             = "status"
+	PICloudConnectionIBMIPAddress       = "ibm_ip_address"
+	PICloudConnectionUserIPAddress      = "user_ip_address"
+	PICloudConnectionPort               = "port"
+	PICloudConnectionClassicGreSource   = "gre_source_address"
+	PICloudConnectionConnectionMode     = "connection_mode"
 	PIInstanceDeploymentType            = "pi_deployment_type"
 	PIInstanceMigratable                = "pi_migratable"
 	PIInstanceNetwork                   = "pi_network"
@@ -312,6 +317,7 @@ const (
 
 	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
 	Attr_PIInstanceSharedProcessorPoolID = "shared_processor_pool_id"
+	Arg_PIInstanceSharedProcessorPool    = "pi_shared_processor_pool"
 
 	// Placement Group
 	PIPlacementGroupID      = "placement_group_id"

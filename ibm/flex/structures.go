@@ -561,9 +561,9 @@ func FlattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	return vlans
 }
 
-func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
-	groups := make([]map[string]interface{}, len(grouplist.Groups))
-	for i, group := range grouplist.Groups {
+func FlattenIcdGroups(groupResponse *clouddatabasesv5.ListDeploymentScalingGroupsResponse) []map[string]interface{} {
+	groups := make([]map[string]interface{}, len(groupResponse.Groups))
+	for i, group := range groupResponse.Groups {
 		memorys := make([]map[string]interface{}, 1)
 		memory := make(map[string]interface{})
 		memory["units"] = group.Memory.Units
@@ -576,12 +576,12 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 
 		cpus := make([]map[string]interface{}, 1)
 		cpu := make(map[string]interface{})
-		cpu["units"] = group.Cpu.Units
-		cpu["allocation_count"] = group.Cpu.AllocationCount
-		cpu["minimum_count"] = group.Cpu.MinimumCount
-		cpu["step_size_count"] = group.Cpu.StepSizeCount
-		cpu["is_adjustable"] = group.Cpu.IsAdjustable
-		cpu["can_scale_down"] = group.Cpu.CanScaleDown
+		cpu["units"] = group.CPU.Units
+		cpu["allocation_count"] = group.CPU.AllocationCount
+		cpu["minimum_count"] = group.CPU.MinimumCount
+		cpu["step_size_count"] = group.CPU.StepSizeCount
+		cpu["is_adjustable"] = group.CPU.IsAdjustable
+		cpu["can_scale_down"] = group.CPU.CanScaleDown
 		cpus[0] = cpu
 
 		disks := make([]map[string]interface{}, 1)
@@ -594,12 +594,23 @@ func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 		disk["can_scale_down"] = group.Disk.CanScaleDown
 		disks[0] = disk
 
+		hostflavors := make([]map[string]interface{}, 0)
+		if group.HostFlavor != nil {
+			hostflavors = make([]map[string]interface{}, 1)
+			hostflavor := make(map[string]interface{})
+			hostflavor["id"] = group.HostFlavor.ID
+			hostflavor["name"] = group.HostFlavor.Name
+			hostflavor["hosting_size"] = group.HostFlavor.HostingSize
+			hostflavors[0] = hostflavor
+		}
+
 		l := map[string]interface{}{
-			"group_id": group.Id,
-			"count":    group.Count,
-			"memory":   memorys,
-			"cpu":      cpus,
-			"disk":     disks,
+			"group_id":    group.ID,
+			"count":       group.Count,
+			"memory":      memorys,
+			"cpu":         cpus,
+			"disk":        disks,
+			"host_flavor": hostflavors,
 		}
 		groups[i] = l
 	}
@@ -1628,7 +1639,11 @@ func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []
 	if len(customAttributes) > 0 {
 		out := make(map[string]string)
 		for _, a := range customAttributes {
-			out[*a.Key] = fmt.Sprint(a.Value)
+			if *a.Operator == "stringExists" && a.Value == true {
+				out[*a.Key] = fmt.Sprint("*")
+			} else if *a.Operator == "stringMatch" || *a.Operator == "stringEquals" {
+				out[*a.Key] = fmt.Sprint(a.Value)
+			}
 		}
 		l["attributes"] = out
 	}
@@ -3334,10 +3349,12 @@ func GetResourceAttribute(name string, r iampolicymanagementv1.PolicyResource) *
 
 func GetV2PolicyResourceAttribute(key string, r iampolicymanagementv1.V2PolicyResource) string {
 	for _, a := range r.Attributes {
-		if *a.Key == key &&
-			(*a.Operator == "stringMatch" ||
-				*a.Operator == "stringEquals") {
-			return a.Value.(string)
+		if *a.Key == key {
+			if *a.Operator == "stringExists" && a.Value == true {
+				return fmt.Sprint("*")
+			} else if *a.Operator == "stringMatch" || *a.Operator == "stringEquals" {
+				return a.Value.(string)
+			}
 		}
 	}
 	return *core.StringPtr("")
@@ -3352,7 +3369,7 @@ func GetSubjectAttribute(name string, s iampolicymanagementv1.PolicySubject) *st
 	return core.StringPtr("")
 }
 
-func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySubject) *string {
+func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySubject) interface{} {
 	for _, a := range s.Attributes {
 		if *a.Key == key &&
 			(*a.Operator == "stringMatch" ||
@@ -3360,7 +3377,7 @@ func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySub
 			return a.Value
 		}
 	}
-	return core.StringPtr("")
+	return interface{}(core.StringPtr(""))
 }
 
 func SetResourceAttribute(name *string, value *string, r []iampolicymanagementv1.ResourceAttribute) []iampolicymanagementv1.ResourceAttribute {
@@ -3501,6 +3518,7 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 	controlResponse := policy.Control.(*iampolicymanagementv1.ControlResponse)
 	policyRoles := MapRolesToPolicyRoles(controlResponse.Grant.Roles)
 	resourceAttributes := policy.Resource.Attributes
+	subjectAttributes := policy.Subject.Attributes
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -3508,10 +3526,19 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 	}
 
 	var (
-		serviceName    string
-		resourceType   string
-		serviceGroupID string
+		serviceName       string
+		sourceServiceName string
+		resourceType      string
+		serviceGroupID    string
 	)
+
+	for _, a := range subjectAttributes {
+		if *a.Key == "serviceName" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			sourceServiceName = a.Value.(string)
+		}
+	}
 
 	for _, a := range resourceAttributes {
 		if *a.Key == "serviceName" &&
@@ -3539,6 +3566,11 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 	if accountManagement, ok := d.GetOk("account_management"); ok {
 		isAccountManagementPolicy = accountManagement.(bool)
 	}
+
+	if serviceName == "" && resourceType == "resource-group" {
+		serviceName = "resource-controller"
+	}
+
 	if serviceName == "" && // no specific service specified
 		!isAccountManagementPolicy && // not all account management services
 		resourceType != "resource-group" && // not to a resource group
@@ -3552,6 +3584,14 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 
 	if serviceGroupID != "" {
 		listRoleOptions.ServiceGroupID = &serviceGroupID
+	}
+
+	if sourceServiceName != "" {
+		listRoleOptions.SourceServiceName = &sourceServiceName
+	}
+
+	if *policy.Type != "" {
+		listRoleOptions.PolicyType = policy.Type
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
