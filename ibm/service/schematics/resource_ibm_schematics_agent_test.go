@@ -13,18 +13,17 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
 func TestAccIbmSchematicsAgentBasic(t *testing.T) {
 	var conf schematicsv1.AgentData
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	version := "1.0.0-beta2"
+	version := "1.0.0-prega"
 	schematicsLocation := "us-south"
 	agentLocation := "eu-de"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := "1.0.0-beta2"
+	versionUpdate := "1.0.0"
 	schematicsLocationUpdate := "us-east"
 	agentLocationUpdate := "eu-gb"
 
@@ -59,11 +58,11 @@ func TestAccIbmSchematicsAgentBasic(t *testing.T) {
 func TestAccIbmSchematicsAgentAllArgs(t *testing.T) {
 	var conf schematicsv1.AgentData
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	version := "1.0.0-beta2"
+	version := "1.0.0-prega"
 	schematicsLocation := "us-south"
 	agentLocation := "eu-de"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := "1.0.0-beta2"
+	versionUpdate := "1.0.0"
 	schematicsLocationUpdate := "us-east"
 	agentLocationUpdate := "eu-gb"
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -130,7 +129,7 @@ func testAccCheckIbmSchematicsAgentConfig(name string, version string, schematic
 
 		resource "ibm_schematics_agent" "schematics_agent_instance" {
 			name = "%s"
-			resource_group = "default"
+			resource_group = "Default"
 			version = "%s"
 			schematics_location = "%s"
 			agent_location = "%s"
@@ -143,49 +142,10 @@ func testAccCheckIbmSchematicsAgentConfig(name string, version string, schematic
 				cos_bucket_region = "cos_bucket_region"
 			}
 			description = "%s"
-			tags = "FIXME"
+			tags = ["tag-agent"]
 			agent_metadata {
 				name = "purpose"
 				value = ["git", "terraform", "ansible"]
-			}
-			agent_inputs {
-				name = "name"
-				value = "value"
-				use_default = true
-				metadata {
-					type = "boolean"
-					aliases = [ "aliases" ]
-					description = "description"
-					cloud_data_type = "cloud_data_type"
-					default_value = "default_value"
-					link_status = "normal"
-					secure = true
-					immutable = true
-					hidden = true
-					required = true
-					options = [ "options" ]
-					min_value = 1
-					max_value = 1
-					min_length = 1
-					max_length = 1
-					matches = "matches"
-					position = 1
-					group_by = "group_by"
-					source = "source"
-				}
-				link = "link"
-			}
-			user_state {
-				state = "enable"
-				set_by = "set_by"
-				set_at = "2021-01-31T09:44:12Z"
-			}
-			agent_kpi {
-				availability_indicator = "available"
-				lifecycle_indicator = "consistent"
-				percent_usage_indicator = "percent_usage_indicator"
-				application_indicators = [ null ]
-				infra_indicators = [ null ]
 			}
 		}
 	`, name, version, schematicsLocation, agentLocation, description)
@@ -204,9 +164,7 @@ func testAccCheckIbmSchematicsAgentExists(n string, obj schematicsv1.AgentData) 
 			return err
 		}
 
-		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			XFeatureAgents: core.BoolPtr(true),
-		}
+		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{}
 
 		getAgentDataOptions.SetAgentID(rs.Primary.ID)
 
@@ -230,9 +188,7 @@ func testAccCheckIbmSchematicsAgentDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-			XFeatureAgents: core.BoolPtr(true),
-		}
+		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{}
 
 		getAgentDataOptions.SetAgentID(rs.Primary.ID)
 

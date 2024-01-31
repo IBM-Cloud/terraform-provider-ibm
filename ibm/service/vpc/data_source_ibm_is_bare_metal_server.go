@@ -470,9 +470,11 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 
 	d.SetId(*bms.ID)
 	d.Set(isBareMetalServerBandwidth, bms.Bandwidth)
-	bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
-	bmsBootTarget := bmsBootTargetIntf.ID
-	d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+	if bms.BootTarget != nil {
+		bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
+		bmsBootTarget := bmsBootTargetIntf.ID
+		d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+	}
 
 	// set keys and image using initialization
 

@@ -13,6 +13,11 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
+const (
+	testAccountID = "12ab34cd56ef78ab90cd12ef34ab56cd"
+	testZoneID    = "559052eb8f43302824e7ae490c0281eb"
+)
+
 func TestAccIBMCbrRuleDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -77,13 +82,13 @@ func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
   			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "559052eb8f43302824e7ae490c0281eb"
+      				value = "%s"
     			}
   			}
   			resources {
     			attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "%s"
     			}
     			attributes {
       				name = "serviceName"
@@ -94,7 +99,7 @@ func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
 		data "ibm_cbr_rule" "cbr_rule" {
 			rule_id = ibm_cbr_rule.cbr_rule.id
 		}
-	`)
+	`, testZoneID, testAccountID)
 }
 
 func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleEnforcementMode string) string {
@@ -104,13 +109,13 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleEnforcem
 			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "559052eb8f43302824e7ae490c0281eb"
+      				value = "%s"
     			}
 			}
 			resources {
 				attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "%s"
     			}
     			attributes {
       				name = "serviceName"
@@ -133,5 +138,5 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleEnforcem
 		data "ibm_cbr_rule" "cbr_rule" {
 			rule_id = ibm_cbr_rule.cbr_rule.id
 		}
-	`, ruleDescription, ruleEnforcementMode)
+	`, ruleDescription, testZoneID, testAccountID, ruleEnforcementMode)
 }

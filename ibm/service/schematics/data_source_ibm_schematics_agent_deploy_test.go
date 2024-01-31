@@ -25,25 +25,6 @@ func TestAccIbmSchematicsAgentDeployDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmSchematicsAgentDeployDataSourceAllArgs(t *testing.T) {
-	agentDeployJobAgentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
-	agentDeployJobForce := "false"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentDeployDataSourceConfig(agentDeployJobAgentID, agentDeployJobForce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "updated_by"),
@@ -60,25 +41,8 @@ func TestAccIbmSchematicsAgentDeployDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmSchematicsAgentDeployDataSourceConfigBasic(agentDeployJobAgentID string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
-			agent_id = "%s"
-		}
 		data "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
-			agent_id = ibm_schematics_agent_deploy.schematics_agent_deploy_instance.agent_id
+			agent_id = "%s"
 		}
 	`, agentDeployJobAgentID)
-}
-
-func testAccCheckIbmSchematicsAgentDeployDataSourceConfig(agentDeployJobAgentID string, agentDeployJobForce string) string {
-	return fmt.Sprintf(`
-		resource "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
-			agent_id = "%s"
-			force = %s
-		}
-
-		data "ibm_schematics_agent_deploy" "schematics_agent_deploy_instance" {
-			agent_id = ibm_schematics_agent_deploy.schematics_agent_deploy_instance.agent_id
-		}
-	`, agentDeployJobAgentID, agentDeployJobForce)
 }
