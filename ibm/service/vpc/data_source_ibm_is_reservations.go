@@ -340,7 +340,7 @@ func dataSourceReservationCollectionReservationsToMap(reservationsItem vpcv1.Res
 	}
 	if reservationsItem.Profile != nil {
 		profileList := []map[string]interface{}{}
-		profile := reservationsItem.Profile.(*vpcv1.ReservationProfile)
+		profile := reservationsItem.Profile
 		profileMap := dataSourceReservationCollectionReservationsProfileToMap(*profile)
 		profileList = append(profileList, profileMap)
 		reservationsMap["profile"] = profileList

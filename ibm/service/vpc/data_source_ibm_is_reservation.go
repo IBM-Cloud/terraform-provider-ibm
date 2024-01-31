@@ -309,7 +309,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 	}
 	if reservation.Profile != nil {
 		profileList := []map[string]interface{}{}
-		profile := reservation.Profile.(*vpcv1.ReservationProfile)
+		profile := reservation.Profile
 		profileMap := dataSourceReservationProfileToMap(*profile)
 		profileList = append(profileList, profileMap)
 		if err = d.Set("profile", profileList); err != nil {

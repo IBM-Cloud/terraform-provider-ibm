@@ -350,7 +350,7 @@ func resourceIBMISReservationActivateRead(d *schema.ResourceData, meta interface
 		profileMap := []map[string]interface{}{}
 		finalList := map[string]interface{}{}
 
-		profileItem := reservation.Profile.(*vpcv1.ReservationProfile)
+		profileItem := reservation.Profile
 
 		if profileItem.Href != nil {
 			finalList[isReservationProfileHref] = profileItem.Href
