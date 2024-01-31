@@ -317,7 +317,6 @@ const (
 
 	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
 	Attr_PIInstanceSharedProcessorPoolID = "shared_processor_pool_id"
-	Arg_PIInstanceSharedProcessorPool    = "pi_shared_processor_pool"
 
 	// Placement Group
 	PIPlacementGroupID      = "placement_group_id"
