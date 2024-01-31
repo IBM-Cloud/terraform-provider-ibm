@@ -14,17 +14,18 @@ import (
 )
 
 func DataSourceIBMPIInstanceSnapshot() *schema.Resource {
-
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstanceSnapshotRead,
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
+				Description:  "The GUID of the service instance associated with an account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_SnapshotID: {
+				Description:  "The unique identifier of the Power Systems Virtual Machine instance snapshot.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
