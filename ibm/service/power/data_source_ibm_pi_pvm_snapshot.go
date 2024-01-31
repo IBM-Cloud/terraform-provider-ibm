@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func DataSourceIBMPISnapshot() *schema.Resource {
+func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPISnapshotRead,

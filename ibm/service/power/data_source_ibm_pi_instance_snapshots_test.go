@@ -12,14 +12,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMPISnapshotsDataSource_basic(t *testing.T) {
+func TestAccIBMPIInstanceSnapshotsDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPISnapshotsDataSourceConfig(),
+				Config: testAccCheckIBMPIInstanceSnapshotsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_instance_snapshots.testacc_ds_snapshots", "id"),
 				),
@@ -28,7 +28,7 @@ func TestAccIBMPISnapshotsDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPISnapshotsDataSourceConfig() string {
+func testAccCheckIBMPIInstanceSnapshotsDataSourceConfig() string {
 	return fmt.Sprintf(`
 	
 data "ibm_pi_instance_snapshots" "testacc_ds_snapshots" {

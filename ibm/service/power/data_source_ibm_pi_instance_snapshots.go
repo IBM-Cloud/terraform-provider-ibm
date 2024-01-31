@@ -17,10 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func DataSourceIBMPISnapshots() *schema.Resource {
+func DataSourceIBMPIInstanceSnapshots() *schema.Resource {
 
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPISnapshotsRead,
+		ReadContext: dataSourceIBMPIInstanceSnapshotsRead,
 		Schema: map[string]*schema.Schema{
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
@@ -77,7 +77,7 @@ func DataSourceIBMPISnapshots() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstanceSnapshotsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
