@@ -89,7 +89,7 @@ func resourceIBMPIInstanceConsoleLanguageUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange(ConsoleLanguageCode) {
+	if d.HasChange(PIConsoleLanguageCode) {
 		cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 		instanceName := d.Get(helpers.PIInstanceName).(string)
 		code := d.Get(PIConsoleLanguageCode).(string)
