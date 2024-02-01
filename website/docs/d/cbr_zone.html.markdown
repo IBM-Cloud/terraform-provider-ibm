@@ -36,7 +36,7 @@ In addition to all argument references listed, you can access the following attr
 * `address_count` - (Integer) The number of addresses in the zone.
 
 * `addresses` - (List) The list of addresses in the zone.
-  * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
+  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 Nested scheme for **addresses**:
 	* `ref` - (List) A service reference value.
 	Nested scheme for **ref**:

@@ -138,6 +138,16 @@ func DataSourceIBMSatelliteLocation() *schema.Resource {
 					},
 				},
 			},
+			"service_subnet": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Custom subnet CIDR to provide private IP addresses for services",
+			},
+			"pod_subnet": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Custom subnet CIDR to provide private IP addresses for pods",
+			},
 		},
 	}
 }
@@ -214,6 +224,13 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 			"An error occured during reading of instance (%s) tags : %s", d.Id(), err)
 	}
 	d.Set("tags", tags)
+
+	if instance.PodSubnet != nil {
+		d.Set("pod_subnet", *instance.PodSubnet)
+	}
+	if instance.ServiceSubnet != nil {
+		d.Set("service_subnet", *instance.ServiceSubnet)
+	}
 
 	return nil
 }
