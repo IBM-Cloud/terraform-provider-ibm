@@ -37,10 +37,10 @@ func TestAccIBMCbrZoneBasic(t *testing.T) {
 func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Zone
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountID := fmt.Sprintf("12ab34cd56ef78ab90cd12ef34ab56cd")
+	accountID := testAccountID
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := fmt.Sprintf("12ab34cd56ef78ab90cd12ef34ab56cd")
+	accountIDUpdate := testAccountID
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -79,13 +79,13 @@ func testAccCheckIBMCbrZoneConfigBasic() string {
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Resource Config Basic"
 			description = "Test Zone Resource Config Basic"
-			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
+			account_id = "%s"
 			addresses {
 				type = "ipRange"
 				value = "169.23.22.0-169.23.22.255"
 			}
 		}
-	`)
+	`, testAccountID)
 }
 
 func testAccCheckIBMCbrZoneConfig(name string, accountID string, description string) string {

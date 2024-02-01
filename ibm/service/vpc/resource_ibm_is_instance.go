@@ -3545,6 +3545,30 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+	bootVolName := "boot_volume.0.name"
+	if d.HasChange(bootVolName) && !d.IsNewResource() {
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		volName := d.Get(bootVolName).(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Name: &volName,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume name update of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while updating name of boot volume of instance %s/n%s", err, res))
+		}
+	}
 	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
 	if d.HasChange(bootVolAutoDel) && !d.IsNewResource() {
 		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
