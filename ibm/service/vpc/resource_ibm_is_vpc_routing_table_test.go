@@ -94,27 +94,45 @@ func TestAccIBMISVPCRoutingTable_advertiseRoutesTO(t *testing.T) {
 	var vpcRouteTables string
 	name1 := fmt.Sprintf("tfvpc-create-%d", acctest.RandIntRange(10, 100))
 	routeTableName := fmt.Sprintf("tfvpcrt-create-%d", acctest.RandIntRange(10, 100))
-	routeTableName1 := fmt.Sprintf("tfvpcrt-up-create-%d", acctest.RandIntRange(10, 100))
 
+	advertiseRoutesToDirectLink := "direct_link"
+	advertiseRoutesToTransit_gateway := "transit_gateway"
+	acceptRoutesFromVPNServer := "vpn_server"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMISVPCRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISVPCRouteTableConfig(routeTableName, name1),
+				Config: testAccCheckIBMISVPCRouteTableAdvertiseRoutesToConfig(routeTableName, name1, acceptRoutesFromVPNServer, advertiseRoutesToDirectLink, advertiseRoutesToTransit_gateway),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to.0", advertiseRoutesToDirectLink),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to.1", advertiseRoutesToTransit_gateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "accept_routes_from_resource_type.0", acceptRoutesFromVPNServer),
 				),
 			},
 			{
-				Config: testAccCheckIBMISVPCRouteTableConfig(routeTableName1, name1),
+				Config: testAccCheckIBMISVPCRouteTableAdvertiseRoutesToDLConfig(routeTableName, name1, acceptRoutesFromVPNServer, advertiseRoutesToDirectLink),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
-					resource.TestCheckResourceAttrSet(
-						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to.0", advertiseRoutesToDirectLink),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "accept_routes_from_resource_type.0", acceptRoutesFromVPNServer),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPCRouteTableAdvertiseRoutesToRemovalConfig(routeTableName, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCRouteTableExists("ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", vpcRouteTables),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "advertise_routes_to.#", "0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc_routing_table.test_ibm_is_vpc_routing_table", "accept_routes_from_resource_type.#", "0"),
 				),
 			},
 		},
@@ -205,4 +223,51 @@ resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
 	name = "%s"
 	accept_routes_from_resource_type=["%s"]
 }`, name, rtName, acceptRoutesFromVPNServer)
+}
+
+func testAccCheckIBMISVPCRouteTableAdvertiseRoutesToConfig(rtName, name, acceptRoutesFromVPNServer, advertiseRoutesTo1, advertiseRoutesTo2 string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
+	depends_on = [ibm_is_vpc.testacc_vpc]
+	route_direct_link_ingress = true
+	route_transit_gateway_ingress = true
+	vpc = ibm_is_vpc.testacc_vpc.id
+	name = "%s"
+	accept_routes_from_resource_type=["%s"]
+	advertise_routes_to=["%s","%s"]
+}`, name, rtName, acceptRoutesFromVPNServer, advertiseRoutesTo1, advertiseRoutesTo2)
+}
+
+func testAccCheckIBMISVPCRouteTableAdvertiseRoutesToDLConfig(rtName, name, acceptRoutesFromVPNServer, advertiseRoutesTo1 string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
+	depends_on = [ibm_is_vpc.testacc_vpc]
+	route_direct_link_ingress = true
+	route_transit_gateway_ingress = true
+	vpc = ibm_is_vpc.testacc_vpc.id
+	name = "%s"
+	accept_routes_from_resource_type=["%s"]
+	advertise_routes_to=["%s"]
+}`, name, rtName, acceptRoutesFromVPNServer, advertiseRoutesTo1)
+}
+
+func testAccCheckIBMISVPCRouteTableAdvertiseRoutesToRemovalConfig(rtName, name string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+	name = "%s"
+}
+resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
+	depends_on = [ibm_is_vpc.testacc_vpc]
+	route_direct_link_ingress = true
+	vpc = ibm_is_vpc.testacc_vpc.id
+	name = "%s"
+	accept_routes_from_resource_type=[]
+	advertise_routes_to=[]
+}`, name, rtName)
 }

@@ -36,6 +36,11 @@ func ResourceIbmSmPublicCertificateConfigurationCALetsEncrypt() *schema.Resource
 				Required:    true,
 				Description: "The configuration of the Let's Encrypt CA environment.",
 			},
+			"lets_encrypt_preferred_chain": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Prefer the chain with an issuer matching this Subject Common Name.",
+			},
 			"lets_encrypt_private_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -140,6 +145,9 @@ func resourceIbmSmPublicCertificateConfigurationCALetsEncryptRead(context contex
 	if err = d.Set("lets_encrypt_environment", configuration.LetsEncryptEnvironment); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting lets_encrypt_environment: %s", err))
 	}
+	if err = d.Set("lets_encrypt_preferred_chain", configuration.LetsEncryptPreferredChain); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting lets_encrypt_preferred_chain: %s", err))
+	}
 	if err = d.Set("lets_encrypt_private_key", configuration.LetsEncryptPrivateKey); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting lets_encrypt_private_key: %s", err))
 	}
@@ -170,6 +178,11 @@ func resourceIbmSmPublicCertificateConfigurationCALetsEncryptUpdate(context cont
 
 	if d.HasChange("lets_encrypt_private_key") {
 		patchVals.LetsEncryptPrivateKey = core.StringPtr(d.Get("lets_encrypt_private_key").(string))
+		hasChange = true
+	}
+
+	if d.HasChange("lets_encrypt_preferred_chain") {
+		patchVals.LetsEncryptPreferredChain = core.StringPtr(d.Get("lets_encrypt_preferred_chain").(string))
 		hasChange = true
 	}
 
@@ -222,14 +235,14 @@ func resourceIbmSmPublicCertificateConfigurationCALetsEncryptMapToConfigurationP
 
 	model.ConfigType = core.StringPtr("public_cert_configuration_ca_lets_encrypt")
 
-	//if _, ok := d.GetOk("config_type"); ok {
-	//	model.ConfigType = core.StringPtr(d.Get("config_type").(string))
-	//}
 	if _, ok := d.GetOk("name"); ok {
 		model.Name = core.StringPtr(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("lets_encrypt_environment"); ok {
 		model.LetsEncryptEnvironment = core.StringPtr(d.Get("lets_encrypt_environment").(string))
+	}
+	if _, ok := d.GetOk("lets_encrypt_preferred_chain"); ok {
+		model.LetsEncryptPreferredChain = core.StringPtr(d.Get("lets_encrypt_preferred_chain").(string))
 	}
 	if _, ok := d.GetOk("lets_encrypt_private_key"); ok {
 		model.LetsEncryptPrivateKey = core.StringPtr(formatCertificate(d.Get("lets_encrypt_private_key").(string)))
