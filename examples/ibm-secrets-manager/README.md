@@ -32,30 +32,6 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-
-## SecretsManagerV1 resources
-
-
-## SecretsManagerV1 Data sources
-
-secrets_manager_secrets data source:
-
-```hcl
-data "ibm_secrets_manager_secrets" "secrets_manager_secrets_instance" {
-  instance_id = var.secrets_manager_instance_id
-  secret_type = var.secrets_manager_secrets_secret_type
-}
-```
-secrets_manager_secret data source:
-
-```hcl
-data "ibm_secrets_manager_secret" "secrets_manager_secret_instance" {
-  instance_id = var.secrets_manager_instance_id
-  secret_type = var.secrets_manager_secret_secret_type
-  secret_id = var.secrets_manager_secret_id
-}
-```
-
 ## SecretsManagerV2 resources
 
 sm_secret_group resource:
