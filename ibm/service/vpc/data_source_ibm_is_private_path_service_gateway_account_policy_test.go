@@ -35,7 +35,6 @@ func TestAccIBMIsPrivatePathServiceGatewayAccountPolicyDataSourceBasic(t *testin
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy", "account.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy", "href"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy", "private_path_service_gateway_account_policy"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateway_account_policy.is_private_path_service_gateway_account_policy", "resource_type"),
 				),
 			},

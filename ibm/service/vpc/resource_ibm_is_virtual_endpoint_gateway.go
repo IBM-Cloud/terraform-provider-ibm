@@ -179,6 +179,7 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 						isVirtualEndpointGatewayTargetName: {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 							ForceNew: true,
 							AtLeastOneOf: []string{
 								targetNameFmt,

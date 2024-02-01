@@ -64,11 +64,6 @@ func DataSourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The URL for this account policy.",
 			},
-			"private_path_service_gateway_account_policy": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier for this account policy.",
-			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -124,10 +119,6 @@ func dataSourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.C
 
 	if err = d.Set("href", privatePathServiceGatewayAccountPolicy.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
-
-	if err = d.Set("private_path_service_gateway_account_policy_id", privatePathServiceGatewayAccountPolicy.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateway_account_policy_id: %s", err))
 	}
 
 	if err = d.Set("resource_type", privatePathServiceGatewayAccountPolicy.ResourceType); err != nil {

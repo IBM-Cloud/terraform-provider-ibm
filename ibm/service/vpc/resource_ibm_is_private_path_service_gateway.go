@@ -36,6 +36,7 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 			"default_access_policy": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_private_path_service_gateway", "access_policy"),
 				Description:  "The access policy for the account:- permit: access will be permitted- deny:  access will be denied- review: access will be manually reviewed.",
 			},
@@ -47,16 +48,20 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The name of this PPSG ",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
 				Description: "ID of resource group to use.",
 			},
 			"zonal_affinity": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "ndicates whether this private path service gateway has zonal affinity.",
 			},
 			"created_at": &schema.Schema{
@@ -71,6 +76,7 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 			},
 			"published": &schema.Schema{
 				Type:        schema.TypeBool,
+				Optional:    true,
 				Computed:    true,
 				Description: "Indicates the availability of this private path service gateway.",
 			},
@@ -104,6 +110,53 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the account policy was updated.",
 			},
+			// "remote": &schema.Schema{
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Description: "If present, this property indicates that the resource associated with this reference is remote and therefore may not be directly retrievable..",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"account": &schema.Schema{
+			// 				Type:        schema.TypeList,
+			// 				Computed:    true,
+			// 				Description: "If present, this property indicates that the referenced resource is remote to this account, and identifies the owning account.",
+			// 				Elem: &schema.Resource{
+			// 					Schema: map[string]*schema.Schema{
+			// 						"id": &schema.Schema{
+			// 							Type:        schema.TypeList,
+			// 							Computed:    true,
+			// 							Description: "The unique identifier for this account.",
+			// 						},
+			// 						"resource_type": &schema.Schema{
+			// 							Type:        schema.TypeString,
+			// 							Computed:    true,
+			// 							Description: "The resource type.",
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 			"region": &schema.Schema{
+			// 				Type:        schema.TypeList,
+			// 				Computed:    true,
+			// 				Description: "If present, this property indicates that the referenced resource is remote to this region, and identifies the native region.",
+			// 				Elem: &schema.Resource{
+			// 					Schema: map[string]*schema.Schema{
+			// 						"href": &schema.Schema{
+			// 							Type:        schema.TypeList,
+			// 							Computed:    true,
+			// 							Description: "The URL for this region.",
+			// 						},
+			// 						"name": &schema.Schema{
+			// 							Type:        schema.TypeString,
+			// 							Computed:    true,
+			// 							Description: "The globally unique name for this region.",
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// },
 			"private_path_service_gateway": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -181,7 +234,7 @@ func resourceIBMIsPrivatePathServiceGatewayCreate(context context.Context, d *sc
 
 	d.SetId(*privatePathServiceGateway.ID)
 
-	return resourceIBMIsPrivatePathServiceGatewayRead(context, d, meta)
+	return resourceIBMIsPrivatePathServiceGatewayUpdate(context, d, meta)
 }
 
 func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -266,18 +319,18 @@ func resourceIBMIsPrivatePathServiceGatewayUpdate(context context.Context, d *sc
 
 	patchVals := &vpcv1.PrivatePathServiceGatewayPatch{}
 
-	if d.HasChange("default_access_policy") {
+	if d.HasChange("default_access_policy") && !d.IsNewResource() {
 		newAccessPolicy := d.Get("default_access_policy").(string)
 		patchVals.DefaultAccessPolicy = &newAccessPolicy
 		hasChange = true
 	}
 
-	if d.HasChange("name") {
+	if d.HasChange("name") && !d.IsNewResource() {
 		name := d.Get("name").(string)
 		patchVals.Name = &name
 		hasChange = true
 	}
-	if d.HasChange("zonal_affinity") {
+	if d.HasChange("zonal_affinity") && !d.IsNewResource() {
 		zonalAffinity := d.Get("zonal_affinity").(bool)
 		patchVals.ZonalAffinity = &zonalAffinity
 		hasChange = true
@@ -287,7 +340,7 @@ func resourceIBMIsPrivatePathServiceGatewayUpdate(context context.Context, d *sc
 		patchVals.Published = &published
 		hasChange = true
 	}
-	if d.HasChange("load_balancer") {
+	if d.HasChange("load_balancer") && !d.IsNewResource() {
 		loadBalancer := d.Get("load_balancer").(string)
 		patchVals.LoadBalancer = &vpcv1.LoadBalancerIdentity{
 			ID: &loadBalancer,

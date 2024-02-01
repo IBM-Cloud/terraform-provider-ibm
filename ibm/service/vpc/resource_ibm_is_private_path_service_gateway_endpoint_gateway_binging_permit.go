@@ -56,7 +56,7 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingPermitCreate(co
 
 	permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetPrivatePathServiceGatewayID(d.Get("private_path_service_gateway").(string))
 	permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetID(d.Get("endpoint_gateway_binding").(string))
-	if setAccountPolicyIntf, ok := d.GetOk("set_account_policy"); ok {
+	if setAccountPolicyIntf, ok := d.GetOkExists("set_account_policy"); ok {
 		setAccountPolicy := setAccountPolicyIntf.(bool)
 		permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetSetAccountPolicy(setAccountPolicy)
 	}

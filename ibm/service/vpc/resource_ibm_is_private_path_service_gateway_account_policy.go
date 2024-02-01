@@ -64,7 +64,7 @@ func ResourceIBMIsPrivatePathServiceGatewayAccountPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that the account policy was updated.",
 			},
-			"private_path_service_gateway_account_policy": &schema.Schema{
+			"account_policy": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this account policy.",
@@ -160,7 +160,7 @@ func resourceIBMIsPrivatePathServiceGatewayAccountPolicyRead(context context.Con
 	// if err = d.Set("updated_at", flex.DateTimeToString(privatePathServiceGatewayAccountPolicy.UpdatedAt)); err != nil {
 	// 	return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	// }
-	if err = d.Set("private_path_service_gateway_account_policy", privatePathServiceGatewayAccountPolicy.ID); err != nil {
+	if err = d.Set("account_policy", privatePathServiceGatewayAccountPolicy.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting private_path_service_gateway_account_policy_id: %s", err))
 	}
 

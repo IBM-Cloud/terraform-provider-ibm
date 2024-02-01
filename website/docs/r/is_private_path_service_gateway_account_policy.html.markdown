@@ -42,7 +42,7 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the PrivatePathServiceGatewayAccountPolicy. The ID is composed of `<private_path_service_gateway_id>/<account_policy_id>`.
 - `created_at` - (String) The date and time that the account policy was created.
 - `href` - (String) The URL for this account policy.
-- `private_path_service_gateway_account_policy` - (String) The unique identifier for this account policy.
+- `account_policy` - (String) The unique identifier for this account policy.
 - `resource_type` - (String) The resource type.
 - `updated_at` - (String) The date and time that the account policy was updated.
 
