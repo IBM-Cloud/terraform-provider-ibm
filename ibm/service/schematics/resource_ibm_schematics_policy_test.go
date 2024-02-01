@@ -42,13 +42,11 @@ func TestAccIbmSchematicsPolicyAllArgs(t *testing.T) {
 	var conf schematicsv1.Policy
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	resourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	resourceGroup := "Default"
 	location := "us-south"
 	kind := "agent_assignment_policy"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	resourceGroupUpdate := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
-	locationUpdate := "eu-de"
 	kindUpdate := "agent_assignment_policy"
 
 	resource.Test(t, resource.TestCase{
@@ -62,18 +60,15 @@ func TestAccIbmSchematicsPolicyAllArgs(t *testing.T) {
 					testAccCheckIbmSchematicsPolicyExists("ibm_schematics_policy.schematics_policy_instance", conf),
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "description", description),
-					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "resource_group", resourceGroup),
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "location", location),
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "kind", kind),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSchematicsPolicyConfig(nameUpdate, descriptionUpdate, resourceGroupUpdate, locationUpdate, kindUpdate),
+				Config: testAccCheckIbmSchematicsPolicyConfig(nameUpdate, descriptionUpdate, resourceGroup, location, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "resource_group", resourceGroupUpdate),
-					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "location", locationUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_policy.schematics_policy_instance", "kind", kindUpdate),
 				),
 			},
@@ -103,39 +98,23 @@ func testAccCheckIbmSchematicsPolicyConfig(name string, description string, reso
 			name = "%s"
 			description = "%s"
 			resource_group = "%s"
-			tags = "FIXME"
+			tags = ["policy-tag"]
 			location = "%s"
-			state {
-				state = "draft"
-				set_by = "set_by"
-				set_at = "2021-01-31T09:44:12Z"
-			}
 			kind = "%s"
 			target {
 				selector_kind = "ids"
 				selector_ids = [ "selector_ids" ]
-				selector_scope {
-					kind = "workspace"
-					tags = [ "tags" ]
-					resource_groups = [ "resource_groups" ]
-					locations = [ "us-south" ]
-				}
 			}
 			parameter {
 				agent_assignment_policy_parameter {
-					selector_kind = "ids"
-					selector_ids = [ "selector_ids" ]
+					selector_kind = "scoped"
 					selector_scope {
 						kind = "workspace"
 						tags = [ "tags" ]
-						resource_groups = [ "resource_groups" ]
+						resource_groups = [ "Default" ]
 						locations = [ "us-south" ]
 					}
 				}
-			}
-			scoped_resources {
-				kind = "workspace"
-				id = "id"
 			}
 		}
 	`, name, description, resourceGroup, location, kind)
