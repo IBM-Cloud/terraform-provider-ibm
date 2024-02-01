@@ -52,7 +52,7 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 				Description:   "The name of consistency group at storage controller level",
 				ConflictsWith: []string{PIVolumeGroupName},
 			},
-			PIVolumeGroupsVolumeIds: {
+			PIVolumeIds: {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -98,7 +98,7 @@ func resourceIBMPIVolumeGroupCreate(ctx context.Context, d *schema.ResourceData,
 		Name: vgName,
 	}
 
-	volids := flex.ExpandStringList((d.Get(PIVolumeGroupsVolumeIds).(*schema.Set)).List())
+	volids := flex.ExpandStringList((d.Get(PIVolumeIds).(*schema.Set)).List())
 	body.VolumeIDs = volids
 
 	if v, ok := d.GetOk(PIVolumeGroupConsistencyGroupName); ok {
@@ -144,7 +144,7 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("consistency_group_name", vg.ConsistencyGroupName)
 	d.Set("replication_status", vg.ReplicationStatus)
 	d.Set(PIVolumeGroupName, vg.Name)
-	d.Set(PIVolumeGroupsVolumeIds, vg.VolumeIDs)
+	d.Set(PIVolumeIds, vg.VolumeIDs)
 	d.Set("status_description_errors", flattenVolumeGroupStatusDescription(vg.StatusDescription.Errors))
 
 	return nil
@@ -163,8 +163,8 @@ func resourceIBMPIVolumeGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	client := st.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
-	if d.HasChanges(PIVolumeGroupsVolumeIds) {
-		old, new := d.GetChange(PIVolumeGroupsVolumeIds)
+	if d.HasChanges(PIVolumeIds) {
+		old, new := d.GetChange(PIVolumeIds)
 		oldList := old.(*schema.Set)
 		newList := new.(*schema.Set)
 		body := &models.VolumeGroupUpdate{
@@ -196,7 +196,7 @@ func resourceIBMPIVolumeGroupDelete(ctx context.Context, d *schema.ResourceData,
 
 	client := st.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
 
-	volids := flex.ExpandStringList((d.Get(PIVolumeGroupsVolumeIds).(*schema.Set)).List())
+	volids := flex.ExpandStringList((d.Get(PIVolumeIds).(*schema.Set)).List())
 	if len(volids) > 0 {
 		body := &models.VolumeGroupUpdate{
 			RemoveVolumes: volids,

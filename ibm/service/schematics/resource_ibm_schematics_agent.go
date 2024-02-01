@@ -40,6 +40,7 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The resource-group name for the agent.  By default, agent will be registered in Default Resource Group.",
 			},
 			"version": &schema.Schema{
@@ -132,6 +133,7 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 			"agent_inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Additional input variables for the agent.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -270,6 +272,7 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 				MaxItems:    1,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "User defined status of the agent.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -294,40 +297,33 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 			},
 			"agent_kpi": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
 				Computed:    true,
 				Description: "Schematics Agent key performance indicators.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"availability_indicator": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Overall availability indicator reported by the agent.",
 						},
 						"lifecycle_indicator": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Overall lifecycle indicator reported by the agents.",
 						},
 						"percent_usage_indicator": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Percentage usage of the agent resources.",
 						},
 						"application_indicators": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Agent application key performance indicators.",
 							Elem:        &schema.Schema{Type: schema.TypeMap},
 						},
 						"infra_indicators": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Agent infrastructure key performance indicators.",
 							Elem:        &schema.Schema{Type: schema.TypeMap},
@@ -559,9 +555,7 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	createAgentDataOptions := &schematicsv1.CreateAgentDataOptions{
-		XFeatureAgents: core.BoolPtr(true),
-	}
+	createAgentDataOptions := &schematicsv1.CreateAgentDataOptions{}
 
 	createAgentDataOptions.SetName(d.Get("name").(string))
 	createAgentDataOptions.SetResourceGroup(d.Get("resource_group").(string))
@@ -577,7 +571,7 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 		createAgentDataOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createAgentDataOptions.SetTags(d.Get("tags").([]string))
+		createAgentDataOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("agent_metadata"); ok {
 		var agentMetadata []schematicsv1.AgentMetadataInfo
@@ -610,13 +604,6 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 		}
 		createAgentDataOptions.SetUserState(userStateModel)
 	}
-	if _, ok := d.GetOk("agent_kpi"); ok {
-		agentKpiModel, err := resourceIbmSchematicsAgentMapToAgentKPIData(d.Get("agent_kpi.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createAgentDataOptions.SetAgentKpi(agentKpiModel)
-	}
 
 	agentData, response, err := schematicsClient.CreateAgentDataWithContext(context, createAgentDataOptions)
 	if err != nil {
@@ -636,8 +623,7 @@ func resourceIbmSchematicsAgentRead(context context.Context, d *schema.ResourceD
 	}
 
 	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
-		XFeatureAgents: core.BoolPtr(true),
-		Profile:        core.StringPtr("detailed"),
+		Profile: core.StringPtr("detailed"),
 	}
 
 	getAgentDataOptions.SetAgentID(d.Id())
@@ -787,20 +773,87 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	updateAgentDataOptions := &schematicsv1.UpdateAgentDataOptions{
-		XFeatureAgents: core.BoolPtr(true),
+	updateAgentDataOptions := &schematicsv1.UpdateAgentDataOptions{}
+	session, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	iamRefreshToken := session.Config.IAMRefreshToken
+	ff := map[string]string{
+		"refresh_token": iamRefreshToken,
+	}
+	updateAgentDataOptions.Headers = ff
 
 	updateAgentDataOptions.SetAgentID(d.Id())
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("resource_group") || d.HasChange("version") || d.HasChange("schematics_location") || d.HasChange("agent_location") || d.HasChange("agent_infrastructure") {
-		updateAgentDataOptions.SetName(d.Get("name").(string))
-		updateAgentDataOptions.SetResourceGroup(d.Get("resource_group").(string))
-		updateAgentDataOptions.SetVersion(d.Get("version").(string))
+	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
+		Profile: core.StringPtr("detailed"),
+	}
+
+	getAgentDataOptions.SetAgentID(d.Id())
+
+	agentData, response, err := schematicsClient.GetAgentDataWithContext(context, getAgentDataOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
+	}
+	if agentData.Name != nil {
+		updateAgentDataOptions.Name = agentData.Name
+	}
+	if agentData.ResourceGroup != nil {
+		updateAgentDataOptions.ResourceGroup = agentData.ResourceGroup
+	}
+	if agentData.Version != nil {
+		updateAgentDataOptions.Version = agentData.Version
+	}
+	if agentData.SchematicsLocation != nil {
+		updateAgentDataOptions.SchematicsLocation = agentData.SchematicsLocation
+	}
+	if agentData.AgentLocation != nil {
+		updateAgentDataOptions.AgentLocation = agentData.AgentLocation
+	}
+	if agentData.AgentInfrastructure != nil {
+		updateAgentDataOptions.AgentInfrastructure = agentData.AgentInfrastructure
+	}
+	if agentData.Description != nil {
+		updateAgentDataOptions.Description = agentData.Description
+	}
+	if agentData.Tags != nil {
+		updateAgentDataOptions.Tags = agentData.Tags
+	}
+	if agentData.AgentMetadata != nil {
+		updateAgentDataOptions.AgentMetadata = agentData.AgentMetadata
+	}
+	if agentData.AgentInputs != nil {
+		updateAgentDataOptions.AgentInputs = agentData.AgentInputs
+	}
+	if agentData.UserState != nil {
+		updateAgentDataOptions.UserState = agentData.UserState
+	}
+	if agentData.AgentKpi != nil {
+		updateAgentDataOptions.AgentKpi = agentData.AgentKpi
+	}
+
+	if d.HasChange("schematics_location") || d.HasChange("agent_location") {
 		updateAgentDataOptions.SetSchematicsLocation(d.Get("schematics_location").(string))
 		updateAgentDataOptions.SetAgentLocation(d.Get("agent_location").(string))
+		hasChange = true
+	}
+	if d.HasChange("name") {
+		updateAgentDataOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+	if d.HasChange("version") {
+		updateAgentDataOptions.SetVersion(d.Get("version").(string))
+		hasChange = true
+	}
+	if d.HasChange("agent_infrastructure") {
 		agentInfrastructure, err := resourceIbmSchematicsAgentMapToAgentInfrastructure(d.Get("agent_infrastructure.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
@@ -813,7 +866,7 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 		hasChange = true
 	}
 	if d.HasChange("tags") {
-		updateAgentDataOptions.SetTags(d.Get("tags").([]string))
+		updateAgentDataOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
 	}
 	if d.HasChange("agent_metadata") {
@@ -827,36 +880,6 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 			agentMetadata = append(agentMetadata, *agentMetadataItem)
 		}
 		updateAgentDataOptions.SetAgentMetadata(agentMetadata)
-		hasChange = true
-	}
-	if d.HasChange("agent_inputs") {
-		// TODO: handle AgentInputs of type TypeList -- not primitive, not model
-		var agentInputs []schematicsv1.VariableData
-		for _, e := range d.Get("agent_inputs").([]interface{}) {
-			value := e.(map[string]interface{})
-			agentInputsItem, err := resourceIbmSchematicsAgentMapToVariableData(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			agentInputs = append(agentInputs, *agentInputsItem)
-		}
-		updateAgentDataOptions.SetAgentInputs(agentInputs)
-		hasChange = true
-	}
-	if d.HasChange("user_state") {
-		userState, err := resourceIbmSchematicsAgentMapToAgentUserState(d.Get("user_state.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateAgentDataOptions.SetUserState(userState)
-		hasChange = true
-	}
-	if d.HasChange("agent_kpi") {
-		agentKpi, err := resourceIbmSchematicsAgentMapToAgentKPIData(d.Get("agent_kpi.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateAgentDataOptions.SetAgentKpi(agentKpi)
 		hasChange = true
 	}
 
@@ -877,9 +900,16 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	deleteAgentDataOptions := &schematicsv1.DeleteAgentDataOptions{
-		XFeatureAgents: core.BoolPtr(true),
+	deleteAgentDataOptions := &schematicsv1.DeleteAgentDataOptions{}
+	session, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	iamRefreshToken := session.Config.IAMRefreshToken
+	ff := map[string]string{
+		"refresh_token": iamRefreshToken,
+	}
+	deleteAgentDataOptions.Headers = ff
 
 	deleteAgentDataOptions.SetAgentID(d.Id())
 
@@ -1036,34 +1066,6 @@ func resourceIbmSchematicsAgentMapToAgentUserState(modelMap map[string]interface
 	}
 	if modelMap["set_at"] != nil {
 
-	}
-	return model, nil
-}
-
-func resourceIbmSchematicsAgentMapToAgentKPIData(modelMap map[string]interface{}) (*schematicsv1.AgentKPIData, error) {
-	model := &schematicsv1.AgentKPIData{}
-	if modelMap["availability_indicator"] != nil && modelMap["availability_indicator"].(string) != "" {
-		model.AvailabilityIndicator = core.StringPtr(modelMap["availability_indicator"].(string))
-	}
-	if modelMap["lifecycle_indicator"] != nil && modelMap["lifecycle_indicator"].(string) != "" {
-		model.LifecycleIndicator = core.StringPtr(modelMap["lifecycle_indicator"].(string))
-	}
-	if modelMap["percent_usage_indicator"] != nil && modelMap["percent_usage_indicator"].(string) != "" {
-		model.PercentUsageIndicator = core.StringPtr(modelMap["percent_usage_indicator"].(string))
-	}
-	if modelMap["application_indicators"] != nil {
-		applicationIndicators := []interface{}{}
-		for _, applicationIndicatorsItem := range modelMap["application_indicators"].([]interface{}) {
-			applicationIndicators = append(applicationIndicators, applicationIndicatorsItem)
-		}
-		model.ApplicationIndicators = applicationIndicators
-	}
-	if modelMap["infra_indicators"] != nil {
-		infraIndicators := []interface{}{}
-		for _, infraIndicatorsItem := range modelMap["infra_indicators"].([]interface{}) {
-			infraIndicators = append(infraIndicators, infraIndicatorsItem)
-		}
-		model.InfraIndicators = infraIndicators
 	}
 	return model, nil
 }

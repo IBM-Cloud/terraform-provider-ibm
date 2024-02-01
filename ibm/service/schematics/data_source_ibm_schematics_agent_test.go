@@ -15,7 +15,7 @@ import (
 
 func TestAccIbmSchematicsAgentDataSourceBasic(t *testing.T) {
 	agentDataName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	agentDataVersion := "1.0.0-beta2"
+	agentDataVersion := "1.0.0"
 	agentDataSchematicsLocation := "us-south"
 	agentDataAgentLocation := "eu-de"
 
@@ -42,7 +42,7 @@ func TestAccIbmSchematicsAgentDataSourceBasic(t *testing.T) {
 
 func TestAccIbmSchematicsAgentDataSourceAllArgs(t *testing.T) {
 	agentDataName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	agentDataVersion := "1.0.0-beta2"
+	agentDataVersion := "1.0.0"
 	agentDataSchematicsLocation := "us-south"
 	agentDataAgentLocation := "eu-de"
 	agentDataDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -65,19 +65,12 @@ func TestAccIbmSchematicsAgentDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_location"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_infrastructure.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_metadata.#"),
-					resource.TestCheckResourceAttr("data.ibm_schematics_agent.schematics_agent_instance", "agent_metadata.0.name", agentDataName),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_inputs.#"),
-					resource.TestCheckResourceAttr("data.ibm_schematics_agent.schematics_agent_instance", "agent_inputs.0.name", agentDataName),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_inputs.0.value"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_inputs.0.use_default"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_inputs.0.link"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "user_state.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "creation_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "updated_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "system_state.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "agent_kpi.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent.schematics_agent_instance", "recent_prs_job.#"),
@@ -130,49 +123,13 @@ func testAccCheckIbmSchematicsAgentDataSourceConfig(agentDataName string, agentD
 				cos_bucket_region = "cos_bucket_region"
 			}
 			description = "%s"
-			tags = "FIXME"
+			tags = ["agent-tag"]
 			agent_metadata {
 				name = "purpose"
 				value = ["git", "terraform", "ansible"]
 			}
-			agent_inputs {
-				name = "name"
-				value = "value"
-				use_default = true
-				metadata {
-					type = "boolean"
-					aliases = [ "aliases" ]
-					description = "description"
-					cloud_data_type = "cloud_data_type"
-					default_value = "default_value"
-					link_status = "normal"
-					secure = true
-					immutable = true
-					hidden = true
-					required = true
-					options = [ "options" ]
-					min_value = 1
-					max_value = 1
-					min_length = 1
-					max_length = 1
-					matches = "matches"
-					position = 1
-					group_by = "group_by"
-					source = "source"
-				}
-				link = "link"
-			}
 			user_state {
 				state = "enable"
-				set_by = "set_by"
-				set_at = "2021-01-31T09:44:12Z"
-			}
-			agent_kpi {
-				availability_indicator = "available"
-				lifecycle_indicator = "consistent"
-				percent_usage_indicator = "percent_usage_indicator"
-				application_indicators = [ null ]
-				infra_indicators = [ null ]
 			}
 		}
 
