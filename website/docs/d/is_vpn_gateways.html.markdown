@@ -56,11 +56,9 @@ In addition to all argument reference list, you can access the following attribu
           Nested scheme for `private_ip`:
           - `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
 	  - `private_address` - (String) The private IP address assigned to the VPN gateway member. Same as `private_ip.0.address`.</br>
-	  - `status` - (String) The status of the VPN gateway member.
   
 
   - `resource_type` - (String) The resource type, supported value is `vpn_gateway`.
-  - `status` - (String) The status of the VPN gateway, supported values are **available**, **deleting**, **failed**, **pending**.
   - `health_reasons` - (List) The reasons for the current health_state (if any).
 
       Nested scheme for `health_reasons`:
