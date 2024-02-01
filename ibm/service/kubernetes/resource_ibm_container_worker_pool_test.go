@@ -206,3 +206,139 @@ resource "ibm_container_worker_pool" "test_pool" {
   }
 }`, workerPoolName, acc.MachineType, clusterName)
 }
+
+func TestAccIBMContainerWorkerPoolImportOnCreate(t *testing.T) {
+
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerWorkerPoolImportOnCreate(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "worker_pool_name", "default"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "size_per_zone", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerWorkerPoolImportOnCreateClusterUpdate(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "worker_pool_name", "default"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "size_per_zone", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerWorkerPoolImportOnCreateWPUpdate(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "worker_pool_name", "default"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "size_per_zone", "3"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMContainerWorkerPoolImportOnCreate(clusterName string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name              = "%s"
+  datacenter        = "%s"
+  machine_type      = "%s"
+  hardware          = "shared"
+  public_vlan_id    = "%s"
+  private_vlan_id   = "%s"
+  kube_version      = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  default_pool_size = 1
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+}
+
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "default"
+  machine_type     = "%[3]s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 1
+  import_on_create = "true"
+}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion)
+}
+
+func testAccCheckIBMContainerWorkerPoolImportOnCreateClusterUpdate(clusterName string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name              = "%s"
+  datacenter        = "%s"
+  machine_type      = "%s"
+  hardware          = "shared"
+  public_vlan_id    = "%s"
+  private_vlan_id   = "%s"
+  kube_version      = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  default_pool_size = 3
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+}
+
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "default"
+  machine_type     = "%[3]s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 1
+  import_on_create = "true"
+}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion)
+}
+
+func testAccCheckIBMContainerWorkerPoolImportOnCreateWPUpdate(clusterName string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name              = "%s"
+  datacenter        = "%s"
+  machine_type      = "%s"
+  hardware          = "shared"
+  public_vlan_id    = "%s"
+  private_vlan_id   = "%s"
+  kube_version      = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  default_pool_size = 1
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+}
+
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "default"
+  machine_type     = "%[3]s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 3
+  import_on_create = "true"
+}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion)
+}

@@ -66,9 +66,9 @@ resource "ibm_resource_instance" "instance2" {
 
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name         = "cloud-object-storage"
-  source_resource_instance_id = ibm_resource_instance.instance1.id
+  source_resource_instance_id = ibm_resource_instance.instance1.guid
   target_service_name         = "kms"
-  target_resource_instance_id = ibm_resource_instance.instance2.id
+  target_resource_instance_id = ibm_resource_instance.instance2.guid
   roles                       = ["Reader"]
 }
 
@@ -156,6 +156,40 @@ resource "ibm_iam_authorization_policy" "policy" {
 	  }
 ```
 
+### Authorization policy between all resource groups in an account and a target service using resource attributes
+
+```terraform
+
+resource "ibm_resource_group" "source_resource_group" {
+  name     = "123123"
+}
+
+resource "ibm_iam_authorization_policy" "policy" {
+    roles                  = [
+        "Reader",
+    ]
+
+    resource_attributes {
+        name     = "accountId"
+        operator = "stringEquals"
+        value    = "12345"
+    }
+    resource_attributes {
+        name     = "serviceName"
+        operator = "stringEquals"
+        value    = "cloud-object-storage"
+    }
+
+    subject_attributes {
+        name  = "accountId"
+        value = "12345"
+    }
+    subject_attributes {
+        name  = "resourceGroupId"
+        value = "*"
+    }
+}
+```
 
 ### Authorization policy between source service and target resource type "resource-group" using resource attributes
 
