@@ -92,6 +92,9 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 			memory {
 				allocation_mb = 1024
 			}
+			host_flavor {
+				id = "multitenant"
+			}
 			disk {
 				allocation_mb = 20480
 			}
@@ -137,6 +140,9 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 			}
 			cpu {
 				allocation_count = 4
+			}
+			host_flavor {
+				id = "multitenant"
 			}
 		}
 		service_endpoints            = "public-and-private"

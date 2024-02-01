@@ -1,11 +1,10 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -43,15 +42,16 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 				Description: "The environment definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "",
+							Description: "The description of the environment.",
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The name of the environment.  It is unique within the account across projects and regions.",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The description of the environment.",
 						},
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
@@ -317,7 +317,7 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 			" The resource must be re-created to update this property.", "project_id"))
 	}
 	if d.HasChange("definition") {
-		definition, err := resourceIbmProjectEnvironmentMapToEnvironmentDefinitionProperties(d.Get("definition.0").(map[string]interface{}))
+		definition, err := resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -365,10 +365,10 @@ func resourceIbmProjectEnvironmentDelete(context context.Context, d *schema.Reso
 
 func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionRequiredProperties, error) {
 	model := &projectv1.EnvironmentDefinitionRequiredProperties{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
+	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -377,12 +377,7 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(m
 		model.Authorizations = AuthorizationsModel
 	}
 	if modelMap["inputs"] != nil {
-		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Inputs = newMap
-		}
+		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
@@ -428,13 +423,13 @@ func resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[str
 	return model, nil
 }
 
-func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionProperties(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionProperties, error) {
-	model := &projectv1.EnvironmentDefinitionProperties{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
+func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionPropertiesPatch, error) {
+	model := &projectv1.EnvironmentDefinitionPropertiesPatch{}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
@@ -444,12 +439,7 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionProperties(modelMap 
 		model.Authorizations = AuthorizationsModel
 	}
 	if modelMap["inputs"] != nil {
-		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Inputs = newMap
-		}
+		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
@@ -463,10 +453,10 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionProperties(modelMap 
 
 func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(model *projectv1.EnvironmentDefinitionRequiredProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
+	modelMap["name"] = model.Name
 	if model.Authorizations != nil {
 		authorizationsMap, err := resourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
@@ -481,9 +471,7 @@ func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(m
 		for k, v := range model.Inputs {
 			inputs[k] = fmt.Sprintf("%v", v)
 		}
-		if len(inputs) > 0 {
-			modelMap["inputs"] = inputs
-		}
+		modelMap["inputs"] = inputs
 	}
 	if model.ComplianceProfile != nil {
 		complianceProfileMap, err := resourceIbmProjectEnvironmentProjectComplianceProfileToMap(model.ComplianceProfile)

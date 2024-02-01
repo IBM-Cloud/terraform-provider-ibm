@@ -78,13 +78,13 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
   			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "559052eb8f43302824e7ae490c0281eb"
+      				value = "%s"
     			}
   			}
 			resources {
     			attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "%s"
     			}
     			attributes {
       				name = "serviceName"
@@ -97,7 +97,7 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
   			}
 			enforcement_mode = "disabled"
 		}
-	`)
+	`, testZoneID, testAccountID)
 }
 
 func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) string {
@@ -108,13 +108,13 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) st
 			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "559052eb8f43302824e7ae490c0281eb"
+      				value = "%s"
     			}
 			}
 			resources {
     			attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "%s"
     			}
     			attributes {
       				name = "serviceName"
@@ -133,7 +133,7 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) st
 			}
 			enforcement_mode = "%s"
 		}
-	`, description, enforcementMode)
+	`, description, testZoneID, testAccountID, enforcementMode)
 }
 
 func testAccCheckIBMCbrRuleExists(n string, obj contextbasedrestrictionsv1.Rule) resource.TestCheckFunc {
