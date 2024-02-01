@@ -84,7 +84,6 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 			"version_custom_metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
-				Computed:    true,
 				Description: "The secret version metadata that a user can customize.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -422,7 +421,7 @@ func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.Resou
 		// Apply change to version_custom_metadata in current version
 		secretVersionMetadataPatchModel := new(secretsmanagerv2.SecretVersionMetadataPatch)
 		secretVersionMetadataPatchModel.VersionCustomMetadata = d.Get("version_custom_metadata").(map[string]interface{})
-		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataPatchModel.AsPatch()
+		secretVersionMetadataPatchModelAsPatch, _ := secretVersionMetadataAsPatchFunction(secretVersionMetadataPatchModel)
 
 		updateSecretVersionOptions := &secretsmanagerv2.UpdateSecretVersionMetadataOptions{}
 		updateSecretVersionOptions.SetSecretID(secretId)
