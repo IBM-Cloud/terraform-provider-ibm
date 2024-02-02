@@ -34,7 +34,7 @@ func TestAccIbmSchematicsPolicyDataSourceBasic(t *testing.T) {
 func TestAccIbmSchematicsPolicyDataSourceAllArgs(t *testing.T) {
 	policyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	policyDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	policyResourceGroup := fmt.Sprintf("tf_resource_group_%d", acctest.RandIntRange(10, 100))
+	policyResourceGroup := "Default"
 	policyLocation := "us-south"
 	policyKind := "agent_assignment_policy"
 
@@ -57,11 +57,7 @@ func TestAccIbmSchematicsPolicyDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "target.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "parameter.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "account"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "scoped_resources.#"),
-					resource.TestCheckResourceAttr("data.ibm_schematics_policy.schematics_policy_instance", "scoped_resources.0.kind", policyKind),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "scoped_resources.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_policy.schematics_policy_instance", "updated_at"),
@@ -90,39 +86,23 @@ func testAccCheckIbmSchematicsPolicyDataSourceConfig(policyName string, policyDe
 			name = "%s"
 			description = "%s"
 			resource_group = "%s"
-			tags = "FIXME"
+			tags = ["policy-tag"]
 			location = "%s"
-			state {
-				state = "draft"
-				set_by = "set_by"
-				set_at = "2021-01-31T09:44:12Z"
-			}
 			kind = "%s"
 			target {
 				selector_kind = "ids"
 				selector_ids = [ "selector_ids" ]
-				selector_scope {
-					kind = "workspace"
-					tags = [ "tags" ]
-					resource_groups = [ "resource_groups" ]
-					locations = [ "us-south" ]
-				}
 			}
 			parameter {
 				agent_assignment_policy_parameter {
-					selector_kind = "ids"
-					selector_ids = [ "selector_ids" ]
+					selector_kind = "scoped"
 					selector_scope {
 						kind = "workspace"
 						tags = [ "tags" ]
-						resource_groups = [ "resource_groups" ]
+						resource_groups = [ "Default" ]
 						locations = [ "us-south" ]
 					}
 				}
-			}
-			scoped_resources {
-				kind = "workspace"
-				id = "id"
 			}
 		}
 

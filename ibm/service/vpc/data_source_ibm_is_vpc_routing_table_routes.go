@@ -221,6 +221,9 @@ func dataSourceIBMISVPCRoutingTableRoutesList(d *schema.ResourceData, meta inter
 		if instance.LifecycleState != nil {
 			route[isRoutingTableRouteLifecycleState] = *instance.LifecycleState
 		}
+		if instance.Action != nil {
+			route[isRoutingTableRouteAction] = *instance.Action
+		}
 		if instance.Advertise != nil {
 			route["advertise"] = *instance.Advertise
 		}
