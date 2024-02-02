@@ -34,7 +34,7 @@ func DataSourceIBMPIKeys() *schema.Resource {
 				Description: "List of all the SSH keys.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						Attr_KeyCreationDate: {
+						Attr_CreationDate: {
 							Computed:    true,
 							Description: "Date of SSH key creation.",
 							Type:        schema.TypeString,
@@ -75,9 +75,9 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 	result := make([]map[string]interface{}, 0, len(sshKeys.SSHKeys))
 	for _, sshKey := range sshKeys.SSHKeys {
 		key := map[string]interface{}{
-			Attr_KeyCreationDate: sshKey.CreationDate.String(),
-			Attr_Name:            sshKey.Name,
-			Attr_SSHKey:          sshKey.SSHKey,
+			Attr_CreationDate: sshKey.CreationDate.String(),
+			Attr_Name:         sshKey.Name,
+			Attr_SSHKey:       sshKey.SSHKey,
 		}
 		result = append(result, key)
 	}
