@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_pi_public_network
-Retrieve the details about a public network that is used for your Power Systems Virtual Server instance. For more information, about public network in IBM power virtual server, see [adding or removing a public network
+Retrieve the details about a public network that is used for your Power Systems Virtual Server instance. For more information, about public network in IBM Power Systems Virtual Server, see [adding or removing a public network
 ](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-modifying-server#adding-removing-network).
 
 ## Example usage
