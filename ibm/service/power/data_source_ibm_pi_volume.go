@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,10 +24,10 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PIVolumeName: {
-				Type:         schema.TypeString,
-				Required:     true,
+			Arg_VolumeName: {
 				Description:  "Volume Name to be used for pvminstances",
+				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
@@ -61,6 +60,11 @@ func DataSourceIBMPIVolume() *schema.Resource {
 			Attr_GroupID: {
 				Computed:    true,
 				Description: "The volume group id in which the volume belongs.",
+				Type:        schema.TypeString,
+			},
+			Attr_IOThrottleRate: {
+				Computed:    true,
+				Description: "Amount of iops assigned to the volume",
 				Type:        schema.TypeString,
 			},
 			Attr_MasterVolumeName: {
@@ -130,7 +134,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string))
+	volumedata, err := volumeC.Get(d.Get(Arg_VolumeName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,6 +146,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_ConsistencyGroupName, volumedata.ConsistencyGroupName)
 	d.Set(Attr_DiskType, volumedata.DiskType)
 	d.Set(Attr_GroupID, volumedata.GroupID)
+	d.Set(Attr_IOThrottleRate, volumedata.IoThrottleRate)
 	d.Set(Attr_MasterVolumeName, volumedata.MasterVolumeName)
 	d.Set(Attr_MirroringState, volumedata.MirroringState)
 	d.Set(Attr_PrimaryRole, volumedata.PrimaryRole)

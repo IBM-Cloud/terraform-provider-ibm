@@ -49,6 +49,7 @@ In addition to all argument reference list, you can access the following attribu
 - `disk_type` - (String) The disk type that is used for the volume.
 - `group_id` - (String) The volume group id in which the volume belongs.
 - `id` - (String) The unique identifier of the volume.
+- `io_throttle_rate` - (String) Amount of iops assigned to the volume.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
