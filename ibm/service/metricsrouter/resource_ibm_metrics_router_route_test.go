@@ -139,7 +139,7 @@ func TestAccIBMMetricsRouterRouteSendNoTarget(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMMetricsRouterRouteNoTarget(name, action),
-				ExpectError: regexp.MustCompile("Send rule action requires non-empty targets"),
+				ExpectError: regexp.MustCompile("You have a rule with empty targets."),
 			},
 		},
 	})
