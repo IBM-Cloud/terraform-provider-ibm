@@ -41,6 +41,7 @@ Review the argument references that you can specify for your resource.
 - `pi_datacenter` - (Required, String) Target location or environment to create the resource instance.
 - `pi_resource_group_id` - (Required, String) The ID of the resource group where you want to create the workspace. You can retrieve the value from data source `ibm_resource_group`.
 - `pi_plan` -  (Required, String) Plan associated with the offering; Valid values are `public` or `private`.
+- `crn` - (String) Workspace crn.
 
 ## Attribute reference
 
