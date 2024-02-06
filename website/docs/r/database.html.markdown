@@ -118,6 +118,53 @@ output "ICD Etcd database connection string" {
 
 ```
 
+### Sample database instance by using `host_flavor` attribute
+An example to configure and deploy database by using `host_flavor` attribute.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "<your_database>" {
+  name              = "<your_database_name>"
+  plan              = "standard"
+  location          = "eu-gb"
+  service           = "databases-for-etcd"
+  resource_group_id = data.ibm_resource_group.group.id
+  tags              = ["tag1", "tag2"]
+
+  adminpassword                = "password12"
+
+  group {
+    group_id = "member"
+
+    host_flavor {
+      id = "b3c.8x32.encrypted"
+    }
+
+    disk {
+      allocation_mb = 256000
+    }
+  }
+
+  users {
+    name     = "user123"
+    password = "password12"
+  }
+
+  allowlist {
+    address     = "172.168.1.1/32"
+    description = "desc"
+  }
+}
+
+output "ICD Etcd database connection string" {
+  value = "http://${ibm_database.test_acc.ibm_database_connection.icd_conn}"
+}
+
+```
+
 ### Sample database instance by using `point_in_time_recovery`
 An example for configuring `point_in_time_recovery` time by using `ibm_database` resource.
 
@@ -666,6 +713,16 @@ Review the argument reference that you can specify for your resource.
     - `cpu` (Set, Optional)
       - Nested scheme for `cpu`:
         - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
+
+    - `host_flavor` (Set, Optional)
+      - Nested scheme for `host_flavor`:
+        - `id` - (Optional, String) **Beta feature:** The hosting infrastructure identifier. Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants.
+          - `b3c.4x16.encrypted`
+          - `b3c.8x32.encrypted`
+          - `m3c.8x64.encrypted`
+          - `b3c.16x64.encrypted`
+          - `b3c.32x128.encrypted`
+          - `m3c.30x240.encrypted`
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
