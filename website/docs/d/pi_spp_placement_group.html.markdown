@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_spp_placement_group"
@@ -11,7 +10,6 @@ description: |-
 Retrieve information about a shared processor pool placement group. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example Usage
-
 ```terraform
 data "ibm_pi_spp_placement_group" "ds_placement_group" {
   pi_spp_placement_group_id   = "my-spppg"
@@ -20,20 +18,18 @@ data "ibm_pi_spp_placement_group" "ds_placement_group" {
 ```
 
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
-  
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
-  
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
@@ -44,6 +40,6 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `members` - (List of strings) The list of shared processor pool IDs that are members of the placement group.
+- `members` - (List) List of shared processor pool IDs that are members of the placement group.
 - `name` - (String) The name of the shared processor pool placement group.
 - `policy` - (String) The value of the group's affinity policy. Valid values are affinity and anti-affinity.
