@@ -280,6 +280,29 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
+						"host_flavor": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor id",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor name",
+									},
+									"hosting_size": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor size",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -624,12 +647,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
-	icdId := flex.EscapeUrlParm(instance.ID)
 	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
 		ID: core.StringPtr(instance.ID),
 	}
@@ -651,7 +668,11 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))
 	}
 
-	groupList, err := icdClient.Groups().GetGroups(icdId)
+	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
+		ID: core.StringPtr(instance.ID),
+	}
+
+	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
