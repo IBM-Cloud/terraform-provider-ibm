@@ -108,7 +108,6 @@ const (
 	Attr_IsActive                                    = "is_active"
 	Attr_Jumbo                                       = "jumbo"
 	Attr_Key                                         = "key"
-	Attr_KeyCreationDate                             = "creation_date"
 	Attr_KeyID                                       = "key_id"
 	Attr_KeyName                                     = "name"
 	Attr_Keys                                        = "keys"
