@@ -74,12 +74,10 @@ In addition to all argument reference list, you can access the following attribu
   - `address` -  (String) The public IP address assigned to the VPN gateway member.
   - `private_address` -  (String) The private IP address assigned to the VPN gateway member.
   - `role` -  (String) The high availability role assigned to the VPN gateway member.
-  - `status` -  (String) The status of the VPN gateway member.
 - `public_ip_address` - (String) The IP address assigned to this VPN gateway.
 - `public_ip_address2` -  (String) The Second Public IP address assigned to this VPN gateway member.
 - `private_ip_address` -  (String) The Private IP address assigned to this VPN gateway member.
 - `private_ip_address2` -  (String) The Second Private IP address assigned to this VPN gateway.
-- `status` -  (String) The status of the VPN gateway. Supported values are **available**, **deleting**, **failed**, or **pending**.
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
   Nested scheme for `health_reasons`:

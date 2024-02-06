@@ -108,7 +108,6 @@ const (
 	Attr_IsActive                                    = "is_active"
 	Attr_Jumbo                                       = "jumbo"
 	Attr_Key                                         = "key"
-	Attr_KeyCreationDate                             = "creation_date"
 	Attr_KeyID                                       = "key_id"
 	Attr_KeyName                                     = "name"
 	Attr_Keys                                        = "keys"
@@ -288,6 +287,11 @@ const (
 	PIInstanceIbmiRDSUsers      = "pi_ibmi_rds_users"
 	OS_IBMI                     = "ibmi"
 
+	Attr_Status       = "status"
+	Attr_Progress     = "progress"
+	Attr_HealthStatus = "health_status"
+	Arg_PIInstanceSharedProcessorPool = "pi_shared_processor_pool"
+
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
 
@@ -297,6 +301,7 @@ const (
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 
+	PIConsoleLanguageCode               = "pi_language_code"
 	PICloudConnectionId                 = "cloud_connection_id"
 	PICloudConnectionStatus             = "status"
 	PICloudConnectionIBMIPAddress       = "ibm_ip_address"
@@ -321,7 +326,6 @@ const (
 
 	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
 	Attr_PIInstanceSharedProcessorPoolID = "shared_processor_pool_id"
-	Arg_PIInstanceSharedProcessorPool    = "pi_shared_processor_pool"
 
 	// Placement Group
 	PIPlacementGroupID      = "placement_group_id"

@@ -65,7 +65,6 @@ In addition to all argument references listed, you can access the following attr
 	- `private_ip_address` - (String) The private IP address assigned to the VPN gateway member. This property will be present only when the VPN gateway status is `available`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered. Same as `primary_ip.0.address`
 	- `public_ip_address` - (String) The public IP address assigned to the VPN gateway member. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
 	- `role` - (String) The high availability role assigned to the VPN gateway member.
-	- `status` - (String) The status of the VPN gateway member.
 
 - `mode` - (String) Route mode VPN gateway.
 
@@ -79,7 +78,6 @@ In addition to all argument references listed, you can access the following attr
 
 - `resource_type` - (String) The resource type.
 
-- `status` - (String) The status of the VPN gateway.
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
   Nested scheme for `health_reasons`:
