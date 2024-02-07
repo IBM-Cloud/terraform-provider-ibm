@@ -132,6 +132,34 @@ resource "ibm_resource_instance" "instance" {
 }
 ```
 
+### Example to provision a Planning Analytics service instance
+The following example enables you to create a service instance of IBM Planning Analytics with Watson. 
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+resource "ibm_resource_instance" "pa_automation_instance" {
+  name              = "planning-analytics-instance-1"
+  service           = "planning-analytics"
+  plan              = "enterprise"
+  location          = "global" 
+  resource_group_id = data.ibm_resource_group.group.id
+  parameters_json = <<PARAMETERS_JSON
+    {
+      "sublocation": "us-east-2",
+      "planning-analytics": {
+        "quota": {
+          "memory": 16,
+          "storage": 200,
+          "users" : 5
+        }
+      }
+    }
+  PARAMETERS_JSON
+}
+```
+
 ## Timeouts
 
 The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
