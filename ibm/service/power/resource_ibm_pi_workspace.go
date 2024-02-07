@@ -123,8 +123,8 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	}
 	d.Set(PIWorkspaceName, controller.Name)
 	wsDetails := map[string]interface{}{
-		WorkspaceCreationDate: controller.CreatedAt,
-		WorkspaceCRN:          controller.TargetCRN,
+		Attr_CreationDate: controller.CreatedAt,
+		Attr_CRN:          controller.TargetCRN,
 	}
 	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsDetails))
 

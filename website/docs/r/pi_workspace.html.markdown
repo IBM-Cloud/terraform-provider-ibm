@@ -42,7 +42,7 @@ Review the argument references that you can specify for your resource.
 - `pi_resource_group_id` - (Required, String) The ID of the resource group where you want to create the workspace. You can retrieve the value from data source `ibm_resource_group`.
 - `pi_plan` -  (Required, String) Plan associated with the offering; Valid values are `public` or `private`.
 - `crn` - (String) Workspace crn
-- `WorkspaceCreationDate` -(String) Workspace creation Date
+- `creation_date` -(String) Workspace creation Date
 ## Attribute reference
 
 In addition to all argument reference listed, you can access the following attribute references after your resource source is created.
