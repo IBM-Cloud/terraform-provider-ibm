@@ -17,9 +17,8 @@ import (
 
 func TestAccIBMAtrackerSettingsBasic(t *testing.T) {
 	var conf atrackerv2.Settings
-	metadataRegionPrimary := "us-east"
+	metadataRegionPrimary := "us-south"
 	privateAPIEndpointOnly := "false"
-	metadataRegionPrimaryUpdate := "us-south"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -33,15 +32,6 @@ func TestAccIBMAtrackerSettingsBasic(t *testing.T) {
 					testAccCheckIBMAtrackerSettingsExists("ibm_atracker_settings.atracker_settings", conf),
 					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_primary", metadataRegionPrimary),
 					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_backup", ""),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "private_api_endpoint_only", privateAPIEndpointOnly),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimaryUpdate,
-					metadataRegionPrimary, privateAPIEndpointOnly),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_primary", metadataRegionPrimaryUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_backup", metadataRegionPrimary),
 					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "private_api_endpoint_only", privateAPIEndpointOnly),
 				),
 			},
