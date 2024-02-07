@@ -287,9 +287,6 @@ const (
 	PIInstanceIbmiRDSUsers      = "pi_ibmi_rds_users"
 	OS_IBMI                     = "ibmi"
 
-	Attr_Status       = "status"
-	Attr_Progress     = "progress"
-	Attr_HealthStatus = "health_status"
 	Arg_PIInstanceSharedProcessorPool = "pi_shared_processor_pool"
 
 	PVMInstanceHealthOk      = "OK"
