@@ -166,6 +166,24 @@ Review the argument references that you can specify for your resource.
 When action is `redirect`, `target_url` should specify the `url` and `target_http_status_code` to specify the code used in the redirect response.
 When action is `https_redirect`, `target_https_redirect_listener` should specify the ID of the listener, `target_https_redirect_status_code` to specify the code used in the redirect response and `target_https_redirect_uri` to specify the target URI where traffic will be redirected.
 Network load balancer does not support `ibm_is_lb_listener_policy`.
+- `target` - (Optional, List) - If `action` is `forward`, the response is a `LoadBalancerPoolReference`- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.
+    Nested schema for **target**:
+	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (Computed, String) Link to documentation about deleted resources.
+	- `href` - (Optional, String) The pool's canonical URL.
+	- `http_status_code` - (Optional, Integer) The HTTP status code for this redirect. Allowable values are: `301`, `302`, `303`, `307`, `308`.
+	- `id` - (Optional, String) The unique identifier for this load balancer pool.
+	- `listener` - (Optional, List)
+	  Nested schema for **listener**:
+		- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (Computed, String) Link to documentation about deleted resources.
+		- `href` - (Optional, String) The listener's canonical URL.
+		- `id` - (Optional, String) The unique identifier for this load balancer listener.
+	- `name` - (Computed, String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
+	- `url` - (Optional, String) The redirect target URL.
+	  
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
