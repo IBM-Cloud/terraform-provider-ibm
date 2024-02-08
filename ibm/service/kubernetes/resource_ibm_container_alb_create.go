@@ -80,6 +80,11 @@ func ResourceIBMContainerAlbCreate() *schema.Resource {
 					"ibm_container_alb_create",
 					"cluster"),
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the resource group.",
+			},
 
 			//response
 			"alb_id": {
@@ -91,11 +96,13 @@ func ResourceIBMContainerAlbCreate() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
 			},
 			"disable_deployment": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Set to true if ALB needs to be disabled",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
 			},
 			"user_ip": {
 				Type:        schema.TypeString,
@@ -111,6 +118,17 @@ func ResourceIBMContainerAlbCreate() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "resize",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+			},
+			"state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB state",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the ALB",
 			},
 		},
 	}
@@ -132,6 +150,7 @@ func resourceIBMContainerClassicAlbCreate(d *schema.ResourceData, meta interface
 	// "type": "string", //mandatory
 	// "vlanID": "string", //mandatory
 	// "zone": "string" //mandatory
+	// "resource_group_id": "string"
 
 	params := v1.CreateALB{}
 

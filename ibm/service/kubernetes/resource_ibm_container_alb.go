@@ -14,6 +14,7 @@ import (
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
 func ResourceIBMContainerALB() *schema.Resource {
@@ -53,44 +54,64 @@ func ResourceIBMContainerALB() *schema.Resource {
 				Description: "IP assigned by the user",
 			},
 			"enable": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"disable_deployment"},
-				Description:   "set to true if ALB needs to be enabled",
-			},
-			"disable_deployment": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"enable"},
-				Description:   "Set to true if ALB needs to be disabled",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ALB name",
-			},
-			"replicas": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Desired number of ALB replicas.",
-			},
-			"resize": {
 				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicate whether resizing should be done",
+				Required:    true,
+				Description: "set to true if ALB needs to be enabled",
 			},
 			"zone": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB zone",
 			},
+			"state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB state",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the ALB",
+			},
+			"ingress_image": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of Ingress image that you want to use for your ALB deployment.",
+			},
+			"resource_group_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "ID of the resource group.",
+			},
+			"disable_deployment": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Set to true if ALB needs to be disabled",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB name",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+			},
+			"resize": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicate whether resizing should be done",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+			},
 			"region": {
 				Type:       schema.TypeString,
 				Optional:   true,
 				Deprecated: "This field is deprecated",
+			},
+			"replicas": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Desired number of ALB replicas.",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
 			},
 		},
 	}
@@ -102,24 +123,20 @@ func resourceIBMContainerALBCreate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	var userIP string
-	var enable, disableDeployment bool
+	var enable bool
 	albID := d.Get("alb_id").(string)
 	if v, ok := d.GetOkExists("enable"); ok {
 		enable = v.(bool)
-	} else if v, ok := d.GetOkExists("disable_deployment"); ok {
-		disableDeployment = v.(bool)
 	} else {
-		return fmt.Errorf("[ERROR] Provide either `enable` or `disable_deployment`")
+		return fmt.Errorf("[ERROR] Missing `enable` argument")
 	}
 
-	numOfInstances := "2"
 	if v, ok := d.GetOk("user_ip"); ok {
 		userIP = v.(string)
 	}
 	params := v1.ALBConfig{
-		ALBID:          albID,
-		Enable:         enable,
-		NumOfInstances: numOfInstances,
+		ALBID:  albID,
+		Enable: enable,
 	}
 	if userIP != "" {
 		params.ALBIP = userIP
@@ -135,12 +152,20 @@ func resourceIBMContainerALBCreate(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	err = albAPI.ConfigureALB(albID, params, disableDeployment, targetEnv)
-	if err != nil {
-		return err
+	if enable {
+		err = albAPI.EnableALB(albID, params, targetEnv)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = albAPI.DisableALB(albID, targetEnv)
+		if err != nil {
+			return err
+		}
 	}
+
 	d.SetId(albID)
-	_, err = waitForContainerALB(d, meta, albID, schema.TimeoutCreate, enable, disableDeployment)
+	_, err = waitForContainerALB(d, meta, albID, schema.TimeoutCreate, enable)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error waiting for create resource alb (%s) : %s", d.Id(), err)
 	}
@@ -174,6 +199,9 @@ func resourceIBMContainerALBRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("replicas", albConfig.NumOfInstances)
 	d.Set("resize", albConfig.Resize)
 	d.Set("user_ip", albConfig.ALBIP)
+	d.Set("state", &albConfig.State)
+	d.Set("status", &albConfig.Status)
+	d.Set("ingress_image", &albConfig.ALBBuild)
 	d.Set("zone", albConfig.Zone)
 	return nil
 }
@@ -187,7 +215,6 @@ func resourceIBMContainerALBUpdate(d *schema.ResourceData, meta interface{}) err
 
 	if d.HasChange("enable") {
 		enable := d.Get("enable").(bool)
-		disableDeployment := d.Get("disable_deployment").(bool)
 		albID := d.Id()
 		params := v1.ALBConfig{
 			ALBID:  albID,
@@ -204,11 +231,19 @@ func resourceIBMContainerALBUpdate(d *schema.ResourceData, meta interface{}) err
 			return fmt.Errorf("[ERROR] Error waiting for cluster resources availabilty (%s) : %s", d.Id(), err)
 		}
 
-		err = albAPI.ConfigureALB(albID, params, disableDeployment, targetEnv)
-		if err != nil {
-			return err
+		if enable {
+			err = albAPI.EnableALB(albID, params, targetEnv)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = albAPI.DisableALB(albID, targetEnv)
+			if err != nil {
+				return err
+			}
 		}
-		_, err = waitForContainerALB(d, meta, albID, schema.TimeoutUpdate, enable, disableDeployment)
+
+		_, err = waitForContainerALB(d, meta, albID, schema.TimeoutUpdate, enable)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error waiting for updating resource alb (%s) : %s", d.Id(), err)
 		}
@@ -217,7 +252,7 @@ func resourceIBMContainerALBUpdate(d *schema.ResourceData, meta interface{}) err
 	return resourceIBMContainerALBRead(d, meta)
 }
 
-func waitForContainerALB(d *schema.ResourceData, meta interface{}, albID, timeout string, enable, disableDeployment bool) (interface{}, error) {
+func waitForContainerALB(d *schema.ResourceData, meta interface{}, albID, timeout string, enable bool) (interface{}, error) {
 	albClient, err := meta.(conns.ClientSession).ContainerAPI()
 	if err != nil {
 		return false, err
@@ -242,7 +277,7 @@ func waitForContainerALB(d *schema.ResourceData, meta interface{}, albID, timeou
 				if !alb.Enable {
 					return alb, "pending", nil
 				}
-			} else if disableDeployment {
+			} else {
 				if alb.Enable {
 					return alb, "pending", nil
 				}

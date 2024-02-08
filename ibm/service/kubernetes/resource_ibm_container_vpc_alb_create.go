@@ -74,11 +74,13 @@ func ResourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Disable the ALB instance in the cluster",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
 			},
 			"load_balancer_hostname": {
 				Type:        schema.TypeString,
@@ -89,6 +91,7 @@ func ResourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "boolean value to resize the albs",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
 			},
 			"state": {
 				Type:        schema.TypeString,

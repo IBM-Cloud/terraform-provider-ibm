@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -363,7 +364,46 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"alb_config": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Represents the ALB cluster-wide options.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ingress_status_report": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Description: "Configure the ALB status reporting behavior.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Enable or disable the ALB status reporting.",
+									},
+									"ignored_erros": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "The list of the ignored errors.",
+									},
+								},
+							},
+						},
+						"health_checker": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Enable or disable the ALB in cluster health checker.",
+						},
+					},
+				},
+			},
 			"albs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -871,6 +911,55 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			csClient.Clusters().EnableImageSecurityEnforcement(clusterID, targetEnv)
 		} else {
 			csClient.Clusters().DisableImageSecurityEnforcement(clusterID, targetEnv)
+		}
+	}
+
+	if d.HasChange("alb_config") {
+		if alb_config, ok := d.GetOk("alb_config"); ok {
+			albConfigList := alb_config.([]interface{})
+
+			for _, l := range albConfigList {
+				albMap, _ := l.(map[string]interface{})
+				if healthChecker := albMap["health_checker"]; healthChecker != nil {
+					healthCheckerEnabled := healthChecker.(bool)
+
+					err = csClient.Albs().SetAlbClusterHealthCheckConfig(containerv2.ALBClusterHealthCheckConfig{
+						Cluster: d.Id(),
+						Enable:  healthCheckerEnabled,
+					}, targetEnv)
+					if err != nil {
+						return err
+					}
+				}
+				if ingressStatusReport := albMap["ingress_status_report"]; ingressStatusReport != nil {
+					ingressStatusReportConfig := ingressStatusReport.([]interface{})
+					for _, ingressStatusReportConfigMap := range ingressStatusReportConfig {
+						ingressStatusReportConfigMap, _ := ingressStatusReportConfigMap.(map[string]interface{})
+						if enabled := ingressStatusReportConfigMap["enabled"]; enabled != nil {
+							ingressStatusReportEnabled := enabled.(bool)
+							csClient.Albs().SetIngressStatusState(containerv2.IngressStatusState{
+								Cluster: d.Id(),
+								Enable:  ingressStatusReportEnabled,
+							}, targetEnv)
+							if err != nil {
+								return err
+							}
+						}
+						if ignoredErrors := ingressStatusReportConfigMap["ignored_erros"]; ignoredErrors != nil {
+
+							ignoredErrorCodes := flex.FlattenSet(ignoredErrors.(*schema.Set))
+							csClient.Albs().AddIgnoredIngressStatusErrors(containerv2.IgnoredIngressStatusErrors{
+								Cluster:       d.Id(),
+								IgnoredErrors: ignoredErrorCodes,
+							}, targetEnv)
+							if err != nil {
+								return err
+							}
+						}
+					}
+				}
+
+			}
 		}
 	}
 

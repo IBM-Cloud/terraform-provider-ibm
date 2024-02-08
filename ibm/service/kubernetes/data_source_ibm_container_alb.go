@@ -38,20 +38,42 @@ func DataSourceIBMContainerALB() *schema.Resource {
 				Computed:    true,
 				Description: "set to true if ALB needs to be enabled",
 			},
+			"zone": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB zone",
+			},
+			"state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB state",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the ALB",
+			},
+			"ingress_image": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of Ingress image that you want to use for your ALB deployment.",
+			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the resource group.",
+			},
 			"disable_deployment": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Set to true if ALB needs to be disabled",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
-			},
-			"zone": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ALB zone",
+				Deprecated:  "Remove this attribute's configuration as it no longer is used",
 			},
 		},
 	}
@@ -85,5 +107,8 @@ func dataSourceIBMContainerALBRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("resize", &albConfig.Resize)
 	d.Set("user_ip", &albConfig.ALBIP)
 	d.Set("zone", &albConfig.Zone)
+	d.Set("state", &albConfig.State)
+	d.Set("status", &albConfig.Status)
+	d.Set("ingress_image", &albConfig.ALBBuild)
 	return nil
 }

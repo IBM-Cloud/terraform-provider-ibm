@@ -57,6 +57,11 @@ func DataSourceIBMContainerVPCClusterALB() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"ingress_image": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of Ingress image that you want to use for your ALB deployment.",
+			},
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -90,6 +95,7 @@ func dataSourceIBMContainerVpcALBRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("status", albConfig.Status)
 	d.Set("state", albConfig.State)
 	d.Set("load_balancer_hostname", albConfig.LoadBalancerHostname)
+	d.Set("ingress_image", albConfig.AlbBuild)
 	d.SetId(albID)
 	return nil
 }

@@ -235,6 +235,8 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
+replace github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985 => github.com/szombi/bluemix-go v0.0.0-20240201095802-1b6be4d7d9d3
+
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
 
