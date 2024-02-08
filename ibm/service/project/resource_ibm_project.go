@@ -63,6 +63,11 @@ func ResourceIbmProject() *schema.Resource {
 							Required:    true,
 							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
 						},
+						"monitoring_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "A boolean flag to enable project monitoring.",
+						},
 					},
 				},
 			},
@@ -531,7 +536,7 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteProjectOptions.SetID(d.Id())
 
-	response, err := projectClient.DeleteProjectWithContext(context, deleteProjectOptions)
+	_, response, err := projectClient.DeleteProjectWithContext(context, deleteProjectOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteProjectWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteProjectWithContext failed %s\n%s", err, response))
@@ -550,6 +555,9 @@ func resourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]inter
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["monitoring_enabled"] != nil {
+		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
 	}
 	return model, nil
 }
@@ -773,6 +781,9 @@ func resourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
+	if modelMap["monitoring_enabled"] != nil {
+		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
+	}
 	return model, nil
 }
 
@@ -781,6 +792,7 @@ func resourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Project
 	modelMap["name"] = model.Name
 	modelMap["destroy_on_delete"] = model.DestroyOnDelete
 	modelMap["description"] = model.Description
+	modelMap["monitoring_enabled"] = model.MonitoringEnabled
 	return modelMap, nil
 }
 

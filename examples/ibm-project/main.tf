@@ -27,6 +27,7 @@ resource "ibm_project" "project_instance" {
     name = "My static website"
     description = "Sample static website test using the IBM catalog deployable architecture"
     destroy_on_delete = true
+    monitoring_enabled = true
   }
 }
 
