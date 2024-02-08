@@ -29,10 +29,8 @@ func TestAccIBMPISnapshotDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPISnapshotDataSourceConfig() string {
 	return fmt.Sprintf(`
-	
-data "ibm_pi_pvm_snapshots" "testacc_pi_snapshots" {
-    pi_instance_name = "%s"
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_instance_name, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_pvm_snapshots" "testacc_pi_snapshots" {
+			pi_instance_name = "%s"
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_instance_name, acc.Pi_cloud_instance_id)
 }

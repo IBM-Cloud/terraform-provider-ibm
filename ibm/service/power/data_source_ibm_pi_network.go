@@ -4,82 +4,97 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPINetwork() *schema.Resource {
-
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPINetworkRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PINetworkName: {
-				Type:         schema.TypeString,
+			// Arguments
+			Arg_CloudInstanceID: {
+				Description:  "The GUID of the service instance associated with an account.",
 				Required:     true,
-				Description:  "Network Name to be used for pvminstances",
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
-				Type:         schema.TypeString,
+			Arg_NetworkName: {
+				Description:  "The unique identifier or name of a network.",
 				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			// Computed Attributes
-			"cidr": {
-				Type:     schema.TypeString,
-				Computed: true,
+			// Attributes
+			Attr_AccessConfig: {
+				Computed:    true,
+				Description: "The network communication configuration option of the network (for satellite locations only).",
+				Type:        schema.TypeString,
 			},
-			"type": {
-				Type:     schema.TypeString,
-				Computed: true,
+			Attr_AvailableIPCount: {
+				Computed:    true,
+				Description: "The total number of IP addresses that you have in your network.",
+				Type:        schema.TypeFloat,
 			},
-			"vlan_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+			Attr_CIDR: {
+				Computed:    true,
+				Description: "The CIDR of the network.",
+				Type:        schema.TypeString,
 			},
-			"gateway": {
-				Type:     schema.TypeString,
-				Computed: true,
+			Attr_DNS: {
+				Computed:    true,
+				Description: "The DNS Servers for the network.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
 			},
-			"available_ip_count": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+			Attr_Gateway: {
+				Computed:    true,
+				Description: "The network gateway that is attached to your network.",
+				Type:        schema.TypeString,
 			},
-			"used_ip_count": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+			Attr_Jumbo: {
+				Computed:    true,
+				Deprecated:  "This field is deprecated, use mtu instead.",
+				Description: "MTU Jumbo option of the network (for multi-zone locations only).",
+				Type:        schema.TypeBool,
 			},
-			"used_ip_percent": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+			Attr_MTU: {
+				Computed:    true,
+				Description: "Maximum Transmission Unit option of the network.",
+				Type:        schema.TypeInt,
 			},
-			"dns": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+			Attr_Name: {
+				Computed:    true,
+				Deprecated:  "This field is deprecated, use pi_network_name instead.",
+				Description: "The unique identifier or name of a network.",
+				Type:        schema.TypeString,
 			},
-			"jumbo": {
-				Type:       schema.TypeBool,
-				Computed:   true,
-				Deprecated: "This field is deprecated, use mtu instead.",
+			Attr_Type: {
+				Computed:    true,
+				Description: "The type of network.",
+				Type:        schema.TypeString,
 			},
-			"mtu": {
-				Type:     schema.TypeInt,
-				Computed: true,
+			Attr_UsedIPCount: {
+				Computed:    true,
+				Description: "The number of used IP addresses.",
+				Type:        schema.TypeFloat,
 			},
-			"access_config": {
-				Type:     schema.TypeString,
-				Computed: true,
+			Attr_UsedIPPercent: {
+				Computed:    true,
+				Description: "The percentage of IP addresses used.",
+				Type:        schema.TypeFloat,
+			},
+			Attr_VLanID: {
+				Computed:    true,
+				Description: "The VLAN ID that the network is connected to.",
+				Type:        schema.TypeInt,
 			},
 		},
 	}
@@ -91,7 +106,7 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string))
@@ -100,32 +115,34 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	if networkdata.Cidr != nil {
-		d.Set("cidr", networkdata.Cidr)
-	}
-	if networkdata.Type != nil {
-		d.Set("type", networkdata.Type)
-	}
-	d.Set("gateway", networkdata.Gateway)
-	if networkdata.VlanID != nil {
-		d.Set("vlan_id", networkdata.VlanID)
-	}
+	d.Set(Attr_AccessConfig, networkdata.AccessConfig)
 	if networkdata.IPAddressMetrics.Available != nil {
-		d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
+		d.Set(Attr_AvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}
-	if networkdata.IPAddressMetrics.Used != nil {
-		d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
-	}
-	if networkdata.IPAddressMetrics.Utilization != nil {
-		d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
+	if networkdata.Cidr != nil {
+		d.Set(Attr_CIDR, networkdata.Cidr)
 	}
 	if len(networkdata.DNSServers) > 0 {
-		d.Set("dns", networkdata.DNSServers)
+		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
-	d.Set("jumbo", networkdata.Jumbo)
-	d.Set("mtu", networkdata.Mtu)
-	d.Set("access_config", networkdata.AccessConfig)
+	d.Set(Attr_Gateway, networkdata.Gateway)
+	d.Set(Attr_Jumbo, networkdata.Jumbo)
+	d.Set(Attr_MTU, networkdata.Mtu)
+	if networkdata.Name != nil {
+		d.Set(Attr_Name, networkdata.Name)
+	}
+	if networkdata.Type != nil {
+		d.Set(Attr_Type, networkdata.Type)
+	}
+	if networkdata.IPAddressMetrics.Used != nil {
+		d.Set(Attr_UsedIPCount, networkdata.IPAddressMetrics.Used)
+	}
+	if networkdata.IPAddressMetrics.Utilization != nil {
+		d.Set(Attr_UsedIPPercent, networkdata.IPAddressMetrics.Utilization)
+	}
+	if networkdata.VlanID != nil {
+		d.Set(Attr_VLanID, networkdata.VlanID)
+	}
 
 	return nil
-
 }

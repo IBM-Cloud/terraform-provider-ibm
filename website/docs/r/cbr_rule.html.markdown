@@ -101,7 +101,7 @@ resource "ibm_cbr_rule" "cbr_rule" {
 Review the argument reference that you can specify for your resource.
 
 * `contexts` - (Optional, List) The contexts this rule applies to.
-  * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
+  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 Nested scheme for **contexts**:
 	* `attributes` - (Required, List) The attributes.
 	  * Constraints: The minimum length is `1` item.
