@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -57,18 +58,56 @@ const (
 )
 
 const (
-	redisRBACRoleRegexPattern = `([+-][a-z]+\s?)+`
+	redisRBACRoleRegexPattern = `[+-]@(?P<category>[a-z]+)`
 )
 
 type DatabaseUser struct {
 	Username string
 	Password string
-	Role     string
+	Role     *string
 	Type     string
+}
+
+type databaseUserValidationError struct {
+	user *DatabaseUser
+	errs []error
+}
+
+func (e *databaseUserValidationError) Error() string {
+	if len(e.errs) == 0 {
+		return ""
+	}
+
+	var b []byte
+	for i, err := range e.errs {
+		if i > 0 {
+			b = append(b, '\n')
+		}
+		b = append(b, err.Error()...)
+	}
+
+	return fmt.Sprintf("database user (%s) validation error:\n%s", e.user.Username, string(b))
+}
+
+func (e *databaseUserValidationError) Unwrap() error {
+	if e == nil || len(e.errs) == 0 {
+		return nil
+	}
+
+	// only return the first
+	return e.errs[0]
 }
 
 type userChange struct {
 	Old, New *DatabaseUser
+}
+
+func redisRBACAllowedRoles() []string {
+	return []string{"all", "admin", "read", "write"}
+}
+
+func opsManagerRoles() []string {
+	return []string{"group_read_only", "group_data_access_admin"}
 }
 
 func retry(f func() error) (err error) {
@@ -296,11 +335,10 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							ValidateFunc: validation.StringInSlice([]string{"database", "ops_manager", "read_only_replica"}, false),
 						},
 						"role": {
-							Description:  "User role. Only available for ops_manager user type.",
-							Type:         schema.TypeString,
-							Optional:     true,
-							Sensitive:    false,
-							ValidateFunc: validation.StringInSlice([]string{"group_read_only", "group_data_access_admin"}, false),
+							Description: "User role. Only available for ops_manager user type and Redis 6.0 and above.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   false,
 						},
 					},
 				},
@@ -492,6 +530,19 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 								},
 							},
 						},
+						"host_flavor": {
+							Optional: true,
+							Type:     schema.TypeSet,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -620,6 +671,29 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Can the disk size be scaled down as well as up",
+									},
+								},
+							},
+						},
+						"host_flavor": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor id",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor name",
+									},
+									"hosting_size": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor size",
 									},
 								},
 							},
@@ -893,6 +967,7 @@ type Params struct {
 	Memory              int     `json:"members_memory_allocation_mb,omitempty"`
 	Disk                int     `json:"members_disk_allocation_mb,omitempty"`
 	CPU                 int     `json:"members_cpu_allocation_count,omitempty"`
+	HostFlavor          string  `json:"members_host_flavor,omitempty"`
 	KeyProtectInstance  string  `json:"disk_encryption_instance_crn,omitempty"`
 	ServiceEndpoints    string  `json:"service-endpoints,omitempty"`
 	BackupID            string  `json:"backup-id,omitempty"`
@@ -903,11 +978,12 @@ type Params struct {
 }
 
 type Group struct {
-	ID      string
-	Members *GroupResource
-	Memory  *GroupResource
-	Disk    *GroupResource
-	CPU     *GroupResource
+	ID         string
+	Members    *GroupResource
+	Memory     *GroupResource
+	Disk       *GroupResource
+	CPU        *GroupResource
+	HostFlavor *HostFlavorGroupResource
 }
 
 type GroupResource struct {
@@ -919,6 +995,10 @@ type GroupResource struct {
 	IsAdjustable bool
 	IsOptional   bool
 	CanScaleDown bool
+}
+
+type HostFlavorGroupResource struct {
+	ID string
 }
 
 func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
@@ -1174,6 +1254,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if memberGroup.CPU != nil {
 				params.CPU = memberGroup.CPU.Allocation * initialNodeCount
 			}
+
+			if memberGroup.HostFlavor != nil {
+				params.HostFlavor = memberGroup.HostFlavor.ID
+			}
 		}
 	}
 	if version, ok := d.GetOk("version"); ok {
@@ -1278,8 +1362,11 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
+			if g.HostFlavor != nil && g.HostFlavor.ID != currentGroup.HostFlavor.ID {
+				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
+			}
 
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
 				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
 					ID:      instance.ID,
 					GroupID: &g.ID,
@@ -1330,23 +1417,23 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		adminUser := deployment.AdminUsernames["database"]
 
-		user := &clouddatabasesv5.APasswordSettingUser{
+		user := &clouddatabasesv5.UserUpdatePasswordSetting{
 			Password: &adminPassword,
 		}
 
-		changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+		updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
 			ID:       core.StringPtr(instanceID),
 			UserType: core.StringPtr("database"),
 			Username: core.StringPtr(adminUser),
 			User:     user,
 		}
 
-		changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+		updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
+			return diag.FromErr(fmt.Errorf("[ERROR] UpdateUser (%s) failed %s\n%s", *updateUserOptions.Username, err, response))
 		}
 
-		taskID := *changeUserPasswordResponse.Task.ID
+		taskID := *updateUserResponse.Task.ID
 		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
 
 		if err != nil {
@@ -1631,11 +1718,14 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	d.Set("adminuser", deployment.AdminUsernames["database"])
 	d.Set("version", deployment.Version)
 
-	groupList, err := icdClient.Groups().GetGroups(icdId)
+	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
+		ID: core.StringPtr(instanceID),
+	}
+	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database groups: %s", err))
 	}
-	if groupList.Groups[0].Members.AllocationCount == 0 {
+	if len(groupList.Groups) == 0 || groupList.Groups[0].Members == nil || groupList.Groups[0].Members.AllocationCount == nil || *groupList.Groups[0].Members.AllocationCount == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] This database appears to have have 0 members. Unable to proceed"))
 	}
 
@@ -1844,8 +1934,11 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
+			if group.HostFlavor != nil && group.HostFlavor.ID != currentGroup.HostFlavor.ID {
+				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
+			}
 
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
 				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
 					ID:      &instanceID,
 					GroupID: &group.ID,
@@ -1919,23 +2012,24 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	if d.HasChange("adminpassword") {
 		adminUser := d.Get("adminuser").(string)
 		password := d.Get("adminpassword").(string)
-		user := &clouddatabasesv5.APasswordSettingUser{
+
+		user := &clouddatabasesv5.UserUpdatePasswordSetting{
 			Password: &password,
 		}
 
-		changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+		updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
 			ID:       core.StringPtr(instanceID),
 			UserType: core.StringPtr("database"),
 			Username: core.StringPtr(adminUser),
 			User:     user,
 		}
 
-		changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+		updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
+			return diag.FromErr(fmt.Errorf("[ERROR] UpdateUser (%s) failed %s\n%s", *updateUserOptions.Username, err, response))
 		}
 
-		taskID := *changeUserPasswordResponse.Task.ID
+		taskID := *updateUserResponse.Task.ID
 		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
 		if err != nil {
@@ -2256,7 +2350,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 				return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
+			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, cdbErr)
 		}
 		return nil
 	})
@@ -2640,6 +2734,11 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 			CanScaleDown: *g.CPU.CanScaleDown,
 		}
 
+		group.HostFlavor = &HostFlavorGroupResource{}
+		if g.HostFlavor != nil {
+			group.HostFlavor.ID = *g.HostFlavor.ID
+		}
+
 		groups = append(groups, group)
 	}
 
@@ -2685,6 +2784,13 @@ func expandGroups(_groups []interface{}) []*Group {
 				}
 			}
 
+			if hostflavorSet, ok := tfGroup["host_flavor"].(*schema.Set); ok {
+				hostflavor := hostflavorSet.List()
+				if len(hostflavor) != 0 {
+					group.HostFlavor = &HostFlavorGroupResource{ID: hostflavor[0].(map[string]interface{})["id"].(string)}
+				}
+			}
+
 			groups = append(groups, &group)
 		}
 	}
@@ -2720,6 +2826,13 @@ func validateGroupScaling(groupId string, resourceName string, value int, resour
 	}
 	if value < resource.Allocation/nodeCount && !resource.CanScaleDown {
 		return fmt.Errorf("can not scale %s group %s below %d to %d", groupId, resourceName, resource.Allocation/nodeCount, value)
+	}
+	return nil
+}
+
+func validateGroupHostFlavor(groupId string, resourceName string, group *Group) error {
+	if group.CPU != nil || group.Memory != nil {
+		return fmt.Errorf("%s must not be set with cpu and memory", resourceName)
 	}
 	return nil
 }
@@ -2786,6 +2899,13 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 
+			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
+				err = validateGroupHostFlavor(groupId, "host_flavor", group)
+				if err != nil {
+					return err
+				}
+			}
+
 			if group.Memory != nil {
 				err = validateGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
@@ -2813,6 +2933,28 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	service := diff.Get("service").(string)
+
+	var versionStr string
+	var version int
+
+	if _version, ok := diff.GetOk("version"); ok {
+		versionStr = _version.(string)
+	}
+
+	if versionStr == "" {
+		// Latest Version
+		version = 0
+	} else {
+		_v, err := strconv.ParseFloat(versionStr, 64)
+
+		if err != nil {
+			return fmt.Errorf("invalid version: %s", versionStr)
+		}
+
+		version = int(_v)
+	}
+
 	oldUsers, newUsers := diff.GetChange("users")
 	userChanges := expandUserChanges(oldUsers.(*schema.Set).List(), newUsers.(*schema.Set).List())
 
@@ -2822,14 +2964,34 @@ func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interf
 		}
 
 		if change.isCreate() || change.isUpdate() {
-			err = change.New.Validate()
+			err = change.New.ValidatePassword()
+
+			if err != nil {
+				return err
+			}
+
+			// TODO: Use Capability API
+			// RBAC roles supported for Redis 6.0 and above
+			if service == "databases-for-redis" && !(version > 0 && version < 6) {
+				err = change.New.ValidateRBACRole()
+			} else if service == "databases-for-mongodb" && change.New.Type == "ops_manager" {
+				err = change.New.ValidateOpsManagerRole()
+			} else {
+				if change.New.Role != nil {
+					if *change.New.Role != "" {
+						err = errors.New("role is not supported for this deployment or user type")
+						err = &databaseUserValidationError{user: change.New, errs: []error{err}}
+					}
+				}
+			}
+
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return nil
+	return
 }
 
 func expandUsers(_users []interface{}) []*DatabaseUser {
@@ -2845,8 +3007,15 @@ func expandUsers(_users []interface{}) []*DatabaseUser {
 			user := DatabaseUser{
 				Username: tfUser["name"].(string),
 				Password: tfUser["password"].(string),
-				Role:     tfUser["role"].(string),
 				Type:     tfUser["type"].(string),
+			}
+
+			// NOTE: cannot differentiate nil vs empty string
+			// https://github.com/hashicorp/terraform-plugin-sdk/issues/741
+			if role, ok := tfUser["role"].(string); ok {
+				if tfUser["role"] != "" {
+					user.Role = &role
+				}
 			}
 
 			users = append(users, &user)
@@ -2875,8 +3044,8 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 
 	userChanges = make([]*userChange, 0, len(userChangeMap))
 
-	for _, user := range userChangeMap {
-		userChanges = append(userChanges, user)
+	for _, change := range userChangeMap {
+		userChanges = append(userChanges, change)
 	}
 
 	return userChanges
@@ -2913,9 +3082,9 @@ func (u *DatabaseUser) Create(instanceID string, d *schema.ResourceData, meta in
 		Password: core.StringPtr(u.Password),
 	}
 
-	// User Role only for ops_manager user type
-	if u.Type == "ops_manager" && u.Role != "" {
-		userEntry.Role = core.StringPtr(u.Role)
+	// User Role only for ops_manager user type and Redis 6.0 and above
+	if u.Role != nil {
+		userEntry.Role = u.Role
 	}
 
 	createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
@@ -2947,30 +3116,34 @@ func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta in
 	}
 
 	// Attempt to update user password
-	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
+	user := &clouddatabasesv5.UserUpdate{
 		Password: core.StringPtr(u.Password),
 	}
 
-	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+	if u.Role != nil {
+		user.Role = u.Role
+	}
+
+	updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
 		ID:       &instanceID,
 		UserType: core.StringPtr(u.Type),
 		Username: core.StringPtr(u.Username),
-		User:     passwordSettingUser,
+		User:     user,
 	}
 
-	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+	updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 
 	// user was found but an error occurs while triggering task
 	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
-		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %w\n%s", *changeUserPasswordOptions.Username, err, response)
+		return fmt.Errorf("[ERROR] UpdateUser (%s) failed %w\n%s", *updateUserOptions.Username, err, response)
 	}
 
-	taskID := *changeUserPasswordResponse.Task.ID
+	taskID := *updateUserResponse.Task.ID
 	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
 	if err != nil {
 		return fmt.Errorf(
-			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *changeUserPasswordOptions.Username, err)
+			"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %w", instanceID, *updateUserOptions.Username, err)
 	}
 
 	return nil
@@ -3011,7 +3184,7 @@ func (u *DatabaseUser) isUpdatable() bool {
 	return u.Type != "ops_manager"
 }
 
-func (u *DatabaseUser) Validate() error {
+func (u *DatabaseUser) ValidatePassword() (err error) {
 	var errs []error
 
 	var specialChars string
@@ -3063,24 +3236,84 @@ func (u *DatabaseUser) Validate() error {
 	}
 
 	if len(errs) == 0 {
-		return nil
+		return
 	}
 
-	var b []byte
-	for i, err := range errs {
-		if i > 0 {
-			b = append(b, '\n')
+	return &databaseUserValidationError{user: u, errs: errs}
+}
+
+func (u *DatabaseUser) ValidateRBACRole() (err error) {
+	var errs []error
+
+	if u.Role == nil || *u.Role == "" {
+		return
+	}
+
+	if u.Type != "database" {
+		errs = append(errs, errors.New("role is only allowed for the database user"))
+		return &databaseUserValidationError{user: u, errs: errs}
+	}
+
+	redisRBACCategoryRegex := regexp.MustCompile(redisRBACRoleRegexPattern)
+	redisRBACRoleRegex := regexp.MustCompile(fmt.Sprintf(`^(%s\s?)+$`, redisRBACRoleRegexPattern))
+
+	if !redisRBACRoleRegex.MatchString(*u.Role) {
+		errs = append(errs, errors.New("role must be in the format +@category or -@category"))
+	}
+
+	matches := redisRBACCategoryRegex.FindAllStringSubmatch(*u.Role, -1)
+
+	for _, match := range matches {
+		valid := false
+		role := match[1]
+		for _, allowed := range redisRBACAllowedRoles() {
+			if role == allowed {
+				valid = true
+				break
+			}
 		}
-		b = append(b, err.Error()...)
+
+		if !valid {
+			errs = append(errs, fmt.Errorf("role must contain only allowed categories: %s", strings.Join(redisRBACAllowedRoles()[:], ",")))
+			break
+		}
 	}
 
-	return fmt.Errorf("database user (%s) validation error:\n%w", u.Username, errors.New(string(b)))
+	if len(errs) == 0 {
+		return
+	}
+
+	return &databaseUserValidationError{user: u, errs: errs}
+}
+
+func (u *DatabaseUser) ValidateOpsManagerRole() (err error) {
+	if u.Role == nil {
+		return
+	}
+
+	if u.Type != "ops_manager" {
+		return
+	}
+
+	if *u.Role == "" {
+		return
+	}
+
+	for _, str := range opsManagerRoles() {
+		if *u.Role == str {
+			return
+		}
+	}
+
+	err = fmt.Errorf("role must be a valid ops_manager role: %s", strings.Join(opsManagerRoles()[:], ","))
+
+	return &databaseUserValidationError{user: u, errs: []error{err}}
 }
 
 func DatabaseUserPasswordValidator(userType string) schema.SchemaValidateFunc {
 	return func(i interface{}, k string) (warnings []string, errors []error) {
 		user := &DatabaseUser{Username: "admin", Type: userType, Password: i.(string)}
-		err := user.Validate()
+		err := user.ValidatePassword()
 		if err != nil {
 			errors = append(errors, err)
 		}

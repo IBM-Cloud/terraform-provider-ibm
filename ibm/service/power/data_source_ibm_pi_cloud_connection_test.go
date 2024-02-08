@@ -30,9 +30,8 @@ func TestAccIBMPICloudConnectionDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPICloudConnectionDataSourceConfig() string {
 	return fmt.Sprintf(`
-	data "ibm_pi_cloud_connection" "example" {
-		pi_cloud_connection_name 	= "%s"
-		pi_cloud_instance_id 		= "%s"
-	}
-	`, acc.PiCloudConnectionName, acc.Pi_cloud_instance_id)
+		data "ibm_pi_cloud_connection" "example" {
+			pi_cloud_connection_name 	= "%s"
+			pi_cloud_instance_id 		= "%s"
+		}`, acc.PiCloudConnectionName, acc.Pi_cloud_instance_id)
 }

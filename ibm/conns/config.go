@@ -1210,9 +1210,12 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 
 // MQ on Cloud
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
-	sessionMqcloudClient := session.mqcloudClient
-	sessionMqcloudClient.EnableRetries(0, 0)
-	return session.mqcloudClient, session.mqcloudClientErr
+	if session.mqcloudClientErr != nil {
+		sessionMqcloudClient := session.mqcloudClient
+		sessionMqcloudClient.EnableRetries(0, 0)
+		return session.mqcloudClient, session.mqcloudClientErr
+	}
+	return session.mqcloudClient.Clone(), nil
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1881,11 +1884,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.pushServiceClient = pnclient
+
 	// event notifications
 	enurl := fmt.Sprintf("https://%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
-	if c.Visibility == "private" {
-		session.eventNotificationsApiClientErr = fmt.Errorf("Event Notifications Service does not support private endpoints")
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		enurl = fmt.Sprintf("https://private.%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
 	}
+
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		enurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT", c.Region, enurl)
 	}
@@ -3266,23 +3272,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		mqCloudURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT", c.Region, mqCloudURL)
 	}
-
+	accept_language := os.Getenv("IBMCLOUD_MQCLOUD_ACCEPT_LANGUAGE")
 	mqcloudClientOptions := &mqcloudv1.MqcloudV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
+		Authenticator:  authenticator,
+		AcceptLanguage: core.StringPtr(accept_language),
+		URL:            EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
 	}
 
 	// Construct the service client for MQ Cloud.
 	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
-	if err != nil {
-		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ Cloud service: %q", err)
-	} else {
+	if err == nil {
 		// Enable retries for API calls
 		session.mqcloudClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.mqcloudClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	} else {
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ on Cloud service: %q", err)
 	}
 
 	// Construct the service options.

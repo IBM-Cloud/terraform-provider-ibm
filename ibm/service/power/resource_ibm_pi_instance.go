@@ -83,31 +83,30 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Maximum memory size",
 			},
 			helpers.PIInstanceVolumeIds: {
-				Type:             schema.TypeSet,
-				Optional:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "List of PI volumes",
+				Type:        schema.TypeSet,
+				ForceNew:    true,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of PI volumes",
 			},
-
 			helpers.PIInstanceUserData: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Base64 encoded data to be passed in for invoking a cloud init script",
 			},
-
 			helpers.PIInstanceStorageType: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Storage type for server deployment",
+				Description: "Storage type for server deployment; if pi_storage_type is not provided the storage type will default to tier3",
 			},
 			PIInstanceStoragePool: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Storage Pool for server deployment; if provided then pi_affinity_policy and pi_storage_type will be ignored",
+				Description: "Storage Pool for server deployment; if provided then pi_storage_pool_affinity will be ignored; Only valid when you deploy one of the IBM supplied stock images. Storage pool for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage pool the image was created in",
 			},
 			PIAffinityPolicy: {
 				Type:         schema.TypeString,
@@ -154,10 +153,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
 			},
 			PIInstanceNetwork: {
-				Type:             schema.TypeList,
-				Required:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "List of one or more networks to attach to the instance",
+				Type:        schema.TypeList,
+				ForceNew:    true,
+				Required:    true,
+				Description: "List of one or more networks to attach to the instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip_address": {
@@ -190,13 +189,14 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
 			Arg_PIInstanceSharedProcessorPool: {
 				Type:          schema.TypeString,
-				Optional:      true,
 				ForceNew:      true,
+				Optional:      true,
 				ConflictsWith: []string{PISAPInstanceProfileID},
 				Description:   "Shared Processor Pool the instance is deployed on",
 			},
@@ -247,10 +247,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description:   "Instance processor type",
 			},
 			helpers.PIInstanceSSHKeyName: {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "SSH key name",
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "SSH key name",
 			},
 			helpers.PIInstanceMemory: {
 				Type:          schema.TypeFloat,
@@ -261,6 +261,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			PIInstanceDeploymentType: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Custom Deployment Type Information",
 			},
@@ -272,23 +273,27 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			PISAPInstanceDeploymentType: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Custom SAP Deployment Type Information",
 			},
 			helpers.PIInstanceSystemType: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI Instance system type",
 			},
 			helpers.PIInstanceReplicants: {
 				Type:        schema.TypeInt,
+				ForceNew:    true,
 				Optional:    true,
 				Default:     1,
 				Description: "PI Instance replicas count",
 			},
 			helpers.PIInstanceReplicationPolicy: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity", "none"}),
 				Default:      "none",
@@ -296,6 +301,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceReplicationScheme: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"prefix", "suffix"}),
 				Default:      "suffix",

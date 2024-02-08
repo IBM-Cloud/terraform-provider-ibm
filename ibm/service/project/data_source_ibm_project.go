@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project
@@ -85,6 +85,11 @@ func DataSourceIbmProject() *schema.Resource {
 				Computed:    true,
 				Description: "The project status value.",
 			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A URL.",
+			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -137,15 +142,15 @@ func DataSourceIbmProject() *schema.Resource {
 							Description: "The name and description of a project configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The configuration name. It is unique within the account across projects and regions.",
-									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "A project configuration description.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The configuration name. It is unique within the account across projects and regions.",
 									},
 								},
 							},
@@ -187,6 +192,11 @@ func DataSourceIbmProject() *schema.Resource {
 									},
 								},
 							},
+						},
+						"deployment_model": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The configuration type.",
 						},
 					},
 				},
@@ -256,15 +266,15 @@ func DataSourceIbmProject() *schema.Resource {
 							Description: "The environment definition used in the project collection.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The name of the environment.  It is unique within the account across projects and regions.",
-									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the environment.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the environment.  It is unique within the account across projects and regions.",
 									},
 								},
 							},
@@ -283,15 +293,15 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the project.  It is unique within the account across regions.",
 						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
-						},
 						"destroy_on_delete": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
 						},
 					},
 				},
@@ -354,6 +364,10 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	if err = d.Set("state", project.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+
+	if err = d.Set("href", project.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
@@ -446,7 +460,7 @@ func dataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfi
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["modified_at"] = model.ModifiedAt.String()
 	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
+	definitionMap, err := dataSourceIbmProjectProjectConfigSummaryDefinitionToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
@@ -456,6 +470,9 @@ func dataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfi
 		return modelMap, err
 	}
 	modelMap["project"] = []map[string]interface{}{projectMap}
+	if model.DeploymentModel != nil {
+		modelMap["deployment_model"] = model.DeploymentModel
+	}
 	return modelMap, nil
 }
 
@@ -467,13 +484,13 @@ func dataSourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Proje
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model *projectv1.ProjectConfigDefinitionNameDescription) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectConfigSummaryDefinitionToMap(model *projectv1.ProjectConfigSummaryDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
 	}
 	return modelMap, nil
 }
@@ -507,7 +524,7 @@ func dataSourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.Project
 	modelMap["project"] = []map[string]interface{}{projectMap}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model.Definition)
+	definitionMap, err := dataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
@@ -515,23 +532,19 @@ func dataSourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.Project
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model *projectv1.EnvironmentDefinitionNameDescription) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *projectv1.ProjectEnvironmentSummaryDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
+	modelMap["name"] = model.Name
 	return modelMap, nil
 }
 
 func dataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
-	if model.Description != nil {
-		modelMap["description"] = model.Description
-	}
 	modelMap["destroy_on_delete"] = model.DestroyOnDelete
+	modelMap["description"] = model.Description
 	return modelMap, nil
 }
