@@ -1884,11 +1884,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.pushServiceClient = pnclient
+
 	// event notifications
 	enurl := fmt.Sprintf("https://%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
-	if c.Visibility == "private" {
-		session.eventNotificationsApiClientErr = fmt.Errorf("Event Notifications Service does not support private endpoints")
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		enurl = fmt.Sprintf("https://private.%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
 	}
+
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		enurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT", c.Region, enurl)
 	}

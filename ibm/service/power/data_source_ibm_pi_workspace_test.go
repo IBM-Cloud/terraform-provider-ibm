@@ -25,10 +25,10 @@ func TestAccIBMPIWorkspaceDataSourceBasic(t *testing.T) {
 		},
 	})
 }
+
 func testAccCheckIBMPIWorkspaceDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_workspace" "test" {
 			pi_cloud_instance_id = "%s"
-		}
-	`, acc.Pi_cloud_instance_id)
+		}`, acc.Pi_cloud_instance_id)
 }
