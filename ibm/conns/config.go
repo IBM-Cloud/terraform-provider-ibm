@@ -119,7 +119,6 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
-	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv1"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
@@ -283,7 +282,6 @@ type ClientSession interface {
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
-	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 	SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
@@ -540,7 +538,6 @@ type clientSession struct {
 	// Resource Controller Option
 	resourceControllerErr   error
 	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
-	secretsManagerClientV1  *secretsmanagerv1.SecretsManagerV1
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -1084,11 +1081,6 @@ func (session clientSession) EnterpriseManagementV1() (*enterprisemanagementv1.E
 // ResourceController Session
 func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error) {
 	return sess.resourceControllerAPI, sess.resourceControllerErr
-}
-
-// IBM Cloud Secrets Manager V1 Basic API
-func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
-	return session.secretsManagerClientV1, session.secretsManagerClientErr
 }
 
 // IBM Cloud Secrets Manager V2 Basic API
@@ -3086,24 +3078,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.resourceControllerAPI = resourceControllerClient
-
-	// SECRETS MANAGER Service
-	secretsManagerClientOptions := &secretsmanagerv1.SecretsManagerV1Options{
-		Authenticator: authenticator,
-	}
-	/// Construct the service client.
-	session.secretsManagerClientV1, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
-	if err != nil {
-		session.secretsManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
-	}
-	if session.secretsManagerClient != nil && session.secretsManagerClient.Service != nil {
-		// Enable retries for API calls
-		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
 
 	// SECRETS MANAGER Service V2
 	// Construct an "options" struct for creating the service client.
