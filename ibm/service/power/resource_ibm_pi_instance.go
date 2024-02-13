@@ -56,12 +56,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "PI instance status",
 			},
-			"pi_migratable": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "set to true to enable migration of the PI instance",
-			},
 			"min_processors": {
 				Type:        schema.TypeFloat,
 				Computed:    true,
@@ -83,20 +77,19 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Maximum memory size",
 			},
 			helpers.PIInstanceVolumeIds: {
-				Type:             schema.TypeSet,
-				Optional:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "List of PI volumes",
+				Type:        schema.TypeSet,
+				ForceNew:    true,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "List of PI volumes",
 			},
-
 			helpers.PIInstanceUserData: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Base64 encoded data to be passed in for invoking a cloud init script",
 			},
-
 			helpers.PIInstanceStorageType: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -154,10 +147,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
 			},
 			PIInstanceNetwork: {
-				Type:             schema.TypeList,
-				Required:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "List of one or more networks to attach to the instance",
+				Type:        schema.TypeList,
+				ForceNew:    true,
+				Required:    true,
+				Description: "List of one or more networks to attach to the instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip_address": {
@@ -190,13 +183,14 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
 			Arg_PIInstanceSharedProcessorPool: {
 				Type:          schema.TypeString,
-				Optional:      true,
 				ForceNew:      true,
+				Optional:      true,
 				ConflictsWith: []string{PISAPInstanceProfileID},
 				Description:   "Shared Processor Pool the instance is deployed on",
 			},
@@ -247,10 +241,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description:   "Instance processor type",
 			},
 			helpers.PIInstanceSSHKeyName: {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "SSH key name",
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "SSH key name",
 			},
 			helpers.PIInstanceMemory: {
 				Type:          schema.TypeFloat,
@@ -261,6 +255,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			PIInstanceDeploymentType: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"EPIC", "VMNoStorage"}),
 				Description:  "Custom Deployment Type Information",
@@ -273,6 +268,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			PISAPInstanceDeploymentType: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Custom SAP Deployment Type Information",
 			},
@@ -284,18 +280,21 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceSystemType: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI Instance system type",
 			},
 			helpers.PIInstanceReplicants: {
 				Type:        schema.TypeInt,
+				ForceNew:    true,
 				Optional:    true,
 				Default:     1,
 				Description: "PI Instance replicas count",
 			},
 			helpers.PIInstanceReplicationPolicy: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity", "none"}),
 				Default:      "none",
@@ -303,6 +302,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceReplicationScheme: {
 				Type:         schema.TypeString,
+				ForceNew:     true,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"prefix", "suffix"}),
 				Default:      "suffix",
@@ -320,12 +320,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Default:      "none",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"none", "soft", "hard"}),
 			},
-
-			// "reboot_for_resource_change": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "Flag to be passed for CPU/Memory changes that require a reboot to take effect",
-			// },
 			"operating_system": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -464,9 +458,6 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("status", powervmdata.Status)
 	}
 	d.Set(helpers.PIInstanceProcType, powervmdata.ProcType)
-	if powervmdata.Migratable != nil {
-		d.Set("pi_migratable", powervmdata.Migratable)
-	}
 	d.Set("min_processors", powervmdata.Minproc)
 	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
 	if powervmdata.StorageType != nil && *powervmdata.StorageType != "" {
@@ -629,7 +620,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Start of the change for Memory and Processors
-	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange("pi_migratable") {
+	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) {
 
 		maxMemLpar := d.Get("max_memory").(float64)
 		maxCPULpar := d.Get("max_processors").(float64)
@@ -657,10 +648,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			body := &models.PVMInstanceUpdate{
 				Memory:     mem,
 				Processors: procs,
-			}
-			if m, ok := d.GetOk("pi_migratable"); ok {
-				migratable := m.(bool)
-				body.Migratable = &migratable
 			}
 			if cores_enabled {
 				log.Printf("support for %s is enabled", CUSTOM_VIRTUAL_CORES)
@@ -1256,11 +1243,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 	if r, ok := d.GetOk(helpers.PIInstanceReplicationScheme); ok {
 		replicationNamingScheme = r.(string)
 	}
-	var migratable bool
-	if m, ok := d.GetOk("pi_migratable"); ok {
-		migratable = m.(bool)
-	}
-
 	var pinpolicy string
 	if p, ok := d.GetOk(helpers.PIInstancePinPolicy); ok {
 		pinpolicy = p.(string)
@@ -1274,9 +1256,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		userData = u.(string)
 	}
 
-	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
-		//NetworkIds: networks,
 		Processors:              &procs,
 		Memory:                  &mem,
 		ServerName:              flex.PtrToString(name),
@@ -1288,7 +1268,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		ReplicantNamingScheme:   flex.PtrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: flex.PtrToString(replicationpolicy),
 		Networks:                pvmNetworks,
-		Migratable:              &migratable,
 	}
 	if s, ok := d.GetOk(helpers.PIInstanceSSHKeyName); ok {
 		sshkey := s.(string)

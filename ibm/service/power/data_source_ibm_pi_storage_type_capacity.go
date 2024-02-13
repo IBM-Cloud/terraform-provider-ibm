@@ -40,33 +40,33 @@ func DataSourceIBMPIStorageTypeCapacity() *schema.Resource {
 				Description:  "Storage type name",
 			},
 			// Computed Attributes
-			MaximumStorageAllocation: {
+			Attr_MaximumStorageAllocation: {
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Maximum storage allocation",
 			},
-			StoragePoolsCapacity: {
+			Attr_StoragePoolsCapacity: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Storage pools capacity",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						MaxAllocationSize: {
+						Attr_MaxAllocationSize: {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "Maximum allocation storage size (GB)",
 						},
-						PoolName: {
+						Attr_PoolName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Pool name",
 						},
-						StorageType: {
+						Attr_StorageType: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Storage type of the storage pool",
 						},
-						TotalCapacity: {
+						Attr_TotalCapacity: {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "Total pool capacity (GB)",
@@ -99,24 +99,24 @@ func dataSourceIBMPIStorageTypeCapacityRead(ctx context.Context, d *schema.Resou
 	if stc.MaximumStorageAllocation != nil {
 		msa := stc.MaximumStorageAllocation
 		data := map[string]interface{}{
-			MaxAllocationSize: *msa.MaxAllocationSize,
-			StoragePool:       *msa.StoragePool,
-			StorageType:       *msa.StorageType,
+			Attr_MaxAllocationSize: *msa.MaxAllocationSize,
+			Attr_StoragePool:       *msa.StoragePool,
+			Attr_StorageType:       *msa.StorageType,
 		}
-		d.Set(MaximumStorageAllocation, flex.Flatten(data))
+		d.Set(Attr_MaximumStorageAllocation, flex.Flatten(data))
 	}
 
 	result := make([]map[string]interface{}, 0, len(stc.StoragePoolsCapacity))
 	for _, sp := range stc.StoragePoolsCapacity {
 		data := map[string]interface{}{
-			MaxAllocationSize: *sp.MaxAllocationSize,
-			PoolName:          sp.PoolName,
-			StorageType:       sp.StorageType,
-			TotalCapacity:     sp.TotalCapacity,
+			Attr_MaxAllocationSize: *sp.MaxAllocationSize,
+			Attr_PoolName:          sp.PoolName,
+			Attr_StorageType:       sp.StorageType,
+			Attr_TotalCapacity:     sp.TotalCapacity,
 		}
 		result = append(result, data)
 	}
-	d.Set(StoragePoolsCapacity, result)
+	d.Set(Attr_StoragePoolsCapacity, result)
 
 	return nil
 }

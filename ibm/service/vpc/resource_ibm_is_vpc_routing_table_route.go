@@ -343,20 +343,11 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 
 	// Construct an instance of the RoutePatch model
 	routePatchModel := new(vpcv1.RoutePatch)
-	if d.HasChange(rName) || d.HasChange("advertise") {
-		// Construct an instance of the RoutePatch model
-		routePatchModel := new(vpcv1.RoutePatch)
-		if d.HasChange(rName) {
-			name := d.Get(rName).(string)
-			routePatchModel.Name = &name
-			hasChange = true
-		}
+	if d.HasChange("advertise") {
+		advertiseVal := d.Get("advertise").(bool)
+		routePatchModel.Advertise = &advertiseVal
+		hasChange = true
 
-		if d.HasChange("advertise") {
-			advertiseVal := d.Get("advertise").(bool)
-			routePatchModel.Advertise = &advertiseVal
-			hasChange = true
-		}
 	}
 	if d.HasChange(rName) {
 		name := d.Get(rName).(string)

@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
@@ -18,60 +17,71 @@ import (
 )
 
 func DataSourceIBMPISnapshots() *schema.Resource {
-
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPISnapshotsRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
-				Type:         schema.TypeString,
+			// Arguments
+			Arg_CloudInstanceID: {
+				Description:  "The GUID of the service instance associated with an account.",
 				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			//Computed Attributes
-			"instance_snapshots": {
-				Type:     schema.TypeList,
-				Computed: true,
+			// Attributes
+			Attr_InstanceSnapshots: {
+				Computed:    true,
+				Description: "List of Power Virtual Machine instance snapshots within the given cloud instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_Action: {
+							Computed:    true,
+							Description: "Action performed on the instance snapshot.",
+							Type:        schema.TypeString,
 						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_CreationDate: {
+							Computed:    true,
+							Description: "Date of snapshot creation.",
+							Type:        schema.TypeString,
 						},
-						"percent_complete": {
-							Type:     schema.TypeInt,
-							Computed: true,
+						Attr_Description: {
+							Computed:    true,
+							Description: "The description of the snapshot.",
+							Type:        schema.TypeString,
 						},
-						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_ID: {
+							Computed:    true,
+							Description: "The unique identifier of the Power Systems Virtual Machine instance snapshot.",
+							Type:        schema.TypeString,
 						},
-						"action": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_LastUpdatedDate: {
+							Computed:    true,
+							Description: "Date of last update.",
+							Type:        schema.TypeString,
 						},
-						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_Name: {
+							Computed:    true,
+							Description: "The name of the Power Systems Virtual Machine instance snapshot.",
+							Type:        schema.TypeString,
 						},
-						"creation_date": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_PercentComplete: {
+							Computed:    true,
+							Description: "The snapshot completion percentage.",
+							Type:        schema.TypeInt,
 						},
-						"last_updated_date": {
-							Type:     schema.TypeString,
-							Computed: true,
+						Attr_Status: {
+							Computed:    true,
+							Description: "The status of the Power Virtual Machine instance snapshot.",
+							Type:        schema.TypeString,
 						},
-						"volume_snapshots": {
-							Type:     schema.TypeMap,
-							Computed: true,
+						Attr_VolumeSnapshots: {
+							Computed:    true,
+							Description: "A map of volume snapshots included in the Power Virtual Machine instance snapshot.",
+							Type:        schema.TypeMap,
 						},
 					},
 				},
+				Type: schema.TypeList,
 			},
 		},
 	}
@@ -83,7 +93,7 @@ func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 	snapshotData, err := snapshot.GetAll()
 	if err != nil {
@@ -92,29 +102,27 @@ func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, m
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("instance_snapshots", flattenSnapshotsInstances(snapshotData.Snapshots))
+	d.Set(Attr_InstanceSnapshots, flattenSnapshotsInstances(snapshotData.Snapshots))
 
 	return nil
 }
 
 func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{} {
-	log.Printf("Calling the flattensnapshotsinstances call with list %d", len(list))
+	log.Printf("Calling the flattenSnapshotsInstances call with list %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"id":                *i.SnapshotID,
-			"name":              *i.Name,
-			"description":       i.Description,
-			"creation_date":     i.CreationDate.String(),
-			"last_updated_date": i.LastUpdateDate.String(),
-			"action":            i.Action,
-			"percent_complete":  i.PercentComplete,
-			"status":            i.Status,
-			"volume_snapshots":  i.VolumeSnapshots,
+			Attr_Action:          i.Action,
+			Attr_CreationDate:    i.CreationDate.String(),
+			Attr_Description:     i.Description,
+			Attr_ID:              *i.SnapshotID,
+			Attr_LastUpdatedDate: i.LastUpdateDate.String(),
+			Attr_Name:            *i.Name,
+			Attr_PercentComplete: i.PercentComplete,
+			Attr_Status:          i.Status,
+			Attr_VolumeSnapshots: i.VolumeSnapshots,
 		}
-
 		result = append(result, l)
 	}
-
 	return result
 }
