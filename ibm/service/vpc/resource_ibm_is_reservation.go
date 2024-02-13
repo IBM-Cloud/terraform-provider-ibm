@@ -359,6 +359,15 @@ func resourceIBMISReservationCreate(d *schema.ResourceData, meta interface{}) er
 		createReservationOptions.Profile = reservationProfilePrototype
 	}
 
+	if _, ok := d.GetOk(isReservationResourceGroup); ok {
+		resGroup := d.Get(isReservationResourceGroup + ".0").(map[string]interface{})
+		if resGroup[isReservationResourceGroupId] != nil && resGroup[isReservationResourceGroupId].(string) != "" {
+			createReservationOptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+				ID: core.StringPtr(resGroup[isReservationResourceGroupId].(string)),
+			}
+		}
+	}
+
 	if zone, ok := d.GetOk(isReservationZone); ok {
 		if zone.(string) != "" {
 			createReservationOptions.Zone = &vpcv1.ZoneIdentity{Name: core.StringPtr(zone.(string))}
