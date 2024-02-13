@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_pi_volume_attach
-Attaches volume to a Power Systems Virtual Server instance. For more information, about managing volume, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
+Attach and Detach volume to a Power Systems Virtual Server instance. For more information, about managing volume, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
 The following example attaches volume to a power systems virtual server instance.
@@ -17,6 +17,11 @@ The following example attaches volume to a power systems virtual server instance
 resource "ibm_pi_volume_attach" "testacc_volume_attach"{
 	pi_cloud_instance_id = "<value of the cloud_instance_id>"
 	pi_volume_id = "<id of the volume to attach>"
+	pi_instance_id = "<pvm instance id>"
+}
+resource "ibm_pi_volume_detach" "testacc_volume_detach"{
+	pi_cloud_instance_id = "<value of the cloud_instance_id>"
+	pi_volume_id = "<id of the volume to detach>"
 	pi_instance_id = "<pvm instance id>"
 }
 ```
