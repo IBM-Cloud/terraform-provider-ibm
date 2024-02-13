@@ -1174,7 +1174,6 @@ func Provider() *schema.Provider {
 			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
-			"ibm_pi_network_port":                    power.ResourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),

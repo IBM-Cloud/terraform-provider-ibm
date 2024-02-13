@@ -56,12 +56,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "PI instance status",
 			},
-			"pi_migratable": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "set to true to enable migration of the PI instance",
-			},
 			"min_processors": {
 				Type:        schema.TypeFloat,
 				Computed:    true,
@@ -319,12 +313,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Default:      "none",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"none", "soft", "hard"}),
 			},
-
-			// "reboot_for_resource_change": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "Flag to be passed for CPU/Memory changes that require a reboot to take effect",
-			// },
 			"operating_system": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -441,9 +429,6 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("status", powervmdata.Status)
 	}
 	d.Set(helpers.PIInstanceProcType, powervmdata.ProcType)
-	if powervmdata.Migratable != nil {
-		d.Set("pi_migratable", powervmdata.Migratable)
-	}
 	d.Set("min_processors", powervmdata.Minproc)
 	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
 	if powervmdata.StorageType != nil {
@@ -604,7 +589,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Start of the change for Memory and Processors
-	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) || d.HasChange("pi_migratable") {
+	if d.HasChange(helpers.PIInstanceMemory) || d.HasChange(helpers.PIInstanceProcessors) {
 
 		maxMemLpar := d.Get("max_memory").(float64)
 		maxCPULpar := d.Get("max_processors").(float64)
@@ -632,10 +617,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			body := &models.PVMInstanceUpdate{
 				Memory:     mem,
 				Processors: procs,
-			}
-			if m, ok := d.GetOk("pi_migratable"); ok {
-				migratable := m.(bool)
-				body.Migratable = &migratable
 			}
 			if cores_enabled {
 				log.Printf("support for %s is enabled", CUSTOM_VIRTUAL_CORES)
@@ -1190,11 +1171,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 	if r, ok := d.GetOk(helpers.PIInstanceReplicationScheme); ok {
 		replicationNamingScheme = r.(string)
 	}
-	var migratable bool
-	if m, ok := d.GetOk("pi_migratable"); ok {
-		migratable = m.(bool)
-	}
-
 	var pinpolicy string
 	if p, ok := d.GetOk(helpers.PIInstancePinPolicy); ok {
 		pinpolicy = p.(string)
@@ -1208,9 +1184,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		userData = u.(string)
 	}
 
-	//publicinterface := d.Get(helpers.PIInstancePublicNetwork).(bool)
 	body := &models.PVMInstanceCreate{
-		//NetworkIds: networks,
 		Processors:              &procs,
 		Memory:                  &mem,
 		ServerName:              flex.PtrToString(name),
@@ -1222,7 +1196,6 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		ReplicantNamingScheme:   flex.PtrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: flex.PtrToString(replicationpolicy),
 		Networks:                pvmNetworks,
-		Migratable:              &migratable,
 	}
 	if s, ok := d.GetOk(helpers.PIInstanceSSHKeyName); ok {
 		sshkey := s.(string)
