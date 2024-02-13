@@ -28,9 +28,8 @@ func TestAccIBMPIPISharedProcessorPoolDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIPISharedProcessorPoolDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_shared_processor_pool" "test_pool" {
-	pi_shared_processor_pool_id = "%s"
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_shared_processor_pool_id, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_shared_processor_pool" "test_pool" {
+			pi_shared_processor_pool_id = "%s"
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_shared_processor_pool_id, acc.Pi_cloud_instance_id)
 }

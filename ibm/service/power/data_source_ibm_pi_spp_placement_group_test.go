@@ -28,9 +28,8 @@ func TestAccIBMPISPPPlacementGroupDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPISPPPlacementGroupDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_spp_placement_group" "testacc_ds_spp_placement_group" {
-	pi_spp_placement_group_id = "%s"
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_spp_placement_group_id, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_spp_placement_group" "testacc_ds_spp_placement_group" {
+			pi_spp_placement_group_id = "%s"
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_spp_placement_group_id, acc.Pi_cloud_instance_id)
 }
