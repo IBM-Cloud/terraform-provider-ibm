@@ -246,6 +246,7 @@ In addition to all argument reference list, you can access the following attribu
 - `master_status` - (String) The status of the Kubernetes master.
 - `master_url` - (String) The URL of the Kubernetes master.
 - `private_service_endpoint_url` - (String) The private service endpoint URL.
+- `vpe_service_endpoint_url` - (String) The virtual private endpoint URL.
 - `public_service_endpoint_url` - (String) The public service endpoint URL.
 - `state` - (String) The state of the VPC cluster.
 
