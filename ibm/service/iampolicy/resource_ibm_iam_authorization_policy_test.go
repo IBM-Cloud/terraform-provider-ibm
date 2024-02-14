@@ -107,7 +107,7 @@ func TestAccIBMIAMAuthorizationPolicy_ResourceType(t *testing.T) {
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "is"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_resource_type", "load-balancer"),
-					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "hs-crypto"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "secrets-manager"),
 				),
 			},
 		},
@@ -202,6 +202,27 @@ func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupId_ResourceAttributes(t
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupId_ResourceAttributes_WildCard(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttributesWildCard(acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", ""),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "cloud-object-storage"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAuthorizationPolicy_TargetResourceType(t *testing.T) {
 	var conf iampolicymanagementv1.PolicyTemplateMetaData
 
@@ -259,6 +280,25 @@ func TestAccIBMIAMAuthorizationPolicy_With_Transaction_id(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "transaction_id", "terrformAuthorizationPolicy"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_SourceResourceGroupIdWithStringExistsInSubjectAttributes(t *testing.T) {
+	var conf iampolicymanagementv1.PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdWithStringExistsInSubjectAttributes(acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
 				),
 			},
 		},
@@ -350,9 +390,9 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceInstance(instanceName string) 
 	  
 	  resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name         = "cloud-object-storage"
-		source_resource_instance_id = ibm_resource_instance.instance1.id
+		source_resource_instance_id = ibm_resource_instance.instance1.guid
 		target_service_name         = "kms"
-		target_resource_instance_id = ibm_resource_instance.instance2.id
+		target_resource_instance_id = ibm_resource_instance.instance2.guid
 		roles                       = ["Reader"]
 	  }
 	  
@@ -364,8 +404,8 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceType() string {
 	resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name  = "is"
 		source_resource_type = "load-balancer"
-		target_service_name  = "hs-crypto"
-		roles                = ["Reader"]
+		target_service_name  = "secrets-manager"
+		roles                = ["SecretsReader"]
 	  }
 	`
 }
@@ -426,7 +466,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, t
 		}
 		subject_attributes {
 			name   = "serviceInstance"
-			value = ibm_resource_instance.cos.id
+			value = ibm_resource_instance.cos.guid
 		}
 		subject_attributes {
 			name   = "serviceName"
@@ -442,7 +482,7 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, t
 		}
 		resource_attributes {
 			name   = "serviceInstance"
-			value = ibm_resource_instance.kms.id
+			value = ibm_resource_instance.kms.guid
 		}
 	}
 	`, sServiceInstance, tServiceInstance, sAccountID, tAccountID)
@@ -497,6 +537,31 @@ func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttribute
 	`, sAccountID, tAccountID)
 }
 
+func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdResourceAttributesWildCard(sAccountID, tAccountID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Reader"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+		subject_attributes {
+			name   = "resourceGroupId"
+			value  = "*"
+		}
+
+		resource_attributes {
+			name   = "serviceName"
+			value  = "cloud-object-storage"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+	}
+	`, sAccountID, tAccountID)
+}
+
 func testAccCheckIBMIAMAuthorizationPolicyTargetResourceType() string {
 	return `
 	resource "ibm_iam_authorization_policy" "policy" {
@@ -531,6 +596,32 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceTypeAndResourceAttributes(sAcc
 			value  = "%s"
 		}
 
+	}
+	`, sAccountID, tAccountID)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicySourceResourceGroupIdWithStringExistsInSubjectAttributes(sAccountID, tAccountID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles    = ["Reader"]
+		subject_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
+		subject_attributes {
+			name     = "resourceGroupId"
+			operator = "stringExists"
+			value    = "true"
+		}
+
+		resource_attributes {
+			name   = "serviceName"
+			value  = "cloud-object-storage"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value  = "%s"
+		}
 	}
 	`, sAccountID, tAccountID)
 }

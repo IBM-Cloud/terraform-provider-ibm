@@ -8,6 +8,8 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a read-only data source for schematics_agent. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
@@ -40,37 +42,6 @@ Nested scheme for **agent_infrastructure**:
 	* `cos_instance_name` - (String) The COS instance name to store the agent logs.
 	* `infra_type` - (String) Type of target agent infrastructure.
 	  * Constraints: Allowable values are: `ibm_kubernetes`, `ibm_openshift`, `ibm_satellite`.
-
-* `agent_inputs` - (List) Additional input variables for the agent.
-Nested scheme for **agent_inputs**:
-	* `link` - (String) The reference link to the variable value By default the expression points to `$self.value`.
-	* `metadata` - (List) An user editable metadata for the variables.
-	Nested scheme for **metadata**:
-		* `aliases` - (List) The list of aliases for the variable name.
-		* `cloud_data_type` - (String) Cloud data type of the variable. eg. resource_group_id, region, vpc_id.
-		* `default_value` - (String) Default value for the variable only if the override value is not specified.
-		* `description` - (String) The description of the meta data.
-		* `group_by` - (String) The display name of the group this variable belongs to.
-		* `hidden` - (Boolean) If **true**, the variable is not displayed on UI or Command line.
-		* `immutable` - (Boolean) Is the variable readonly ?.
-		* `link_status` - (String) The status of the link.
-		  * Constraints: Allowable values are: `normal`, `broken`.
-		* `matches` - (String) The regex for the variable value.
-		* `max_length` - (Integer) The maximum length of the variable value. Applicable for the string type.
-		* `max_value` - (Integer) The maximum value of the variable. Applicable for the integer type.
-		* `min_length` - (Integer) The minimum length of the variable value. Applicable for the string type.
-		* `min_value` - (Integer) The minimum value of the variable. Applicable for the integer type.
-		* `options` - (List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
-		* `position` - (Integer) The relative position of this variable in a list.
-		* `required` - (Boolean) If the variable required?.
-		* `secure` - (Boolean) Is the variable secure or sensitive ?.
-		* `source` - (String) The source of this meta-data.
-		* `type` - (String) Type of the variable.
-		  * Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
-	* `name` - (String) The name of the variable. For example, `name = "inventory username"`.
-	* `use_default` - (Boolean) True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.
-	* `value` - (String) The value for the variable or reference to the value. For example, `value = "<provide your ssh_key_value with \n>"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.
-
 * `agent_kpi` - (List) Schematics Agent key performance indicators.
 Nested scheme for **agent_kpi**:
 	* `application_indicators` - (List) Agent application key performance indicators.

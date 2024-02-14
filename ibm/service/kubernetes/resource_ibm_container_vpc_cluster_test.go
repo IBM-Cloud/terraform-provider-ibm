@@ -152,6 +152,33 @@ func TestAccIBMContainerVpcClusterDedicatedHost(t *testing.T) {
 	)
 }
 
+func TestAccIBMContainerVpcClusterSecurityGroups(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterSecurityGroups(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -273,6 +300,68 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	}
 	
   }`, name)
+}
+
+// preveously you have to create securitygroups and use them instead
+func testAccCheckIBMContainerVpcClusterSecurityGroups(name string) string {
+	return fmt.Sprintf(`	
+	data "ibm_resource_group" "resource_group" {
+		is_default = "true"
+		//name = "Default"
+	}
+	resource "ibm_is_vpc" "vpc" {
+		name = "%[1]s"
+	}
+	resource "ibm_is_security_group" "security_group" {
+		name = "example-security-group"
+		vpc  = ibm_is_vpc.vpc.id
+	}
+	resource "ibm_is_subnet" "subnet" {
+		name                     = "%[1]s"
+		vpc                      = ibm_is_vpc.vpc.id
+		zone                     = "us-south-1"
+		total_ipv4_address_count = 256
+	}
+	resource "ibm_resource_instance" "kms_instance" {
+		name              = "%[1]s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "eu-de"
+	}
+	  
+	resource "ibm_kms_key" "test" {
+		instance_id = ibm_resource_instance.kms_instance.guid
+		key_name = "%[1]s"
+		standard_key =  false
+		force_delete = true
+	}
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = ibm_is_vpc.vpc.id
+		flavor            = "cx2.2x4"
+		worker_count      = 1
+		wait_till         = "OneWorkerNodeReady"
+		resource_group_id = data.ibm_resource_group.resource_group.id
+		zones {
+			 subnet_id = ibm_is_subnet.subnet.id
+			 name      = "us-south-1"
+		}
+		kms_config {
+			instance_id = ibm_resource_instance.kms_instance.guid
+			crk_id = ibm_kms_key.test.key_id
+			private_endpoint = false
+		}
+		worker_labels = {
+		"test"  = "test-default-pool"
+		"test1" = "test-default-pool1"
+		"test2" = "test-default-pool2"
+		}
+		
+		security_groups = [ 
+			ibm_is_security_group.security_group.id,
+			"cluster",
+		]
+	}`, name)
 }
 
 func testAccCheckIBMContainerVpcClusterUpdate(name string) string {
@@ -464,6 +553,38 @@ func TestAccIBMContainerVpcClusterBaseEnvvar(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update", "albs"},
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcClusterKMSEnvvar(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterKMSEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "kms_config.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
 					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
 			},
 		},
@@ -512,7 +633,22 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 // export IBM_CLUSTER_VPC_ID
 // export IBM_CLUSTER_VPC_SUBNET_ID
 // export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+// optionally for kms and cross account kms:
+// export IBM_KMS_INSTANCE_ID
+// export IBM_CRK_ID
+// for cross account kms:
+// export IBM_KMS_ACCOUNT_ID
 func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
+	var kmsConfig string
+	if acc.KmsInstanceID != "" {
+		kmsConfig = fmt.Sprintf(`
+		kms_config {
+			instance_id = "%[1]s"
+			crk_id = "%[2]s"
+			account_id = "%[3]s"
+		}
+	`, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
+	}
 	config := fmt.Sprintf(`
 	resource "ibm_container_vpc_cluster" "cluster" {
 		name              = "%[1]s"
@@ -525,8 +661,40 @@ func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
 			name      = "us-south-1"
 		}
 		wait_till = "normal"
+		%[5]s
 	}
-	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, kmsConfig)
+
+	fmt.Println(config)
+	return config
+}
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+// export IBM_KMS_INSTANCE_ID
+// export IBM_CRK_ID
+func testAccCheckIBMContainerVpcClusterKMSEnvvar(name string) string {
+	config := fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "normal"
+		kms_config {
+			instance_id = "%[5]s"
+			crk_id = "%[6]s"
+			private_endpoint = false
+		}
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
 	fmt.Println(config)
 	return config
 }

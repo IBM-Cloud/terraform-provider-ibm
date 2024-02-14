@@ -45,14 +45,10 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `pi_datacenter_capabilities` - (Map) Datacenter Capabilities.
+- `pi_datacenter_capabilities` - (Map) Datacenter Capabilities. Capabilities are `true` or `false`.
 
-    Nested schema for `pi_datacenter_capabilities`:
-  - `cloud-connections` - (Bool) Cloud-connections capability.
-  - `disaster-recovery-site` - (Bool) Disaster recovery site.
-  - `power-edge-router` - (Bool) Power edge router capability.
-  - `vpn-connections`- (Bool) VPN-connections capability.
-  - `sysdig-enabled`- (Bool) Sysdig-enabled capability.
+    Some of `pi_datacenter_capabilities` are:
+  - `cloud-connections`, `disaster-recovery-site`, `metrics`,  `power-edge-router`, `power-vpn-connections`
 
 - `pi_datacenter_location` - (Map) Datacenter location.
 
@@ -60,5 +56,5 @@ In addition to all argument reference list, you can access the following attribu
   - `region` - (String) The Datacenter location region zone.
   - `type` - (String) The Datacenter location region type.
   - `url`- (String) The Datacenter location region url.
-- `pi_datacenter_status` - (String) The Datacenter status, `ACTIVE`,`MAINTENANCE` or `DOWN`.
-- `pi_datacenter_type` - (String) The Datacenter type, `Public Cloud` or `Private Cloud`.
+- `pi_datacenter_status` - (String) The Datacenter status, `active`,`maintenance` or `down`.
+- `pi_datacenter_type` - (String) The Datacenter type, `off-premises` or `on-premises`.

@@ -20,6 +20,7 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -924,6 +925,9 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	}
 
 	if apiType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
@@ -1152,6 +1156,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+	}
+	if endpointType == "direct" {
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
 	}
 
 	if apiType == "sl" {
@@ -1544,7 +1551,26 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	if len(bucket_meta) < 2 || len(strings.Split(bucket_meta[1], ":")) < 2 {
 		return false, fmt.Errorf("[ERROR] Error parsing bucket ID. Bucket ID format must be: $CRN:meta:$buckettype:$bucketlocation")
 	}
-
+	resourceInstanceId := strings.Split(d.Id(), ":bucket:")[0]
+	resourceInstanceIdInput := resourceInstanceId + "::"
+	resourceInstanceGet := rc.GetResourceInstanceOptions{
+		ID: &resourceInstanceIdInput,
+	}
+	rsConClientV2, errConf := meta.(conns.ClientSession).ResourceControllerV2API()
+	if errConf != nil {
+		return false, errConf
+	}
+	instance, resp, err := rsConClientV2.GetResourceInstance(&resourceInstanceGet)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return false, nil
+		}
+		return false, fmt.Errorf("[WARN] Error getting resource instance from cos bucket: %s with resp code: %s", err, resp)
+	}
+	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, "pending_reclamation")) {
+		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state from the cos bucket resource")
+		return false, nil
+	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 

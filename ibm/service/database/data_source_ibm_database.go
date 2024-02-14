@@ -89,18 +89,6 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"members_memory_allocation_mb": {
-				Description: "Memory allocation required for cluster",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Deprecated:  "This field is deprecated please use groups",
-			},
-			"members_disk_allocation_mb": {
-				Description: "Disk allocation required for cluster",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Deprecated:  "This field is deprecated please use groups",
-			},
 			"platform_options": {
 				Description: "Platform-specific options for this deployment.r",
 				Type:        schema.TypeSet,
@@ -288,6 +276,29 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Can the disk size be scaled down as well as up",
+									},
+								},
+							},
+						},
+						"host_flavor": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor id",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor name",
+									},
+									"hosting_size": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The host flavor size",
 									},
 								},
 							},
@@ -636,12 +647,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
-	icdId := flex.EscapeUrlParm(instance.ID)
 	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
 		ID: core.StringPtr(instance.ID),
 	}
@@ -663,13 +668,15 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))
 	}
 
-	groupList, err := icdClient.Groups().GetGroups(icdId)
+	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
+		ID: core.StringPtr(instance.ID),
+	}
+
+	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
-	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
-	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
 	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
 		ID:      &instance.ID,

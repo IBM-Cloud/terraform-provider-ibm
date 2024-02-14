@@ -625,7 +625,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							ForceNew:      true,
 							Computed:      true,
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
 						},
@@ -1000,6 +1000,119 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			isInstanceReservation: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reservation used by this virtual server instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isReservationId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this reservation.",
+						},
+						isReservationCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this reservation.",
+						},
+						isReservationName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this reservation. The name is unique across all reservations in the region.",
+						},
+						isReservationHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this reservation.",
+						},
+						isReservationResourceType: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						isReservationDeleted: &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationDeletedMoreInfo: &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isReservationAffinity: {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The reservation affinity policy to use for this virtual server instance.",
+						},
+						isReservationAffinityPool: &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "The pool of reservations available for use by this virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationId: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The unique identifier for this reservation.",
+									},
+									isReservationCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this reservation.",
+									},
+									isReservationHref: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reservation.",
+									},
+									isReservationName: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reservation. The name is unique across all reservations in the region.",
+									},
+									isReservationResourceType: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									isReservationDeleted: &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												isReservationDeletedMoreInfo: &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -1212,6 +1325,32 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			Volume:                       volTemplate,
 		}
 
+	}
+
+	if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+		resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+		var resAffinity = &vpcv1.InstanceReservationAffinityPrototype{}
+		policy, ok := resAff["policy"]
+		policyStr := policy.(string)
+		if policyStr != "" && ok {
+			resAffinity.Policy = &policyStr
+		}
+		poolIntf, okPool := resAff[isReservationAffinityPool]
+		if okPool {
+			pool := poolIntf.([]interface{})[0].(map[string]interface{})
+			id, okId := pool["id"]
+			if okId {
+				idStr, ok := id.(string)
+				if idStr != "" && ok {
+					var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+					resAffPool[0] = &vpcv1.ReservationIdentity{
+						ID: &idStr,
+					}
+					resAffinity.Pool = resAffPool
+				}
+			}
+		}
+		instanceproto.ReservationAffinity = resAffinity
 	}
 
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
@@ -1587,6 +1726,32 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 
 	}
 
+	if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+		resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+		var resAffinity = &vpcv1.InstanceReservationAffinityPrototype{}
+		policy, ok := resAff["policy"]
+		policyStr := policy.(string)
+		if policyStr != "" && ok {
+			resAffinity.Policy = &policyStr
+		}
+		poolIntf, okPool := resAff[isReservationAffinityPool]
+		if okPool {
+			pool := poolIntf.([]interface{})[0].(map[string]interface{})
+			id, okId := pool["id"]
+			if okId {
+				idStr, ok := id.(string)
+				if idStr != "" && ok {
+					var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+					resAffPool[0] = &vpcv1.ReservationIdentity{
+						ID: &idStr,
+					}
+					resAffinity.Pool = resAffPool
+				}
+			}
+		}
+		instanceproto.ReservationAffinity = resAffinity
+	}
+
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
 		subnetintf, _ := primnic[isInstanceNicSubnet]
@@ -1958,6 +2123,32 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 	}
 
+	if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+		resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+		var resAffinity = &vpcv1.InstanceReservationAffinityPrototype{}
+		policy, ok := resAff["policy"]
+		policyStr := policy.(string)
+		if policyStr != "" && ok {
+			resAffinity.Policy = &policyStr
+		}
+		poolIntf, okPool := resAff[isReservationAffinityPool]
+		if okPool {
+			pool := poolIntf.([]interface{})[0].(map[string]interface{})
+			id, okId := pool["id"]
+			if okId {
+				idStr, ok := id.(string)
+				if idStr != "" && ok {
+					var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+					resAffPool[0] = &vpcv1.ReservationIdentity{
+						ID: &idStr,
+					}
+					resAffinity.Pool = resAffPool
+				}
+			}
+		}
+		instanceproto.ReservationAffinity = resAffinity
+	}
+
 	if primnicintf, ok := d.GetOk(isInstancePrimaryNetworkInterface); ok {
 		primnic := primnicintf.([]interface{})[0].(map[string]interface{})
 		subnetintf, _ := primnic[isInstanceNicSubnet]
@@ -2321,6 +2512,33 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			Volume:                       volTemplate,
 		}
 	}
+
+	if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+		resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+		var resAffinity = &vpcv1.InstanceReservationAffinityPrototype{}
+		policy, ok := resAff["policy"]
+		policyStr := policy.(string)
+		if policyStr != "" && ok {
+			resAffinity.Policy = &policyStr
+		}
+		poolIntf, okPool := resAff[isReservationAffinityPool]
+		if okPool {
+			pool := poolIntf.([]interface{})[0].(map[string]interface{})
+			id, okId := pool["id"]
+			if okId {
+				idStr, ok := id.(string)
+				if idStr != "" && ok {
+					var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+					resAffPool[0] = &vpcv1.ReservationIdentity{
+						ID: &idStr,
+					}
+					resAffinity.Pool = resAffPool
+				}
+			}
+		}
+		instanceproto.ReservationAffinity = resAffinity
+	}
+
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
@@ -2660,6 +2878,33 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		}
 		instanceproto.BootVolumeAttachment = bootVolAttachment
 	}
+
+	if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+		resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+		var resAffinity = &vpcv1.InstanceReservationAffinityPrototype{}
+		policy, ok := resAff["policy"]
+		policyStr := policy.(string)
+		if policyStr != "" && ok {
+			resAffinity.Policy = &policyStr
+		}
+		poolIntf, okPool := resAff[isReservationAffinityPool]
+		if okPool {
+			pool := poolIntf.([]interface{})[0].(map[string]interface{})
+			id, okId := pool["id"]
+			if okId {
+				idStr, ok := id.(string)
+				if idStr != "" && ok {
+					var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+					resAffPool[0] = &vpcv1.ReservationIdentity{
+						ID: &idStr,
+					}
+					resAffinity.Pool = resAffPool
+				}
+			}
+		}
+		instanceproto.ReservationAffinity = resAffinity
+	}
+
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
@@ -3236,6 +3481,52 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		primaryNicList = append(primaryNicList, currentPrimNic)
 		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
+	if instance.ReservationAffinity != nil {
+		reservationAffinity := []map[string]interface{}{}
+		reservationAffinityMap := map[string]interface{}{}
+
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
+		if instance.ReservationAffinity.Pool != nil && len(instance.ReservationAffinity.Pool) > 0 {
+			poolList := make([]map[string]interface{}, 0)
+			for _, pool := range instance.ReservationAffinity.Pool {
+				res := map[string]interface{}{}
+
+				res[isReservationId] = *pool.ID
+				res[isReservationHref] = *pool.Href
+				res[isReservationName] = *pool.Name
+				res[isReservationCrn] = *pool.CRN
+				res[isReservationResourceType] = *pool.ResourceType
+				if pool.Deleted != nil {
+					deletedList := []map[string]interface{}{}
+					deletedMap := dataSourceInstanceReservationDeletedToMap(*pool.Deleted)
+					deletedList = append(deletedList, deletedMap)
+					res[isReservationDeleted] = deletedList
+				}
+				poolList = append(poolList, res)
+			}
+			reservationAffinityMap[isReservationAffinityPool] = poolList
+		}
+		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
+		d.Set(isReservationAffinity, reservationAffinity)
+	}
+	if instance.Reservation != nil {
+		resList := make([]map[string]interface{}, 0)
+		res := map[string]interface{}{}
+
+		res[isReservationId] = *instance.Reservation.ID
+		res[isReservationHref] = *instance.Reservation.Href
+		res[isReservationName] = *instance.Reservation.Name
+		res[isReservationCrn] = *instance.Reservation.CRN
+		res[isReservationResourceType] = *instance.Reservation.ResourceType
+		if instance.Reservation.Deleted != nil {
+			deletedList := []map[string]interface{}{}
+			deletedMap := dataSourceInstanceReservationDeletedToMap(*instance.Reservation.Deleted)
+			deletedList = append(deletedList, deletedMap)
+			res[isReservationDeleted] = deletedList
+		}
+		resList = append(resList, res)
+		d.Set(isInstanceReservation, resList)
+	}
 
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
@@ -3470,6 +3761,72 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	id := d.Id()
 
+	resPol := "reservation_affinity.0.policy"
+	resPool := "reservation_affinity.0.pool"
+
+	if (d.HasChange(resPol) || d.HasChange(resPool)) && !d.IsNewResource() {
+		if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			_, response, err := instanceC.GetInstance(getinsOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response)
+			}
+			eTag := response.Headers.Get("ETag")
+
+			resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+			var resAffinityPatch = &vpcv1.InstanceReservationAffinityPatch{}
+			policy, ok := resAff["policy"]
+			policyStr := policy.(string)
+			idStr := ""
+			if policyStr != "" && ok {
+				resAffinityPatch.Policy = &policyStr
+			}
+			if d.HasChange(resPool) {
+				poolIntf, okPool := resAff[isReservationAffinityPool]
+				if okPool {
+					pool := poolIntf.([]interface{})[0].(map[string]interface{})
+					id, okId := pool["id"]
+					if okId {
+						idStr, ok = id.(string)
+						if idStr != "" && ok {
+							var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+							resAffPool[0] = &vpcv1.ReservationIdentity{
+								ID: &idStr,
+							}
+							resAffinityPatch.Pool = resAffPool
+						}
+					}
+
+				}
+			}
+
+			instancePatchModel := &vpcv1.InstancePatch{
+				ReservationAffinity: resAffinityPatch,
+			}
+			mpatch, err := instancePatchModel.AsPatch()
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error calling asPatch with reservation affinity: %s", err)
+			}
+			//Detaching the reservation from the reserved instance
+			if policyStr == "disabled" && idStr == "" {
+				resAffMap := mpatch["reservation_affinity"].(map[string]interface{})
+				resAffMap["pool"] = nil
+				mpatch["reservation_affinity"] = resAffMap
+			}
+			param := &vpcv1.UpdateInstanceOptions{
+				InstancePatch: mpatch,
+				ID:            &id,
+			}
+			param.IfMatch = &eTag
+			_, _, err = instanceC.UpdateInstance(param)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	bootVolSize := "boot_volume.0.size"
 	if d.HasChange(bootVolSize) && !d.IsNewResource() {
 		old, new := d.GetChange(bootVolSize)
@@ -3543,6 +3900,30 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					return err
 				}
 			}
+		}
+	}
+	bootVolName := "boot_volume.0.name"
+	if d.HasChange(bootVolName) && !d.IsNewResource() {
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		volName := d.Get(bootVolName).(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Name: &volName,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume name update of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while updating name of boot volume of instance %s/n%s", err, res))
 		}
 	}
 	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
@@ -4584,6 +4965,15 @@ func resourceIbmIsInstanceInstancePlacementToMap(instancePlacement vpcv1.Instanc
 	instancePlacementMap["resource_type"] = instancePlacement.ResourceType
 
 	return instancePlacementMap
+}
+
+func resourceIbmIsInstanceReservationAffinityPoolToMap(reservationPool vpcv1.ReservationReference) map[string]interface{} {
+	resAffPoolMap := map[string]interface{}{}
+
+	resAffPoolMap["crn"] = reservationPool.CRN
+	resAffPoolMap["href"] = reservationPool.Href
+	resAffPoolMap["id"] = reservationPool.ID
+	return resAffPoolMap
 }
 
 func resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(dedicatedHostGroupReferenceDeleted vpcv1.DedicatedHostGroupReferenceDeleted) map[string]interface{} {

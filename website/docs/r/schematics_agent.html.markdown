@@ -8,6 +8,8 @@ subcategory: "Schematics"
 
 # ibm_schematics_agent
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a resource for schematics_agent. This allows schematics_agent to be created, updated and deleted.
 
 ## Example Usage
@@ -22,40 +24,6 @@ resource "ibm_schematics_agent" "schematics_agent_instance" {
 		cos_bucket_name = "cos_bucket_name"
 		cos_bucket_region = "cos_bucket_region"
   }
-  agent_inputs {
-		name = "name"
-		value = "value"
-		use_default = true
-		metadata {
-			type = "boolean"
-			aliases = [ "aliases" ]
-			description = "description"
-			cloud_data_type = "cloud_data_type"
-			default_value = "default_value"
-			link_status = "normal"
-			secure = true
-			immutable = true
-			hidden = true
-			required = true
-			options = [ "options" ]
-			min_value = 1
-			max_value = 1
-			min_length = 1
-			max_length = 1
-			matches = "matches"
-			position = 1
-			group_by = "group_by"
-			source = "source"
-		}
-		link = "link"
-  }
-  agent_kpi {
-		availability_indicator = "available"
-		lifecycle_indicator = "consistent"
-		percent_usage_indicator = "percent_usage_indicator"
-		application_indicators = [ null ]
-		infra_indicators = [ null ]
-  }
   agent_location = "us-south"
   agent_metadata {
 		name = "purpose"
@@ -65,12 +33,8 @@ resource "ibm_schematics_agent" "schematics_agent_instance" {
   name = "MyDevAgent"
   resource_group = "Default"
   schematics_location = "us-south"
-  user_state {
-		state = "enable"
-		set_by = "set_by"
-		set_at = "2021-01-31T09:44:12Z"
-  }
-  version = "v1.0.0"
+  tags = ["agent-MyDevAgent"]
+  version = "1.0.0"
 }
 ```
 
@@ -87,44 +51,6 @@ Nested scheme for **agent_infrastructure**:
 	* `cos_instance_name` - (Optional, String) The COS instance name to store the agent logs.
 	* `infra_type` - (Optional, String) Type of target agent infrastructure.
 	  * Constraints: Allowable values are: `ibm_kubernetes`, `ibm_openshift`, `ibm_satellite`.
-* `agent_inputs` - (Optional, List) Additional input variables for the agent.
-Nested scheme for **agent_inputs**:
-	* `link` - (Computed, String) The reference link to the variable value By default the expression points to `$self.value`.
-	* `metadata` - (Optional, List) An user editable metadata for the variables.
-	Nested scheme for **metadata**:
-		* `aliases` - (Optional, List) The list of aliases for the variable name.
-		* `cloud_data_type` - (Optional, String) Cloud data type of the variable. eg. resource_group_id, region, vpc_id.
-		* `default_value` - (Optional, String) Default value for the variable only if the override value is not specified.
-		* `description` - (Optional, String) The description of the meta data.
-		* `group_by` - (Optional, String) The display name of the group this variable belongs to.
-		* `hidden` - (Optional, Boolean) If **true**, the variable is not displayed on UI or Command line.
-		* `immutable` - (Optional, Boolean) Is the variable readonly ?.
-		* `link_status` - (Optional, String) The status of the link.
-		  * Constraints: Allowable values are: `normal`, `broken`.
-		* `matches` - (Optional, String) The regex for the variable value.
-		* `max_length` - (Optional, Integer) The maximum length of the variable value. Applicable for the string type.
-		* `max_value` - (Optional, Integer) The maximum value of the variable. Applicable for the integer type.
-		* `min_length` - (Optional, Integer) The minimum length of the variable value. Applicable for the string type.
-		* `min_value` - (Optional, Integer) The minimum value of the variable. Applicable for the integer type.
-		* `options` - (Optional, List) The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.
-		* `position` - (Optional, Integer) The relative position of this variable in a list.
-		* `required` - (Optional, Boolean) If the variable required?.
-		* `secure` - (Optional, Boolean) Is the variable secure or sensitive ?.
-		* `source` - (Optional, String) The source of this meta-data.
-		* `type` - (Optional, String) Type of the variable.
-		  * Constraints: Allowable values are: `boolean`, `string`, `integer`, `date`, `array`, `list`, `map`, `complex`, `link`.
-	* `name` - (Optional, String) The name of the variable. For example, `name = "inventory username"`.
-	* `use_default` - (Optional, Boolean) True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.
-	* `value` - (Optional, String) The value for the variable or reference to the value. For example, `value = "<provide your ssh_key_value with \n>"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.
-* `agent_kpi` - (Optional, List) Schematics Agent key performance indicators.
-Nested scheme for **agent_kpi**:
-	* `application_indicators` - (Optional, List) Agent application key performance indicators.
-	* `availability_indicator` - (Optional, String) Overall availability indicator reported by the agent.
-	  * Constraints: Allowable values are: `available`, `unavailable`, `error`.
-	* `infra_indicators` - (Optional, List) Agent infrastructure key performance indicators.
-	* `lifecycle_indicator` - (Optional, String) Overall lifecycle indicator reported by the agents.
-	  * Constraints: Allowable values are: `consistent`, `inconsistent`, `obselete`.
-	* `percent_usage_indicator` - (Optional, String) Percentage usage of the agent resources.
 * `agent_location` - (Required, String) The location where agent is deployed in the user environment.
 * `agent_metadata` - (Optional, List) The metadata of an agent.
 Nested scheme for **agent_metadata**:
@@ -150,6 +76,15 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the schematics_agent.
 * `agent_crn` - (String) The agent crn, obtained from the Schematics agent deployment configuration.
+* `agent_kpi` - (List) Schematics Agent key performance indicators.
+Nested scheme for **agent_kpi**:
+	* `application_indicators` - (List) Agent application key performance indicators.
+	* `availability_indicator` - (String) Overall availability indicator reported by the agent.
+	  * Constraints: Allowable values are: `available`, `unavailable`, `error`.
+	* `infra_indicators` - (List) Agent infrastructure key performance indicators.
+	* `lifecycle_indicator` - (String) Overall lifecycle indicator reported by the agents.
+	  * Constraints: Allowable values are: `consistent`, `inconsistent`, `obselete`.
+	* `percent_usage_indicator` - (String) Percentage usage of the agent resources.
 * `created_at` - (String) The agent creation date-time.
 * `creation_by` - (String) The email address of an user who created the agent.
 * `recent_deploy_job` - (List) Post-installations checks for Agent health.

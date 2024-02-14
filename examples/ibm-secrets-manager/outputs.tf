@@ -1,11 +1,3 @@
-output "secrets_manager_secrets" {
-  value = data.ibm_secrets_manager_secrets.secrets_manager_secrets_instance
-}
-
-output "secrets_manager_secret" {
-  value = data.ibm_secrets_manager_secret.secrets_manager_secret_instance
-}
-
 // This allows sm_secret_group data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_sm_secret_group" {
@@ -44,6 +36,12 @@ output "ibm_sm_kv_secret" {
 output "ibm_sm_iam_credentials_secret" {
   value       = ibm_sm_iam_credentials_secret.sm_iam_credentials_secret_instance
   description = "sm_iam_credentials_secret resource instance"
+}
+// This allows sm_service_credentials_secret data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_service_credentials_secret" {
+  value       = ibm_sm_service_credentials_secret.sm_service_credentials_secret_instance
+  description = "sm_service_credentials_secret resource instance"
 }
 // This allows sm_arbitrary_secret data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
