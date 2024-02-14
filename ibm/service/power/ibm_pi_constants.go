@@ -408,4 +408,6 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
+
+	PIVirtualOpticalDevice = "pi_virtual_optical_device"
 )

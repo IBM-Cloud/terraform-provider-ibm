@@ -127,6 +127,51 @@ resource "ibm_is_instance" "example1" {
 
 ```
 
+### Sample for creating an instance in a VPC with reservation
+
+```terraform
+resource "ibm_is_reservation" "example" {
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name          = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+  name = "reservation-name"
+}
+
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
+  profile = "bx2-2x8"
+  metadata_service_enabled  = false
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  reservation_affinity {
+    policy = "manual"
+    pool {
+      id = ibm_is_reservation.example.id
+    }
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+
+  //User can configure timeouts
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+
+```
 ### Sample for creating an instance with custom security group rules.
 
 The following example shows how you can create a virtual server instance with custom security group rules. Note that the security group, security group rules, and the virtual server instance must be created in a specific order to meet the dependencies of the individual resources. To force the creation in a specific order, you use the [`depends_on` parameter](https://www.terraform.io/docs/configuration/resources.html). If you do not provide this parameter, all resources are created at the same time which might lead to resource dependency errors during the provisioning of your virtual server, such as `The security group to attach to is not available`.
@@ -523,6 +568,16 @@ Review the argument references that you can specify for your resource.
     1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
     2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
 
+- `reservation_affinity` - (Optional, List) The reservation affinity for the instance
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
+
+    ->**policy** 
+			&#x2022; disabled: Reservations will not be used
+      </br>&#x2022; manual: Reservations in pool will be available for use
+  - `pool` - (Optional, String) The pool of reservations available for use by this virtual server instance. Specified reservations must have a status of active, and have the same profile and zone as this virtual server instance. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
+    Nested scheme for `pool`:
+    - `id` - The unique identifier for this reservation
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
 - `instance_template` - (Optional, String) ID of the instance template to create the instance from. To create an instance template, use `ibm_is_instance_template` resource.
   
@@ -614,7 +669,34 @@ In addition to all argument reference list, you can access the following attribu
         # value = ibm_is_instance.example.primary_network_interface.0.primary_ipv4_address // will be deprecated in future
         value = ibm_is_instance.example.primary_network_interface.0.primary_ip.0.address // use this instead 
       }
-      ```
+- `reservation`- (List) The reservation used by this virtual server instance. 
+
+  Nested scheme for `reservation`:
+  - `crn` - (String) The CRN for this reservation.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        
+      Nested `deleted` blocks have the following structure: 
+      - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this reservation.
+  - `id` - (String) The unique identifier for this reservation.
+  - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+  - `resource_type` - (string) The resource type.
+- `reservation_affinity`- (List) The instance reservation affinity. 
+
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (String) The reservation affinity policy to use for this virtual server instance.
+  - `pool` - (List) The pool of reservations available for use by this virtual server instance.
+      
+      Nested `pool` blocks have the following structure: 
+      - `crn` - (String) The CRN for this reservation.
+      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+          Nested `deleted` blocks have the following structure:
+          - `more_info` - (String) Link to documentation about deleted resources. 
+      - `href` - (String) The URL for this reservation.
+      - `id` - (String) The unique identifier for this reservation.
+      - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+      - `resource_type` - (string) The resource type.      ```
 - `status` - (String) The status of the instance.
 - `status_reasons` - (List) Array of reasons for the current status.
 

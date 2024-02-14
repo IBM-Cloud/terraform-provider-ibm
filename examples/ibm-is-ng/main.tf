@@ -1441,3 +1441,30 @@ data "ibm_is_snapshot_consistency_groups" "is_snapshot_consistency_group_instanc
   depends_on = [ibm_is_snapshot_consistency_group.is_snapshot_consistency_group_instance]
   name       = "example-snapshot-consistency-group"
 }
+
+//reservation
+
+resource "ibm_is_reservation" "example" {
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+}
+
+resource "ibm_is_reservation_activate" "example" {
+  reservation = ibm_is_reservation.example.id
+}
+
+data "ibm_is_reservations" "example" {
+}
+
+data "ibm_is_reservation" "example" {
+  identifier = ibm_is_reservation.example.id
+}
