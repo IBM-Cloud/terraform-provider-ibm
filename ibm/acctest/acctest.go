@@ -232,6 +232,7 @@ var ISDelegegatedVPC string
 var (
 	IsImageName             string
 	IsImage                 string
+	IsImage2                string
 	IsImageEncryptedDataKey string
 	IsImageEncryptionKey    string
 	IsWinImage              string
@@ -713,6 +714,12 @@ func init() {
 		// IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
 		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
+	}
+
+	IsImage2 = os.Getenv("IS_IMAGE2")
+	if IsImage2 == "" {
+		IsImage2 = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE2 for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
