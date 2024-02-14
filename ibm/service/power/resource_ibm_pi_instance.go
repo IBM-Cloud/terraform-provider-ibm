@@ -1025,7 +1025,7 @@ func isPIInstanceShutoffRefreshFunc(client *st.IBMPIInstanceClient, id, instance
 		return pvm, helpers.PIInstanceBuilding, nil
 	}
 }
-  
+
 // This function takes the input string and encodes into base64 if isn't already encoded
 func encodeBase64(userData string) string {
 	_, err := base64.StdEncoding.DecodeString(userData)
