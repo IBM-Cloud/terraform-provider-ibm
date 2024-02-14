@@ -238,6 +238,28 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"reservation_terms": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The type for this profile field",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported committed use terms for a reservation using this profile",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"total_volume_bandwidth": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -694,6 +716,12 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 			return err
 		}
 	}
+	if profile.ReservationTerms != nil {
+		err = d.Set("reservation_terms", dataSourceInstanceProfileFlattenReservationTerms(*profile.ReservationTerms))
+		if err != nil {
+			return err
+		}
+	}
 	if profile.TotalVolumeBandwidth != nil {
 		err = d.Set("total_volume_bandwidth", dataSourceInstanceProfileFlattenTotalVolumeBandwidth(*profile.TotalVolumeBandwidth.(*vpcv1.InstanceProfileVolumeBandwidth)))
 		if err != nil {
@@ -871,6 +899,27 @@ func dataSourceInstanceProfileGPUModelToMap(bandwidthItem vpcv1.InstanceProfileG
 	}
 
 	return gpuModelMap
+}
+
+func dataSourceInstanceProfileFlattenReservationTerms(result vpcv1.InstanceProfileReservationTerms) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileReservationTermsToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileReservationTermsToMap(resTermItem vpcv1.InstanceProfileReservationTerms) map[string]interface{} {
+	resTermMap := map[string]interface{}{}
+
+	if resTermItem.Type != nil {
+		resTermMap["type"] = resTermItem.Type
+	}
+	if resTermItem.Values != nil {
+		resTermMap["values"] = resTermItem.Values
+	}
+
+	return resTermMap
 }
 
 func dataSourceInstanceProfileFlattenGPUMemory(result vpcv1.InstanceProfileGpuMemory) (finalList []map[string]interface{}) {

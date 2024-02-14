@@ -232,6 +232,7 @@ var ISDelegegatedVPC string
 var (
 	IsImageName             string
 	IsImage                 string
+	IsImage2                string
 	IsImageEncryptedDataKey string
 	IsImageEncryptionKey    string
 	IsWinImage              string
@@ -713,6 +714,12 @@ func init() {
 		// IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
 		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
+	}
+
+	IsImage2 = os.Getenv("IS_IMAGE2")
+	if IsImage2 == "" {
+		IsImage2 = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE2 for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
@@ -1267,18 +1274,6 @@ func init() {
 	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
 	if SecretsManagerServiceCredentialsCosCrn == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
-	}
-
-	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
-	if SecretsManagerSecretType == "" {
-		SecretsManagerSecretType = "username_password"
-		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SECRET_TYPE for testing data_source_ibm_secrets_manager_secrets_test, else it is set to default value. For data_source_ibm_secrets_manager_secret_test, tests will fail if this is not set correctly")
-	}
-
-	SecretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
-	if SecretsManagerSecretID == "" {
-		// SecretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
-		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")

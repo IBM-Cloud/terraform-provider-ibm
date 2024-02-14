@@ -156,6 +156,33 @@ In addition to all argument reference list, you can access the following attribu
 			- `resource_type`- (String) The resource type.
 		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
 		- `resource_group` - (String) The name of the resource group where the instance was created.
+	- `reservation`- (List) The reservation used by this virtual server instance. 
+	  Nested scheme for `reservation`:
+	  - `crn` - (String) The CRN for this reservation.
+	  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        
+        Nested `deleted` blocks have the following structure: 
+		- `more_info` - (String) Link to documentation about deleted resources.
+	  - `href` - (String) The URL for this reservation.
+      - `id` - (String) The unique identifier for this reservation.
+      - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+      - `resource_type` - (string) The resource type.
+    - `reservation_affinity`- (List) The instance reservation affinity. 
+
+		Nested scheme for `reservation_affinity`:
+	    - `policy` - (String) The reservation affinity policy to use for this virtual server instance.
+        - `pool` - (List) The pool of reservations available for use by this virtual server instance.
+
+          Nested `pool` blocks have the following structure: 
+          - `crn` - (String) The CRN for this reservation.
+          - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+		  Nested `deleted` blocks have the following structure:
+		    - `more_info` - (String) Link to documentation about deleted resources. 
+          - `href` - (String) The URL for this reservation.
+          - `id` - (String) The unique identifier for this reservation.
+          - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+          - `resource_type` - (string) The resource type.
 	- `status` - (String) The status of the instance.
 	- `status_reasons` - (List) Array of reasons for the current status. 
 

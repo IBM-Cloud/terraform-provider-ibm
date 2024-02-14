@@ -470,6 +470,8 @@ func Provider() *schema.Provider {
 			"ibm_is_public_gateways":                 vpc.DataSourceIBMISPublicGateways(),
 			"ibm_is_region":                          vpc.DataSourceIBMISRegion(),
 			"ibm_is_regions":                         vpc.DataSourceIBMISRegions(),
+			"ibm_is_reservation":                     vpc.DataSourceIBMIsReservation(),
+			"ibm_is_reservations":                    vpc.DataSourceIBMIsReservations(),
 			"ibm_is_ssh_key":                         vpc.DataSourceIBMISSSHKey(),
 			"ibm_is_ssh_keys":                        vpc.DataSourceIBMIsSshKeys(),
 			"ibm_is_subnet":                          vpc.DataSourceIBMISSubnet(),
@@ -684,11 +686,6 @@ func Provider() *schema.Provider {
 			"ibm_billing_snapshot_list": usagereports.DataSourceIBMBillingSnapshotList(),
 
 			// Added for Secrets Manager
-			// V1 data sources:
-			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
-			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
-
-			// V2 data sources
 			"ibm_sm_secret_group":  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroup()),
 			"ibm_sm_secret_groups": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroups()),
 			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
@@ -1088,6 +1085,8 @@ func Provider() *schema.Provider {
 			"ibm_is_share_replica_operations":               vpc.ResourceIbmIsShareReplicaOperations(),
 			"ibm_is_share_mount_target":                     vpc.ResourceIBMIsShareMountTarget(),
 			"ibm_is_subnet":                                 vpc.ResourceIBMISSubnet(),
+			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
+			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),
 			"ibm_is_subnet_reserved_ip":                     vpc.ResourceIBMISReservedIP(),
 			"ibm_is_subnet_network_acl_attachment":          vpc.ResourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_subnet_public_gateway_attachment":       vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
@@ -1174,7 +1173,6 @@ func Provider() *schema.Provider {
 			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
-			"ibm_pi_network_port":                    power.ResourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
@@ -1551,6 +1549,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_vpn_gateway":                      vpc.ResourceIBMISVPNGatewayValidator(),
 				"ibm_is_vpn_server":                       vpc.ResourceIBMIsVPNServerValidator(),
 				"ibm_is_vpn_server_route":                 vpc.ResourceIBMIsVPNServerRouteValidator(),
+				"ibm_is_reservation":                      vpc.ResourceIBMISReservationValidator(),
 				"ibm_kms_key_rings":                       kms.ResourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                     dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
@@ -1687,8 +1686,6 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_is_vpc":                      vpc.DataSourceIBMISVpcValidator(),
 				"ibm_is_volume":                   vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_secrets_manager_secret":      secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
-				"ibm_secrets_manager_secrets":     secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 				"ibm_cis_webhooks":                cis.DataSourceIBMCISAlertWebhooksValidator(),
 				"ibm_cis_alerts":                  cis.DataSourceIBMCISAlertsValidator(),
 				"ibm_cis_bot_managements":         cis.DataSourceIBMCISBotManagementValidator(),
