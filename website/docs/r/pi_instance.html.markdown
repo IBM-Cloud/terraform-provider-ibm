@@ -64,7 +64,7 @@ Review the argument references that you can specify for your resource.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC`.
+- `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC` or `VMNoStorage`.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
 - `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
   - **Note**: only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
@@ -100,6 +100,7 @@ Review the argument references that you can specify for your resource.
   - Supported SAP system types are (e880/e980).
 - `pi_user_data` - (Optional, String) The user data `cloud-init` to pass to the instance during creation. It can be a base64 encoded or an unencoded string. If it is an unencoded string, the provider will encode it before it passing it down.
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
+- `pi_virtual_optical_device` - (Optional, String) Virtual Machine's Cloud Initialization Virtual Optical Device.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
