@@ -684,11 +684,6 @@ func Provider() *schema.Provider {
 			"ibm_billing_snapshot_list": usagereports.DataSourceIBMBillingSnapshotList(),
 
 			// Added for Secrets Manager
-			// V1 data sources:
-			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
-			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
-
-			// V2 data sources
 			"ibm_sm_secret_group":  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroup()),
 			"ibm_sm_secret_groups": secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmSecretGroups()),
 			"ibm_sm_private_certificate_configuration_intermediate_ca":           secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmPrivateCertificateConfigurationIntermediateCA()),
@@ -1174,7 +1169,6 @@ func Provider() *schema.Provider {
 			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
-			"ibm_pi_network_port":                    power.ResourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
@@ -1687,8 +1681,6 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_is_vpc":                      vpc.DataSourceIBMISVpcValidator(),
 				"ibm_is_volume":                   vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_secrets_manager_secret":      secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
-				"ibm_secrets_manager_secrets":     secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 				"ibm_cis_webhooks":                cis.DataSourceIBMCISAlertWebhooksValidator(),
 				"ibm_cis_alerts":                  cis.DataSourceIBMCISAlertsValidator(),
 				"ibm_cis_bot_managements":         cis.DataSourceIBMCISBotManagementValidator(),
