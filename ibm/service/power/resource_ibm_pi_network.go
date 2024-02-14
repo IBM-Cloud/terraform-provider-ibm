@@ -75,12 +75,12 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description: "PI network gateway",
 			},
 			helpers.PINetworkJumbo: {
-				Type:         schema.TypeBool,
-				Optional:     true,
-				Computed:     true,
-				Deprecated:   "This field is deprecated, use pi_network_mtu instead.",
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Computed:      true,
+				Deprecated:    "This field is deprecated, use pi_network_mtu instead.",
 				ConflictsWith: []string{helpers.PINetworkMtu, helpers.PINetworkJumbo},
-				Description:  "PI network enable MTU Jumbo option",
+				Description:   "PI network enable MTU Jumbo option",
 			},
 			helpers.PINetworkMtu: {
 				Type:          schema.TypeInt,
