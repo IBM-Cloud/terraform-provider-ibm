@@ -1561,7 +1561,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ukoClientErr = fmt.Errorf("Error occurred while configuring HPCS UKO service: %q", err)
 	}
 
-	// APPID Service
+	// APP ID Service
 	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
 	if c.Visibility == "private" {
 		session.appidErr = fmt.Errorf("App Id resources doesnot support private endpoints")
