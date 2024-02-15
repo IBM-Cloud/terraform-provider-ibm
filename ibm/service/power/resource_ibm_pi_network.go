@@ -79,7 +79,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				Deprecated:    "This field is deprecated, use pi_network_mtu instead.",
-				ConflictsWith: []string{helpers.PINetworkMtu, helpers.PINetworkJumbo},
+				ConflictsWith: []string{helpers.PINetworkMtu},
 				Description:   "PI network enable MTU Jumbo option",
 			},
 			helpers.PINetworkMtu: {
