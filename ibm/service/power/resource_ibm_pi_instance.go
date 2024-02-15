@@ -353,24 +353,24 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Minimum Virtual Cores Assigned to the PVMInstance",
 			},
-			PIInstanceIbmiCSS: {
+			PIInstanceIBMiCSS: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "IBMi Cloud Storage Solution",
 			},
-			PIInstanceIbmiPHA: {
+			PIInstanceIBMiPHA: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "IBMi Power High Availability",
 			},
-			PIInstanceIbmiRDS: {
+			PIInstanceIBMiRDS: {
 				Type:        schema.TypeBool,
 				Optional:    false,
 				Required:    false,
 				Computed:    true,
 				Description: "IBMi Rational Dev Studio",
 			},
-			PIInstanceIbmiRDSUsers: {
+			PIInstanceIBMiRDSUsers: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "IBMi Rational Dev Studio Number of User Licenses",
@@ -537,13 +537,13 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(PIInstanceDeploymentType, powervmdata.DeploymentType)
 	if powervmdata.SoftwareLicenses != nil {
-		d.Set(PIInstanceIbmiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
-		d.Set(PIInstanceIbmiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
-		d.Set(PIInstanceIbmiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		d.Set(PIInstanceIBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
+		d.Set(PIInstanceIBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(PIInstanceIBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
 		if *powervmdata.SoftwareLicenses.IbmiRDS {
-			d.Set(PIInstanceIbmiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+			d.Set(PIInstanceIBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
 		} else {
-			d.Set(PIInstanceIbmiRDSUsers, 0)
+			d.Set(PIInstanceIBMiRDSUsers, 0)
 		}
 	}
 	return nil
@@ -801,7 +801,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-	if d.HasChanges(PIInstanceIbmiCSS, PIInstanceIbmiPHA, PIInstanceIbmiRDSUsers) {
+	if d.HasChanges(PIInstanceIBMiCSS, PIInstanceIBMiPHA, PIInstanceIBMiRDSUsers) {
 		if d.Get("status") == "ACTIVE" {
 			log.Printf("the lpar is in the Active state, continuing with update")
 		} else {
@@ -812,9 +812,9 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 
 		sl := &models.SoftwareLicenses{}
-		sl.IbmiCSS = flex.PtrToBool(d.Get(PIInstanceIbmiCSS).(bool))
-		sl.IbmiPHA = flex.PtrToBool(d.Get(PIInstanceIbmiPHA).(bool))
-		ibmrdsUsers := d.Get(PIInstanceIbmiRDSUsers).(int)
+		sl.IbmiCSS = flex.PtrToBool(d.Get(PIInstanceIBMiCSS).(bool))
+		sl.IbmiPHA = flex.PtrToBool(d.Get(PIInstanceIBMiPHA).(bool))
+		ibmrdsUsers := d.Get(PIInstanceIBMiRDSUsers).(int)
 		if ibmrdsUsers < 0 {
 			return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
 		}
@@ -1473,13 +1473,13 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 			IbmiRDS:      &falseBool,
 			IbmiRDSUsers: 0,
 		}
-		if ibmiCSS, ok := d.GetOk(PIInstanceIbmiCSS); ok {
+		if ibmiCSS, ok := d.GetOk(PIInstanceIBMiCSS); ok {
 			sl.IbmiCSS = flex.PtrToBool(ibmiCSS.(bool))
 		}
-		if ibmiPHA, ok := d.GetOk(PIInstanceIbmiPHA); ok {
+		if ibmiPHA, ok := d.GetOk(PIInstanceIBMiPHA); ok {
 			sl.IbmiPHA = flex.PtrToBool(ibmiPHA.(bool))
 		}
-		if ibmrdsUsers, ok := d.GetOk(PIInstanceIbmiRDSUsers); ok {
+		if ibmrdsUsers, ok := d.GetOk(PIInstanceIBMiRDSUsers); ok {
 			if ibmrdsUsers.(int) < 0 {
 				return nil, fmt.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
 			}
