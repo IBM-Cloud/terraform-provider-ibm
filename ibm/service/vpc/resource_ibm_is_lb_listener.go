@@ -122,6 +122,7 @@ func ResourceIBMISLBListener() *schema.Resource {
 				Optional:      true,
 				RequiredWith:  []string{isLBListenerHTTPSRedirectListener},
 				ConflictsWith: []string{"https_redirect"},
+				Deprecated:    "Please use the argument 'https_redirect'",
 				Description:   "The HTTP status code to be returned in the redirect response",
 			},
 
@@ -129,6 +130,7 @@ func ResourceIBMISLBListener() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"https_redirect"},
+				Deprecated:    "Please use the argument 'https_redirect'",
 				RequiredWith:  []string{isLBListenerHTTPSRedirectStatusCode, isLBListenerHTTPSRedirectListener},
 				Description:   "Target URI where traffic will be redirected",
 			},
@@ -137,6 +139,7 @@ func ResourceIBMISLBListener() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"https_redirect"},
+				Deprecated:    "Please use the argument 'https_redirect'",
 				RequiredWith:  []string{isLBListenerHTTPSRedirectStatusCode},
 				Description:   "ID of the listener that will be set as http redirect target",
 			},
@@ -181,7 +184,7 @@ func ResourceIBMISLBListener() *schema.Resource {
 									},
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The unique identifier for this load balancer listener.",
 									},
 								},

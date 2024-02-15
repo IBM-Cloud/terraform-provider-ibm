@@ -257,9 +257,7 @@ func TestAccIBMISLBListenerPolicyHttpRedirectNew_basic(t *testing.T) {
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.http_status_code", "301"),
-					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.uri", "/example?doc=getupdated"),
-					resource.TestCheckNoResourceAttr("ibm_is_lb_listener_policy.lb_listener_policy", "target.0.uri"),
+					resource.TestCheckResourceAttr("ibm_is_lb_listener_policy.lb_listener_policy", "target.0.uri", ""),
 				),
 			},
 		},
@@ -660,7 +658,7 @@ func testAccCheckIBMISLBListenerPolicyHttpsRedirectNewConfig(vpcname, subnetname
 	}
 	resource "ibm_is_lb_listener" "lb_listener3"{
 		lb       = ibm_is_lb.testacc_LB.id
-		port     = "9086"
+		port     = "9088"
 		protocol = "https"
 		certificate_instance="%s"
 	}

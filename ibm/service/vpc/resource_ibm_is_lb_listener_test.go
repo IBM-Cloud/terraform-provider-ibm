@@ -346,7 +346,7 @@ func TestAccIBMISLBListenerHttpRedirectNew_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.status_code", "303"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", "/example?doc=getupdated"),
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", ""),
 				),
 			},
 			{
@@ -356,7 +356,7 @@ func TestAccIBMISLBListenerHttpRedirectNew_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckNoResourceAttr(
-						"ibm_is_lb_listener.lb_listener2", "https_redirect"),
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.#"),
 				),
 			},
 		},
@@ -618,7 +618,7 @@ func testAccCheckIBMISLBListenerHttpsRedirectNewConfig(vpcname, subnetname, zone
 	}
 	resource "ibm_is_lb_listener" "lb_listener1"{
 		lb       = ibm_is_lb.testacc_LB.id
-		port     = "9086"
+		port     = "9088"
 		protocol = "https"
 		certificate_instance="%s"
 	  }

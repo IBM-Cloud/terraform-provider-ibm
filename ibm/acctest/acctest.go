@@ -591,7 +591,7 @@ func init() {
 	}
 	LbListerenerCertificateInstance = os.Getenv("IBM_LB_LISTENER_CERTIFICATE_INSTANCE")
 	if LbListerenerCertificateInstance == "" {
-		LbListerenerCertificateInstance = "crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+		LbListerenerCertificateInstance = "crn:v1:bluemix:public:secrets-manager:us-south:a/1431ea2a7958ad20f0fee592ff85f746:2f504783-548b-4a8e-85ba-6a8df9c62a1f:secret:4b9bdfeb-a2a4-23bc-5e9d-3d60a0debd51"
 		fmt.Println("[WARN] Set the environment variable IBM_LB_LISTENER_CERTIFICATE_INSTANCE for testing ibm_is_lb_listener resource for https redirect else it is set to default value 'crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed'")
 	}
 
