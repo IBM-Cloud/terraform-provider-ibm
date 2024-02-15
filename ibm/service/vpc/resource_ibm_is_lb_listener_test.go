@@ -320,7 +320,7 @@ func TestAccIBMISLBListenerHttpRedirectNew_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.status_code", "301"),
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.http_status_code", "302"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", "/example?doc=get"),
 				),
@@ -332,7 +332,7 @@ func TestAccIBMISLBListenerHttpRedirectNew_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.status_code", "303"),
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.http_status_code", "303"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", "/example?doc=getupdated"),
 				),
@@ -344,7 +344,7 @@ func TestAccIBMISLBListenerHttpRedirectNew_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.status_code", "303"),
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.http_status_code", "303"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", ""),
 				),
