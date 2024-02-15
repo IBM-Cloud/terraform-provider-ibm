@@ -37,3 +37,4 @@ vendor/
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
 
+*.sh

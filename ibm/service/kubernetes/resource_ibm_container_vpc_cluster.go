@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2023 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes
@@ -53,10 +53,10 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"flavor": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Cluster nodes flavour",
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Cluster nodes flavour",
 			},
 
 			"name": {
@@ -106,21 +106,24 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"zones": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				Description: "Zone info",
+				Type:             schema.TypeSet,
+				Required:         true,
+				Description:      "Zone info",
+				DiffSuppressFunc: flex.ApplyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Zone for the worker pool in a multizone cluster",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "Zone for the worker pool in a multizone cluster",
+							DiffSuppressFunc: flex.ApplyOnce,
 						},
 
 						"subnet_id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The VPC subnet to assign the cluster",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The VPC subnet to assign the cluster",
+							DiffSuppressFunc: flex.ApplyOnce,
 						},
 					},
 				},
@@ -189,56 +192,62 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"worker_count": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "Number of worker nodes in the cluster",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Default:          1,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Number of worker nodes in the default worker pool",
 			},
 
 			"worker_labels": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Labels for default worker pool",
+				Type:             schema.TypeMap,
+				Optional:         true,
+				Computed:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Labels for default worker pool",
 			},
 
 			"operating_system": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The operating system of the workers in the default worker pool.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The operating system of the workers in the default worker pool.",
 			},
 
 			"secondary_storage": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The secondary storage option for the default worker pool.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The secondary storage option for the default worker pool.",
 			},
 
 			"taints": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "WorkerPool Taints",
+				Type:             schema.TypeSet,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Taints for the default worker pool",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Key for taint",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "Key for taint",
 						},
 						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Value for taint.",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "Value for taint.",
 						},
 						"effect": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: validate.InvokeValidator(
 								"ibm_container_vpc_cluster",
 								"effect"),
@@ -322,6 +331,15 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
 
+			"security_groups": {
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "Allow user to set which security groups added to their workers",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              flex.ResourceIBMVPCHash,
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+
 			//Get Cluster info Request
 			"state": {
 				Type:     schema.TypeString,
@@ -397,6 +415,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed: true,
 			},
 
+			"vpe_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -421,10 +444,10 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"host_pool_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The ID of the cluster's associated host pool",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The ID of the default worker pool's associated host pool",
 			},
 
 			flex.ResourceName: {
@@ -587,6 +610,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		params.CosInstanceCRN = v.(string)
 	}
 
+	if v, ok := d.GetOk("security_groups"); ok {
+		securityGroups := flex.FlattenSet(v.(*schema.Set))
+		params.SecurityGroupIDs = securityGroups
+	}
+
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
@@ -634,6 +662,14 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 
 	}
+	var taints []interface{}
+	if taintRes, ok := d.GetOk("taints"); ok {
+		taints = taintRes.(*schema.Set).List()
+	}
+	if err := updateWorkerpoolTaints(d, meta, cls.ID, "default", taints); err != nil {
+		return err
+	}
+
 	return resourceIBMContainerVpcClusterUpdate(d, meta)
 
 }
@@ -671,7 +707,6 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		kmsConfig.Cluster = clusterID
 		targetEnv := v2.ClusterHeader{}
 		if kms, ok := d.GetOk("kms_config"); ok {
-
 			kmsConfiglist := kms.([]interface{})
 
 			for _, l := range kmsConfiglist {
@@ -824,106 +859,6 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	if d.HasChange("worker_labels") && !d.IsNewResource() {
-		labels := make(map[string]string)
-		if l, ok := d.GetOk("worker_labels"); ok {
-			for k, v := range l.(map[string]interface{}) {
-				labels[k] = v.(string)
-			}
-		}
-
-		ClusterClient, err := meta.(conns.ClientSession).ContainerAPI()
-		if err != nil {
-			return err
-		}
-		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
-
-		err = ClusterClient.WorkerPools().UpdateLabelsWorkerPool(clusterID, "default", labels, Env)
-		if err != nil {
-			return fmt.Errorf(
-				"[ERROR] Error updating the labels: %s", err)
-		}
-	}
-
-	if d.HasChange("taints") {
-		var taints []interface{}
-		if taintRes, ok := d.GetOk("taints"); ok {
-			taints = taintRes.(*schema.Set).List()
-		}
-		if err := updateWorkerpoolTaints(d, meta, clusterID, "default", taints); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("worker_count") && !d.IsNewResource() {
-		count := d.Get("worker_count").(int)
-		ClusterClient, err := meta.(conns.ClientSession).ContainerAPI()
-		if err != nil {
-			return err
-		}
-		Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
-
-		err = ClusterClient.WorkerPools().ResizeWorkerPool(clusterID, "default", count, Env)
-		if err != nil {
-			return fmt.Errorf(
-				"[ERROR] Error updating the worker_count %d: %s", count, err)
-		}
-	}
-
-	if d.HasChange("zones") && !d.IsNewResource() {
-		oldList, newList := d.GetChange("zones")
-		if oldList == nil {
-			oldList = new(schema.Set)
-		}
-		if newList == nil {
-			newList = new(schema.Set)
-		}
-		os := oldList.(*schema.Set)
-		ns := newList.(*schema.Set)
-		remove := os.Difference(ns).List()
-		add := ns.Difference(os).List()
-		if len(add) > 0 {
-			for _, zone := range add {
-				newZone := zone.(map[string]interface{})
-				zoneParam := v2.WorkerPoolZone{
-					Cluster:      clusterID,
-					Id:           newZone["name"].(string),
-					SubnetID:     newZone["subnet_id"].(string),
-					WorkerPoolID: "default",
-				}
-				err = csClient.WorkerPools().CreateWorkerPoolZone(zoneParam, targetEnv)
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error adding zone to conatiner vpc cluster: %s", err)
-				}
-				_, err = WaitForWorkerPoolAvailable(d, meta, clusterID, "default", d.Timeout(schema.TimeoutCreate), targetEnv)
-				if err != nil {
-					return fmt.Errorf(
-						"[ERROR] Error waiting for workerpool (%s) to become ready: %s", d.Id(), err)
-				}
-
-			}
-		}
-		if len(remove) > 0 {
-			for _, zone := range remove {
-				oldZone := zone.(map[string]interface{})
-				ClusterClient, err := meta.(conns.ClientSession).ContainerAPI()
-				if err != nil {
-					return err
-				}
-				Env := v1.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
-				err = ClusterClient.WorkerPools().RemoveZone(clusterID, oldZone["name"].(string), "default", Env)
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error deleting zone to conatiner vpc cluster: %s", err)
-				}
-				_, err = WaitForV2WorkerZoneDeleted(clusterID, "default", oldZone["name"].(string), meta, d.Timeout(schema.TimeoutDelete), targetEnv)
-				if err != nil {
-					return fmt.Errorf(
-						"[ERROR] Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", "default", clusterID, err)
-				}
-			}
-		}
-	}
-
 	if d.HasChange("force_delete_storage") {
 		var forceDeleteStorage bool
 		if v, ok := d.GetOk("force_delete_storage"); ok {
@@ -946,6 +881,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 
 	return resourceIBMContainerVpcClusterRead(d, meta)
 }
+
 func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -1053,6 +989,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
+	d.Set("vpe_service_endpoint_url", cls.VirtualPrivateEndpointURL)
 	if cls.ServiceEndpoints.PublicServiceEndpointEnabled {
 		d.Set("disable_public_service_endpoint", false)
 	} else {

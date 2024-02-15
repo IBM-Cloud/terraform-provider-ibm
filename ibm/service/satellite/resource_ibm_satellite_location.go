@@ -209,6 +209,20 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
+			"service_subnet": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "Custom subnet CIDR to provide private IP addresses for services",
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+			"pod_subnet": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "Custom subnet CIDR to provide private IP addresses for pods",
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 		},
 	}
 }
@@ -273,6 +287,16 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 			"X-Auth-Resource-Group": v.(string),
 		}
 		createSatLocOptions.Headers = pathParamsMap
+	}
+
+	if v, ok := d.GetOk("pod_subnet"); ok {
+		podSubnet := v.(string)
+		createSatLocOptions.PodSubnet = &podSubnet
+	}
+
+	if v, ok := d.GetOk("service_subnet"); ok {
+		serviceSubnet := v.(string)
+		createSatLocOptions.ServiceSubnet = &serviceSubnet
 	}
 
 	instance, response, err := satClient.CreateSatelliteLocation(createSatLocOptions)
@@ -355,6 +379,14 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 	if instance.Ingress != nil {
 		d.Set("ingress_hostname", *instance.Ingress.Hostname)
 		d.Set("ingress_secret", *instance.Ingress.SecretName)
+	}
+
+	if instance.PodSubnet != nil {
+		d.Set("pod_subnet", *instance.PodSubnet)
+	}
+
+	if instance.ServiceSubnet != nil {
+		d.Set("service_subnet", *instance.ServiceSubnet)
 	}
 
 	return nil

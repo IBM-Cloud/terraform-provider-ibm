@@ -48,6 +48,21 @@ resource "ibm_is_image" "example" {
 
 }
 
+resource "ibm_is_reservation" "example" {
+  capacity {
+    total = 5
+  }
+  committed_use {
+    term = "one_year"
+  }
+  profile {
+    name          = "ba2-2x8"
+    resource_type = "instance_profile"
+  }
+  zone = "us-east-3"
+  name = "reservation-name"
+}
+
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
@@ -61,6 +76,13 @@ resource "ibm_is_instance" "example" {
   network_interfaces {
     name   = "eth1"
     subnet = ibm_is_subnet.example.id
+  }
+
+  reservation_affinity {
+    policy = "manual"
+    pool {
+      id = ibm_is_reservation.example.id
+    }
   }
 
   vpc  = ibm_is_vpc.example.id
@@ -200,6 +222,34 @@ In addition to all argument reference list, you can access the following attribu
   - `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
   - `subnet` - (String) The ID of the subnet that is used in the primary network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
+- `reservation`- (List) The reservation used by this virtual server instance. 
+
+  Nested scheme for `reservation`:
+  - `crn` - (String) The CRN for this reservation.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        
+      Nested `deleted` blocks have the following structure: 
+      - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this reservation.
+  - `id` - (String) The unique identifier for this reservation.
+  - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+  - `resource_type` - (string) The resource type.
+- `reservation_affinity`- (List) The instance reservation affinity. 
+
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (String) The reservation affinity policy to use for this virtual server instance.
+  - `pool` - (List) The pool of reservations available for use by this virtual server instance.
+        
+    Nested `pool` blocks have the following structure: 
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+      Nested `deleted` blocks have the following structure:
+      - `more_info` - (String) Link to documentation about deleted resources. 
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
 - `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that you can use to see details for your instance.  
 - `resource_group` - (String) The resource group id, where the instance was created.
 - `status` - (String) The status of the instance.
