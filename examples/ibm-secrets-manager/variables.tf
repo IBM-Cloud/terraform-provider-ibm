@@ -210,6 +210,54 @@ variable "sm_iam_credentials_secret_reuse_api_key" {
   default     = true
 }
 
+// Resource arguments for sm_service_credentials_secret
+variable "sm_service_credentials_name" {
+  description = "The human-readable name of your secret."
+  type        = string
+  default     = "my-service-credentials-secret"
+}
+variable "sm_service_credentials_secret_custom_metadata" {
+  description = "The secret metadata that a user can customize."
+  type        = any
+  default     = "anything as a string"
+}
+variable "sm_service_credentials_secret_description" {
+  description = "An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group."
+  type        = string
+  default     = "Extended description for this secret."
+}
+variable "sm_service_credentials_secret_labels" {
+  description = "Labels that you can use to search for secrets in your instance.Up to 30 labels can be created."
+  type        = list(string)
+  default     = [ "my-label" ]
+}
+variable "sm_service_credentials_secret_secret_group_id" {
+  description = "A v4 UUID identifier, or `default` secret group."
+  type        = string
+  default     = "default"
+}
+variable "sm_service_credentials_secret_source_service_instance_crn" {
+  description = "A CRN that uniquely identifies a service credentials source"
+  type        = string
+  default     = "crn:v1:staging:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
+}
+variable "sm_service_credentials_secret_source_service_role_crn" {
+  description = "The service-specific custom role object, CRN role is accepted. Refer to the service’s documentation for supported roles."
+  type        = string
+  default     = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
+}
+variable "sm_service_credentials_secret_source_service_parameters" {
+  description = "Configuration options represented as key-value pairs. Service-defined options are used in the generation of credentials for some services."
+  type        = string
+  default     = {}
+}
+variable "sm_service_credentials_secret_ttl" {
+  description = "The time-to-live (TTL) or lease duration to assign to generated credentials. The TTL defines for how long generated credentials remain valid. The value should be a string that specifies the number of seconds. Minimum duration is 86400 (1 day). Maximum is 7776000 seconds (90 days)."
+  type        = string
+  default     = "86401"
+}
+
+
 // Resource arguments for sm_arbitrary_secret
 variable "sm_arbitrary_secret_name" {
   description = "The human-readable name of your secret."
@@ -705,6 +753,14 @@ variable "sm_iam_credentials_secret_metadata_id" {
   default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
 }
 
+// Data source arguments for sm_service_credentials_secret_metadata
+variable "sm_service_credentials_secret_metadata_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
+
 // Data source arguments for sm_arbitrary_secret_metadata
 variable "sm_arbitrary_secret_metadata_id" {
   description = "The ID of the secret."
@@ -742,6 +798,13 @@ variable "sm_kv_secret_id" {
 
 // Data source arguments for sm_iam_credentials_secret
 variable "sm_iam_credentials_secret_id" {
+  description = "The ID of the secret."
+  type        = string
+  default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"
+}
+
+// Data source arguments for sm_service_credentials_secret
+variable "sm_service_credentials_secret_id" {
   description = "The ID of the secret."
   type        = string
   default     = "0b5571f7-21e6-42b7-91c5-3f5ac9793a46"

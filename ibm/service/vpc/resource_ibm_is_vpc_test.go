@@ -298,6 +298,53 @@ func TestAccIBMISVPC_dns_delegated(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVPC_dns_delegated_first(t *testing.T) {
+	var vpc string
+	name1 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("terraformvpcuat-%d", acctest.RandIntRange(10, 100))
+	subnet1 := fmt.Sprintf("terraformsubnet-%d", acctest.RandIntRange(10, 100))
+	subnet2 := fmt.Sprintf("terraformsubnet-%d", acctest.RandIntRange(10, 100))
+	resourecinstance := fmt.Sprintf("terraformresource-%d", acctest.RandIntRange(10, 100))
+	resolver1 := fmt.Sprintf("terraformresolver-%d", acctest.RandIntRange(10, 100))
+	binding := fmt.Sprintf("terraformbinding-%d", acctest.RandIntRange(10, 100))
+	enableHubTrue := true
+	enableHubFalse := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPCDnsDelegatedFirstConfig(name1, name2, subnet1, subnet2, resourecinstance, resolver1, binding, enableHubTrue, enableHubFalse),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.hub_true", vpc),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_true", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "name", name2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_true", "dns.0.enable_hub", fmt.Sprintf("%t", enableHubTrue)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_true", "dns.0.resolver.0.type", "system"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.enable_hub", fmt.Sprintf("%t", enableHubFalse)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.type", "delegated"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolution_binding_count", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_name", binding),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.dns_binding_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpc.hub_false_delegated", "dns.0.resolver.0.vpc_name"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISVPC_basic_apm(t *testing.T) {
 	var vpc string
@@ -596,6 +643,69 @@ func testAccCheckIBMISVPCDnsDelegatedConfig(vpcname, vpcname2, subnetname1, subn
 	}
 	
 	`, vpcname, enableHub, vpcname2, enablehubfalse, subnetname1, acc.ISZoneName, subnetname2, acc.ISZoneName, subnetname3, acc.ISZoneName, subnetname4, acc.ISZoneName, resourceinstance, resolver1, resolver2, bindingname)
+
+}
+func testAccCheckIBMISVPCDnsDelegatedFirstConfig(vpcname, vpcname2, subnetname1, subnetname2, resourceinstance, resolver1, bindingname string, enableHub, enablehubfalse bool) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "rg" {
+		is_default	   =  true
+	}
+	
+	resource ibm_is_vpc hub_true {
+		name = "%s"
+		dns {
+			enable_hub = %t
+		}
+	}
+	
+	resource ibm_is_vpc hub_false_delegated {
+		depends_on = [ ibm_dns_custom_resolver.test_hub_true ]
+		name = "%s"
+		dns {
+			enable_hub = %t
+			resolver {
+				type = "delegated"
+				vpc_id = ibm_is_vpc.hub_true.id
+				dns_binding_name = "%s"
+			}
+		}
+	}
+	
+	resource "ibm_is_subnet" "hub_true_sub1" {
+		name		   				=  "%s"
+		vpc      	   				=  ibm_is_vpc.hub_true.id
+		zone		   				=  "%s"
+		total_ipv4_address_count 	= 16
+	}
+	resource "ibm_is_subnet" "hub_true_sub2" {
+		name		   				=  "%s"
+		vpc      	   				=  ibm_is_vpc.hub_true.id
+		zone		   				=  "%s"
+		total_ipv4_address_count 	= 16
+	}
+	resource "ibm_resource_instance" "dns-cr-instance" {
+		name		   		=  "%s"
+		resource_group_id  	=  data.ibm_resource_group.rg.id
+		location           	=  "global"
+		service		   		=  "dns-svcs"
+		plan		   		=  "standard-dns"
+	}
+	resource "ibm_dns_custom_resolver" "test_hub_true" {
+		name		   		=  "%s"
+		instance_id 	   	=  ibm_resource_instance.dns-cr-instance.guid
+		description	   		=  "new test CR - TF"
+		high_availability  	=  true
+		enabled 	   		=  true
+		locations {
+				subnet_crn  = ibm_is_subnet.hub_true_sub1.crn
+				enabled	 = true
+		}
+		locations {
+				subnet_crn  = ibm_is_subnet.hub_true_sub2.crn
+				enabled	 = true
+		}
+	}
+	`, vpcname, enableHub, vpcname2, enablehubfalse, bindingname, subnetname1, acc.ISZoneName, subnetname2, acc.ISZoneName, resourceinstance, resolver1)
 
 }
 func testAccCheckIBMISVPCDnsDelegatedUpdate1Config(vpcname, vpcname2, subnetname1, subnetname2, subnetname3, subnetname4, resourceinstance, resolver1, resolver2, bindingname string, enableHub, enablehubfalse bool) string {

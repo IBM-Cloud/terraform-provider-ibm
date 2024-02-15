@@ -70,14 +70,15 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "users.#", "1"),
+					resource.TestCheckResourceAttr(name, "users.0.name", "coolguy"),
+					resource.TestCheckResourceAttr(name, "users.0.role", "-@all +@read"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 				),
 			},
@@ -168,7 +169,7 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -208,7 +209,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -243,7 +244,7 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			memory {
@@ -257,7 +258,7 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 				`, databaseResourceGroup, name, acc.Region())
 }
 
-func testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -269,17 +270,12 @@ func testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup st
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
-		group {
-			group_id = "member"
-
-			memory {
-				allocation_mb = 1024
-			}
-			 disk {
-				allocation_mb = 2048
-			}
+		users {
+			name = "coolguy"
+      password = "securepassword123"
+      role     = "-@all +@read"
 	  }
   }
 				`, databaseResourceGroup, name, acc.Region())

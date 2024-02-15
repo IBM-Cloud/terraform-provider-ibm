@@ -351,7 +351,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 
@@ -364,7 +364,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -393,14 +393,14 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -434,7 +434,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		timeouts {
 			create = "120m"
@@ -458,7 +458,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
@@ -493,7 +493,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -512,7 +512,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -541,7 +541,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -559,11 +559,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -596,7 +596,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -635,7 +635,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 		group {
 			group_id = "member"
 			members {
@@ -674,7 +674,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
@@ -694,7 +694,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -723,7 +723,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
@@ -742,11 +742,11 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		}
 		users {
 		  name     = "user123"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12345678"
 		}
 		allowlist {
 		  address     = "172.168.1.2/32"
@@ -780,7 +780,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"
@@ -820,7 +820,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 		service                      = "databases-for-elasticsearch"
 		plan                         = "platinum"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 		  group_id = "member"

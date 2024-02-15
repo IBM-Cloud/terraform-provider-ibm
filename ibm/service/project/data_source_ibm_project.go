@@ -75,15 +75,20 @@ func DataSourceIbmProject() *schema.Resource {
 				Computed:    true,
 				Description: "The IBM Cloud location where a resource is deployed.",
 			},
-			"resource_group": &schema.Schema{
+			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group where the project's data and tools are created.",
+				Description: "The resource group id where the project's data and tools are created.",
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The project status value.",
+			},
+			"resource_group": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource group name where the project's data and tools are created.",
 			},
 			"event_notifications_crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -135,7 +140,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The configuration name.",
+										Description: "The configuration name. It is unique within the account across projects and regions.",
 									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
@@ -254,7 +259,7 @@ func DataSourceIbmProject() *schema.Resource {
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The name of the environment.",
+										Description: "The name of the environment.  It is unique within the account across projects and regions.",
 									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
@@ -276,7 +281,7 @@ func DataSourceIbmProject() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the project.",
+							Description: "The name of the project.  It is unique within the account across regions.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
@@ -343,12 +348,16 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
 
-	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+	if err = d.Set("resource_group_id", project.ResourceGroupID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
 
 	if err = d.Set("state", project.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+
+	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 	}
 
 	if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
@@ -358,7 +367,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	configs := []map[string]interface{}{}
 	if project.Configs != nil {
 		for _, modelItem := range project.Configs {
-			modelMap, err := dataSourceIbmProjectProjectConfigCollectionMemberToMap(&modelItem)
+			modelMap, err := dataSourceIbmProjectProjectConfigSummaryToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -372,7 +381,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	environments := []map[string]interface{}{}
 	if project.Environments != nil {
 		for _, modelItem := range project.Environments {
-			modelMap, err := dataSourceIbmProjectProjectEnvironmentCollectionMemberToMap(&modelItem)
+			modelMap, err := dataSourceIbmProjectProjectEnvironmentSummaryToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -415,7 +424,7 @@ func dataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulati
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.ProjectConfigCollectionMember) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ApprovedVersion != nil {
 		approvedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
@@ -434,12 +443,8 @@ func dataSourceIbmProjectProjectConfigCollectionMemberToMap(model *projectv1.Pro
 	modelMap["id"] = model.ID
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["state"] = model.State
-	if model.CreatedAt != nil {
-		modelMap["created_at"] = model.CreatedAt.String()
-	}
-	if model.ModifiedAt != nil {
-		modelMap["modified_at"] = model.ModifiedAt.String()
-	}
+	modelMap["created_at"] = model.CreatedAt.String()
+	modelMap["modified_at"] = model.ModifiedAt.String()
 	modelMap["href"] = model.Href
 	definitionMap, err := dataSourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
 	if err != nil {
@@ -492,7 +497,7 @@ func dataSourceIbmProjectProjectDefinitionReferenceToMap(model *projectv1.Projec
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectEnvironmentCollectionMemberToMap(model *projectv1.ProjectEnvironmentCollectionMember) (map[string]interface{}, error) {
+func dataSourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.ProjectEnvironmentSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	projectMap, err := dataSourceIbmProjectProjectReferenceToMap(model.Project)
