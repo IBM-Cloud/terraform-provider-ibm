@@ -155,6 +155,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									},
 									"id": {
 										Type:        schema.TypeString,
+										Optional:    true,
 										Computed:    true,
 										Description: "ID of this VNI",
 									},
@@ -163,6 +164,22 @@ func ResourceIbmIsShare() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "Name of this VNI",
+									},
+									"allow_ip_spoofing": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+									},
+									"auto_delete": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
+									},
+									"enable_infrastructure_nat": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 									},
 									"primary_ip": {
 										Type:        schema.TypeList,
@@ -230,6 +247,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									"subnet": {
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "The associated subnet. Required if primary_ip is not specified.",
 									},
 								},
@@ -388,6 +406,7 @@ func ResourceIbmIsShare() *schema.Resource {
 												},
 												"id": {
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "ID of this VNI",
 												},
@@ -396,6 +415,22 @@ func ResourceIbmIsShare() *schema.Resource {
 													Optional:    true,
 													Computed:    true,
 													Description: "Name of this VNI",
+												},
+												"allow_ip_spoofing": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+												},
+												"auto_delete": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Computed:    true,
+													Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
+												},
+												"enable_infrastructure_nat": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 												},
 												"primary_ip": {
 													Type:        schema.TypeList,
@@ -463,6 +498,7 @@ func ResourceIbmIsShare() *schema.Resource {
 												"subnet": {
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "The associated subnet. Required if primary_ip is not specified.",
 												},
 											},
@@ -819,9 +855,10 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			if ok {
 				var targets []vpcv1.ShareMountTargetPrototypeIntf
 				targetsIntf := replicaTargets.([]interface{})
-				for _, targetIntf := range targetsIntf {
+				for tergetIdx, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
-					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, target)
+					autoDeleteSchema := fmt.Sprintf("replica_share.0.mount_targets.%d.virtual_network_interface.0.auto_delete", tergetIdx)
+					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, target, autoDeleteSchema)
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -887,9 +924,10 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 	if shareTargetPrototypeIntf, ok := d.GetOk("mount_targets"); ok {
 		var targets []vpcv1.ShareMountTargetPrototypeIntf
-		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
+		for targetIdx, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
-			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, value)
+			autoDeleteSchema := fmt.Sprintf("mount_targets.%d.virtual_network_interface.0.auto_delete", targetIdx)
+			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, value, autoDeleteSchema)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -962,7 +1000,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, shareTargetPrototypeMap map[string]interface{}) (vpcv1.ShareMountTargetPrototype, error) {
+func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, shareTargetPrototypeMap map[string]interface{}, autoDeleteSchema string) (vpcv1.ShareMountTargetPrototype, error) {
 	shareTargetPrototype := vpcv1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
@@ -977,11 +1015,20 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 	} else if vniIntf, ok := shareTargetPrototypeMap["virtual_network_interface"]; ok {
 		vniPrototype := vpcv1.ShareMountTargetVirtualNetworkInterfacePrototype{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
-		vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(d, vniMap)
-		if err != nil {
-			return shareTargetPrototype, err
+
+		VNIIdIntf, ok := vniMap["id"]
+		VNIId := VNIIdIntf.(string)
+		if ok && VNIId != "" {
+			vniPrototype.ID = &VNIId
+			shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
+		} else {
+			vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(d, vniMap, autoDeleteSchema)
+			if err != nil {
+				return shareTargetPrototype, err
+			}
+			shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
 		}
-		shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
+
 	}
 	if transitEncryptionIntf, ok := shareTargetPrototypeMap["transit_encryption"]; ok && transitEncryptionIntf != "" {
 		transitEncryption := transitEncryptionIntf.(string)
@@ -1663,6 +1710,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 		for targetIdx := range target_prototype {
 			targetName := fmt.Sprintf("%s.%d.name", shareMountTargetSchema, targetIdx)
 			vniName := fmt.Sprintf("%s.%d.virtual_network_interface.0.name", shareMountTargetSchema, targetIdx)
+			vniAutoDelete := fmt.Sprintf("%s.%d.virtual_network_interface.0.auto_delete", shareMountTargetSchema, targetIdx)
 			vniId := fmt.Sprintf("%s.%d.virtual_network_interface.0.id", shareMountTargetSchema, targetIdx)
 			targetId := fmt.Sprintf("%s.%d.id", shareMountTargetSchema, targetIdx)
 			securityGroups := fmt.Sprintf("%s.%d.virtual_network_interface.0.security_groups", shareMountTargetSchema, targetIdx)
@@ -1699,10 +1747,15 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				}
 			}
 
-			if d.HasChange(vniName) {
-				vniNameStr := d.Get(vniName).(string)
-				vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{
-					Name: &vniNameStr,
+			if d.HasChange(vniName) || d.HasChange(vniAutoDelete) {
+				vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{}
+				if d.HasChange(vniName) {
+					vniNameStr := d.Get(vniName).(string)
+					vniPatchModel.Name = &vniNameStr
+				}
+				if d.HasChange(vniAutoDelete) {
+					autoDelete := d.Get(vniAutoDelete).(bool)
+					vniPatchModel.AutoDelete = &autoDelete
 				}
 				vniPatch, err := vniPatchModel.AsPatch()
 				if err != nil {
