@@ -65,7 +65,8 @@ func ResourceIbmProject() *schema.Resource {
 						},
 						"monitoring_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
-							Required:    true,
+							Optional:    true,
+							Default:     false,
 							Description: "A boolean flag to enable project monitoring.",
 						},
 					},

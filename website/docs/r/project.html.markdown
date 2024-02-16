@@ -34,7 +34,7 @@ Nested schema for **definition**:
 	* `description` - (Required, String) A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.
 	  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `destroy_on_delete` - (Required, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.
-	* `monitoring_enabled` - (Required, Boolean) A boolean flag to enable project monitoring.
+	* `monitoring_enabled` - (Boolean) A boolean flag to enable project monitoring.
 	  * Constraints: The default value is `false`.
 	* `name` - (Required, String) The name of the project.  It is unique within the account across regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
