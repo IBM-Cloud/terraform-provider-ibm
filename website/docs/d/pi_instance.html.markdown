@@ -64,6 +64,12 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
+
+**Notes** IBMi software licenses for IBMi virtual server instances -- only for IBMi instances
+- `pi_ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
+- `pi_ibmi_pha` - (Boolean) IBMi Power High Availability.
+- `pi_ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
+- `pi_ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
@@ -75,9 +81,3 @@ In addition to all argument reference list, you can access the following attribu
 - `storage_type` - (String) The storage type where server is deployed.
 - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
 - `volumes` - (List of strings) The list of volume IDs that are attached to the instance.
-
-  **Notes** Ibmi software licenses for IBMi virtual server instances -- only for IBMi instances
-- `pi_ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
-- `pi_ibmi_pha` - (Boolean) IBMi Power High Availability.
-- `pi_ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
-- `pi_ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
