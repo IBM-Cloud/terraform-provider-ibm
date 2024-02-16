@@ -205,6 +205,7 @@ var (
 	Pi_volume_onboarding_id         string
 	Pi_network_name                 string
 	Pi_cloud_instance_id            string
+	Pi_snapshot_id                  string
 	Pi_instance_name                string
 	Pi_dhcp_id                      string
 	PiCloudConnectionName           string
@@ -1034,6 +1035,12 @@ func init() {
 	if Pi_cloud_instance_id == "" {
 		Pi_cloud_instance_id = "fd3454a3-14d8-4eb0-b075-acf3da5cd324"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
+	}
+
+	Pi_snapshot_id = os.Getenv("PI_SNAPSHOT_ID")
+	if Pi_snapshot_id == "" {
+		Pi_snapshot_id = "1ea33118-4c43-4356-bfce-904d0658de82"
+		fmt.Println("[INFO] Set the environment variable PI_SNAPSHOT_ID for testing ibm_pi_instance_snapshot data source else it is set to default value '1ea33118-4c43-4356-bfce-904d0658de82'")
 	}
 
 	Pi_instance_name = os.Getenv("PI_PVM_INSTANCE_NAME")

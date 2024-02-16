@@ -9,7 +9,6 @@ description: |-
 
 # ibm_container_vpc_cluster
 Create, update, or delete a VPC cluster. To create a VPC cluster, make sure to include the VPC infrastructure generation in the `provider` block of your  Terraform configuration file. If you do not set this value, the generation is automatically set to 2. For more information, about how to configure the `provider` block, see [Overview of required input parameters for each resource category](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-You cannot create a free cluster in IBM Cloud Schematics.
 
 If you want to delete a VPC cluster and their associated load balancer. The following order is followed by the resource.
 1. Invokes the cluster deletion.
