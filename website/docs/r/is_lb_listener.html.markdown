@@ -58,7 +58,7 @@ resource "ibm_is_lb_pool_member" "example" {
 }
 ```
 
-### Sample to create a load balancer listener policy for a `https_redirect` action.
+### Sample to create a load balancer listener with `https_redirect`.
 
 ```terraform
 resource "ibm_is_lb" "example2" {
@@ -77,9 +77,14 @@ resource "ibm_is_lb_listener" "example2" {
   lb                         = ibm_is_lb.example2.id
   port                       = "9087"
   protocol                   = "http"
-  https_redirect_listener    = ibm_is_lb_listener.example1.listener_id
-  https_redirect_status_code = 301
-  https_redirect_uri         = "/example?doc=geta"
+  idle_connection_timeout = 60 
+  https_redirect {
+    http_status_code = 302
+    listener {
+        id = ibm_is_lb_listener.example1.listener_id
+    }
+    uri = "/example?doc=get"
+  }
 }
 ```
 
@@ -147,7 +152,7 @@ resource "ibm_is_lb_listener" "example2" {
   port_max 	= 400
 }
 ```
-
+### Example to create a listener with 
 ## Timeouts
 The `ibm_is_lb_listener` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 

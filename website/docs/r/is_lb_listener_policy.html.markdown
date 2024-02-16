@@ -35,19 +35,16 @@ resource "ibm_is_lb_listener" "example" {
   port     = "9086"
   protocol = "http"
 }
+
 resource "ibm_is_lb_listener_policy" "example" {
-  lb                      = ibm_is_lb.example.id
-  listener                = ibm_is_lb_listener.example.listener_id
-  action                  = "redirect"
-  priority                = 2
-  name                    = "example-listener-policy"
-  target_http_status_code = 302
-  target_url              = "https://www.redirect.com"
-  rules {
-    condition = "contains"
-    type      = "header"
-    field     = "1"
-    value     = "2"
+  lb       = ibm_is_lb.example.id
+  listener = ibm_is_lb_listener.example.listener_id
+  action   = "redirect"
+  priority = 4
+  name     = "example-listener-policy"
+  target {
+    http_status_code = 302
+    url              = "https://www.example.com"
   }
 }
 ```
@@ -79,9 +76,13 @@ resource "ibm_is_lb_listener_policy" "example" {
   action                            = "https_redirect"
   priority                          = 2
   name                              = "example-listener"
-  target_https_redirect_listener    = ibm_is_lb_listener.example_https_target.listener_id
-  target_https_redirect_status_code = 301
-  target_https_redirect_uri         = "/example?doc=geta"
+  target {
+    http_status_code = 302
+    listener {
+      id = ibm_is_lb_listener.example_https_target.listener_id
+    }
+    uri = "/example?doc=get"
+  }
   rules {
     condition = "contains"
     type      = "header"
@@ -91,7 +92,7 @@ resource "ibm_is_lb_listener_policy" "example" {
 }
 ```
 
-###  Creating a load balancer listener policy for a `forward` action by using `lb` and `lb listener`.
+###  Creating a load balancer listener policy for a `forward` action.
 
 
 ```terraform
@@ -118,17 +119,13 @@ resource "ibm_is_lb_pool" "example" {
 }
 
 resource "ibm_is_lb_listener_policy" "example" {
-  lb        = ibm_is_lb.example.id
-  listener  = ibm_is_lb_listener.example.listener_id
-  action    = "forward"
-  priority  = 2
-  name      = "example-listener"
-  target_id = ibm_is_lb_pool.example.pool_id
-  rules {
-    condition = "contains"
-    type      = "header"
-    field     = "1"
-    value     = "2"
+  lb       = ibm_is_lb.example.id
+  listener = ibm_is_lb_listener.example.listener_id
+  action   = "forward"
+  priority = 3
+  name     = "example-listener"
+  target {
+    id = ibm_is_lb_pool.example.pool_id
   }
 }
 ```
@@ -162,10 +159,8 @@ Review the argument references that you can specify for your resource.
 - `target_https_redirect_status_code` - (Optional, Integer) When `action` is set to **https_redirect**, specify the HTTP status code to be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, `308`.
 - `target_https_redirect_uri` - (Optional, String) When `action` is set to **https_redirect**, specify the target URI where traffic will be redirected.
 
-~> **Note:** When action is `forward`, `target_id` should specify which pool the load balancer forwards the traffic to.
-When action is `redirect`, `target_url` should specify the `url` and `target_http_status_code` to specify the code used in the redirect response.
-When action is `https_redirect`, `target_https_redirect_listener` should specify the ID of the listener, `target_https_redirect_status_code` to specify the code used in the redirect response and `target_https_redirect_uri` to specify the target URI where traffic will be redirected.
-Network load balancer does not support `ibm_is_lb_listener_policy`.
+~> **Note:** `target_id`, `target_http_status_code`, `target_url`, `target_https_redirect_listener`, `target_https_redirect_status_code`, `target_https_redirect_uri` are deprecated and will be removed soon. Please use `target` instead.
+
 - `target` - (Optional, List) - If `action` is `forward`, the response is a `LoadBalancerPoolReference`- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.
     Nested schema for **target**:
 	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
@@ -184,6 +179,10 @@ Network load balancer does not support `ibm_is_lb_listener_policy`.
 	- `name` - (Computed, String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
 	- `url` - (Optional, String) The redirect target URL.
 	  
+~> **Note:** When action is `forward`, `target.id` should specify which pool the load balancer forwards the traffic to.
+When action is `redirect`, `target.url` should specify the `url` and `target.http_status_code` to specify the code used in the redirect response.
+When action is `https_redirect`, `target.listener.id` should specify the ID of the listener, `target.http_status_code` to specify the code used in the redirect response and `target.uri` to specify the target URI where traffic will be redirected.
+Network load balancer does not support `ibm_is_lb_listener_policy`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
