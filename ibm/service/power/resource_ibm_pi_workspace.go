@@ -51,6 +51,11 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				ForceNew:    true,
 				Description: "Plan associated with the offering; Valid values are public or private.",
 			},
+			Attr_WorkspaceDetails: {
+				Computed:    true,
+				Description: "Workspace information.",
+				Type:        schema.TypeMap,
+			},
 		},
 	}
 }
@@ -126,6 +131,7 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 		Attr_CreationDate: controller.CreatedAt,
 		Attr_CRN:          controller.TargetCRN,
 	}
+
 	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsDetails))
 
 	return nil
