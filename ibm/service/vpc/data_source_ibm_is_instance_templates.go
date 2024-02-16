@@ -748,7 +748,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			reservationAffinityMap := map[string]interface{}{}
 
 			reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
-			if instance.ReservationAffinity.Pool != nil {
+			if instance.ReservationAffinity.Pool != nil && len(instance.ReservationAffinity.Pool) > 0 {
 				pool := instance.ReservationAffinity.Pool[0]
 				res := ""
 				if idPool, ok := pool.(*vpcv1.ReservationIdentityByID); ok {
