@@ -30,8 +30,7 @@ func TestAccIBMPIDisasterRecoveryLocationDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMPIDisasterRecoveryLocationDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_disaster_recovery_location" "testacc_disaster_recovery_location" {
-    pi_cloud_instance_id = "%s"
-}`, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_disaster_recovery_location" "testacc_disaster_recovery_location" {
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_cloud_instance_id)
 }

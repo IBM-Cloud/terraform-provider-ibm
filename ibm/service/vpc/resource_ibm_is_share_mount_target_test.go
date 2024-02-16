@@ -176,6 +176,68 @@ func TestAccIbmIsShareMountTargetVNI(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareMountTargetVNIID(t *testing.T) {
+	var conf vpcv1.ShareMountTarget
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfvpngw-subnet-%d", acctest.RandIntRange(10, 100))
+	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tf-vni-name-%d", acctest.RandIntRange(10, 100))
+
+	allowIPSpoofing := true
+	enableInfrastructureNat := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareMountTargetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareMountTargetConfigVNIID(vpcname, sname, targetName, subnetname, vniname, allowIPSpoofing, enableInfrastructureNat),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareMountTargetExists("ibm_is_share_mount_target.is_share_target", conf),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetName),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmIsShareMountTargetConfigVNIID(vpcName, sname, targetName, subnetName, vniName string, enablenat, allowipspoofing bool) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_share" "is_share" {
+		zone = "us-south-1"
+		size = 200
+		name = "%s"
+		profile = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+		enable_infrastructure_nat = %t
+		allow_ip_spoofing = %t
+	}
+	resource "ibm_is_share_mount_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
+		virtual_network_interface {
+			id = ibm_is_virtual_network_interface.testacc_vni.id
+		}
+
+		name = "%s"
+	}
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, enablenat, allowipspoofing, targetName)
+}
 func testAccCheckIbmIsShareMountTargetConfigVNISubnet(vpcName, sname, targetName, subnetName, vniName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "group" {
