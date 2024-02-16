@@ -3509,8 +3509,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
 		d.Set(isReservationAffinity, reservationAffinity)
 	}
+	resList := make([]map[string]interface{}, 0)
 	if instance.Reservation != nil {
-		resList := make([]map[string]interface{}, 0)
 		res := map[string]interface{}{}
 
 		res[isReservationId] = *instance.Reservation.ID
@@ -3525,8 +3525,8 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			res[isReservationDeleted] = deletedList
 		}
 		resList = append(resList, res)
-		d.Set(isInstanceReservation, resList)
 	}
+	d.Set(isInstanceReservation, resList)
 
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
