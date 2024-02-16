@@ -4,7 +4,6 @@
 package power_test
 
 import (
-	"fmt"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -27,9 +26,8 @@ func TestAccIBMPIDatacenterDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMPIDatacenterDataSourceConfig() string {
-	return fmt.Sprintf(`
+	return `
 		data "ibm_pi_datacenter" "test" {
 			pi_datacenter_zone = "dal12"
-		}
-	`)
+		}`
 }
