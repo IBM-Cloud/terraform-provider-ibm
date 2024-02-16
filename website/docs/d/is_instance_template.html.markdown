@@ -82,6 +82,46 @@ You can access the following attribute references after your data source is crea
        - `response_hop_limit` - (Integer) The hop limit (IP time to live) for IP response packets from the metadata service.
        
 - `name` - (String) The name of the instance template.
+- `network_attachments` - (List) The additional network attachments to create for the virtual server instance.
+	Nested schema for **network_attachments**:
+	- `name` - (String) The name for this network attachment. Names must be unique within the instance the network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
+	- `virtual_network_interface` - (List) A virtual network interface for the instance network attachment. This can be specifiedusing an existing virtual network interface, or a prototype object for a new virtualnetwork interface.If an existing virtual network interface is specified, `enable_infrastructure_nat` must be`false`.
+		Nested schema for **virtual_network_interface**:
+		- `allow_ip_spoofing` - (Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
+		- `auto_delete` - (Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
+		- `crn` - (String) The CRN for this virtual network interface.
+		- `enable_infrastructure_nat` - (Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the virtual network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
+		- `href` - (String) The URL for this virtual network interface.
+		- `id` - (String) The unique identifier for this virtual network interface.
+		- `ips` - (List) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or as a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the same subnet as the primary IP.If reserved IP identities are provided, the specified reserved IPs must be unbound.If reserved IP prototype objects with addresses are provided, the addresses must be available on the virtual network interface's subnet. For any prototype objects that do not specify an address, an available address on the subnet will be automatically selected and reserved.
+			Nested schema for **ips**:
+			- `address` - (String) The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.
+			- `auto_delete` - (Boolean) Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.
+			- `href` - (String) The URL for this reserved IP.
+			- `id` - (String) The unique identifier for this reserved IP.
+			- `name` - (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
+		- `name` - (String) The name for this virtual network interface. The name must not be used by another virtual network interface in the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words. Names beginning with `ibm-` are reserved for provider-owned resources, and are not allowed.
+		- `primary_ip` - (List) The primary IP address to bind to the virtual network interface. May be either areserved IP identity, or a reserved IP prototype object which will be used to create anew reserved IP.If a reserved IP identity is provided, the specified reserved IP must be unbound.If a reserved IP prototype object with an address is provided, the address must beavailable on the virtual network interface's subnet. If no address is specified,an available address on the subnet will be automatically selected and reserved.
+			Nested schema for **primary_ip**:
+			- `address` - (String) The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.
+			- `auto_delete` - (Boolean) Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.
+			- `href` - (String) The URL for this reserved IP.
+			- `id` - (String) The unique identifier for this reserved IP.
+			- `name` - (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
+		- `resource_group` - (List) The resource group to use for this virtual network interface. If unspecified, thevirtual server instance's resource group will be used.
+			Nested schema for **resource_group**:
+			- `id` - (String) The unique identifier for this resource group.
+		- `security_groups` - (List) The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC for the subnet is used.
+			Nested schema for **security_groups**:
+			- `crn` - (String) The security group's CRN.
+			- `href` - (String) The security group's canonical URL.
+			- `id` - (String) The unique identifier for this security group.
+		- `subnet` - (List) The associated subnet. Required if `primary_ip` does not specify a reserved IP.
+			Nested schema for **subnet**:
+			- `crn` - (String) The CRN for this subnet.
+			- `href` - (String) The URL for this subnet.
+			- `id` - (String) The unique identifier for this subnet.
+
 - `network_interfaces` - (List) A nested block describes the network interfaces for the template.
 
 	Nested scheme for `network_interfaces`:
@@ -97,6 +137,46 @@ You can access the following attribute references after your data source is crea
     - `id` - (String) The URL for this placement target.
 		
 - `profile` - (String) The number of instances created in the instance group.
+- `primary_network_attachment` - (List) The primary network attachment to create for the virtual server instance.
+	Nested schema for **primary_network_attachment**:
+	- `name` - (String) The name for this network attachment. Names must be unique within the instance the network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
+	- `virtual_network_interface` - (List) A virtual network interface for the instance network attachment. This can be specifiedusing an existing virtual network interface, or a prototype object for a new virtualnetwork interface.If an existing virtual network interface is specified, `enable_infrastructure_nat` must be`false`.
+		Nested schema for **virtual_network_interface**:
+		- `allow_ip_spoofing` - (Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
+		- `auto_delete` - (Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
+		- `crn` - (String) The CRN for this virtual network interface.
+		- `enable_infrastructure_nat` - (Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the virtual network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
+		- `href` - (String) The URL for this virtual network interface.
+		- `id` - (String) The unique identifier for this virtual network interface.
+		- `ips` - (List) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or as a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the same subnet as the primary IP.If reserved IP identities are provided, the specified reserved IPs must be unbound.If reserved IP prototype objects with addresses are provided, the addresses must be available on the virtual network interface's subnet. For any prototype objects that do not specify an address, an available address on the subnet will be automatically selected and reserved.
+			Nested schema for **ips**:
+			- `address` - (String) The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.
+			- `auto_delete` - (Boolean) Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.
+			- `href` - (String) The URL for this reserved IP.
+			- `id` - (String) The unique identifier for this reserved IP.
+			- `name` - (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
+		- `name` - (String) The name for this virtual network interface. The name must not be used by another virtual network interface in the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words. Names beginning with `ibm-` are reserved for provider-owned resources, and are not allowed.
+		- `primary_ip` - (List) The primary IP address to bind to the virtual network interface. May be either areserved IP identity, or a reserved IP prototype object which will be used to create anew reserved IP.If a reserved IP identity is provided, the specified reserved IP must be unbound.If a reserved IP prototype object with an address is provided, the address must beavailable on the virtual network interface's subnet. If no address is specified,an available address on the subnet will be automatically selected and reserved.
+			Nested schema for **primary_ip**:
+			- `address` - (String) The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.
+			- `auto_delete` - (Boolean) Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.
+			- `href` - (String) The URL for this reserved IP.
+			- `id` - (String) The unique identifier for this reserved IP.
+			- `name` - (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
+		- `resource_group` - (List) The resource group to use for this virtual network interface. If unspecified, thevirtual server instance's resource group will be used.
+			Nested schema for **resource_group**:
+			- `id` - (String) The unique identifier for this resource group.
+		- `security_groups` - (List) The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC for the subnet is used.
+			Nested schema for **security_groups**:
+			- `crn` - (String) The security group's CRN.
+			- `href` - (String) The security group's canonical URL.
+			- `id` - (String) The unique identifier for this security group.
+		- `subnet` - (List) The associated subnet. Required if `primary_ip` does not specify a reserved IP.
+			Nested schema for **subnet**:
+			- `crn` - (String) The CRN for this subnet.
+			- `href` - (String) The URL for this subnet.
+			- `id` - (String) The unique identifier for this subnet.
+
 - `primary_network_interfaces` - (List) A nested block describes the primary network interface for the template.
 
 	Nested scheme for `primary_network_interfaces`:
