@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func DataSourceIBMPISnapshots() *schema.Resource {
+func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPISnapshotsRead,
+		ReadContext: dataSourceIBMPISnapshotRead,
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
@@ -27,11 +27,17 @@ func DataSourceIBMPISnapshots() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_InstanceName: {
+				Description:  "The unique identifier or name of the instance.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
+			},
 
 			// Attributes
-			Attr_InstanceSnapshots: {
-				Computed:    true,
-				Description: "List of Power Virtual Machine instance snapshots within the given cloud instance.",
+			Attr_PVMSnapshots: {
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_Action: {
@@ -51,7 +57,7 @@ func DataSourceIBMPISnapshots() *schema.Resource {
 						},
 						Attr_ID: {
 							Computed:    true,
-							Description: "The unique identifier of the Power Systems Virtual Machine instance snapshot.",
+							Description: "The unique identifier of the Power Virtual Machine instance snapshot.",
 							Type:        schema.TypeString,
 						},
 						Attr_LastUpdatedDate: {
@@ -61,7 +67,7 @@ func DataSourceIBMPISnapshots() *schema.Resource {
 						},
 						Attr_Name: {
 							Computed:    true,
-							Description: "The name of the Power Systems Virtual Machine instance snapshot.",
+							Description: "The name of the Power Virtual Machine instance snapshot.",
 							Type:        schema.TypeString,
 						},
 						Attr_PercentComplete: {
@@ -81,34 +87,35 @@ func DataSourceIBMPISnapshots() *schema.Resource {
 						},
 					},
 				},
-				Type: schema.TypeList,
 			},
 		},
 	}
 }
 
-func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
-	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
-	snapshotData, err := snapshot.GetAll()
+	powerinstancename := d.Get(Arg_InstanceName).(string)
+	snapshot := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
+	snapshotData, err := snapshot.GetSnapShotVM(powerinstancename)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Attr_InstanceSnapshots, flattenSnapshotsInstances(snapshotData.Snapshots))
+	d.Set(Attr_PVMSnapshots, flattenPVMSnapshotInstances(snapshotData.Snapshots))
 
 	return nil
 }
 
-func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{} {
-	log.Printf("Calling the flattenSnapshotsInstances call with list %d", len(list))
+func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface{} {
+	log.Printf("Calling the flattenPVMSnapshotInstances call with list %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
