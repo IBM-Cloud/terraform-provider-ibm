@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231207111718-a3b74cc935fa
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
 	github.com/IBM-Cloud/power-go-client v1.5.8
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
@@ -17,7 +17,7 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.2.7
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.15.0
+	github.com/IBM/go-sdk-core/v5 v5.15.1
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -38,10 +38,10 @@ require (
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
-	github.com/go-openapi/strfmt v0.21.10
+	github.com/go-openapi/strfmt v0.22.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-cmp v0.6.0
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
@@ -53,7 +53,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
-	golang.org/x/crypto v0.17.0
+	golang.org/x/crypto v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.26.3
@@ -116,7 +116,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.16.0 // indirect
+	github.com/go-playground/validator/v10 v10.18.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -132,7 +132,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.5.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.7 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
@@ -167,7 +167,7 @@ require (
 	github.com/kardianos/govendor v1.0.9 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/kube-object-storage/lib-bucket-provisioner v0.0.0-20221122204822-d1a8c34382f1 // indirect
-	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/libopenstorage/secrets v0.0.0-20220823020833-2ecadaf59d8a // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -208,16 +208,20 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.1 // indirect
-	go.mongodb.org/mongo-driver v1.13.1 // indirect
+	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
+<<<<<<< HEAD
 	golang.org/x/term v0.15.0 // indirect
+=======
+	golang.org/x/term v0.17.0 // indirect
+>>>>>>> 5388c491 (Satellite Storage API Fix)
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.16.0 // indirect
