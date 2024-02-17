@@ -75,7 +75,7 @@ cluster = "" # Enter the Cluster ID
 region = "us-south" # Enter the region
 
 # For add-on deployment
-odfVersion = "4.13.0"
+odfVersion = "4.14.0"
 
 # For CRD Creation and Management
 autoDiscoverDevices = "false"
