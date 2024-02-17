@@ -1,22 +1,50 @@
-# [Tech Preview] Deploying and Managing Openshift Data Foundation - Remote on Satellite
+# [Tech Preview] Deploying and Managing Openshift Data Foundation
 
-This example shows how to deploy and manage the Openshift Data Foundation (ODF) on IBM Cloud Satellite based RedHat Openshift cluster. Note this template is still in development, so please be advised before using in production.
+This example shows how to deploy and manage the Openshift Data Foundation (ODF) on IBM Cloud VPC based RedHat Openshift cluster. Note this template is still in development, so please be advised before using in production.
 
-This sample configuration will deploy, scale, upgrade and delete ODF using the "ibm_satellite_storage_configuration" and "ibm_satellite_storage_assignment" from the ibm cloud terraform provider.
+This sample configuration will deploy the ODF, scale and upgrade it using the "ibm_container_addons" and "kubernetes_manifest" from the ibm terraform provider and kubernetes provider respectively.
 
 For more information, about
 
-* ODF Deployment, see [Deploying OpenShift Data Foundation on Satellite clusters](https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui)
+* ODF Deployment, see [Deploying OpenShift Data Foundation on VPC clusters](https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui)
 * ODF Management, see [Managing your OpenShift Data Foundation deployment](https://cloud.ibm.com/docs/openshift?topic=openshift-ocs-manage-deployment&interface=ui)
+
+#### Folder Structure
+
+```ini
+├── openshift-data-foundation
+│   ├── addon
+│   │   ├── ibm-odf-addon
+│   │   │   ├── main.tf
+│   │   ├── ocscluster
+│   │   │   ├── main.tf
+│   │   ├── createaddon.sh
+│   │   ├── createcrd.sh
+│   │   ├── updatecrd.sh
+│   │   ├── updateodf.sh
+│   │   ├── deleteaddon.sh
+│   │   ├── deletecrd.sh
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── schematics.tfvars
+```
+
+* `ibm-odf-addon` - This folder is used to deploy a specific Version of Openshift-Data-Foundation with the `odfDeploy` parameter set to false i.e the add-on is installed without the ocscluster using the IBM-Cloud Terraform Provider.
+* `ocscluster` - This folder is used to deploy the `OcsCluster` CRD with the given parameters set in the `schematics.tfvars` file.
+* `addon` - This folder contains scripts to create the CRD and deploy the ODF add-on on your cluster. `The main.tf` file contains the `null_resource` to internally call the above two folders, and perform the required actions.
+
+#### Note
+
+You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folders. You just have to input the required parameters in the `schematics.tfvars` file under the `addon` folder, and run terraform.
 
 ## Usage
 
 ### Option 1 - Command Line Interface
 
-To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/satellite/`
+To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd odf-remote/4.1x
+$ cd addon
 ```
 
 ```bash
@@ -47,7 +75,7 @@ cluster = "" # Enter the Cluster ID
 region = "us-south" # Enter the region
 
 # For add-on deployment
-odfVersion = "4.12.0"
+odfVersion = "4.13.0"
 
 # For CRD Creation and Management
 autoDiscoverDevices = "false"
@@ -66,6 +94,12 @@ osdDevicePaths = null
 osdSize = "250Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
 workerNodes = null
+encryptionInTransit = false
+taintNodes = false
+addSingleReplicaPool = false
+prepareForDisasterRecovery = false
+ignore-noobaa = false
+disableNoobaaLB = false
 ```
 
 ### Scale-Up of ODF
@@ -90,7 +124,7 @@ The following variables in the `schematics.tfvars` file should be changed in ord
 
 ```hcl
 # For ODF add-on upgrade
-odfVersion = "4.12.0" -> "4.13.0"
+odfVersion = "4.14.0" -> "4.15.0"
 
 # For Ocscluster upgrade
 ocsUpgrade = "false" -> "true"
@@ -135,10 +169,15 @@ ocsUpgrade = "false" -> "true"
 | hpcsSecretName |  The HPCS secret name | `string` | no | null
 | hpcsServiceName | The HPCS service name | `string` | no | null
 | hpcsTokenUrl | The HPCS Token URL | `string` | no | null
-| ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `string` | no | false
+| ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
 | osdDevicePaths | IDs of the disks to be used for OSD pods if using local disks or standard classic cluster | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
+| encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
+| taintNodes | Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster. | `bool` | no | false
+| addSingleReplicaPool | Specify true to create a single replica pool without data replication, increasing the risk of data loss, data corruption, and potential system instability. | `bool` | no | false
+| prepareForDisasterRecovery | Specify true to set up the storage system for disaster recovery service with the essential configurations in place. This allows seamless implementation of disaster recovery strategies for your workloads | `bool` | no | false
+| disableNoobaaLB | Specify true to disable to NooBaa public load balancer. | `bool` | no | false
 
 Refer - https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui#odf-vpc-param-ref
 

@@ -164,11 +164,13 @@ ocsUpgrade = "false" -> "true"
 | hpcsSecretName |  The HPCS secret name | `string` | no | null
 | hpcsServiceName | The HPCS service name | `string` | no | null
 | hpcsTokenUrl | The HPCS Token URL | `string` | no | null
-| ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `string` | no | false
+| ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
 | osdDevicePaths | IDs of the disks to be used for OSD pods if using local disks or standard classic cluster | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
+| disableNoobaaLB | Specify true to disable to NooBaa public load balancer. | `bool` | no | false
+
 
 Refer - https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui#odf-vpc-param-ref
 
