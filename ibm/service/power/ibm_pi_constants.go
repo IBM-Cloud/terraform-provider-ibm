@@ -291,6 +291,7 @@ const (
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 
+	PIConsoleLanguageCode               = "pi_language_code"
 	PICloudConnectionId                 = "cloud_connection_id"
 	PICloudConnectionStatus             = "status"
 	PICloudConnectionIBMIPAddress       = "ibm_ip_address"
@@ -401,4 +402,5 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
+	PIVirtualOpticalDevice   = "pi_virtual_optical_device"
 )
