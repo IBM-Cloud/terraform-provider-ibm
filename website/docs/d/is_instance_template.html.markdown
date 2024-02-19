@@ -104,6 +104,14 @@ You can access the following attribute references after your data source is crea
 	- `primary_ipv4_address` - (String) The IPv4 address assigned to the primary network interface.
 	- `subnet` - (String) The VPC subnet to assign to the interface.
 	- `security_groups` - (String) List of security groups of the subnet.
+- `reservation_affinity` - (Optional, List) The reservation affinity for the instance
+  Nested scheme for `reservation_affinity`:
+  - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
+
+    ->**policy** 
+	&#x2022; disabled: Reservations will not be used
+    </br>&#x2022; manual: Reservations in pool will be available for use
+  - `pool` - (string) The unique identifier for this reservation
 - `resource_group` - (String) The resource group ID.	
 - `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` -  (String) The user data provided for the instance.

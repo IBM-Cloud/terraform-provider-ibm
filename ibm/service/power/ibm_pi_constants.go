@@ -278,10 +278,9 @@ const (
 	Attr_DhcpStatus            = "status"
 
 	// Instance
-	Arg_PVMInstanceId                 = "pi_instance_id"
-	Arg_PVMInstanceActionType         = "pi_action"
-	Arg_PVMInstanceHealthStatus       = "pi_health_status"
-	Arg_PIInstanceSharedProcessorPool = "pi_shared_processor_pool"
+	Arg_PVMInstanceId           = "pi_instance_id"
+	Arg_PVMInstanceActionType   = "pi_action"
+	Arg_PVMInstanceHealthStatus = "pi_health_status"
 
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
@@ -316,6 +315,7 @@ const (
 
 	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
 	Attr_PIInstanceSharedProcessorPoolID = "shared_processor_pool_id"
+	Arg_PIInstanceSharedProcessorPool    = "pi_shared_processor_pool"
 
 	// Placement Group
 	PIPlacementGroupID      = "placement_group_id"
@@ -401,6 +401,4 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
-
-	PIVirtualOpticalDevice = "pi_virtual_optical_device"
 )

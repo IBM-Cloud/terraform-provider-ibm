@@ -117,6 +117,10 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `gpu_model`:
   - `type` - (String) The type for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `reservation_terms` - (List) Nested `reservation_terms` blocks have the following structure:
+  Nested scheme for `reservation_terms`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The supported committed use terms for a reservation using this profile.
 - `href` - (String) The URL for this virtual server instance profile.
 - `memory` - (List) Nested `memory` blocks have the following structure:
 

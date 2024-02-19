@@ -581,6 +581,37 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 					},
 				},
 			},
+			isReservationAffinity: {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isReservationAffinityPolicyResp: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The reservation affinity policy to use for this virtual server instance.",
+						},
+						isReservationAffinityPool: &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "The pool of reservations available for use by this virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationId: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The unique identifier for this reservation.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -1198,6 +1229,31 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		}
 		instanceproto.PlacementTarget = dHostGrpPlaementTarget
 	}
+	if resAffinity, ok := d.GetOk(isReservationAffinity); ok {
+		resAff := resAffinity.([]interface{})[0].(map[string]interface{})
+		var resAffinity = &vpcv1.InstanceReservationAffinityPrototype{}
+		policy, ok := resAff["policy"]
+		policyStr := policy.(string)
+		if policyStr != "" && ok {
+			resAffinity.Policy = &policyStr
+		}
+		poolIntf, okPool := resAff[isReservationAffinityPool]
+		if okPool {
+			pool := poolIntf.([]interface{})[0].(map[string]interface{})
+			id, okId := pool["id"]
+			if okId {
+				idStr, ok := id.(string)
+				if idStr != "" && ok {
+					var resAffPool = make([]vpcv1.ReservationIdentityIntf, 1)
+					resAffPool[0] = &vpcv1.ReservationIdentity{
+						ID: &idStr,
+					}
+					resAffinity.Pool = resAffPool
+				}
+			}
+		}
+		instanceproto.ReservationAffinity = resAffinity
+	}
 
 	if placementGroupInf, ok := d.GetOk(isPlacementTargetPlacementGroup); ok {
 		placementGrpStr := placementGroupInf.(string)
@@ -1585,6 +1641,27 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		catOfferingList = append(catOfferingList, currentOffering)
 		d.Set(isInstanceTemplateCatalogOffering, catOfferingList)
 
+	}
+
+	if instance.ReservationAffinity != nil {
+		reservationAffinity := []map[string]interface{}{}
+		reservationAffinityMap := map[string]interface{}{}
+
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
+		if instance.ReservationAffinity.Pool != nil {
+			pool := instance.ReservationAffinity.Pool[0]
+			res := ""
+			if idPool, ok := pool.(*vpcv1.ReservationIdentityByID); ok {
+				res = *idPool.ID
+			} else if crnPool, ok := pool.(*vpcv1.ReservationIdentityByCRN); ok {
+				res = *crnPool.CRN
+			} else if hrefPool, ok := pool.(*vpcv1.ReservationIdentityByHref); ok {
+				res = *hrefPool.Href
+			}
+			reservationAffinityMap[isReservationAffinityPool] = res
+		}
+		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
+		d.Set(isReservationAffinity, reservationAffinity)
 	}
 
 	if instance.Profile != nil {
