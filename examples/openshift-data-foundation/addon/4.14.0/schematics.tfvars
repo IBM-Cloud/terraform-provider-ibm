@@ -27,4 +27,7 @@ osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
 workerNodes = null
 encryptionInTransit = false
+taintNodes = false
+addSingleReplicaPool = false
+prepareForDisasterRecovery = false
 disableNoobaaLB = false
