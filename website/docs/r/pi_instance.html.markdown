@@ -66,7 +66,8 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC` or `VMNoStorage`.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
- **Notes** Ibmi software licenses for IBMi virtual server instances -- only for IBMi instances. Default to `false` and `0` if no values provided
+
+**Notes** Ibmi software licenses for IBMi virtual server instances -- only for IBMi instances. Default to `false` and `0` if no values provided
 - `pi_ibmi_css` - (Optional, Boolean) IBMi Cloud Storage Solution.
 - `pi_ibmi_pha` - (Optional, Boolean) IBMi Power High Availability.
 - `pi_ibmi_rds_users` - (Optional, Integer) IBMi Rational Dev Studio Number of User Licenses.
@@ -111,6 +112,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `health_status` - (String) The health status of the VM.
+- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
 - `instance_id` - (String) The unique identifier of the instance. 
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
@@ -131,7 +133,6 @@ In addition to all argument reference list, you can access the following attribu
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.
-- `pi_ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
 ## Import
 
 The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.

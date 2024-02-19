@@ -46,6 +46,12 @@ In addition to all argument reference list, you can access the following attribu
 
 - `deployment_type` - (String) The custom deployment type.
 - `health_status` - (String) The health of the instance.
+
+**Notes** IBMi software licenses for IBMi virtual server instances -- only for IBMi instances
+- `ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
+- `ibmi_pha` - (Boolean) IBMi Power High Availability.
+- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
+- `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
 - `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
 - `memory` - (Float) The amount of memory that is allocated to the instance.
@@ -65,11 +71,6 @@ In addition to all argument reference list, you can access the following attribu
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
 
-**Notes** IBMi software licenses for IBMi virtual server instances -- only for IBMi instances
-- `pi_ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
-- `pi_ibmi_pha` - (Boolean) IBMi Power High Availability.
-- `pi_ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
-- `pi_ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
