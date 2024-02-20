@@ -27,6 +27,16 @@ Review the argument reference that you can specify for your resource.
 
 - `integration_id` - (Required, String) Unique identifier for Integration created with .
 
+- `type` - (Required, String) The integration type collect_failed_events.
+
+- `metadata` - (Required, List)
+
+  Nested scheme for **params**:
+
+  - `endpoint` - (Required, String) endpoint url for COS bucket region.
+  - `crn` - (Required, String) CRN of the COS instance.
+  - `bucket_name` - (Required, String) cloud object storage bucket name.
+
 
 ## Attribute reference
 
