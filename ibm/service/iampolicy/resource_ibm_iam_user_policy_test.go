@@ -180,6 +180,7 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 		},
 	})
 }
+
 func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
@@ -205,6 +206,26 @@ func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMIAMUserPolicy_With_Resource_Attributes_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 
 func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
@@ -806,6 +827,28 @@ func testAccCheckIBMIAMUserPolicyResourceAttributes() string {
 	  
 `, acc.IAMUser)
 }
+
+func testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard() string {
+	return fmt.Sprintf(`
+  
+	  resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	  
+`, acc.IAMUser)
+}
+
+
 func testAccCheckIBMIAMUserPolicyResourceAttributesUpdate() string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_user_policy" "policy" {

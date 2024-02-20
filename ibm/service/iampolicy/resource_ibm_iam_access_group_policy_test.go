@@ -544,6 +544,27 @@ func TestAccIBMIAMAccessGroupPolicy_With_Attribute_Based_Condition(t *testing.T)
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicy_StringMatch_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupStringMatchWithoutWildcard(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -1289,5 +1310,27 @@ func testAccCheckIBMIAMAccessGroupPolicyUpdateAttributeBasedCondition(name strin
 		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
 			description = "IAM Access Group Policy Attribute Based Condition Update for test scenario"
 		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupStringMatchWithoutWildcard(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Viewer"]
+			resource_attributes {
+				name     = "resource"
+				value    = "test"
+				operator = "stringMatch"
+			}
+			resource_attributes {
+				name     = "serviceName"
+				value    = "messagehub"
+			}
+	  	}
 	`, name)
 }
