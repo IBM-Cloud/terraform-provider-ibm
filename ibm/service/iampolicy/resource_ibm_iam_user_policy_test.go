@@ -836,7 +836,7 @@ func testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard() string {
 		roles  = ["Viewer"]
 		resource_attributes {
 			name     = "resource"
-			value    = "test*"
+			value    = "test"
 			operator = "stringMatch"
 		}
 		resource_attributes {
