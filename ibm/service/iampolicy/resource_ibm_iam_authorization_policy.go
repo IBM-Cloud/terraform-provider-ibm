@@ -365,7 +365,7 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 				} else if value == "false" {
 					resourceValue = false
 				} else {
-					return fmt.Errorf("[ERROR] When operator = stringExists, value should be either \"true\" or \"false\", instead of %s", value)
+					return fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %s", value)
 				}
 				at := iampolicymanagementv1.V2PolicyResourceAttribute{
 					Key:      &name,
