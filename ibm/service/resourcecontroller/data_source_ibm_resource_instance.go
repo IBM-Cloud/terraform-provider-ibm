@@ -25,9 +25,18 @@ func DataSourceIBMResourceInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Description: "Resource instance name for example, myobjectstorage",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Resource instance name for example, myobjectstorage",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"identifier", "name"},
+			},
+			"identifier": {
+				Description:   "Resource instance name for example, myobjectstorage",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"identifier", "name"},
+				ConflictsWith: []string{"resource_group_id", "name", "location", "service"},
 			},
 
 			"resource_group_id": {
@@ -162,83 +171,91 @@ func getInstancesNext(next *string) (string, error) {
 }
 
 func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	name := d.Get("name").(string)
+	var instance rc.ResourceInstance
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
-
-	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
-		Name: &name,
-	}
-
-	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
-		rg := rsGrpID.(string)
-		resourceInstanceListOptions.ResourceGroupID = &rg
-	}
-
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	if service, ok := d.GetOk("service"); ok {
-
-		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+	if _, ok := d.GetOk("name"); ok {
+		name := d.Get("name").(string)
+		resourceInstanceListOptions := rc.ListResourceInstancesOptions{
+			Name: &name,
 		}
-		resourceId := serviceOff[0].ID
-		resourceInstanceListOptions.ResourceID = &resourceId
-	}
 
-	next_url := ""
-	var instances []rc.ResourceInstance
-	for {
-		if next_url != "" {
-			resourceInstanceListOptions.Start = &next_url
+		if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
+			rg := rsGrpID.(string)
+			resourceInstanceListOptions.ResourceGroupID = &rg
 		}
-		listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
-		}
-		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
-		if err != nil {
-			return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
 
-		}
-		instances = append(instances, listInstanceResponse.Resources...)
-		if next_url == "" {
-			break
-		}
-	}
+		if service, ok := d.GetOk("service"); ok {
 
-	var filteredInstances []rc.ResourceInstance
-	var location string
+			serviceOff, err := rsCatRepo.FindByName(service.(string), true)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+			}
+			resourceId := serviceOff[0].ID
+			resourceInstanceListOptions.ResourceID = &resourceId
+		}
 
-	if loc, ok := d.GetOk("location"); ok {
-		location = loc.(string)
-		for _, instance := range instances {
-			if flex.GetLocationV2(instance) == location {
-				filteredInstances = append(filteredInstances, instance)
+		next_url := ""
+		var instances []rc.ResourceInstance
+		for {
+			if next_url != "" {
+				resourceInstanceListOptions.Start = &next_url
+			}
+			listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+			}
+			next_url, err = getInstancesNext(listInstanceResponse.NextURL)
+			if err != nil {
+				return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
+
+			}
+			instances = append(instances, listInstanceResponse.Resources...)
+			if next_url == "" {
+				break
 			}
 		}
-	} else {
-		filteredInstances = instances
+
+		var filteredInstances []rc.ResourceInstance
+		var location string
+
+		if loc, ok := d.GetOk("location"); ok {
+			location = loc.(string)
+			for _, instance := range instances {
+				if flex.GetLocationV2(instance) == location {
+					filteredInstances = append(filteredInstances, instance)
+				}
+			}
+		} else {
+			filteredInstances = instances
+		}
+
+		if len(filteredInstances) == 0 {
+			return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		}
+		if len(filteredInstances) > 1 {
+			return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		}
+		instance = filteredInstances[0]
+	} else if _, ok := d.GetOk("identifier"); ok {
+		instanceGUID := d.Get("identifier").(string)
+		getResourceInstanceOptions := &rc.GetResourceInstanceOptions{
+			ID: &instanceGUID,
+		}
+		instances, res, err := rsConClient.GetResourceInstance(getResourceInstanceOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] No resource instance found with id [%s\n%v]", instanceGUID, res)
+		}
+		instance = *instances
+		d.Set("name", instance.Name)
 	}
-
-	if len(filteredInstances) == 0 {
-		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
-	}
-
-	var instance rc.ResourceInstance
-
-	if len(filteredInstances) > 1 {
-		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
-	}
-	instance = filteredInstances[0]
-
 	d.SetId(*instance.ID)
 	d.Set("status", instance.State)
 	d.Set("resource_group_id", instance.ResourceGroupID)
