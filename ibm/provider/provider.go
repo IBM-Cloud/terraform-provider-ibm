@@ -728,7 +728,7 @@ func Provider() *schema.Provider {
 			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
-			// //Added for Satellite
+			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
 			"ibm_satellite_location_nlb_dns":                    satellite.DataSourceIBMSatelliteLocationNLBDNS(),
 			"ibm_satellite_attach_host_script":                  satellite.DataSourceIBMSatelliteAttachHostScript(),
