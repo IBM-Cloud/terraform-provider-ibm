@@ -29,6 +29,7 @@ resource "ibm_satellite_storage_assignment" "assignment" {
     assignment_name = "assignment-name"
     config = "storage-config-name"
     groups = ["cluster-group-1","cluster-group-2"]
+    controller = "satellite-location"
 }
 ```
 
@@ -53,12 +54,11 @@ Review the argument references that you can specify for your resource.
 
 - `assignment_name` - (Required, String) The name of the assignment
 - `controller` - (Required, String) The name of the location where the storage configuration is created.
-  * Constraints: Required with `cluster` and Conflicts with `groups`
 - `config` - (Required, String) The name of the storage configuration to be assigned.
 - `groups` - (Required, List(String)) A list of strings of cluster groups you want to assign the defined configuration too.
-  * Constraints: Conflicts with `cluster` and `controller`
+  * Constraints: Required with `controller`
 - `cluster` - (Required, String) The id of the cluster you wish to assign the defined configuration too.
-  * Constraints: Required with `controller` and Conflicts with `groups`
+  * Constraints: Required with `controller`
 - `update_config_revision` - (Optional, Bool) Set to true to update the assignment with the latest revision of the storage configuration.
 
 ## Attribute reference

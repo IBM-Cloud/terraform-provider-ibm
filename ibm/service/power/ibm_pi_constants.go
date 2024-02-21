@@ -22,6 +22,7 @@ const (
 	Arg_SharedProcessorPoolName             = "pi_shared_processor_pool_name"
 	Arg_SharedProcessorPoolPlacementGroupID = "pi_shared_processor_pool_placement_group_id"
 	Arg_SharedProcessorPoolReservedCores    = "pi_shared_processor_pool_reserved_cores"
+	Arg_SnapshotID                          = "pi_snapshot_id"
 	Arg_StoragePool                         = "pi_storage_pool"
 	Arg_StorageType                         = "pi_storage_type"
 	Arg_VTL                                 = "vtl"
@@ -401,4 +402,6 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
+
+	PIVirtualOpticalDevice = "pi_virtual_optical_device"
 )

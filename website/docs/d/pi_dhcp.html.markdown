@@ -34,7 +34,6 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `leases`:
   - `instance_ip` - (String) The IP of the PVM Instance.
   - `instance_mac` - (String) The MAC Address of the PVM Instance.
-- `network` - (String) The ID of the DHCP Server private network (deprecated - replaced by `network_id`).
 - `network_id`- (String) The ID of the DHCP Server private network.
 - `network_name` - The name of the DHCP Server private network.
 - `status` - (String) The status of the DHCP Server.

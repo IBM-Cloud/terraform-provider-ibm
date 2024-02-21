@@ -150,3 +150,11 @@ variable "encryptionInTransit" {
     description = "Enter true to enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one."
   
 }
+
+variable "disableNoobaaLB" {
+
+    type = bool
+    default = false
+    description = "Specify true to disable to NooBaa public load balancer."
+
+}

@@ -14,14 +14,16 @@ Create, update, or delete a Slack destination by using IBM Cloud™ Event Notifi
 
 ```terraform
 resource "ibm_en_destination_slack" "slack_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "My Slack Destination"
-  type          = "slack"
-  description   = "Destination slack for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "My Slack Destination"
+  type                  = "slack"
+  collect_failed_events = false
+  description           = "Destination slack for event notification"
   config {
     params {
       url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
   }
+}
 }
 ```
 
@@ -36,6 +38,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) slack.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

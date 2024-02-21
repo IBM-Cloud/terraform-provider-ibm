@@ -36,7 +36,8 @@ func TestAccIBMEnFCMDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEnFCMDestinationExists("ibm_en_destination_android.en_destination_resource_fcm", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "webhook"),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "push_android"),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnFCMDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "push_android"),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "description", newDescription),
 				),
 			},

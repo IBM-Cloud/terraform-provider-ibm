@@ -545,12 +545,6 @@ func resourceIBMCmObjectMapToPublishObject(modelMap map[string]interface{}) (*ca
 	if modelMap["public_approved"] != nil {
 		model.PublicApproved = core.BoolPtr(modelMap["public_approved"].(bool))
 	}
-	if modelMap["portal_approval_record"] != nil && modelMap["portal_approval_record"].(string) != "" {
-		model.PortalApprovalRecord = core.StringPtr(modelMap["portal_approval_record"].(string))
-	}
-	if modelMap["portal_url"] != nil && modelMap["portal_url"].(string) != "" {
-		model.PortalURL = core.StringPtr(modelMap["portal_url"].(string))
-	}
 	return model, nil
 }
 
@@ -584,12 +578,6 @@ func resourceIBMCmObjectPublishObjectToMap(model *catalogmanagementv1.PublishObj
 	}
 	if model.PublicApproved != nil {
 		modelMap["public_approved"] = model.PublicApproved
-	}
-	if model.PortalApprovalRecord != nil {
-		modelMap["portal_approval_record"] = model.PortalApprovalRecord
-	}
-	if model.PortalURL != nil {
-		modelMap["portal_url"] = model.PortalURL
 	}
 	return modelMap, nil
 }

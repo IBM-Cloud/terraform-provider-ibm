@@ -6,9 +6,9 @@ description: |-
 subcategory: "VPC infrastructure"
 ---
 
-# ibm\_is_share_target
+# is_share_replica_operations
 
-Provides a resource for ShareTarget. This allows ShareTarget to be created, updated and deleted.
+Provides a resource for managing the share operations failover and split.
 
 ~> **NOTE**
 `ibm_is_share_replica_operations` is used for either failing over to replica share or splitting the source and replica shares. 
@@ -67,7 +67,6 @@ The following arguments are supported:
 - `split_share` - (Boolean, string) If set to true the replication relationship between source share and replica will be removed.
 
 ~>**Note**
-
 `split_share` and `fallback_policy` are mutually exclusive
 
 ## Attribute Reference
