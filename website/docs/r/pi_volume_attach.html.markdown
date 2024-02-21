@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_pi_volume_attach
-Attach and Detach volumes to a Power Systems Virtual Server instance. For more information, about managing volume, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
+Attaches and Detaches a volume to a Power Systems Virtual Server instance. For more information, about managing volume, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
 The following example attaches volume to a power systems virtual server instance.
