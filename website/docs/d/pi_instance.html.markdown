@@ -40,18 +40,8 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-<<<<<<< HEAD
 - `addresses` - (Deprecated, List of objects) - The address associated with this instance.
 
-  Nested scheme for `addresses`:
-  - `external_ip` - (String) The external IP address of the instance.
-  - `ip` - (String) The IP address of the instance.
-  - `macaddress` - (String) The MAC address of the instance.
-  - `network_id` - (String) The network ID of the instance.
-  - `network_name` - (String) The network name of the instance.
-  - `type` - (String) The type of the network.
-=======
->>>>>>> master
 - `deployment_type` - (String) The custom deployment type.
 - `health_status` - (String) The health of the instance.
 - `id` - (String) The unique identifier of the instance.
