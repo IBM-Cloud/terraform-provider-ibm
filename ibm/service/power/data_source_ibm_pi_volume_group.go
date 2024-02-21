@@ -128,15 +128,15 @@ func vgStatusDescriptionErrors() *schema.Schema {
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"key": {
+				Attr_Key: {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
-				"message": {
+				Attr_Message: {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
-				"volume_ids": {
+				Attr_VolumeIDs: {
 					Type:     schema.TypeList,
 					Computed: true,
 					Elem:     &schema.Schema{Type: schema.TypeString},
