@@ -116,4 +116,3 @@ func enCOSIntegrationFlattenMetadata(metadataItem *en.IntegrationMetadata) []int
 	}
 	return []interface{}{metadataMap}
 }
-
