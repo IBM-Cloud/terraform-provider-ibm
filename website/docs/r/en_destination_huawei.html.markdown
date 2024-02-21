@@ -14,10 +14,11 @@ Create, update, or delete a  Huawei destination by using IBM Cloud™ Event Noti
 
 ```terraform
 resource "ibm_en_destination_huawei" "huawei_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Huawei Destination"
-  type          = "push_huawei"
-  description   = "The Huawei Destination"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Huawei Destination"
+  type                  = "push_huawei"
+  collect_failed_events = false
+  description           = "The Huawei Destination"
   config {
     params {
       client_id   = "5237288990"
@@ -40,6 +41,7 @@ Review the argument reference that you can specify for your resource.
 
 - `type` - (Required, String) push_huawei.
 
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

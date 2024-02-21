@@ -46,6 +46,11 @@ func ResourceIBMEnCodeEngineDestination() *schema.Resource {
 				Optional:    true,
 				Description: "The Destination description.",
 			},
+			"collect_failed_events": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
+			},
 			"config": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -123,6 +128,7 @@ func resourceIBMEnCodeEngineDestinationCreate(context context.Context, d *schema
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetName(d.Get("name").(string))
 	options.SetType(d.Get("type").(string))
+	options.SetCollectFailedEvents(d.Get("collect_failed_events").(bool))
 
 	destinationtype := d.Get("type").(string)
 	if _, ok := d.GetOk("description"); ok {
@@ -184,6 +190,10 @@ func resourceIBMEnCodeEngineDestinationRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
+	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
+	}
+
 	if err = d.Set("description", result.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
 	}
@@ -227,12 +237,17 @@ func resourceIBMEnCodeEngineDestinationUpdate(context context.Context, d *schema
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	if ok := d.HasChanges("name", "description", "config"); ok {
+	if ok := d.HasChanges("name", "description", "collect_failed_events", "config"); ok {
 		options.SetName(d.Get("name").(string))
 
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
+
+		if _, ok := d.GetOk("collect_failed_events"); ok {
+			options.SetCollectFailedEvents(d.Get("collect_failed_events").(bool))
+		}
+
 		destinationtype := d.Get("type").(string)
 		if _, ok := d.GetOk("config"); ok {
 			config := CodeEnginedestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
@@ -288,6 +303,10 @@ func CodeEnginedestinationConfigMapToDestinationConfig(configParams map[string]i
 	if configParams["verb"] != nil {
 		params.Verb = core.StringPtr(configParams["verb"].(string))
 	}
+
+	// if configParams["collect_failed_events"] != nil {
+	// 	params.CollectFailedEvents = core.BoolPtr(configParams["collect_failed_events"].(bool))
+	// }
 
 	if configParams["custom_headers"] != nil {
 		var customHeaders = make(map[string]string)

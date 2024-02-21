@@ -837,6 +837,11 @@ func Provider() *schema.Provider {
 			"ibm_en_sources":                   eventnotification.DataSourceIBMEnSources(),
 			"ibm_en_destination_custom_email":  eventnotification.DataSourceIBMEnCustomEmailDestination(),
 			"ibm_en_subscription_custom_email": eventnotification.DataSourceIBMEnCustomEmailSubscription(),
+			"ibm_en_email_template":            eventnotification.DataSourceIBMEnEmailTemplate(),
+			"ibm_en_email_templates":           eventnotification.DataSourceIBMEnTemplates(),
+			"ibm_en_destination_custom_sms":    eventnotification.DataSourceIBMEnCustomSMSDestination(),
+			"ibm_en_subscription_custom_sms":   eventnotification.DataSourceIBMEnCustomSMSSubscription(),
+			"ibm_en_integration_cos":           eventnotification.DataSourceIBMEnCOSIntegration(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1371,6 +1376,10 @@ func Provider() *schema.Provider {
 			"ibm_en_ibmsource":                 eventnotification.ResourceIBMEnIBMSource(),
 			"ibm_en_destination_custom_email":  eventnotification.ResourceIBMEnCustomEmailDestination(),
 			"ibm_en_subscription_custom_email": eventnotification.ResourceIBMEnCustomEmailSubscription(),
+			"ibm_en_email_template":            eventnotification.ResourceIBMEnEmailTemplate(),
+			"ibm_en_integration_cos":           eventnotification.ResourceIBMEnCOSIntegration(),
+			"ibm_en_destination_custom_sms":    eventnotification.ResourceIBMEnCustomSMSDestination(),
+			"ibm_en_subscription_custom_sms":   eventnotification.ResourceIBMEnCustomSMSSubscription(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
