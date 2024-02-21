@@ -1,3 +1,71 @@
+# 1.63.0-beta0 (Feb 21, 2024)
+Features
+* Support for Virtual Private Cloud
+    - **Datasources**
+        - ibm_is_reservation
+    - **Resources**
+        - ibm_is_reservation
+        - ibm_is_reservation_activate
+        - ibm_is_bare_metal_server_network_attachment
+        - ibm_is_instance_network_attachment
+        - ibm_is_virtual_network_interface
+        - ibm_is_virtual_network_interface_floating_ip
+        - ibm_is_virtual_network_interface_ip
+
+* Support for Power Instance
+    - **Datasources**
+        - ibm_pi_instance_snapshot
+        - ibm_is_bare_metal_server_network_attachment
+        - ibm_is_bare_metal_server_network_attachments
+        - ibm_is_instance_network_attachment
+        - ibm_is_instance_network_attachments
+        - ibm_is_virtual_network_interface_floating_ip
+        - ibm_is_virtual_network_interface_floating_ips
+        - ibm_is_virtual_network_interface_ip
+        - ibm_is_virtual_network_interface_ips
+
+* Support for Event Notification
+    - **Datasources**
+        - ibm_en_email_template
+        - ibm_en_email_templates
+        - ibm_en_destination_custom_sms
+        - ibm_en_subscription_custom_sms
+        - ibm_en_integration_cos
+    - **Resources**
+        - ibm_en_email_template
+        - ibm_en_destination_custom_sms
+        - ibm_en_subscription_custom_sms
+        - ibm_en_integration_cos
+
+Enhancements
+* Added new region eu-fr2 ([5073](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5073))
+* Update Forcenew instance fields ([5025](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5025))
+* Event Notifications: enabled private endpoint ([4989](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4989))
+* Adding OpenPages as part of UX030 ([5051](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5051))
+* add vpe_service_endpoint_url output ([5129](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5129))
+* Remove old deprecated features from terraform ([5049](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5049))
+* Remove deprecated Secrets Manager data sources ([5126](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5126))
+* Add Power VMRM ([4994](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4994))
+* Remove references for creating free clusters, no longer supported ([4987](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4987))
+* fix: CIS - added deafult value for min_tls_version ([5136](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5136))
+* fix: add vpe_service_endpoint_url output ([5129](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5129))
+* Secrets manager custom password generation policy ([5134](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5134))
+* deprecate(is-lb-listener-redirect): Deprecate lb listener https redirect ([5140](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5140))
+* Support for virtual network interfaces across instance, bare metal servers, instance templates, shares ([5112](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5112))
+* new feature "monitoring_enabled" for Project service ([5120](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5120))
+* feat(Catalog Management): update platform go sdk version, remove old catalog fields ([5145](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5145))
+* SCC eu-es update ([5135](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5135))
+
+BugFixes
+* Fix Satellite Locations recreation when updating, remove forcenew, add computed and applyonce
+([5090](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5090))
+* updated is_images document ([5088](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5088))
+* reordered reservation on instance to avoid update and length check on templates ([5141](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5141))
+* fix(share-operations) : File shares operations and doc fixes ([5139](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5139))
+* Satellite Storage API Fix and Updated ODF Documentation ([5143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5143))
+* fix(bare metal server) : fixed allow to float and ips issue ([5146](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5146))
+* fix(lb-and-routing-table) : Fix routing table and lbs datasource ([5149](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5149))
+
 # 1.62.0 (Jan 30, 2024)
 Features
 * Support for Power Virtual Instance
