@@ -280,6 +280,383 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							},
 						},
 
+						"network_attachments": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The additional network attachments to create for the virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this network attachment. Names must be unique within the instance the network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+									},
+									"virtual_network_interface": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "A virtual network interface for the instance network attachment. This can be specifiedusing an existing virtual network interface, or a prototype object for a new virtualnetwork interface.If an existing virtual network interface is specified, `enable_infrastructure_nat` must be`false`.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"allow_ip_spoofing": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+												},
+												"auto_delete": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
+												},
+												"enable_infrastructure_nat": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the virtual network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
+												},
+												"ips": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or as a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the same subnet as the primary IP.If reserved IP identities are provided, the specified reserved IPs must be unbound.If reserved IP prototype objects with addresses are provided, the addresses must be available on the virtual network interface's subnet. For any prototype objects that do not specify an address, an available address on the subnet will be automatically selected and reserved.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this reserved IP.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this reserved IP.",
+															},
+															"address": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.",
+															},
+															"auto_delete": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+															},
+														},
+													},
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this virtual network interface. The name must not be used by another virtual network interface in the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words. Names beginning with `ibm-` are reserved for provider-owned resources, and are not allowed.",
+												},
+												"primary_ip": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The primary IP address to bind to the virtual network interface. May be either areserved IP identity, or a reserved IP prototype object which will be used to create anew reserved IP.If a reserved IP identity is provided, the specified reserved IP must be unbound.If a reserved IP prototype object with an address is provided, the address must beavailable on the virtual network interface's subnet. If no address is specified,an available address on the subnet will be automatically selected and reserved.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this reserved IP.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this reserved IP.",
+															},
+															"address": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.",
+															},
+															"auto_delete": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+															},
+														},
+													},
+												},
+												"resource_group": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The resource group to use for this virtual network interface. If unspecified, thevirtual server instance's resource group will be used.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this resource group.",
+															},
+														},
+													},
+												},
+												"security_groups": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC for the subnet is used.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this security group.",
+															},
+															"crn": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The security group's CRN.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The security group's canonical URL.",
+															},
+														},
+													},
+												},
+												"subnet": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The associated subnet. Required if `primary_ip` does not specify a reserved IP.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this subnet.",
+															},
+															"crn": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The CRN for this subnet.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this subnet.",
+															},
+														},
+													},
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this virtual network interface.",
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this virtual network interface.",
+												},
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this virtual network interface.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"primary_network_attachment": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary network attachment to create for the virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this network attachment. Names must be unique within the instance the network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+									},
+									"virtual_network_interface": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "A virtual network interface for the instance network attachment. This can be specifiedusing an existing virtual network interface, or a prototype object for a new virtualnetwork interface.If an existing virtual network interface is specified, `enable_infrastructure_nat` must be`false`.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"allow_ip_spoofing": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+												},
+												"auto_delete": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
+												},
+												"enable_infrastructure_nat": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the virtual network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
+												},
+												"ips": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or as a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the same subnet as the primary IP.If reserved IP identities are provided, the specified reserved IPs must be unbound.If reserved IP prototype objects with addresses are provided, the addresses must be available on the virtual network interface's subnet. For any prototype objects that do not specify an address, an available address on the subnet will be automatically selected and reserved.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this reserved IP.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this reserved IP.",
+															},
+															"address": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.",
+															},
+															"auto_delete": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+															},
+														},
+													},
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this virtual network interface. The name must not be used by another virtual network interface in the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words. Names beginning with `ibm-` are reserved for provider-owned resources, and are not allowed.",
+												},
+												"primary_ip": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The primary IP address to bind to the virtual network interface. May be either areserved IP identity, or a reserved IP prototype object which will be used to create anew reserved IP.If a reserved IP identity is provided, the specified reserved IP must be unbound.If a reserved IP prototype object with an address is provided, the address must beavailable on the virtual network interface's subnet. If no address is specified,an available address on the subnet will be automatically selected and reserved.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this reserved IP.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this reserved IP.",
+															},
+															"address": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.",
+															},
+															"auto_delete": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Indicates whether this reserved IP member will be automatically deleted when either`target` is deleted, or the reserved IP is unbound.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+															},
+														},
+													},
+												},
+												"resource_group": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The resource group to use for this virtual network interface. If unspecified, thevirtual server instance's resource group will be used.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this resource group.",
+															},
+														},
+													},
+												},
+												"security_groups": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The security groups to use for this virtual network interface. If unspecified, the default security group of the VPC for the subnet is used.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this security group.",
+															},
+															"crn": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The security group's CRN.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The security group's canonical URL.",
+															},
+														},
+													},
+												},
+												"subnet": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The associated subnet. Required if `primary_ip` does not specify a reserved IP.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this subnet.",
+															},
+															"crn": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The CRN for this subnet.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this subnet.",
+															},
+														},
+													},
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this virtual network interface.",
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this virtual network interface.",
+												},
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this virtual network interface.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+
 						isInstanceTemplatePrimaryNetworkInterface: {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -562,6 +939,30 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			template[isInstanceTotalVolumeBandwidth] = int(*instance.TotalVolumeBandwidth)
 		}
 
+		// vni
+
+		networkAttachments := []map[string]interface{}{}
+		if instance.NetworkAttachments != nil {
+			for _, modelItem := range instance.NetworkAttachments {
+				modelMap, err := dataSourceIBMIsInstanceTemplateInstanceNetworkAttachmentPrototypeToMap(&modelItem)
+				if err != nil {
+					return err
+				}
+				networkAttachments = append(networkAttachments, modelMap)
+			}
+		}
+		template["network_attachments"] = networkAttachments
+
+		primaryNetworkAttachment := []map[string]interface{}{}
+		if instance.PrimaryNetworkAttachment != nil {
+			modelMap, err := dataSourceIBMIsInstanceTemplateInstanceNetworkAttachmentPrototypeToMap(instance.PrimaryNetworkAttachment)
+			if err != nil {
+				return err
+			}
+			primaryNetworkAttachment = append(primaryNetworkAttachment, modelMap)
+		}
+		template["primary_network_attachment"] = primaryNetworkAttachment
+
 		if instance.PrimaryNetworkInterface != nil {
 			interfaceList := make([]map[string]interface{}, 0)
 			currentPrimNic := map[string]interface{}{}
@@ -748,7 +1149,7 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			reservationAffinityMap := map[string]interface{}{}
 
 			reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
-			if instance.ReservationAffinity.Pool != nil {
+			if instance.ReservationAffinity.Pool != nil && len(instance.ReservationAffinity.Pool) > 0 {
 				pool := instance.ReservationAffinity.Pool[0]
 				res := ""
 				if idPool, ok := pool.(*vpcv1.ReservationIdentityByID); ok {
