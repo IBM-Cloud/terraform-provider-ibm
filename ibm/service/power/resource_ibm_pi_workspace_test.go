@@ -39,7 +39,7 @@ func testAccCheckIBMPIWorkspaceConfig(name string) string {
 		pi_name              = "%[1]s"
 		pi_datacenter        = "dal"
 		pi_resource_group_id = "%[2]s"
-		pi_plan              = "private"
+		pi_plan              = "public"
 	  }
 	`, name, acc.Pi_resource_group_id)
 }
