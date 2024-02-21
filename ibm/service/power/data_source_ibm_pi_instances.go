@@ -231,7 +231,6 @@ func flattenPvmInstances(list []*models.PVMInstanceReference) []map[string]inter
 	return result
 }
 
-// TODO: REVIEW THIS ONE
 func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []map[string]interface{}) {
 	if list != nil {
 		networks = make([]map[string]interface{}, len(list))
