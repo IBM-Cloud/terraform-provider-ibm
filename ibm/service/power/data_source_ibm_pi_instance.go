@@ -268,6 +268,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set(Attr_PlacementGroupID, powervmdata.PlacementGroup)
 	}
 
+<<<<<<< HEAD
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
 		for i, pvmip := range powervmdata.Addresses {
@@ -283,6 +284,8 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set(Attr_Addresses, pvmaddress)
 	}
 
+=======
+>>>>>>> master
 	if powervmdata.Health != nil {
 		d.Set(Attr_HealthStatus, powervmdata.Health.Status)
 	}

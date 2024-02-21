@@ -973,6 +973,8 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionToMap(model projectv
 		return resourceIbmProjectConfigProjectConfigResponseDefinitionDAConfigDefinitionPropertiesToMap(model.(*projectv1.ProjectConfigResponseDefinitionDAConfigDefinitionProperties))
 	} else if _, ok := model.(*projectv1.ProjectConfigResponseDefinitionResourceConfigDefinitionProperties); ok {
 		return resourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefinitionPropertiesToMap(model.(*projectv1.ProjectConfigResponseDefinitionResourceConfigDefinitionProperties))
+	} else if _, ok := model.(*projectv1.ProjectConfigResponseDefinitionStackConfigDefinitionProperties); ok {
+		return resourceIbmProjectConfigProjectConfigResponseDefinitionStackConfigDefinitionPropertiesToMap(model.(*projectv1.ProjectConfigResponseDefinitionStackConfigDefinitionProperties))
 	} else if _, ok := model.(*projectv1.ProjectConfigResponseDefinition); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*projectv1.ProjectConfigResponseDefinition)
@@ -1140,6 +1142,23 @@ func resourceIbmProjectConfigProjectConfigResponseDefinitionResourceConfigDefini
 			settings[k] = fmt.Sprintf("%v", v)
 		}
 		modelMap["settings"] = settings
+	}
+	return modelMap, nil
+}
+
+func resourceIbmProjectConfigProjectConfigResponseDefinitionStackConfigDefinitionPropertiesToMap(model *projectv1.ProjectConfigResponseDefinitionStackConfigDefinitionProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.LocatorID != nil {
+		modelMap["locator_id"] = model.LocatorID
+	}
+	if model.EnvironmentID != nil {
+		modelMap["environment_id"] = model.EnvironmentID
 	}
 	return modelMap, nil
 }

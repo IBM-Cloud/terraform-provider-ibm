@@ -19,24 +19,6 @@ variable "endpoint_type" {
   default     = "private"
 }
 
-// Data source arguments for secrets_manager_secrets
-variable "secrets_manager_secrets_secret_type" {
-  description = "The secret type."
-  type        = string
-  default     = null
-}
-
-// Data source arguments for secrets_manager_secret
-variable "secrets_manager_secret_secret_type" {
-  description = "The secret type. Supported options include: arbitrary, iam_credentials, username_password."
-  type        = string
-  default     = "arbitrary"
-}
-variable "secrets_manager_secret_id" {
-  description = "The v4 UUID that uniquely identifies the secret."
-  type        = string
-}
-
 // Resource arguments for sm_secret_group
 variable "sm_secret_group_description" {
   description = "An extended description of your secret group.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group."

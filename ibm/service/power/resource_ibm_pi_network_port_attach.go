@@ -69,11 +69,6 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"port_id": {
-				Type:       schema.TypeString,
-				Computed:   true,
-				Deprecated: "port_id attribute is deprecated, use network_port_id instead.",
-			},
 			"network_port_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -169,7 +164,6 @@ func resourceIBMPINetworkPortAttachRead(ctx context.Context, d *schema.ResourceD
 	d.Set("macaddress", networkdata.MacAddress)
 	d.Set("status", networkdata.Status)
 	d.Set("network_port_id", networkdata.PortID)
-	d.Set("port_id", networkdata.PortID)
 	d.Set("public_ip", networkdata.ExternalIP)
 
 	return nil

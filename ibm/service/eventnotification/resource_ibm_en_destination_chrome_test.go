@@ -37,6 +37,7 @@ func TestAccIBMEnChromeDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnChromeDestinationExists("ibm_en_destination_chrome.en_destination_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "type", "push_chrome"),
+					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnChromeDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "type", "push_chrome"),
+					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_chrome.en_destination_resource_1", "description", newDescription),
 				),
 			},
