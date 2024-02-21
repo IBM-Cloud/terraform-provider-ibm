@@ -37,7 +37,7 @@ func testAccCheckIBMPIWorkspaceConfig(name string) string {
 	return fmt.Sprintf(`
 	 resource "ibm_pi_workspace" "powervs_service_instance" {
 		pi_name              = "%[1]s"
-		pi_datacenter        = "satloc_dal_clp25g92006uiuvbvku0"
+		pi_datacenter        = "dal"
 		pi_resource_group_id = "%[2]s"
 		pi_plan              = "private"
 	  }
