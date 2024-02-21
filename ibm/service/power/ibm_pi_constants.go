@@ -276,6 +276,7 @@ const (
 	Attr_DhcpNetworkDeprecated = "network" // to deprecate
 	Attr_DhcpNetworkID         = "network_id"
 	Attr_DhcpNetworkName       = "network_name"
+	Attr_DhcpStatus            = "status"
 
 	// Instance
 	Arg_PVMInstanceId           = "pi_instance_id"
