@@ -48,7 +48,7 @@ func DataSourceIBMPIImage() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			// TODO: Relabel this one "operating_system" to match catalog images
-			"operatingsystem": {
+			Attr_OperatingSystem: {
 				Computed:    true,
 				Description: "The operating system that is installed with the image.",
 				Type:        schema.TypeString,
@@ -95,7 +95,7 @@ func dataSourceIBMPIImagesRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_Architecture, imagedata.Specifications.Architecture)
 	d.Set(Attr_Hypervisor, imagedata.Specifications.HypervisorType)
 	d.Set(Attr_ImageType, imagedata.Specifications.ImageType)
-	d.Set("operatingsystem", imagedata.Specifications.OperatingSystem)
+	d.Set(Attr_OperatingSystem, imagedata.Specifications.OperatingSystem)
 	d.Set(Attr_Size, imagedata.Size)
 	d.Set(Attr_State, imagedata.State)
 	d.Set(Attr_StoragePool, imagedata.StoragePool)

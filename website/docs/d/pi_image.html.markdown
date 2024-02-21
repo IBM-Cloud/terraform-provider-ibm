@@ -45,7 +45,7 @@ In addition to all argument reference list, you can access the following attribu
 - `hypervisor` - (String) Hypervisor type.
 - `id` - (String) The unique identifier of the image.
 - `image_type` - (String) The identifier of this image type.
-- `operatingsystem` - (String) The operating system that is installed with the image.
+- `operating_system` - (String) The operating system that is installed with the image.
 - `size` - (String) The size of the image in megabytes.
 - `state` - (String) The state for this image. 
 - `storage_type` - (String) The storage type for this image.
