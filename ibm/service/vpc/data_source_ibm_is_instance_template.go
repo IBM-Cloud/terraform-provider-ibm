@@ -883,6 +883,12 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				version := insTempCatalogOffering.Version.(*vpcv1.CatalogOfferingVersionIdentity)
 				currentOffering[isInstanceTemplateCatalogOfferingVersionCrn] = *version.CRN
 			}
+			if insTempCatalogOffering.Plan != nil {
+				plan := insTempCatalogOffering.Plan.(*vpcv1.CatalogOfferingVersionPlanIdentity)
+				if plan.CRN != nil && *plan.CRN != "" {
+					currentOffering[isInstanceTemplateCatalogOfferingPlanCrn] = *plan.CRN
+				}
+			}
 			catOfferingList = append(catOfferingList, currentOffering)
 			d.Set(isInstanceTemplateCatalogOffering, catOfferingList)
 		}
