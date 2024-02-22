@@ -18,7 +18,7 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnDestinationAllArgs(t *testing.T) {
+func TestAccIBMEnCustomSMSDestinationAllArgs(t *testing.T) {
 	var config en.Destination
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -29,27 +29,29 @@ func TestAccIBMEnDestinationAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnServiceNowDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnCustomSMSDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnDestinationExists("ibm_en_destination.en_destination_resource_1", config),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "description", description),
+					testAccCheckIBMEnCustomSMSDestinationExists("ibm_en_destination_custom_sms.en_destination_resource_1", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "type", "smtp_custom"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "collect_failed_events", "false"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnCustomEmailDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "type", "sms_custom"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "collect_failed_events", "false"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_sms.en_destination_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination.en_destination_resource_1",
+				ResourceName:      "ibm_en_destination_custom_sms.en_destination_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -57,7 +59,7 @@ func TestAccIBMEnDestinationAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnCustomSMSDestinationConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "en_destination_resource" {
 		name     = "%s"
@@ -66,22 +68,16 @@ func testAccCheckIBMEnDestinationConfig(instanceName, name, description string) 
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination" "en_destination_resource_1" {
+	resource "ibm_en_destination_custom_sms" "en_destination_resource_1" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
-		type        = "webhook"
+		type        = "sms_custom"
 		description = "%s"
-		config {
-			params {
-				verb = "POST"
-				url  = "https://demo.webhook.com"
-			}
-		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnCustomSMSDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -114,7 +110,7 @@ func testAccCheckIBMEnDestinationExists(n string, obj en.Destination) resource.T
 	}
 }
 
-func testAccCheckIBMEnDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnCustomSMSDestinationDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err

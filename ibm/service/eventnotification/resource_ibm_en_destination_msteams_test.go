@@ -37,6 +37,7 @@ func TestAccIBMEnMSTeamsDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnMSTeamsDestinationExists("ibm_en_destination_msteams.en_destination_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "type", "msteams"),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnMSTeamsDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "type", "msteams"),
+					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_msteams.en_destination_resource_1", "description", newDescription),
 				),
 			},

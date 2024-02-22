@@ -14,10 +14,11 @@ Create, update, or delete a IBM Cloud Functions destination by using IBM Cloudâ„
 
 ```terraform
 resource "ibm_en_destination_cf" "cf_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Cloud Function Test Destination"
-  type          = "ibmcf"
-  description   = "Destination Chrome for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Cloud Function Test Destination"
+  type                  = "ibmcf"
+  collect_failed_events = true
+  description           = "Destination Chrome for event notification"
   config {
     params {
       api_key     = "XYZ"
@@ -38,6 +39,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) ibmcf.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
