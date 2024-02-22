@@ -132,6 +132,15 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
     - `resource_type` - (String) The type of resource referenced.
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
+- `catalog_offering` - (List) The catalog offering inherited from the snapshot's source. If a virtual server instance is provisioned with a source_snapshot specifying this snapshot, the virtual server instance will use this snapshot's catalog offering, including its pricing plan. If absent, this snapshot is not associated with a catalog offering.
+
+  Nested scheme for `catalog_offering`:
+    - `version_crn` - (String) The CRN for this version of a catalog offering
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    
+      Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
 - `copies` - (List) The copies of this snapshot in other regions.
 
     Nested scheme for `copies`:
