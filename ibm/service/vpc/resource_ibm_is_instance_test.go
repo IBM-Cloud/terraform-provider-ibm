@@ -230,6 +230,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "boot_volume.0.encryption"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
 				),
 			},
 		},
@@ -1418,6 +1420,7 @@ func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, 
 		name    = "%s"
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.1.catalog_offering.0.version.0.crn
+			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.7c7210da-bc40-418f-9a0a-af994040c13c-global"
 		}
 		boot_volume {
 			encryption = ibm_kms_key.testacc_key.crn
@@ -2374,6 +2377,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
 					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
+					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_images.testacc_images", "images.0.name"),
 				),
 			},
@@ -2419,6 +2424,7 @@ func testAccCheckIBMISInstanceCatalogImageConfig(vpcname, subnetname, sshname, p
 		}
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.0.catalog_offering.0.version.0.crn
+			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.7c7210da-bc40-418f-9a0a-af994040c13c-global"
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.InstanceProfileName, userData, acc.ISZoneName)
 }

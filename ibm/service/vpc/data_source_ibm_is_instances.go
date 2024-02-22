@@ -249,6 +249,25 @@ func DataSourceIBMISInstances() *schema.Resource {
 										Computed:    true,
 										Description: "Identifies a version of a catalog offering by a unique CRN property",
 									},
+									isInstanceCatalogOfferingPlanCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this catalog offering version's billing plan",
+									},
+									"deleted": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -1276,6 +1295,13 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			catalogList := make([]map[string]interface{}, 0)
 			catalogMap := map[string]interface{}{}
 			catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+			if instance.CatalogOffering.Plan != nil {
+				catalogMap[isInstanceCatalogOfferingPlanCrn] = *instance.CatalogOffering.Plan.CRN
+				if instance.CatalogOffering.Plan.Deleted != nil {
+					deletedMap := resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(*instance.CatalogOffering.Plan.Deleted)
+					catalogMap["deleted"] = []map[string]interface{}{deletedMap}
+				}
+			}
 			catalogList = append(catalogList, catalogMap)
 			l[isInstanceCatalogOffering] = catalogList
 		}

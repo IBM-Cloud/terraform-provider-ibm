@@ -417,6 +417,7 @@ resource "ibm_is_instance" "example" {
   profile = "cx2-2x4"
   catalog_offering {
     version_crn = data.ibm_is_images.example.images.0.catalog_offering.0.version.0.crn
+    plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.7c7210da-bc40-418f-9a0a-af994040c13c-global"
   }
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -471,6 +472,7 @@ resource "ibm_is_instance" "example" {
   profile = "cx2-2x4"
   catalog_offering {
     version_crn = data.ibm_is_images.example.images.0.catalog_offering.0.version.0.crn
+    plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.7c7210da-bc40-418f-9a0a-af994040c13c-global"
   }
   primary_network_interface {
     subnet = ibm_is_subnet.example.id

@@ -318,6 +318,39 @@ func DataSourceSnapshot() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "User Tags for the snapshot",
 			},
+			isSnapshotCatalogOffering: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The catalog offering inherited from the snapshot's source. If a virtual server instance is provisioned with a source_snapshot specifying this snapshot, the virtual server instance will use this snapshot's catalog offering, including its pricing plan.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isSnapshotCatalogOfferingPlanCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this catalog offering version's billing plan",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						isSnapshotCatalogOfferingVersionCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this version of a catalog offering",
+						},
+					},
+				},
+			},
 
 			isSnapshotBackupPolicyPlan: {
 				Type:        schema.TypeList,
@@ -502,6 +535,22 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 				if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 					d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
 				}
+				// catalog
+				if snapshot.CatalogOffering != nil {
+					versionCrn := *snapshot.CatalogOffering.Version.CRN
+					catalogList := make([]map[string]interface{}, 0)
+					catalogMap := map[string]interface{}{}
+					catalogMap[isSnapshotCatalogOfferingVersionCrn] = versionCrn
+					if snapshot.CatalogOffering.Plan != nil {
+						catalogMap[isSnapshotCatalogOfferingPlanCrn] = *snapshot.CatalogOffering.Plan.CRN
+						if snapshot.CatalogOffering.Plan.Deleted != nil {
+							deletedMap := resourceIbmIsSnapshotCatalogOfferingVersionPlanReferenceDeletedToMap(*snapshot.CatalogOffering.Plan.Deleted)
+							catalogMap["deleted"] = []map[string]interface{}{deletedMap}
+						}
+					}
+					catalogList = append(catalogList, catalogMap)
+					d.Set(isSnapshotCatalogOffering, catalogList)
+				}
 
 				var clones []string
 				clones = make([]string, 0)
@@ -624,6 +673,23 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		}
 		d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
 
+		// catalog
+		if snapshot.CatalogOffering != nil {
+			versionCrn := *snapshot.CatalogOffering.Version.CRN
+			catalogList := make([]map[string]interface{}, 0)
+			catalogMap := map[string]interface{}{}
+			catalogMap[isSnapshotCatalogOfferingVersionCrn] = versionCrn
+			if snapshot.CatalogOffering.Plan != nil {
+				catalogMap[isSnapshotCatalogOfferingPlanCrn] = *snapshot.CatalogOffering.Plan.CRN
+				if snapshot.CatalogOffering.Plan.Deleted != nil {
+					deletedMap := resourceIbmIsSnapshotCatalogOfferingVersionPlanReferenceDeletedToMap(*snapshot.CatalogOffering.Plan.Deleted)
+					catalogMap["deleted"] = []map[string]interface{}{deletedMap}
+				}
+			}
+			catalogList = append(catalogList, catalogMap)
+			d.Set(isSnapshotCatalogOffering, catalogList)
+		}
+
 		backupPolicyPlanList := []map[string]interface{}{}
 		if snapshot.BackupPolicyPlan != nil {
 			backupPolicyPlan := map[string]interface{}{}
@@ -647,4 +713,12 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		d.Set(isSnapshotAccessTags, accesstags)
 		return nil
 	}
+}
+
+func resourceIbmIsSnapshotCatalogOfferingVersionPlanReferenceDeletedToMap(catalogOfferingVersionPlanReferenceDeleted vpcv1.CatalogOfferingVersionPlanReferenceDeleted) map[string]interface{} {
+	catalogOfferingVersionPlanReferenceDeletedMap := map[string]interface{}{}
+
+	catalogOfferingVersionPlanReferenceDeletedMap["more_info"] = catalogOfferingVersionPlanReferenceDeleted.MoreInfo
+
+	return catalogOfferingVersionPlanReferenceDeletedMap
 }
