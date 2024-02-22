@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance_ip"
@@ -11,7 +10,6 @@ description: |-
 Retrieve information about a Power Systems Virtual Server instance IP address. For more information, about Power Systems Virtual Server instance IP address, see [configuring and adding a private network subnet](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
 ## Example usage
-
 ```terraform
 data "ibm_pi_instance_ip" "ds_instance_ip" {
   pi_instance_name     = "terraform-test-instance"
@@ -19,12 +17,14 @@ data "ibm_pi_instance_ip" "ds_instance_ip" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
+
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
-  Example usage:
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
+
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -36,7 +36,7 @@ data "ibm_pi_instance_ip" "ds_instance_ip" {
 Review the argument references that you can specify for your data source. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_name` - (Required, String) The name of the instance.
+- `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
 - `pi_network_name` - (Required, String) The subnet that the instance belongs to. 
 
 

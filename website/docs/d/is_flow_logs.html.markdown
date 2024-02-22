@@ -48,7 +48,7 @@ Review the argument references that you can specify for your data source.
 - `vpc` - (String) The ID of the VPC this flow log collector resides in
 - `resource_group` - (String) The ID of the Resource group this flow log collector belongs to
 - `target` - (String) The ID of the target this collector is collecting flow logs for.
-- `target_resource_type` - (String) The target resource type for this flow log collector. Available options are `instance`, `network_interface`, `subnet`, `vpc`
+- `target_resource_type` - (String) The target resource type for this flow log collector. Available options are `instance`, `instance_network_attachment`, `network_interface`, `subnet`, `vpc`, `virtual_network_interface`
  
 ## Attribute reference
 Review the attribute references that you can access after you retrieve your data source. 

@@ -84,6 +84,7 @@ var (
 	ISZoneName2                     string
 	ISZoneName3                     string
 	IsResourceGroupID               string
+	ISResourceCrn                   string
 	ISCIDR                          string
 	ISCIDR2                         string
 	ISPublicSSHKeyFilePath          string
@@ -205,6 +206,7 @@ var (
 	Pi_volume_onboarding_id         string
 	Pi_network_name                 string
 	Pi_cloud_instance_id            string
+	Pi_snapshot_id                  string
 	Pi_instance_name                string
 	Pi_dhcp_id                      string
 	PiCloudConnectionName           string
@@ -232,6 +234,7 @@ var ISDelegegatedVPC string
 var (
 	IsImageName             string
 	IsImage                 string
+	IsImage2                string
 	IsImageEncryptedDataKey string
 	IsImageEncryptionKey    string
 	IsWinImage              string
@@ -707,12 +710,23 @@ func init() {
 		IsResourceGroupID = "c01d34dff4364763476834c990398zz8"
 		fmt.Println("[INFO] Set the environment variable SL_RESOURCE_GROUP_ID for testing with different resource group id else it is set to default value 'c01d34dff4364763476834c990398zz8'")
 	}
+	ISResourceCrn = os.Getenv("IS_RESOURCE_INSTANCE_CRN")
+	if ISResourceCrn == "" {
+		ISResourceCrn = "crn:v1:bluemix:public:cloud-object-storage:global:a/fugeggfcgjebvrburvgurgvugfr:236764224-f48fu4-f4h84-9db3-4f94fh::"
+		fmt.Println("[INFO] Set the environment variable IS_RESOURCE_CRN for testing with created resource instance")
+	}
 
 	IsImage = os.Getenv("IS_IMAGE")
 	if IsImage == "" {
 		// IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
 		IsImage = "r006-907911a7-0ffe-467e-8821-3cc9a0d82a39" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-907911a7-0ffe-467e-8821-3cc9a0d82a39'")
+	}
+
+	IsImage2 = os.Getenv("IS_IMAGE2")
+	if IsImage2 == "" {
+		IsImage2 = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b" // for next gen infrastructure ibm-centos-7-9-minimal-amd64-10 image
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE2 for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b'")
 	}
 
 	IsWinImage = os.Getenv("IS_WIN_IMAGE")
@@ -783,8 +797,8 @@ func init() {
 
 	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
 	if IsBareMetalServerProfileName == "" {
-		IsBareMetalServerProfileName = "bx2-metal-192x768" // for next gen infrastructure
-		fmt.Println("[INFO] Set the environment variable IS_BARE_METAL_SERVER_PROFILE for testing ibm_is_bare_metal_server resource else it is set to default value 'bx2-metal-192x768'")
+		IsBareMetalServerProfileName = "bx2-metal-96x384" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_BARE_METAL_SERVER_PROFILE for testing ibm_is_bare_metal_server resource else it is set to default value 'bx2-metal-96x384'")
 	}
 
 	IsBareMetalServerImage = os.Getenv("IS_BARE_METAL_SERVER_IMAGE")
@@ -1029,6 +1043,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 
+	Pi_snapshot_id = os.Getenv("PI_SNAPSHOT_ID")
+	if Pi_snapshot_id == "" {
+		Pi_snapshot_id = "1ea33118-4c43-4356-bfce-904d0658de82"
+		fmt.Println("[INFO] Set the environment variable PI_SNAPSHOT_ID for testing ibm_pi_instance_snapshot data source else it is set to default value '1ea33118-4c43-4356-bfce-904d0658de82'")
+	}
+
 	Pi_instance_name = os.Getenv("PI_PVM_INSTANCE_NAME")
 	if Pi_instance_name == "" {
 		Pi_instance_name = "terraform-test-power"
@@ -1267,18 +1287,6 @@ func init() {
 	SecretsManagerServiceCredentialsCosCrn = os.Getenv("SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN")
 	if SecretsManagerServiceCredentialsCosCrn == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
-	}
-
-	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
-	if SecretsManagerSecretType == "" {
-		SecretsManagerSecretType = "username_password"
-		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SECRET_TYPE for testing data_source_ibm_secrets_manager_secrets_test, else it is set to default value. For data_source_ibm_secrets_manager_secret_test, tests will fail if this is not set correctly")
-	}
-
-	SecretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
-	if SecretsManagerSecretID == "" {
-		// SecretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
-		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")

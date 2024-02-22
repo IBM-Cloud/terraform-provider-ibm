@@ -122,9 +122,45 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 			},
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Sensitive:   true,
 				Description: "The password that is assigned to the secret.",
+			},
+			"password_generation_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "Policy for auto-generated passwords.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     32,
+							Description: "The length of auto-generated passwords.",
+						},
+						"include_digits": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Include digits in auto-generated passwords.",
+						},
+						"include_symbols": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Include symbols in auto-generated passwords.",
+						},
+						"include_uppercase": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Include uppercase letters in auto-generated passwords.",
+						},
+					},
+				},
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
@@ -354,6 +390,14 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting password: %s", err))
 	}
 
+	passwordPolicyMap, err := passwordGenerationPolicyToMap(secret.PasswordGenerationPolicy)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("password_generation_policy", []map[string]interface{}{passwordPolicyMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting password generation policy: %s", err))
+	}
+
 	// Call get version metadata API to get the current version_custom_metadata
 	getVersionMetdataOptions := &secretsmanagerv2.GetSecretVersionMetadataOptions{}
 	getVersionMetdataOptions.SetSecretID(secretId)
@@ -439,6 +483,16 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 		} else {
 			return diag.FromErr(errors.New(`The "expiration_date" field cannot be removed. To disable expiration set expiration date to a far future date'`))
 		}
+	}
+
+	if d.HasChange("password_generation_policy") {
+		passwordPolicyModel, err := mapToPasswordGenerationPolicyPatch(d.Get("password_generation_policy").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed: Reading password_generation_policy parameter failed: %s", err)
+			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed: Reading password_generation_policy parameter failed: %s", err))
+		}
+		patchVals.PasswordGenerationPolicy = passwordPolicyModel
+		hasChange = true
 	}
 
 	if hasChange {
@@ -574,6 +628,13 @@ func resourceIbmSmUsernamePasswordSecretMapToSecretPrototype(d *schema.ResourceD
 		}
 		model.Rotation = RotationModel
 	}
+	if _, ok := d.GetOk("password_generation_policy"); ok {
+		passwordPolicyModel, err := mapToPasswordGenerationPolicy(d.Get("password_generation_policy").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.PasswordGenerationPolicy = passwordPolicyModel
+	}
 
 	return model, nil
 }
@@ -634,4 +695,59 @@ func rotationAttributesDiffSuppress(key, oldValue, newValue string, d *schema.Re
 	}
 
 	return oldValue == newValue
+}
+
+func passwordGenerationPolicyToMap(model *secretsmanagerv2.PasswordGenerationPolicyRO) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Length != nil {
+		modelMap["length"] = model.Length
+	}
+	if model.IncludeDigits != nil {
+		modelMap["include_digits"] = model.IncludeDigits
+	}
+	if model.IncludeSymbols != nil {
+		modelMap["include_symbols"] = model.IncludeSymbols
+	}
+	if model.IncludeUppercase != nil {
+		modelMap["include_uppercase"] = model.IncludeUppercase
+	}
+	return modelMap, nil
+}
+
+func mapToPasswordGenerationPolicy(modelMap map[string]interface{}) (*secretsmanagerv2.PasswordGenerationPolicy, error) {
+	model := &secretsmanagerv2.PasswordGenerationPolicy{}
+	if modelMap["length"].(int) == 0 {
+		model.Length = nil
+	} else {
+		model.Length = core.Int64Ptr(int64(modelMap["length"].(int)))
+	}
+	if modelMap["include_digits"] != nil {
+		model.IncludeDigits = core.BoolPtr(modelMap["include_digits"].(bool))
+	}
+	if modelMap["include_symbols"] != nil {
+		model.IncludeSymbols = core.BoolPtr(modelMap["include_symbols"].(bool))
+	}
+	if modelMap["include_uppercase"] != nil {
+		model.IncludeUppercase = core.BoolPtr(modelMap["include_uppercase"].(bool))
+	}
+	return model, nil
+}
+
+func mapToPasswordGenerationPolicyPatch(modelMap map[string]interface{}) (*secretsmanagerv2.PasswordGenerationPolicyPatch, error) {
+	model := &secretsmanagerv2.PasswordGenerationPolicyPatch{}
+	if modelMap["length"].(int) == 0 {
+		model.Length = nil
+	} else {
+		model.Length = core.Int64Ptr(int64(modelMap["length"].(int)))
+	}
+	if modelMap["include_digits"] != nil {
+		model.IncludeDigits = core.BoolPtr(modelMap["include_digits"].(bool))
+	}
+	if modelMap["include_symbols"] != nil {
+		model.IncludeSymbols = core.BoolPtr(modelMap["include_symbols"].(bool))
+	}
+	if modelMap["include_uppercase"] != nil {
+		model.IncludeUppercase = core.BoolPtr(modelMap["include_uppercase"].(bool))
+	}
+	return model, nil
 }
