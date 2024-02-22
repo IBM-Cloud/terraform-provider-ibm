@@ -1420,7 +1420,7 @@ func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, 
 		name    = "%s"
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.1.catalog_offering.0.version.0.crn
-			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.7c7210da-bc40-418f-9a0a-af994040c13c-global"
+			plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
 		}
 		boot_volume {
 			encryption = ibm_kms_key.testacc_key.crn
@@ -2424,7 +2424,7 @@ func testAccCheckIBMISInstanceCatalogImageConfig(vpcname, subnetname, sshname, p
 		}
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.0.catalog_offering.0.version.0.crn
-			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.7c7210da-bc40-418f-9a0a-af994040c13c-global"
+			plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.InstanceProfileName, userData, acc.ISZoneName)
 }
