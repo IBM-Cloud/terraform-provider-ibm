@@ -1296,7 +1296,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			catalogMap := map[string]interface{}{}
 			catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
 			if instance.CatalogOffering.Plan != nil {
-				catalogMap[isInstanceCatalogOfferingPlanCrn] = *instance.CatalogOffering.Plan.CRN
+				if instance.CatalogOffering.Plan.CRN != nil && *instance.CatalogOffering.Plan.CRN != "" {
+					catalogMap[isInstanceCatalogOfferingPlanCrn] = *instance.CatalogOffering.Plan.CRN
+				}
 				if instance.CatalogOffering.Plan.Deleted != nil {
 					deletedMap := resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(*instance.CatalogOffering.Plan.Deleted)
 					catalogMap["deleted"] = []map[string]interface{}{deletedMap}

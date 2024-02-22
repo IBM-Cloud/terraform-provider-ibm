@@ -2237,7 +2237,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		}
 		if insTempCatalogOffering.Plan != nil {
 			plan := insTempCatalogOffering.Plan.(*vpcv1.CatalogOfferingVersionPlanIdentity)
-			currentOffering[isInstanceTemplateCatalogOfferingPlanCrn] = *plan.CRN
+			if plan.CRN != nil && *plan.CRN != "" {
+				currentOffering[isInstanceTemplateCatalogOfferingPlanCrn] = *plan.CRN
+			}
 		}
 		catOfferingList = append(catOfferingList, currentOffering)
 		d.Set(isInstanceTemplateCatalogOffering, catOfferingList)

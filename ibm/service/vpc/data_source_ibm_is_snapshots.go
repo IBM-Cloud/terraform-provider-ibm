@@ -705,12 +705,23 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 
 		// catalog
 		if snapshot.CatalogOffering != nil {
-			versionCrn := *snapshot.CatalogOffering.Version.CRN
+			versionCrn := ""
+			if snapshot.CatalogOffering.Version != nil && snapshot.CatalogOffering.Version.CRN != nil {
+				versionCrn = *snapshot.CatalogOffering.Version.CRN
+			}
 			catalogList := make([]map[string]interface{}, 0)
 			catalogMap := map[string]interface{}{}
-			catalogMap[isSnapshotCatalogOfferingVersionCrn] = versionCrn
+			if versionCrn != "" {
+				catalogMap[isSnapshotCatalogOfferingVersionCrn] = versionCrn
+			}
 			if snapshot.CatalogOffering.Plan != nil {
-				catalogMap[isSnapshotCatalogOfferingPlanCrn] = *snapshot.CatalogOffering.Plan.CRN
+				planCrn := ""
+				if snapshot.CatalogOffering.Plan.CRN != nil {
+					planCrn = *snapshot.CatalogOffering.Plan.CRN
+				}
+				if planCrn != "" {
+					catalogMap[isSnapshotCatalogOfferingPlanCrn] = planCrn
+				}
 				if snapshot.CatalogOffering.Plan.Deleted != nil {
 					deletedMap := resourceIbmIsSnapshotCatalogOfferingVersionPlanReferenceDeletedToMap(*snapshot.CatalogOffering.Plan.Deleted)
 					catalogMap["deleted"] = []map[string]interface{}{deletedMap}

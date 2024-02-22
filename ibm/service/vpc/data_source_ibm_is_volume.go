@@ -439,12 +439,23 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 	// catalog
 	if vol.CatalogOffering != nil {
-		versionCrn := *vol.CatalogOffering.Version.CRN
+		versionCrn := ""
+		if vol.CatalogOffering.Version != nil && vol.CatalogOffering.Version.CRN != nil {
+			versionCrn = *vol.CatalogOffering.Version.CRN
+		}
 		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
-		catalogMap[isVolumeCatalogOfferingVersionCrn] = versionCrn
+		if versionCrn != "" {
+			catalogMap[isVolumeCatalogOfferingVersionCrn] = versionCrn
+		}
 		if vol.CatalogOffering.Plan != nil {
-			catalogMap[isVolumeCatalogOfferingPlanCrn] = *vol.CatalogOffering.Plan.CRN
+			planCrn := ""
+			if vol.CatalogOffering.Plan.CRN != nil {
+				planCrn = *vol.CatalogOffering.Plan.CRN
+			}
+			if planCrn != "" {
+				catalogMap[isVolumeCatalogOfferingPlanCrn] = *vol.CatalogOffering.Plan.CRN
+			}
 			if vol.CatalogOffering.Plan.Deleted != nil {
 				deletedMap := resourceIbmIsVolumeCatalogOfferingVersionPlanReferenceDeletedToMap(*vol.CatalogOffering.Plan.Deleted)
 				catalogMap["deleted"] = []map[string]interface{}{deletedMap}

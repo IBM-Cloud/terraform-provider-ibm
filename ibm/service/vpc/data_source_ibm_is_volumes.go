@@ -806,14 +806,24 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 		}
 		volumesMap[isVolumeHealthReasons] = healthReasonsList
 	}
-	// catalog
 	if volumesItem.CatalogOffering != nil {
-		versionCrn := *volumesItem.CatalogOffering.Version.CRN
+		versionCrn := ""
+		if volumesItem.CatalogOffering.Version != nil && volumesItem.CatalogOffering.Version.CRN != nil {
+			versionCrn = *volumesItem.CatalogOffering.Version.CRN
+		}
 		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
-		catalogMap[isVolumeCatalogOfferingVersionCrn] = versionCrn
+		if versionCrn != "" {
+			catalogMap[isVolumeCatalogOfferingVersionCrn] = versionCrn
+		}
 		if volumesItem.CatalogOffering.Plan != nil {
-			catalogMap[isVolumeCatalogOfferingPlanCrn] = *volumesItem.CatalogOffering.Plan.CRN
+			planCrn := ""
+			if volumesItem.CatalogOffering.Plan.CRN != nil {
+				planCrn = *volumesItem.CatalogOffering.Plan.CRN
+			}
+			if planCrn != "" {
+				catalogMap[isVolumeCatalogOfferingPlanCrn] = *volumesItem.CatalogOffering.Plan.CRN
+			}
 			if volumesItem.CatalogOffering.Plan.Deleted != nil {
 				deletedMap := resourceIbmIsVolumeCatalogOfferingVersionPlanReferenceDeletedToMap(*volumesItem.CatalogOffering.Plan.Deleted)
 				catalogMap["deleted"] = []map[string]interface{}{deletedMap}
