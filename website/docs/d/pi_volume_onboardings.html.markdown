@@ -45,6 +45,5 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `onboardings`:
       - `description` - (String) The description of the volume onboarding operation.
       - `id` - (String) The type of cycling mode used.
-```suggestion
       - `input_volumes` - (List) List of volumes requested to be onboarded.
-      - `status` (String) The status of volume onboarding operation.
+      - `status` - (String) The status of volume onboarding operation.
