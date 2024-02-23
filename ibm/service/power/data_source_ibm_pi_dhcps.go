@@ -36,14 +36,14 @@ func DataSourceIBMPIDhcps() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						Attr_DhcpID: {
 							Computed:    true,
-							Deprecated:  "The field is deprecated,use mtu instead.",
+							Deprecated:  "The field is deprecated, use id instead.",
 							Description: "ID of the DHCP Server.",
 							Type:        schema.TypeString,
 						},
 						Attr_DhcpNetworkID: {
-							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "ID of the DHCP Server private network.",
+							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
 							Computed:    true,

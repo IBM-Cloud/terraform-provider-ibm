@@ -40,7 +40,8 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `dhcp_id` - (Deprecated,String) ID of the DHCP Server.
+- `dhcp_id` - (Deprecated, String) ID of the DHCP Server.
+- `id` - (String) ID of the DHCP Server.
 - `leases` - (List) List of DHCP Server PVM Instance leases.
   Nested scheme for `leases`:
   - `instance_ip` - (String) IP of the PVM Instance.
