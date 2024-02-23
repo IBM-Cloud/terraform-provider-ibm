@@ -32,46 +32,6 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 
 			// Attributes
-			Attr_Addresses: {
-				Computed:    true,
-				Description: "The address associated with this instance.",
-				Deprecated:  "This field is deprecated, use networks instead",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						Attr_ExternalIP: {
-							Computed:    true,
-							Description: "The external IP address of the instance.",
-							Type:        schema.TypeString,
-						},
-						Attr_IP: {
-							Computed:    true,
-							Description: "The IP address of the instance.",
-							Type:        schema.TypeString,
-						},
-						Attr_MacAddress: {
-							Computed:    true,
-							Description: "The MAC address of the instance.",
-							Type:        schema.TypeString,
-						},
-						Attr_NetworkID: {
-							Computed:    true,
-							Description: "The network ID of the instance.",
-							Type:        schema.TypeString,
-						},
-						Attr_NetworkName: {
-							Computed:    true,
-							Description: "The network name of the instance.",
-							Type:        schema.TypeString,
-						},
-						Attr_Type: {
-							Computed:    true,
-							Description: "The type of the network.",
-							Type:        schema.TypeString,
-						},
-					},
-				},
-				Type: schema.TypeList,
-			},
 			Attr_DeploymentType: {
 				Computed:    true,
 				Description: "The custom deployment type.",
@@ -266,21 +226,6 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 
 	if *powervmdata.PlacementGroup != "none" {
 		d.Set(Attr_PlacementGroupID, powervmdata.PlacementGroup)
-	}
-
-	if powervmdata.Addresses != nil {
-		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
-		for i, pvmip := range powervmdata.Addresses {
-			p := make(map[string]interface{})
-			p[Attr_ExternalIP] = pvmip.ExternalIP
-			p[Attr_IP] = pvmip.IPAddress
-			p[Attr_MacAddress] = pvmip.MacAddress
-			p[Attr_NetworkID] = pvmip.NetworkID
-			p[Attr_NetworkName] = pvmip.NetworkName
-			p[Attr_Type] = pvmip.Type
-			pvmaddress[i] = p
-		}
-		d.Set(Attr_Addresses, pvmaddress)
 	}
 
 	if powervmdata.Health != nil {

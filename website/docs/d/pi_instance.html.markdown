@@ -40,8 +40,6 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `addresses` - (Deprecated, List of objects) - The address associated with this instance.
-
 - `deployment_type` - (String) The custom deployment type.
 - `health_status` - (String) The health of the instance.
 - `id` - (String) The unique identifier of the instance.
