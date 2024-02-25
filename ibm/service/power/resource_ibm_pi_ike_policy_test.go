@@ -108,8 +108,7 @@ func testAccCheckIBMPIIKEPolicyConfig(name string) string {
 		pi_policy_key_lifetime = 180
 		pi_policy_preshared_key = "sample"
 		pi_policy_version = 1
-	}
-	`, acc.Pi_cloud_instance_id, name)
+	}`, acc.Pi_cloud_instance_id, name)
 }
 
 func testAccCheckIBMPIIKEPolicyAuthConfig(name string) string {
@@ -123,6 +122,5 @@ func testAccCheckIBMPIIKEPolicyAuthConfig(name string) string {
 		pi_policy_preshared_key = "sample"
 		pi_policy_version = 1
 		pi_policy_authentication = "sha1"
-	}
-	`, acc.Pi_cloud_instance_id, name)
+	}`, acc.Pi_cloud_instance_id, name)
 }

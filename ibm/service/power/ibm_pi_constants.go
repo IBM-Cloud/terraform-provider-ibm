@@ -29,7 +29,13 @@ const (
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeID                            = "pi_volume_id"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
-
+	Arg_VPNPolicyDhGroup                    = "pi_policy_dh_group"
+	Arg_VPNPolicyAuthentication             = "pi_policy_authentication"
+	Arg_VPNPolicyEncryption                 = "pi_policy_encryption"
+	Arg_VPNPolicyKeyLifetime                = "pi_policy_key_lifetime"
+	Arg_VPNPolicyName                       = "pi_policy_name"
+	Arg_VPNPolicyPresharedKey               = "pi_policy_preshared_key"
+	Arg_VPNPolicyVersion                    = "pi_policy_version"
 	// Attributes
 	Attr_AccessConfig                                = "access_config"
 	Attr_Action                                      = "action"
@@ -156,6 +162,7 @@ const (
 	Attr_PlacementGroupID                            = "placement_group_id"
 	Attr_PlacementGroups                             = "placement_groups"
 	Attr_Policy                                      = "policy"
+	Attr_PolicyId                                    = "policy_id"
 	Attr_Pool                                        = "pool"
 	Attr_PoolName                                    = "pool_name"
 	Attr_Port                                        = "port"

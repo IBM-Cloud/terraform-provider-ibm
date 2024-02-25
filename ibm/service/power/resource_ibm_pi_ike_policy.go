@@ -9,14 +9,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
@@ -39,48 +37,48 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Attributes
-			helpers.PICloudInstanceId: {
+			Arg_CloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-			helpers.PIVPNPolicyName: {
+			Arg_VPNPolicyName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the IKE Policy",
 			},
-			helpers.PIVPNPolicyDhGroup: {
+			Arg_VPNPolicyDhGroup: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedIntValues([]int{1, 2, 5, 14, 19, 20, 24}),
 				Description:  "DH group of the IKE Policy",
 			},
-			helpers.PIVPNPolicyEncryption: {
+			Arg_VPNPolicyEncryption: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"aes-256-cbc", "aes-192-cbc", "aes-128-cbc", "aes-256-gcm", "aes-128-gcm", "3des-cbc"}),
 				Description:  "Encryption of the IKE Policy",
 			},
-			helpers.PIVPNPolicyKeyLifetime: {
+			Arg_VPNPolicyKeyLifetime: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(180, 86400),
 				Description:  "Policy key lifetime",
 			},
-			helpers.PIVPNPolicyVersion: {
+			Arg_VPNPolicyVersion: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(1, 2),
 				Description:  "Version of the IKE Policy",
 			},
-			helpers.PIVPNPolicyPresharedKey: {
+			Arg_VPNPolicyPresharedKey: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Preshared key used in this IKE Policy (length of preshared key must be even)",
 			},
 
 			// Optional Attributes
-			helpers.PIVPNPolicyAuthentication: {
+			Arg_VPNPolicyAuthentication: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
@@ -89,7 +87,7 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 			},
 
 			//Computed Attributes
-			PIPolicyId: {
+			Attr_PolicyId: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IKE Policy ID",
@@ -104,13 +102,13 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PIVPNPolicyName).(string)
-	dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
-	encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
-	presharedKey := d.Get(helpers.PIVPNPolicyPresharedKey).(string)
-	version := int64(d.Get(helpers.PIVPNPolicyVersion).(int))
-	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	name := d.Get(Arg_VPNPolicyName).(string)
+	dhGroup := int64(d.Get(Arg_VPNPolicyDhGroup).(int))
+	encryption := d.Get(Arg_VPNPolicyEncryption).(string)
+	presharedKey := d.Get(Arg_VPNPolicyPresharedKey).(string)
+	version := int64(d.Get(Arg_VPNPolicyVersion).(int))
+	keyLifetime := int64(d.Get(Arg_VPNPolicyKeyLifetime).(int))
 	klt := models.KeyLifetime(keyLifetime)
 
 	body := &models.IKEPolicyCreate{
@@ -122,11 +120,11 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		Version:      &version,
 	}
 
-	if v, ok := d.GetOk(helpers.PIVPNPolicyAuthentication); ok {
+	if v, ok := d.GetOk(Arg_VPNPolicyAuthentication); ok {
 		body.Authentication = models.IKEPolicyAuthentication(v.(string))
 	}
 
-	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	ikePolicy, err := client.CreateIKEPolicy(body)
 	if err != nil {
 		log.Printf("[DEBUG] create ike policy failed %v", err)
@@ -149,35 +147,35 @@ func resourceIBMPIIKEPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	body := &models.IKEPolicyUpdate{}
 
-	if d.HasChange(helpers.PIVPNPolicyName) {
-		name := d.Get(helpers.PIVPNPolicyName).(string)
+	if d.HasChange(Arg_VPNPolicyName) {
+		name := d.Get(Arg_VPNPolicyName).(string)
 		body.Name = name
 	}
-	if d.HasChange(helpers.PIVPNPolicyDhGroup) {
-		dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
+	if d.HasChange(Arg_VPNPolicyDhGroup) {
+		dhGroup := int64(d.Get(Arg_VPNPolicyDhGroup).(int))
 		body.DhGroup = dhGroup
 	}
-	if d.HasChange(helpers.PIVPNPolicyEncryption) {
-		encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
+	if d.HasChange(Arg_VPNPolicyEncryption) {
+		encryption := d.Get(Arg_VPNPolicyEncryption).(string)
 		body.Encryption = encryption
 	}
-	if d.HasChange(helpers.PIVPNPolicyKeyLifetime) {
-		keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	if d.HasChange(Arg_VPNPolicyKeyLifetime) {
+		keyLifetime := int64(d.Get(Arg_VPNPolicyKeyLifetime).(int))
 		body.KeyLifetime = models.KeyLifetime(keyLifetime)
 	}
-	if d.HasChange(helpers.PIVPNPolicyPresharedKey) {
-		presharedKey := d.Get(helpers.PIVPNPolicyPresharedKey).(string)
+	if d.HasChange(Arg_VPNPolicyPresharedKey) {
+		presharedKey := d.Get(Arg_VPNPolicyPresharedKey).(string)
 		body.PresharedKey = presharedKey
 	}
-	if d.HasChange(helpers.PIVPNPolicyVersion) {
-		version := int64(d.Get(helpers.PIVPNPolicyVersion).(int))
+	if d.HasChange(Arg_VPNPolicyVersion) {
+		version := int64(d.Get(Arg_VPNPolicyVersion).(int))
 		body.Version = version
 	}
-	if d.HasChange(helpers.PIVPNPolicyAuthentication) {
-		authentication := d.Get(helpers.PIVPNPolicyAuthentication).(string)
+	if d.HasChange(Arg_VPNPolicyAuthentication) {
+		authentication := d.Get(Arg_VPNPolicyAuthentication).(string)
 		body.Authentication = models.IKEPolicyAuthentication(authentication)
 	}
 
@@ -200,7 +198,7 @@ func resourceIBMPIIKEPolicyRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	ikePolicy, err := client.GetIKEPolicy(policyID)
 	if err != nil {
 		// FIXME: Uncomment when 404 error is available
@@ -215,12 +213,12 @@ func resourceIBMPIIKEPolicyRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.Set(PIPolicyId, ikePolicy.ID)
-	d.Set(helpers.PIVPNPolicyName, ikePolicy.Name)
-	d.Set(helpers.PIVPNPolicyDhGroup, ikePolicy.DhGroup)
-	d.Set(helpers.PIVPNPolicyEncryption, ikePolicy.Encryption)
-	d.Set(helpers.PIVPNPolicyKeyLifetime, ikePolicy.KeyLifetime)
-	d.Set(helpers.PIVPNPolicyVersion, ikePolicy.Version)
-	d.Set(helpers.PIVPNPolicyAuthentication, ikePolicy.Authentication)
+	d.Set(Arg_VPNPolicyName, ikePolicy.Name)
+	d.Set(Arg_VPNPolicyDhGroup, ikePolicy.DhGroup)
+	d.Set(Arg_VPNPolicyEncryption, ikePolicy.Encryption)
+	d.Set(Arg_VPNPolicyKeyLifetime, ikePolicy.KeyLifetime)
+	d.Set(Arg_VPNPolicyVersion, ikePolicy.Version)
+	d.Set(Arg_VPNPolicyAuthentication, ikePolicy.Authentication)
 
 	return nil
 }
@@ -236,7 +234,7 @@ func resourceIBMPIIKEPolicyDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 
 	err = client.DeleteIKEPolicy(policyID)
 	if err != nil {
