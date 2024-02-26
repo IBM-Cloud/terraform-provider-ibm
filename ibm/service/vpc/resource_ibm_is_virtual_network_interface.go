@@ -228,6 +228,7 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 			"subnet": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The associated subnet id.",
 			},
 			"created_at": &schema.Schema{
