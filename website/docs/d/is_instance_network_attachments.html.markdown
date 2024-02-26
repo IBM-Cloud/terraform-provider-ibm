@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_instance_network_attachments"
 description: |-
   Get information about InstanceNetworkAttachment Collection
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_instance_network_attachments
