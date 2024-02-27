@@ -78,9 +78,9 @@ func TestAccIBMISPublicGateway_floatingip(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_public_gateway.testacc_public_gateway", "zone", acc.ISZoneName),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_public_gateway.testacc_public_gateway", "floating_ip[\"id\"]"),
+						"ibm_is_public_gateway.testacc_public_gateway", "floating_ip.id"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_public_gateway.testacc_public_gateway", "floating_ip[\"address\"]"),
+						"ibm_is_public_gateway.testacc_public_gateway", "floating_ip.address"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_floating_ip.testacc_fip", "name", fipname),
 					resource.TestCheckResourceAttrSet(
