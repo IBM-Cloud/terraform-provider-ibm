@@ -234,6 +234,54 @@ func ResourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "The configuration type.",
 						},
+						"approved_version": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "approved_version",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "state",
+									},
+									"version": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "version",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "version",
+									},
+								},
+							},
+						},
+						"deployed_version": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "deployed_version",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "state",
+									},
+									"version": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "version",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "version",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -816,22 +864,20 @@ func resourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulative
 
 func resourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	/*
-		if model.ApprovedVersion != nil {
-			approvedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
+	if model.ApprovedVersion != nil {
+		approvedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
+		if err != nil {
+			return modelMap, err
 		}
-		if model.DeployedVersion != nil {
-			deployedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
+		modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
+	}
+	if model.DeployedVersion != nil {
+		deployedVersionMap, err := resourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
+		if err != nil {
+			return modelMap, err
 		}
-	*/
+		modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
+	}
 	modelMap["id"] = model.ID
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["state"] = model.State
