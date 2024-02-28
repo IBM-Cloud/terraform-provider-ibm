@@ -4328,3 +4328,16 @@ func Listdifference(a, b []string) []string {
 	}
 	return ab
 }
+
+func FlattenGeneralIngressStatus(list []containerv2.V2IngressComponentStatus) []map[string]interface{} {
+	componentStatusList := make([]map[string]interface{}, len(list))
+
+	for i, component := range list {
+		actualComponent := make(map[string]interface{})
+		actualComponent["component"] = component.Component
+		actualComponent["status"] = component.Status
+		componentStatusList[i] = actualComponent
+	}
+
+	return componentStatusList
+}

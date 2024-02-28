@@ -67,6 +67,41 @@ In addition to all argument reference list, you can access the following attribu
 - `image_security_enforcement` - (Bool) Indicates if image security enforcement policies are enabled in a cluster.
 - `ingress_hostname` - (String) The Ingress host name.
 - `ingress_secret` - (String) The name of the Ingress secret.
+- `ingress_config` - List of objects - Ingress related configuration options and Ingress status report. 
+
+  Nested scheme for `ingress_config`:
+  - `ingress_health_checker_enabled` - (Bool) The state of the Ingress health checker. Supported values are `enabled` or `disabled`.
+  - `ingress_status_report` - List of objects. Ingress status report and related configurations. 
+    
+    Nested scheme for `ingress_status_report`:
+    - `enabled` - (Bool) The state of the Ingress status report. Supported values are `enabled` or `disabled`.
+    - `ingress_status` - (String) The overall Ingress status.
+    - `message` - (String) Ingress status detailed summary.
+    - `ignored_errors` - List of strings - Ignored Ingress status warnings for a cluster.
+    - `general_ingress_component_status` - List of objects - General ingress component status report. 
+
+      Nested scheme for `general_ingress_component_status`:
+      - `component` - (String) - The name of the Ingress component. 
+      - `status` - (String) - The status of the Ingress component. 
+    
+    - `alb_status` - List of objects - The status report of the ALBs. 
+
+      Nested scheme for `alb_status`:
+      - `component` - (String) - The name of the ALB. 
+      - `status` - (String) - The status of the ALB.
+
+    - `secret_status` - List of objects - The status report of the Ingress secrets. 
+
+      Nested scheme for `secret_status`:
+      - `component` - (String) - The name of the Ingress secret. 
+      - `status` - (String) - The status of the Ingress secret.
+      
+    - `subdomain_status` - List of objects - The status report of the Ingress subdomains. 
+
+      Nested scheme for `secret_status`:
+      - `component` - (String) - The name of the Ingress subdomain. 
+      - `status` - (String) - The status of the Ingress subdomain.
+
 - `name` - (String) The name of the cluster.
 - `public_service_endpoint` -  (Bool) Indicates if the public service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
 - `public_service_endpoint_url` - (String) The URL of the public service endpoint for your cluster.

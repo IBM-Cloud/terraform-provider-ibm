@@ -461,11 +461,11 @@ func ResourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
-			"alb_config": {
+			"ingress_config": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Represents the ALB cluster-wide options.",
+				Description: "Represents the Ingress cluster-wide options.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ingress_status_report": {
@@ -473,30 +473,30 @@ func ResourceIBMContainerCluster() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 							MaxItems:    1,
-							Description: "Configure the ALB status reporting behavior.",
+							Description: "Configure the Ingress status report behavior",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Computed:    true,
-										Description: "Enable or disable the ALB status reporting.",
+										Description: "Enabled or disabled the Ingress status report.",
 									},
-									"ignored_erros": {
+									"ignored_errors": {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										Computed:    true,
 										Elem:        &schema.Schema{Type: schema.TypeString},
-										Description: "The list of the ignored errors.",
+										Description: "Overall Ingress status.",
 									},
 								},
 							},
 						},
-						"health_checker": {
+						"ingress_health_checker_enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
-							Description: "Enable or disable the ALB in cluster health checker.",
+							Description: "Enable or disable the Ingress health checker.",
 						},
 					},
 				},
@@ -1229,7 +1229,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 			for _, l := range albConfigList {
 				albMap, _ := l.(map[string]interface{})
-				if healthChecker := albMap["health_checker"]; healthChecker != nil {
+				if healthChecker := albMap["ingress_health_checker_enabled"]; healthChecker != nil {
 					healthCheckerEnabled := healthChecker.(bool)
 
 					err = csClientV2.Albs().SetAlbClusterHealthCheckConfig(containerv2.ALBClusterHealthCheckConfig{
@@ -1254,7 +1254,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 								return err
 							}
 						}
-						if ignoredErrors := ingressStatusReportConfigMap["ignored_erros"]; ignoredErrors != nil {
+						if ignoredErrors := ingressStatusReportConfigMap["ignored_errors"]; ignoredErrors != nil {
 
 							ignoredErrorCodes := flex.FlattenSet(ignoredErrors.(*schema.Set))
 							csClientV2.Albs().AddIgnoredIngressStatusErrors(containerv2.IgnoredIngressStatusErrors{

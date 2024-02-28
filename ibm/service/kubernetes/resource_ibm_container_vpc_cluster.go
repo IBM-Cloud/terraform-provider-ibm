@@ -364,11 +364,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"alb_config": {
+			"ingress_config": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Represents the ALB cluster-wide options.",
+				Description: "Represents the Ingress cluster-wide options.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ingress_status_report": {
@@ -376,30 +376,30 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 							MaxItems:    1,
-							Description: "Configure the ALB status reporting behavior.",
+							Description: "Configure the Ingress status report behavior",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"enabled": {
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Computed:    true,
-										Description: "Enable or disable the ALB status reporting.",
+										Description: "Enabled or disabled the Ingress status report.",
 									},
-									"ignored_erros": {
+									"ignored_errors": {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										Computed:    true,
 										Elem:        &schema.Schema{Type: schema.TypeString},
-										Description: "The list of the ignored errors.",
+										Description: "Overall Ingress status.",
 									},
 								},
 							},
 						},
-						"health_checker": {
+						"ingress_health_checker_enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
-							Description: "Enable or disable the ALB in cluster health checker.",
+							Description: "Enable or disable the Ingress health checker.",
 						},
 					},
 				},
@@ -945,7 +945,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 								return err
 							}
 						}
-						if ignoredErrors := ingressStatusReportConfigMap["ignored_erros"]; ignoredErrors != nil {
+						if ignoredErrors := ingressStatusReportConfigMap["ignored_errors"]; ignoredErrors != nil {
 
 							ignoredErrorCodes := flex.FlattenSet(ignoredErrors.(*schema.Set))
 							csClient.Albs().AddIgnoredIngressStatusErrors(containerv2.IgnoredIngressStatusErrors{

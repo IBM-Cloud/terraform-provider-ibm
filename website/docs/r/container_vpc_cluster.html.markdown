@@ -241,6 +241,18 @@ In addition to all argument reference list, you can access the following attribu
   - `resize`- (Bool) Indicates whether resizing should be done.
 - `id` - (String) The ID of the VPC cluster.
 - `crn` - (String) The CRN of the VPC cluster.
+- `ingress_config` - List of objects - Ingress related configuration options and Ingress status report. 
+
+  Nested scheme for `ingress_config`:
+  - `ingress_health_checker_enabled` - (Bool) The state of the Ingress health checker. Supported values are `enabled` or `disabled`.
+  - `ingress_status_report` - List of objects. Ingress status report and related configurations. 
+    
+    Nested scheme for `ingress_status_report`:
+    - `enabled` - (Bool) The state of the Ingress status report. Supported values are `enabled` or `disabled`.
+    - `ingress_status` - (String) The overall Ingress status.
+    - `message` - (String) Ingress status detailed summary.
+    - `ignored_errors` - List of strings - Ignored Ingress status warnings for a cluster.
+
 - `ingress_hostname` - (String) The hostname that was assigned to your Ingress subdomain.
 - `ingress_secret` - (String) The name of the Ingress secret that was created for you and that the Ingress subdomain uses.
 - `master_status` - (String) The status of the Kubernetes master.
