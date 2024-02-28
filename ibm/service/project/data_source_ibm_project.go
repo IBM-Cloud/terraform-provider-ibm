@@ -445,20 +445,22 @@ func dataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulati
 
 func dataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ApprovedVersion != nil {
-		approvedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
-		if err != nil {
-			return modelMap, err
+	/*
+		if model.ApprovedVersion != nil {
+			approvedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
+			if err != nil {
+				return modelMap, err
+			}
+			modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
 		}
-		modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
-	}
-	if model.DeployedVersion != nil {
-		deployedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
-		if err != nil {
-			return modelMap, err
+		if model.DeployedVersion != nil {
+			deployedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
+			if err != nil {
+				return modelMap, err
+			}
+			modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
 		}
-		modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
-	}
+	*/
 	modelMap["id"] = model.ID
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["state"] = model.State
