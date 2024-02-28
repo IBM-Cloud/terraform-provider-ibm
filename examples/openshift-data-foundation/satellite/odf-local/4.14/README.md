@@ -6,7 +6,7 @@ This sample configuration will deploy the ODF, scale and upgrade it using the "i
 
 For more information, about
 
-* ODF Deployment & Management on Satellite, see [OpenShift Data Foundation for remote devices](https://cloud.ibm.com/docs/satellite?topic=satellite-storage-odf-local&interface=ui)
+* ODF Deployment & Management on Satellite, see [OpenShift Data Foundation for local devices](https://cloud.ibm.com/docs/satellite?topic=satellite-storage-odf-local&interface=ui)
 
 ## Usage
 
