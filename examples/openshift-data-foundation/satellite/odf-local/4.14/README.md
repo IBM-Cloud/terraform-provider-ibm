@@ -142,7 +142,6 @@ Note this operation deletes the existing configuration and it's respective assig
 | Name | Version |
 |------|---------|
 | ibm | latest |
-| kubernetes | latest |
 
 ## Inputs
 
