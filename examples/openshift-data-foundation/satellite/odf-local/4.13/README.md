@@ -148,8 +148,8 @@ Note this operation deletes the existing configuration and it's respective assig
 | ibmcloud_api_key | IBM Cloud API Key | `string` | yes | -
 | cluster | Name of the cluster. | `string` | yes | -
 | region | Region of the cluster | `string` | yes | -
-| storageTemplateVersion | Version of the Storage Template (odf-remote) | `string` | yes | -
-| storageTemplateName | Name of the Storage Template (odf-remote)| `string` | yes | -
+| storageTemplateVersion | Version of the Storage Template (odf-local) | `string` | yes | -
+| storageTemplateName | Name of the Storage Template (odf-local)| `string` | yes | -
 | numOfOsd | The Number of OSD | `string` | yes | 1
 | autoDiscoverDevices | Set to true if automatically discovering local disks | `string` | no | true
 | billingType | Set to true if automatically discovering local disks | `string` | no | advanced
