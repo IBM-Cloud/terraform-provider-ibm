@@ -41,14 +41,17 @@ Review the argument references that you can specify for your resource.
 - `ip` - (Optional,String) The IP address that you want to assign to the ALB.
 - `nlb_version` - (Optional,String) The version of the network load balancer that you want to use for the ALB.
 - `vlan_id` - (String) ID of the cluster's vlan where the ALB is going to be created.
+- `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 - `zone` - (String) The name of cluster's zone where the ALB is going to be created.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `alb_id` - (String) The unique identifier of the ALB. To retrieve the ID, run `ibmcloud ks alb ls`.
-- `name` -  (String) The name of the ALB.
-- `replicas` - (String) Desired number of ALB replicas. 
-- `resize` -  (Bool) Indicate whether resizing should be done
+- `name` -  (Deprecated, String) The name of the ALB.
+- `replicas` - (String) Desired number of ALB replicas.
+- `resize` -  (Deprecated, Bool) Indicate whether resizing should be done
+- `state` - (String) The current state of the ALB. Supported values are `enabled` or `disabled`.
+- `status` - (String) The current status of the ALB.
 - `user_ip` - (String) Private ALB only. The private ALB is deployed with an IP address from a user-provided private subnet.
-- `disable_deployment` - (Optional, Bool) If set to **true**, the default Ingress ALB in your cluster is disabled. If set to **false**, the default Ingress ALB is enabled in your cluster and configured with the IBM-provided Ingress subdomain.
+- `disable_deployment` - (Optional, Bool) Unsupported, you must use the `enable` parameter.

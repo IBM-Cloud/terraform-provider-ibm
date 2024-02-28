@@ -65,8 +65,6 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN of the cluster.
 - `id` - (String) The unique identifier of the cluster.
 - `image_security_enforcement` - (Bool) Indicates if image security enforcement policies are enabled in a cluster.
-- `ingress_hostname` - (String) The Ingress host name.
-- `ingress_secret` - (String) The name of the Ingress secret.
 - `ingress_config` - List of objects - Ingress related configuration options and Ingress status report. 
 
   Nested scheme for `ingress_config`:
@@ -102,6 +100,8 @@ In addition to all argument reference list, you can access the following attribu
       - `component` - (String) - The name of the Ingress subdomain. 
       - `status` - (String) - The status of the Ingress subdomain.
 
+- `ingress_hostname` - (String) The Ingress host name.
+- `ingress_secret` - (String) The name of the Ingress secret.
 - `name` - (String) The name of the cluster.
 - `public_service_endpoint` -  (Bool) Indicates if the public service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
 - `public_service_endpoint_url` - (String) The URL of the public service endpoint for your cluster.

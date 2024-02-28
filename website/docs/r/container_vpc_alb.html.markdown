@@ -33,9 +33,8 @@ Review the argument references that you can specify for your resource.
 
 - `alb_id` - (Required, Forces new resource, String) The unique identifier of the application load balancer.
 - `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
-- `enable` - (Optional, Bool) If set to **true**, the ALB in your cluster is enabled. If you set this option, do not specify `disable_deployment` at the same time.
-- `disable_deployment` - (Optional, Bool) Disable the ALB deployment only. If provided, the ALB deployment is deleted but the IBM-provided Ingress subdomain remains. If you set this option, do not specify `enable` at the same time.
-**Note** You must include either `enable` or `disable_deployment` in the configuration, but must not include both.
+- `enable` - (Required, Bool) If set to **true**, the ALB in your cluster is enabled. 
+- `disable_deployment` - (Deprecated, Optional, Bool) Unsupported, you must specify the `enable` parameter.
 
 
 ## Attribute reference
@@ -44,9 +43,10 @@ In addition to all argument reference list, you can access the following attribu
 - `alb_type` - (String) The ALB type.
 - `cluster` - (String) The name of the cluster.
 - `id` - (String) The ALB ID.
+- `ingress_image` - (String) The current version of the ALB.
 - `load_balancer_hostname` - (String) The host name of the ALB.
-- `name` - (String) The name of the ALB.
-- `resize`- (Bool) Resize of the ALB.
+- `name` - (Deprecated, String) The name of the ALB.
+- `resize`- (Deprecated, Bool) Resize of the ALB.
 - `state` - (String) ALB state.
 - `status` - (String) The status of ALB.
 - `zone` - (String) The name of the zone.

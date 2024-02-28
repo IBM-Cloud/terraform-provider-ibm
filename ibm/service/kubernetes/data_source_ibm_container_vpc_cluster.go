@@ -205,13 +205,15 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"component": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the Ingress component",
 												},
 												"status": {
-													Type:     schema.TypeList,
-													Computed: true,
-													Elem:     &schema.Schema{Type: schema.TypeString},
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the Ingress component",
+													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
 											},
 										},
@@ -223,13 +225,15 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"component": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the ALB",
 												},
 												"status": {
-													Type:     schema.TypeList,
-													Computed: true,
-													Elem:     &schema.Schema{Type: schema.TypeString},
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the ALB",
+													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
 											},
 										},
@@ -241,13 +245,15 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"component": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the Ingress secret",
 												},
 												"status": {
-													Type:     schema.TypeList,
-													Computed: true,
-													Elem:     &schema.Schema{Type: schema.TypeString},
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the Ingress subdomain",
+													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
 											},
 										},
@@ -259,13 +265,15 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"component": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the Ingress subdomain",
 												},
 												"status": {
-													Type:     schema.TypeList,
-													Computed: true,
-													Elem:     &schema.Schema{Type: schema.TypeString},
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the Ingress subdomain",
+													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
 											},
 										},
