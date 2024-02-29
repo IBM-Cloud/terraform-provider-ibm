@@ -122,26 +122,3 @@ func flattenVolumeGroupStatusDescription(list []*models.StatusDescriptionError) 
 	}
 	return
 }
-func vgStatusDescriptionErrors() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeSet,
-		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				Attr_Key: {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				Attr_Message: {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				Attr_VolumeIDs: {
-					Type:     schema.TypeList,
-					Computed: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
-				},
-			},
-		},
-	}
-}
