@@ -70,7 +70,7 @@ The `ibm_satellite_host` provides the following [timeouts](https://www.terraform
 Review the argument references that you can specify for your resource. 
 
 - `cluster` - (Optional, String)   The name or ID of a Satellite  location or cluster to assign the host to.
-- `host_id` - (Required, String)   The specific host ID to assign to a Satellite  location or cluster.
+- `host_id` - (Required, String)   The name or ID of the specific host to assign to a Satellite location or cluster
 - `host_provider` - (Optional, String) The name of host provider, such as `ibm`, `aws` or `azure`.
  - `location` - (Required, String) The name or ID of the Satellite  location.
 - `labels`- (Optional, Array of Strings) The key value pairs to label the host, such as `cpu=4` to describe the host capabilities.

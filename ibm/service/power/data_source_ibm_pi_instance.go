@@ -42,6 +42,26 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The health of the instance.",
 				Type:        schema.TypeString,
 			},
+			Attr_IBMiCSS: {
+				Computed:    true,
+				Description: "IBMi Cloud Storage Solution",
+				Type:        schema.TypeBool,
+			},
+			Attr_IBMiPHA: {
+				Computed:    true,
+				Description: "IBMi Power High Availability",
+				Type:        schema.TypeBool,
+			},
+			Attr_IBMiRDS: {
+				Computed:    true,
+				Description: "IBMi Rational Dev Studio",
+				Type:        schema.TypeBool,
+			},
+			Attr_IBMiRDSUsers: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "IBMi Rational Dev Studio Number of User Licenses",
+			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
 				Description: "The VTL license repository capacity TB value.",
@@ -230,6 +250,17 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 
 	if powervmdata.Health != nil {
 		d.Set(Attr_HealthStatus, powervmdata.Health.Status)
+	}
+
+	if powervmdata.SoftwareLicenses != nil {
+		d.Set(Attr_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
+		d.Set(Attr_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		if *powervmdata.SoftwareLicenses.IbmiRDS {
+			d.Set(Attr_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		} else {
+			d.Set(Attr_IBMiRDSUsers, 0)
+		}
 	}
 
 	return nil
