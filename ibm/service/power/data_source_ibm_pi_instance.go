@@ -58,9 +58,9 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 			},
 			Attr_IBMiRDSUsers: {
-				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "IBMi Rational Dev Studio Number of User Licenses",
+				Type:        schema.TypeInt,
 			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
