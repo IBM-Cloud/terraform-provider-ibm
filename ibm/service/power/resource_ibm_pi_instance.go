@@ -353,6 +353,28 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Minimum Virtual Cores Assigned to the PVMInstance",
 			},
+			Arg_IBMiCSS: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "IBMi Cloud Storage Solution",
+			},
+			Arg_IBMiPHA: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "IBMi Power High Availability",
+			},
+			Attr_IBMiRDS: {
+				Type:        schema.TypeBool,
+				Optional:    false,
+				Required:    false,
+				Computed:    true,
+				Description: "IBMi Rational Dev Studio",
+			},
+			Arg_IBMiRDSUsers: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "IBMi Rational Dev Studio Number of User Licenses",
+			},
 		},
 	}
 }
@@ -513,7 +535,17 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
-
+	d.Set(PIInstanceDeploymentType, powervmdata.DeploymentType)
+	if powervmdata.SoftwareLicenses != nil {
+		d.Set(Arg_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
+		d.Set(Arg_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		if *powervmdata.SoftwareLicenses.IbmiRDS {
+			d.Set(Arg_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		} else {
+			d.Set(Arg_IBMiRDSUsers, 0)
+		}
+	}
 	return nil
 }
 
@@ -568,7 +600,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange(helpers.PIInstanceProcType) {
-
 		// Stop the lpar
 		if d.Get("status") == "SHUTOFF" {
 			log.Printf("the lpar is in the shutoff state. Nothing to do . Moving on ")
@@ -677,7 +708,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	// License repository capacity will be updated only if service instance is a vtl instance
 	// might need to check if lrc was set
 	if d.HasChange(helpers.PIInstanceLicenseRepositoryCapacity) {
-
 		lrc := d.Get(helpers.PIInstanceLicenseRepositoryCapacity).(int64)
 		body := &models.PVMInstanceUpdate{
 			LicenseRepositoryCapacity: lrc,
@@ -738,7 +768,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange(helpers.PIPlacementGroupID) {
-
 		pgClient := st.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 
 		oldRaw, newRaw := d.GetChange(helpers.PIPlacementGroupID)
@@ -772,8 +801,37 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-	return resourceIBMPIInstanceRead(ctx, d, meta)
+	if d.HasChanges(Arg_IBMiCSS, Arg_IBMiPHA, Arg_IBMiRDSUsers) {
+		if d.Get("status") == "ACTIVE" {
+			log.Printf("the lpar is in the Active state, continuing with update")
+		} else {
+			_, err = isWaitForPIInstanceAvailable(ctx, client, instanceID, "OK")
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 
+		sl := &models.SoftwareLicenses{}
+		sl.IbmiCSS = flex.PtrToBool(d.Get(Arg_IBMiCSS).(bool))
+		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
+		ibmrdsUsers := d.Get(Arg_IBMiRDSUsers).(int)
+		if ibmrdsUsers < 0 {
+			return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+		}
+		sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
+		sl.IbmiRDSUsers = int64(ibmrdsUsers)
+
+		updatebody := &models.PVMInstanceUpdate{SoftwareLicenses: sl}
+		_, err = client.Update(instanceID, updatebody)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForPIInstanceSoftwareLicenses(ctx, client, instanceID, sl)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	return resourceIBMPIInstanceRead(ctx, d, meta)
 }
 
 func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -870,6 +928,59 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 		}
 
 		return pvm, helpers.PIInstanceBuilding, nil
+	}
+}
+
+func isWaitForPIInstanceSoftwareLicenses(ctx context.Context, client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) (interface{}, error) {
+	log.Printf("Waiting for PIInstance Software Licenses (%s) to be updated ", id)
+
+	queryTimeOut := activeTimeOut
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"notdone"},
+		Target:     []string{"done"},
+		Refresh:    isPIInstanceSoftwareLicensesRefreshFunc(client, id, softwareLicenses),
+		Delay:      90 * time.Second,
+		MinTimeout: queryTimeOut,
+		Timeout:    120 * time.Minute,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceSoftwareLicensesRefreshFunc(client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+
+		// Check that each software license we modified has been updated
+		if softwareLicenses.IbmiCSS != nil {
+			if *softwareLicenses.IbmiCSS != *pvm.SoftwareLicenses.IbmiCSS {
+				return pvm, "notdone", nil
+			}
+		}
+
+		if softwareLicenses.IbmiPHA != nil {
+			if *softwareLicenses.IbmiPHA != *pvm.SoftwareLicenses.IbmiPHA {
+				return pvm, "notdone", nil
+			}
+		}
+
+		if softwareLicenses.IbmiRDS != nil {
+			// If the update set IBMiRDS to false, don't check IBMiRDSUsers as it will be updated on the terraform side on the read
+			if !*softwareLicenses.IbmiRDS {
+				if *softwareLicenses.IbmiRDS != *pvm.SoftwareLicenses.IbmiRDS {
+					return pvm, "notdone", nil
+				}
+			} else if (*softwareLicenses.IbmiRDS != *pvm.SoftwareLicenses.IbmiRDS) || (softwareLicenses.IbmiRDSUsers != pvm.SoftwareLicenses.IbmiRDSUsers) {
+				return pvm, "notdone", nil
+			}
+		}
+
+		return pvm, "done", nil
 	}
 }
 
@@ -1336,24 +1447,46 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 	if spp, ok := d.GetOk(Arg_PIInstanceSharedProcessorPool); ok {
 		body.SharedProcessorPool = spp.(string)
 	}
-
-	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
-		// check if using vtl image
-		// check if vtl image is stock image
-		imageData, err := imageClient.GetStockImage(imageid)
+	imageData, err := imageClient.GetStockImage(imageid)
+	if err != nil {
+		// check if vtl image is cloud instance image
+		imageData, err = imageClient.Get(imageid)
 		if err != nil {
-			// check if vtl image is cloud instance image
-			imageData, err = imageClient.Get(imageid)
-			if err != nil {
-				return nil, fmt.Errorf("image doesn't exist. %e", err)
-			}
+			return nil, fmt.Errorf("image doesn't exist. %e", err)
 		}
+	}
+	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
 
 		if imageData.Specifications.ImageType == "stock-vtl" {
 			body.LicenseRepositoryCapacity = int64(lrc.(int))
 		} else {
 			return nil, fmt.Errorf("pi_license_repository_capacity should only be used when creating VTL instances. %e", err)
 		}
+	}
+
+	if imageData.Specifications.OperatingSystem == OS_IBMI {
+		// Default value
+		falseBool := false
+		sl := &models.SoftwareLicenses{
+			IbmiCSS:      &falseBool,
+			IbmiPHA:      &falseBool,
+			IbmiRDS:      &falseBool,
+			IbmiRDSUsers: 0,
+		}
+		if ibmiCSS, ok := d.GetOk(Arg_IBMiCSS); ok {
+			sl.IbmiCSS = flex.PtrToBool(ibmiCSS.(bool))
+		}
+		if ibmiPHA, ok := d.GetOk(Arg_IBMiPHA); ok {
+			sl.IbmiPHA = flex.PtrToBool(ibmiPHA.(bool))
+		}
+		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
+			if ibmrdsUsers.(int) < 0 {
+				return nil, fmt.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+			}
+			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers.(int) > 0)
+			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
+		}
+		body.SoftwareLicenses = sl
 	}
 
 	pvmList, err := client.Create(body)

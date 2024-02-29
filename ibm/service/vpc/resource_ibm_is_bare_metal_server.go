@@ -4199,9 +4199,9 @@ func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfacePrototypeAttachment
 	if _, ok := d.GetOkExists(enablenat); ok && modelMap["enable_infrastructure_nat"] != nil {
 		model.EnableInfrastructureNat = core.BoolPtr(modelMap["enable_infrastructure_nat"].(bool))
 	}
-	if modelMap["ips"] != nil {
+	if modelMap["ips"] != nil && modelMap["ips"].(*schema.Set).Len() > 0 {
 		ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
-		for _, ipsItem := range modelMap["ips"].([]interface{}) {
+		for _, ipsItem := range modelMap["ips"].(*schema.Set).List() {
 			ipsItemModel, err := resourceIBMIsBareMetalServerMapToVirtualNetworkInterfaceIPsReservedIPPrototype(ipsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err

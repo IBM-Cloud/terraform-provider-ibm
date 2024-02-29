@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,6 +38,11 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server_network_attachment", "bare_metal_server"),
 				Description:  "The bare metal server identifier.",
+			},
+			"floating_bare_metal_server": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The bare metal server identifier of the server where the attachment is floated to(only applicated for allow_to_float true).",
 			},
 
 			"network_attachment": &schema.Schema{
@@ -454,18 +460,21 @@ func resourceIBMIsBareMetalServerNetworkAttachmentCreate(context context.Context
 			d.Set("virtual_network_interface_id", *bareMetalServerNetworkAttachment.VirtualNetworkInterface.ID)
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID, *bareMetalServerNetworkAttachment.ID))
+		d.Set("floating_bare_metal_server", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID)
 	} else if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByPci); ok {
 		bareMetalServerNetworkAttachment := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByPci)
 		if bareMetalServerNetworkAttachment.VirtualNetworkInterface != nil && bareMetalServerNetworkAttachment.VirtualNetworkInterface.ID != nil {
 			d.Set("virtual_network_interface_id", *bareMetalServerNetworkAttachment.VirtualNetworkInterface.ID)
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID, *bareMetalServerNetworkAttachment.ID))
+		d.Set("floating_bare_metal_server", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID)
 	} else if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachment); ok {
 		bareMetalServerNetworkAttachment := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachment)
 		if bareMetalServerNetworkAttachment.VirtualNetworkInterface != nil && bareMetalServerNetworkAttachment.VirtualNetworkInterface.ID != nil {
 			d.Set("virtual_network_interface_id", *bareMetalServerNetworkAttachment.VirtualNetworkInterface.ID)
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID, *bareMetalServerNetworkAttachment.ID))
+		d.Set("floating_bare_metal_server", *createBareMetalServerNetworkAttachmentOptions.BareMetalServerID)
 	} else {
 		return diag.FromErr(fmt.Errorf("Unrecognized vpcv1.BareMetalServerNetworkAttachmentIntf subtype encountered"))
 	}
@@ -505,19 +514,99 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 	nacId = parts[1]
 	getBareMetalServerNetworkAttachmentOptions.SetBareMetalServerID(bmId)
 	getBareMetalServerNetworkAttachmentOptions.SetID(nacId)
-
 	bareMetalServerNetworkAttachmentIntf, response, err := vpcClient.GetBareMetalServerNetworkAttachmentWithContext(context, getBareMetalServerNetworkAttachmentOptions)
 	if err != nil {
+
 		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+
+			allowToFloatIntf := d.Get("allow_to_float")
+			if allowToFloatIntf != nil && allowToFloatIntf.(bool) {
+
+				vniid := d.Get("virtual_network_interface.0.id").(string)
+				getVirtualNetworkInterfaceOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+					ID: &vniid,
+				}
+				vniDetails, response, err := vpcClient.GetVirtualNetworkInterface(getVirtualNetworkInterfaceOptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						d.SetId("")
+						return nil
+					}
+					return diag.FromErr(fmt.Errorf("[ERROR] Error on GetVirtualNetworkInterface in BareMetalServer : %s\n%s", err, response))
+				}
+
+				vniTargetIntf := vniDetails.Target
+
+				if _, ok := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTargetShareMountTargetReference); ok {
+					vniTarget := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTargetShareMountTargetReference)
+					ree := regexp.MustCompile(`([^/]+)/network_attachments/([^/]+)`)
+
+					// Find the matches
+					matches := ree.FindStringSubmatch(*vniTarget.Href)
+					if len(matches) >= 3 {
+						bmId = (matches[1])
+						nacId = matches[2]
+					}
+
+				} else if _, ok := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTargetInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContext); ok {
+					vniTarget := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTargetInstanceNetworkAttachmentReferenceVirtualNetworkInterfaceContext)
+					ree := regexp.MustCompile(`([^/]+)/network_attachments/([^/]+)`)
+
+					// Find the matches
+					matches := ree.FindStringSubmatch(*vniTarget.Href)
+					if len(matches) >= 3 {
+						bmId = (matches[1])
+						nacId = matches[2]
+					}
+
+				} else if _, ok := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTargetBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContext); ok {
+					vniTarget := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTargetBareMetalServerNetworkAttachmentReferenceVirtualNetworkInterfaceContext)
+					ree := regexp.MustCompile(`([^/]+)/network_attachments/([^/]+)`)
+
+					// Find the matches
+					matches := ree.FindStringSubmatch(*vniTarget.Href)
+					if len(matches) >= 3 {
+						bmId = (matches[1])
+						nacId = matches[2]
+					}
+
+				} else if _, ok := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTarget); ok {
+					vniTarget := vniTargetIntf.(*vpcv1.VirtualNetworkInterfaceTarget)
+					ree := regexp.MustCompile(`([^/]+)/network_attachments/([^/]+)`)
+
+					// Find the matches
+					matches := ree.FindStringSubmatch(*vniTarget.Href)
+					if len(matches) >= 3 {
+						bmId = (matches[1])
+						nacId = matches[2]
+					}
+
+				}
+
+				getBareMetalServerNetworkAttachmentOptions.SetBareMetalServerID(bmId)
+				getBareMetalServerNetworkAttachmentOptions.SetID(nacId)
+
+				bareMetalServerNetworkAttachmentIntf, response, err = vpcClient.GetBareMetalServerNetworkAttachmentWithContext(context, getBareMetalServerNetworkAttachmentOptions)
+				if err != nil {
+
+					if response != nil && response.StatusCode == 404 {
+						d.SetId("")
+						return nil
+					}
+				}
+			}
+
+			log.Printf("[DEBUG] GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
+			// return diag.FromErr(fmt.Errorf("GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
+		} else {
+			log.Printf("[DEBUG] GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
 		}
-		log.Printf("[DEBUG] GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response))
 	}
 
 	if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByVlan); ok {
 		bareMetalServerNetworkAttachment := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachmentByVlan)
+		d.SetId(fmt.Sprintf("%s/%s", bmId, *bareMetalServerNetworkAttachment.ID))
 		if err = d.Set("interface_type", bareMetalServerNetworkAttachment.InterfaceType); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting interface_type: %s", err))
 		}
@@ -606,10 +695,13 @@ func resourceIBMIsBareMetalServerNetworkAttachmentRead(context context.Context, 
 		if err = d.Set("type", bareMetalServerNetworkAttachment.Type); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 		}
+		d.SetId(fmt.Sprintf("%s/%s", bmId, *bareMetalServerNetworkAttachment.ID))
 	} else if _, ok := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachment); ok {
 		bareMetalServerNetworkAttachment := bareMetalServerNetworkAttachmentIntf.(*vpcv1.BareMetalServerNetworkAttachment)
+		d.SetId(fmt.Sprintf("%s/%s", bmId, *bareMetalServerNetworkAttachment.ID))
+
 		// parent class argument: bare_metal_server string
-		if err = d.Set("bare_metal_server", getBareMetalServerNetworkAttachmentOptions.BareMetalServerID); err != nil {
+		if err = d.Set("floating_bare_metal_server", getBareMetalServerNetworkAttachmentOptions.BareMetalServerID); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting bare_metal_server: %s", err))
 		}
 		// parent class argument: interface_type string
@@ -894,7 +986,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentDelete(context context.Context
 	}
 	ifServerStopped := false
 	interfaceType := d.Get("interface_type").(string)
-	bareMetalServerId := d.Get("bare_metal_server").(string)
+	bareMetalServerId := d.Get("floating_bare_metal_server").(string)
 	if interfaceType == "pci" {
 		getbmsoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &bareMetalServerId,
