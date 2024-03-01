@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -264,7 +263,7 @@ func dataSourceIBMIsVPCDnsResolutionBindingsRead(context context.Context, d *sch
 		vpcdnsResolutionBindingCollection, response, err := sess.ListVPCDnsResolutionBindingsWithContext(context, listVPCDnsResolutionBindingOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVPCDnsResolutionBindingsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVPCDnsResolutionBindingsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListVPCDnsResolutionBindingsWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(vpcdnsResolutionBindingCollection.Next)
 		allrecs = append(allrecs, vpcdnsResolutionBindingCollection.DnsResolutionBindings...)

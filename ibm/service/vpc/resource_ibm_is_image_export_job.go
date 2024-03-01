@@ -219,7 +219,7 @@ func ResourceIBMIsImageExportCreate(context context.Context, d *schema.ResourceD
 	imageExportJob, response, err := vpcClient.CreateImageExportJobWithContext(context, createImageExportJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateImageExportJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateImageExportJobWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("CreateImageExportJobWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createImageExportJobOptions.ImageID, *imageExportJob.ID))
@@ -250,36 +250,36 @@ func ResourceIBMIsImageExportRead(context context.Context, d *schema.ResourceDat
 			return nil
 		}
 		log.Printf("[DEBUG] GetImageExportJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetImageExportJobWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetImageExportJobWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("format", imageExportJob.Format); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting format: %s", err))
 	}
 	if err = d.Set("name", imageExportJob.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if err = d.Set("completed_at", flex.DateTimeToString(imageExportJob.CompletedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting completed_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting completed_at: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(imageExportJob.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("encrypted_data_key", imageExportJob.EncryptedDataKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encrypted_data_key: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting encrypted_data_key: %s", err))
 	}
 	if err = d.Set("href", imageExportJob.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("resource_type", imageExportJob.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 	if err = d.Set("started_at", flex.DateTimeToString(imageExportJob.StartedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting started_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting started_at: %s", err))
 	}
 	if err = d.Set("status", imageExportJob.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status: %s", err))
 	}
 
 	if imageExportJob.StorageBucket != nil {
@@ -302,20 +302,20 @@ func ResourceIBMIsImageExportRead(context context.Context, d *schema.ResourceDat
 		statusReasons = append(statusReasons, statusReasonsItemMap)
 	}
 	if err = d.Set("status_reasons", statusReasons); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status_reasons: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status_reasons: %s", err))
 	}
 	if err = d.Set("storage_href", imageExportJob.StorageHref); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting storage_href: %s", err))
 	}
 	storageObjectMap, err := ResourceIBMIsImageExportCloudObjectStorageObjectReferenceToMap(imageExportJob.StorageObject)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("storage_object", []map[string]interface{}{storageObjectMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_object: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting storage_object: %s", err))
 	}
 	if err = d.Set("image_export_job", imageExportJob.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting image_export_job: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting image_export_job: %s", err))
 	}
 
 	return nil
@@ -351,7 +351,7 @@ func ResourceIBMIsImageExportUpdate(context context.Context, d *schema.ResourceD
 		_, response, err := vpcClient.UpdateImageExportJobWithContext(context, updateImageExportJobOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateImageExportJobWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateImageExportJobWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("UpdateImageExportJobWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -377,7 +377,7 @@ func ResourceIBMIsImageExportDelete(context context.Context, d *schema.ResourceD
 	response, err := vpcClient.DeleteImageExportJobWithContext(context, deleteImageExportJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteImageExportJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteImageExportJobWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("DeleteImageExportJobWithContext failed %s\n%s", err, response))
 	}
 	_, err = isWaitForImageExportJobDeleted(context, d, meta, vpcClient, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -427,7 +427,7 @@ func ResourceIBMIsImageExportCloudObjectStorageBucketIdentityToMap(model vpcv1.C
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.CloudObjectStorageBucketIdentityIntf subtype encountered")
+		return nil, flex.FmtErrorf("Unrecognized vpcv1.CloudObjectStorageBucketIdentityIntf subtype encountered")
 	}
 }
 
@@ -491,7 +491,7 @@ func isImageExportJobDeleteRefreshFunc(context context.Context, d *schema.Resour
 			if response != nil && response.StatusCode == 404 {
 				return imageExportJob, "done", nil
 			}
-			return imageExportJob, "", fmt.Errorf("[ERROR] Error Getting Image export job: %s\n%s", err, response)
+			return imageExportJob, "", flex.FmtErrorf("[ERROR] Error Getting Image export job: %s\n%s", err, response)
 		}
 		return imageExportJob, *imageExportJob.Status, err
 	}

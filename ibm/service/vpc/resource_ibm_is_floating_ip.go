@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -351,7 +350,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 
 	if zone == "" && target == "" {
-		return fmt.Errorf("%s or %s need to be provided", isFloatingIPZone, isFloatingIPTarget)
+		return flex.FmtErrorf("%s or %s need to be provided", isFloatingIPZone, isFloatingIPTarget)
 	}
 
 	if rgrp, ok := d.GetOk(isFloatingIPResourceGroup); ok {
@@ -367,7 +366,7 @@ func fipCreate(d *schema.ResourceData, meta interface{}, name string) error {
 
 	floatingip, response, err := sess.CreateFloatingIP(createFloatingIPOptions)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Floating IP err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Floating IP err %s\n%s", err, response)
 	}
 	d.SetId(*floatingip.ID)
 	log.Printf("[INFO] Floating IP : %s[%s]", *floatingip.ID, *floatingip.Address)
@@ -420,7 +419,7 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Floating IP (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Floating IP (%s): %s\n%s", id, err, response)
 
 	}
 	d.Set(isFloatingIPName, *floatingip.Name)
@@ -488,7 +487,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		fip, response, err := sess.GetFloatingIP(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Floating IP: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Floating IP: %s\n%s", err, response)
 		}
 
 		oldList, newList := d.GetChange(isFloatingIPTags)
@@ -504,7 +503,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		fip, response, err := sess.GetFloatingIP(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Floating IP: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Floating IP: %s\n%s", err, response)
 		}
 
 		oldList, newList := d.GetChange(isFloatingIPAccessTags)
@@ -526,7 +525,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		hasChanged = true
 		floatingIPPatch, err := floatingIPPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for FloatingIPPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for FloatingIPPatch: %s", err)
 		}
 		options.FloatingIPPatch = floatingIPPatch
 	}
@@ -539,14 +538,14 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		hasChanged = true
 		floatingIPPatch, err := floatingIPPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for floatingIPPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for floatingIPPatch: %s", err)
 		}
 		options.FloatingIPPatch = floatingIPPatch
 	}
 	if hasChanged {
 		_, response, err := sess.UpdateFloatingIP(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating vpc Floating IP: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating vpc Floating IP: %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -575,7 +574,7 @@ func fipDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			return nil
 		}
 
-		return fmt.Errorf("[ERROR] Error Getting Floating IP (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Floating IP (%s): %s\n%s", id, err, response)
 	}
 
 	options := &vpcv1.DeleteFloatingIPOptions{
@@ -583,7 +582,7 @@ func fipDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteFloatingIP(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Floating IP : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Floating IP : %s\n%s", err, response)
 	}
 	_, err = isWaitForFloatingIPDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -612,7 +611,7 @@ func fipExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting floating IP: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting floating IP: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -643,7 +642,7 @@ func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) resource.StateRe
 			if response != nil && response.StatusCode == 404 {
 				return FloatingIP, isFloatingIPDeleted, nil
 			}
-			return FloatingIP, "", fmt.Errorf("[ERROR] Error Getting Floating IP: %s\n%s", err, response)
+			return FloatingIP, "", flex.FmtErrorf("[ERROR] Error Getting Floating IP: %s\n%s", err, response)
 		}
 		return FloatingIP, isFloatingIPDeleting, err
 	}
@@ -671,7 +670,7 @@ func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) resour
 		}
 		instance, response, err := floatingipC.GetFloatingIP(getfipoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Floating IP for the instance: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Floating IP for the instance: %s\n%s", err, response)
 		}
 
 		if *instance.Status == "available" {

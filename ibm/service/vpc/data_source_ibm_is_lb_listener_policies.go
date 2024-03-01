@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -210,7 +210,7 @@ func dataSourceIBMIsLbListenerPoliciesRead(context context.Context, d *schema.Re
 	loadBalancerListenerPolicyCollection, response, err := vpcClient.ListLoadBalancerListenerPoliciesWithContext(context, listLoadBalancerListenerPoliciesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListLoadBalancerListenerPoliciesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerListenerPoliciesWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("ListLoadBalancerListenerPoliciesWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(dataSourceIBMIsLbListenerPoliciesID(d))
@@ -218,7 +218,7 @@ func dataSourceIBMIsLbListenerPoliciesRead(context context.Context, d *schema.Re
 	if loadBalancerListenerPolicyCollection.Policies != nil {
 		err = d.Set("policies", dataSourceLoadBalancerListenerPolicyCollectionFlattenPolicies(loadBalancerListenerPolicyCollection.Policies))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting policies %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting policies %s", err))
 		}
 	}
 

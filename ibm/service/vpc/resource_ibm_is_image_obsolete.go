@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -196,7 +195,7 @@ func imgObsoleteCreate(context context.Context, d *schema.ResourceData, meta int
 
 	response, err := sess.ObsoleteImageWithContext(context, imageObsoletePrototype)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Image obsolete err %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Image obsolete err %s\n%s", err, response)
 	}
 	d.SetId(id)
 	log.Printf("[INFO] Image ID : %s", id)
@@ -229,14 +228,14 @@ func isImageObsoleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRe
 		}
 		image, response, err := imageC.GetImage(getimgoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Image: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Image: %s\n%s", err, response)
 		}
 
 		if *image.Status == "obsolete" {
 			return image, isImageProvisioningDone, nil
 		}
 		if *image.Status == "failed" {
-			return image, "", fmt.Errorf("[ERROR] Error Image(%s) went to failed state while obsoleting ", *image.ID)
+			return image, "", flex.FmtErrorf("[ERROR] Error Image(%s) went to failed state while obsoleting ", *image.ID)
 		}
 
 		return image, isImageProvisioning, nil
@@ -267,7 +266,7 @@ func imgObsoleteGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
 	}
 	if image.MinimumProvisionedSize != nil {
 		d.Set(isImageMinimumProvisionedSize, *image.MinimumProvisionedSize)

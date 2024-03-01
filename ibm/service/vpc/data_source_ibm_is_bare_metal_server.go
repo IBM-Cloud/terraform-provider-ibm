@@ -729,7 +729,7 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 		server, response, err := sess.GetBareMetalServerWithContext(context, options)
 		if err != nil {
 			log.Printf("[DEBUG] GetBareMetalServerWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response))
 		}
 		bms = server
 	} else if name != "" {
@@ -738,10 +738,10 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 		bmservers, response, err := sess.ListBareMetalServersWithContext(context, options)
 		if err != nil {
 			log.Printf("[DEBUG] ListBareMetalServersWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Listing Bare Metal Server (%s): %s\n%s", name, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error Listing Bare Metal Server (%s): %s\n%s", name, err, response))
 		}
 		if len(bmservers.BareMetalServers) == 0 {
-			return diag.FromErr(fmt.Errorf("[ERROR] No bare metal servers found with name %s", name))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] No bare metal servers found with name %s", name))
 		}
 		bms = &bmservers.BareMetalServers[0]
 	}
@@ -762,7 +762,7 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 
 	initialization, response, err := sess.GetBareMetalServerInitialization(optionsInitialization)
 	if err != nil || initialization == nil {
-		return diag.FromErr(fmt.Errorf("[Error] Error getting Bare Metal Server (%s) initialization : %s\n%s", *bms.ID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[Error] Error getting Bare Metal Server (%s) initialization : %s\n%s", *bms.ID, err, response))
 	}
 
 	d.Set(isBareMetalServerImage, initialization.Image.ID)
@@ -784,10 +784,10 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 	}
 	d.Set(isBareMetalServerCPU, cpuList)
 	if err = d.Set(isBareMetalServerCreatedAt, bms.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set(isBareMetalServerCRN, bms.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 	}
 
 	diskList := make([]map[string]interface{}, 0)
@@ -806,21 +806,21 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 	}
 	d.Set(isBareMetalServerDisks, diskList)
 	if err = d.Set(isBareMetalServerHref, bms.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set(isBareMetalServerMemory, bms.Memory); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting memory: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting memory: %s", err))
 	}
 	if err = d.Set(isBareMetalServerName, *bms.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if err = d.Set("identifier", *bms.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting identifier: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting identifier: %s", err))
 	}
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enable_secure_boot: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting enable_secure_boot: %s", err))
 	}
 
 	// tpm
@@ -830,7 +830,7 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 			return diag.FromErr(err)
 		}
 		if err = d.Set(isBareMetalServerTrustedPlatformModule, []map[string]interface{}{trustedPlatformModuleMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting trusted_platform_module: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting trusted_platform_module: %s", err))
 		}
 	}
 
@@ -871,7 +871,7 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 		}
 		bmsnic, response, err := sess.GetBareMetalServerNetworkInterface(getnicoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
 		}
 
 		switch reflect.TypeOf(bmsnic).String() {
@@ -969,7 +969,7 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 			}
 			bmsnicintf, response, err := sess.GetBareMetalServerNetworkInterface(getnicoptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
 			}
 
 			switch reflect.TypeOf(bmsnicintf).String() {
@@ -1035,16 +1035,16 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 	}
 
 	if err = d.Set(isBareMetalServerProfile, *bms.Profile.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting profile: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting profile: %s", err))
 	}
 	if bms.ResourceGroup != nil {
 		d.Set(isBareMetalServerResourceGroup, *bms.ResourceGroup.ID)
 	}
 	if err = d.Set(isBareMetalServerResourceType, bms.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set(isBareMetalServerStatus, *bms.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status: %s", err))
 	}
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if bms.StatusReasons != nil {
@@ -1063,10 +1063,10 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 	d.Set(isBareMetalServerStatusReasons, statusReasonsList)
 
 	if err = d.Set(isBareMetalServerVPC, *bms.VPC.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpc: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vpc: %s", err))
 	}
 	if err = d.Set(isBareMetalServerZone, *bms.Zone.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting zone: %s", err))
 	}
 
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)

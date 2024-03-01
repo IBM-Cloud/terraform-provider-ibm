@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 
@@ -333,37 +332,37 @@ func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.Resou
 	backupPolicyJob, response, err := vpcClient.GetBackupPolicyJobWithContext(context, getBackupPolicyJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetBackupPolicyJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetBackupPolicyJobWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetBackupPolicyJobWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*backupPolicyJob.ID)
 	if err = d.Set("auto_delete", backupPolicyJob.AutoDelete); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting auto_delete: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting auto_delete: %s", err))
 	}
 	if err = d.Set("auto_delete_after", flex.IntValue(backupPolicyJob.AutoDeleteAfter)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting auto_delete_after: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting auto_delete_after: %s", err))
 	}
 
 	if backupPolicyJob.BackupPolicyPlan != nil {
 		err = d.Set("backup_policy_plan", dataSourceBackupPolicyJobFlattenBackupPolicyPlan(*backupPolicyJob.BackupPolicyPlan))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting backup_policy_plan %s", err))
 		}
 	}
 	if err = d.Set("completed_at", flex.DateTimeToString(backupPolicyJob.CompletedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting completed_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting completed_at: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(backupPolicyJob.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("href", backupPolicyJob.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("job_type", backupPolicyJob.JobType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting job_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting job_type: %s", err))
 	}
 	if err = d.Set("resource_type", backupPolicyJob.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	if backupPolicyJob.Source != nil {
@@ -373,7 +372,7 @@ func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.Resou
 				jobSource := backupPolicyJob.Source.(*vpcv1.BackupPolicyJobSourceVolumeReference)
 				err = d.Set("source_volume", dataSourceBackupPolicyJobFlattenSourceVolume(*jobSource))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting source_volume %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting source_volume %s", err))
 				}
 			}
 		case "*vpcv1.BackupPolicyJobSourceInstanceReference":
@@ -381,27 +380,27 @@ func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.Resou
 				jobSource := backupPolicyJob.Source.(*vpcv1.BackupPolicyJobSourceInstanceReference)
 				err = d.Set("source_instance", dataSourceBackupPolicyJobFlattenSourceInstance(*jobSource))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting source_instance %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting source_instance %s", err))
 				}
 			}
 		}
 
 	}
 	if err = d.Set("status", backupPolicyJob.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status: %s", err))
 	}
 
 	if backupPolicyJob.StatusReasons != nil {
 		err = d.Set("status_reasons", dataSourceBackupPolicyJobFlattenStatusReasons(backupPolicyJob.StatusReasons))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting status_reasons %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting status_reasons %s", err))
 		}
 	}
 
 	if backupPolicyJob.TargetSnapshots != nil {
 		err = d.Set("target_snapshot", dataSourceBackupPolicyJobFlattenTargetSnapshot(backupPolicyJob.TargetSnapshots))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting target_snapshot %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting target_snapshot %s", err))
 		}
 	}
 

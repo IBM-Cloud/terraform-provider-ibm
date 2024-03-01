@@ -205,7 +205,7 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 		}
 		floatingIPs, response, err := sess.ListFloatingIps(floatingIPOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching floating IPs %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching floating IPs %s\n%s", err, response)
 		}
 		start = flex.GetNext(floatingIPs.Next)
 		allFloatingIPs = append(allFloatingIPs, floatingIPs.FloatingIps...)
@@ -249,7 +249,7 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 		}
 	}
 
-	return fmt.Errorf("[ERROR] No floatingIP found with name  %s", name)
+	return flex.FmtErrorf("[ERROR] No floatingIP found with name  %s", name)
 
 }
 

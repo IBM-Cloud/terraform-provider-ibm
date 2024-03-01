@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -127,7 +128,7 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpCreate(context context.Conte
 
 	fip, response, err := sess.AddInstanceNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil || fip == nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create Instance (%s) network interface (%s) floating ip (%s) err %s\n%s", instanceId, instanceNicId, instanceNicFipId, err, response))
+		return diag.FromErr(flex.FmtErrorf("[DEBUG] Create Instance (%s) network interface (%s) floating ip (%s) err %s\n%s", instanceId, instanceNicId, instanceNicFipId, err, response))
 	}
 	d.SetId(MakeTerraformNICFipID(instanceId, instanceNicId, *fip.ID))
 	err = instanceNICFipGet(d, fip, instanceId, instanceNicId)
@@ -160,7 +161,7 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpRead(context context.Context
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Instance (%s) network interface (%s): %s\n%s", instanceId, nicID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting Instance (%s) network interface (%s): %s\n%s", instanceId, nicID, err, response))
 	}
 	err = instanceNICFipGet(d, fip, instanceId, nicID)
 	if err != nil {
@@ -211,7 +212,7 @@ func resourceIBMISInstanceNetworkInterfaceFloatingIpUpdate(context context.Conte
 
 		fip, response, err := sess.AddInstanceNetworkInterfaceFloatingIPWithContext(context, options)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating Instance: %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating Instance: %s\n%s", err, response))
 		}
 		d.SetId(MakeTerraformNICFipID(instanceId, nicId, *fip.ID))
 		return diag.FromErr(instanceNICFipGet(d, fip, instanceId, nicId))
@@ -249,7 +250,7 @@ func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.Resour
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance (%s) network interface(%s) Floating Ip(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Instance (%s) network interface(%s) Floating Ip(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
 	}
 
 	options := &vpcv1.RemoveInstanceNetworkInterfaceFloatingIPOptions{
@@ -259,7 +260,7 @@ func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.Resour
 	}
 	response, err = sess.RemoveInstanceNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Instance (%s) network interface (%s) Floating Ip(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Instance (%s) network interface (%s) Floating Ip(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
 	}
 	_, err = isWaitForInstanceNetworkInterfaceFloatingIpDeleted(sess, instanceId, nicId, fipId, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -297,7 +298,7 @@ func isInstanceNetworkInterfaceFloatingIpDeleteRefreshFunc(instanceC *vpcv1.VpcV
 			if response != nil && response.StatusCode == 404 {
 				return fip, isInstanceNetworkInterfaceFloatingIpDeleted, nil
 			}
-			return fip, isInstanceNetworkInterfaceFloatingIpFailed, fmt.Errorf("[ERROR] Error getting Instance(%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
+			return fip, isInstanceNetworkInterfaceFloatingIpFailed, flex.FmtErrorf("[ERROR] Error getting Instance(%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
 		}
 		return fip, isInstanceNetworkInterfaceFloatingIpDeleting, err
 	}
@@ -326,7 +327,7 @@ func isInstanceNetworkInterfaceFloatingIpRefreshFunc(client *vpcv1.VpcV1, instan
 		}
 		fip, response, err := client.GetInstanceNetworkInterfaceFloatingIP(getBmsNicFloatingIpOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Instance (%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Instance (%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", instanceId, nicId, fipId, err, response)
 		}
 		status := ""
 

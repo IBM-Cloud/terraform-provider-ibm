@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 
@@ -378,7 +377,7 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 			networkACLCollection, response, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
 			if err != nil || networkACLCollection == nil {
 				log.Printf("[DEBUG] ListNetworkAclsWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
 			}
 			start = flex.GetNext(networkACLCollection.Next)
 			allrecs = append(allrecs, networkACLCollection.NetworkAcls...)
@@ -397,7 +396,7 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 
 		if !acl_found {
 			log.Printf("[DEBUG] No networkACL found with given VPC %s and ACL name %s", vpc_name_str, network_acl_name)
-			return diag.FromErr(fmt.Errorf("[ERROR] No networkACL found with given VPC %s and ACL name %s", vpc_name_str, network_acl_name))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] No networkACL found with given VPC %s and ACL name %s", vpc_name_str, network_acl_name))
 		}
 	} else {
 
@@ -408,49 +407,49 @@ func dataSourceIBMIsNetworkACLRead(context context.Context, d *schema.ResourceDa
 		networkACLInst, response, err := vpcClient.GetNetworkACLWithContext(context, getNetworkACLOptions)
 		if err != nil || networkACLInst == nil {
 			log.Printf("[DEBUG] GetNetworkACLWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetNetworkACLWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetNetworkACLWithContext failed %s\n%s", err, response))
 		}
 		networkACL = networkACLInst
 	}
 	d.SetId(*networkACL.ID)
 	if err = d.Set("created_at", flex.DateTimeToString(networkACL.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", networkACL.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 	}
 	if err = d.Set("href", networkACL.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("name", networkACL.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 
 	if networkACL.ResourceGroup != nil {
 		err = d.Set(isNetworkACLResourceGroup, dataSourceNetworkACLFlattenResourceGroup(*networkACL.ResourceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group %s", err))
 		}
 	}
 
 	if networkACL.Rules != nil {
 		err = d.Set(isNetworkACLRules, dataSourceNetworkACLFlattenRules(networkACL.Rules))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting rules %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting rules %s", err))
 		}
 	}
 
 	if networkACL.Subnets != nil {
 		err = d.Set("subnets", dataSourceNetworkACLFlattenSubnets(networkACL.Subnets))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnets %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting subnets %s", err))
 		}
 	}
 
 	if networkACL.VPC != nil {
 		err = d.Set("vpc", dataSourceNetworkACLFlattenVPC(*networkACL.VPC))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpc %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vpc %s", err))
 		}
 	}
 

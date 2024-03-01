@@ -704,7 +704,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 
 	vpc, response, err := sess.CreateVPC(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating VPC %s ", flex.BeautifyError(err, response))
+		return flex.FmtErrorf("[ERROR] Error while creating VPC %s ", flex.BeautifyError(err, response))
 	}
 	d.SetId(*vpc.ID)
 
@@ -742,7 +742,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 			_, response, err := sess.CreateVPCDnsResolutionBinding(createDnsBindings)
 			if err != nil {
 				log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc resource %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpc resource %s\n%s", err, response)
 			}
 			resolverType := "delegated"
 			dnsPatch := &vpcv1.VpcdnsPatch{
@@ -757,7 +757,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 			vpcPatchModel.Dns = dnsPatch
 			vpcPatchModelAsPatch, err := vpcPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpcpatch as patch %s", err)
+				return flex.FmtErrorf("[ERROR] CreateVPCDnsResolutionBinding failed in vpcpatch as patch %s", err)
 			}
 			updateVpcOptions := &vpcv1.UpdateVPCOptions{
 				ID: vpc.ID,
@@ -766,7 +766,7 @@ func vpcCreate(d *schema.ResourceData, meta interface{}, name, apm, rg string, i
 			_, response, err = sess.UpdateVPC(updateVpcOptions)
 			if err != nil {
 				log.Printf("[DEBUG] Update vpc with delegated failed %s\n%s", err, response)
-				return fmt.Errorf("[ERROR] Update vpc with delegated failed in vpc resource %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Update vpc with delegated failed in vpc resource %s\n%s", err, response)
 			}
 		}
 	}
@@ -832,7 +832,7 @@ func deleteDefaultNetworkACLRules(sess *vpcv1.VpcV1, vpcID string) error {
 				_, response, err := sess.GetNetworkACLRule(getNetworkAclRuleOptions)
 
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error Getting Network ACL Rule  (%s): %s\n%s", *sourceRuleVal.ID, err, response)
+					return flex.FmtErrorf("[ERROR] Error Getting Network ACL Rule  (%s): %s\n%s", *sourceRuleVal.ID, err, response)
 				}
 
 				deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkACLRuleOptions{
@@ -841,7 +841,7 @@ func deleteDefaultNetworkACLRules(sess *vpcv1.VpcV1, vpcID string) error {
 				}
 				response, err = sess.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error Deleting Network ACL Rule : %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error Deleting Network ACL Rule : %s\n%s", err, response)
 				}
 			}
 		}
@@ -868,7 +868,7 @@ func deleteDefaultSecurityGroupRules(sess *vpcv1.VpcV1, vpcID string) error {
 				_, response, err := sess.GetSecurityGroupRule(getSecurityGroupRuleOptions)
 
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error Getting Security Group Rule  (%s): %s\n%s", *sourceRuleVal.ID, err, response)
+					return flex.FmtErrorf("[ERROR] Error Getting Security Group Rule  (%s): %s\n%s", *sourceRuleVal.ID, err, response)
 				}
 
 				deleteSecurityGroupRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
@@ -877,7 +877,7 @@ func deleteDefaultSecurityGroupRules(sess *vpcv1.VpcV1, vpcID string) error {
 				}
 				response, err = sess.DeleteSecurityGroupRule(deleteSecurityGroupRuleOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error Deleting Security Group Rule : %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error Deleting Security Group Rule : %s\n%s", err, response)
 				}
 			}
 		}
@@ -892,7 +892,7 @@ func isVPCRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 		}
 		vpc, response, err := vpc.GetVPC(getvpcOptions)
 		if err != nil {
-			return nil, isVPCFailed, fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+			return nil, isVPCFailed, flex.FmtErrorf("[ERROR] Error getting VPC : %s\n%s", err, response)
 		}
 
 		if *vpc.Status == isVPCAvailable || *vpc.Status == isVPCFailed {
@@ -926,7 +926,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting VPC : %s\n%s", err, response)
 	}
 
 	d.Set(isVPCName, *vpc.Name)
@@ -963,11 +963,11 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 	}
 	if err = d.Set("health_reasons", healthReasons); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_reasons %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting health_reasons %s", err)
 	}
 
 	if err = d.Set("health_state", vpc.HealthState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting health_state: %s", err)
 	}
 	if !core.IsNil(vpc.Dns) {
 		vpcCrn := d.Get("dns.0.resolver.0.vpc_crn").(string)
@@ -989,13 +989,13 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 
 				pager, err := sess.NewVPCDnsResolutionBindingsPager(listVPCDnsResolutionBindingOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting VPC dns bindings: %s", err)
+					return flex.FmtErrorf("[ERROR] Error getting VPC dns bindings: %s", err)
 				}
 				var allResults []vpcv1.VpcdnsResolutionBinding
 				for pager.HasNext() {
 					nextPage, err := pager.GetNext()
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error getting VPC dns bindings pager next: %s", err)
+						return flex.FmtErrorf("[ERROR] Error getting VPC dns bindings pager next: %s", err)
 					}
 					allResults = append(allResults, nextPage...)
 				}
@@ -1010,7 +1010,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		if err = d.Set(isVPCDns, []map[string]interface{}{dnsMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting dns: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting dns: %s", err)
 		}
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
@@ -1062,7 +1062,7 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		s, response, err := sess.ListSubnets(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching subnets %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching subnets %s\n%s", err, response)
 		}
 		start = flex.GetNext(s.Next)
 		allrecs = append(allrecs, s.Subnets...)
@@ -1237,7 +1237,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		vpc, response, err := sess.GetVPC(getvpcOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting VPC : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVPCTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCUserTagType)
@@ -1252,7 +1252,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		vpc, response, err := sess.GetVPC(getvpcOptions)
 		if err != nil {
-			return fmt.Errorf("Error getting VPC : %s\n%s", err, response)
+			return flex.FmtErrorf("Error getting VPC : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVPCAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vpc.CRN, "", isVPCAccessTagType)
@@ -1304,7 +1304,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 					}
 					_, response, err := sess.GetVPC(getVpcOptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error Getting VPC (%s): %s\n%s", id, err, response)
+						return flex.FmtErrorf("[ERROR] Error Getting VPC (%s): %s\n%s", id, err, response)
 					}
 					isDnsResolverManualServerChange = true
 					isDnsResolverManualServerEtag = response.Headers.Get("ETag") // Getting Etag from the response headers.
@@ -1385,7 +1385,7 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		vpcPatch, err := vpcPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPCPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for VPCPatch: %s", err)
 		}
 		if isDnsResolverVPCCrnNull || isDnsResolverVPCIDNull {
 			dnsMap := vpcPatch["dns"].(map[string]interface{})
@@ -1404,10 +1404,10 @@ func vpcUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 				updateVpcOptions.IfMatch = nil
 				_, nestedresponse, nestederr := sess.UpdateVPC(updateVpcOptions)
 				if nestederr != nil {
-					return fmt.Errorf("[ERROR] Error Updating VPC on retry : %s\n%s", nestederr, nestedresponse)
+					return flex.FmtErrorf("[ERROR] Error Updating VPC on retry : %s\n%s", nestederr, nestedresponse)
 				}
 			} else {
-				return fmt.Errorf("[ERROR] Error Updating VPC : %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Updating VPC : %s\n%s", err, response)
 			}
 		}
 		if isDnsResolverVPCCrnNull || isDnsResolverVPCIDNull {
@@ -1452,7 +1452,7 @@ func vpcDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPC (%s): %s\n%s", id, err, response)
 	}
 
 	deletevpcOptions := &vpcv1.DeleteVPCOptions{
@@ -1460,7 +1460,7 @@ func vpcDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteVPC(deletevpcOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting VPC : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting VPC : %s\n%s", err, response)
 	}
 	_, err = isWaitForVPCDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -1496,7 +1496,7 @@ func isVPCDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFu
 			if response != nil && response.StatusCode == 404 {
 				return vpc, isVPCDeleted, nil
 			}
-			return nil, isVPCFailed, fmt.Errorf("[ERROR] The VPC %s failed to delete: %s\n%s", id, err, response)
+			return nil, isVPCFailed, flex.FmtErrorf("[ERROR] The VPC %s failed to delete: %s\n%s", id, err, response)
 		}
 
 		return vpc, isVPCDeleting, nil
@@ -1522,7 +1522,7 @@ func vpcExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting VPC: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting VPC: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -1543,12 +1543,12 @@ func nwaclNameUpdate(sess *vpcv1.VpcV1, id, name string) error {
 	}
 	networkACLPatch, err := networkACLPatchModel.AsPatch()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for NetworkACLPatch: %s", err)
+		return flex.FmtErrorf("[ERROR] Error calling asPatch for NetworkACLPatch: %s", err)
 	}
 	updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
 	_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Updating Network ACL(%s) name : %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Updating Network ACL(%s) name : %s\n%s", id, err, response)
 	}
 	return nil
 }
@@ -1562,12 +1562,12 @@ func sgNameUpdate(sess *vpcv1.VpcV1, id, name string) error {
 	}
 	securityGroupPatch, err := securityGroupPatchModel.AsPatch()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupPatch: %s", err)
+		return flex.FmtErrorf("[ERROR] Error calling asPatch for SecurityGroupPatch: %s", err)
 	}
 	updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
 	_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Updating Security Group name : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Updating Security Group name : %s\n%s", err, response)
 	}
 	return nil
 }
@@ -1580,12 +1580,12 @@ func rtNameUpdate(sess *vpcv1.VpcV1, vpcID, id, name string) error {
 	routingTablePatchModel.Name = &name
 	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
 	if asPatchErr != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
+		return flex.FmtErrorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
 	}
 	updateVpcRoutingTableOptions.RoutingTablePatch = routingTablePatchModelAsPatch
 	_, response, err := sess.UpdateVPCRoutingTable(updateVpcRoutingTableOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Updating Routing table name %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Updating Routing table name %s\n%s", err, response)
 	}
 	return nil
 }
@@ -1731,7 +1731,7 @@ func resourceIBMIsVPCVpcdnsResolverToMap(model vpcv1.VpcdnsResolverIntf, vpcId, 
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.VpcdnsResolverIntf subtype encountered")
+		return nil, flex.FmtErrorf("Unrecognized vpcv1.VpcdnsResolverIntf subtype encountered")
 	}
 }
 

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -416,7 +415,7 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode 
 
 	vpnGatewayIntf, response, err := sess.CreateVPNGateway(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create vpc VPN Gateway %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Create vpc VPN Gateway %s\n%s", err, response)
 	}
 	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -472,7 +471,7 @@ func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateR
 		}
 		vpnGatewayIntf, response, err := vpnGateway.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Vpn Gateway: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -508,23 +507,23 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
 	}
 	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
 	d.Set(isVPNGatewayName, *vpnGateway.Name)
 	d.Set(isVPNGatewaySubnet, *vpnGateway.Subnet.ID)
 	if err = d.Set(isVPNGatewayHealthState, vpnGateway.HealthState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting health_state: %s", err)
 	}
 	if err := d.Set(isVPNGatewayHealthReasons, resourceVPNGatewayRouteFlattenHealthReasons(vpnGateway.HealthReasons)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting health_reasons: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting health_reasons: %s", err)
 	}
 	if err = d.Set(isVPNGatewayLifecycleState, vpnGateway.LifecycleState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err)
 	}
 	if err := d.Set(isVPNGatewayLifecycleReasons, resourceVPNGatewayFlattenLifecycleReasons(vpnGateway.LifecycleReasons)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting lifecycle_reasons: %s", err)
 	}
 	members := []vpcv1.VPNGatewayMember{}
 	for _, member := range vpnGateway.Members {
@@ -593,7 +592,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 		vpcList = append(vpcList, dataSourceVPNServerCollectionVPNGatewayVpcReferenceToMap(vpnGateway.VPC))
 		err = d.Set("vpc", vpcList)
 		if err != nil {
-			return fmt.Errorf("Error setting the vpc: %s", err)
+			return flex.FmtErrorf("Error setting the vpc: %s", err)
 		}
 	}
 	return nil
@@ -627,7 +626,7 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		}
 		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Volume : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Volume : %s\n%s", err, response)
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -644,7 +643,7 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		}
 		vpnGatewayIntf, response, err := sess.GetVPNGateway(getVpnGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Volume : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Volume : %s\n%s", err, response)
 		}
 		vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
@@ -664,12 +663,12 @@ func vpngwUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		}
 		vpnGatewayPatch, err := vpnGatewayPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPNGatewayPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for VPNGatewayPatch: %s", err)
 		}
 		options.VPNGatewayPatch = vpnGatewayPatch
 		_, response, err := sess.UpdateVPNGateway(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating vpc Vpn Gateway: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating vpc Vpn Gateway: %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -700,7 +699,7 @@ func vpngwDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Vpn Gateway (%s): %s\n%s", id, err, response)
 	}
 
 	options := &vpcv1.DeleteVPNGatewayOptions{
@@ -708,7 +707,7 @@ func vpngwDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteVPNGateway(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Vpn Gateway : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Vpn Gateway : %s\n%s", err, response)
 	}
 	_, err = isWaitForVpnGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -743,7 +742,7 @@ func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.
 			if response != nil && response.StatusCode == 404 {
 				return "", isVPNGatewayDeleted, nil
 			}
-			return "", "", fmt.Errorf("[ERROR] Error Getting Vpn Gateway: %s\n%s", err, response)
+			return "", "", flex.FmtErrorf("[ERROR] Error Getting Vpn Gateway: %s\n%s", err, response)
 		}
 		return vpngw, isVPNGatewayDeleting, err
 	}
@@ -769,7 +768,7 @@ func vpngwExists(d *schema.ResourceData, meta interface{}, id string) (bool, err
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Vpn Gatewa: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Vpn Gatewa: %s\n%s", err, response)
 	}
 	return true, nil
 }

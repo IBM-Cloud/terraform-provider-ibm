@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -421,7 +420,7 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 	if vpcID, ok := d.GetOk(isNetworkACLVPC); ok {
 		vpc = vpcID.(string)
 	} else {
-		return fmt.Errorf("[ERROR] Required parameter vpc is not set")
+		return flex.FmtErrorf("[ERROR] Required parameter vpc is not set")
 	}
 
 	nwaclTemplate := &vpcv1.NetworkACLPrototype{
@@ -455,7 +454,7 @@ func nwaclCreate(d *schema.ResourceData, meta interface{}, name string) error {
 
 	nwacl, response, err := sess.CreateNetworkACL(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG]Error while creating Network ACL err %s\n%s", err, response)
 	}
 	d.SetId(*nwacl.ID)
 	log.Printf("[INFO] Network ACL : %s", *nwacl.ID)
@@ -514,7 +513,7 @@ func nwaclGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Network ACL(%s) : %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Network ACL(%s) : %s\n%s", id, err, response)
 	}
 	d.Set(isNetworkACLName, *nwacl.Name)
 	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
@@ -661,12 +660,12 @@ func nwaclUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasC
 		}
 		networkACLPatch, err := networkACLPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for NetworkACLPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for NetworkACLPatch: %s", err)
 		}
 		updateNetworkACLOptions.NetworkACLPatch = networkACLPatch
 		_, response, err := sess.UpdateNetworkACL(updateNetworkACLOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Network ACL(%s) : %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Network ACL(%s) : %s\n%s", id, err, response)
 		}
 	}
 	if d.HasChange(isNetworkACLTags) {
@@ -731,7 +730,7 @@ func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Network ACL (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Network ACL (%s): %s\n%s", id, err, response)
 	}
 
 	deleteNetworkAclOptions := &vpcv1.DeleteNetworkACLOptions{
@@ -739,7 +738,7 @@ func nwaclDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteNetworkACL(deleteNetworkAclOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Network ACL : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Network ACL : %s\n%s", err, response)
 	}
 	d.SetId("")
 	return nil
@@ -764,7 +763,7 @@ func nwaclExists(d *schema.ResourceData, meta interface{}, id string) (bool, err
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Network ACL: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Network ACL: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -788,7 +787,7 @@ func clearRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
 		}
 		rawrules, response, err := nwaclC.ListNetworkACLRules(listNetworkAclRulesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Listing network ACL rules : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Listing network ACL rules : %s\n%s", err, response)
 		}
 		start = flex.GetNext(rawrules.Next)
 		allrecs = append(allrecs, rawrules.Rules...)
@@ -815,7 +814,7 @@ func clearRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
 
 		response, err := nwaclC.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Deleting network ACL rule : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Deleting network ACL rule : %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -826,7 +825,7 @@ func validateInlineRules(rules []interface{}) error {
 		rulex := rule.(map[string]interface{})
 		action := rulex[isNetworkACLRuleAction].(string)
 		if (action != "allow") && (action != "deny") {
-			return fmt.Errorf("[ERROR] Invalid action. valid values are allow|deny")
+			return flex.FmtErrorf("[ERROR] Invalid action. valid values are allow|deny")
 		}
 
 		direction := rulex[isNetworkACLRuleDirection].(string)
@@ -837,7 +836,7 @@ func validateInlineRules(rules []interface{}) error {
 		udp := len(rulex[isNetworkACLRuleUDP].([]interface{})) > 0
 
 		if (icmp && tcp) || (icmp && udp) || (tcp && udp) {
-			return fmt.Errorf("Only one of icmp|tcp|udp can be defined per rule")
+			return flex.FmtErrorf("Only one of icmp|tcp|udp can be defined per rule")
 		}
 
 	}
@@ -945,7 +944,7 @@ func createInlineRules(nwaclC *vpcv1.VpcV1, nwaclid string, rules []interface{})
 		}
 		_, response, err := nwaclC.CreateNetworkACLRule(createNetworkAclRuleOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Creating network ACL rule : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Creating network ACL rule : %s\n%s", err, response)
 		}
 	}
 	return nil

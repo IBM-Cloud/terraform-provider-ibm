@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -454,7 +453,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 	allItems, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] VirtualNetworkInterfacesPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
+		return diag.FromErr(flex.FmtErrorf("VirtualNetworkInterfacesPager.GetAll() failed %s", err))
 	}
 
 	d.SetId(dataSourceIBMIsVirtualNetworkInterfacesID(d))
@@ -484,7 +483,7 @@ func dataSourceIBMIsVirtualNetworkInterfacesRead(context context.Context, d *sch
 	}
 
 	if err = d.Set("virtual_network_interfaces", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting virtual_network_interfaces %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting virtual_network_interfaces %s", err))
 	}
 
 	return nil

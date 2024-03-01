@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"time"
@@ -782,7 +781,7 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 		availableServers, response, err := sess.ListBareMetalServersWithContext(context, listBareMetalServersOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching Bare Metal Servers %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching Bare Metal Servers %s\n%s", err, response))
 		}
 		start = flex.GetNext(availableServers.Next)
 		allrecs = append(allrecs, availableServers.BareMetalServers...)
@@ -888,7 +887,7 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 			}
 			bmsnic, response, err := sess.GetBareMetalServerNetworkInterface(getnicoptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
 			}
 
 			switch reflect.TypeOf(bmsnic).String() {
@@ -982,7 +981,7 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 				}
 				bmsnicintf, response, err := sess.GetBareMetalServerNetworkInterface(getnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the bare metal server %s\n%s", err, response))
 				}
 
 				switch reflect.TypeOf(bmsnicintf).String() {

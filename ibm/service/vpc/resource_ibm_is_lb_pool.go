@@ -299,7 +299,7 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
 	options := &vpcv1.CreateLoadBalancerPoolOptions{
@@ -333,7 +333,7 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 	}
 	lbPool, response, err := sess.CreateLoadBalancerPool(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] lbpool create err: %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] lbpool create err: %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", lbID, *lbPool.ID))
@@ -341,12 +341,12 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 
 	_, err = isWaitForLBPoolActive(sess, lbID, *lbPool.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", *lbPool.ID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", *lbPool.ID, err)
 	}
 
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
 	return nil
@@ -386,7 +386,7 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Load Balancer Pool : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Load Balancer Pool : %s\n%s", err, response)
 	}
 	d.Set(isLBPoolName, *lbPool.Name)
 	d.Set(isLBPool, lbPoolID)
@@ -429,7 +429,7 @@ func lbPoolGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID string) 
 	}
 	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 	}
 	d.Set(flex.RelatedCRN, *lb.CRN)
 	return nil
@@ -533,19 +533,19 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		defer conns.IbmMutexKV.Unlock(isLBKey)
 		_, err := isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
 
 		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
 
 		LoadBalancerPoolPatch, err := loadBalancerPoolPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPoolPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for LoadBalancerPoolPatch: %s", err)
 		}
 		if sessionPersistenceRemoved {
 			LoadBalancerPoolPatch["session_persistence"] = nil
@@ -558,18 +558,18 @@ func lbPoolUpdate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 
 		_, response, err := sess.UpdateLoadBalancerPool(updateLoadBalancerPoolOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Load Balancer Pool : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Load Balancer Pool : %s\n%s", err, response)
 		}
 
 		_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 		}
 
 		_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
 	}
@@ -613,16 +613,16 @@ func lbPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting vpc load balancer pool(%s): %s\n%s", lbPoolID, err, response)
 	}
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
 	_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
 	}
 
 	deleteLoadBalancerPoolOptions := &vpcv1.DeleteLoadBalancerPoolOptions{
@@ -631,16 +631,16 @@ func lbPoolDelete(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 	}
 	response, err = sess.DeleteLoadBalancerPool(deleteLoadBalancerPoolOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Load Balancer Pool : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Load Balancer Pool : %s\n%s", err, response)
 	}
 	_, err = isWaitForLBPoolDeleted(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is deleted: %s", lbPoolID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer pool (%s) is deleted: %s", lbPoolID, err)
 	}
 
 	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 	d.SetId("")
 	return nil
@@ -653,7 +653,7 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbPoolID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbPoolID", d.Id())
 	}
 
 	lbID := parts[0]
@@ -679,7 +679,7 @@ func lbPoolExists(d *schema.ResourceData, meta interface{}, lbID, lbPoolID strin
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Load balancer pool: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Load balancer pool: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -708,7 +708,7 @@ func isLBPoolRefreshFunc(sess *vpcv1.VpcV1, lbId, lbPoolId string) resource.Stat
 		}
 		lbPool, response, err := sess.GetLoadBalancerPool(getlbpOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer Pool: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer Pool: %s\n%s", err, response)
 		}
 
 		if *lbPool.ProvisioningStatus == isLBPoolActive || *lbPool.ProvisioningStatus == isLBPoolFailed {
@@ -746,7 +746,7 @@ func isLBPoolDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbId, lbPoolId string) resource
 			if response != nil && response.StatusCode == 404 {
 				return lbPool, isLBPoolDeleteDone, nil
 			}
-			return nil, "", fmt.Errorf("[ERROR] The vpc load balancer pool %s failed to delete: %s\n%s", lbPoolId, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] The vpc load balancer pool %s failed to delete: %s\n%s", lbPoolId, err, response)
 		}
 		return lbPool, isLBPoolDeletePending, nil
 	}

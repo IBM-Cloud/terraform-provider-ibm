@@ -5,11 +5,11 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -161,7 +161,7 @@ func dataSourceIbmIsDedicatedHostDisksRead(context context.Context, d *schema.Re
 	if dedicatedHostDiskCollection.Disks != nil {
 		err = d.Set("disks", dataSourceDedicatedHostDiskCollectionFlattenDisks(dedicatedHostDiskCollection.Disks))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting disks %s", err))
 		}
 	}
 

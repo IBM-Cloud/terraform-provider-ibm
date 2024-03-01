@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -232,7 +231,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		r, response, err := vpcClient.GetVPCRoutingTableRouteWithContext(context, getVPCRoutingTableRouteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, response))
 		}
 		route = r
 	} else {
@@ -250,7 +249,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 			result, detail, err := vpcClient.ListVPCRoutingTableRoutes(listVpcRoutingTablesRoutesOptions)
 			if err != nil {
 				log.Printf("Error reading list of VPC Routing Table Routes:%s\n%s", err, detail)
-				return diag.FromErr(fmt.Errorf("[ERROR] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, detail))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPCRoutingTableRouteWithContext failed %s\n%s", err, detail))
 			}
 			start = flex.GetNext(result.Next)
 			allrecs = append(allrecs, result.Routes...)
@@ -266,22 +265,22 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 			}
 		}
 		if route == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Route not found with name: %s", routeName))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Route not found with name: %s", routeName))
 		}
 	}
 
 	d.SetId(*route.ID)
 
 	if err = d.Set(rAction, route.Action); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting action: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting action: %s", err))
 	}
 
 	if err = d.Set("advertise", route.Advertise); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting advertise: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting advertise: %s", err))
 	}
 
 	if err = d.Set(rtCreateAt, flex.DateTimeToString(route.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 
 	// creator changes
@@ -290,33 +289,33 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		mm, err := dataSourceIBMIsRouteCreatorToMap(route.Creator)
 		if err != nil {
 			log.Printf("Error reading list of VPC Routing Table Routes' creator:%s", err)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching creator: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching creator: %s", err))
 		}
 		creator = append(creator, mm)
 
 	}
 	if err = d.Set("creator", creator); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting creator: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting creator: %s", err))
 	}
 
 	if err = d.Set(isRoutingTableRouteID, route.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting route_id: %s", err))
 	}
 
 	if err = d.Set(rDestination, route.Destination); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting destination: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting destination: %s", err))
 	}
 
 	if err = d.Set(rtHref, route.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 
 	if err = d.Set(rtLifecycleState, route.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 
 	if err = d.Set(rName, route.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 
 	nextHop := []map[string]interface{}{}
@@ -328,16 +327,16 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		nextHop = append(nextHop, modelMap)
 	}
 	if err = d.Set(rNextHop, nextHop); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting next_hop %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting next_hop %s", err))
 	}
 
 	//orgin
 	if err = d.Set("origin", route.Origin); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting origin %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting origin %s", err))
 	}
 	// priority
 	if err = d.Set("priority", route.Priority); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting priority, :%s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting priority, :%s", err))
 	}
 	zone := []map[string]interface{}{}
 	if route.Zone != nil {
@@ -348,7 +347,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		zone = append(zone, modelMap)
 	}
 	if err = d.Set(rZone, zone); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting zone %s", err))
 	}
 
 	return nil
@@ -386,7 +385,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRouteNextHopToMap(model vpcv1.RouteNe
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("[ERROR] Unrecognized vpcv1.RouteNextHopIntf subtype encountered")
+		return nil, flex.FmtErrorf("[ERROR] Unrecognized vpcv1.RouteNextHopIntf subtype encountered")
 	}
 }
 

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 
@@ -142,7 +141,7 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 	securityGroupRuleIntf, response, err := vpcClient.GetSecurityGroupRuleWithContext(context, getSecurityGroupRuleOptions)
 	if err != nil || securityGroupRuleIntf == nil {
 		log.Printf("[DEBUG] GetSecurityGroupRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSecurityGroupRuleWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetSecurityGroupRuleWithContext failed %s\n%s", err, response))
 	}
 
 	switch reflect.TypeOf(securityGroupRuleIntf).String() {
@@ -152,25 +151,25 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 
 			d.SetId(*securityGroupRule.ID)
 			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting direction: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting direction: %s", err))
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting ip_version: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting ip_version: %s", err))
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting protocol: %s", err))
 			}
 			if securityGroupRule.Remote != nil {
 				securityGroupRuleRemote, err := dataSourceSecurityGroupRuleFlattenRemote(securityGroupRule.Remote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error flattening securityGroupRule.Remote %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error flattening securityGroupRule.Remote %s", err))
 				}
 				err = d.Set("remote", securityGroupRuleRemote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting remote %s", err))
 				}
 			}
 
@@ -181,33 +180,33 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 
 			d.SetId(*securityGroupRule.ID)
 			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting direction: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting direction: %s", err))
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting ip_version: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting ip_version: %s", err))
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting protocol: %s", err))
 			}
 			if securityGroupRule.Remote != nil {
 				securityGroupRuleRemote, err := dataSourceSecurityGroupRuleFlattenRemote(securityGroupRule.Remote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error flattening securityGroupRule.Remote %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error flattening securityGroupRule.Remote %s", err))
 				}
 				err = d.Set("remote", securityGroupRuleRemote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting remote %s", err))
 				}
 			}
 
 			if err = d.Set("code", flex.IntValue(securityGroupRule.Code)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting code: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting code: %s", err))
 			}
 			if err = d.Set("type", flex.IntValue(securityGroupRule.Type)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting type: %s", err))
 			}
 		}
 	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
@@ -216,32 +215,32 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 
 			d.SetId(*securityGroupRule.ID)
 			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting direction: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting direction: %s", err))
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting ip_version: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting ip_version: %s", err))
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting protocol: %s", err))
 			}
 			if securityGroupRule.Remote != nil {
 				securityGroupRuleRemote, err := dataSourceSecurityGroupRuleFlattenRemote(securityGroupRule.Remote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error flattening securityGroupRule.Remote %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error flattening securityGroupRule.Remote %s", err))
 				}
 				err = d.Set("remote", securityGroupRuleRemote)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting remote %s", err))
 				}
 			}
 			if err = d.Set("port_max", flex.IntValue(securityGroupRule.PortMax)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting port_max: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting port_max: %s", err))
 			}
 			if err = d.Set("port_min", flex.IntValue(securityGroupRule.PortMin)); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting port_min: %s", err))
+				return diag.FromErr(flex.FmtErrorf("Error setting port_min: %s", err))
 			}
 		}
 	}

@@ -5,9 +5,9 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -122,7 +122,7 @@ func dataSourceIBMISInstanceNICReservedIPRead(context context.Context, d *schema
 	reserveIP, response, err := sess.GetInstanceNetworkInterfaceIPWithContext(context, options)
 
 	if err != nil || response == nil || reserveIP == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response))
 	}
 
 	d.SetId(*reserveIP.ID)

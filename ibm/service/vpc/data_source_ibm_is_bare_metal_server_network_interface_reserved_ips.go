@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -130,7 +130,7 @@ func dataSourceIBMISBareMetalServerNICReservedIPsRead(context context.Context, d
 
 	result, response, err := sess.ListBareMetalServerNetworkInterfaceIpsWithContext(context, options)
 	if err != nil || response == nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
 	}
 	allrecs = append(allrecs, result.Ips...)
 

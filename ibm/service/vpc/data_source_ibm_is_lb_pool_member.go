@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -132,35 +131,35 @@ func dataSourceIBMIsLbPoolMemberRead(context context.Context, d *schema.Resource
 	loadBalancerPoolMember, response, err := sess.GetLoadBalancerPoolMemberWithContext(context, getLoadBalancerPoolMemberOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetLoadBalancerPoolMemberWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLoadBalancerPoolMemberWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetLoadBalancerPoolMemberWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*loadBalancerPoolMember.ID)
 	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerPoolMember.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("health", loadBalancerPoolMember.Health); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting health: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting health: %s", err))
 	}
 	if err = d.Set("href", loadBalancerPoolMember.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("port", flex.IntValue(loadBalancerPoolMember.Port)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting port: %s", err))
 	}
 	if err = d.Set("provisioning_status", loadBalancerPoolMember.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting provisioning_status: %s", err))
 	}
 
 	if loadBalancerPoolMember.Target != nil {
 		target := loadBalancerPoolMember.Target.(*vpcv1.LoadBalancerPoolMemberTarget)
 		err = d.Set("target", dataSourceLoadBalancerPoolMemberFlattenTarget(*target))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting target %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting target %s", err))
 		}
 	}
 	if err = d.Set("weight", flex.IntValue(loadBalancerPoolMember.Weight)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting weight: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting weight: %s", err))
 	}
 
 	return nil

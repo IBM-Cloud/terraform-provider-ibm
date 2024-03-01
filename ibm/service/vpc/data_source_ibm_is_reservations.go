@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -266,7 +265,7 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 		reservationCollection, response, err := sess.ListReservationsWithContext(context, listReservationsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListReservationsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListReservationsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] ListReservationsWithContext failed %s\n%s", err, response))
 		}
 		if reservationCollection != nil && *reservationCollection.TotalCount == int64(0) {
 			break
@@ -283,7 +282,7 @@ func dataSourceIBMIsReservationsRead(context context.Context, d *schema.Resource
 	if reservations != nil {
 		err = d.Set("reservations", dataSourceReservationCollectionFlattenReservations(reservations))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting reservations %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting reservations %s", err))
 		}
 	}
 

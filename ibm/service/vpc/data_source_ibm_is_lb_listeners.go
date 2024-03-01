@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -243,7 +243,7 @@ func dataSourceIBMIsLbListenersRead(context context.Context, d *schema.ResourceD
 	loadBalancerListenerCollection, response, err := vpcClient.ListLoadBalancerListenersWithContext(context, listLoadBalancerListenersOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListLoadBalancerListenersWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerListenersWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("ListLoadBalancerListenersWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(dataSourceIBMIsLbListenersID(d))
@@ -251,7 +251,7 @@ func dataSourceIBMIsLbListenersRead(context context.Context, d *schema.ResourceD
 	if loadBalancerListenerCollection.Listeners != nil {
 		err = d.Set("listeners", dataSourceLoadBalancerListenerCollectionFlattenListeners(loadBalancerListenerCollection.Listeners))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting listeners %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting listeners %s", err))
 		}
 	}
 

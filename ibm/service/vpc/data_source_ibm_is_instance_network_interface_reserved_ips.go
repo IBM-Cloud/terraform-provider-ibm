@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -136,7 +135,7 @@ func dataSourceIBMISInstanceNICReservedIPsRead(context context.Context, d *schem
 
 		result, response, err := sess.ListInstanceNetworkInterfaceIpsWithContext(context, options)
 		if err != nil || response == nil || result == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.Ips...)

@@ -349,7 +349,7 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	endpointGateway, response, err := sess.CreateEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Create Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("[ERROR] Create Endpoint Gateway failed %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Create Endpoint Gateway failed %s\n%s", err, response)
 	}
 
 	d.SetId(*endpointGateway.ID)
@@ -400,7 +400,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 	_, response, err := sess.UpdateEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Update Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("Update Endpoint Gateway failed : %s\n%s", err, response)
+		return flex.FmtErrorf("Update Endpoint Gateway failed : %s\n%s", err, response)
 	}
 	id := d.Id()
 	var remove, add []string
@@ -417,7 +417,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 				createSecurityGroupTargetBindingOptions.ID = &id
 				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 				if err != nil {
-					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
+					return flex.FmtErrorf("Error while creating Security Group Target Binding %s\n%s", err, response)
 				}
 				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
@@ -436,12 +436,12 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 					if response != nil && response.StatusCode == 404 {
 						continue
 					}
-					return fmt.Errorf("Error Getting Security Group Target for this endpoint gateway (%s): %s\n%s", sgId, err, response)
+					return flex.FmtErrorf("Error Getting Security Group Target for this endpoint gateway (%s): %s\n%s", sgId, err, response)
 				}
 				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(sgId, id)
 				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
 				if err != nil {
-					return fmt.Errorf("Error Deleting Security Group Target for this endpoint gateway : %s\n%s", err, response)
+					return flex.FmtErrorf("Error Deleting Security Group Target for this endpoint gateway : %s\n%s", err, response)
 				}
 				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
@@ -455,7 +455,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 		opt := sess.NewGetEndpointGatewayOptions(d.Id())
 		endpointGateway, response, err := sess.GetEndpointGateway(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting VPE: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting VPE: %s\n%s", err, response)
 		}
 		if d.HasChange(isVirtualEndpointGatewayTags) {
 			oldList, newList := d.GetChange(isVirtualEndpointGatewayTags)
@@ -492,7 +492,7 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 			return nil
 		}
 		log.Printf("Get Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("[ERROR] Get Endpoint Gateway failed %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Get Endpoint Gateway failed %s\n%s", err, response)
 	}
 	d.Set(isVirtualEndpointGatewayName, endpointGateway.Name)
 	d.Set(isVirtualEndpointGatewayHealthState, endpointGateway.HealthState)
@@ -562,7 +562,7 @@ func isVirtualEndpointGatewayRefreshFunc(sess *vpcv1.VpcV1, endPointGatewayId st
 		result, response, err := sess.GetEndpointGateway(opt)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return nil, "", fmt.Errorf("Error Getting Virtual Endpoint Gateway : %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("Error Getting Virtual Endpoint Gateway : %s\n%s", err, response)
 			}
 		}
 		if *result.LifecycleState == "stable" || *result.LifecycleState == "failed" {
@@ -582,7 +582,7 @@ func resourceIBMisVirtualEndpointGatewayDelete(d *schema.ResourceData, meta inte
 	response, err := sess.DeleteEndpointGateway(opt)
 	if err != nil {
 		log.Printf("Delete Endpoint Gateway failed: %v", response)
-		return fmt.Errorf("Delete Endpoint Gateway failed : %s\n%s", err, response)
+		return flex.FmtErrorf("Delete Endpoint Gateway failed : %s\n%s", err, response)
 	}
 	return nil
 }

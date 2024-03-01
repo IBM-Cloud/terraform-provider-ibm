@@ -17,7 +17,7 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.4.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.16.1
+	github.com/IBM/go-sdk-core/v5 v5.16.2
 	github.com/IBM/ibm-cos-sdk-go v1.10.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -64,6 +64,7 @@ require (
 require (
 	github.com/IBM/mqcloud-go-sdk v0.0.4
 	github.com/IBM/sarama v1.41.2
+	github.com/stretchr/testify v1.8.4
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
 )
@@ -197,7 +198,6 @@ require (
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

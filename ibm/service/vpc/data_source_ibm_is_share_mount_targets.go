@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -316,7 +315,7 @@ func dataSourceIBMIsShareTargetsRead(context context.Context, d *schema.Resource
 	if len(allrecs) > 0 {
 		err = d.Set("mount_targets", dataSourceShareMountTargetCollectionFlattenTargets(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting targets %s", err))
 		}
 	}
 

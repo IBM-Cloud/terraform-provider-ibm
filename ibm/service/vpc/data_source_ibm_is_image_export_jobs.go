@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -164,7 +164,7 @@ func DataSourceIBMIsImageExportsRead(context context.Context, d *schema.Resource
 	imageExportJobUnpaginatedCollection, response, err := vpcClient.ListImageExportJobsWithContext(context, listImageExportJobsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListImageExportJobsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListImageExportJobsWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("ListImageExportJobsWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(DataSourceIBMIsImageExportsID(d))
@@ -180,7 +180,7 @@ func DataSourceIBMIsImageExportsRead(context context.Context, d *schema.Resource
 		}
 	}
 	if err = d.Set("export_jobs", exportJobs); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting export_jobs %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting export_jobs %s", err))
 	}
 
 	return nil

@@ -295,10 +295,10 @@ func resourceIBMIsInstanceNetworkInterfaceCreate(context context.Context, d *sch
 	}
 
 	if primary_ipv4 != "" && reservedipv4 != "" && primary_ipv4 != reservedipv4 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", primary_ipv4, reservedipv4))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", primary_ipv4, reservedipv4))
 	}
 	if reservedIp != "" && (primary_ipv4 != "" || reservedipv4 != "" || reservedipname != "") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp))
 	}
 	if reservedIp != "" {
 		createInstanceNetworkInterfaceOptions.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -344,7 +344,7 @@ func resourceIBMIsInstanceNetworkInterfaceCreate(context context.Context, d *sch
 	networkInterface, response, err := vpcClient.CreateInstanceNetworkInterfaceWithContext(context, createInstanceNetworkInterfaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateInstanceNetworkInterfaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("CreateInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createInstanceNetworkInterfaceOptions.InstanceID, *networkInterface.ID))
@@ -352,7 +352,7 @@ func resourceIBMIsInstanceNetworkInterfaceCreate(context context.Context, d *sch
 
 	_, err = isWaitForNetworkInterfaceAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error occured while waiting for network interface %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error occured while waiting for network interface %s", err))
 	}
 
 	if floating_ip_Intf, ok := d.GetOk(isInstanceNicFloatingIP); ok && floating_ip_Intf.(string) != "" {
@@ -368,11 +368,11 @@ func resourceIBMIsInstanceNetworkInterfaceCreate(context context.Context, d *sch
 
 		if err != nil {
 			d.Set(isInstanceNicFloatingIP, "")
-			return diag.FromErr(fmt.Errorf("[DEBUG] Error adding Floating IP to network interface %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[DEBUG] Error adding Floating IP to network interface %s\n%s", err, response))
 		}
 		_, err = isWaitForNetworkInterfaceAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error occured while waiting for network interface %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error occured while waiting for network interface %s", err))
 		}
 
 	}
@@ -407,23 +407,23 @@ func resourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *schem
 			return nil
 		}
 		log.Printf("[DEBUG] GetInstanceNetworkInterfaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
 	}
 	d.SetId(fmt.Sprintf("%s/%s", parts[0], *networkInterface.ID))
 	d.Set("network_interface", *networkInterface.ID)
 	d.Set("instance", parts[0])
 	if err = d.Set(isInstanceNicSubnet, *networkInterface.Subnet.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnet: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting subnet: %s", err))
 	}
 	if err = d.Set(isInstanceNicAllowIPSpoofing, *networkInterface.AllowIPSpoofing); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
 	}
 	if err = d.Set(isInstanceNicName, *networkInterface.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if networkInterface.PrimaryIP != nil {
 		if err = d.Set(isInstanceNicPrimaryIpv4Address, *networkInterface.PrimaryIP.Address); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_ipv4_address: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting primary_ipv4_address: %s", err))
 		}
 		// reserved ip changes
 		primaryIpList := make([]map[string]interface{}, 0)
@@ -450,7 +450,7 @@ func resourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *schem
 		}
 		insRip, response, err := vpcClient.GetSubnetReservedIP(getripoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *networkInterface.PrimaryIP.ID, *networkInterface.ID, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *networkInterface.PrimaryIP.ID, *networkInterface.ID, err, response))
 		}
 		currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
 
@@ -466,7 +466,7 @@ func resourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *schem
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(networkInterface.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	floatingIps := []map[string]interface{}{}
 	if networkInterface.FloatingIps != nil {
@@ -477,22 +477,22 @@ func resourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *schem
 		}
 	}
 	if err = d.Set(isInstanceNicFloatingIPs, floatingIps); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting floating_ips: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting floating_ips: %s", err))
 	}
 	if err = d.Set("href", networkInterface.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("port_speed", flex.IntValue(networkInterface.PortSpeed)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting port_speed: %s", err))
 	}
 	if err = d.Set("resource_type", networkInterface.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set("status", networkInterface.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status: %s", err))
 	}
 	if err = d.Set("type", networkInterface.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting type: %s", err))
 	}
 
 	return nil
@@ -569,12 +569,12 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 		}
 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err))
 		}
 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 		_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
 		}
 	}
 
@@ -593,7 +593,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 				}
 				_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response))
 				}
 				_, err = isWaitForInstanceAvailable(vpcClient, instance_id, d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
@@ -610,7 +610,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 				}
 				response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response))
 				}
 				_, err = isWaitForInstanceAvailable(vpcClient, instance_id, d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
@@ -628,7 +628,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 		_, response, err := vpcClient.UpdateInstanceNetworkInterfaceWithContext(context, updateInstanceNetworkInterfaceOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateInstanceNetworkInterfaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("UpdateInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -643,7 +643,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 				if response.StatusCode == 404 {
 					log.Println("[DEBUG] The specified floating IP address is not associated with the network interface with the specified identifier. ", err.Error())
 				} else {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error de-associating the floating ip %s in network interface %s of instance %s, %s\n%s", floating_ip_id_old.(string), network_interface_id, instance_id, err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error de-associating the floating ip %s in network interface %s of instance %s, %s\n%s", floating_ip_id_old.(string), network_interface_id, instance_id, err, response))
 				}
 			}
 		} else {
@@ -657,7 +657,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 					d.SetId("")
 					return nil
 				}
-				return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Floating IP (%s): %s\n%s", floating_ip_id, err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Floating IP (%s): %s\n%s", floating_ip_id, err, response))
 
 			}
 
@@ -665,7 +665,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 				floatingIpTarget := floatingip.Target.(*vpcv1.FloatingIPTarget)
 				if *floatingIpTarget.ID != network_interface_id {
 					d.Set(isInstanceNicFloatingIP, "")
-					return diag.FromErr(fmt.Errorf("[Error] Provided floating ip is already bound to another resource"))
+					return diag.FromErr(flex.FmtErrorf("[Error] Provided floating ip is already bound to another resource"))
 				}
 			}
 
@@ -679,7 +679,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 
 			if err != nil {
 				d.Set(isInstanceNicFloatingIP, "")
-				return diag.FromErr(fmt.Errorf("[DEBUG] Error adding Floating IP to network interface %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[DEBUG] Error adding Floating IP to network interface %s\n%s", err, response))
 			}
 		}
 
@@ -687,7 +687,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 
 	_, err = isWaitForNetworkInterfaceAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error occured while waiting for network interface %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error occured while waiting for network interface %s", err))
 	}
 	_, err = isWaitForInstanceAvailable(vpcClient, instance_id, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
@@ -720,12 +720,12 @@ func resourceIBMIsInstanceNetworkInterfaceDelete(context context.Context, d *sch
 	response, err := vpcClient.DeleteInstanceNetworkInterfaceWithContext(context, deleteInstanceNetworkInterfaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteInstanceNetworkInterfaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("DeleteInstanceNetworkInterfaceWithContext failed %s\n%s", err, response))
 	}
 
 	_, err = isWaitForNetworkInterfaceDelete(vpcClient, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error occured while waiting for network interface %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error occured while waiting for network interface %s", err))
 	}
 
 	_, err = isWaitForInstanceAvailable(vpcClient, instance_id, d.Timeout(schema.TimeoutCreate), d)
@@ -759,7 +759,7 @@ func isNetworkInterfaceRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.
 		getInstanceNetworkInterfaceOptions := &vpcv1.GetInstanceNetworkInterfaceOptions{}
 		parts, err := flex.SepIdParts(d.Id(), "/")
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error splitting ID in parts %s", err)
+			return nil, "", flex.FmtErrorf("[ERROR] Error splitting ID in parts %s", err)
 		}
 
 		getInstanceNetworkInterfaceOptions.SetInstanceID(parts[0])
@@ -767,12 +767,12 @@ func isNetworkInterfaceRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.
 
 		networkInterface, response, err := vpcClient.GetInstanceNetworkInterface(getInstanceNetworkInterfaceOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("GetInstanceNetworkInterface failed %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("GetInstanceNetworkInterface failed %s\n%s", err, response)
 		}
 		d.Set("status", *networkInterface.Status)
 
 		if *networkInterface.Status == isNetworkInterfaceFailed {
-			return networkInterface, *networkInterface.Status, fmt.Errorf("Network Interface creationg failed with status %s ", *networkInterface.Status)
+			return networkInterface, *networkInterface.Status, flex.FmtErrorf("Network Interface creationg failed with status %s ", *networkInterface.Status)
 		}
 		return networkInterface, *networkInterface.Status, nil
 	}
@@ -799,7 +799,7 @@ func isNetworkInterfaceRefreshDeleteFunc(vpcClient *vpcv1.VpcV1, id string, d *s
 		getInstanceNetworkInterfaceOptions := &vpcv1.GetInstanceNetworkInterfaceOptions{}
 		parts, err := flex.SepIdParts(d.Id(), "/")
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error splitting ID in parts %s", err)
+			return nil, "", flex.FmtErrorf("[ERROR] Error splitting ID in parts %s", err)
 		}
 
 		getInstanceNetworkInterfaceOptions.SetInstanceID(parts[0])
@@ -810,12 +810,12 @@ func isNetworkInterfaceRefreshDeleteFunc(vpcClient *vpcv1.VpcV1, id string, d *s
 			if response != nil && response.StatusCode == 404 {
 				return networkInterface, isNetworkInterfaceDeleted, nil
 			}
-			return nil, "", fmt.Errorf("GetInstanceNetworkInterface failed %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("GetInstanceNetworkInterface failed %s\n%s", err, response)
 		}
 		d.Set("status", *networkInterface.Status)
 
 		if *networkInterface.Status == isNetworkInterfaceFailed {
-			return networkInterface, *networkInterface.Status, fmt.Errorf("Network Interface creationg failed with status %s ", *networkInterface.Status)
+			return networkInterface, *networkInterface.Status, flex.FmtErrorf("Network Interface creationg failed with status %s ", *networkInterface.Status)
 		}
 		return networkInterface, *networkInterface.Status, nil
 	}

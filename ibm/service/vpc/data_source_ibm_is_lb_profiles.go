@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 
@@ -91,7 +90,7 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 		}
 		lbProfile, response, err := sess.GetLoadBalancerProfile(getLoadBalancerProfileOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Load Balancer Profile(%s) for VPC %s\n%s", lbprofilename, err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Load Balancer Profile(%s) for VPC %s\n%s", lbprofilename, err, response)
 		}
 		allrecs = append(allrecs, *lbProfile)
 	} else {
@@ -102,7 +101,7 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 			}
 			profileCollectors, response, err := sess.ListLoadBalancerProfiles(listOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching Load Balancer Profiles for VPC %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Fetching Load Balancer Profiles for VPC %s\n%s", err, response)
 			}
 			start = flex.GetNext(profileCollectors.Next)
 			allrecs = append(allrecs, profileCollectors.Profiles...)

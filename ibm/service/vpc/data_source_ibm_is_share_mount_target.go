@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -336,26 +337,26 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 		d.Set("access_control_mode", *shareTarget.AccessControlMode)
 	}
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("href", shareTarget.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", shareTarget.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("mount_path", shareTarget.MountPath); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mount_path: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting mount_path: %s", err))
 	}
 	if err = d.Set("name", shareTarget.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if err = d.Set("resource_type", shareTarget.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 	if shareTarget.TransitEncryption != nil {
 		if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting transit_encryption: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting transit_encryption: %s", err))
 		}
 	}
 
@@ -369,21 +370,21 @@ func dataSourceIBMIsShareTargetRead(context context.Context, d *schema.ResourceD
 	if shareTarget.VPC != nil {
 		err = d.Set("vpc", dataSourceShareMountTargetFlattenVpc(*shareTarget.VPC))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting vpc %s", err))
 		}
 	}
 
 	if shareTarget.VirtualNetworkInterface != nil {
 		err = d.Set("virtual_network_interface", dataSourceShareMountTargetFlattenVNI(*shareTarget.VirtualNetworkInterface))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting vpc %s", err))
 		}
 	}
 
 	if shareTarget.Subnet != nil {
 		err = d.Set("subnet", dataSourceShareMountTargetFlattenSubnet(*shareTarget.Subnet))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting subnet %s", err))
 		}
 	}
 

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -354,7 +353,7 @@ func resourceIBMIsSnapshotConsistencyGroupCreate(context context.Context, d *sch
 	snapshotConsistencyGroup, response, err := vpcClient.CreateSnapshotConsistencyGroupWithContext(context, createSnapshotConsistencyGroupOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("CreateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*snapshotConsistencyGroup.ID)
@@ -411,14 +410,14 @@ func isSnapshotConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) re
 		snapshotConsistencyGroup, response, err := vpcClient.GetSnapshotConsistencyGroup(getSnapshotConsistencyGroupOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return nil, "failed", fmt.Errorf("[ERROR] Error GetSnapshotConsistencyGroupWithContext failed : %s\n%s", err, response)
+			return nil, "failed", flex.FmtErrorf("[ERROR] Error GetSnapshotConsistencyGroupWithContext failed : %s\n%s", err, response)
 		}
 
 		if *snapshotConsistencyGroup.LifecycleState == "stable" {
 			return snapshotConsistencyGroup, *snapshotConsistencyGroup.LifecycleState, nil
 		} else if *snapshotConsistencyGroup.LifecycleState == "failed" {
 			return snapshotConsistencyGroup, *snapshotConsistencyGroup.LifecycleState,
-				fmt.Errorf("Snapshot Consistency Group (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot consistency group and attempt to create the snapshot again replacing the previous configuration", *snapshotConsistencyGroup.ID)
+				flex.FmtErrorf("Snapshot Consistency Group (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot consistency group and attempt to create the snapshot again replacing the previous configuration", *snapshotConsistencyGroup.ID)
 		}
 
 		return snapshotConsistencyGroup, "pending", nil
@@ -447,13 +446,13 @@ func isSnapshotUpdateConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id stri
 		snapshotConsistencyGroup, response, err := vpcClient.GetSnapshotConsistencyGroup(getSnapshotConsistencyGroupOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return nil, "failed", fmt.Errorf("[ERROR] Error GetSnapshotConsistencyGroupWithContext failed : %s\n%s", err, response)
+			return nil, "failed", flex.FmtErrorf("[ERROR] Error GetSnapshotConsistencyGroupWithContext failed : %s\n%s", err, response)
 		}
 
 		if *snapshotConsistencyGroup.LifecycleState == "stable" || *snapshotConsistencyGroup.LifecycleState == "failed" {
 			return snapshotConsistencyGroup, *snapshotConsistencyGroup.LifecycleState, nil
 		} else if *snapshotConsistencyGroup.LifecycleState == isSnapshotFailed {
-			return snapshotConsistencyGroup, *snapshotConsistencyGroup.LifecycleState, fmt.Errorf("Snapshot Consistency Group (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot consistency group and attempt to create the snapshot consistency group again replacing the previous configuration", *snapshotConsistencyGroup.ID)
+			return snapshotConsistencyGroup, *snapshotConsistencyGroup.LifecycleState, flex.FmtErrorf("Snapshot Consistency Group (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot consistency group and attempt to create the snapshot consistency group again replacing the previous configuration", *snapshotConsistencyGroup.ID)
 		}
 
 		return snapshotConsistencyGroup, isSnapshotUpdating, nil
@@ -487,7 +486,7 @@ func isSnapshotDeleteConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id stri
 			if response != nil && response.StatusCode == 404 {
 				return snapshotConsistencyGroup, "deleted", nil
 			}
-			return nil, "failed", fmt.Errorf("[ERROR] The Snapshot Consistency Group %s failed to delete: %s\n%s", id, err, response)
+			return nil, "failed", flex.FmtErrorf("[ERROR] The Snapshot Consistency Group %s failed to delete: %s\n%s", id, err, response)
 		}
 		return snapshotConsistencyGroup, *snapshotConsistencyGroup.LifecycleState, nil
 	}
@@ -509,17 +508,17 @@ func resourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *schem
 			return nil
 		}
 		log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 	}
 
 	if !core.IsNil(snapshotConsistencyGroup.DeleteSnapshotsOnDelete) {
 		if err = d.Set("delete_snapshots_on_delete", snapshotConsistencyGroup.DeleteSnapshotsOnDelete); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting delete_snapshots_on_delete: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting delete_snapshots_on_delete: %s", err))
 		}
 	}
 	if !core.IsNil(snapshotConsistencyGroup.Name) {
 		if err = d.Set("name", snapshotConsistencyGroup.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 		}
 	}
 	if !core.IsNil(snapshotConsistencyGroup.ResourceGroup) && !core.IsNil(snapshotConsistencyGroup.ResourceGroup.ID) {
@@ -535,7 +534,7 @@ func resourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *schem
 			snapshots = append(snapshots, snapshotsItemMap)
 		}
 		if err = d.Set("snapshot_reference", snapshots); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting snapshots: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting snapshots: %s", err))
 		}
 	}
 	if !core.IsNil(snapshotConsistencyGroup.BackupPolicyPlan) {
@@ -544,30 +543,30 @@ func resourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *schem
 			return diag.FromErr(err)
 		}
 		if err = d.Set("backup_policy_plan", []map[string]interface{}{backupPolicyPlanMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting backup_policy_plan: %s", err))
 		}
 	} else {
 		if err = d.Set("backup_policy_plan", []map[string]interface{}{}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting backup_policy_plan: %s", err))
 		}
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(snapshotConsistencyGroup.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", snapshotConsistencyGroup.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("href", snapshotConsistencyGroup.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", snapshotConsistencyGroup.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("resource_type", snapshotConsistencyGroup.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 	if err = d.Set("service_tags", snapshotConsistencyGroup.ServiceTags); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting service_tags: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting service_tags: %s", err))
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshotConsistencyGroup.CRN, "", isUserTagType)
 	if err != nil {
@@ -606,7 +605,7 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 				return nil
 			}
 			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 		}
 
 		oldList, newList := d.GetChange("tags")
@@ -627,7 +626,7 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 				return nil
 			}
 			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 		}
 
 		oldList, newList := d.GetChange("access_tags")
@@ -660,7 +659,7 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 			return nil
 		}
 		log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 	}
 	updateSnapshotConsistencyGroupOptions.SetIfMatch(response.Headers.Get("Etag"))
 
@@ -669,7 +668,7 @@ func resourceIBMIsSnapshotConsistencyGroupUpdate(context context.Context, d *sch
 		_, response, err := vpcClient.UpdateSnapshotConsistencyGroupWithContext(context, updateSnapshotConsistencyGroupOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("UpdateSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 		}
 		_, err = isWaitForSnapshotConsistencyGroupUpdate(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -693,7 +692,7 @@ func resourceIBMIsSnapshotConsistencyGroupDelete(context context.Context, d *sch
 	_, response, err := vpcClient.DeleteSnapshotConsistencyGroupWithContext(context, deleteSnapshotConsistencyGroupOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("DeleteSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 	}
 
 	_, err = isWaitForSnapshotConsistencyGroupDeleted(vpcClient, d.Id(), d.Timeout(schema.TimeoutDelete))

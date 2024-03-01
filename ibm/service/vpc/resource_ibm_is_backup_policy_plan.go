@@ -258,13 +258,13 @@ func resourceIBMIsBackupPolicyPlanCreate(context context.Context, d *schema.Reso
 			if deleteOverCountString != "" && deleteOverCountString != "null" {
 				deleteOverCount, err := strconv.ParseInt(backupPolicyPlanDeletionTriggerPrototypeMap["delete_over_count"].(string), 10, 64)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting delete_over_count: %s", err))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting delete_over_count: %s", err))
 				}
 				deleteOverCountint := int64(deleteOverCount)
 				if deleteOverCountint >= int64(0) {
 					backupPolicyPlanDeletionTriggerPrototype.DeleteOverCount = core.Int64Ptr(deleteOverCountint)
 				} else {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting delete_over_count: Retention count and days cannot be both zero"))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting delete_over_count: Retention count and days cannot be both zero"))
 				}
 			}
 		}
@@ -289,7 +289,7 @@ func resourceIBMIsBackupPolicyPlanCreate(context context.Context, d *schema.Reso
 	backupPolicyPlan, response, err := vpcClient.CreateBackupPolicyPlanWithContext(context, createBackupPolicyPlanOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateBackupPolicyPlanWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] CreateBackupPolicyPlanWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] CreateBackupPolicyPlanWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createBackupPolicyPlanOptions.BackupPolicyID, *backupPolicyPlan.ID))
@@ -320,30 +320,30 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 			return nil
 		}
 		log.Printf("[DEBUG] GetBackupPolicyPlanWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyPlanWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] GetBackupPolicyPlanWithContext failed %s\n%s", err, response))
 	}
 
 	if getBackupPolicyPlanOptions.BackupPolicyID != nil {
 		if err = d.Set("backup_policy_id", getBackupPolicyPlanOptions.BackupPolicyID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting backup_policy_id: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting backup_policy_id: %s", err))
 		}
 	}
 
 	if getBackupPolicyPlanOptions.ID != nil {
 		if err = d.Set("backup_policy_plan_id", getBackupPolicyPlanOptions.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting backup_policy_plan_id: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting backup_policy_plan_id: %s", err))
 		}
 	}
 
 	if backupPolicyPlan.CronSpec != nil {
 		if err = d.Set("cron_spec", backupPolicyPlan.CronSpec); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting cron_spec: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting cron_spec: %s", err))
 		}
 	}
 
 	if backupPolicyPlan.Active != nil {
 		if err = d.Set("active", backupPolicyPlan.Active); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting active: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting active: %s", err))
 		}
 	}
 
@@ -367,20 +367,20 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 
 	if backupPolicyPlan.AttachUserTags != nil {
 		if err = d.Set("attach_user_tags", backupPolicyPlan.AttachUserTags); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting attach_user_tags: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting attach_user_tags: %s", err))
 		}
 	}
 
 	if backupPolicyPlan.CopyUserTags != nil {
 		if err = d.Set("copy_user_tags", backupPolicyPlan.CopyUserTags); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting copy_user_tags: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting copy_user_tags: %s", err))
 		}
 	}
 
 	if backupPolicyPlan.DeletionTrigger != nil {
 		deletionTriggerMap := resourceIBMIsBackupPolicyPlanBackupPolicyPlanDeletionTriggerPrototypeToMap(*backupPolicyPlan.DeletionTrigger)
 		if err = d.Set("deletion_trigger", []map[string]interface{}{deletionTriggerMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting deletion_trigger: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting deletion_trigger: %s", err))
 		}
 	}
 	if backupPolicyPlan.RemoteRegionPolicies != nil {
@@ -393,32 +393,32 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 			remoteCopyPolicies = append(remoteCopyPolicies, remoteCopyPoliciesItemMap)
 		}
 		if err = d.Set("remote_region_policy", remoteCopyPolicies); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting remote_region_policy %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting remote_region_policy %s", err))
 		}
 	}
 	if backupPolicyPlan.Name != nil {
 		if err = d.Set("name", backupPolicyPlan.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 		}
 	}
 
 	if backupPolicyPlan.CreatedAt != nil {
 		if err = d.Set("created_at", flex.DateTimeToString(backupPolicyPlan.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 		}
 	}
 
 	if err = d.Set("href", backupPolicyPlan.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", backupPolicyPlan.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("resource_type", backupPolicyPlan.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting version: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting version: %s", err))
 	}
 
 	return nil
@@ -487,7 +487,7 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 			if deleteOverCountString != "" && deleteOverCountString != "null" {
 				deleteOverCount, err := strconv.ParseInt(backupPolicyPlanDeletionTriggerPrototypeMap["delete_over_count"].(string), 10, 64)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting delete_over_count: %s", err))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting delete_over_count: %s", err))
 				}
 				deleteOverCountint := int64(deleteOverCount)
 				if deleteOverCountint >= int64(0) {
@@ -548,7 +548,7 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 	if hasChange {
 		backupPolicyPlanPatch, err := patchVals.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] [ERROR] Error calling asPatch for BackupPolicyPlanPatch: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] [ERROR] Error calling asPatch for BackupPolicyPlanPatch: %s", err))
 		}
 
 		if deleteOverCountBool {
@@ -562,7 +562,7 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 		_, response, err := vpcClient.UpdateBackupPolicyPlanWithContext(context, updateBackupPolicyPlanOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateBackupPolicyPlanWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] UpdateBackupPolicyPlanWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] UpdateBackupPolicyPlanWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -590,7 +590,7 @@ func resourceIBMIsBackupPolicyPlanDelete(context context.Context, d *schema.Reso
 	_, response, err := vpcClient.DeleteBackupPolicyPlanWithContext(context, deleteBackupPolicyPlanOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteBackupPolicyPlanWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] DeleteBackupPolicyPlanWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] DeleteBackupPolicyPlanWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

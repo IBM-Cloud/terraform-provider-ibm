@@ -209,7 +209,7 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 		}
 		instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
 		if err != nil || instanceGroupManagerIntf == nil {
-			return fmt.Errorf("[ERROR] Error creating InstanceGroup manager: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error creating InstanceGroup manager: %s\n%s", err, response)
 		}
 		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 		d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, *instanceGroupManager.ID))
@@ -261,7 +261,7 @@ func resourceIBMISInstanceGroupManagerCreate(d *schema.ResourceData, meta interf
 
 		instanceGroupManagerIntf, response, err := sess.CreateInstanceGroupManager(&createInstanceGroupManagerOptions)
 		if err != nil || instanceGroupManagerIntf == nil {
-			return fmt.Errorf("[ERROR] Error creating InstanceGroup manager: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error creating InstanceGroup manager: %s\n%s", err, response)
 		}
 		instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 
@@ -333,7 +333,7 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 		updateInstanceGroupManagerOptions.InstanceGroupID = &instanceGroupID
 		instanceGroupManagerPatch, err := instanceGroupManagerPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceGroupManagerPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceGroupManagerPatch: %s", err)
 		}
 		updateInstanceGroupManagerOptions.InstanceGroupManagerPatch = instanceGroupManagerPatch
 
@@ -344,7 +344,7 @@ func resourceIBMISInstanceGroupManagerUpdate(d *schema.ResourceData, meta interf
 
 		_, response, err := sess.UpdateInstanceGroupManager(&updateInstanceGroupManagerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating InstanceGroup manager: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating InstanceGroup manager: %s\n%s", err, response)
 		}
 	}
 	return resourceIBMISInstanceGroupManagerRead(d, meta)
@@ -373,7 +373,7 @@ func resourceIBMISInstanceGroupManagerRead(d *schema.ResourceData, meta interfac
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Manager: %s\n%s", err, response)
 	}
 	instanceGroupManager := instanceGroupManagerIntf.(*vpcv1.InstanceGroupManager)
 
@@ -451,7 +451,7 @@ func resourceIBMISInstanceGroupManagerDelete(d *schema.ResourceData, meta interf
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup Manager: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting the InstanceGroup Manager: %s\n%s", err, response)
 	}
 	return nil
 }

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -234,71 +233,71 @@ func dataSourceIBMIsLbListenerRead(context context.Context, d *schema.ResourceDa
 	loadBalancerListener, response, err := vpcClient.GetLoadBalancerListenerWithContext(context, getLoadBalancerListenerOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetLoadBalancerListenerWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLoadBalancerListenerWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetLoadBalancerListenerWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*loadBalancerListener.ID)
 	if err = d.Set("accept_proxy_protocol", loadBalancerListener.AcceptProxyProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting accept_proxy_protocol: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting accept_proxy_protocol: %s", err))
 	}
 
 	if loadBalancerListener.CertificateInstance != nil {
 		err = d.Set("certificate_instance", dataSourceLoadBalancerListenerFlattenCertificateInstance(*loadBalancerListener.CertificateInstance))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting certificate_instance %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting certificate_instance %s", err))
 		}
 	}
 	if loadBalancerListener.ConnectionLimit != nil {
 		if err = d.Set("connection_limit", flex.IntValue(loadBalancerListener.ConnectionLimit)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting connection_limit: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting connection_limit: %s", err))
 		}
 	}
 	if loadBalancerListener.IdleConnectionTimeout != nil {
 		if err = d.Set(isLBListenerIdleConnectionTimeout, flex.IntValue(loadBalancerListener.IdleConnectionTimeout)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting idle_connection_timeout: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting idle_connection_timeout: %s", err))
 		}
 	}
 	if err = d.Set("created_at", loadBalancerListener.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if loadBalancerListener.DefaultPool != nil {
 		err = d.Set("default_pool", dataSourceLoadBalancerListenerFlattenDefaultPool(*loadBalancerListener.DefaultPool))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting default_pool %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting default_pool %s", err))
 		}
 	}
 	if err = d.Set("href", loadBalancerListener.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if loadBalancerListener.HTTPSRedirect != nil {
 		err = d.Set("https_redirect", dataSourceLoadBalancerListenerFlattenHTTPSRedirect(*loadBalancerListener.HTTPSRedirect))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting https_redirect %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting https_redirect %s", err))
 		}
 	}
 
 	if loadBalancerListener.Policies != nil {
 		err = d.Set("policies", dataSourceLoadBalancerListenerFlattenPolicies(loadBalancerListener.Policies))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting policies %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting policies %s", err))
 		}
 	}
 	if err = d.Set("port", flex.IntValue(loadBalancerListener.Port)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting port: %s", err))
 	}
 	if err = d.Set("port_max", flex.IntValue(loadBalancerListener.PortMax)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port_max: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting port_max: %s", err))
 	}
 	if err = d.Set("port_min", flex.IntValue(loadBalancerListener.PortMin)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting port_min: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting port_min: %s", err))
 	}
 	if err = d.Set("protocol", loadBalancerListener.Protocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting protocol: %s", err))
 	}
 	if err = d.Set("provisioning_status", loadBalancerListener.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting provisioning_status: %s", err))
 	}
 
 	return nil

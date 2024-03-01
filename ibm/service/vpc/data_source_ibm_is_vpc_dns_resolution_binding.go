@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -235,13 +234,13 @@ func dataSourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *sche
 	vpcdnsResolutionBinding, response, err := sess.GetVPCDnsResolutionBindingWithContext(context, getVPCDnsResolutionBindingOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*vpcdnsResolutionBinding.ID)
 
 	if err = d.Set("created_at", flex.DateTimeToString(vpcdnsResolutionBinding.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	endpointGateways := []map[string]interface{}{}
@@ -255,23 +254,23 @@ func dataSourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *sche
 		}
 	}
 	if err = d.Set("endpoint_gateways", endpointGateways); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting endpoint_gateways %s", err))
 	}
 
 	if err = d.Set("href", vpcdnsResolutionBinding.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("lifecycle_state", vpcdnsResolutionBinding.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 
 	if err = d.Set("name", vpcdnsResolutionBinding.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	if err = d.Set("resource_type", vpcdnsResolutionBinding.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	vpc := []map[string]interface{}{}
@@ -283,7 +282,7 @@ func dataSourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *sche
 		vpc = append(vpc, modelMap)
 	}
 	if err = d.Set("vpc", vpc); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting vpc %s", err))
 	}
 
 	return nil

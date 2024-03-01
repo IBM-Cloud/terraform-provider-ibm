@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -439,10 +438,10 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 		}
 		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
 		}
 		if (response != nil && response.StatusCode == 404) || snapshot == nil {
-			return fmt.Errorf("[ERROR] No snapshot found with id %s", sourceSnapshot)
+			return flex.FmtErrorf("[ERROR] No snapshot found with id %s", sourceSnapshot)
 		}
 		minimumCapacity := *snapshot.MinimumCapacity
 		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
@@ -505,7 +504,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 
 	vol, response, err := sess.CreateVolume(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create volume err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Create volume err %s\n%s", err, response)
 	}
 	d.SetId(*vol.ID)
 	log.Printf("[INFO] Volume : %s", *vol.ID)
@@ -549,7 +548,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Volume (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Volume (%s): %s\n%s", id, err, response)
 	}
 	d.SetId(*vol.ID)
 	d.Set(isVolumeName, *vol.Name)
@@ -590,7 +589,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if vol.UserTags != nil {
 		if err = d.Set(isVolumeTags, vol.UserTags); err != nil {
-			return fmt.Errorf("Error setting user tags: %s", err)
+			return flex.FmtErrorf("Error setting user tags: %s", err)
 		}
 	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
@@ -674,7 +673,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 		vol, response, err := sess.GetVolume(options)
 		if err != nil {
-			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
+			return flex.FmtErrorf("Error getting Volume : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isVolumeAccessTags)
 
@@ -694,7 +693,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error getting Volume (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("Error getting Volume (%s): %s\n%s", id, err, response)
 	}
 	eTag := response.Headers.Get("ETag")
 	options := &vpcv1.UpdateVolumeOptions{
@@ -708,7 +707,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		volumeNamePatchModel.Name = &name
 		volumeNamePatch, err := volumeNamePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeNamePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for volumeNamePatch: %s", err)
 		}
 		options.VolumePatch = volumeNamePatch
 		_, _, err = sess.UpdateVolume(options)
@@ -727,10 +726,10 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 		vol, response, err := sess.GetVolume(getvoloptions)
 		if err != nil || vol == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volId, err, response)
+			return flex.FmtErrorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volId, err, response)
 		}
 		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) < 1 {
-			return fmt.Errorf("[ERROR] Error updating Volume profile/iops because the specified volume %s is not attached to a virtual server instance ", volId)
+			return flex.FmtErrorf("[ERROR] Error updating Volume profile/iops because the specified volume %s is not attached to a virtual server instance ", volId)
 		}
 		volAtt := &vol.VolumeAttachments[0]
 		insId := *volAtt.Instance.ID
@@ -739,7 +738,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 		instance, response, err := sess.GetInstance(getinsOptions)
 		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) to which the volume (%s) is attached : %s\n%s", insId, volId, err, response)
+			return flex.FmtErrorf("[ERROR] Error retrieving Instance (%s) to which the volume (%s) is attached : %s\n%s", insId, volId, err, response)
 		}
 		if instance != nil && *instance.Status != "running" {
 			actiontype := "start"
@@ -749,7 +748,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			}
 			_, response, err = sess.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) to which the volume (%s) is attached  : %s\n%s", insId, volId, err, response)
+				return flex.FmtErrorf("[ERROR] Error starting Instance (%s) to which the volume (%s) is attached  : %s\n%s", insId, volId, err, response)
 			}
 			_, err = isWaitForInstanceAvailable(sess, insId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
@@ -772,7 +771,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 
 		volumeProfilePatch, err := volumeProfilePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VolumeProfilePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for VolumeProfilePatch: %s", err)
 		}
 		options.VolumePatch = volumeProfilePatch
 		_, response, err = sess.UpdateVolume(options)
@@ -794,10 +793,10 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Getting Volume (%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Volume (%s): %s\n%s", id, err, response)
 		}
 		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].ID == "" {
-			return fmt.Errorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
+			return flex.FmtErrorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
 		}
 		insId := vol.VolumeAttachments[0].Instance.ID
 		getinsOptions := &vpcv1.GetInstanceOptions{
@@ -805,7 +804,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 		instance, response, err := sess.GetInstance(getinsOptions)
 		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", *insId, err, response)
+			return flex.FmtErrorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", *insId, err, response)
 		}
 		if instance != nil && *instance.Status != "running" {
 			actiontype := "start"
@@ -815,7 +814,7 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			}
 			_, response, err = sess.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", *insId, err, response)
+				return flex.FmtErrorf("[ERROR] Error starting Instance (%s) : %s\n%s", *insId, err, response)
 			}
 			_, err = isWaitForInstanceAvailable(sess, *insId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
@@ -828,12 +827,12 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 
 		volumeCapacityPatch, err := volumeCapacityPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeCapacityPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for volumeCapacityPatch: %s", err)
 		}
 		options.VolumePatch = volumeCapacityPatch
 		_, response, err = sess.UpdateVolume(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating vpc volume: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating vpc volume: %s\n%s", err, response)
 		}
 		_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -862,13 +861,13 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 				volumeNamePatchModel.UserTags = userTagsArray
 				volumeNamePatch, err := volumeNamePatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("Error calling asPatch for volumeNamePatch: %s", err)
+					return flex.FmtErrorf("Error calling asPatch for volumeNamePatch: %s", err)
 				}
 				options.IfMatch = &eTag
 				options.VolumePatch = volumeNamePatch
 				_, response, err := sess.UpdateVolume(options)
 				if err != nil {
-					return fmt.Errorf("Error updating volume : %s\n%s", err, response)
+					return flex.FmtErrorf("Error updating volume : %s\n%s", err, response)
 				}
 				_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 				if err != nil {
@@ -905,7 +904,7 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Volume (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Volume (%s): %s\n%s", id, err, response)
 	}
 
 	if volDetails.VolumeAttachments != nil {
@@ -916,7 +915,7 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 			_, err := sess.DeleteInstanceVolumeAttachment(deleteVolumeAttachment)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while removing volume attachment %q for instance %s: %q", *volAtt.ID, *volAtt.Instance.ID, err)
+				return flex.FmtErrorf("[ERROR] Error while removing volume attachment %q for instance %s: %q", *volAtt.ID, *volAtt.Instance.ID, err)
 			}
 			_, err = isWaitForInstanceVolumeDetached(sess, d, d.Id(), *volAtt.ID)
 			if err != nil {
@@ -931,7 +930,7 @@ func volDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteVolume(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting Volume : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Volume : %s\n%s", err, response)
 	}
 	_, err = isWaitForVolumeDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -966,7 +965,7 @@ func isVolumeDeleteRefreshFunc(vol *vpcv1.VpcV1, id string) resource.StateRefres
 			if response != nil && response.StatusCode == 404 {
 				return vol, isVolumeDeleted, nil
 			}
-			return vol, "", fmt.Errorf("[ERROR] Error getting Volume: %s\n%s", err, response)
+			return vol, "", flex.FmtErrorf("[ERROR] Error getting Volume: %s\n%s", err, response)
 		}
 		return vol, isVolumeDeleting, err
 	}
@@ -993,7 +992,7 @@ func volExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Volume: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Volume: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -1020,7 +1019,7 @@ func isVolumeRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFu
 		}
 		vol, response, err := client.GetVolume(volgetoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting volume: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting volume: %s\n%s", err, response)
 		}
 
 		if *vol.Status == "available" {
@@ -1036,7 +1035,7 @@ func deleteAllSnapshots(sess *vpcv1.VpcV1, id string) error {
 	delete_all_snapshots.SourceVolumeID = &id
 	response, err := sess.DeleteSnapshots(delete_all_snapshots)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting snapshots from volume %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting snapshots from volume %s\n%s", err, response)
 	}
 	return nil
 }

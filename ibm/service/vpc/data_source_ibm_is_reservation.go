@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -232,7 +231,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 		reservationInfo, response, err := sess.GetReservationWithContext(context, getReservationOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetReservationWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetReservationWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] GetReservationWithContext failed %s\n%s", err, response))
 		}
 		reservation = reservationInfo
 
@@ -250,7 +249,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 			reservationCollection, response, err := sess.ListReservationsWithContext(context, listReservationsOptions)
 			if err != nil {
 				log.Printf("[DEBUG] ListReservationsWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("[ERROR] ListReservationsWithContext failed %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] ListReservationsWithContext failed %s\n%s", err, response))
 			}
 			if reservationCollection != nil && *reservationCollection.TotalCount == int64(0) {
 				break
@@ -268,20 +267,20 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 			}
 		}
 		if reservation == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] No reservation found with name (%s)", name))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] No reservation found with name (%s)", name))
 		}
 	}
 
 	d.SetId(*reservation.ID)
 	if err = d.Set("affinity_policy", reservation.AffinityPolicy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting affinity_policy: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting affinity_policy: %s", err))
 	}
 	if reservation.Capacity != nil {
 		capacityList := []map[string]interface{}{}
 		capacityMap := dataSourceReservationCapacityToMap(*reservation.Capacity)
 		capacityList = append(capacityList, capacityMap)
 		if err = d.Set("capacity", capacityList); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting capacity: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting capacity: %s", err))
 		}
 	}
 	if reservation.CommittedUse != nil {
@@ -289,23 +288,23 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 		committedUseMap := dataSourceReservationCommittedUseToMap(*reservation.CommittedUse)
 		committedUseList = append(committedUseList, committedUseMap)
 		if err = d.Set("committed_use", committedUseList); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting committed_use: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting committed_use: %s", err))
 		}
 	}
 	if err = d.Set("created_at", reservation.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", reservation.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 	}
 	if err = d.Set("href", reservation.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", reservation.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("name", reservation.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if reservation.Profile != nil {
 		profileList := []map[string]interface{}{}
@@ -313,7 +312,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 		profileMap := dataSourceReservationProfileToMap(*profile)
 		profileList = append(profileList, profileMap)
 		if err = d.Set("profile", profileList); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting profile: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting profile: %s", err))
 		}
 	}
 	if reservation.ResourceGroup != nil {
@@ -321,14 +320,14 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 		resourceGroupMap := dataSourceReservationResourceGroupToMap(*reservation.ResourceGroup)
 		resourceGroupList = append(resourceGroupList, resourceGroupMap)
 		if err = d.Set("resource_group", resourceGroupList); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group: %s", err))
 		}
 	}
 	if err = d.Set("resource_type", reservation.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set("status", reservation.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status: %s", err))
 	}
 	if reservation.StatusReasons != nil {
 		statusReasonsList := []map[string]interface{}{}
@@ -336,7 +335,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 			statusReasonsList = append(statusReasonsList, dataSourceReservationStatusReasonsToMap(statusReasonsItem))
 		}
 		if err = d.Set("status_reasons", statusReasonsList); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_reasons: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status_reasons: %s", err))
 		}
 	}
 	zone := ""
@@ -344,7 +343,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 		zone = *reservation.Zone.Name
 	}
 	if err = d.Set("zone", zone); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting zone: %s", err))
 	}
 	return nil
 }

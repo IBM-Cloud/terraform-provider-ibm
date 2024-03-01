@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -264,7 +265,7 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Routing table: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPC Routing table: %s\n%s", err, response)
 	}
 
 	d.Set(rtVpcID, idSet[0])
@@ -285,7 +286,7 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 		acceptRoutesFromArray = append(acceptRoutesFromArray, string(*(routeTable.AcceptRoutesFrom[i].ResourceType)))
 	}
 	if err = d.Set("accept_routes_from_resource_type", acceptRoutesFromArray); err != nil {
-		return fmt.Errorf("[ERROR] Error setting accept_routes_from_resource_type: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting accept_routes_from_resource_type: %s", err)
 	}
 
 	for i := 0; i < len(routeTable.AdvertiseRoutesTo); i++ {
@@ -293,7 +294,7 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if err = d.Set("advertise_routes_to", advertiseRoutesToArray); err != nil {
-		return fmt.Errorf("[ERROR] Error setting advertise_routes_to: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting advertise_routes_to: %s", err)
 	}
 
 	subnets := make([]map[string]interface{}, 0)
@@ -393,7 +394,7 @@ func resourceIBMISVPCRoutingTableUpdate(d *schema.ResourceData, meta interface{}
 
 	routingTablePatchModelAsPatch, asPatchErr := routingTablePatchModel.AsPatch()
 	if asPatchErr != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
+		return flex.FmtErrorf("[ERROR] Error calling asPatch for RoutingTablePatchModel: %s", asPatchErr)
 	}
 
 	if removeAdvertiseRoutesTo {
@@ -438,7 +439,7 @@ func resourceIBMISVPCRoutingTableExists(d *schema.ResourceData, meta interface{}
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID", d.Id())
 	}
 	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)
@@ -447,7 +448,7 @@ func resourceIBMISVPCRoutingTableExists(d *schema.ResourceData, meta interface{}
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting VPC Routing table : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting VPC Routing table : %s\n%s", err, response)
 	}
 	return true, nil
 }

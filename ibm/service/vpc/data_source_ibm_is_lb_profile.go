@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,7 +70,7 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 	}
 	lbProfile, response, err := sess.GetLoadBalancerProfileWithContext(context, getLoadBalancerProfileOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching Load Balancer Profile(%s) for VPC %s\n%s", lbprofilename, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Fetching Load Balancer Profile(%s) for VPC %s\n%s", lbprofilename, err, response))
 	}
 
 	d.Set("name", *lbProfile.Name)

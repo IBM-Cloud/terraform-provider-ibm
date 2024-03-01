@@ -1059,32 +1059,32 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 
 	if share.EncryptionKey != nil {
 		if err = d.Set("encryption_key", *share.EncryptionKey.CRN); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting encryption_key: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting encryption_key: %s", err))
 		}
 	}
 	if share.AccessControlMode != nil {
 		if err = d.Set("access_control_mode", *share.AccessControlMode); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting access_control_mode: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting access_control_mode: %s", err))
 		}
 	}
 	if err = d.Set("iops", flex.IntValue(share.Iops)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting iops: %s", err))
 	}
 	if err = d.Set("name", share.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if share.Profile != nil {
 		if err = d.Set("profile", *share.Profile.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profile: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting profile: %s", err))
 		}
 	}
 	if share.ResourceGroup != nil {
 		if err = d.Set("resource_group", *share.ResourceGroup.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting resource_group: %s", err))
 		}
 	}
 	if err = d.Set("size", flex.IntValue(share.Size)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting size: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting size: %s", err))
 	}
 	targets := make([]map[string]interface{}, 0)
 	if share.MountTargets != nil {
@@ -1111,7 +1111,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		}
 	}
 	if err = d.Set("mount_targets", targets); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mount_targets: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting mount_targets: %s", err))
 	}
 
 	replicaShare := []map[string]interface{}{}
@@ -1141,26 +1141,26 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 
 	if share.Zone != nil {
 		if err = d.Set("zone", *share.Zone.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting zone: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting zone: %s", err))
 		}
 	}
 	if err = d.Set("created_at", share.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", share.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("encryption", share.Encryption); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encryption: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting encryption: %s", err))
 	}
 	if err = d.Set("href", share.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", share.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("resource_type", share.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	latest_syncs := []map[string]interface{}{}
@@ -1441,7 +1441,7 @@ func isShareRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid
 
 		share, response, err := vpcClient.GetShareWithContext(context, shareOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting share: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("Error Getting share: %s\n%s", err, response)
 		}
 		d.Set("lifecycle_state", *share.LifecycleState)
 		if *share.LifecycleState == "stable" || *share.LifecycleState == "failed" {
@@ -1468,10 +1468,10 @@ func isWaitForShareDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *sc
 				if response != nil && response.StatusCode == 404 {
 					return share, "done", nil
 				}
-				return nil, "", fmt.Errorf("Error Getting Target: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("Error Getting Target: %s\n%s", err, response)
 			}
 			if *share.LifecycleState == isInstanceFailed {
-				return share, *share.LifecycleState, fmt.Errorf("The  target %s failed to delete: %v", shareid, err)
+				return share, *share.LifecycleState, flex.FmtErrorf("The  target %s failed to delete: %v", shareid, err)
 			}
 			return share, "deleting", nil
 		},
@@ -1803,7 +1803,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 						}
 						_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response)
+							return flex.FmtErrorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response)
 						}
 						_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
@@ -1825,7 +1825,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 						}
 						response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response)
+							return flex.FmtErrorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
 						_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
@@ -1862,16 +1862,16 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				}
 				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+					return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err)
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 				_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+					return flex.FmtErrorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
 				}
 				_, err = isWaitForReservedIpAvailable(sess, subnetId, ripId, d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
+					return flex.FmtErrorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
 				}
 			}
 		}

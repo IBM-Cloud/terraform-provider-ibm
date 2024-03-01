@@ -267,13 +267,13 @@ func lbListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{}, lbID, 
 
 	_, err = isWaitForLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf(
+		return flex.FmtErrorf(
 			"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
 	rule, response, err := sess.CreateLoadBalancerListenerPolicyRule(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating lb listener policy for LB %s: Error %v Response %v", lbID, err, *response)
+		return flex.FmtErrorf("[ERROR] Error while creating lb listener policy for LB %s: Error %v Response %v", lbID, err, *response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s/%s", lbID, listenerID, policyID, *(rule.ID)))
@@ -408,7 +408,7 @@ func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID str
 		return false, err
 	}
 	if len(parts) != 4 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/listenerID/policyID/ruleID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/listenerID/policyID/ruleID", d.Id())
 	}
 	lbID := parts[0]
 	listenerID := parts[1]
@@ -429,7 +429,7 @@ func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID str
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting policy: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting policy: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -494,7 +494,7 @@ func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, 
 	if hasChanged {
 		loadBalancerListenerPolicyRulePatch, err := loadBalancerListenerPolicyRulePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerListenerPolicyRulePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for LoadBalancerListenerPolicyRulePatch: %s", err)
 		}
 		updatePolicyRuleOptions.LoadBalancerListenerPolicyRulePatch = loadBalancerListenerPolicyRulePatch
 
@@ -504,13 +504,13 @@ func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, 
 
 		_, err = isWaitForLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return fmt.Errorf(
+			return flex.FmtErrorf(
 				"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
 		}
 
 		_, response, err := sess.UpdateLoadBalancerListenerPolicyRule(&updatePolicyRuleOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating in policy : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating in policy : %s\n%s", err, response)
 		}
 
 		_, err = isWaitForLbListenerPolicyRuleAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
@@ -570,7 +570,7 @@ func lbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}, lbID, 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error in LbListenerPolicyGet : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error in LbListenerPolicyGet : %s\n%s", err, response)
 	}
 
 	deleteLbListenerPolicyRuleOptions := &vpcv1.DeleteLoadBalancerListenerPolicyRuleOptions{
@@ -581,7 +581,7 @@ func lbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}, lbID, 
 	}
 	response, err = sess.DeleteLoadBalancerListenerPolicyRule(deleteLbListenerPolicyRuleOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in lbListenerPolicyRuleDelete: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error in lbListenerPolicyRuleDelete: %s\n%s", err, response)
 	}
 	_, err = isWaitForLbListnerPolicyRuleDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -677,7 +677,7 @@ func lbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lbID, lis
 	}
 	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 	}
 	d.Set(flex.RelatedCRN, *lb.CRN)
 

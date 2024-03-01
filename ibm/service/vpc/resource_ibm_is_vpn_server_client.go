@@ -74,7 +74,7 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 			return nil
 		}
 		log.Printf("[DEBUG] GetVPNServerClientWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
 	}
 
 	var flag bool
@@ -91,15 +91,15 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 		response, err := sess.DisconnectVPNClientWithContext(context, disconnectVPNServerRouteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] DisconnectVPNClientWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] DisconnectVPNClientWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] DisconnectVPNClientWithContext failed %s\n%s", err, response))
 		}
 
 		if err = d.Set("status_code", response.StatusCode); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_code: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status_code: %s", err))
 		}
 
 		if err = d.Set("description", "The VPN client disconnection request was accepted."); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting description: %s", err))
 		}
 
 		d.SetId(fmt.Sprintf("%s/%s/%v", d.Get("vpn_server").(string), d.Get("vpn_client").(string), response.StatusCode))
@@ -113,22 +113,22 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 		response, err := sess.DeleteVPNServerClientWithContext(context, deleteVPNServerClientOptions)
 		if err != nil {
 			log.Printf("[DEBUG] DeleteVPNServerClientWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] DeleteVPNServerClientWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] DeleteVPNServerClientWithContext failed %s\n%s", err, response))
 		}
 
 		if err = d.Set("status_code", response.StatusCode); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_code: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status_code: %s", err))
 		}
 
 		if err = d.Set("description", "The VPN client disconnection request was accepted."); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_code: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status_code: %s", err))
 		}
 
 		d.SetId(fmt.Sprintf("%s/%s", d.Get("vpn_server").(string), d.Get("vpn_client").(string)))
 	}
 
 	if err = d.Set("delete", d.Get("delete")); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting delete: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting delete: %s", err))
 	}
 	return nil
 }
@@ -141,10 +141,10 @@ func resourceIBMIsVPNServerClientDelete(context context.Context, d *schema.Resou
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR]  Failed %s\n%s", "false", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR]  Failed %s\n%s", "false", err))
 	}
 	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpnServer/vpnClient", d.Id()))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of vpnServer/vpnClient", d.Id()))
 	}
 	vpnServer := parts[0]
 	vpnClient := parts[1]
@@ -161,7 +161,7 @@ func resourceIBMIsVPNServerClientDelete(context context.Context, d *schema.Resou
 			return nil
 		}
 		log.Printf("[DEBUG] GetVPNServerClientWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
 	}
 
 	deleteVPNServerClientOptions := &vpcv1.DeleteVPNServerClientOptions{}
@@ -171,7 +171,7 @@ func resourceIBMIsVPNServerClientDelete(context context.Context, d *schema.Resou
 	response, err = sess.DeleteVPNServerClientWithContext(context, deleteVPNServerClientOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVPNServerClientWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] DeleteVPNServerClientWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] DeleteVPNServerClientWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

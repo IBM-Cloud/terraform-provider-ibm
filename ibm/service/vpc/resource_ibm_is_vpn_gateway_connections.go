@@ -361,7 +361,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 
 	vpnGatewayConnectionIntf, response, err := sess.CreateVPNGatewayConnection(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
 	}
 	vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
 	d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
@@ -401,7 +401,7 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway Connection (%s): %s\n%s", gConnID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Vpn Gateway Connection (%s): %s\n%s", gConnID, err, response)
 	}
 	d.Set(isVPNGatewayConnection, gConnID)
 	vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
@@ -430,7 +430,7 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 		d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
 	}
 	if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting status_reasons: %s", err)
 	}
 	if vpnGatewayConnection.ResourceType != nil {
 		d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
@@ -466,7 +466,7 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 	}
 	vpngatewayIntf, response, err := sess.GetVPNGateway(getVPNGatewayOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting VPN Gateway : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPN Gateway : %s\n%s", err, response)
 	}
 	vpngateway := vpngatewayIntf.(*vpcv1.VPNGateway)
 	d.Set(flex.RelatedCRN, *vpngateway.CRN)
@@ -572,12 +572,12 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 	if hasChanged {
 		vpnGatewayConnectionPatch, err := vpnGatewayConnectionPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPNGatewayConnectionPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for VPNGatewayConnectionPatch: %s", err)
 		}
 		updateVpnGatewayConnectionOptions.VPNGatewayConnectionPatch = vpnGatewayConnectionPatch
 		_, response, err := sess.UpdateVPNGatewayConnection(updateVpnGatewayConnectionOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Vpn Gateway Connection: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating Vpn Gateway Connection: %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -616,7 +616,7 @@ func vpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway Connection(%s): %s\n%s", gConnID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Vpn Gateway Connection(%s): %s\n%s", gConnID, err, response)
 	}
 
 	deleteVpnGatewayConnectionOptions := &vpcv1.DeleteVPNGatewayConnectionOptions{
@@ -625,12 +625,12 @@ func vpngwconDelete(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 	}
 	response, err = sess.DeleteVPNGatewayConnection(deleteVpnGatewayConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Vpn Gateway Connection : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Vpn Gateway Connection : %s\n%s", err, response)
 	}
 
 	_, err = isWaitForVPNGatewayConnectionDeleted(sess, gID, gConnID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for Vpn Gateway Connection (%s) is deleted: %s", gConnID, err)
+		return flex.FmtErrorf("[ERROR] Error checking for Vpn Gateway Connection (%s) is deleted: %s", gConnID, err)
 	}
 
 	d.SetId("")
@@ -663,7 +663,7 @@ func isVPNGatewayConnectionDeleteRefreshFunc(vpnGatewayConnection *vpcv1.VpcV1, 
 			if response != nil && response.StatusCode == 404 {
 				return "", isVPNGatewayConnectionDeleted, nil
 			}
-			return "", "", fmt.Errorf("[ERROR] The Vpn Gateway Connection %s failed to delete: %s\n%s", gConnID, err, response)
+			return "", "", flex.FmtErrorf("[ERROR] The Vpn Gateway Connection %s failed to delete: %s\n%s", gConnID, err, response)
 		}
 		return vpngwcon, isVPNGatewayConnectionDeleting, nil
 	}
@@ -676,7 +676,7 @@ func resourceIBMISVPNGatewayConnectionExists(d *schema.ResourceData, meta interf
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of gID/gConnID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of gID/gConnID", d.Id())
 	}
 
 	gID := parts[0]
@@ -700,7 +700,7 @@ func vpngwconExists(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Vpn Gateway Connection: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Vpn Gateway Connection: %s\n%s", err, response)
 	}
 	return true, nil
 }

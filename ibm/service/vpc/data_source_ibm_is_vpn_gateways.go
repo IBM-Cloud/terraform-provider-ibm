@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -262,7 +261,7 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 		}
 		availableVPNGateways, detail, err := sess.ListVPNGateways(listvpnGWOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error reading list of VPN Gateways:%s\n%s", err, detail)
+			return flex.FmtErrorf("[ERROR] Error reading list of VPN Gateways:%s\n%s", err, detail)
 		}
 		start = flex.GetNext(availableVPNGateways.Next)
 		allrecs = append(allrecs, availableVPNGateways.VPNGateways...)

@@ -114,7 +114,7 @@ func resourceIBMISSecurityGroupTargetCreate(d *schema.ResourceData, meta interfa
 
 	sg, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 	if err != nil || sg == nil {
-		return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
 	}
 	sgtarget := sg.(*vpcv1.SecurityGroupTargetReference)
 	d.SetId(fmt.Sprintf("%s/%s", securityGroupID, *sgtarget.ID))
@@ -168,7 +168,7 @@ func resourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interface
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Security Group Target : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Security Group Target : %s\n%s", err, response)
 	}
 
 	target := data.(*vpcv1.SecurityGroupTargetReference)
@@ -204,13 +204,13 @@ func resourceIBMISSecurityGroupTargetDelete(d *schema.ResourceData, meta interfa
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Security Group Targets (%s): %s\n%s", securityGroupID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Security Group Targets (%s): %s\n%s", securityGroupID, err, response)
 	}
 
 	deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, securityGroupTargetID)
 	response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Security Group Targets : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Security Group Targets : %s\n%s", err, response)
 	}
 	securityGroupTargetReference := sgt.(*vpcv1.SecurityGroupTargetReference)
 	crn := securityGroupTargetReference.CRN
@@ -250,7 +250,7 @@ func resourceIBMISSecurityGroupTargetExists(d *schema.ResourceData, meta interfa
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Security Group Target : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Security Group Target : %s\n%s", err, response)
 	}
 	return true, nil
 
@@ -288,7 +288,7 @@ func isLBRemoveRefreshFunc(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTargetRefer
 				}
 				lb, response, err := sess.GetLoadBalancer(getlboptions)
 				if err != nil {
-					return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+					return nil, "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 				}
 
 				if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {
@@ -297,7 +297,7 @@ func isLBRemoveRefreshFunc(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTargetRefer
 					return sgt, isLBProvisioning, nil
 				}
 			}
-			return nil, isLBProvisioningDone, fmt.Errorf("[ERROR] Error getting Security Group Target : %s\n%s", err, response)
+			return nil, isLBProvisioningDone, flex.FmtErrorf("[ERROR] Error getting Security Group Target : %s\n%s", err, response)
 		}
 		return sgt, isLBProvisioning, nil
 	}
@@ -326,7 +326,7 @@ func isLBSgTargetRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefre
 		}
 		lb, response, err := sess.GetLoadBalancer(getlboptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 		}
 
 		if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {
@@ -360,11 +360,11 @@ func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) resource.Sta
 		}
 		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 		}
 
 		if *vni.LifecycleState == "failed" {
-			return vni, *vni.LifecycleState, fmt.Errorf("Network Interface creationg failed with status %s ", *vni.LifecycleState)
+			return vni, *vni.LifecycleState, flex.FmtErrorf("Network Interface creationg failed with status %s ", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil
 	}

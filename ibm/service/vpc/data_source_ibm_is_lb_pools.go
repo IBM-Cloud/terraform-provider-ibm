@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -225,10 +225,10 @@ func dataSourceIBMIsLbPoolsRead(context context.Context, d *schema.ResourceData,
 	loadBalancerPoolCollection, response, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListLoadBalancerPoolsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
 	}
 	if err = d.Set("lb", d.Get("lb").(string)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lb: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lb: %s", err))
 	}
 
 	d.SetId(dataSourceIBMIsLbPoolsID(d))
@@ -236,7 +236,7 @@ func dataSourceIBMIsLbPoolsRead(context context.Context, d *schema.ResourceData,
 	if loadBalancerPoolCollection.Pools != nil {
 		err = d.Set("pools", dataSourceLoadBalancerPoolCollectionFlattenPools(loadBalancerPoolCollection.Pools))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting pools %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting pools %s", err))
 		}
 	}
 

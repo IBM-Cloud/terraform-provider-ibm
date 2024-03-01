@@ -140,8 +140,8 @@ github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc
 github.com/IBM/go-sdk-core/v5 v5.9.2/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
-github.com/IBM/go-sdk-core/v5 v5.16.1 h1:vAgOxRvaXD5AmgwR7dlstjT1JFE4BA4lPcGsEFZOKGs=
-github.com/IBM/go-sdk-core/v5 v5.16.1/go.mod h1:aojBkkq4HXkOYdn7YZ6ve8cjPWHdcB3tt8v0b9Cbac8=
+github.com/IBM/go-sdk-core/v5 v5.16.2 h1:4psKDqjN6mPacgbaRjV/qcYtXlnAEISLJF/QQa7FQqo=
+github.com/IBM/go-sdk-core/v5 v5.16.2/go.mod h1:aojBkkq4HXkOYdn7YZ6ve8cjPWHdcB3tt8v0b9Cbac8=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go v1.10.0 h1:/2VIev2/jBei39OqU2+nSZQnoWJ+KtkiSAIDkqsd7uU=
 github.com/IBM/ibm-cos-sdk-go v1.10.0/go.mod h1:C8KRTRaoD3CWPPBOa6FCOpdh0ZMlUjKAAA4i3F+Q/sc=

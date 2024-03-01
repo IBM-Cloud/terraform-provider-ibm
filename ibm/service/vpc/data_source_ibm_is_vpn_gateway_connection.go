@@ -296,7 +296,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 			}
 			availableVPNGateways, detail, err := vpcClient.ListVPNGatewaysWithContext(context, listvpnGWOptions)
 			if err != nil || availableVPNGateways == nil {
-				return diag.FromErr(fmt.Errorf("Error reading list of VPN Gateways:%s\n%s", err, detail))
+				return diag.FromErr(flex.FmtErrorf("Error reading list of VPN Gateways:%s\n%s", err, detail))
 			}
 			start = flex.GetNext(availableVPNGateways.Next)
 			allrecs = append(allrecs, availableVPNGateways.VPNGateways...)
@@ -315,7 +315,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 		}
 		if !vpn_gateway_found {
 			log.Printf("[DEBUG] No vpn gateway and connection found with given name %s", vpn_gateway_name)
-			return diag.FromErr(fmt.Errorf("No vpn gateway and connection found with given name %s", vpn_gateway_name))
+			return diag.FromErr(flex.FmtErrorf("No vpn gateway and connection found with given name %s", vpn_gateway_name))
 		}
 	}
 
@@ -324,7 +324,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 
 		availableVPNGatewayConnections, detail, err := vpcClient.ListVPNGatewayConnections(listvpnGWConnectionOptions)
 		if err != nil || availableVPNGatewayConnections == nil {
-			return diag.FromErr(fmt.Errorf("Error reading list of VPN Gateway Connections:%s\n%s", err, detail))
+			return diag.FromErr(flex.FmtErrorf("Error reading list of VPN Gateway Connections:%s\n%s", err, detail))
 		}
 
 		vpn_gateway_conn_found := false
@@ -337,7 +337,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 			}
 		}
 		if !vpn_gateway_conn_found {
-			return diag.FromErr(fmt.Errorf("VPN gateway connection %s not found", vpn_gateway_connection_name))
+			return diag.FromErr(flex.FmtErrorf("VPN gateway connection %s not found", vpn_gateway_connection_name))
 		}
 	} else if vpn_gateway_connection != "" {
 		getVPNGatewayConnectionOptions := &vpcv1.GetVPNGatewayConnectionOptions{}
@@ -348,7 +348,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 		vpnGatewayConnectionIntf, response, err := vpcClient.GetVPNGatewayConnectionWithContext(context, getVPNGatewayConnectionOptions)
 		if err != nil || vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection) == nil {
 			log.Printf("[DEBUG] GetVPNGatewayConnectionWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetVPNGatewayConnectionWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetVPNGatewayConnectionWithContext failed %s\n%s", err, response))
 		}
 		vpnGatewayConnection = vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
 	}
@@ -356,81 +356,81 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 	d.SetId(fmt.Sprintf("%s/%s", vpn_gateway_id, *vpnGatewayConnection.ID))
 
 	if err = d.Set("admin_state_up", vpnGatewayConnection.AdminStateUp); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting admin_state_up: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting admin_state_up: %s", err))
 	}
 	if err = d.Set("authentication_mode", vpnGatewayConnection.AuthenticationMode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting authentication_mode: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting authentication_mode: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(vpnGatewayConnection.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if vpnGatewayConnection.DeadPeerDetection != nil {
 		err = d.Set("dead_peer_detection", dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting dead_peer_detection %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting dead_peer_detection %s", err))
 		}
 	}
 	if err = d.Set("href", vpnGatewayConnection.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if vpnGatewayConnection.IkePolicy != nil {
 		err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting ike_policy %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting ike_policy %s", err))
 		}
 	}
 
 	if vpnGatewayConnection.IpsecPolicy != nil {
 		err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting ipsec_policy %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting ipsec_policy %s", err))
 		}
 	}
 	if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting mode: %s", err))
 	}
 	if err = d.Set("name", vpnGatewayConnection.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if err = d.Set("peer_address", vpnGatewayConnection.PeerAddress); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting peer_address: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting peer_address: %s", err))
 	}
 	if err = d.Set("psk", vpnGatewayConnection.Psk); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting psk: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting psk: %s", err))
 	}
 	if err = d.Set("resource_type", vpnGatewayConnection.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 	if err = d.Set("status", vpnGatewayConnection.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status: %s", err))
 	}
 	if err := d.Set("status_reasons", resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_reasons: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status_reasons: %s", err))
 	}
 	if err = d.Set("routing_protocol", vpnGatewayConnection.RoutingProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting routing_protocol: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting routing_protocol: %s", err))
 	}
 
 	if vpnGatewayConnection.Tunnels != nil {
 		err = d.Set("tunnels", dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tunnels %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting tunnels %s", err))
 		}
 	}
 
 	if len(vpnGatewayConnection.LocalCIDRs) > 0 {
 		err = d.Set("local_cidrs", vpnGatewayConnection.LocalCIDRs)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting local CIDRs %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting local CIDRs %s", err))
 		}
 	}
 
 	if len(vpnGatewayConnection.PeerCIDRs) > 0 {
 		err = d.Set("peer_cidrs", vpnGatewayConnection.PeerCIDRs)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting Peer CIDRs %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting Peer CIDRs %s", err))
 		}
 	}
 	return nil

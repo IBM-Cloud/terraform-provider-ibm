@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -116,7 +115,7 @@ func dataSourceIBMIsVPNServerClientRead(context context.Context, d *schema.Resou
 	vpnServerClient, response, err := sess.GetVPNServerClientWithContext(context, getVPNServerClientOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetVPNServerClientWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*vpnServerClient.ID)
@@ -124,39 +123,39 @@ func dataSourceIBMIsVPNServerClientRead(context context.Context, d *schema.Resou
 	if vpnServerClient.ClientIP != nil {
 		err = d.Set("client_ip", dataSourceVPNServerClientFlattenClientIP(*vpnServerClient.ClientIP))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting client_ip %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting client_ip %s", err))
 		}
 	}
 	if err = d.Set("common_name", vpnServerClient.CommonName); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting common_name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting common_name: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(vpnServerClient.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("disconnected_at", flex.DateTimeToString(vpnServerClient.DisconnectedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting disconnected_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting disconnected_at: %s", err))
 	}
 	if err = d.Set("href", vpnServerClient.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 
 	if vpnServerClient.RemoteIP != nil {
 		err = d.Set("remote_ip", dataSourceVPNServerClientFlattenRemoteIP(*vpnServerClient.RemoteIP))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting remote_ip %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting remote_ip %s", err))
 		}
 	}
 	if err = d.Set("remote_port", flex.IntValue(vpnServerClient.RemotePort)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting remote_port: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting remote_port: %s", err))
 	}
 	if err = d.Set("resource_type", vpnServerClient.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set("status", vpnServerClient.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status: %s", err))
 	}
 	if err = d.Set("username", vpnServerClient.Username); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting username: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting username: %s", err))
 	}
 
 	return nil

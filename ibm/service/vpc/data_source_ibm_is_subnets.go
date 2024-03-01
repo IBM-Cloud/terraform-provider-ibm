@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -249,7 +248,7 @@ func subnetList(d *schema.ResourceData, meta interface{}) error {
 		}
 		subnets, response, err := sess.ListSubnets(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching subnets %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching subnets %s\n%s", err, response)
 		}
 		start = flex.GetNext(subnets.Next)
 		allrecs = append(allrecs, subnets.Subnets...)

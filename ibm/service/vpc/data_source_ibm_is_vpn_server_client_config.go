@@ -5,11 +5,11 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -54,7 +54,7 @@ func dataSourceIBMIsVPNServerClientConfigurationRead(context context.Context, d 
 	result, response, err := sess.GetVPNServerClientConfigurationWithContext(context, getVPNServerClientConfigurationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetVPNServerClientWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPNServerClientWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(d.Get("vpn_server").(string))
@@ -70,14 +70,14 @@ func dataSourceIBMIsVPNServerClientConfigurationRead(context context.Context, d 
 			_, err = f.WriteString(configStr)
 		}
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Saving VPNServerClientConfiguration Result: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error Saving VPNServerClientConfiguration Result: %s", err))
 
 		}
 		log.Printf("OpenVPN client configuration was saved to {{.%s}}", fileName)
 	}
 
 	if err = d.Set("vpn_server_client_configuration", *result); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting VPNServerClientConfiguration Result: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting VPNServerClientConfiguration Result: %s", err))
 	}
 	return nil
 }

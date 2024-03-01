@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -146,10 +145,10 @@ func dataSourceIbmIsPlacementGroupsRead(context context.Context, d *schema.Resou
 	d.SetId(dataSourceIbmIsPlacementGroupsID(d))
 	err = d.Set("placement_groups", dataSourcePlacementGroupCollectionFlattenPlacementGroups(meta, allrecs))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting placement_groups %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting placement_groups %s", err))
 	}
 	if err = d.Set("total_count", len(allrecs)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting total_count: %s", err))
 	}
 	return nil
 }

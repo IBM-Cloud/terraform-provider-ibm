@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -100,7 +99,7 @@ func osList(d *schema.ResourceData, meta interface{}) error {
 
 		osList, response, err := sess.ListOperatingSystems(listOperatingSystemsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching operating systems %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching operating systems %s\n%s", err, response)
 		}
 		start = flex.GetNext(osList.Next)
 		allrecs = append(allrecs, osList.OperatingSystems...)

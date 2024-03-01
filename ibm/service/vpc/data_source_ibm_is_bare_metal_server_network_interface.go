@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -238,7 +237,7 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceRead(context context.Context,
 
 	nicIntf, response, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, options)
 	if err != nil || nicIntf == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerID, bareMetalServerNicID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerID, bareMetalServerNicID, err, response))
 	}
 	switch reflect.TypeOf(nicIntf).String() {
 	case "*vpcv1.BareMetalServerNetworkInterfaceByPci":

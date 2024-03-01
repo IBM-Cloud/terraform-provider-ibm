@@ -5,9 +5,9 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -95,12 +95,12 @@ func resourceIBMISBareMetalServerDiskCreate(context context.Context, d *schema.R
 	}
 	diskPatch, err := diskPatchModel.AsPatch()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerDiskPatch %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error calling asPatch for BareMetalServerDiskPatch %s", err))
 	}
 	options.BareMetalServerDiskPatch = diskPatch
 	disk, response, err := sess.UpdateBareMetalServerDiskWithContext(context, options)
 	if err != nil || disk == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error updating bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response))
 	}
 	d.SetId(*disk.ID)
 	err = bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
@@ -122,7 +122,7 @@ func bareMetalServerDiskGet(context context.Context, d *schema.ResourceData, ses
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error fetching bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response)
 	}
 
 	d.Set(isBareMetalServerID, bareMetalServerId)
@@ -178,12 +178,12 @@ func resourceIBMISBareMetalServerDiskUpdate(context context.Context, d *schema.R
 		}
 		diskPatch, err := diskPatchModel.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerDiskPatch %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error calling asPatch for BareMetalServerDiskPatch %s", err))
 		}
 		options.BareMetalServerDiskPatch = diskPatch
 		disk, response, err := sess.UpdateBareMetalServerDiskWithContext(context, options)
 		if err != nil || disk == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating bare metal server (%s)  disk (%s) err %s\n%s", bareMetalServerId, diskId, err, response))
 		}
 		err = bareMetalServerDiskGet(context, d, sess, bareMetalServerId, diskId)
 		if err != nil {

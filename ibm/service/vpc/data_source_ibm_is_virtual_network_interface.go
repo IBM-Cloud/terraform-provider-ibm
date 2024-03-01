@@ -431,33 +431,33 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 	virtualNetworkInterface, response, err := vpcClient.GetVirtualNetworkInterfaceWithContext(context, getVirtualNetworkInterfaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetVirtualNetworkInterfaceWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*virtualNetworkInterface.ID)
 
 	if err = d.Set("auto_delete", virtualNetworkInterface.AutoDelete); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting auto_delete: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting auto_delete: %s", err))
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(virtualNetworkInterface.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if err = d.Set("crn", virtualNetworkInterface.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 	}
 
 	if err = d.Set("href", virtualNetworkInterface.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("lifecycle_state", virtualNetworkInterface.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 
 	if err = d.Set("name", virtualNetworkInterface.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	primaryIP := []map[string]interface{}{}
@@ -469,7 +469,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		primaryIP = append(primaryIP, modelMap)
 	}
 	if err = d.Set("primary_ip", primaryIP); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting primary_ip %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting primary_ip %s", err))
 	}
 
 	resourceGroup := []map[string]interface{}{}
@@ -481,11 +481,11 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		resourceGroup = append(resourceGroup, modelMap)
 	}
 	if err = d.Set("resource_group", resourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_group %s", err))
 	}
 
 	if err = d.Set("resource_type", virtualNetworkInterface.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	securityGroups := []map[string]interface{}{}
@@ -499,7 +499,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		}
 	}
 	if err = d.Set("security_groups", securityGroups); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting security_groups %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting security_groups %s", err))
 	}
 
 	subnet := []map[string]interface{}{}
@@ -511,7 +511,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		subnet = append(subnet, modelMap)
 	}
 	if err = d.Set("subnet", subnet); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting subnet %s", err))
 	}
 
 	target := []map[string]interface{}{}
@@ -523,7 +523,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		target = append(target, modelMap)
 	}
 	if err = d.Set("target", target); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting target %s", err))
 	}
 
 	vpc := []map[string]interface{}{}
@@ -535,7 +535,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		vpc = append(vpc, modelMap)
 	}
 	if err = d.Set("vpc", vpc); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting vpc %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting vpc %s", err))
 	}
 
 	zone := []map[string]interface{}{}
@@ -547,7 +547,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 		zone = append(zone, modelMap)
 	}
 	if err = d.Set("zone", zone); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting zone %s", err))
 	}
 
 	// vni p2 changes
@@ -739,7 +739,7 @@ func dataSourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetToMap(mo
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.VirtualNetworkInterfaceTargetIntf subtype encountered")
+		return nil, flex.FmtErrorf("Unrecognized vpcv1.VirtualNetworkInterfaceTargetIntf subtype encountered")
 	}
 }
 

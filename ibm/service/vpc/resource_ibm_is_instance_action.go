@@ -5,9 +5,9 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -126,14 +126,14 @@ func resourceIBMISInstanceActionCreate(context context.Context, d *schema.Resour
 	}
 	instance, response, err := sess.GetInstance(getinsOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", instanceId, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Instance (%s): %s\n%s", instanceId, err, response))
 	}
 	if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state"))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state"))
 	} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state"))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state"))
 	}
 	createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 		InstanceID: &instanceId,
@@ -148,7 +148,7 @@ func resourceIBMISInstanceActionCreate(context context.Context, d *schema.Resour
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response))
 	}
 	if actiontype == "stop" {
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutUpdate), instanceId, d)
@@ -182,7 +182,7 @@ func resourceIBMISInstanceActionRead(context context.Context, d *schema.Resource
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response))
 	}
 
 	d.Set(isInstanceStatus, *instance.Status)
@@ -218,14 +218,14 @@ func resourceIBMISInstanceActionUpdate(context context.Context, d *schema.Resour
 	}
 	instance, response, err := sess.GetInstance(getinsOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response))
 	}
 	if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state"))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state"))
 	} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
 		d.Set(isInstanceAction, nil)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state"))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state"))
 	}
 	createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 		InstanceID: &id,
@@ -236,7 +236,7 @@ func resourceIBMISInstanceActionUpdate(context context.Context, d *schema.Resour
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response))
 	}
 	if actiontype == "stop" {
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutUpdate), id, d)
@@ -272,7 +272,7 @@ func resourceIBMISInstanceActionExists(d *schema.ResourceData, meta interface{})
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting instance : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting instance : %s\n%s", err, response)
 	}
 	return true, err
 }

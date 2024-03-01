@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -343,7 +342,7 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 		instanceGroupCollection, response, err := vpcClient.ListInstanceGroupsWithContext(context, listInstanceGroupsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListInstanceGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListInstanceGroupsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListInstanceGroupsWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(instanceGroupCollection.Next)
 		allrecs = append(allrecs, instanceGroupCollection.InstanceGroups...)
@@ -365,7 +364,7 @@ func DataSourceIBMIsInstanceGroupsRead(context context.Context, d *schema.Resour
 	}
 
 	if err = d.Set("instance_groups", instanceGroups); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_groups %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting instance_groups %s", err))
 	}
 
 	return nil

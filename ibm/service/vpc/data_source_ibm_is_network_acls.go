@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -377,7 +376,7 @@ func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceD
 		networkACLCollection, response, err := vpcClient.ListNetworkAclsWithContext(context, listNetworkAclsOptions)
 		if err != nil || networkACLCollection == nil {
 			log.Printf("[DEBUG] ListNetworkAclsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListNetworkAclsWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(networkACLCollection.Next)
 		allrecs = append(allrecs, networkACLCollection.NetworkAcls...)
@@ -390,7 +389,7 @@ func dataSourceIBMIsNetworkAclsRead(context context.Context, d *schema.ResourceD
 
 	err = d.Set("network_acls", dataSourceNetworkACLCollectionFlattenNetworkAcls(allrecs, d, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_acls %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting network_acls %s", err))
 	}
 
 	return nil

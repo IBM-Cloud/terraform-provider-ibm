@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -644,7 +643,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVolumesWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListVolumesWithContext failed %s\n%s", err, response))
 		}
 
 		start = flex.GetNext(volumeCollection.Next)
@@ -660,7 +659,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 
 	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting volumes %s", err))
 	}
 
 	return nil

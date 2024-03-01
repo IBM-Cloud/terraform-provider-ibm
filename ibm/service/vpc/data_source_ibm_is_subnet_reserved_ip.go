@@ -4,8 +4,7 @@
 package vpc
 
 import (
-	"fmt"
-
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -169,7 +168,7 @@ func dataSdataSourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}
 	reserveIP, response, err := sess.GetSubnetReservedIP(options)
 
 	if err != nil || response == nil || reserveIP == nil {
-		return fmt.Errorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching the reserved IP %s\n%s", err, response)
 	}
 
 	d.SetId(*reserveIP.ID)

@@ -296,7 +296,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 
 			snapshotConsistencyGroup, response, err := vpcClient.ListSnapshotConsistencyGroups(listSnapshotConsistencyGroupsOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error fetching snapshots %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching snapshots %s\n%s", err, response))
 			}
 			start = flex.GetNext(snapshotConsistencyGroup.Next)
 			allrecs = append(allrecs, snapshotConsistencyGroup.SnapshotConsistencyGroups...)
@@ -318,31 +318,31 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 					backupPolicyPlan = append(backupPolicyPlan, modelMap)
 				}
 				if err = d.Set("backup_policy_plan", backupPolicyPlan); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting backup_policy_plan %s", err))
 				}
 
 				if err = d.Set("created_at", flex.DateTimeToString(snapshotConsistencyGroup.CreatedAt)); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 				}
 
 				if err = d.Set("crn", snapshotConsistencyGroup.CRN); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 				}
 
 				if err = d.Set("delete_snapshots_on_delete", snapshotConsistencyGroup.DeleteSnapshotsOnDelete); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting delete_snapshots_on_delete: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting delete_snapshots_on_delete: %s", err))
 				}
 
 				if err = d.Set("href", snapshotConsistencyGroup.Href); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 				}
 
 				if err = d.Set("lifecycle_state", snapshotConsistencyGroup.LifecycleState); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 				}
 
 				if err = d.Set("name", snapshotConsistencyGroup.Name); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 				}
 
 				resourceGroup := []map[string]interface{}{}
@@ -354,11 +354,11 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 					resourceGroup = append(resourceGroup, modelMap)
 				}
 				if err = d.Set("resource_group", resourceGroup); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting resource_group %s", err))
 				}
 
 				if err = d.Set("resource_type", snapshotConsistencyGroup.ResourceType); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 				}
 
 				snapshots := []map[string]interface{}{}
@@ -372,7 +372,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 					}
 				}
 				if err = d.Set("snapshots", snapshots); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting snapshots %s", err))
+					return diag.FromErr(flex.FmtErrorf("Error setting snapshots %s", err))
 				}
 				tags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshotConsistencyGroup.CRN, "", isUserTagType)
 				if err != nil {
@@ -390,7 +390,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 				return nil
 			}
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] No snapshot consistency group found with name %s", name))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] No snapshot consistency group found with name %s", name))
 	} else {
 		getSnapshotConsistencyGroupOptions := &vpcv1.GetSnapshotConsistencyGroupOptions{}
 
@@ -399,7 +399,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 		snapshotConsistencyGroup, response, err := vpcClient.GetSnapshotConsistencyGroupWithContext(context, getSnapshotConsistencyGroupOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetSnapshotConsistencyGroupWithContext failed %s\n%s", err, response))
 		}
 
 		d.SetId(fmt.Sprintf("%s", *getSnapshotConsistencyGroupOptions.ID))
@@ -413,31 +413,31 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 			backupPolicyPlan = append(backupPolicyPlan, modelMap)
 		}
 		if err = d.Set("backup_policy_plan", backupPolicyPlan); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting backup_policy_plan %s", err))
 		}
 
 		if err = d.Set("created_at", flex.DateTimeToString(snapshotConsistencyGroup.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 		}
 
 		if err = d.Set("crn", snapshotConsistencyGroup.CRN); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 		}
 
 		if err = d.Set("delete_snapshots_on_delete", snapshotConsistencyGroup.DeleteSnapshotsOnDelete); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting delete_snapshots_on_delete: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting delete_snapshots_on_delete: %s", err))
 		}
 
 		if err = d.Set("href", snapshotConsistencyGroup.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 		}
 
 		if err = d.Set("lifecycle_state", snapshotConsistencyGroup.LifecycleState); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 		}
 
 		if err = d.Set("name", snapshotConsistencyGroup.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 		}
 
 		resourceGroup := []map[string]interface{}{}
@@ -449,11 +449,11 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 			resourceGroup = append(resourceGroup, modelMap)
 		}
 		if err = d.Set("resource_group", resourceGroup); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting resource_group %s", err))
 		}
 
 		if err = d.Set("resource_type", snapshotConsistencyGroup.ResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 		}
 
 		snapshots := []map[string]interface{}{}
@@ -467,7 +467,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *sch
 			}
 		}
 		if err = d.Set("snapshots", snapshots); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting snapshots %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting snapshots %s", err))
 		}
 		tags, err := flex.GetGlobalTagsUsingCRN(meta, *snapshotConsistencyGroup.CRN, "", isUserTagType)
 		if err != nil {

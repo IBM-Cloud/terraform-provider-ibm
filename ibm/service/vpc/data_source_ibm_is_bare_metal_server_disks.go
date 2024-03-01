@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -89,7 +89,7 @@ func dataSourceIBMISBareMetalServerDisksRead(context context.Context, d *schema.
 	diskCollection, response, err := sess.ListBareMetalServerDisksWithContext(context, options)
 	disks := diskCollection.Disks
 	if err != nil || disks == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) disks: %s\n%s", bareMetalServerID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) disks: %s\n%s", bareMetalServerID, err, response))
 	}
 	disksInfo := make([]map[string]interface{}, 0)
 	for _, disk := range disks {

@@ -288,12 +288,12 @@ func imageGetByName(d *schema.ResourceData, meta interface{}, name, visibility s
 	}
 	availableImages, response, err := sess.ListImages(listImagesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Fetching Images %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Fetching Images %s\n%s", err, response)
 	}
 	allrecs := availableImages.Images
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No image found with name  %s", name)
+		return flex.FmtErrorf("[ERROR] No image found with name  %s", name)
 	}
 	image := allrecs[0]
 	d.SetId(*image.ID)
@@ -371,9 +371,9 @@ func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) e
 	image, response, err := sess.GetImage(getImageOptions)
 	if err != nil {
 		if response.StatusCode == 404 {
-			return fmt.Errorf("[ERROR] No image found with id  %s", identifier)
+			return flex.FmtErrorf("[ERROR] No image found with id  %s", identifier)
 		}
-		return fmt.Errorf("[ERROR] Error Fetching Images %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Fetching Images %s\n%s", err, response)
 	}
 
 	d.SetId(*image.ID)

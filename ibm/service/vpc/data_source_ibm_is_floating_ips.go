@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"time"
@@ -237,7 +236,7 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 		floatingIPs, response, err := sess.ListFloatingIps(floatingIPOptions)
 		if err != nil {
 			log.Printf("[DEBUG] Error Fetching floating IPs  %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching floating IPs %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error Fetching floating IPs %s\n%s", err, response))
 		}
 		start = flex.GetNext(floatingIPs.Next)
 		allFloatingIPs = append(allFloatingIPs, floatingIPs.FloatingIps...)
@@ -262,7 +261,7 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 	}
 	if suppliedFilter {
 		if len(matchFloatingIps) == 0 {
-			return diag.FromErr(fmt.Errorf("no FloatingIps found with name %s", name))
+			return diag.FromErr(flex.FmtErrorf("no FloatingIps found with name %s", name))
 		}
 		d.SetId(name)
 	} else {
@@ -272,7 +271,7 @@ func dataSourceIBMIsFloatingIpsRead(context context.Context, d *schema.ResourceD
 	if matchFloatingIps != nil {
 		err = d.Set("floating_ips", dataSourceFloatingIPCollectionFlattenFloatingIps(matchFloatingIps, d, meta))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting floating_ips %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting floating_ips %s", err))
 		}
 	}
 	return nil

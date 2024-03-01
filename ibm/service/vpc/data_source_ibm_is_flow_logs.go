@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -184,7 +183,7 @@ func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error
 		}
 		flowlogCollectors, response, err := sess.ListFlowLogCollectors(listOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Flow Logs for VPC %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Flow Logs for VPC %s\n%s", err, response)
 		}
 		start = flex.GetNext(flowlogCollectors.Next)
 		allrecs = append(allrecs, flowlogCollectors.FlowLogCollectors...)

@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -563,7 +562,7 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 		}
 		snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching snapshots %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching snapshots %s\n%s", err, response)
 		}
 		start = flex.GetNext(snapshots.Next)
 		allrecs = append(allrecs, snapshots.Snapshots...)
@@ -619,7 +618,7 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			for _, copiesItem := range snapshot.Copies {
 				copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+					return flex.FmtErrorf("[ERROR] Error fetching snapshot copies: %s", err)
 				}
 				snapshotCopies = append(snapshotCopies, copiesMap)
 			}

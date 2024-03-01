@@ -4,8 +4,7 @@
 package vpc
 
 import (
-	"fmt"
-
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -135,7 +134,7 @@ func instanceVolumeAttachmentGetByName(d *schema.ResourceData, meta interface{},
 	}
 	volumeAtts, response, err := sess.ListInstanceVolumeAttachments(listInstanceVolumeAttOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching Instance volume attachments %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching Instance volume attachments %s\n%s", err, response)
 	}
 	allrecs = append(allrecs, volumeAtts.VolumeAttachments...)
 	for _, volumeAtt := range allrecs {
@@ -164,5 +163,5 @@ func instanceVolumeAttachmentGetByName(d *schema.ResourceData, meta interface{},
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Instance volume attachment found with name %s on instance %s", name, instanceId)
+	return flex.FmtErrorf("[ERROR] No Instance volume attachment found with name %s on instance %s", name, instanceId)
 }

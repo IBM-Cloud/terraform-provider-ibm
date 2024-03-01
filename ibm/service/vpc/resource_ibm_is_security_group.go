@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -202,7 +201,7 @@ func resourceIBMISSecurityGroupCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	sg, response, err := sess.CreateSecurityGroup(createSecurityGroupOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Security Group %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Security Group %s\n%s", err, response)
 	}
 	d.SetId(*sg.ID)
 	v := os.Getenv("IC_ENV_TAGS")
@@ -241,7 +240,7 @@ func resourceIBMISSecurityGroupRead(d *schema.ResourceData, meta interface{}) er
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Security Group : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Security Group : %s\n%s", err, response)
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *group.CRN, "", isUserTagType)
 	if err != nil {
@@ -403,12 +402,12 @@ func resourceIBMISSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 		securityGroupPatch, err := securityGroupPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for SecurityGroupPatch: %s", err)
 		}
 		updateSecurityGroupOptions.SecurityGroupPatch = securityGroupPatch
 		_, response, err := sess.UpdateSecurityGroup(updateSecurityGroupOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Security Group : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Security Group : %s\n%s", err, response)
 		}
 	}
 	return resourceIBMISSecurityGroupRead(d, meta)
@@ -430,7 +429,7 @@ func resourceIBMISSecurityGroupDelete(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Security Group (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Security Group (%s): %s\n%s", id, err, response)
 	}
 
 	start := ""
@@ -441,7 +440,7 @@ func resourceIBMISSecurityGroupDelete(d *schema.ResourceData, meta interface{}) 
 
 		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
 		if err != nil || groups == nil {
-			return fmt.Errorf("[ERROR] Error Getting Security Group Targets %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Security Group Targets %s\n%s", err, response)
 		}
 		if *groups.TotalCount == int64(0) {
 			break
@@ -475,7 +474,7 @@ func resourceIBMISSecurityGroupDelete(d *schema.ResourceData, meta interface{}) 
 							}
 						}
 					} else {
-						return fmt.Errorf("[ERROR] Error deleting security group target binding while deleting security group : %s\n%s", err, response)
+						return flex.FmtErrorf("[ERROR] Error deleting security group target binding while deleting security group : %s\n%s", err, response)
 					}
 				}
 
@@ -500,7 +499,7 @@ func resourceIBMISSecurityGroupDelete(d *schema.ResourceData, meta interface{}) 
 				}
 			}
 		} else {
-			return fmt.Errorf("[ERROR] Error Deleting Security Group : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Deleting Security Group : %s\n%s", err, response)
 		}
 	}
 	d.SetId("")
@@ -522,7 +521,7 @@ func resourceIBMISSecurityGroupExists(d *schema.ResourceData, meta interface{}) 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Security Group: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Security Group: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -598,7 +597,7 @@ func isTargetRefreshFunc(client *vpcv1.VpcV1, sgId, targetId string, target vpcv
 		}
 		sgTarget, response, err := client.GetSecurityGroupTarget(targetgetoptions)
 		if err != nil {
-			return target, "", fmt.Errorf("[ERROR] Error getting target(%s): %s\n%s", targetId, err, response)
+			return target, "", flex.FmtErrorf("[ERROR] Error getting target(%s): %s\n%s", targetId, err, response)
 		}
 		if response != nil && response.StatusCode == 404 {
 			return target, "done", nil
@@ -630,7 +629,7 @@ func isSgRefreshFunc(client *vpcv1.VpcV1, sgId string, groups []vpcv1.SecurityGr
 
 			sggroups, response, err := client.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
 			if err != nil || sggroups == nil {
-				return groups, "", fmt.Errorf("[ERROR] Error Getting Security Group Targets %s\n%s", err, response)
+				return groups, "", flex.FmtErrorf("[ERROR] Error Getting Security Group Targets %s\n%s", err, response)
 			}
 			if *sggroups.TotalCount == int64(0) {
 				return groups, "done", nil

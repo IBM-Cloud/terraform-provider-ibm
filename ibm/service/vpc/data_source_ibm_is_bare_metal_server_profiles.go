@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -424,7 +423,7 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 		}
 		availableProfiles, response, err := sess.ListBareMetalServerProfilesWithContext(context, listBMSProfilesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching Bare Metal Server Profiles %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching Bare Metal Server Profiles %s\n%s", err, response))
 		}
 		start = flex.GetNext(availableProfiles.Next)
 		allrecs = append(allrecs, availableProfiles.Profiles...)

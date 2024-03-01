@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -283,11 +282,11 @@ func resourceIBMISSubnetCreate(d *schema.ResourceData, meta interface{}) error {
 		ipv4addrcount64 = int64(ipv4addrcount)
 	}
 	if ipv4cidr == "" && ipv4addrcount == 0 {
-		return fmt.Errorf("%s or %s need to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
+		return flex.FmtErrorf("%s or %s need to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
 	}
 
 	if ipv4cidr != "" && ipv4addrcount != 0 {
-		return fmt.Errorf("only one of %s or %s needs to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
+		return flex.FmtErrorf("only one of %s or %s needs to be provided", isSubnetIpv4CidrBlock, isSubnetTotalIpv4AddressCount)
 	}
 	isSubnetKey := "subnet_key_" + vpc + "_" + zone
 	conns.IbmMutexKV.Lock(isSubnetKey)
@@ -369,7 +368,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}, name, vpc, zone, ipv
 	subnet, response, err := sess.CreateSubnet(createSubnetOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Subnet err %s\n%s", err, response)
-		return fmt.Errorf("[ERROR] Error while creating Subnet %s\n%v", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Subnet %s\n%v", err, response)
 	}
 	d.SetId(*subnet.ID)
 	log.Printf("[INFO] Subnet : %s", *subnet.ID)
@@ -421,7 +420,7 @@ func isSubnetRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshF
 		}
 		subnet, response, err := subnetC.GetSubnet(getSubnetOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Subnet : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Subnet : %s\n%s", err, response)
 		}
 
 		if *subnet.Status == "available" || *subnet.Status == "failed" {
@@ -457,7 +456,7 @@ func subnetGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
 	d.Set(isSubnetName, *subnet.Name)
 	d.Set(isSubnetIPVersion, *subnet.IPVersion)
@@ -571,7 +570,7 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 			response, err := sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Detaching the public gateway attached to the subnet : %s\n%s", err, response)
 			}
 			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
@@ -586,7 +585,7 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 			_, response, err := sess.SetSubnetPublicGateway(setSubnetPublicGatewayOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Attaching public gateway to the subnet : %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Attaching public gateway to the subnet : %s\n%s", err, response)
 			}
 			_, err = isWaitForSubnetAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
@@ -616,13 +615,13 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 	if hasChanged {
 		subnetPatch, err := subnetPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for SubnetPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for SubnetPatch: %s", err)
 		}
 		updateSubnetOptions.SubnetPatch = subnetPatch
 		updateSubnetOptions.ID = &id
 		_, response, err := sess.UpdateSubnet(updateSubnetOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Subnet : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Subnet : %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -653,7 +652,7 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
 	if subnet.PublicGateway != nil {
 		unsetSubnetPublicGatewayOptions := &vpcv1.UnsetSubnetPublicGatewayOptions{
@@ -677,10 +676,10 @@ func subnetDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			log.Printf("[DEBUG] Delete subnet response status code: 409 conflict, provider will try again. %s", err)
 			_, err = isWaitForSubnetDeleteRetry(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Deleting Subnet : %s", err)
+				return flex.FmtErrorf("[ERROR] Error Deleting Subnet : %s", err)
 			}
 		} else {
-			return fmt.Errorf("[ERROR] Error Deleting Subnet : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Deleting Subnet : %s\n%s", err, response)
 		}
 	}
 	_, err = isWaitForSubnetDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
@@ -708,7 +707,7 @@ func isWaitForSubnetDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.
 				} else if response != nil && response.StatusCode == 404 {
 					return response, isSubnetDeleted, nil
 				}
-				return response, "", fmt.Errorf("[ERROR] Error deleting subnet: %s\n%s", err, response)
+				return response, "", flex.FmtErrorf("[ERROR] Error deleting subnet: %s\n%s", err, response)
 			}
 			return response, isSubnetDeleting, nil
 		},
@@ -748,7 +747,7 @@ func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRe
 			if response != nil && strings.Contains(err.Error(), "please detach all network interfaces from subnet before deleting it") {
 				return subnet, isSubnetDeleting, nil
 			}
-			return subnet, "", fmt.Errorf("[ERROR] The Subnet %s failed to delete: %s\n%s", id, err, response)
+			return subnet, "", flex.FmtErrorf("[ERROR] The Subnet %s failed to delete: %s\n%s", id, err, response)
 		}
 		return subnet, isSubnetDeleting, err
 	}
@@ -773,7 +772,7 @@ func subnetExists(d *schema.ResourceData, meta interface{}, id string) (bool, er
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Subnet: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Subnet: %s\n%s", err, response)
 	}
 	return true, nil
 }

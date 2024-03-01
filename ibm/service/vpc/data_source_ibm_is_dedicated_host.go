@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -408,20 +407,20 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 		d.SetId(*dedicatedHost.ID)
 
 		if err = d.Set("available_memory", dedicatedHost.AvailableMemory); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting available_memory: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting available_memory: %s", err))
 		}
 
 		if dedicatedHost.AvailableVcpu != nil {
 			err = d.Set("available_vcpu", dataSourceDedicatedHostFlattenAvailableVcpu(*dedicatedHost.AvailableVcpu))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting available_vcpu %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting available_vcpu %s", err))
 			}
 		}
 		if err = d.Set("created_at", dedicatedHost.CreatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 		}
 		if err = d.Set("crn", dedicatedHost.CRN); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 		}
 		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
 		if err != nil {
@@ -432,93 +431,93 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 		if dedicatedHost.Disks != nil {
 			err = d.Set("disks", dataSourceDedicatedHostFlattenDisks(dedicatedHost.Disks))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting disks %s", err))
 			}
 		}
 		if dedicatedHost.Group != nil {
 			err = d.Set("host_group", *dedicatedHost.Group.ID)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting group %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting group %s", err))
 			}
 		}
 		if err = d.Set("href", dedicatedHost.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 		}
 		if err = d.Set("instance_placement_enabled", dedicatedHost.InstancePlacementEnabled); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting instance_placement_enabled: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting instance_placement_enabled: %s", err))
 		}
 
 		if dedicatedHost.Instances != nil {
 			err = d.Set("instances", dataSourceDedicatedHostFlattenInstances(dedicatedHost.Instances))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting instances %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting instances %s", err))
 			}
 		}
 		if err = d.Set("lifecycle_state", dedicatedHost.LifecycleState); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 		}
 		if err = d.Set("memory", dedicatedHost.Memory); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting memory: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting memory: %s", err))
 		}
 		if err = d.Set("name", dedicatedHost.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 		}
 		if dedicatedHost.Numa != nil {
 			if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting numa nodes: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting numa nodes: %s", err))
 			}
 		}
 		if dedicatedHost.Profile != nil {
 			err = d.Set("profile", dataSourceDedicatedHostFlattenProfile(*dedicatedHost.Profile))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting profile %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting profile %s", err))
 			}
 		}
 		if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting provisionable: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting provisionable: %s", err))
 		}
 
 		if dedicatedHost.ResourceGroup != nil {
 			err = d.Set("resource_group", *dedicatedHost.ResourceGroup.ID)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group %s", err))
 			}
 		}
 		if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 		}
 		if err = d.Set("socket_count", dedicatedHost.SocketCount); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting socket_count: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting socket_count: %s", err))
 		}
 		if err = d.Set("state", dedicatedHost.State); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting state: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting state: %s", err))
 		}
 
 		if dedicatedHost.SupportedInstanceProfiles != nil {
 			err = d.Set("supported_instance_profiles", dataSourceDedicatedHostFlattenSupportedInstanceProfiles(dedicatedHost.SupportedInstanceProfiles))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting supported_instance_profiles %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting supported_instance_profiles %s", err))
 			}
 		}
 
 		if dedicatedHost.Vcpu != nil {
 			err = d.Set("vcpu", dataSourceDedicatedHostFlattenVcpu(*dedicatedHost.Vcpu))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vcpu %s", err))
 			}
 		}
 
 		if dedicatedHost.Zone != nil {
 			err = d.Set("zone", *dedicatedHost.Zone.Name)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting zone %s", err))
 			}
 		}
 
 		return nil
 
 	}
-	return diag.FromErr(fmt.Errorf("[ERROR] No Dedicated Host found with name %s", name))
+	return diag.FromErr(flex.FmtErrorf("[ERROR] No Dedicated Host found with name %s", name))
 }
 
 // dataSourceIbmIsDedicatedHostID returns a reasonable ID for the list.

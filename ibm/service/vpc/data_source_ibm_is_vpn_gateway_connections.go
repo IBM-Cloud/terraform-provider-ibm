@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -194,7 +193,7 @@ func dataSourceIBMVPNGatewayConnectionsRead(d *schema.ResourceData, meta interfa
 	}
 	availableVPNGatewayConnections, detail, err := sess.ListVPNGatewayConnections(listvpnGWConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading list of VPN Gateway Connections:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading list of VPN Gateway Connections:%s\n%s", err, detail)
 	}
 	vpngatewayconnections := make([]map[string]interface{}, 0)
 	for _, instance := range availableVPNGatewayConnections.Connections {

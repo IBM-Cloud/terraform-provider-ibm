@@ -175,14 +175,14 @@ func resourceIBMISReservedIPCreate(d *schema.ResourceData, meta interface{}) err
 	}
 	rip, response, err := sess.CreateSubnetReservedIP(options)
 	if err != nil || response == nil || rip == nil {
-		return fmt.Errorf("[ERROR] Error creating the reserved IP: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error creating the reserved IP: %s\n%s", err, response)
 	}
 
 	// Set id for the reserved IP as combination of subnet ID and reserved IP ID
 	d.SetId(fmt.Sprintf("%s/%s", subnetID, *rip.ID))
 	_, err = isWaitForReservedIpAvailable(sess, subnetID, *rip.ID, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
+		return flex.FmtErrorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
 	}
 
 	return resourceIBMISReservedIPRead(d, meta)
@@ -196,7 +196,7 @@ func resourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}) error
 
 	allIDs, err := flex.IdParts(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] The ID can not be split into subnet ID and reserved IP ID. %s", err)
+		return flex.FmtErrorf("[ERROR] The ID can not be split into subnet ID and reserved IP ID. %s", err)
 	}
 	subnetID := allIDs[0]
 
@@ -294,19 +294,19 @@ func resourceIBMISReservedIPUpdate(d *schema.ResourceData, meta interface{}) err
 
 		reservedIPPatch, err := patch.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the reserved IP %s", err)
+			return flex.FmtErrorf("[ERROR] Error updating the reserved IP %s", err)
 		}
 
 		options.ReservedIPPatch = reservedIPPatch
 
 		_, response, err := sess.UpdateSubnetReservedIP(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the reserved IP %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating the reserved IP %s\n%s", err, response)
 		}
 
 		_, err = isWaitForReservedIpAvailable(sess, subnetID, reservedIPID, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
+			return flex.FmtErrorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
 		}
 	}
 	return resourceIBMISReservedIPRead(d, meta)
@@ -336,7 +336,7 @@ func resourceIBMISReservedIPDelete(d *schema.ResourceData, meta interface{}) err
 	deleteOptions := sess.NewDeleteSubnetReservedIPOptions(subnetID, reservedIPID)
 	response, err := sess.DeleteSubnetReservedIP(deleteOptions)
 	if err != nil || response == nil {
-		return fmt.Errorf("[ERROR] Error deleting the reserverd ip %s in subnet %s, %s\n%s", reservedIPID, subnetID, err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting the reserverd ip %s in subnet %s, %s\n%s", reservedIPID, subnetID, err, response)
 	}
 	d.SetId("")
 	return nil
@@ -369,7 +369,7 @@ func get(d *schema.ResourceData, meta interface{}) (*vpcv1.ReservedIP, error) {
 			d.SetId("")
 			return nil, nil
 		}
-		return nil, fmt.Errorf("[ERROR] Error Getting Reserved IP : %s\n%s", err, response)
+		return nil, flex.FmtErrorf("[ERROR] Error Getting Reserved IP : %s\n%s", err, response)
 	}
 	return rip, nil
 }
@@ -395,7 +395,7 @@ func isReserveIpRefreshFunc(sess *vpcv1.VpcV1, subnetid, id string, d *schema.Re
 		}
 		rsip, response, err := sess.GetSubnetReservedIP(getreservedipOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting reserved ip(%s/%s) : %s\n%s", subnetid, id, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting reserved ip(%s/%s) : %s\n%s", subnetid, id, err, response)
 		}
 		if rsip.LifecycleState != nil {
 			d.Set(isReservedIPLifecycleState, *rsip.LifecycleState)
@@ -403,7 +403,7 @@ func isReserveIpRefreshFunc(sess *vpcv1.VpcV1, subnetid, id string, d *schema.Re
 		d.Set(isReservedIPAddress, *rsip.Address)
 
 		if rsip.LifecycleState != nil && *rsip.LifecycleState == "failed" {
-			return rsip, "failed", fmt.Errorf("[ERROR] Error Reserved ip(%s/%s) creation failed : %s\n%s", subnetid, id, err, response)
+			return rsip, "failed", flex.FmtErrorf("[ERROR] Error Reserved ip(%s/%s) creation failed : %s\n%s", subnetid, id, err, response)
 		}
 		if rsip.LifecycleState != nil && *rsip.LifecycleState == "stable" {
 			return rsip, "done", nil

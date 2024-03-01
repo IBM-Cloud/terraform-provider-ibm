@@ -78,7 +78,7 @@ func dataSourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interfa
 		}
 		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
 		}
 		if *groups.TotalCount == int64(0) {
 			break
@@ -109,5 +109,5 @@ func dataSourceIBMISSecurityGroupTargetRead(d *schema.ResourceData, meta interfa
 			return nil
 		}
 	}
-	return fmt.Errorf("Security Group Target %s not found", name)
+	return flex.FmtErrorf("Security Group Target %s not found", name)
 }

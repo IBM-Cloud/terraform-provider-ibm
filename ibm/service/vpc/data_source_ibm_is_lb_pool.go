@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -223,7 +222,7 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		loadBalancerPoolInfo, response, err := sess.GetLoadBalancerPoolWithContext(context, getLoadBalancerPoolOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetLoadBalancerPoolWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetLoadBalancerPoolWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetLoadBalancerPoolWithContext failed %s\n%s", err, response))
 		}
 		loadBalancerPool = loadBalancerPoolInfo
 
@@ -235,7 +234,7 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		loadBalancerPoolCollection, response, err := sess.ListLoadBalancerPoolsWithContext(context, listLoadBalancerPoolsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListLoadBalancerPoolsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListLoadBalancerPoolsWithContext failed %s\n%s", err, response))
 		}
 
 		name := v.(string)
@@ -247,64 +246,64 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 		}
 		if loadBalancerPool == nil {
 			log.Printf("[DEBUG] No LoadBalancerPool found with name (%s)", name)
-			return diag.FromErr(fmt.Errorf("No LoadBalancerPool found with name (%s)", name))
+			return diag.FromErr(flex.FmtErrorf("No LoadBalancerPool found with name (%s)", name))
 		}
 
 	}
 
 	d.SetId(*loadBalancerPool.ID)
 	if err = d.Set("algorithm", loadBalancerPool.Algorithm); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting algorithm: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting algorithm: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerPool.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if loadBalancerPool.HealthMonitor != nil {
 		err = d.Set("health_monitor", dataSourceLoadBalancerPoolFlattenHealthMonitor(*loadBalancerPool.HealthMonitor))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting health_monitor %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting health_monitor %s", err))
 		}
 	}
 	if err = d.Set("href", loadBalancerPool.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if loadBalancerPool.InstanceGroup != nil {
 		err = d.Set("instance_group", dataSourceLoadBalancerPoolFlattenInstanceGroup(*loadBalancerPool.InstanceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting instance_group %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting instance_group %s", err))
 		}
 	}
 
 	if loadBalancerPool.Members != nil {
 		err = d.Set("members", dataSourceLoadBalancerPoolFlattenMembers(loadBalancerPool.Members))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting members %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting members %s", err))
 		}
 	}
 
 	if err = d.Set("identifier", loadBalancerPool.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identifier: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting identifier: %s", err))
 	}
 
 	if err = d.Set("name", loadBalancerPool.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if err = d.Set("protocol", loadBalancerPool.Protocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protocol: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting protocol: %s", err))
 	}
 	if err = d.Set("provisioning_status", loadBalancerPool.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting provisioning_status: %s", err))
 	}
 	if err = d.Set("proxy_protocol", loadBalancerPool.ProxyProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting proxy_protocol: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting proxy_protocol: %s", err))
 	}
 
 	if loadBalancerPool.SessionPersistence != nil {
 		err = d.Set("session_persistence", dataSourceLoadBalancerPoolFlattenSessionPersistence(*loadBalancerPool.SessionPersistence))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting session_persistence %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting session_persistence %s", err))
 		}
 	}
 

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -173,7 +172,7 @@ func dataSourceIBMIsIpsecPoliciesRead(context context.Context, d *schema.Resourc
 		iPsecPolicyCollection, response, err := vpcClient.ListIpsecPoliciesWithContext(context, listIpsecPoliciesOptions)
 		if err != nil || iPsecPolicyCollection == nil {
 			log.Printf("[DEBUG] ListIpsecPoliciesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListIpsecPoliciesWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListIpsecPoliciesWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(iPsecPolicyCollection.Next)
 		allrecs = append(allrecs, iPsecPolicyCollection.IpsecPolicies...)
@@ -186,7 +185,7 @@ func dataSourceIBMIsIpsecPoliciesRead(context context.Context, d *schema.Resourc
 
 	err = d.Set("ipsec_policies", dataSourceIPsecPolicyCollectionFlattenIpsecPolicies(allrecs))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ipsec_policies %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting ipsec_policies %s", err))
 	}
 
 	return nil

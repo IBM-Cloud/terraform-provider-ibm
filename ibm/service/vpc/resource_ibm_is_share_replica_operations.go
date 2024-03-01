@@ -5,11 +5,11 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -97,7 +97,6 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 	share_id := d.Get("share_replica").(string)
 
 	splitShare := d.Get("split_share").(bool)
-
 	if !splitShare {
 		fallback_policy := d.Get("fallback_policy").(string)
 		timeout := d.Get("timeout").(int)
@@ -111,7 +110,7 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 		response, err := vpcClient.FailoverShareWithContext(context, failOverShareOptions)
 		if err != nil {
 			log.Printf("[DEBUG] FailoverShareWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] FailoverShareWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] FailoverShareWithContext failed %s\n%s", err, response))
 		}
 	} else {
 		deleteShareSourceOptions := &vpcv1.DeleteShareSourceOptions{
@@ -120,7 +119,7 @@ func resourceIbmIsShareReplicaOperationsCreate(context context.Context, d *schem
 		response, err := vpcClient.DeleteShareSourceWithContext(context, deleteShareSourceOptions)
 		if err != nil {
 			log.Printf("[DEBUG] DeleteShareSourceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] DeleteShareSourceWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] DeleteShareSourceWithContext failed %s\n%s", err, response))
 		}
 	}
 	_, err = isWaitForShareReplicationJobDone(context, vpcClient, share_id, d, d.Timeout(schema.TimeoutCreate))
@@ -154,7 +153,7 @@ func isShareReplicationJobRefreshFunc(context context.Context, vpcClient *vpcv1.
 
 		share, response, err := vpcClient.GetShareWithContext(context, shareOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting share: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("Error Getting share: %s\n%s", err, response)
 		}
 		if *share.ReplicationStatus == "active" || *share.ReplicationStatus == "none" {
 
@@ -202,7 +201,7 @@ func isShareSplitRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, sh
 
 		share, response, err := vpcClient.GetShareWithContext(context, shareOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting share: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("Error Getting share: %s\n%s", err, response)
 		}
 		d.Set("replication_status", *share.LifecycleState)
 		if *share.LifecycleState == "none" {

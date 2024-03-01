@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -243,7 +242,7 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 
 	publicgw, response, err := sess.CreatePublicGateway(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Public Gateway %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Public Gateway %s\n%s", err, response)
 	}
 	d.SetId(*publicgw.ID)
 	log.Printf("[INFO] PublicGateway : %s", *publicgw.ID)
@@ -297,7 +296,7 @@ func isPublicGatewayRefreshFunc(publicgwC *vpcv1.VpcV1, id string) resource.Stat
 		}
 		publicgw, response, err := publicgwC.GetPublicGateway(getPublicGatewayOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
 		}
 
 		if *publicgw.Status == isPublicGatewayProvisioningDone {
@@ -323,7 +322,7 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
 	}
 	d.Set(isPublicGatewayName, *publicgw.Name)
 	if publicgw.FloatingIP != nil {
@@ -388,7 +387,7 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *publicgw.CRN, "", isUserTagType)
@@ -404,7 +403,7 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *publicgw.CRN, "", isAccessTagType)
@@ -423,12 +422,12 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 		PublicGatewayPatch, err := PublicGatewayPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for PublicGatewayPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for PublicGatewayPatch: %s", err)
 		}
 		updatePublicGatewayOptions.PublicGatewayPatch = PublicGatewayPatch
 		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Public Gateway  : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Public Gateway  : %s\n%s", err, response)
 		}
 	}
 	return resourceIBMISPublicGatewayRead(d, meta)
@@ -450,7 +449,7 @@ func resourceIBMISPublicGatewayDelete(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Public Gateway (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Public Gateway (%s): %s\n%s", id, err, response)
 	}
 
 	deletePublicGatewayOptions := &vpcv1.DeletePublicGatewayOptions{
@@ -474,15 +473,15 @@ func resourceIBMISPublicGatewayDelete(d *schema.ResourceData, meta interface{}) 
 						}
 						response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error Deleting Public Gateway : %s\n%s", err, response)
+							return flex.FmtErrorf("[ERROR] Error Deleting Public Gateway : %s\n%s", err, response)
 						}
 					} else {
-						return fmt.Errorf("[ERROR] Error Unsetting Public Gateway : %s\n%s", errSub, res)
+						return flex.FmtErrorf("[ERROR] Error Unsetting Public Gateway : %s\n%s", errSub, res)
 					}
 				}
 			}
 		} else {
-			return fmt.Errorf("[ERROR] Error Deleting Public Gateway : error is %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Deleting Public Gateway : error is %s\n%s", err, response)
 		}
 	}
 	_, err = isWaitForPublicGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
@@ -519,7 +518,7 @@ func isPublicGatewayDeleteRefreshFunc(pg *vpcv1.VpcV1, id string) resource.State
 			if response != nil && response.StatusCode == 404 {
 				return pgw, isPublicGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("[ERROR] The Public Gateway %s failed to delete: %s\n%s", id, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] The Public Gateway %s failed to delete: %s\n%s", id, err, response)
 		}
 		return pgw, isPublicGatewayDeleting, nil
 	}
@@ -539,7 +538,7 @@ func resourceIBMISPublicGatewayExists(d *schema.ResourceData, meta interface{}) 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Public Gateway: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Public Gateway: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -570,7 +569,7 @@ func isSubnetPublicGatewayUnsetRefreshFunc(subnetC *vpcv1.VpcV1, id string) reso
 			if response.StatusCode == 404 {
 				return subnetPublicGateway, "done", nil
 			}
-			return subnetPublicGateway, "", fmt.Errorf("[ERROR] Error getting Subnet PublicGateway : %s\n%s", err, response)
+			return subnetPublicGateway, "", flex.FmtErrorf("[ERROR] Error getting Subnet PublicGateway : %s\n%s", err, response)
 		}
 
 		return subnetPublicGateway, "wait", nil

@@ -5,11 +5,11 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -345,62 +345,62 @@ func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 	if dedicatedHostProfile == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] No Dedicated Host Profile found with name %s", name))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] No Dedicated Host Profile found with name %s", name))
 	}
 	d.SetId(dataSourceIbmIsDedicatedHostProfileID(d))
 
 	if err = d.Set("class", dedicatedHostProfile.Class); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting class: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting class: %s", err))
 	}
 
 	if dedicatedHostProfile.Disks != nil {
 		err = d.Set("disks", dataSourceDedicatedHostProfileFlattenDisks(dedicatedHostProfile.Disks))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting disks %s", err))
 		}
 	}
 	if dedicatedHostProfile.Status != nil {
 		d.Set("status", dedicatedHostProfile.Status)
 	}
 	if err = d.Set("family", dedicatedHostProfile.Family); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting family: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting family: %s", err))
 	}
 	if err = d.Set("href", dedicatedHostProfile.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 
 	if dedicatedHostProfile.Memory != nil {
 		err = d.Set("memory", dataSourceDedicatedHostProfileFlattenMemory(*dedicatedHostProfile.Memory.(*vpcv1.DedicatedHostProfileMemory)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting memory %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting memory %s", err))
 		}
 	}
 
 	if dedicatedHostProfile.SocketCount != nil {
 		err = d.Set("socket_count", dataSourceDedicatedHostProfileFlattenSocketCount(*dedicatedHostProfile.SocketCount.(*vpcv1.DedicatedHostProfileSocket)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting socket_count %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting socket_count %s", err))
 		}
 	}
 
 	if dedicatedHostProfile.SupportedInstanceProfiles != nil {
 		err = d.Set("supported_instance_profiles", dataSourceDedicatedHostProfileFlattenSupportedInstanceProfiles(dedicatedHostProfile.SupportedInstanceProfiles))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting supported_instance_profiles %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting supported_instance_profiles %s", err))
 		}
 	}
 
 	if dedicatedHostProfile.VcpuArchitecture != nil {
 		err = d.Set("vcpu_architecture", dataSourceDedicatedHostProfileFlattenVcpuArchitecture(*dedicatedHostProfile.VcpuArchitecture))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu_architecture %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vcpu_architecture %s", err))
 		}
 	}
 
 	if dedicatedHostProfile.VcpuCount != nil {
 		err = d.Set("vcpu_count", dataSourceDedicatedHostProfileFlattenVcpuCount(*dedicatedHostProfile.VcpuCount.(*vpcv1.DedicatedHostProfileVcpu)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu_count %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vcpu_count %s", err))
 		}
 	}
 
@@ -408,7 +408,7 @@ func dataSourceIbmIsDedicatedHostProfileRead(context context.Context, d *schema.
 	if dedicatedHostProfile.VcpuManufacturer != nil {
 		err = d.Set("vcpu_manufacturer", dataSourceDedicatedHostProfileFlattenVcpuManufacturer(*dedicatedHostProfile.VcpuManufacturer))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting vcpu_architecture %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting vcpu_architecture %s", err))
 		}
 	}
 

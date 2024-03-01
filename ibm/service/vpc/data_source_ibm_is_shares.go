@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -432,11 +431,11 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 	if allrecs != nil {
 		err = d.Set("shares", dataSourceShareCollectionFlattenShares(meta, allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting shares %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting shares %s", err))
 		}
 	}
 	if err = d.Set("total_count", totalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting total_count: %s", err))
 	}
 
 	return nil

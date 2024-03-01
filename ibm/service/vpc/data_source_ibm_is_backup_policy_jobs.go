@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -420,7 +419,7 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 		backupPolicyJobCollection, response, err := vpcClient.ListBackupPolicyJobsWithContext(context, listBackupPolicyJobsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListBackupPolicyJobsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListBackupPolicyJobsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListBackupPolicyJobsWithContext failed %s\n%s", err, response))
 		}
 
 		if backupPolicyJobCollection != nil && *backupPolicyJobCollection.TotalCount == int64(0) {
@@ -438,7 +437,7 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 	if allrecs != nil {
 		err = d.Set("jobs", dataSourceBackupPolicyJobCollectionFlattenJobs(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting jobs %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting jobs %s", err))
 		}
 	}
 

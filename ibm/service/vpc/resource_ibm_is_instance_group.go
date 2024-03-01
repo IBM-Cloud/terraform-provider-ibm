@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -273,7 +272,7 @@ func resourceIBMISInstanceGroupCreate(d *schema.ResourceData, meta interface{}) 
 
 	instanceGroup, response, err := sess.CreateInstanceGroup(&instanceGroupOptions)
 	if err != nil || instanceGroup == nil {
-		return fmt.Errorf("[ERROR] Error Creating InstanceGroup: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Creating InstanceGroup: %s\n%s", err, response)
 	}
 	d.SetId(*instanceGroup.ID)
 
@@ -320,7 +319,7 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 		instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
 		if err != nil || instanceGroup == nil {
-			return fmt.Errorf("[ERROR] Error getting instance group: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting instance group: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange("tags")
 		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instanceGroup.CRN)
@@ -377,12 +376,12 @@ func resourceIBMISInstanceGroupUpdate(d *schema.ResourceData, meta interface{}) 
 		instanceGroupUpdateOptions.ID = &instanceGroupID
 		instanceGroupPatch, err := instanceGroupPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceGroupPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceGroupPatch: %s", err)
 		}
 		instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
 		_, response, err := sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating InstanceGroup: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating InstanceGroup: %s\n%s", err, response)
 		}
 
 		// wait for instance group health update with update timeout configured.
@@ -408,7 +407,7 @@ func resourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) er
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
 	}
 	d.Set("name", *instanceGroup.Name)
 	d.Set("instance_template", *instanceGroup.InstanceTemplate.ID)
@@ -453,7 +452,7 @@ func getLBStatus(sess *vpcv1.VpcV1, lbId string) (string, error) {
 	}
 	lb, response, err := sess.GetLoadBalancer(getlboptions)
 	if err != nil || lb == nil {
-		return "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+		return "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 	}
 	return *lb.ProvisioningStatus, nil
 }
@@ -473,9 +472,9 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	instanceGroup, response, err := sess.GetInstanceGroup(&igOpts)
 	if err != nil || instanceGroup == nil {
 		if response != nil && response.StatusCode == 404 {
-			return fmt.Errorf("Instance Group with id:[%s] not found!!", instanceGroupID)
+			return flex.FmtErrorf("Instance Group with id:[%s] not found!!", instanceGroupID)
 		}
-		return fmt.Errorf("Internal Error fetching info for instance group [%s]", instanceGroupID)
+		return flex.FmtErrorf("Internal Error fetching info for instance group [%s]", instanceGroupID)
 	}
 	// Inorder to delete instance group, need to update membership count to 0
 	zeroMembers := int64(0)
@@ -485,14 +484,14 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 	instanceGroupPatchModel.MembershipCount = &zeroMembers
 	instanceGroupPatch, err := instanceGroupPatchModel.AsPatch()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
+		return flex.FmtErrorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
 	}
 
 	instanceGroupUpdateOptions.ID = &instanceGroupID
 	instanceGroupUpdateOptions.InstanceGroupPatch = instanceGroupPatch
 	_, response, err = sess.UpdateInstanceGroup(&instanceGroupUpdateOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error updating instanceGroup's instance count to 0 : %s\n%s", err, response)
 	}
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 	if healthError != nil {
@@ -521,7 +520,7 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 				return err
 			}
 			if lbStatus != "active" {
-				return fmt.Errorf("LoadBalancer [%s] is not active yet! Current Load Balancer status is [%s]", loadBalancerID, lbStatus)
+				return flex.FmtErrorf("LoadBalancer [%s] is not active yet! Current Load Balancer status is [%s]", loadBalancerID, lbStatus)
 			}
 		}
 	}
@@ -533,7 +532,7 @@ func resourceIBMISInstanceGroupDelete(d *schema.ResourceData, meta interface{}) 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup: %s\n%s", Err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting the InstanceGroup: %s\n%s", Err, response)
 	}
 
 	_, deleteError := waitForInstanceGroupDelete(d, meta)
@@ -555,7 +554,7 @@ func resourceIBMISInstanceGroupExists(d *schema.ResourceData, meta interface{}) 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -574,7 +573,7 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 		Refresh: func() (interface{}, string, error) {
 			instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
 			if err != nil || instanceGroup == nil {
-				return nil, SCALING, fmt.Errorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
+				return nil, SCALING, flex.FmtErrorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
 			}
 			log.Println("Status : ", *instanceGroup.Status)
 

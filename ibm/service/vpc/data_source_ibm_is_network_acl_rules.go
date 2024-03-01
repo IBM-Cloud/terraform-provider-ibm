@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 
@@ -205,7 +204,7 @@ func networkACLRulesList(d *schema.ResourceData, meta interface{}, nwACLID strin
 
 		ruleList, response, err := sess.ListNetworkACLRules(listNetworkACLRulesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching network acl ruless %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching network acl ruless %s\n%s", err, response)
 		}
 		start = flex.GetNext(ruleList.Next)
 

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -459,7 +458,7 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 
 	lb, response, err := sess.CreateLoadBalancer(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Load Balancer err %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Load Balancer err %s\n%s", err, response)
 	}
 	d.SetId(*lb.ID)
 	log.Printf("[INFO] Load Balancer : %s", *lb.ID)
@@ -513,7 +512,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response)
 	}
 	dnsList := make([]map[string]interface{}, 0)
 	if lb.Dns != nil {
@@ -639,7 +638,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(flex.ResourceGroupName, lb.ResourceGroup.Name)
 	}
 	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return fmt.Errorf("[ERROR] Error setting version: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting version: %s", err)
 	}
 	return nil
 }
@@ -690,7 +689,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response)
 		}
 		if d.HasChange(isLBTags) {
 			oldList, newList := d.GetChange(isLBTags)
@@ -737,7 +736,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
 		}
 		if dnsRemoved {
 			loadBalancerPatch["dns"] = nil
@@ -746,7 +745,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating subents in vpc Load Balancer : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating subents in vpc Load Balancer : %s\n%s", err, response)
 		}
 		_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -773,13 +772,13 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
 		}
 		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating subents in vpc Load Balancer : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating subents in vpc Load Balancer : %s\n%s", err, response)
 		}
 		_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -796,13 +795,13 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
 		}
 		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating vpc Load Balancer : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating vpc Load Balancer : %s\n%s", err, response)
 		}
 	}
 	if hasChangedLog {
@@ -820,13 +819,13 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 		}
 		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
 		}
 		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
 
 		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating vpc Load Balancer : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating vpc Load Balancer : %s\n%s", err, response)
 		}
 	}
 
@@ -839,7 +838,7 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 				createSecurityGroupTargetBindingOptions.ID = &id
 				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error while creating Security Group Target Binding %s\n%s", err, response)
 				}
 				_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
@@ -859,12 +858,12 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 					if response != nil && response.StatusCode == 404 {
 						continue
 					}
-					return fmt.Errorf("[ERROR] Error Getting Security Group Target for this load balancer (%s): %s\n%s", securityGroupID, err, response)
+					return flex.FmtErrorf("[ERROR] Error Getting Security Group Target for this load balancer (%s): %s\n%s", securityGroupID, err, response)
 				}
 				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, id)
 				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error Deleting Security Group Target for this load balancer : %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error Deleting Security Group Target for this load balancer : %s\n%s", err, response)
 				}
 				_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
@@ -903,7 +902,7 @@ func lbDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting vpc load balancer(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting vpc load balancer(%s): %s\n%s", id, err, response)
 	}
 
 	deleteLoadBalancerOptions := &vpcv1.DeleteLoadBalancerOptions{
@@ -911,7 +910,7 @@ func lbDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteLoadBalancer(deleteLoadBalancerOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting vpc load balancer : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting vpc load balancer : %s\n%s", err, response)
 	}
 	_, err = isWaitForLBDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -947,7 +946,7 @@ func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFun
 			if response != nil && response.StatusCode == 404 {
 				return lb, isLBDeleted, nil
 			}
-			return nil, "failed", fmt.Errorf("[ERROR] The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
+			return nil, "failed", flex.FmtErrorf("[ERROR] The vpc load balancer %s failed to delete: %s\n%s", id, err, response)
 		}
 		return lb, isLBDeleting, nil
 	}
@@ -974,7 +973,7 @@ func lbExists(d *schema.ResourceData, meta interface{}, id string) (bool, error)
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting vpc load balancer: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting vpc load balancer: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -1002,7 +1001,7 @@ func isLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
 		}
 		lb, response, err := sess.GetLoadBalancer(getlboptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
 		}
 
 		if *lb.ProvisioningStatus == "active" || *lb.ProvisioningStatus == "failed" {

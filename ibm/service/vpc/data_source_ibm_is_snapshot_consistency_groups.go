@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -277,7 +276,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupsRead(context context.Context, d *sc
 
 		snapshotConsistencyGroup, response, err := vpcClient.ListSnapshotConsistencyGroups(listSnapshotConsistencyGroupsOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching snapshots %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching snapshots %s\n%s", err, response))
 		}
 		start = flex.GetNext(snapshotConsistencyGroup.Next)
 		allrecs = append(allrecs, snapshotConsistencyGroup.SnapshotConsistencyGroups...)
@@ -358,7 +357,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupsRead(context context.Context, d *sc
 
 	d.SetId(dataSourceIBMIsSnapshotConsistencyGroupsID(d))
 	if err = d.Set("snapshot_consistency_groups", snapshotConsistencyGroupsInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting snapshot_consistency_groups %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting snapshot_consistency_groups %s", err))
 	}
 	return nil
 }

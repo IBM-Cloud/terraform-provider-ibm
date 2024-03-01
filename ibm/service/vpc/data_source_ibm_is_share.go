@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -407,32 +406,32 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 			}
 		}
 		if share == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Share with provided name %s not found", shareName))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Share with provided name %s not found", shareName))
 		}
 	}
 
 	d.SetId(*share.ID)
 	if err = d.Set("created_at", share.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", share.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("encryption", share.Encryption); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encryption: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting encryption: %s", err))
 	}
 
 	if share.EncryptionKey != nil {
 		err = d.Set("encryption_key", *share.EncryptionKey.CRN)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting encryption_key %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting encryption_key %s", err))
 		}
 	}
 	if err = d.Set("href", share.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("iops", share.Iops); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting iops: %s", err))
 	}
 	latest_syncs := []map[string]interface{}{}
 	if share.LatestSync != nil {
@@ -448,15 +447,15 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	if share.LatestJob != nil {
 		err = d.Set("latest_job", dataSourceShareFlattenLatestJob(*share.LatestJob))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting latest_job %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting latest_job %s", err))
 		}
 	}
 
 	if err = d.Set("lifecycle_state", share.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("name", share.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if share.AccessControlMode != nil {
 		d.Set("access_control_mode", *share.AccessControlMode)
@@ -464,62 +463,62 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	if share.Profile != nil {
 		err = d.Set("profile", *share.Profile.Name)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profile %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting profile %s", err))
 		}
 	}
 
 	if share.ReplicaShare != nil {
 		err = d.Set("replica_share", dataSourceShareFlattenReplicaShare(*share.ReplicaShare))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting replica_share %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting replica_share %s", err))
 		}
 	}
 	if err = d.Set("replication_cron_spec", share.ReplicationCronSpec); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting replication_cron_spec: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting replication_cron_spec: %s", err))
 	}
 	if err = d.Set("replication_role", share.ReplicationRole); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting replication_role: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting replication_role: %s", err))
 	}
 	if err = d.Set("replication_status", share.ReplicationStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting replication_status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting replication_status: %s", err))
 	}
 
 	if share.ReplicationStatusReasons != nil {
 		err = d.Set("replication_status_reasons", dataSourceShareFlattenReplicationStatusReasons(share.ReplicationStatusReasons))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting replication_status_reasons %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting replication_status_reasons %s", err))
 		}
 	}
 
 	if share.ResourceGroup != nil {
 		err = d.Set("resource_group", *share.ResourceGroup.ID)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting resource_group %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting resource_group %s", err))
 		}
 	}
 	if err = d.Set("resource_type", share.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 	if err = d.Set("size", share.Size); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting size: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting size: %s", err))
 	}
 	if share.SourceShare != nil {
 		err = d.Set("source_share", dataSourceShareFlattenSourceShare(*share.SourceShare))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_share %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting source_share %s", err))
 		}
 	}
 	if share.MountTargets != nil {
 		err = d.Set("share_targets", dataSourceShareFlattenTargets(share.MountTargets))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting targets %s", err))
 		}
 	}
 
 	if share.Zone != nil {
 		err = d.Set("zone", *share.Zone.Name)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting zone %s", err))
 		}
 	}
 

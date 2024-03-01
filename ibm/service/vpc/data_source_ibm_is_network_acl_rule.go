@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -189,7 +188,7 @@ func nawaclRuleDataGet(d *schema.ResourceData, meta interface{}, name, nwACLID s
 
 		ruleList, response, err := sess.ListNetworkACLRules(listNetworkACLRulesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching network acl ruless %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching network acl ruless %s\n%s", err, response)
 		}
 		start = flex.GetNext(ruleList.Next)
 

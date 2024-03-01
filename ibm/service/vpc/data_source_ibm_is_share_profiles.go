@@ -5,11 +5,11 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -167,11 +167,11 @@ func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.Resourc
 	if shareProfileCollection.Profiles != nil {
 		err = d.Set("profiles", dataSourceShareProfileCollectionFlattenProfiles(shareProfileCollection.Profiles))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting profiles %s", err))
 		}
 	}
 	if err = d.Set("total_count", shareProfileCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting total_count: %s", err))
 	}
 
 	return nil

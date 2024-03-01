@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -183,7 +182,7 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 
 		result, response, err := sess.ListSubnetReservedIps(options)
 		if err != nil || response == nil || result == nil {
-			return fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching reserved ips %s\n%s", err, response)
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.ReservedIps...)
@@ -273,7 +272,7 @@ func dataSourceIBMIsReservedIPReservedIPTargetToMap(model vpcv1.ReservedIPTarget
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.ReservedIPTargetIntf subtype encountered")
+		return nil, flex.FmtErrorf("Unrecognized vpcv1.ReservedIPTargetIntf subtype encountered")
 	}
 }
 

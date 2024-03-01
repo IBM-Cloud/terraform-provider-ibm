@@ -116,7 +116,7 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 		}
 		instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
 		if err != nil || instanceGroupMembershipCollection == nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
 		}
 
 		start = flex.GetNext(instanceGroupMembershipCollection.Next)
@@ -164,5 +164,5 @@ func dataSourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta int
 			return nil
 		}
 	}
-	return fmt.Errorf("Instance group membership %s not found", instanceGroupMembershipName)
+	return flex.FmtErrorf("Instance group membership %s not found", instanceGroupMembershipName)
 }

@@ -4,9 +4,9 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -688,7 +688,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 	listInstanceProfilesOptions := &vpcv1.ListInstanceProfilesOptions{}
 	availableProfiles, response, err := sess.ListInstanceProfiles(listInstanceProfilesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Fetching Instance Profiles %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Fetching Instance Profiles %s\n%s", err, response)
 	}
 	profilesInfo := make([]map[string]interface{}, 0)
 	for _, profile := range availableProfiles.Profiles {
@@ -806,7 +806,7 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		if profile.Disks != nil {
 			l[isInstanceDisks] = dataSourceInstanceProfileFlattenDisks(profile.Disks)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error setting disks %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting disks %s", err)
 			}
 		}
 		profilesInfo = append(profilesInfo, l)

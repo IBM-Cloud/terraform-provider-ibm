@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -574,7 +573,7 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 
 	snapshot, response, err := sess.CreateSnapshot(options)
 	if err != nil || snapshot == nil {
-		return fmt.Errorf("[ERROR] Error creating Snapshot %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error creating Snapshot %s\n%s", err, response)
 	}
 
 	d.SetId(*snapshot.ID)
@@ -619,13 +618,13 @@ func isSnapshotRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFu
 		}
 		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
 		if err != nil {
-			return nil, isSnapshotFailed, fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
+			return nil, isSnapshotFailed, flex.FmtErrorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
 		}
 
 		if *snapshot.LifecycleState == isSnapshotAvailable {
 			return snapshot, *snapshot.LifecycleState, nil
 		} else if *snapshot.LifecycleState == isSnapshotFailed {
-			return snapshot, *snapshot.LifecycleState, fmt.Errorf("Snapshot (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot and attempt to create the snapshot again replacing the previous configuration", *snapshot.ID)
+			return snapshot, *snapshot.LifecycleState, flex.FmtErrorf("Snapshot (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot and attempt to create the snapshot again replacing the previous configuration", *snapshot.ID)
 		}
 
 		return snapshot, isSnapshotPending, nil
@@ -655,7 +654,7 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
 	}
 
 	d.SetId(*snapshot.ID)
@@ -673,7 +672,7 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isSnapshotBootable, *snapshot.Bootable)
 	if snapshot.UserTags != nil {
 		if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
-			return fmt.Errorf("[ERROR] Error setting user tags: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting user tags: %s", err)
 		}
 	}
 	sourceSnapshotList := []map[string]interface{}{}
@@ -716,7 +715,7 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 		for _, copiesItem := range snapshot.Copies {
 			copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+				return flex.FmtErrorf("[ERROR] Error fetching snapshot copies: %s", err)
 			}
 			snapshotCopies = append(snapshotCopies, copiesMap)
 		}
@@ -804,7 +803,7 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
 	}
 	eTag := response.Headers.Get("ETag")
 
@@ -835,12 +834,12 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 				snapshotPatchModel.UserTags = userTagsArray
 				snapshotPatch, err := snapshotPatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
+					return flex.FmtErrorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
 				}
 				updateSnapshotOptions.SnapshotPatch = snapshotPatch
 				_, response, err := sess.UpdateSnapshot(updateSnapshotOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
 				}
 				_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 				if err != nil {
@@ -859,12 +858,12 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 		}
 		snapshotPatch, err := snapshotPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for SnapshotPatch: %s", err)
 		}
 		updateSnapshotOptions.SnapshotPatch = snapshotPatch
 		_, response, err := sess.UpdateSnapshot(updateSnapshotOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating Snapshot : %s\n%s", err, response)
 		}
 		_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -888,7 +887,7 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 				}
 				_, _, err := sess.CreateSnapshotClone(createCloneOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating snapshot (%s) clone(%s) : %q", d.Id(), add[i], err)
+					return flex.FmtErrorf("[ERROR] Error while creating snapshot (%s) clone(%s) : %q", d.Id(), add[i], err)
 				}
 				_, err = isWaitForCloneAvailable(sess, d, id, add[i])
 				if err != nil {
@@ -905,7 +904,7 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 				}
 				_, err := sess.DeleteSnapshotClone(delCloneOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while removing Snapshot (%s) clone (%s) : %q", d.Id(), remove[i], err)
+					return flex.FmtErrorf("[ERROR] Error while removing Snapshot (%s) clone (%s) : %q", d.Id(), remove[i], err)
 				}
 				_, err = isWaitForCloneDeleted(sess, d, d.Id(), remove[i])
 				if err != nil {
@@ -947,13 +946,13 @@ func isSnapshotUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRef
 		}
 		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
 		if err != nil {
-			return nil, isSnapshotFailed, fmt.Errorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
+			return nil, isSnapshotFailed, flex.FmtErrorf("[ERROR] Error getting Snapshot : %s\n%s", err, response)
 		}
 
 		if *snapshot.LifecycleState == isSnapshotAvailable || *snapshot.LifecycleState == isSnapshotFailed {
 			return snapshot, *snapshot.LifecycleState, nil
 		} else if *snapshot.LifecycleState == isSnapshotFailed {
-			return snapshot, *snapshot.LifecycleState, fmt.Errorf("Snapshot (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot and attempt to create the snapshot again replacing the previous configuration", *snapshot.ID)
+			return snapshot, *snapshot.LifecycleState, flex.FmtErrorf("Snapshot (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted snapshot and attempt to create the snapshot again replacing the previous configuration", *snapshot.ID)
 		}
 
 		return snapshot, isSnapshotUpdating, nil
@@ -984,7 +983,7 @@ func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) resource
 			if response.StatusCode == 404 {
 				return nil, "deleted", nil
 			}
-			return nil, "deleted", fmt.Errorf("[ERROR] Error getting Snapshot clone : %s\n%s", err, response)
+			return nil, "deleted", flex.FmtErrorf("[ERROR] Error getting Snapshot clone : %s\n%s", err, response)
 		}
 
 		if *clone.Available == true {
@@ -1006,7 +1005,7 @@ func isSnapshotCloneDeleteRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) re
 			if response.StatusCode == 404 {
 				return clone, "deleted", nil
 			}
-			return clone, "false", fmt.Errorf("[ERROR] Error getting Snapshot clone : %s\n%s", err, response)
+			return clone, "false", flex.FmtErrorf("[ERROR] Error getting Snapshot clone : %s\n%s", err, response)
 		}
 
 		return clone, "true", nil
@@ -1052,7 +1051,7 @@ func snapshotDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Snapshot (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Snapshot (%s): %s\n%s", id, err, response)
 	}
 
 	deleteSnapshotOptions := &vpcv1.DeleteSnapshotOptions{
@@ -1060,7 +1059,7 @@ func snapshotDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteSnapshot(deleteSnapshotOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting Snapshot : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Snapshot : %s\n%s", err, response)
 	}
 	_, err = isWaitForSnapshotDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -1096,7 +1095,7 @@ func isSnapshotDeleteRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRef
 			if response != nil && response.StatusCode == 404 {
 				return snapshot, isSnapshotDeleted, nil
 			}
-			return nil, isSnapshotFailed, fmt.Errorf("[ERROR] The Snapshot %s failed to delete: %s\n%s", id, err, response)
+			return nil, isSnapshotFailed, flex.FmtErrorf("[ERROR] The Snapshot %s failed to delete: %s\n%s", id, err, response)
 		}
 		return snapshot, *snapshot.LifecycleState, nil
 	}
@@ -1121,7 +1120,7 @@ func snapshotExists(d *schema.ResourceData, meta interface{}, id string) (bool, 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Snapshot: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Snapshot: %s\n%s", err, response)
 	}
 	return true, nil
 }

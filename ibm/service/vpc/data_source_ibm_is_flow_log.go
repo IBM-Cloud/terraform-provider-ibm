@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -221,13 +220,13 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 		flowlogCollectors, response, err := sess.ListFlowLogCollectors(listOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error Fetching Flow Logs for VPC %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("Error Fetching Flow Logs for VPC %s\n%s", err, response))
 		}
 
 		allrecs := flowlogCollectors.FlowLogCollectors
 
 		if len(allrecs) == 0 {
-			return diag.FromErr(fmt.Errorf("[ERROR] No flow log collector found with name (%s)", name))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] No flow log collector found with name (%s)", name))
 		}
 		flc := allrecs[0]
 		flowLogCollector = &flc
@@ -240,48 +239,48 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 		flowlogCollector, response, err := sess.GetFlowLogCollectorWithContext(context, getFlowLogCollectorOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetFlowLogCollectorWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetFlowLogCollectorWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetFlowLogCollectorWithContext failed %s\n%s", err, response))
 		}
 		flowLogCollector = flowlogCollector
 	}
 
 	d.SetId(*flowLogCollector.ID)
 	if err = d.Set("active", flowLogCollector.Active); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting active: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting active: %s", err))
 	}
 	if err = d.Set("auto_delete", flowLogCollector.AutoDelete); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting auto_delete: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting auto_delete: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(flowLogCollector.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", flowLogCollector.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 	}
 	if err = d.Set("href", flowLogCollector.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", flowLogCollector.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("name", flowLogCollector.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if err = d.Set("identifier", *flowLogCollector.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting identifier: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting identifier: %s", err))
 	}
 
 	if flowLogCollector.ResourceGroup != nil {
 		err = d.Set("resource_group", dataSourceFlowLogCollectorFlattenResourceGroup(*flowLogCollector.ResourceGroup))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group %s", err))
 		}
 	}
 
 	if flowLogCollector.StorageBucket != nil {
 		err = d.Set("storage_bucket", dataSourceFlowLogCollectorFlattenStorageBucket(*flowLogCollector.StorageBucket))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting storage_bucket %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting storage_bucket %s", err))
 		}
 	}
 
@@ -290,14 +289,14 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 		target := targetIntf.(*vpcv1.FlowLogCollectorTarget)
 		err = d.Set("target", dataSourceFlowLogCollectorFlattenTarget(*target))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting target %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting target %s", err))
 		}
 	}
 
 	if flowLogCollector.VPC != nil {
 		err = d.Set("vpc", dataSourceFlowLogCollectorFlattenVPC(*flowLogCollector.VPC))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpc %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vpc %s", err))
 		}
 	}
 
@@ -309,7 +308,7 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 	err = d.Set(isFlowLogAccessTags, accesstags)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting access tags %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting access tags %s", err))
 	}
 	return nil
 }

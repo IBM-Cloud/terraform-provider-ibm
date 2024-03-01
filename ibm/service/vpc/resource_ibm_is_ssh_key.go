@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -224,7 +223,7 @@ func keyCreate(d *schema.ResourceData, meta interface{}, name, publickey string)
 
 	key, response, err := sess.CreateKey(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create SSH Key %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Create SSH Key %s\n%s", err, response)
 	}
 	d.SetId(*key.ID)
 	log.Printf("[INFO] Key : %s", *key.ID)
@@ -275,7 +274,7 @@ func keyGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting SSH Key (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting SSH Key (%s): %s\n%s", id, err, response)
 	}
 	d.Set(isKeyName, *key.Name)
 	d.Set(isKeyPublicKey, *key.PublicKey)
@@ -338,7 +337,7 @@ func keyUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		key, response, err := sess.GetKey(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting SSH Key : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting SSH Key : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isKeyTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *key.CRN, "", isKeyUserTagType)
@@ -353,7 +352,7 @@ func keyUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		key, response, err := sess.GetKey(options)
 		if err != nil {
-			return fmt.Errorf("Error getting SSH Key : %s\n%s", err, response)
+			return flex.FmtErrorf("Error getting SSH Key : %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isKeyAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *key.CRN, "", isKeyAccessTagType)
@@ -371,12 +370,12 @@ func keyUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasCha
 		}
 		keyPatch, err := keyPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for KeyPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for KeyPatch: %s", err)
 		}
 		options.KeyPatch = keyPatch
 		_, response, err := sess.UpdateKey(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating vpc SSH Key: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating vpc SSH Key: %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -406,7 +405,7 @@ func keyDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting SSH Key (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting SSH Key (%s): %s\n%s", id, err, response)
 	}
 
 	options := &vpcv1.DeleteKeyOptions{
@@ -414,7 +413,7 @@ func keyDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteKey(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting SSH Key : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting SSH Key : %s\n%s", err, response)
 	}
 	d.SetId("")
 	return nil
@@ -440,7 +439,7 @@ func keyExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting SSH Key: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting SSH Key: %s\n%s", err, response)
 	}
 	return true, nil
 }

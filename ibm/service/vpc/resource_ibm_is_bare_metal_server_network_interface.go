@@ -291,11 +291,11 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 
 		bms, response, err := sess.GetBareMetalServerWithContext(context, getbmsoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
 		}
 		// failed, pending, restarting, running, starting, stopped, stopping, maintenance
 		if *bms.Status == "failed" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error cannot attach network interface to a failed bare metal server"))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error cannot attach network interface to a failed bare metal server"))
 		} else if *bms.Status == "running" {
 			log.Printf("[DEBUG] Stopping bare metal server (%s) to create a PCI network interface", bareMetalServerId)
 			stopType := "hard"
@@ -308,14 +308,14 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 			}
 			res, err := sess.StopBareMetalServerWithContext(context, createstopaction)
 			if err != nil || res.StatusCode != 204 {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error stopping bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error stopping bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
 			}
 			_, err = isWaitForBareMetalServerStoppedForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else if *bms.Status != "stopped" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status))
 		}
 
 		nicOptions := &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype{}
@@ -399,7 +399,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 		options.BareMetalServerNetworkInterfacePrototype = nicOptions
 		nic, response, err := sess.CreateBareMetalServerNetworkInterfaceWithContext(context, options)
 		if err != nil || nic == nil {
-			return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response))
 		}
 		switch reflect.TypeOf(nic).String() {
 		case "*vpcv1.BareMetalServerNetworkInterfaceByPci":
@@ -438,7 +438,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 		}
 		res, err := sess.StartBareMetalServerWithContext(context, createstartaction)
 		if err != nil || res.StatusCode != 204 {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error starting bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error starting bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
 		}
 		_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
@@ -549,7 +549,7 @@ func createVlanTypeNetworkInterface(context context.Context, d *schema.ResourceD
 	options.BareMetalServerNetworkInterfacePrototype = nicOptions
 	nic, response, err := sess.CreateBareMetalServerNetworkInterfaceWithContext(context, options)
 	if err != nil || nic == nil {
-		return fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response)
+		return flex.FmtErrorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response)
 	}
 
 	switch reflect.TypeOf(nic).String() {
@@ -666,7 +666,7 @@ func createHiperSocketTypeNetworkInterface(context context.Context, d *schema.Re
 	options.BareMetalServerNetworkInterfacePrototype = nicOptions
 	nic, response, err := sess.CreateBareMetalServerNetworkInterfaceWithContext(context, options)
 	if err != nil || nic == nil {
-		return fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response)
+		return flex.FmtErrorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response)
 	}
 	err = bareMetalServerNICGet(d, meta, sess, nic, bareMetalServerId)
 	if err != nil {
@@ -704,7 +704,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceRead(context context.Context, d
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerId, nicID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerId, nicID, err, response))
 	}
 	err = bareMetalServerNICGet(d, meta, sess, nicIntf, bareMetalServerId)
 	if err != nil {
@@ -767,7 +767,7 @@ func bareMetalServerNICGet(d *schema.ResourceData, meta interface{}, sess *vpcv1
 				}
 				bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", *nic.PrimaryIP.ID, *nic.ID, err, response)
+					return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", *nic.PrimaryIP.ID, *nic.ID, err, response)
 				}
 				currentIP[isBareMetalServerNicIpAutoDelete] = bmsRip.AutoDelete
 				primaryIpList = append(primaryIpList, currentIP)
@@ -844,7 +844,7 @@ func bareMetalServerNICGet(d *schema.ResourceData, meta interface{}, sess *vpcv1
 			}
 			bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", *nic.PrimaryIP.ID, *nic.ID, err, response)
+				return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", *nic.PrimaryIP.ID, *nic.ID, err, response)
 			}
 			currentIP[isBareMetalServerNicIpAutoDelete] = bmsRip.AutoDelete
 
@@ -921,7 +921,7 @@ func bareMetalServerNICGet(d *schema.ResourceData, meta interface{}, sess *vpcv1
 			}
 			bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", *nic.PrimaryIP.ID, *nic.ID, err, response)
+				return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", *nic.PrimaryIP.ID, *nic.ID, err, response)
 			}
 			currentIP[isBareMetalServerNicIpAutoDelete] = bmsRip.AutoDelete
 
@@ -972,7 +972,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceUpdate(context context.Context,
 				}
 				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response))
 				}
 				_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
@@ -989,7 +989,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceUpdate(context context.Context,
 				}
 				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error while removing security group %q for network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response))
 				}
 				_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
@@ -1022,12 +1022,12 @@ func resourceIBMISBareMetalServerNetworkInterfaceUpdate(context context.Context,
 		}
 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err))
 		}
 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 		_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating network interface reserved ip(%s): %s\n%s", ripId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating network interface reserved ip(%s): %s\n%s", ripId, err, response))
 		}
 	}
 
@@ -1073,13 +1073,13 @@ func resourceIBMISBareMetalServerNetworkInterfaceUpdate(context context.Context,
 	if flag {
 		nicPatchModelAsPatch, err := nicPatchModel.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch %s", err))
 		}
 		options.BareMetalServerNetworkInterfacePatch = nicPatchModelAsPatch
 
 		nicIntf, response, err := sess.UpdateBareMetalServerNetworkInterfaceWithContext(context, options)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response))
 		}
 		return diag.FromErr(bareMetalServerNICGet(d, meta, sess, nicIntf, bareMetalServerId))
 	}
@@ -1116,7 +1116,7 @@ func bareMetalServerNetworkInterfaceDelete(context context.Context, d *schema.Re
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface(%s) : %s\n%s", bareMetalServerId, nicId, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) network interface(%s) : %s\n%s", bareMetalServerId, nicId, err, response)
 	}
 	nicType := ""
 	switch reflect.TypeOf(nicIntf).String() {
@@ -1133,11 +1133,11 @@ func bareMetalServerNetworkInterfaceDelete(context context.Context, d *schema.Re
 
 			bms, response, err := sess.GetBareMetalServerWithContext(context, getbmsoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error fetching bare metal server (%s) err %s\n%s", bareMetalServerId, err, response)
+				return flex.FmtErrorf("[ERROR] Error fetching bare metal server (%s) err %s\n%s", bareMetalServerId, err, response)
 			}
 			// failed, pending, restarting, running, starting, stopped, stopping, maintenance
 			if *bms.Status == "failed" {
-				return fmt.Errorf("[ERROR] Error cannot detach network interface from a failed bare metal server")
+				return flex.FmtErrorf("[ERROR] Error cannot detach network interface from a failed bare metal server")
 			} else if *bms.Status == "running" {
 				log.Printf("[DEBUG] Stopping bare metal server (%s) to create a PCI network interface", bareMetalServerId)
 				stopType := "soft"
@@ -1150,14 +1150,14 @@ func bareMetalServerNetworkInterfaceDelete(context context.Context, d *schema.Re
 				}
 				res, err := sess.StopBareMetalServerWithContext(context, createstopaction)
 				if err != nil || res.StatusCode != 204 {
-					return fmt.Errorf("[ERROR] Error stopping bare metal server (%s) err %s\n%s", bareMetalServerId, err, response)
+					return flex.FmtErrorf("[ERROR] Error stopping bare metal server (%s) err %s\n%s", bareMetalServerId, err, response)
 				}
 				_, err = isWaitForBareMetalServerStoppedForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 				if err != nil || res.StatusCode != 204 {
 					return err
 				}
 			} else if *bms.Status != "stopped" {
-				return fmt.Errorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status)
+				return flex.FmtErrorf("[ERROR] Error bare metal server in %s state, please try after some time", *bms.Status)
 			}
 		}
 	case "*vpcv1.BareMetalServerNetworkInterfaceByVlan":
@@ -1172,7 +1172,7 @@ func bareMetalServerNetworkInterfaceDelete(context context.Context, d *schema.Re
 	}
 	response, err = sess.DeleteBareMetalServerNetworkInterfaceWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Bare Metal Server (%s) network interface (%s) : %s\n%s", bareMetalServerId, nicId, err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Bare Metal Server (%s) network interface (%s) : %s\n%s", bareMetalServerId, nicId, err, response)
 	}
 	_, err = isWaitForBareMetalServerNetworkInterfaceDeleted(sess, bareMetalServerId, nicId, nicType, nicIntf, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -1186,7 +1186,7 @@ func bareMetalServerNetworkInterfaceDelete(context context.Context, d *schema.Re
 		}
 		res, err := sess.StartBareMetalServerWithContext(context, createstartaction)
 		if err != nil || res.StatusCode != 204 {
-			return fmt.Errorf("[ERROR] Error starting bare metal server (%s) err %s\n%s", bareMetalServerId, err, response)
+			return flex.FmtErrorf("[ERROR] Error starting bare metal server (%s) err %s\n%s", bareMetalServerId, err, response)
 		}
 		_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
@@ -1224,10 +1224,10 @@ func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareM
 			}
 			bms, response, err := bmsC.GetBareMetalServer(getBmsOptions)
 			if err != nil {
-				return bmsNic, isBareMetalServerNetworkInterfaceFailed, fmt.Errorf("[ERROR] Error getting Bare Metal Server(%s) : %s\n%s", bareMetalServerId, err, response)
+				return bmsNic, isBareMetalServerNetworkInterfaceFailed, flex.FmtErrorf("[ERROR] Error getting Bare Metal Server(%s) : %s\n%s", bareMetalServerId, err, response)
 			}
 			if *bms.Status == "stopped" {
-				return bmsNic, isBareMetalServerNetworkInterfaceVlanPending, fmt.Errorf("[ERROR] Error deleting Bare Metal Server(%s) Network Interface (%s), server in stopped state ", bareMetalServerId, nicId)
+				return bmsNic, isBareMetalServerNetworkInterfaceVlanPending, flex.FmtErrorf("[ERROR] Error deleting Bare Metal Server(%s) Network Interface (%s), server in stopped state ", bareMetalServerId, nicId)
 			}
 		}
 		if bmsNic != nil && nicType == "pci" {
@@ -1236,7 +1236,7 @@ func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareM
 			}
 			bms, response, err := bmsC.GetBareMetalServer(getBmsOptions)
 			if err != nil {
-				return bmsNic, isBareMetalServerNetworkInterfaceFailed, fmt.Errorf("[ERROR] Error getting Bare Metal Server(%s) : %s\n%s", bareMetalServerId, err, response)
+				return bmsNic, isBareMetalServerNetworkInterfaceFailed, flex.FmtErrorf("[ERROR] Error getting Bare Metal Server(%s) : %s\n%s", bareMetalServerId, err, response)
 			}
 			if *bms.Status == "stopped" {
 				return bmsNic, isBareMetalServerNetworkInterfacePCIPending, nil
@@ -1246,7 +1246,7 @@ func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareM
 			if response != nil && response.StatusCode == 404 {
 				return nicIntf, isBareMetalServerNetworkInterfaceDeleted, nil
 			}
-			return bmsNic, isBareMetalServerNetworkInterfaceFailed, fmt.Errorf("[ERROR] Error getting Bare Metal Server(%s) Network Interface (%s): %s\n%s", bareMetalServerId, nicId, err, response)
+			return bmsNic, isBareMetalServerNetworkInterfaceFailed, flex.FmtErrorf("[ERROR] Error getting Bare Metal Server(%s) Network Interface (%s): %s\n%s", bareMetalServerId, nicId, err, response)
 		}
 		return bmsNic, isBareMetalServerNetworkInterfaceDeleting, err
 	}
@@ -1273,7 +1273,7 @@ func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetal
 		}
 		bmsNic, response, err := client.GetBareMetalServerNetworkInterface(getBmsNicOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) Network Interface (%s) : %s\n%s", bareMetalServerId, nicId, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) Network Interface (%s) : %s\n%s", bareMetalServerId, nicId, err, response)
 		}
 		status := ""
 		pcipending := false
@@ -1288,7 +1288,7 @@ func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetal
 				}
 				bms, response, err := client.GetBareMetalServer(getBmsOptions)
 				if err != nil {
-					return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s)  : %s\n%s", bareMetalServerId, err, response)
+					return nil, "", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s)  : %s\n%s", bareMetalServerId, err, response)
 				}
 				if *bms.Status == "stopped" {
 					pcipending = true
@@ -1325,10 +1325,10 @@ func MakeTerraformNICID(id1, id2 string) string {
 func ParseNICTerraformID(s string) (string, string, error) {
 	segments := strings.Split(s, "/")
 	if len(segments) != 2 {
-		return "", "", fmt.Errorf("invalid terraform Id %s (incorrect number of segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (incorrect number of segments)", s)
 	}
 	if segments[0] == "" || segments[1] == "" {
-		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
 }
@@ -1353,7 +1353,7 @@ func isBareMetalServerForNICRefreshFunc(client *vpcv1.VpcV1, id string, d *schem
 		}
 		bms, response, err := client.GetBareMetalServer(bmsgetoptions)
 		if err != nil {
-			return nil, "failed", fmt.Errorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
+			return nil, "failed", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
 		}
 
 		if *bms.Status == "running" || *bms.Status == "failed" {
@@ -1383,12 +1383,12 @@ func isBareMetalServerForNICStoppedRefreshFunc(client *vpcv1.VpcV1, id string, d
 		}
 		bms, response, err := client.GetBareMetalServer(bmsgetoptions)
 		if err != nil {
-			return nil, "failed", fmt.Errorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
+			return nil, "failed", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
 		}
 		if *bms.Status == "stopped" || *bms.Status == "failed" {
 			// let know the isRestartStartAction() to stop
 			if *bms.Status == "failed" {
-				return bms, *bms.Status, fmt.Errorf("[ERROR] Error bare metal server in failed state")
+				return bms, *bms.Status, flex.FmtErrorf("[ERROR] Error bare metal server in failed state")
 			}
 			return bms, "stopped", nil
 

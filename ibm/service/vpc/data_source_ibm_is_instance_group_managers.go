@@ -134,7 +134,7 @@ func dataSourceIBMISInstanceGroupManagersRead(d *schema.ResourceData, meta inter
 		}
 		instanceGroupManagerCollections, response, err := sess.ListInstanceGroupManagers(&listInstanceGroupManagerOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
 		}
 
 		start = flex.GetNext(instanceGroupManagerCollections.Next)
