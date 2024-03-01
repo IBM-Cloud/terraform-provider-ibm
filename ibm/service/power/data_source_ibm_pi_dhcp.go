@@ -35,7 +35,7 @@ func DataSourceIBMPIDhcp() *schema.Resource {
 			// Attributes
 			Attr_DhcpID: {
 				Computed:    true,
-				Deprecated:  "The field is deprecated, use id instead.",
+				Deprecated:  "The field is deprecated, use pi_dhcp_id instead.",
 				Description: "ID of the DHCP Server.",
 				Type:        schema.TypeString,
 			},
