@@ -1324,20 +1324,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 			}
 		}
-		err = authenticateCF(sess.BluemixSession)
-		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				time.Sleep(c.RetryDelay)
-				log.Printf("Retrying CF Authentication %d", count)
-				err = authenticateCF(sess.BluemixSession)
-			}
-			if err != nil {
-				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-			}
-		}
+
+		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 	}
 
 	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
@@ -3398,20 +3386,6 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 		DefaultHeader: gohttp.Header{
 			"User-Agent":            []string{http.UserAgent()},
 			"X-Original-User-Agent": []string{config.UserAgent},
-		},
-	})
-	if err != nil {
-		return err
-	}
-	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
-}
-
-func authenticateCF(sess *bxsession.Session) error {
-	config := sess.Config
-	tokenRefresher, err := authentication.NewUAARepository(config, &rest.Client{
-		DefaultHeader: gohttp.Header{
-			"User-Agent":            []string{http.UserAgent()},
-			"X-Original-User-Agent": []string{http.UserAgent()},
 		},
 	})
 	if err != nil {
