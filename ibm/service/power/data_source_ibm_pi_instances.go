@@ -141,6 +141,16 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The unique identifier of the instance.",
 							Type:        schema.TypeString,
 						},
+						Attr_SharedProcessorPool: {
+							Computed:    true,
+							Description: "The name of the shared processor pool for the instance.",
+							Type:        schema.TypeString,
+						},
+						Attr_SharedProcessorPoolID: {
+							Computed:    true,
+							Description: "The ID of the shared processor pool for the instance.",
+							Type:        schema.TypeString,
+						},
 						Attr_Status: {
 							Computed:    true,
 							Description: "The status of the instance.",
@@ -215,6 +225,8 @@ func flattenPvmInstances(list []*models.PVMInstanceReference) []map[string]inter
 			Attr_Processors:                *i.Processors,
 			Attr_ProcType:                  *i.ProcType,
 			Attr_PVMInstanceID:             *i.PvmInstanceID,
+			Attr_SharedProcessorPool:       i.SharedProcessorPool,
+			Attr_SharedProcessorPoolID:     i.SharedProcessorPoolID,
 			Attr_Status:                    *i.Status,
 			Attr_StoragePool:               i.StoragePool,
 			Attr_StoragePoolAffinity:       i.StoragePoolAffinity,
