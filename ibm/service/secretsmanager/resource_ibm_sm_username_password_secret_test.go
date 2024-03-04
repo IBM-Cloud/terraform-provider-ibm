@@ -4,6 +4,7 @@
 package secretsmanager_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -22,6 +23,21 @@ var password = "password"
 var modifiedPassword = "modified_password"
 var usernamePasswordSecretName = "terraform-test-username-secret"
 var modifiedUsernamePasswordSecretName = "modified-terraform-test-username-secret"
+var passwordGenerationPolicy = `{
+				length = 17
+				include_digits = false
+				include_symbols = false
+				include_uppercase = true
+			}`
+var passwordGenerationPolicyJSON = "{\"length\":17,\"include_digits\":false,\"include_symbols\":false,\"include_uppercase\":true}"
+
+var modifiedPasswordGenerationPolicy = `{
+				length = 26
+				include_digits = true
+				include_symbols = true
+				include_uppercase = false
+			}`
+var modifiedPasswordGenerationPolicyJSON = "{\"length\":26,\"include_digits\":true,\"include_symbols\":true,\"include_uppercase\":false}"
 
 func TestAccIbmSmUsernamePasswordSecretBasic(t *testing.T) {
 	resourceName := "ibm_sm_username_password_secret.sm_username_password_secret_basic"
@@ -113,6 +129,7 @@ var usernamePasswordSecretFullConfigFormat = `
   			custom_metadata = %s
 			secret_group_id = "default"
 			rotation %s
+			password_generation_policy %s
 		}`
 
 func usernamePasswordSecretConfigBasic() string {
@@ -122,13 +139,14 @@ func usernamePasswordSecretConfigBasic() string {
 
 func usernamePasswordSecretConfigAllArgs() string {
 	return fmt.Sprintf(usernamePasswordSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
-		usernamePasswordSecretName, description, label, username, password, expirationDate, customMetadata, rotationPolicy)
+		usernamePasswordSecretName, description, label, username, password, expirationDate, customMetadata, rotationPolicy,
+		passwordGenerationPolicy)
 }
 
 func usernamePasswordSecretConfigUpdated() string {
 	return fmt.Sprintf(usernamePasswordSecretFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		modifiedUsernamePasswordSecretName, modifiedDescription, modifiedLabel, modifiedUsername, modifiedPassword,
-		modifiedExpirationDate, modifiedCustomMetadata, modifiedRotationPolicy)
+		modifiedExpirationDate, modifiedCustomMetadata, modifiedRotationPolicy, modifiedPasswordGenerationPolicy)
 }
 
 func testAccCheckIbmSmUsernamePasswordSecretCreated(n string) resource.TestCheckFunc {
@@ -164,6 +182,10 @@ func testAccCheckIbmSmUsernamePasswordSecretCreated(n string) resource.TestCheck
 			return err
 		}
 		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate"); err != nil {
+			return err
+		}
+		pwdPolicyJson, _ := json.Marshal(secret.PasswordGenerationPolicy)
+		if err := verifyAttr(string(pwdPolicyJson), passwordGenerationPolicyJSON, "password_generation_policy"); err != nil {
 			return err
 		}
 		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit"); err != nil {
@@ -215,6 +237,10 @@ func testAccCheckIbmSmUsernamePasswordSecretUpdated(n string) resource.TestCheck
 			return err
 		}
 		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval after update"); err != nil {
+			return err
+		}
+		pwdPolicyJson, _ := json.Marshal(secret.PasswordGenerationPolicy)
+		if err := verifyAttr(string(pwdPolicyJson), modifiedPasswordGenerationPolicyJSON, "password_generation_policy"); err != nil {
 			return err
 		}
 		return nil

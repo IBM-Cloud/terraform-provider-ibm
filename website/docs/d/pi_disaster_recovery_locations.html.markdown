@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_disaster_recovery_locations"
@@ -16,13 +15,14 @@ The following example retrieves information about the disaster recovery location
 ```terraform
 data "ibm_pi_disaster_recovery_locations" "ds_disaster_recovery_locations" {}
 ```
+
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -39,6 +39,6 @@ In addition to all argument reference list, you can access the following attribu
   - `location` - (String) The region zone of a site.
   - `replication_sites` - List of Replication Sites.
   
-    Nested scheme for `replication_sites`:
-    - `is_active` - (Boolean) Indicates the location is active or not, `true` if location is active, otherwise it is `false`.
-    - `location` - (String) The region zone of the location.
+        Nested scheme for `replication_sites`:
+        - `is_active` - (Boolean) Indicates the location is active or not, `true` if location is active, otherwise it is `false`.
+        - `location` - (String) The region zone of the location.

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project_test
@@ -27,11 +27,14 @@ func TestAccIbmProjectDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "project_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "cumulative_needs_attention_view.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "location"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "resource_group"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "configs.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "environments.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project.project_instance", "definition.#"),
 				),
 			},
@@ -48,6 +51,7 @@ func testAccCheckIbmProjectDataSourceConfigBasic(projectLocation string, project
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
+                monitoring_enabled = true
             }
 		}
 
