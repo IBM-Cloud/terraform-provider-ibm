@@ -128,7 +128,6 @@ func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, 
 	workspaces := make([]map[string]interface{}, 0, len(wsData.Workspaces))
 	for _, ws := range wsData.Workspaces {
 		if ws != nil {
-
 			wsDetails := map[string]interface{}{
 				Attr_CreationDate: ws.Details.CreationDate.String(),
 				Attr_CRN:          *ws.Details.Crn,
@@ -147,18 +146,6 @@ func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, 
 			wsDetailsList := make([]map[string]interface{}, 0, 1)
 			wsDetailsList = append(wsDetailsList, wsDetails)
 
-			// wsDetails := map[string]interface{}{
-			// 	Attr_CreationDate: ws.Details.CreationDate.String(),
-			// 	Attr_CRN:          *ws.Details.Crn,
-			// }
-			// if ws.Details.PowerEdgeRouter != nil {
-			// 	wsPowerEdge := map[string]interface{}{
-			// 		Attr_MigrationStatus: ws.Details.PowerEdgeRouter.MigrationStatus,
-			// 		Attr_State:           *ws.Details.PowerEdgeRouter.State,
-			// 		Attr_Type:            *ws.Details.PowerEdgeRouter.Type,
-			// 	}
-			// 	wsDetails[Attr_PowerEdgeRouter] = fmt.Sprint(wsPowerEdge)
-			// }
 			workspace := map[string]interface{}{
 				Attr_WorkspaceCapabilities: ws.Capabilities,
 				Attr_WorkspaceDetails:      wsDetailsList,
