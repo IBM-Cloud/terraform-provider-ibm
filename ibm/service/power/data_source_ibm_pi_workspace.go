@@ -36,9 +36,45 @@ func DatasourceIBMPIWorkspace() *schema.Resource {
 				Type: schema.TypeMap,
 			},
 			Attr_WorkspaceDetails: {
-				Computed:    true,
-				Description: "Workspace information.",
-				Type:        schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_CreationDate: {
+							Computed:    true,
+							Description: "Workspace creation date.",
+							Type:        schema.TypeString,
+						},
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The Workspace crn.",
+							Type:        schema.TypeString,
+						},
+						Attr_PowerEdgeRouter: {
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_MigrationStatus: {
+										Computed:    true,
+										Description: "The migration status of a Power Edge Router.",
+										Type:        schema.TypeString,
+									},
+									Attr_State: {
+										Computed:    true,
+										Description: "The state of a Power Edge Router.",
+										Type:        schema.TypeString,
+									},
+									Attr_Type: {
+										Computed:    true,
+										Description: "The Power Edge Router type.",
+										Type:        schema.TypeString,
+									},
+								},
+							},
+							Type: schema.TypeList,
+						},
+					},
+				},
+				Type: schema.TypeList,
 			},
 			Attr_WorkspaceLocation: {
 				Computed:    true,
@@ -81,17 +117,32 @@ func dataSourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_WorkspaceStatus, wsData.Status)
 	d.Set(Attr_WorkspaceType, wsData.Type)
 	d.Set(Attr_WorkspaceCapabilities, wsData.Capabilities)
-	wsdetails := map[string]interface{}{
+
+	wsDetails := map[string]interface{}{
 		Attr_CreationDate: wsData.Details.CreationDate.String(),
 		Attr_CRN:          *wsData.Details.Crn,
 	}
-	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsdetails))
-	wslocation := map[string]interface{}{
+	if wsData.Details.PowerEdgeRouter != nil {
+		wsPowerEdge := map[string]interface{}{
+			Attr_MigrationStatus: wsData.Details.PowerEdgeRouter.MigrationStatus,
+			Attr_State:           *wsData.Details.PowerEdgeRouter.State,
+			Attr_Type:            *wsData.Details.PowerEdgeRouter.Type,
+		}
+		wsPowerEdgeList := make([]map[string]interface{}, 0, 1)
+		wsPowerEdgeList = append(wsPowerEdgeList, wsPowerEdge)
+		wsDetails[Attr_PowerEdgeRouter] = wsPowerEdgeList
+	}
+
+	wsDetailsList := make([]map[string]interface{}, 0, 1)
+	wsDetailsList = append(wsDetailsList, wsDetails)
+
+	d.Set(Attr_WorkspaceDetails, wsDetailsList)
+	wsLocation := map[string]interface{}{
 		Attr_Region: *wsData.Location.Region,
 		Attr_Type:   wsData.Location.Type,
 		Attr_URL:    wsData.Location.URL,
 	}
-	d.Set(Attr_WorkspaceLocation, flex.Flatten(wslocation))
+	d.Set(Attr_WorkspaceLocation, flex.Flatten(wsLocation))
 	d.SetId(*wsData.ID)
 	return nil
 }
