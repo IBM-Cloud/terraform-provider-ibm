@@ -165,22 +165,22 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			Attr_IBMiCSS: {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "IBMi Cloud Storage Solution",
+				Description: "IBM i Cloud Storage Solution",
 			},
 			Attr_IBMiPHA: {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "IBMi Power High Availability",
+				Description: "IBM i Power High Availability",
 			},
 			Attr_IBMiRDS: {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "IBMi Rational Dev Studio",
+				Description: "IBM i Rational Dev Studio",
 			},
 			Attr_IBMiRDSUsers: {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "IBMi Rational Dev Studio Number of User Licenses",
+				Description: "IBM i Rational Dev Studio Number of User Licenses",
 			},
 		},
 	}
