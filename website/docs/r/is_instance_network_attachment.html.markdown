@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_instance_network_attachment"
 description: |-
   Manages Instance NetworkAttachment.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_instance_network_attachment

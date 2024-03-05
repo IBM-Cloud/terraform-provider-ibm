@@ -271,6 +271,27 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMTrustedProfilePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesWithoutWildcard(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -807,6 +828,29 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributes(name string) strin
 	  }
 	`, name)
 }
+
+func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesWithoutWildcard(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id     = ibm_iam_trusted_profile.profileID.id
+		roles              = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, name)
+}
+
 func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesUpdate(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_trusted_profile" "profileID" {
