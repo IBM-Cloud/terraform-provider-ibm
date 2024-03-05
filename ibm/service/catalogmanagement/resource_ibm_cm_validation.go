@@ -412,17 +412,19 @@ func markVersionAsConsumable(version catalogmanagementv1.Version, context contex
 func envVariablesToDeployRequestBodyEnvVariables(envVariables []interface{}) ([]catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem, error) {
 	var modelArr []catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem
 	for _, envVar := range envVariables {
-		model := catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem{}
-		if envVar.(map[string]interface{})["name"] != nil && envVar.(map[string]interface{})["name"].(string) != "" {
-			model.Name = core.StringPtr(envVar.(map[string]interface{})["name"].(string))
+		if envVar != nil {
+			model := catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem{}
+			if envVar.(map[string]interface{})["name"] != nil && envVar.(map[string]interface{})["name"].(string) != "" {
+				model.Name = core.StringPtr(envVar.(map[string]interface{})["name"].(string))
+			}
+			if envVar.(map[string]interface{})["value"] != nil {
+				model.Value = envVar.(map[string]interface{})["value"]
+			}
+			if envVar.(map[string]interface{})["secure"] != nil {
+				model.Secure = core.BoolPtr(envVar.(map[string]interface{})["secure"].(bool))
+			}
+			modelArr = append(modelArr, model)
 		}
-		if envVar.(map[string]interface{})["value"] != nil {
-			model.Value = envVar.(map[string]interface{})["value"]
-		}
-		if envVar.(map[string]interface{})["secure"] != nil {
-			model.Secure = core.BoolPtr(envVar.(map[string]interface{})["secure"].(bool))
-		}
-		modelArr = append(modelArr, model)
 	}
 	return modelArr, nil
 }
