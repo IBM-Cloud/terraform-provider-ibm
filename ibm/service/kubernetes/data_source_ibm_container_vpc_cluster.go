@@ -252,7 +252,10 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"vpe_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -395,6 +398,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
+	d.Set("vpe_service_endpoint_url", cls.VirtualPrivateEndpointURL)
 	d.Set("public_service_endpoint", cls.ServiceEndpoints.PublicServiceEndpointEnabled)
 	d.Set("private_service_endpoint", cls.ServiceEndpoints.PrivateServiceEndpointEnabled)
 	d.Set("ingress_hostname", cls.Ingress.HostName)
@@ -421,7 +425,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	if !strings.HasSuffix(cls.MasterKubeVersion, _OPENSHIFT) {
 		albs, err := csClient.Albs().ListClusterAlbs(clusterID, targetEnv)
-		if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") {
+		if err != nil {
 			return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", clusterID, err)
 		}
 

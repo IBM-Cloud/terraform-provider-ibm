@@ -23,6 +23,6 @@ ignoreNoobaa = "false"
 numOfOsd = "1"
 ocsUpgrade = "false"
 osdDevicePaths = null
-osdSize = "250Gi"
+osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
 workerNodes = null

@@ -4,7 +4,7 @@ provider "ibm" {
 
 // Provision project_config resource instance
 resource "ibm_project_config" "project_config_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition {
     name = "static-website-dev"
     description = "Website - development"
@@ -27,12 +27,13 @@ resource "ibm_project" "project_instance" {
     name = "My static website"
     description = "Sample static website test using the IBM catalog deployable architecture"
     destroy_on_delete = true
+    monitoring_enabled = true
   }
 }
 
 // Provision project_environment resource instance
 resource "ibm_project_environment" "project_environment_instance" {
-  project_id = ibm_project.project_instance.project_id
+  project_id = ibm_project.project_instance.id
   definition {
     name = "environment-stage"
     description = "environment for stage project"

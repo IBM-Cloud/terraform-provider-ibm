@@ -10,21 +10,19 @@ description: |-
 Retrieve information about an existing IBM Power Virtual Server Cloud Instance as a read-only data source. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
-
 ```terraform
 data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
-## Notes:
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+**Notes**
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
 
 Example usage:
-
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -46,7 +44,7 @@ In addition to the argument reference list, you can access the following attribu
 - `pvm_instances` - (List) PVM instances owned by the Cloud Instance.
 
   Nested scheme for `pvm_instances`:
-  - `creation_date` - (String) Date/Time of PVM creation.
+  - `creation_date` - (String) Date of PVM instance creation.
   - `href` - (String) Link to Cloud Instance resource.
   - `id` - (String) PVM Instance ID.
   - `name` - (String) Name of the server.
@@ -59,4 +57,3 @@ In addition to the argument reference list, you can access the following attribu
 - `total_processors_consumed` - (String) The total processors consumed by this service instance.
 - `total_ssd_storage_consumed` - (String) The total SSD Storage consumed by this service instance.
 - `total_standard_storage_consumed` - (String) The total Standard Storage consumed by this service instance.
-

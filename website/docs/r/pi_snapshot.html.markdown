@@ -58,7 +58,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the snapshot. The ID is composed of <power_instance_id>/<pi_snap_shot_id>.
+- `id` - (String) The unique identifier of the snapshot. The ID is composed of <power_instance_id>/<snapshot_id>.
 - `snapshot_id` - (String) ID of the PVM instance snapshot.
 - `status` - (String) Status of the PVM instance snapshot.
 - `creation_date` - (String) Creation Date.
@@ -67,7 +67,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_snapshot` resource can be imported by using `power_instance_id` and `pi_snap_shot_id`.
+The `ibm_pi_snapshot` resource can be imported by using `power_instance_id` and `snapshot_id`.
 
 **Example**
 

@@ -44,17 +44,14 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `addresses` - (Deprecated, List of objects) - The address associated with this instance.
-
-  Nested scheme for `addresses`:
-  - `ip` - (String) The IP address of the instance.
-  - `external_ip` - (String) The external IP address of the instance.
-  - `macaddress` - (String) The MAC address of the instance.
-  - `network_id` - (String) The network ID of the instance.
-  - `network_name` - (String) The network name of the instance.
-  - `type` - (String) The type of the network.
 - `deployment_type` - (String) The custom deployment type.
 - `health_status` - (String) The health of the instance.
+
+**Notes** IBMi software licenses for IBMi virtual server instances -- only for IBMi instances
+- `ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
+- `ibmi_pha` - (Boolean) IBMi Power High Availability.
+- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
+- `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
 - `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
 - `memory` - (Float) The amount of memory that is allocated to the instance.
@@ -73,6 +70,7 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
+
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.

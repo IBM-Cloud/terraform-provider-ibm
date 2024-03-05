@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package flex
@@ -1215,9 +1215,9 @@ func IntValue(i64 *int64) (i int) {
 	return
 }
 
-func float64Value(f32 *float32) (f float64) {
-	if f32 != nil {
-		f = float64(*f32)
+func StringValue(strPtr *string) (_ string) {
+	if strPtr != nil {
+		return *strPtr
 	}
 	return
 }
@@ -1639,7 +1639,11 @@ func FlattenV2PolicyResource(resource iampolicymanagementv1.V2PolicyResource) []
 	if len(customAttributes) > 0 {
 		out := make(map[string]string)
 		for _, a := range customAttributes {
-			out[*a.Key] = fmt.Sprint(a.Value)
+			if *a.Operator == "stringExists" && a.Value == true {
+				out[*a.Key] = fmt.Sprint("*")
+			} else if *a.Operator == "stringMatch" || *a.Operator == "stringEquals" {
+				out[*a.Key] = fmt.Sprint(a.Value)
+			}
 		}
 		l["attributes"] = out
 	}
@@ -2710,43 +2714,6 @@ func ResourceValidateAccessTags(diff *schema.ResourceDiff, meta interface{}) err
 	return nil
 }
 
-func ResourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
-	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
-	policyAction := policyActionIntf.(string)
-
-	if policyAction == "forward" {
-		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
-
-		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
-			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
-		}
-	} else if policyAction == "redirect" {
-		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyTargetHTTPStatusCode)
-		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
-
-		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyTargetHTTPStatusCode) {
-			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
-		}
-
-		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
-			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
-		}
-	} else if policyAction == "https_redirect" {
-		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
-		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
-
-		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
-			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
-		}
-
-		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
-			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
-		}
-	}
-
-	return nil
-}
-
 func ResourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
 	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
@@ -3345,10 +3312,12 @@ func GetResourceAttribute(name string, r iampolicymanagementv1.PolicyResource) *
 
 func GetV2PolicyResourceAttribute(key string, r iampolicymanagementv1.V2PolicyResource) string {
 	for _, a := range r.Attributes {
-		if *a.Key == key &&
-			(*a.Operator == "stringMatch" ||
-				*a.Operator == "stringEquals") {
-			return a.Value.(string)
+		if *a.Key == key {
+			if *a.Operator == "stringExists" && a.Value == true {
+				return fmt.Sprint("*")
+			} else if *a.Operator == "stringMatch" || *a.Operator == "stringEquals" {
+				return a.Value.(string)
+			}
 		}
 	}
 	return *core.StringPtr("")
@@ -3363,7 +3332,7 @@ func GetSubjectAttribute(name string, s iampolicymanagementv1.PolicySubject) *st
 	return core.StringPtr("")
 }
 
-func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySubject) *string {
+func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySubject) interface{} {
 	for _, a := range s.Attributes {
 		if *a.Key == key &&
 			(*a.Operator == "stringMatch" ||
@@ -3371,7 +3340,7 @@ func GetV2PolicySubjectAttribute(key string, s iampolicymanagementv1.V2PolicySub
 			return a.Value
 		}
 	}
-	return core.StringPtr("")
+	return interface{}(core.StringPtr(""))
 }
 
 func SetResourceAttribute(name *string, value *string, r []iampolicymanagementv1.ResourceAttribute) []iampolicymanagementv1.ResourceAttribute {
@@ -3512,6 +3481,7 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 	controlResponse := policy.Control.(*iampolicymanagementv1.ControlResponse)
 	policyRoles := MapRolesToPolicyRoles(controlResponse.Grant.Roles)
 	resourceAttributes := policy.Resource.Attributes
+	subjectAttributes := policy.Subject.Attributes
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -3519,10 +3489,19 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 	}
 
 	var (
-		serviceName    string
-		resourceType   string
-		serviceGroupID string
+		serviceName       string
+		sourceServiceName string
+		resourceType      string
+		serviceGroupID    string
 	)
+
+	for _, a := range subjectAttributes {
+		if *a.Key == "serviceName" &&
+			(*a.Operator == "stringMatch" ||
+				*a.Operator == "stringEquals") {
+			sourceServiceName = a.Value.(string)
+		}
+	}
 
 	for _, a := range resourceAttributes {
 		if *a.Key == "serviceName" &&
@@ -3550,6 +3529,11 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 	if accountManagement, ok := d.GetOk("account_management"); ok {
 		isAccountManagementPolicy = accountManagement.(bool)
 	}
+
+	if serviceName == "" && resourceType == "resource-group" {
+		serviceName = "resource-controller"
+	}
+
 	if serviceName == "" && // no specific service specified
 		!isAccountManagementPolicy && // not all account management services
 		resourceType != "resource-group" && // not to a resource group
@@ -3563,6 +3547,14 @@ func GetRoleNamesFromPolicyResponse(policy iampolicymanagementv1.V2PolicyTemplat
 
 	if serviceGroupID != "" {
 		listRoleOptions.ServiceGroupID = &serviceGroupID
+	}
+
+	if sourceServiceName != "" {
+		listRoleOptions.SourceServiceName = &sourceServiceName
+	}
+
+	if *policy.Type != "" {
+		listRoleOptions.PolicyType = policy.Type
 	}
 
 	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)

@@ -37,6 +37,7 @@ func TestAccIBMEnHuaweiDestinationAllArgs(t *testing.T) {
 					testAccCheckIBMEnHuaweiDestinationExists("ibm_en_destination_huawei.en_destination_resource_huawei", config),
 					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "name", name),
 					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "type", "push_huawei"),
+					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "description", description),
 				),
 			},
@@ -45,6 +46,7 @@ func TestAccIBMEnHuaweiDestinationAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "type", "push_huawei"),
+					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_huawei.en_destination_resource_huawei", "description", newDescription),
 				),
 			},

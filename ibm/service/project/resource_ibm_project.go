@@ -1,11 +1,10 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -39,7 +38,7 @@ func ResourceIbmProject() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The resource group where the project's data and tools are created.",
+				Description: "The resource group name where the project's data and tools are created.",
 			},
 			"definition": &schema.Schema{
 				Type:        schema.TypeList,
@@ -54,15 +53,21 @@ func ResourceIbmProject() *schema.Resource {
 							Required:    true,
 							Description: "The name of the project.  It is unique within the account across regions.",
 						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
-						},
 						"destroy_on_delete": &schema.Schema{
 							Type:        schema.TypeBool,
 							Required:    true,
 							Description: "The policy that indicates whether the resources are destroyed or not when a project is deleted.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
+						},
+						"monitoring_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A boolean flag to enable project monitoring.",
 						},
 					},
 				},
@@ -173,15 +178,15 @@ func ResourceIbmProject() *schema.Resource {
 							Description: "The name and description of a project configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The configuration name. It is unique within the account across projects and regions.",
-									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "A project configuration description.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The configuration name. It is unique within the account across projects and regions.",
 									},
 								},
 							},
@@ -228,6 +233,54 @@ func ResourceIbmProject() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The configuration type.",
+						},
+						"approved_version": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "approved_version",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "state",
+									},
+									"version": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "version",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "version",
+									},
+								},
+							},
+						},
+						"deployed_version": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "deployed_version",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "state",
+									},
+									"version": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "version",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "version",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -297,15 +350,15 @@ func ResourceIbmProject() *schema.Resource {
 							Description: "The environment definition used in the project collection.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The name of the environment.  It is unique within the account across projects and regions.",
-									},
 									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the environment.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the environment.  It is unique within the account across projects and regions.",
 									},
 								},
 							},
@@ -434,18 +487,16 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 	if err = d.Set("created_at", flex.DateTimeToString(project.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if !core.IsNil(project.CumulativeNeedsAttentionView) {
-		cumulativeNeedsAttentionView := []map[string]interface{}{}
-		for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
-			cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, cumulativeNeedsAttentionViewItemMap)
+	cumulativeNeedsAttentionView := []map[string]interface{}{}
+	for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
+		cumulativeNeedsAttentionViewItemMap, err := resourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if err = d.Set("cumulative_needs_attention_view", cumulativeNeedsAttentionView); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view: %s", err))
-		}
+		cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, cumulativeNeedsAttentionViewItemMap)
+	}
+	if err = d.Set("cumulative_needs_attention_view", cumulativeNeedsAttentionView); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view: %s", err))
 	}
 	if !core.IsNil(project.CumulativeNeedsAttentionViewError) {
 		if err = d.Set("cumulative_needs_attention_view_error", project.CumulativeNeedsAttentionViewError); err != nil {
@@ -466,31 +517,27 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting event_notifications_crn: %s", err))
 		}
 	}
-	if !core.IsNil(project.Configs) {
-		configs := []map[string]interface{}{}
-		for _, configsItem := range project.Configs {
-			configsItemMap, err := resourceIbmProjectProjectConfigSummaryToMap(&configsItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			configs = append(configs, configsItemMap)
+	configs := []map[string]interface{}{}
+	for _, configsItem := range project.Configs {
+		configsItemMap, err := resourceIbmProjectProjectConfigSummaryToMap(&configsItem)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if err = d.Set("configs", configs); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
-		}
+		configs = append(configs, configsItemMap)
 	}
-	if !core.IsNil(project.Environments) {
-		environments := []map[string]interface{}{}
-		for _, environmentsItem := range project.Environments {
-			environmentsItemMap, err := resourceIbmProjectProjectEnvironmentSummaryToMap(&environmentsItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			environments = append(environments, environmentsItemMap)
+	if err = d.Set("configs", configs); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
+	}
+	environments := []map[string]interface{}{}
+	for _, environmentsItem := range project.Environments {
+		environmentsItemMap, err := resourceIbmProjectProjectEnvironmentSummaryToMap(&environmentsItem)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-		if err = d.Set("environments", environments); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting environments: %s", err))
-		}
+		environments = append(environments, environmentsItemMap)
+	}
+	if err = d.Set("environments", environments); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting environments: %s", err))
 	}
 
 	return nil
@@ -538,7 +585,7 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 
 	deleteProjectOptions.SetID(d.Id())
 
-	response, err := projectClient.DeleteProjectWithContext(context, deleteProjectOptions)
+	_, response, err := projectClient.DeleteProjectWithContext(context, deleteProjectOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteProjectWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteProjectWithContext failed %s\n%s", err, response))
@@ -552,18 +599,21 @@ func resourceIbmProjectDelete(context context.Context, d *schema.ResourceData, m
 func resourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]interface{}) (*projectv1.ProjectPrototypeDefinition, error) {
 	model := &projectv1.ProjectPrototypeDefinition{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["destroy_on_delete"] != nil {
+		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["destroy_on_delete"] != nil {
-		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	if modelMap["monitoring_enabled"] != nil {
+		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
 	}
 	return model, nil
 }
 
 func resourceIbmProjectMapToProjectConfigPrototype(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototype, error) {
 	model := &projectv1.ProjectConfigPrototype{}
-	DefinitionModel, err := resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap["definition"].([]interface{})[0].(map[string]interface{}))
+	DefinitionModel, err := resourceIbmProjectMapToProjectConfigDefinitionBlockPrototype(modelMap["definition"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
 		return model, err
 	}
@@ -578,12 +628,22 @@ func resourceIbmProjectMapToProjectConfigPrototype(modelMap map[string]interface
 	return model, nil
 }
 
-func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[string]interface{}) (projectv1.ProjectConfigPrototypeDefinitionBlockIntf, error) {
-	model := &projectv1.ProjectConfigPrototypeDefinitionBlock{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
+func resourceIbmProjectMapToProjectConfigDefinitionBlockPrototype(modelMap map[string]interface{}) (projectv1.ProjectConfigDefinitionBlockPrototypeIntf, error) {
+	model := &projectv1.ProjectConfigDefinitionBlockPrototype{}
+	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
+		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ComplianceProfile = ComplianceProfileModel
+	}
+	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
+		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
+	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
 		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
 	}
@@ -595,51 +655,17 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlock(modelMap map[s
 		model.Authorizations = AuthorizationsModel
 	}
 	if modelMap["inputs"] != nil {
-		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Inputs = newMap
-		}
+		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["settings"] != nil {
-		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Settings = newMap
-		}
+		model.Settings = modelMap["settings"].(map[string]interface{})
 	}
-	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
-		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ComplianceProfile = ComplianceProfileModel
-	}
-	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
-		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
-	}
-	if modelMap["resource_crns"] != nil && len(modelMap["resource_crns"].([]interface{})) > 0 {
+	if modelMap["resource_crns"] != nil {
 		resourceCrns := []string{}
 		for _, resourceCrnsItem := range modelMap["resource_crns"].([]interface{}) {
 			resourceCrns = append(resourceCrns, resourceCrnsItem.(string))
 		}
 		model.ResourceCrns = resourceCrns
-	}
-	return model, nil
-}
-
-func resourceIbmProjectMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
-	model := &projectv1.ProjectConfigAuth{}
-	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
-		model.TrustedProfileID = core.StringPtr(modelMap["trusted_profile_id"].(string))
-	}
-	if modelMap["method"] != nil && modelMap["method"].(string) != "" {
-		model.Method = core.StringPtr(modelMap["method"].(string))
-	}
-	if modelMap["api_key"] != nil && modelMap["api_key"].(string) != "" {
-		model.ApiKey = core.StringPtr(modelMap["api_key"].(string))
 	}
 	return model, nil
 }
@@ -664,40 +690,22 @@ func resourceIbmProjectMapToProjectComplianceProfile(modelMap map[string]interfa
 	return model, nil
 }
 
-func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlockDAConfigDefinitionProperties(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototypeDefinitionBlockDAConfigDefinitionProperties, error) {
-	model := &projectv1.ProjectConfigPrototypeDefinitionBlockDAConfigDefinitionProperties{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+func resourceIbmProjectMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
+	model := &projectv1.ProjectConfigAuth{}
+	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
+		model.TrustedProfileID = core.StringPtr(modelMap["trusted_profile_id"].(string))
 	}
-	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
-		model.Description = core.StringPtr(modelMap["description"].(string))
+	if modelMap["method"] != nil && modelMap["method"].(string) != "" {
+		model.Method = core.StringPtr(modelMap["method"].(string))
 	}
-	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
-		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
+	if modelMap["api_key"] != nil && modelMap["api_key"].(string) != "" {
+		model.ApiKey = core.StringPtr(modelMap["api_key"].(string))
 	}
-	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
-		AuthorizationsModel, err := resourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Authorizations = AuthorizationsModel
-	}
-	if modelMap["inputs"] != nil {
-		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Inputs = newMap
-		}
-	}
-	if modelMap["settings"] != nil {
-		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Settings = newMap
-		}
-	}
+	return model, nil
+}
+
+func resourceIbmProjectMapToProjectConfigDefinitionBlockPrototypeDAConfigDefinitionProperties(modelMap map[string]interface{}) (*projectv1.ProjectConfigDefinitionBlockPrototypeDAConfigDefinitionProperties, error) {
+	model := &projectv1.ProjectConfigDefinitionBlockPrototypeDAConfigDefinitionProperties{}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -708,16 +716,11 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlockDAConfigDefinit
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
 	}
-	return model, nil
-}
-
-func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlockResourceConfigDefinitionProperties(modelMap map[string]interface{}) (*projectv1.ProjectConfigPrototypeDefinitionBlockResourceConfigDefinitionProperties, error) {
-	model := &projectv1.ProjectConfigPrototypeDefinitionBlockResourceConfigDefinitionProperties{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
 		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
@@ -730,27 +733,44 @@ func resourceIbmProjectMapToProjectConfigPrototypeDefinitionBlockResourceConfigD
 		model.Authorizations = AuthorizationsModel
 	}
 	if modelMap["inputs"] != nil {
-		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Inputs = newMap
-		}
+		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["settings"] != nil {
-		bytes, _ := json.Marshal(modelMap["settings"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Settings = newMap
-		}
+		model.Settings = modelMap["settings"].(map[string]interface{})
 	}
-	if modelMap["resource_crns"] != nil && len(modelMap["resource_crns"].([]interface{})) > 0 {
+	return model, nil
+}
+
+func resourceIbmProjectMapToProjectConfigDefinitionBlockPrototypeResourceConfigDefinitionProperties(modelMap map[string]interface{}) (*projectv1.ProjectConfigDefinitionBlockPrototypeResourceConfigDefinitionProperties, error) {
+	model := &projectv1.ProjectConfigDefinitionBlockPrototypeResourceConfigDefinitionProperties{}
+	if modelMap["resource_crns"] != nil {
 		resourceCrns := []string{}
 		for _, resourceCrnsItem := range modelMap["resource_crns"].([]interface{}) {
 			resourceCrns = append(resourceCrns, resourceCrnsItem.(string))
 		}
 		model.ResourceCrns = resourceCrns
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
+		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
+	}
+	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
+		AuthorizationsModel, err := resourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Authorizations = AuthorizationsModel
+	}
+	if modelMap["inputs"] != nil {
+		model.Inputs = modelMap["inputs"].(map[string]interface{})
+	}
+	if modelMap["settings"] != nil {
+		model.Settings = modelMap["settings"].(map[string]interface{})
 	}
 	return model, nil
 }
@@ -775,10 +795,10 @@ func resourceIbmProjectMapToEnvironmentPrototype(modelMap map[string]interface{}
 
 func resourceIbmProjectMapToEnvironmentDefinitionRequiredProperties(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionRequiredProperties, error) {
 	model := &projectv1.EnvironmentDefinitionRequiredProperties{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
+	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
 		AuthorizationsModel, err := resourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -787,12 +807,7 @@ func resourceIbmProjectMapToEnvironmentDefinitionRequiredProperties(modelMap map
 		model.Authorizations = AuthorizationsModel
 	}
 	if modelMap["inputs"] != nil {
-		bytes, _ := json.Marshal(modelMap["inputs"].(map[string]interface{}))
-		newMap := make(map[string]interface{})
-		json.Unmarshal(bytes, &newMap)
-		if len(newMap) > 0 {
-			model.Inputs = newMap
-		}
+		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
 		ComplianceProfileModel, err := resourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
@@ -809,11 +824,14 @@ func resourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
+	if modelMap["destroy_on_delete"] != nil {
+		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	if modelMap["destroy_on_delete"] != nil {
-		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
+	if modelMap["monitoring_enabled"] != nil {
+		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
 	}
 	return model, nil
 }
@@ -821,10 +839,9 @@ func resourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 func resourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
-	if model.Description != nil {
-		modelMap["description"] = model.Description
-	}
 	modelMap["destroy_on_delete"] = model.DestroyOnDelete
+	modelMap["description"] = model.Description
+	modelMap["monitoring_enabled"] = model.MonitoringEnabled
 	return modelMap, nil
 }
 
@@ -867,7 +884,7 @@ func resourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigS
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["modified_at"] = model.ModifiedAt.String()
 	modelMap["href"] = model.Href
-	definitionMap, err := resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model.Definition)
+	definitionMap, err := resourceIbmProjectProjectConfigSummaryDefinitionToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
@@ -891,13 +908,13 @@ func resourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Project
 	return modelMap, nil
 }
 
-func resourceIbmProjectProjectConfigDefinitionNameDescriptionToMap(model *projectv1.ProjectConfigDefinitionNameDescription) (map[string]interface{}, error) {
+func resourceIbmProjectProjectConfigSummaryDefinitionToMap(model *projectv1.ProjectConfigSummaryDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
+	}
+	if model.Name != nil {
+		modelMap["name"] = model.Name
 	}
 	return modelMap, nil
 }
@@ -931,7 +948,7 @@ func resourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.ProjectEn
 	modelMap["project"] = []map[string]interface{}{projectMap}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["href"] = model.Href
-	definitionMap, err := resourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model.Definition)
+	definitionMap, err := resourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
@@ -939,13 +956,11 @@ func resourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.ProjectEn
 	return modelMap, nil
 }
 
-func resourceIbmProjectEnvironmentDefinitionNameDescriptionToMap(model *projectv1.EnvironmentDefinitionNameDescription) (map[string]interface{}, error) {
+func resourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *projectv1.ProjectEnvironmentSummaryDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
+	modelMap["name"] = model.Name
 	return modelMap, nil
 }

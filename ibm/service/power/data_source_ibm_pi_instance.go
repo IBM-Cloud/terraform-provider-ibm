@@ -52,39 +52,6 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"addresses": {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "This field is deprecated, use networks instead",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"macaddress": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"network_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"network_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"external_ip": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
 			"networks": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -195,6 +162,26 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			Attr_IBMiCSS: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "IBMi Cloud Storage Solution",
+			},
+			Attr_IBMiPHA: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "IBMi Power High Availability",
+			},
+			Attr_IBMiRDS: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "IBMi Rational Dev Studio",
+			},
+			Attr_IBMiRDSUsers: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "IBMi Rational Dev Studio Number of User Licenses",
+			},
 		},
 	}
 }
@@ -243,23 +230,19 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_PIInstanceSharedProcessorPool, powervmdata.SharedProcessorPool)
 	d.Set(Attr_PIInstanceSharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 
-	if powervmdata.Addresses != nil {
-		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
-		for i, pvmip := range powervmdata.Addresses {
-			p := make(map[string]interface{})
-			p["ip"] = pvmip.IPAddress
-			p["network_name"] = pvmip.NetworkName
-			p["network_id"] = pvmip.NetworkID
-			p["macaddress"] = pvmip.MacAddress
-			p["type"] = pvmip.Type
-			p["external_ip"] = pvmip.ExternalIP
-			pvmaddress[i] = p
-		}
-		d.Set("addresses", pvmaddress)
-	}
-
 	if powervmdata.Health != nil {
 		d.Set("health_status", powervmdata.Health.Status)
+	}
+
+	if powervmdata.SoftwareLicenses != nil {
+		d.Set(Attr_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
+		d.Set(Attr_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		if *powervmdata.SoftwareLicenses.IbmiRDS {
+			d.Set(Attr_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		} else {
+			d.Set(Attr_IBMiRDSUsers, 0)
+		}
 	}
 
 	return nil

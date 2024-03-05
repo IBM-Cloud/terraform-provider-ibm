@@ -38,8 +38,13 @@ Review the attribute references that you can access after you retrieve your data
   - `bandwidth` - (List) The total bandwidth (in megabits per second) shared across the network interfaces of a bare metal server with this profile.
     
       Nested scheme for `bandwidth`:
+      - `default` - (Integer) The default value for this profile field.
+      - `max` - (Integer) The maximum value for this profile field.
+      - `min` - (Integer) The minimum value for this profile field.
+      - `step` - (Integer) The increment step value for this profile field.
       - `type` - (String) The type for this profile field.
       - `value` - (Integer) The value for this profile field.
+      - `values` - (List) The permitted values for this profile field.
   - `cpu_architecture` - (List) The CPU architecture for a bare metal server with this profile.
     
       Nested scheme for `cpu_architecture`:
@@ -108,3 +113,9 @@ Review the attribute references that you can access after you retrieve your data
       Nested scheme for `supported_trusted_platform_module_modes`:
       - `type` - (String) The type for this profile field.
       - `values` - (Array) The supported trusted platform module (TPM) modes.
+
+  - `virtual_network_interfaces_supported` - (List) Indicates whether this profile supports virtual network interfaces.
+
+      Nested schema for **virtual_network_interfaces_supported**:
+      - `type` - (String) The type for this profile field.
+      - `value` - (Boolean) The value for this profile field.
