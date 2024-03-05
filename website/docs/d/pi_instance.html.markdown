@@ -43,11 +43,11 @@ In addition to all argument reference list, you can access the following attribu
 - `deployment_type` - (String) The custom deployment type.
 - `health_status` - (String) The health of the instance.
 
-**Notes** IBMi software licenses for IBMi virtual server instances -- only for IBMi instances
-- `ibmi_css` - (Boolean) IBMi Cloud Storage Solution.
-- `ibmi_pha` - (Boolean) IBMi Power High Availability.
-- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
-- `ibmi_rds_users` - (Integer) IBMi Rational Dev Studio Number of User Licenses.
+**Notes** IBM i software licenses for IBM i virtual server instances -- only for IBM i instances
+- `ibmi_css` - (Boolean) IBM i Cloud Storage Solution.
+- `ibmi_pha` - (Boolean) IBM i Power High Availability.
+- `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
+- `ibmi_rds_users` - (Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
 - `license_repository_capacity` - (Integer) The VTL license repository capacity TB value. Only available with VTL instances.
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
