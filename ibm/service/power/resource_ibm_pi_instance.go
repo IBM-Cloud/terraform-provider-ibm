@@ -467,7 +467,11 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	idArr := strings.Split(d.Id(), "/")
+	idArr, err := flex.IdParts(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	cloudInstanceID := idArr[0]
 	instanceID := idArr[1]
 
@@ -843,7 +847,11 @@ func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	idArr := strings.Split(d.Id(), "/")
+	idArr, err := flex.IdParts(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	cloudInstanceID := idArr[0]
 	for _, instanceID := range idArr[1:] {
 		client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
