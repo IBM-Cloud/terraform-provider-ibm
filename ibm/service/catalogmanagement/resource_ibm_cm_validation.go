@@ -225,7 +225,7 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		validateInstallOptions.SetOverrideValues(&overridesModel)
 	}
 	if _, ok := d.GetOk("environment_variables"); ok {
-		envsModel, err := envVariablesToDeployRequestBodyEnvVariables(d.Get("environment_variables").([]map[string]interface{}))
+		envsModel, err := envVariablesToDeployRequestBodyEnvVariables(d.Get("environment_variables").([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -409,18 +409,18 @@ func markVersionAsConsumable(version catalogmanagementv1.Version, context contex
 	return nil
 }
 
-func envVariablesToDeployRequestBodyEnvVariables(envVariables []map[string]interface{}) ([]catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem, error) {
+func envVariablesToDeployRequestBodyEnvVariables(envVariables []interface{}) ([]catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem, error) {
 	var modelArr []catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem
 	for _, envVar := range envVariables {
 		model := catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem{}
-		if envVar["name"] != nil && envVar["name"].(string) != "" {
-			model.Name = core.StringPtr(envVar["name"].(string))
+		if envVar.(map[string]interface{})["name"] != nil && envVar.(map[string]interface{})["name"].(string) != "" {
+			model.Name = core.StringPtr(envVar.(map[string]interface{})["name"].(string))
 		}
-		if envVar["value"] != nil {
-			model.Value = envVar["value"]
+		if envVar.(map[string]interface{})["value"] != nil {
+			model.Value = envVar.(map[string]interface{})["value"]
 		}
-		if envVar["secure"] != nil {
-			model.Secure = core.BoolPtr(envVar["secure"].(bool))
+		if envVar.(map[string]interface{})["secure"] != nil {
+			model.Secure = core.BoolPtr(envVar.(map[string]interface{})["secure"].(bool))
 		}
 		modelArr = append(modelArr, model)
 	}
