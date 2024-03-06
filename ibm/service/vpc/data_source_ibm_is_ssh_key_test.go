@@ -29,6 +29,22 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_ssh_key.ds_key", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "fingerprint"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "id"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "length"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "public_key"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "type"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_ssh_key.ds_key", "tags.#"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_ssh_key.ds_key", "tags.#", "3"),
 				),
 			},
 		},
@@ -38,8 +54,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 func testDSCheckIBMISSSHKeyConfig(publicKey, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ssh_key" "key" {
-			name = "%s"
-			public_key = "%s"
+			name 		= "%s"
+			public_key 	= "%s"
+			tags		= ["test:1", "test:2", "test:3"]
 		}
 		data "ibm_is_ssh_key" "ds_key" {
 		    name = "${ibm_is_ssh_key.key.name}"
