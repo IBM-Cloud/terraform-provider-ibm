@@ -32,7 +32,7 @@ func DataSourceIBMResourceInstance() *schema.Resource {
 				ExactlyOneOf: []string{"identifier", "name"},
 			},
 			"identifier": {
-				Description:   "Resource instance name for example, myobjectstorage",
+				Description:   "Resource instance guid",
 				Type:          schema.TypeString,
 				Optional:      true,
 				ExactlyOneOf:  []string{"identifier", "name"},
