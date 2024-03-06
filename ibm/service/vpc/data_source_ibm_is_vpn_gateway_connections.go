@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -97,10 +96,85 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 							Computed:    true,
 							Description: "VPN Gateway connection name",
 						},
-						isVPNGatewayConnectionPeerAddress: {
+						// isVPNGatewayConnectionPeerAddress: {
+						// 	Type:        schema.TypeString,
+						// 	Computed:    true,
+						// 	Description: "VPN gateway connection peer address",
+						// },
+						// new breaking change
+						"establish_mode": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "VPN gateway connection peer address",
+							Description: "The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.",
+						},
+						"local": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ike_identities": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IKE identity FQDN value.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"peer": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ike_identity": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The peer IKE identity.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IKE identity FQDN value.",
+												},
+											},
+										},
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Indicates whether `peer.address` or `peer.fqdn` is used.",
+									},
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address of the peer VPN gateway for this connection.",
+									},
+									"fqdn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The FQDN of the peer VPN gateway for this connection.",
+									},
+								},
+							},
 						},
 						isVPNGatewayConnectionResourcetype: {
 							Type:        schema.TypeString,
@@ -158,21 +232,21 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 								},
 							},
 						},
-						isVPNGatewayConnectionLocalCIDRS: {
-							Type:        schema.TypeSet,
-							Computed:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Set:         schema.HashString,
-							Description: "VPN gateway connection local CIDRs",
-						},
+						// isVPNGatewayConnectionLocalCIDRS: {
+						// 	Type:        schema.TypeSet,
+						// 	Computed:    true,
+						// 	Elem:        &schema.Schema{Type: schema.TypeString},
+						// 	Set:         schema.HashString,
+						// 	Description: "VPN gateway connection local CIDRs",
+						// },
 
-						isVPNGatewayConnectionPeerCIDRS: {
-							Type:        schema.TypeSet,
-							Computed:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Set:         schema.HashString,
-							Description: "VPN gateway connection peer CIDRs",
-						},
+						// isVPNGatewayConnectionPeerCIDRS: {
+						// 	Type:        schema.TypeSet,
+						// 	Computed:    true,
+						// 	Elem:        &schema.Schema{Type: schema.TypeString},
+						// 	Set:         schema.HashString,
+						// 	Description: "VPN gateway connection peer CIDRs",
+						// },
 					},
 				},
 			},
@@ -208,21 +282,37 @@ func dataSourceIBMVPNGatewayConnectionsRead(d *schema.ResourceData, meta interfa
 		gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = *data.DeadPeerDetection.Timeout
 		gatewayconnection[isVPNGatewayConnectionID] = *data.ID
 
+		if data.Local != nil {
+			localMap, err := dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModeLocalToMap(data.Local)
+			if err != nil {
+				return err
+			}
+			gatewayconnection["local"] = []map[string]interface{}{localMap}
+		}
+		if data.Peer != nil {
+			peerMap, err := dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeerToMap(data.Peer)
+			if err != nil {
+				return err
+			}
+			gatewayconnection["peer"] = []map[string]interface{}{peerMap}
+		}
+		gatewayconnection["establish_mode"] = data.EstablishMode
+
 		if data.IkePolicy != nil {
 			gatewayconnection[isVPNGatewayConnectionIKEPolicy] = *data.IkePolicy.ID
 		}
 		if data.IpsecPolicy != nil {
 			gatewayconnection[isVPNGatewayConnectionIPSECPolicy] = *data.IpsecPolicy.ID
 		}
-		if data.LocalCIDRs != nil {
-			gatewayconnection[isVPNGatewayConnectionLocalCIDRS] = flex.FlattenStringList(data.LocalCIDRs)
-		}
-		if data.PeerCIDRs != nil {
-			gatewayconnection[isVPNGatewayConnectionPeerCIDRS] = flex.FlattenStringList(data.PeerCIDRs)
-		}
+		// if data.LocalCIDRs != nil {
+		// 	gatewayconnection[isVPNGatewayConnectionLocalCIDRS] = flex.FlattenStringList(data.LocalCIDRs)
+		// }
+		// if data.PeerCIDRs != nil {
+		// 	gatewayconnection[isVPNGatewayConnectionPeerCIDRS] = flex.FlattenStringList(data.PeerCIDRs)
+		// }
 		gatewayconnection[isVPNGatewayConnectionMode] = *data.Mode
 		gatewayconnection[isVPNGatewayConnectionName] = *data.Name
-		gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
+		// gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
 		gatewayconnection[isVPNGatewayConnectionResourcetype] = *data.ResourceType
 		gatewayconnection[isVPNGatewayConnectionStatus] = *data.Status
 		gatewayconnection[isVPNGatewayConnectionStatusreasons] = resourceVPNGatewayConnectionFlattenLifecycleReasons(data.StatusReasons)
@@ -255,4 +345,118 @@ func dataSourceIBMVPNGatewayConnectionsRead(d *schema.ResourceData, meta interfa
 // dataSourceIBMVPNGatewaysID returns a reasonable ID  list.
 func dataSourceIBMVPNGatewayConnectionsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModeLocalToMap(model *vpcv1.VPNGatewayConnectionStaticRouteModeLocal) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	ikeIdentities := []map[string]interface{}{}
+	for _, ikeIdentitiesItem := range model.IkeIdentities {
+		ikeIdentitiesItemMap, err := dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityToMap(ikeIdentitiesItem)
+		if err != nil {
+			return modelMap, err
+		}
+		ikeIdentities = append(ikeIdentities, ikeIdentitiesItemMap)
+	}
+	modelMap["ike_identities"] = ikeIdentities
+	return modelMap, nil
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityToMap(model vpcv1.VPNGatewayConnectionIkeIdentityIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityFqdn); ok {
+		return dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityFqdnToMap(model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityFqdn))
+	} else if _, ok := model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityHostname); ok {
+		return dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityHostnameToMap(model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityHostname))
+	} else if _, ok := model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityIPv4); ok {
+		return dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityIPv4ToMap(model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityIPv4))
+	} else if _, ok := model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityKeyID); ok {
+		return dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityKeyIDToMap(model.(*vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityKeyID))
+	} else if _, ok := model.(*vpcv1.VPNGatewayConnectionIkeIdentity); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.VPNGatewayConnectionIkeIdentity)
+		modelMap["type"] = model.Type
+		if model.Value != nil {
+			modelMap["value"] = model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.VPNGatewayConnectionIkeIdentityIntf subtype encountered")
+	}
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityFqdnToMap(model *vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityFqdn) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	modelMap["value"] = model.Value
+	return modelMap, nil
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityHostnameToMap(model *vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityHostname) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	modelMap["value"] = model.Value
+	return modelMap, nil
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityIPv4ToMap(model *vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityIPv4) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	modelMap["value"] = model.Value
+	return modelMap, nil
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityKeyIDToMap(model *vpcv1.VPNGatewayConnectionIkeIdentityVPNGatewayConnectionIkeIdentityKeyID) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	modelMap["value"] = string(*model.Value)
+	return modelMap, nil
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeerToMap(model vpcv1.VPNGatewayConnectionStaticRouteModePeerIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByAddress); ok {
+		return dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByAddressToMap(model.(*vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByAddress))
+	} else if _, ok := model.(*vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdn); ok {
+		return dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdnToMap(model.(*vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdn))
+	} else if _, ok := model.(*vpcv1.VPNGatewayConnectionStaticRouteModePeer); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.VPNGatewayConnectionStaticRouteModePeer)
+		ikeIdentityMap, err := dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityToMap(model.IkeIdentity)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ike_identity"] = []map[string]interface{}{ikeIdentityMap}
+		modelMap["type"] = model.Type
+		if model.Address != nil {
+			modelMap["address"] = model.Address
+		}
+		if model.Fqdn != nil {
+			modelMap["fqdn"] = model.Fqdn
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.VPNGatewayConnectionStaticRouteModePeerIntf subtype encountered")
+	}
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByAddressToMap(model *vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByAddress) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	ikeIdentityMap, err := dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityToMap(model.IkeIdentity)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["ike_identity"] = []map[string]interface{}{ikeIdentityMap}
+	modelMap["type"] = model.Type
+	modelMap["address"] = model.Address
+	return modelMap, nil
+}
+
+func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdnToMap(model *vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdn) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	ikeIdentityMap, err := dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionIkeIdentityToMap(model.IkeIdentity)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["ike_identity"] = []map[string]interface{}{ikeIdentityMap}
+	modelMap["type"] = model.Type
+	modelMap["fqdn"] = model.Fqdn
+	return modelMap, nil
 }
