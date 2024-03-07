@@ -124,7 +124,8 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 							Type:        schema.TypeList,
 							MinItems:    1,
 							MaxItems:    1,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The peer IKE identity.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -370,7 +371,7 @@ func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interf
 	log.Printf("[DEBUG] VPNGatewayConnection create")
 	name := d.Get(isVPNGatewayConnectionName).(string)
 	gatewayID := d.Get(isVPNGatewayConnectionVPNGateway).(string)
-	peerAddress := d.Get(isVPNGatewayConnectionPeerAddress).(string)
+	// peerAddress := d.Get(isVPNGatewayConnectionPeerAddress).(string)
 	prephasedKey := d.Get(isVPNGatewayConnectionPreSharedKey).(string)
 
 	stateUp := false
@@ -396,7 +397,7 @@ func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interf
 		action = "none"
 	}
 
-	err := vpngwconCreate(d, meta, name, gatewayID, peerAddress, prephasedKey, action, interval, timeout, stateUp)
+	err := vpngwconCreate(d, meta, name, gatewayID, "peerAddress", prephasedKey, action, interval, timeout, stateUp)
 	if err != nil {
 		return err
 	}
