@@ -767,6 +767,7 @@ func Provider() *schema.Provider {
 			"ibm_scc_profiles":                 scc.DataSourceIbmSccProfiles(),
 			"ibm_scc_profile_attachment":       scc.DataSourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type":            scc.DataSourceIbmSccProviderType(),
+			"ibm_scc_provider_types":           scc.DataSourceIbmSccProviderTypes(),
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
 			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),

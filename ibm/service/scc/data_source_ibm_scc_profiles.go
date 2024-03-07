@@ -147,7 +147,7 @@ func dataSourceIbmSccProfilesRead(context context.Context, d *schema.ResourceDat
 		profiles = append(profiles, modelMap)
 	}
 	if err = d.Set("profiles", profiles); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting profiles: %s", err))
 	}
 	return nil
 }
