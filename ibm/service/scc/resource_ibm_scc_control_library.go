@@ -7,6 +7,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -152,7 +155,7 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 										Description: "The number of assessments.",
 									},
 									"assessments": {
-										Type:        schema.TypeList,
+										Type:        schema.TypeSet,
 										Optional:    true,
 										Description: "The assessments.",
 										Elem: &schema.Resource{
@@ -660,7 +663,7 @@ func resourceIbmSccControlLibraryMapToControlSpecifications(modelMap map[string]
 	}
 	if modelMap["assessments"] != nil {
 		assessments := []securityandcompliancecenterapiv3.Implementation{}
-		for _, assessmentsItem := range modelMap["assessments"].([]interface{}) {
+		for _, assessmentsItem := range modelMap["assessments"].(*schema.Set).List() {
 			assessmentsItemModel, err := resourceIbmSccControlLibraryMapToImplementation(assessmentsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
@@ -876,6 +879,17 @@ func resourceIbmSccControlLibraryControlsInControlLibToMap(model *securityandcom
 	return modelMap, nil
 }
 
+// using the assessment_id for comparison
+func compareAssessmentSetFunc(v interface{}) int {
+	m := v.(map[string]interface{})
+	id := (m["assessment_id"]).(*string)
+	assId := (*id)[5:18]
+	var i big.Int
+	i.SetString(strings.Replace(assId, "-", "", 4), 16)
+	val, _ := strconv.Atoi(i.String())
+	return val
+}
+
 func resourceIbmSccControlLibraryControlSpecificationsToMap(model *securityandcompliancecenterapiv3.ControlSpecifications) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ControlSpecificationID != nil {
@@ -900,7 +914,7 @@ func resourceIbmSccControlLibraryControlSpecificationsToMap(model *securityandco
 		modelMap["assessments_count"] = flex.IntValue(model.AssessmentsCount)
 	}
 	if model.Assessments != nil {
-		assessments := []map[string]interface{}{}
+		assessments := []interface{}{}
 		for _, assessmentsItem := range model.Assessments {
 			assessmentsItemMap, err := resourceIbmSccControlLibraryImplementationToMap(&assessmentsItem)
 			if err != nil {
@@ -908,7 +922,10 @@ func resourceIbmSccControlLibraryControlSpecificationsToMap(model *securityandco
 			}
 			assessments = append(assessments, assessmentsItemMap)
 		}
-		modelMap["assessments"] = assessments
+		assessmentsList := schema.NewSet(compareAssessmentSetFunc, assessments)
+		modelMap["assessments"] = assessmentsList
+
+		// modelMap["assessments"] = assessments
 	}
 	return modelMap, nil
 }
