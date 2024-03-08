@@ -514,6 +514,10 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
 		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
 		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
 	} else {
 		return (fmt.Errorf("Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered"))
 	}
