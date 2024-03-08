@@ -502,9 +502,22 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
 	}
-	vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
-	d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
-	log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+	if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+	} else {
+		return (fmt.Errorf("Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered"))
+	}
+
 	return nil
 }
 
