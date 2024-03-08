@@ -332,7 +332,7 @@ func resourceIBMPISharedProcessorPoolUpdate(ctx context.Context, d *schema.Resou
 	}
 	if d.HasChange(Arg_SharedProcessorPoolReservedCores) {
 		reservedCores := int64(d.Get(Arg_SharedProcessorPoolReservedCores).(int))
-		body.ReservedCores = reservedCores
+		body.ReservedCores = &reservedCores
 	}
 
 	_, err = client.Update(sppID, body)
