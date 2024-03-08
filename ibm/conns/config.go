@@ -29,6 +29,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
@@ -119,7 +120,6 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
-	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv1"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
 
@@ -284,7 +284,6 @@ type ClientSession interface {
 	CatalogManagementV1() (*catalogmanagementv1.CatalogManagementV1, error)
 	EnterpriseManagementV1() (*enterprisemanagementv1.EnterpriseManagementV1, error)
 	ResourceControllerV2API() (*resourcecontroller.ResourceControllerV2, error)
-	SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error)
 	SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error)
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
@@ -301,6 +300,7 @@ type ClientSession interface {
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
 	ProjectV1() (*project.ProjectV1, error)
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
+	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 }
 
 type clientSession struct {
@@ -542,7 +542,6 @@ type clientSession struct {
 	// Resource Controller Option
 	resourceControllerErr   error
 	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
-	secretsManagerClientV1  *secretsmanagerv1.SecretsManagerV1
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -628,6 +627,9 @@ type clientSession struct {
 	// Usage Reports options
 	usageReportsClient    *usagereportsv4.UsageReportsV4
 	usageReportsClientErr error
+
+	mqcloudClient    *mqcloudv1.MqcloudV1
+	mqcloudClientErr error
 }
 
 // Usage Reports
@@ -1089,11 +1091,6 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
-// IBM Cloud Secrets Manager V1 Basic API
-func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
-	return session.secretsManagerClientV1, session.secretsManagerClientErr
-}
-
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1211,6 +1208,16 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
+// MQ on Cloud
+func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
+	if session.mqcloudClientErr != nil {
+		sessionMqcloudClient := session.mqcloudClient
+		sessionMqcloudClient.EnableRetries(0, 0)
+		return session.mqcloudClient, session.mqcloudClientErr
+	}
+	return session.mqcloudClient.Clone(), nil
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1305,6 +1312,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdToolchainClientErr = errEmptyBluemixCredentials
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
+		session.mqcloudClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1325,20 +1333,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 			}
 		}
-		err = authenticateCF(sess.BluemixSession)
-		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				time.Sleep(c.RetryDelay)
-				log.Printf("Retrying CF Authentication %d", count)
-				err = authenticateCF(sess.BluemixSession)
-			}
-			if err != nil {
-				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-			}
-		}
+
+		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 	}
 
 	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
@@ -1570,7 +1566,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ukoClientErr = fmt.Errorf("Error occurred while configuring HPCS UKO service: %q", err)
 	}
 
-	// APPID Service
+	// APP ID Service
 	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
 	if c.Visibility == "private" {
 		session.appidErr = fmt.Errorf("App Id resources doesnot support private endpoints")
@@ -1877,11 +1873,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.pushServiceClient = pnclient
+
 	// event notifications
 	enurl := fmt.Sprintf("https://%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
-	if c.Visibility == "private" {
-		session.eventNotificationsApiClientErr = fmt.Errorf("Event Notifications Service does not support private endpoints")
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		enurl = fmt.Sprintf("https://private.%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
 	}
+
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		enurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT", c.Region, enurl)
 	}
@@ -3101,24 +3100,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.resourceControllerAPI = resourceControllerClient
 
-	// SECRETS MANAGER Service
-	secretsManagerClientOptions := &secretsmanagerv1.SecretsManagerV1Options{
-		Authenticator: authenticator,
-	}
-	/// Construct the service client.
-	session.secretsManagerClientV1, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
-	if err != nil {
-		session.secretsManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
-	}
-	if session.secretsManagerClient != nil && session.secretsManagerClient.Service != nil {
-		// Enable retries for API calls
-		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
 	// SECRETS MANAGER Service V2
 	// Construct an "options" struct for creating the service client.
 	var smBaseUrl string
@@ -3278,6 +3259,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
 	}
 
+	// MQ Cloud Service Configuration
+	mqCloudURL := ContructEndpoint(fmt.Sprintf("api.%s.mq2", c.Region), cloudEndpoint)
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		mqCloudURL = ContructEndpoint(fmt.Sprintf("api.private.%s.mq2", c.Region), cloudEndpoint)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		mqCloudURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT", c.Region, mqCloudURL)
+	}
+	accept_language := os.Getenv("IBMCLOUD_MQCLOUD_ACCEPT_LANGUAGE")
+	mqcloudClientOptions := &mqcloudv1.MqcloudV1Options{
+		Authenticator:  authenticator,
+		AcceptLanguage: core.StringPtr(accept_language),
+		URL:            EnvFallBack([]string{"IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT"}, mqCloudURL),
+	}
+
+	// Construct the service client for MQ Cloud.
+	session.mqcloudClient, err = mqcloudv1.NewMqcloudV1(mqcloudClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.mqcloudClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.mqcloudClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ on Cloud service: %q", err)
+	}
+
 	// Construct the service options.
 	codeEngineEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.codeengine", c.Region), cloudEndpoint+"/v2")
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
@@ -3410,20 +3419,6 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 		DefaultHeader: gohttp.Header{
 			"User-Agent":            []string{http.UserAgent()},
 			"X-Original-User-Agent": []string{config.UserAgent},
-		},
-	})
-	if err != nil {
-		return err
-	}
-	return tokenRefresher.AuthenticateAPIKey(config.BluemixAPIKey)
-}
-
-func authenticateCF(sess *bxsession.Session) error {
-	config := sess.Config
-	tokenRefresher, err := authentication.NewUAARepository(config, &rest.Client{
-		DefaultHeader: gohttp.Header{
-			"User-Agent":            []string{http.UserAgent()},
-			"X-Original-User-Agent": []string{http.UserAgent()},
 		},
 	})
 	if err != nil {

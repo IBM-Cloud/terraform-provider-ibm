@@ -108,6 +108,10 @@ You can access the following attribute references after your data source is crea
       Nested scheme for `gpu_model`:
       - `type` - (String) The type for this profile field.
       - `values` - (String) The permitted values for this profile field.
+  - `reservation_terms` - (List) Nested `reservation_terms` blocks have the following structure:
+      Nested scheme for `reservation_terms`:
+      - `type` - (String) The type for this profile field.
+      - `values` - (String) The supported committed use terms for a reservation using this profile.
   - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
       Nested scheme for `total_volume_bandwidth`:
       - `type` - The type for this profile field.
@@ -128,6 +132,14 @@ You can access the following attribute references after your data source is crea
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
+
+    - `network_attachment_count` - (List) The number of network attachments supported on an instance with this profile
+
+        Nested scheme for `network_attachment_count`:
+        - `max` - (Integer) The maximum number of network attachments supported by an instance using this profile.
+        - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
+        - `type` - (String) The type for this profile field, Ex: range or dependent.
+
 
   - `network_interface_count` - (List)
   

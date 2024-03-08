@@ -180,6 +180,7 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 		},
 	})
 }
+
 func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
@@ -205,6 +206,26 @@ func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMIAMUserPolicy_With_Resource_Attributes_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -473,6 +494,34 @@ func TestAccIBMIAMUSerPolicy_With_ServiceGroupID(t *testing.T) {
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.0.value", "IAM"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Attribute_Based_Condition(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyAttributeBasedCondition(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Attribute Based Condition Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMUserPolicyUpdateAttributeBasedCondition(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Attribute Based Condition Update for test scenario"),
 				),
 			},
 		},
@@ -777,6 +826,27 @@ func testAccCheckIBMIAMUserPolicyResourceAttributes() string {
 	  
 `, acc.IAMUser)
 }
+
+func testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard() string {
+	return fmt.Sprintf(`
+  
+	  resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	  
+`, acc.IAMUser)
+}
+
 func testAccCheckIBMIAMUserPolicyResourceAttributesUpdate() string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_user_policy" "policy" {
@@ -1005,6 +1075,133 @@ func testAccCheckIBMIAMUserPolicyWithServiceGroupId(name string) string {
          		operator = "stringEquals"
          		value    = "IAM"
 			}
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyAttributeBasedCondition() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM User Policy Attribute Based Condition Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyUpdateAttributeBasedCondition() string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Reader", "Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM User Policy Attribute Based Condition Update for test scenario"
 		}
 	`, acc.IAMUser)
 }

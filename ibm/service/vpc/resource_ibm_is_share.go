@@ -54,12 +54,11 @@ func ResourceIbmIsShare() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"encryption_key": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"size"},
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The CRN of the key to use for encrypting this file share.If no encryption key is provided, the share will not be encrypted.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The CRN of the key to use for encrypting this file share.If no encryption key is provided, the share will not be encrypted.",
 			},
 			"initial_owner": {
 				Type:         schema.TypeList,
@@ -105,8 +104,8 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Computed:      true,
-				ExactlyOneOf:  []string{"size", "source_share"},
-				ConflictsWith: []string{"replication_cron_spec", "source_share"},
+				ExactlyOneOf:  []string{"size", "source_share", "source_share_crn"},
+				ConflictsWith: []string{"replication_cron_spec", "source_share", "source_share_crn"},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_share", "size"),
 				Description:   "The size of the file share rounded up to the next gigabyte.",
 			},
@@ -156,6 +155,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									},
 									"id": {
 										Type:        schema.TypeString,
+										Optional:    true,
 										Computed:    true,
 										Description: "ID of this VNI",
 									},
@@ -164,6 +164,22 @@ func ResourceIbmIsShare() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "Name of this VNI",
+									},
+									"allow_ip_spoofing": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+									},
+									"auto_delete": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
+									},
+									"enable_infrastructure_nat": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 									},
 									"primary_ip": {
 										Type:        schema.TypeList,
@@ -231,6 +247,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									"subnet": {
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "The associated subnet. Required if primary_ip is not specified.",
 									},
 								},
@@ -389,6 +406,7 @@ func ResourceIbmIsShare() *schema.Resource {
 												},
 												"id": {
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "ID of this VNI",
 												},
@@ -397,6 +415,22 @@ func ResourceIbmIsShare() *schema.Resource {
 													Optional:    true,
 													Computed:    true,
 													Description: "Name of this VNI",
+												},
+												"allow_ip_spoofing": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.",
+												},
+												"auto_delete": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Computed:    true,
+													Description: "Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.",
+												},
+												"enable_infrastructure_nat": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 												},
 												"primary_ip": {
 													Type:        schema.TypeList,
@@ -464,6 +498,7 @@ func ResourceIbmIsShare() *schema.Resource {
 												"subnet": {
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "The associated subnet. Required if primary_ip is not specified.",
 												},
 											},
@@ -511,16 +546,25 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{"replica_share", "size"},
+				Computed:      true,
+				ConflictsWith: []string{"replica_share", "size", "source_share_crn"},
 				RequiredWith:  []string{"replication_cron_spec"},
 				Description:   "The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.",
+			},
+			"source_share_crn": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ConflictsWith: []string{"replica_share", "size", "source_share"},
+				RequiredWith:  []string{"replication_cron_spec"},
+				Description:   "The CRN of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.",
 			},
 			"replication_cron_spec": &schema.Schema{
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressCronSpecDiff,
 				Computed:         true,
-				RequiredWith:     []string{"source_share"},
 				ConflictsWith:    []string{"replica_share", "size"},
 				Description:      "The cron specification for the file share replication schedule.Replication of a share can be scheduled to occur at most once per hour.",
 			},
@@ -562,6 +606,30 @@ func ResourceIbmIsShare() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time that the file share was last synchronized to its replica.This property will be present when the `replication_role` is `source`.",
+			},
+			"latest_sync": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Information about the latest synchronization for this file share.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"completed_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The completed date and time of last synchronization between the replica share and its source.",
+						},
+						"data_transferred": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The data transferred (in bytes) in the last synchronization between the replica and its source.",
+						},
+						"started_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The start date and time of last synchronization between the replica share and its source.",
+						},
+					},
+				},
 			},
 			"latest_job": &schema.Schema{
 				Type:        schema.TypeList,
@@ -727,17 +795,18 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		accessControlMode := accessControlModeIntf.(string)
 		sharePrototype.AccessControlMode = &accessControlMode
 	}
+	if encryptionKeyIntf, ok := d.GetOk("encryption_key"); ok {
+		encryptionKey := encryptionKeyIntf.(string)
+		encryptionKeyIdentity := &vpcv1.EncryptionKeyIdentity{
+			CRN: &encryptionKey,
+		}
+		sharePrototype.EncryptionKey = encryptionKeyIdentity
+	}
 	if sizeIntf, ok := d.GetOk("size"); ok {
 
 		size := int64(sizeIntf.(int))
 		sharePrototype.Size = &size
-		if encryptionKeyIntf, ok := d.GetOk("encryption_key"); ok {
-			encryptionKey := encryptionKeyIntf.(string)
-			encryptionKeyIdentity := &vpcv1.EncryptionKeyIdentity{
-				CRN: &encryptionKey,
-			}
-			sharePrototype.EncryptionKey = encryptionKeyIdentity
-		}
+
 		initial_owner := &vpcv1.ShareInitialOwner{}
 		if initialOwnerIntf, ok := d.GetOk("initial_owner"); ok {
 			initialOwnerMap := initialOwnerIntf.([]interface{})[0].(map[string]interface{})
@@ -786,9 +855,10 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			if ok {
 				var targets []vpcv1.ShareMountTargetPrototypeIntf
 				targetsIntf := replicaTargets.([]interface{})
-				for _, targetIntf := range targetsIntf {
+				for tergetIdx, targetIntf := range targetsIntf {
 					target := targetIntf.(map[string]interface{})
-					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, target)
+					autoDeleteSchema := fmt.Sprintf("replica_share.0.mount_targets.%d.virtual_network_interface.0.auto_delete", tergetIdx)
+					targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, target, autoDeleteSchema)
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -823,7 +893,15 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			sharePrototype.SourceShare = &vpcv1.ShareIdentity{
 				ID: &sourceShare,
 			}
+		} else {
+			sourceShareCRN := d.Get("source_share_crn").(string)
+			if sourceShareCRN != "" {
+				sharePrototype.SourceShare = &vpcv1.ShareIdentity{
+					CRN: &sourceShareCRN,
+				}
+			}
 		}
+
 		replicationCronSpec := d.Get("replication_cron_spec").(string)
 		sharePrototype.ReplicationCronSpec = &replicationCronSpec
 	}
@@ -846,9 +924,10 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 
 	if shareTargetPrototypeIntf, ok := d.GetOk("mount_targets"); ok {
 		var targets []vpcv1.ShareMountTargetPrototypeIntf
-		for _, e := range shareTargetPrototypeIntf.([]interface{}) {
+		for targetIdx, e := range shareTargetPrototypeIntf.([]interface{}) {
 			value := e.(map[string]interface{})
-			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, value)
+			autoDeleteSchema := fmt.Sprintf("mount_targets.%d.virtual_network_interface.0.auto_delete", targetIdx)
+			targetsItem, err := resourceIbmIsShareMapToShareMountTargetPrototype(d, value, autoDeleteSchema)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -921,7 +1000,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIbmIsShareRead(context, d, meta)
 }
 
-func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, shareTargetPrototypeMap map[string]interface{}) (vpcv1.ShareMountTargetPrototype, error) {
+func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, shareTargetPrototypeMap map[string]interface{}, autoDeleteSchema string) (vpcv1.ShareMountTargetPrototype, error) {
 	shareTargetPrototype := vpcv1.ShareMountTargetPrototype{}
 
 	if nameIntf, ok := shareTargetPrototypeMap["name"]; ok && nameIntf != "" {
@@ -936,11 +1015,20 @@ func resourceIbmIsShareMapToShareMountTargetPrototype(d *schema.ResourceData, sh
 	} else if vniIntf, ok := shareTargetPrototypeMap["virtual_network_interface"]; ok {
 		vniPrototype := vpcv1.ShareMountTargetVirtualNetworkInterfacePrototype{}
 		vniMap := vniIntf.([]interface{})[0].(map[string]interface{})
-		vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(d, vniMap)
-		if err != nil {
-			return shareTargetPrototype, err
+
+		VNIIdIntf, ok := vniMap["id"]
+		VNIId := VNIIdIntf.(string)
+		if ok && VNIId != "" {
+			vniPrototype.ID = &VNIId
+			shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
+		} else {
+			vniPrototype, err := ShareMountTargetMapToShareMountTargetPrototype(d, vniMap, autoDeleteSchema)
+			if err != nil {
+				return shareTargetPrototype, err
+			}
+			shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
 		}
-		shareTargetPrototype.VirtualNetworkInterface = &vniPrototype
+
 	}
 	if transitEncryptionIntf, ok := shareTargetPrototypeMap["transit_encryption"]; ok && transitEncryptionIntf != "" {
 		transitEncryption := transitEncryptionIntf.(string)
@@ -1075,9 +1163,17 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-	// if share.LastSyncAt != nil {
-	// 	d.Set("last_sync_at", share.LastSyncAt.String())
-	// }
+	latest_syncs := []map[string]interface{}{}
+	if share.LatestSync != nil {
+		latest_sync := make(map[string]interface{})
+		latest_sync["completed_at"] = flex.DateTimeToString(share.LatestSync.CompletedAt)
+		if share.LatestSync.DataTransferred != nil {
+			latest_sync["data_transferred"] = *share.LatestSync.DataTransferred
+		}
+		latest_sync["started_at"] = flex.DateTimeToString(share.LatestSync.CompletedAt)
+		latest_syncs = append(latest_syncs, latest_sync)
+	}
+	d.Set("latest_sync", latest_syncs)
 	latest_jobs := []map[string]interface{}{}
 	if share.LatestJob != nil {
 		latest_job := make(map[string]interface{})
@@ -1614,6 +1710,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 		for targetIdx := range target_prototype {
 			targetName := fmt.Sprintf("%s.%d.name", shareMountTargetSchema, targetIdx)
 			vniName := fmt.Sprintf("%s.%d.virtual_network_interface.0.name", shareMountTargetSchema, targetIdx)
+			vniAutoDelete := fmt.Sprintf("%s.%d.virtual_network_interface.0.auto_delete", shareMountTargetSchema, targetIdx)
 			vniId := fmt.Sprintf("%s.%d.virtual_network_interface.0.id", shareMountTargetSchema, targetIdx)
 			targetId := fmt.Sprintf("%s.%d.id", shareMountTargetSchema, targetIdx)
 			securityGroups := fmt.Sprintf("%s.%d.virtual_network_interface.0.security_groups", shareMountTargetSchema, targetIdx)
@@ -1650,10 +1747,15 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				}
 			}
 
-			if d.HasChange(vniName) {
-				vniNameStr := d.Get(vniName).(string)
-				vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{
-					Name: &vniNameStr,
+			if d.HasChange(vniName) || d.HasChange(vniAutoDelete) {
+				vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{}
+				if d.HasChange(vniName) {
+					vniNameStr := d.Get(vniName).(string)
+					vniPatchModel.Name = &vniNameStr
+				}
+				if d.HasChange(vniAutoDelete) {
+					autoDelete := d.Get(vniAutoDelete).(bool)
+					vniPatchModel.AutoDelete = &autoDelete
 				}
 				vniPatch, err := vniPatchModel.AsPatch()
 				if err != nil {

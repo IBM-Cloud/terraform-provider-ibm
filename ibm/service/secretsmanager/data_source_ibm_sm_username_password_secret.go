@@ -115,6 +115,35 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The number of versions of the secret.",
 			},
+			"password_generation_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Policy for auto-generated passwords.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"length": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of auto-generated passwords.",
+						},
+						"include_digits": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Include digits in auto-generated passwords.",
+						},
+						"include_symbols": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Include symbols in auto-generated passwords.",
+						},
+						"include_uppercase": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Include uppercase letters in auto-generated passwords.",
+						},
+					},
+				},
+			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -135,11 +164,6 @@ func DataSourceIbmSmUsernamePasswordSecret() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The units for the secret rotation time interval.",
-						},
-						"rotate_keys": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.",
 						},
 					},
 				},
@@ -262,6 +286,18 @@ func dataSourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("Error setting rotation %s", err))
 	}
 
+	passwordPolicy := []map[string]interface{}{}
+	if usernamePasswordSecret.PasswordGenerationPolicy != nil {
+		modelMap, err := passwordGenerationPolicyToMap(usernamePasswordSecret.PasswordGenerationPolicy)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		passwordPolicy = append(passwordPolicy, modelMap)
+	}
+	if err = d.Set("password_generation_policy", passwordPolicy); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting password_generation_policy %s", err))
+	}
+
 	if err = d.Set("expiration_date", DateTimeToRFC3339(usernamePasswordSecret.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
@@ -295,9 +331,6 @@ func dataSourceIbmSmUsernamePasswordSecretRotationPolicyToMap(model secretsmanag
 		}
 		if model.Unit != nil {
 			modelMap["unit"] = *model.Unit
-		}
-		if model.RotateKeys != nil {
-			modelMap["rotate_keys"] = *model.RotateKeys
 		}
 		return modelMap, nil
 	} else {

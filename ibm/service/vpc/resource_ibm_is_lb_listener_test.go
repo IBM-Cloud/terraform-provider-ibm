@@ -299,6 +299,69 @@ func TestAccIBMISLBListenerHttpRedirect_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLBListenerHttpRedirectNew_basic(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblis-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblis%d", acctest.RandIntRange(10, 100))
+
+	protocol1 := "https"
+	port1 := "9086"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBListenerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBListenerHttpsRedirectNewConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.lb_listener2", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.http_status_code", "302"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", "/example?doc=get"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerHttpsRedirectNewConfigUpdate(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.lb_listener2", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.http_status_code", "303"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", "/example?doc=getupdated"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerHttpsRedirectNewConfigURIRemove(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.lb_listener2", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.http_status_code", "303"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.0.uri", ""),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerHttpsRedirectNewConfigRemove(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.lb_listener2", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckNoResourceAttr(
+						"ibm_is_lb_listener.lb_listener2", "https_redirect.#"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMISLBListenerDestroy(s *terraform.State) error {
 
@@ -536,6 +599,151 @@ func testAccCheckIBMISLBListenerHttpsRedirectConfigRemove(vpcname, subnetname, z
 	  }`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance)
 
 }
+
+func testAccCheckIBMISLBListenerHttpsRedirectNewConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9088"
+		protocol = "https"
+		certificate_instance="%s"
+	  }
+	  
+	  resource "ibm_is_lb_listener" "lb_listener2"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9087"
+		protocol = "http"
+		https_redirect {
+			http_status_code = 302
+			listener {
+				id = ibm_is_lb_listener.lb_listener1.listener_id
+			}
+			uri = "/example?doc=get"
+		  }
+	  }`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance)
+
+}
+
+func testAccCheckIBMISLBListenerHttpsRedirectNewConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "https"
+		certificate_instance="%s"
+	  }
+	  
+	  resource "ibm_is_lb_listener" "lb_listener2"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9087"
+		protocol = "http"
+		https_redirect {
+			http_status_code = 303
+			listener {
+				id = ibm_is_lb_listener.lb_listener1.listener_id
+			}
+			uri = "/example?doc=getupdated"
+		  }
+	  }`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance)
+
+}
+
+func testAccCheckIBMISLBListenerHttpsRedirectNewConfigURIRemove(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "https"
+		certificate_instance="%s"
+	  }
+	  
+	  resource "ibm_is_lb_listener" "lb_listener2"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9087"
+		protocol = "http"
+		https_redirect {
+			http_status_code = 303
+			listener {
+				id = ibm_is_lb_listener.lb_listener1.listener_id
+			}
+		  }
+	  }`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance)
+
+}
+
+func testAccCheckIBMISLBListenerHttpsRedirectNewConfigRemove(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "https"
+		certificate_instance="%s"
+	  }
+	  
+	  resource "ibm_is_lb_listener" "lb_listener2"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9087"
+		protocol = "http"
+	  }`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance)
+
+}
+
 func testAccCheckIBMISNLBRouteModeListenerConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {

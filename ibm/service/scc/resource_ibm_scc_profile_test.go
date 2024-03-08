@@ -59,6 +59,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	profileType := "custom"
 	profileNameUpdate := profileName
 	profileDescriptionUpdate := profileDescription
+	profileVersion := "0.0.0"
 	profileTypeUpdate := profileType
 
 	resource.Test(t, resource.TestCase{
@@ -73,6 +74,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescription),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_type", profileType),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_version", profileVersion),
 				),
 			},
 			resource.TestStep{
@@ -81,6 +83,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_type", profileTypeUpdate),
+					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_version", profileVersion),
 				),
 			},
 			resource.TestStep{
@@ -197,6 +200,7 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
+			profile_version = "0.0.0"
 			controls {
 				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id

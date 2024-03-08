@@ -38,6 +38,28 @@ func TestAccIbmIsShareBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareCrossRegionReplication(t *testing.T) {
+	var conf vpcv1.Share
+	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareCrossRegionReplicaConfig(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "source_share_crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "encryption_key"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "encryption", "user_managed"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIbmIsShareAllArgs(t *testing.T) {
 	var conf vpcv1.Share
 
@@ -147,6 +169,67 @@ func TestAccIbmIsShareReplicaInline(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareVNIID(t *testing.T) {
+	var conf vpcv1.Share
+
+	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	shareTargetName := fmt.Sprintf("tf-fs-tg-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tf-vni-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareConfigVNIID(vpcname, subnetName, shareTargetName, vniname, name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "mount_targets.0.virtual_network_interface.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "mount_targets.0.virtual_network_interface.0.name"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmIsShareConfigVNIID(vpcName, sname, targetName, vniName, shareName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_virtual_network_interface" "testacc_vni"{
+		name = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+	}
+	resource "ibm_is_share" "is_share" {
+		zone    = "us-south-1"
+		size    = 220
+		name    = "%s"
+		profile = "dp2"
+		mount_targets {
+		  name = "%s"
+		  virtual_network_interface {
+			id = ibm_is_virtual_network_interface.testacc_vni.id
+		  }
+		}
+	  }
+	`, vpcName, sname, acc.ISCIDR, vniName, shareName, targetName)
+}
+
 func testAccCheckIbmIsShareConfigBasic(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_share" "is_share" {
@@ -157,7 +240,18 @@ func testAccCheckIbmIsShareConfigBasic(name string) string {
 		}
 	`, name, acc.ShareProfileName)
 }
-
+func testAccCheckIbmIsShareCrossRegionReplicaConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_share" "is_share" {
+			zone = "us-south-2"
+			encryption_key = "%s"
+			source_share_crn = "%s"
+			replication_cron_spec = "0 */5 * * *"
+			name = "%s"
+			profile = "%s"
+		}
+	`, acc.ShareEncryptionKey, acc.SourceShareCRN, name, acc.ShareProfileName)
+}
 func testAccCheckIbmIsShareConfig(vpcName, name string, size int, shareTergetName string) string {
 	return fmt.Sprintf(`
 

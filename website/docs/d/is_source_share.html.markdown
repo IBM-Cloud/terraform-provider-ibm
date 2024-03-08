@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
-page_title: "IBM : is_share"
+page_title: "IBM : is_source_share"
 description: |-
   Get information about Share
 subcategory: "VPC infrastructure"
 ---
 
-# ibm\_is_share
+# ibm_is_source_share
 
-Provides a read-only data source for Share. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for the source share. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 

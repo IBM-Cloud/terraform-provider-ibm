@@ -43,8 +43,13 @@ In addition to all argument reference list, you can access the following attribu
 - `bandwidth` - (List) The total bandwidth (in megabits per second) shared across the network interfaces of a bare metal server with this profile.
   
   Nested scheme for `bandwidth`:
+    - `default` - (Integer) The default value for this profile field.
+    - `max` - (Integer) The maximum value for this profile field.
+    - `min` - (Integer) The minimum value for this profile field.
+    - `step` - (Integer) The increment step value for this profile field.
     - `type` - (String) The type for this profile field.
     - `value` - (Integer) The value for this profile field.
+    - `values` - (List) The permitted values for this profile field.
 - `console_types` - (List) The console type configuration for a bare metal server with this profile.
   
   Nested schema for  `console_types`:
@@ -94,6 +99,13 @@ In addition to all argument reference list, you can access the following attribu
     - `type` - (String) The type for this profile field.
     - `value` - (String) The value for this profile field.
 - `name` - (String) The name of the profile.
+- `network_attachment_count` - (List)
+
+  Nested schema for **network_attachment_count**:
+    - `max` - (Integer) The maximum value for this profile field.
+    - `min` - (Integer) The minimum value for this profile field.
+    - `type` - (String) The type for this profile field.
+
 - `network_interface_count` - (List) 
   
   Nested schema for **network_interface_count**:
@@ -112,3 +124,10 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `supported_trusted_platform_module_modes`:
     - `type` - (String) The type for this profile field.
     - `values` - (Array) The supported trusted platform module (TPM) modes.
+
+- `virtual_network_interfaces_supported` - (List) Indicates whether this profile supports virtual network interfaces.
+
+  Nested schema for **virtual_network_interfaces_supported**:
+	- `type` - (String) The type for this profile field.
+	- `value` - (Boolean) The value for this profile field.
+

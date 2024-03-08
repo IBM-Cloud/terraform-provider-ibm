@@ -20,6 +20,12 @@ resource "ibm_sm_username_password_secret" "sm_username_password_secret" {
   description = "Extended description for this secret."
   expiration_date = "2024-04-12T23:20:50Z"
   labels = ["my-label"]
+  password_generation_policy {
+		length = 32
+		include_digits = true
+		include_symbols = true
+		include_uppercase = true
+  }
   rotation {
 		auto_rotate = true
 		interval = 1
@@ -48,14 +54,20 @@ Review the argument reference that you can specify for your resource.
 * `expiration_date` - (Optional, String) The date a secret is expired. The date format follows RFC 3339.
 * `labels` - (Optional, List) Labels that you can use to search for secrets in your instance.Up to 30 labels can be created.
   * Constraints: The list items must match regular expression `/(.*?)/`. The maximum length is `30` items. The minimum length is `0` items.
-* `password` - (Required, Forces new resource, String) The password that is assigned to the secret.
-  * Constraints: The maximum length is `64` characters. The minimum length is `6` characters. The value must match regular expression `/[A-Za-z0-9+-=.]*/`.
+* `password` - (Optional, String) The password that is assigned to the secret. If `password` is omitted, Secrets Manager generates a new random password for your secret.
+  * Constraints: The maximum length is `64` characters. The minimum length is `6` characters.
+* `password_generation_policy` - (List) Policy for auto-generated passwords.
+  Nested scheme for **password_generation_policy**:
+    * `length` - (Optional, Integer) The length of auto-generated passwords. Default is 32.
+        * Constraints: The minimum value is `12`. The maximum value is `256`.
+    * `include_digits` - (Optional, Boolean) Include digits in auto-generated passwords. Default is true.
+    * `include_symbols` - (Optional, Boolean) Include symbols in auto-generated passwords. Default is true.
+    * `include_uppercase` - (Optional, Boolean) Include uppercase letters in auto-generated passwords. Default is true.
 * `rotation` - (Optional, List) Determines whether Secrets Manager rotates your secrets automatically.
 Nested scheme for **rotation**:
 	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
 	* `interval` - (Optional, Integer) The length of the secret rotation time interval.
 	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 	* `unit` - (Optional, String) The units for the secret rotation time interval.
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.

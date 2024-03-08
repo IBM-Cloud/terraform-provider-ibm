@@ -25,7 +25,7 @@ provider "ibm" {
 ```terraform
 
 data "ibm_is_image" "example" {
-  name = "centos-7.x-amd64"
+  name = "ibm-centos-7-9-minimal-amd64-12"
 }
 ```
 ```terraform
@@ -69,5 +69,29 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the image.
 - `obsolescence_at` - (String) The obsolescence date and time (UTC) for this image. If absent, no obsolescence date and time has been set.
 - `os` - (String) The name of the operating system.
+- `operating_system` - (List) The operating system details. 
+    
+  Nested scheme for `operating_system`:
+  - `architecture` - (String) The operating system architecture.
+  - `dedicated_host_only` - (Bool) Images with this operating system can only be used on dedicated hosts or dedicated host groups.
+  - `display_name` - (String) A unique, display-friendly name for the operating system.
+  - `family` - (String) The software family for this operating system.
+  - `href` - (String) The URL for this operating system.
+  - `name` - (String) The globally unique name for this operating system.
+  - `vendor` - (String) The vendor of the operating system.
+  - `version` - (String) The major release version of this operating system.
+- `resource_group` - (List) The resource group object, for this image.
+  
+  Nested scheme for `resource_group`:
+  - `href` - (String) The URL for this resource group.
+  - `id` - (String) The unique identifier for this resource group.
+  - `name` - (String) The user-defined name for this resource group.
 - `status` - (String) The status of this image.
+- `status_reasons` - (List) The reasons for the current status (if any).
+
+    Nested scheme for `status_reasons`:
+  - `code` - (String) The status reason code
+  - `message` - (String) An explanation of the status reason
+  - `more_info` - (String) Link to documentation about this status reason
+
 - `source_volume` - The source volume id of the image.

@@ -271,6 +271,27 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMTrustedProfilePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesWithoutWildcard(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -459,6 +480,37 @@ func TestAccIBMIAMTrustedProfilePolicy_With_ServiceGroupID(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMTrustedProfilePolicy_With_Attribute_Based_Condition(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMTrustedProfilePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "description", "IAM Trusted Profile Policy Attribute Based Condition Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyUpdateAttributeBasedCondition(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "description", "IAM Trusted Profile Policy Attribute Based Condition Update for test scenario"),
 				),
 			},
 		},
@@ -776,6 +828,29 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributes(name string) strin
 	  }
 	`, name)
 }
+
+func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesWithoutWildcard(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_trusted_profile_policy" "policy" {
+		profile_id     = ibm_iam_trusted_profile.profileID.id
+		roles              = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, name)
+}
+
 func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesUpdate(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_trusted_profile" "profileID" {
@@ -1030,6 +1105,140 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateWithServiceGroupId(name string)
 			rule_operator = "and"
 		  	pattern = "time-based-conditions:once"
 			description = "IAM Service Profile Policy with service_group_id"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "profileID" {
+			name = "%s"
+		}
+
+		resource "ibm_iam_trusted_profile_policy" "policy" {
+			profile_id = ibm_iam_trusted_profile.profileID.id
+			roles  = ["Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Trusted Profile Policy Attribute Based Condition Creation for test scenario"
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyUpdateAttributeBasedCondition(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "profileID" {
+			name = "%s"
+		}
+
+		resource "ibm_iam_trusted_profile_policy" "policy" {
+			profile_id = ibm_iam_trusted_profile.profileID.id
+			roles  = ["Reader", "Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM Trusted Profile Policy Attribute Based Condition Update for test scenario"
 		}
 	`, name)
 }

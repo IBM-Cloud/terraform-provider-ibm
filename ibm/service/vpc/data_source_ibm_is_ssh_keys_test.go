@@ -5,9 +5,11 @@ package vpc_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -26,10 +28,57 @@ func TestAccIBMIsSshKeysDataSourceBasic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMIsSshKeysDataSourceTags(t *testing.T) {
+	name1 := fmt.Sprintf("tfssh-name-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsSshKeysDataSourceConfigTags(publicKey, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_ssh_key.key", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.key", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.key", "fingerprint"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.key", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_ssh_key.key", "length"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.0.fingerprint"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.0.tags.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_ssh_keys.is_ssh_keys", "keys.0.tags.#", "3"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMIsSshKeysDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_is_ssh_keys" "is_ssh_keys" {
 		}
 	`)
+}
+func testAccCheckIBMIsSshKeysDataSourceConfigTags(publicKey, name1 string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ssh_key" "key" {
+			name 		= "%s"
+			public_key 	= "%s"
+			tags		= ["test:1", "test:2", "test:3"]
+		}
+		data "ibm_is_ssh_keys" "is_ssh_keys" {
+			depends_on = [ ibm_is_ssh_key.key ]
+		}
+	`, name1, publicKey)
 }
