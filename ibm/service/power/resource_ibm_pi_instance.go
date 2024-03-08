@@ -183,7 +183,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				Computed:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
