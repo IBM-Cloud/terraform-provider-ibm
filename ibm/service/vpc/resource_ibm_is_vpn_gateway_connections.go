@@ -74,7 +74,8 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 			// Deprecated
 			isVPNGatewayConnectionPeerAddress: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "VPN gateway connection peer address",
 				Deprecated:  "peer_address is deprecated, use peer instead",
 			},
