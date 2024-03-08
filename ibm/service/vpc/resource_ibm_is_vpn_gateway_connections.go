@@ -96,7 +96,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"ike_identities": &schema.Schema{
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
