@@ -9,7 +9,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	ibmdl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -89,7 +89,7 @@ func testAccCheckIBMDLGatewayVCConfig(vctype, vcName, gatewayname, custname, car
 }
 
 func testAccCheckIBMDLGatewayVCDestroy(s *terraform.State) error {
-	directLink, err := mydirectlinkClient(acc.TestAccProvider.Meta())
+	directLink, err := directlinkClient(acc.TestAccProvider.Meta())
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func testAccCheckIBMDLGatewayVCDestroy(s *terraform.State) error {
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getGatewayVirtualConnectionOptions := &ibmdl.GetGatewayVirtualConnectionOptions{}
+		getGatewayVirtualConnectionOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{}
 		getGatewayVirtualConnectionOptions.SetGatewayID(gatewayId)
 		getGatewayVirtualConnectionOptions.SetID(ID)
 		_, _, err = directLink.GetGatewayVirtualConnection(getGatewayVirtualConnectionOptions)
@@ -120,7 +120,7 @@ func testAccCheckIBMDLGatewayVCDestroy(s *terraform.State) error {
 func testAccCheckIBMDLGatewayVCExists(n string, vc string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
-		directLink, err := mydirectlinkClient(acc.TestAccProvider.Meta())
+		directLink, err := directlinkClient(acc.TestAccProvider.Meta())
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ func testAccCheckIBMDLGatewayVCExists(n string, vc string) resource.TestCheckFun
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getVCOptions := &ibmdl.GetGatewayVirtualConnectionOptions{
+		getVCOptions := &directlinkv1.GetGatewayVirtualConnectionOptions{
 			ID: &ID,
 		}
 		getVCOptions.SetGatewayID(gatewayId)

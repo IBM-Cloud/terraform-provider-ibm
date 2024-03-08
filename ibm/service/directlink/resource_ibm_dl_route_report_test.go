@@ -9,10 +9,10 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	ibmdl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 func TestAccIBMDLRouteReportResource_basic(t *testing.T) {
@@ -59,7 +59,7 @@ func testAccCheckIBMDLRouteReportResourceConfig(gatewayname string) string {
 }
 
 func testAccCheckIBMDLRouteReportDestroy(s *terraform.State) error {
-	client, err := mydirectlinkClient(acc.TestAccProvider.Meta())
+	client, err := directlinkClient(acc.TestAccProvider.Meta())
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func testAccCheckIBMDLRouteReportDestroy(s *terraform.State) error {
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getGatewayRouteReportOptions := &ibmdl.GetGatewayRouteReportOptions{}
+		getGatewayRouteReportOptions := &directlinkv1.GetGatewayRouteReportOptions{}
 		getGatewayRouteReportOptions.SetGatewayID(gatewayId)
 		getGatewayRouteReportOptions.SetID(ID)
 		_, _, err = client.GetGatewayRouteReport(getGatewayRouteReportOptions)
@@ -88,7 +88,7 @@ func testAccCheckIBMDLRouteReportDestroy(s *terraform.State) error {
 
 func testAccCheckIBMDLGatewayRouteReportExists(n string, vc string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := mydirectlinkClient(acc.TestAccProvider.Meta())
+		client, err := directlinkClient(acc.TestAccProvider.Meta())
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ func testAccCheckIBMDLGatewayRouteReportExists(n string, vc string) resource.Tes
 		gatewayId := parts[0]
 		ID := parts[1]
 
-		getGatewayRouteReportOptions := &ibmdl.GetGatewayRouteReportOptions{
+		getGatewayRouteReportOptions := &directlinkv1.GetGatewayRouteReportOptions{
 			ID:        &ID,
 			GatewayID: &gatewayId,
 		}
