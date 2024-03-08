@@ -88,7 +88,6 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
-	ibmdl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -243,7 +242,6 @@ type ClientSession interface {
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
-	DirectlinkIBMV1API() (*ibmdl.DirectLinkV1, error)
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
@@ -410,7 +408,6 @@ type clientSession struct {
 	vpcBetaAPI *vpcbeta.VpcbetaV1
 
 	directlinkAPI    *dl.DirectLinkV1
-	directlinkIBMAPI *ibmdl.DirectLinkV1
 	directlinkErr    error
 	directlinkIBMErr error
 	dlProviderAPI    *dlProviderV2.DirectLinkProviderV2
@@ -844,10 +841,6 @@ func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error) {
 
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
-}
-
-func (sess clientSession) DirectlinkIBMV1API() (*ibmdl.DirectLinkV1, error) {
-	return sess.directlinkIBMAPI, sess.directlinkIBMErr
 }
 
 func (sess clientSession) DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error) {
@@ -2191,30 +2184,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.directlinkAPI != nil && session.directlinkAPI.Service != nil {
 		session.directlinkAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.directlinkAPI.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
-	// DIRECT LINK Service
-	ibmdlURL := ibmdl.DefaultServiceURL
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		ibmdlURL = ContructEndpoint("private.directlink", fmt.Sprintf("%s/v1", cloudEndpoint))
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		ibmdlURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_API_ENDPOINT", c.Region, ibmdlURL)
-	}
-	ibmdirectlinkOptions := &ibmdl.DirectLinkV1Options{
-		URL:           EnvFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, ibmdlURL),
-		Authenticator: authenticator,
-		Version:       &ver,
-	}
-	session.directlinkIBMAPI, session.directlinkIBMErr = ibmdl.NewDirectLinkV1(ibmdirectlinkOptions)
-	if session.directlinkIBMErr != nil {
-		session.directlinkIBMErr = fmt.Errorf("[ERROR] Error occured while configuring Direct Link Service: %s", session.directlinkIBMErr)
-	}
-	if session.directlinkIBMAPI != nil && session.directlinkIBMAPI.Service != nil {
-		session.directlinkIBMAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		session.directlinkIBMAPI.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
