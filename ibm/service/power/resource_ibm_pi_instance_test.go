@@ -85,7 +85,7 @@ func testAccCheckIBMPIInstanceDeploymentTypeConfig(name, instanceHealthStatus, e
 		pi_instance_name      = "%[2]s"
 		pi_proc_type          = "dedicated"
 		pi_image_id           = data.ibm_pi_image.power_image.id
-		pi_key_pair_name      = ibm_pi_key.key.key_id
+		pi_key_pair_name      = ibm_pi_key.key.name
 		pi_sys_type           = "%[7]s"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_type 	  = "%[8]s"
@@ -157,17 +157,17 @@ func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {
 		pi_processors         = "0.25"
 		pi_instance_name      = "%[2]s"
 		pi_proc_type          = "shared"
-		pi_image_id           = "f4501cad-d0f4-4517-9eea-85402309d90d"
-		pi_key_pair_name      = ibm_pi_key.key.key_id
+		pi_image_id           = "%[4]s"
+		pi_key_pair_name      = ibm_pi_key.key.name
 		pi_sys_type           = "e980"
 		pi_storage_type 	  = "tier3"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_network {
-			network_id = resource.ibm_pi_network.power_networks.id
+			network_id = resource.ibm_pi_network.power_networks.network_id
 			ip_address = "%[3]s"
 		}
 	}
-	`, acc.Pi_cloud_instance_id, name, privateNetIP)
+	`, acc.Pi_cloud_instance_id, name, privateNetIP, acc.Pi_image)
 }
 
 func testAccIBMPIInstanceVTLConfig(name string) string {
@@ -191,7 +191,7 @@ func testAccIBMPIInstanceVTLConfig(name string) string {
 		pi_license_repository_capacity = "3"
 		pi_proc_type          = "shared"
 		pi_image_id           = "%[3]s"
-		pi_key_pair_name      = ibm_pi_key.vtl_key.key_id
+		pi_key_pair_name      = ibm_pi_key.vtl_key.name
 		pi_sys_type           = "s922"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_type 	  = "tier1"
@@ -467,7 +467,7 @@ func testAccIBMPIInstanceMixedStorage(name string) string {
 		pi_instance_name         = "%[2]s"
 		pi_proc_type             = "shared"
 		pi_image_id              = "ca4ea55f-b329-4cf5-bdce-d2f38cfc6da3"
-		pi_key_pair_name         = ibm_pi_key.key.key_id
+		pi_key_pair_name         = ibm_pi_key.key.name
 		pi_sys_type              = "s922"
 		pi_storage_type          = "tier1"
 		pi_storage_pool_affinity = false
