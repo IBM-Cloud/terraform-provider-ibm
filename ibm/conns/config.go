@@ -407,11 +407,10 @@ type clientSession struct {
 	vpcbetaErr error
 	vpcBetaAPI *vpcbeta.VpcbetaV1
 
-	directlinkAPI    *dl.DirectLinkV1
-	directlinkErr    error
-	directlinkIBMErr error
-	dlProviderAPI    *dlProviderV2.DirectLinkProviderV2
-	dlProviderErr    error
+	directlinkAPI *dl.DirectLinkV1
+	directlinkErr error
+	dlProviderAPI *dlProviderV2.DirectLinkProviderV2
+	dlProviderErr error
 
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
@@ -1260,7 +1259,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
-		session.directlinkIBMErr = errEmptyBluemixCredentials
 		session.dlProviderErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
