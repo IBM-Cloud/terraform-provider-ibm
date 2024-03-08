@@ -11,10 +11,10 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	ibmdl "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 func TestAccIBMDLGateway_basic(t *testing.T) {
@@ -155,8 +155,8 @@ func testAccCheckIBMDLConnectGatewayConfig(gatewayname string, exprefix string, 
 	  `, gatewayname, exprefix, imprefix)
 }
 
-func mydirectlinkClient(meta interface{}) (*ibmdl.DirectLinkV1, error) {
-	ibmsess, err := meta.(conns.ClientSession).DirectlinkIBMV1API()
+func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
+	ibmsess, err := meta.(conns.ClientSession).DirectlinkV1API()
 	return ibmsess, err
 }
 
@@ -169,15 +169,15 @@ func testAccCheckIBMDLGatewayExists(n string, instance string) resource.TestChec
 		if rs.Primary.ID == "" {
 			return errors.New("No Record ID is set")
 		}
-		directLink, err := mydirectlinkClient(acc.TestAccProvider.Meta())
+		directLink, err := directlinkClient(acc.TestAccProvider.Meta())
 		if err != nil {
 			return err
 		}
-		getOptions := &ibmdl.GetGatewayOptions{
+		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &rs.Primary.ID,
 		}
 		instanceIntf, response, err := directLink.GetGateway(getOptions)
-		instance1 := instanceIntf.(*ibmdl.GetGatewayResponse)
+		instance1 := instanceIntf.(*directlinkv1.GetGatewayResponse)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
@@ -188,14 +188,14 @@ func testAccCheckIBMDLGatewayExists(n string, instance string) resource.TestChec
 }
 
 func testAccCheckIBMDLGatewayDestroy(s *terraform.State) error {
-	directLink, err := mydirectlinkClient(acc.TestAccProvider.Meta())
+	directLink, err := directlinkClient(acc.TestAccProvider.Meta())
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_dl_gateway" {
 			log.Printf("Destroy called ...%s", rs.Primary.ID)
-			getOptions := &ibmdl.GetGatewayOptions{
+			getOptions := &directlinkv1.GetGatewayOptions{
 				ID: &rs.Primary.ID,
 			}
 			_, _, err = directLink.GetGateway(getOptions)

@@ -818,7 +818,8 @@ func resourceIBMdlGatewayActionRead(d *schema.ResourceData, meta interface{}) er
 	getOptions := &directlinkv1.GetGatewayOptions{
 		ID: &ID,
 	}
-	instance, response, err := directLink.GetGateway(getOptions)
+	instanceIntf, response, err := directLink.GetGateway(getOptions)
+	instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -993,7 +994,9 @@ func isDirectLinkRefreshFuncforAction(client *directlinkv1.DirectLinkV1, id stri
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
 		}
-		instance, response, err := client.GetGateway(getOptions)
+
+		instanceIntf, response, err := client.GetGateway(getOptions)
+		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
@@ -1021,7 +1024,8 @@ func isDirectLinkRefreshActionFunc(client *directlinkv1.DirectLinkV1, id string)
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
 		}
-		instance, response, err := client.GetGateway(getOptions)
+		instanceIntf, response, err := client.GetGateway(getOptions)
+		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
@@ -1053,7 +1057,8 @@ func isDirectLinkRefreshDeleteActionFunc(client *directlinkv1.DirectLinkV1, id s
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
 		}
-		instance, response, err := client.GetGateway(getOptions)
+		instanceIntf, response, err := client.GetGateway(getOptions)
+		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
@@ -1090,7 +1095,8 @@ func resourceIBMdlGatewayActionUpdate(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			return err
 		}
-		instance, response, err := directLink.GetGateway(getOptions)
+		instanceIntf, response, err := directLink.GetGateway(getOptions)
+		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
 				d.SetId("")
