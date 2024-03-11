@@ -23,8 +23,9 @@ const (
 	tags         = "tags"
 	resourceType = "resource_type"
 	tagType      = "tag_type"
-	acccountID   = "acccount_id"
+	accountID    = "account_id"
 	service      = "service"
+	replace      = "replace"
 )
 
 func ResourceIBMResourceTag() *schema.Resource {
@@ -68,10 +69,15 @@ func ResourceIBMResourceTag() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", tagType),
 				Description:  "Type of the tag. Only allowed values are: user, or service or access (default value : user)",
 			},
-			acccountID: {
+			accountID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the account that owns the resources to be tagged (required if tag-type is set to service)",
+			},
+			replace: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "if true, it indicates that the attaching operation is a replacement operation",
 			},
 		},
 	}
@@ -153,6 +159,12 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 			AttachTagOptions.AccountID = flex.PtrToString(accountID)
 		}
 	}
+	fmt.Println(AttachTagOptions)
+	if v, ok := d.GetOk(replace); ok && v != nil {
+		replace := v.(bool)
+		AttachTagOptions.Replace = &replace
+		fmt.Println("pippo2")
+	}
 
 	// Fetch tags from schematics only if they are user tags
 	if strings.TrimSpace(tagType) == "" || tagType == "user" {
@@ -207,7 +219,7 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 		tType = v.(string)
 
 		if tType == service {
-			d.Set(acccountID, acctID)
+			d.Set(accountID, acctID)
 		}
 	}
 
