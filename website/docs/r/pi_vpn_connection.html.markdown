@@ -12,6 +12,7 @@ Update or delete a VPN connection. For more information, about IBM power virtual
 
 ~> **Deprecated:**
   Create VPN connection is deprecated and no longer supported. Existing `pi_vpn_connection` will still have support for `update` and `delete`.
+  
 ## Example usage
 The following example creates a VPN Connection.
 
