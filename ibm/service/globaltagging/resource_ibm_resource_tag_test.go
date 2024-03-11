@@ -92,3 +92,49 @@ func testAccCheckResourceTagCreate(name, managed_from string) string {
 	}
 `, name, managed_from)
 }
+
+func TestAccResourceTag_replace_Basic(t *testing.T) {
+	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	managed_from := "wdc04"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccCheckResourceTagCreate_replace(name, managed_from),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
+					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_resource_tag.tag",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckResourceTagCreate_replace(name, managed_from string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_satellite_location" "location" {
+		location      = "%s"
+		managed_from  = "%s"
+		description	  = "satellite service"
+		zones		  = ["us-east-1", "us-east-2", "us-east-3"]
+	}
+
+	data "ibm_satellite_location" "test_location" {
+		location  = ibm_satellite_location.location.id
+	}
+
+	resource "ibm_resource_tag" "tag" {
+		resource_id = data.ibm_satellite_location.test_location.crn
+		tags        = ["test:test"]
+	}
+`, name, managed_from)
+}
