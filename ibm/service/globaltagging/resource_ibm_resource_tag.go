@@ -77,7 +77,7 @@ func ResourceIBMResourceTag() *schema.Resource {
 			replace: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "if true, it indicates that the attaching operation is a replacement operation",
+				Description: "If true, it indicates that the attaching operation is a replacement operation",
 			},
 		},
 	}
