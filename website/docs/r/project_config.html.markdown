@@ -39,7 +39,7 @@ Nested schema for **definition**:
 	* `authorizations` - (Optional, List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
 		* `api_key` - (Optional, String) The IBM Cloud API Key.
-		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 		* `method` - (Optional, String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (Optional, String) The trusted profile ID.
@@ -55,7 +55,7 @@ Nested schema for **definition**:
 		* `instance_location` - (Optional, String) The location of the compliance instance.
 		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
 		* `profile_name` - (Optional, String) The name of the compliance profile.
-		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^`<>\\x00-\\x1F]*$/`.
+		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 	* `description` - (Optional, String) A project configuration description.
 	  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `environment_id` - (Optional, String) The ID of the project environment.
@@ -66,7 +66,7 @@ Nested schema for **definition**:
 	* `name` - (Required, String) The configuration name. It is unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `resource_crns` - (Optional, List) The CRNs of resources associated with this configuration.
-	  * Constraints: The list items must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`. The maximum length is `110` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"<>{}\\s\\x00-\\x1F]*/`. The maximum length is `110` items. The minimum length is `0` items.
 	* `settings` - (Optional, Map) Schematics environment variables to use to deploy the configuration. Settings are only available if they were specified when the configuration was initially created.
 * `project_id` - (Required, Forces new resource, String) The unique project ID.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
@@ -121,7 +121,7 @@ Nested schema for **schematics**:
 		* `type` - (Computed, String) The type of the script.
 		  * Constraints: The maximum length is `7` characters. The minimum length is `7` characters. The value must match regular expression `/^(ansible)$/`.
 	* `workspace_crn` - (Optional, String) An IBM Cloud resource name, which uniquely identifies a resource.
-	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"<>{}\\s\\x00-\\x1F]*/`.
 
 ## Attribute Reference
 
@@ -147,11 +147,11 @@ Nested schema for **outputs**:
 * `project` - (List) The project referenced by this resource.
 Nested schema for **project**:
 	* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
-	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"<>{}\\s\\x00-\\x1F]*/`.
 	* `definition` - (List) The definition of the project reference.
 	Nested schema for **definition**:
 		* `name` - (String) The name of the project.
-		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"`<>{}\\x00-\\x1F]+$/`.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"<>{}\\x00-\\x1F]+$/`.
 	* `href` - (String) A URL.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `id` - (String) The unique ID.
