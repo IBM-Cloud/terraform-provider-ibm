@@ -159,11 +159,11 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 			AttachTagOptions.AccountID = flex.PtrToString(accountID)
 		}
 	}
-	fmt.Println(AttachTagOptions)
+
 	if v, ok := d.GetOk(replace); ok && v != nil {
 		replace := v.(bool)
 		AttachTagOptions.Replace = &replace
-		fmt.Println("pippo2")
+
 	}
 
 	// Fetch tags from schematics only if they are user tags
