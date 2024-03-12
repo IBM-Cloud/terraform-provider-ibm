@@ -7,6 +7,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -162,7 +165,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				},
 			},
 			"attachment_parameters": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The profile parameters for the attachment.",
 				Elem: &schema.Resource{
@@ -321,6 +324,16 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 	return resourceIbmSccProfileAttachmentRead(context, d, meta)
 }
 
+func cmpAttachParamSetFunc(v interface{}) int {
+	m := v.(map[string]interface{})
+	id := (m["assessment_id"]).(*string)
+	assId := (*id)[5:18]
+	var i big.Int
+	i.SetString(strings.Replace(assId, "-", "", 4), 16)
+	val, _ := strconv.Atoi(i.String())
+	return val
+}
+
 func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityandcompliancecenterapiClient, err := meta.(conns.ClientSession).SecurityAndComplianceCenterV3()
 	if err != nil {
@@ -419,14 +432,15 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		}
 	}
 	if !core.IsNil(attachmentItem.AttachmentParameters) {
-		attachmentParameters := []map[string]interface{}{}
+		attachmentParametersList := []interface{}{}
 		for _, attachmentParametersItem := range attachmentItem.AttachmentParameters {
 			attachmentParametersItemMap, err := resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(&attachmentParametersItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			attachmentParameters = append(attachmentParameters, attachmentParametersItemMap)
+			attachmentParametersList = append(attachmentParametersList, attachmentParametersItemMap)
 		}
+		attachmentParameters := schema.NewSet(cmpAttachParamSetFunc, attachmentParametersList)
 		if err = d.Set("attachment_parameters", attachmentParameters); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting attachment_parameters: %s", err))
 		}

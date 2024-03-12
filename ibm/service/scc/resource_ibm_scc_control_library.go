@@ -154,6 +154,7 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 										Computed:    true,
 										Description: "The number of assessments.",
 									},
+
 									"assessments": {
 										Type:        schema.TypeSet,
 										Optional:    true,
@@ -210,6 +211,13 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 													},
 												},
 											},
+										},
+									},
+									"assessments_map": {
+										Type:     schema.TypeMap,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
 										},
 									},
 								},
@@ -924,8 +932,6 @@ func resourceIbmSccControlLibraryControlSpecificationsToMap(model *securityandco
 		}
 		assessmentsList := schema.NewSet(compareAssessmentSetFunc, assessments)
 		modelMap["assessments"] = assessmentsList
-
-		// modelMap["assessments"] = assessments
 	}
 	return modelMap, nil
 }
