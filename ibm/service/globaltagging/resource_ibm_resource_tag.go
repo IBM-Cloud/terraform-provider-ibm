@@ -78,6 +78,7 @@ func ResourceIBMResourceTag() *schema.Resource {
 				Type:        schema.TypeBool,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Optional:    true,
+				Default:     false,
 				Description: "If true, it indicates that the attaching operation is a replacement operation",
 			},
 		},
