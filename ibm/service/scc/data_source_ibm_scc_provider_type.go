@@ -214,10 +214,3 @@ func dataSourceIbmSccProviderTypeLabelTypeToMap(model *securityandcompliancecent
 	}
 	return modelMap, nil
 }
-
-func dataSourceIbmSccProviderTypeAdditionalPropertyToMap(model *securityandcompliancecenterapiv3.AdditionalProperty) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["type"] = model.Type
-	modelMap["display_name"] = model.DisplayName
-	return modelMap, nil
-}
