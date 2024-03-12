@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
@@ -83,7 +83,7 @@ func resourceIBMPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta in
 	sshkey := d.Get(Arg_Key).(string)
 
 	// create key
-	client := st.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	body := &models.SSHKey{
 		Name:   &name,
 		SSHKey: &sshkey,
@@ -114,7 +114,7 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// get key
-	sshkeyC := st.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	sshkeydata, err := sshkeyC.Get(key)
 	if err != nil {
 		return diag.FromErr(err)
@@ -145,7 +145,7 @@ func resourceIBMPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// delete key
-	sshkeyC := st.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	err = sshkeyC.Delete(key)
 	if err != nil {
 		return diag.FromErr(err)

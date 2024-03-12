@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 )
 
 func TestAccIBMPIKey_basic(t *testing.T) {
@@ -55,7 +55,7 @@ func testAccCheckIBMPIKeyDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		sshkeyC := st.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
+		sshkeyC := instance.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
 		_, err = sshkeyC.Get(key)
 		if err == nil {
 			return fmt.Errorf("PI key still exists: %s", rs.Primary.ID)
@@ -87,7 +87,7 @@ func testAccCheckIBMPIKeyExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		client := st.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
 		_, err = client.Get(key)
 		if err != nil {
 			return err

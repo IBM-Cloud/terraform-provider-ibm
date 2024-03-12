@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Resource management"
 layout: "ibm"
 page_title: "IBM : resource_key"
@@ -31,7 +30,8 @@ resource "ibm_resource_key" "resourceKey" {
 }
 ```
 
-**Note** The current `ibm_resource_key` resource doesn't have support for service_id argument but the service_id can be passed as one of the parameter.
+**Notes** 
+The current `ibm_resource_key` resource doesn't have support for service_id argument but the service_id can be passed as one of the parameter.
 
 ### Example to create by using serviceID 
 
