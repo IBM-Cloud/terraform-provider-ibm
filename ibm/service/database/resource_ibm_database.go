@@ -1244,6 +1244,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 
 	initialNodeCount, err := getInitialNodeCount(serviceName, plan, meta)
+	fmt.Printf("LALALA initialNodeCount %d", initialNodeCount)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -2858,11 +2859,32 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 	return nil
 }
 
-func validateMultitenantMemoryCpu(groupId string, resourceName string, resource *GroupResource, group *Group) error {
+func validateMultitenantMemoryCpu(groupId string, resourceName string, resourceDefaults *Group, group *Group) error {
+	cpuCount := 0
+	cpuEnforcementRatioCeiling := 16384
+	fmt.Printf("SEE GROUP %v %v", group.Memory, resourceDefaults)
+	members := resourceDefaults.Members.Minimum
 
-	if group.Memory.Allocation < resource.CPUEnforcementRatioCeilingMb && float64(group.CPU.Allocation) <= float64(group.Memory.Allocation)/float64(resource.CPUEnforcementRatioMb) {
+	if group.Members != nil && members < resourceDefaults.Members.Allocation {
+		members = group.Members.Allocation
+	}
+
+	if group.CPU != nil && group.CPU.Allocation > 2 {
+		return nil
+	} else if group.CPU != nil {
+		cpuCount = group.CPU.Allocation
+	}
+
+	if group.Memory.Allocation < resourceDefaults.Memory.Minimum {
+		return fmt.Errorf("We were unable to complete your request: group.memory requires a minimum of %d megabytes. Try again with valid values or contact support if the issue persists.", resourceDefaults.Memory.Minimum)
+	}
+
+	fmt.Printf("multiplication %d %d", group.Memory.Allocation*members, cpuEnforcementRatioCeiling*resourceDefaults.Members.Minimum)
+
+	if group.Memory.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Minimum && group.Memory.Allocation > cpuCount*resourceDefaults.Memory.CPUEnforcementRatioMb {
 		return fmt.Errorf("[resource] must be a minimum of __GB and a maximum __GB per member")
 	}
+
 	return nil
 }
 
@@ -2947,8 +2969,8 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 
-			if group.Memory != nil && group.CPU != nil && group.CPU.Allocation < 2 && group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" {
-				err = validateMultitenantMemoryCpu(groupId, "memory", groupDefaults.Memory, group)
+			if group.Memory != nil && group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" {
+				err = validateMultitenantMemoryCpu(groupId, "memory", groupDefaults, group)
 				if err != nil {
 					return err
 				}
