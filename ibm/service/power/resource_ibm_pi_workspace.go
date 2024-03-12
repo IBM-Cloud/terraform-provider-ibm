@@ -8,6 +8,7 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,6 +50,11 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "Plan associated with the offering; Valid values are public or private.",
+			},
+			Attr_WorkspaceDetails: {
+				Computed:    true,
+				Description: "Workspace information.",
+				Type:        schema.TypeMap,
 			},
 		},
 	}
@@ -121,6 +127,12 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 	d.Set(PIWorkspaceName, controller.Name)
+	wsDetails := map[string]interface{}{
+		Attr_CreationDate: controller.CreatedAt,
+		Attr_CRN:          controller.TargetCRN,
+	}
+
+	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsDetails))
 
 	return nil
 }

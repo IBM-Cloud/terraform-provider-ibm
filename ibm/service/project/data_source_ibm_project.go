@@ -198,6 +198,54 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "The configuration type.",
 						},
+						"approved_version": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "approved_version",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "state",
+									},
+									"version": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "version",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "version",
+									},
+								},
+							},
+						},
+						"deployed_version": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "deployed_version",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"state": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "state",
+									},
+									"version": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "version",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "version",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -302,6 +350,11 @@ func DataSourceIbmProject() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. It is possible to create a project without providing a description.",
+						},
+						"monitoring_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "A boolean flag to enable project monitoring.",
 						},
 					},
 				},
@@ -546,5 +599,6 @@ func dataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Proje
 	modelMap["name"] = model.Name
 	modelMap["destroy_on_delete"] = model.DestroyOnDelete
 	modelMap["description"] = model.Description
+	modelMap["monitoring_enabled"] = model.MonitoringEnabled
 	return modelMap, nil
 }

@@ -403,7 +403,7 @@ func dataSourceIbmSmServiceCredentialsSecretMetadataRotationPolicyToMap(model *s
 	return modelMap, nil
 }
 
-func dataSourceIbmSmServiceCredentialsSecretMetadataSourceServiceToMap(sourceService *secretsmanagerv2.ServiceCredentialsSecretSourceService) (map[string]interface{}, error) {
+func dataSourceIbmSmServiceCredentialsSecretMetadataSourceServiceToMap(sourceService *secretsmanagerv2.ServiceCredentialsSecretSourceServiceRO) (map[string]interface{}, error) {
 	mainModelMap := make(map[string]interface{})
 	if sourceService.Instance != nil {
 		instanceMap := make(map[string]interface{})

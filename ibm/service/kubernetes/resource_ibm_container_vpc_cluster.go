@@ -466,6 +466,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed: true,
 			},
 
+			"vpe_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
 			"crn": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -1113,6 +1118,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
+	d.Set("vpe_service_endpoint_url", cls.VirtualPrivateEndpointURL)
 	if cls.ServiceEndpoints.PublicServiceEndpointEnabled {
 		d.Set("disable_public_service_endpoint", false)
 	} else {

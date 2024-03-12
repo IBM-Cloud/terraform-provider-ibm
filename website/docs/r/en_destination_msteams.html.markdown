@@ -14,14 +14,16 @@ Create, update, or delete a MSTeams destination by using IBM Cloud™ Event Noti
 
 ```terraform
 resource "ibm_en_destination_msteams" "msteams_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "MSteams EN Destination"
-  type          = "msteams"
-  description   = "Destination MSTeams for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "MSteams EN Destination"
+  type                  = "msteams"
+  collect_failed_events = false
+  description           = "Destination MSTeams for event notification"
   config {
     params {
       url  = "https://xyz.webhook.office.com"
   }
+}
 }
 ```
 
@@ -36,6 +38,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) msteams.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

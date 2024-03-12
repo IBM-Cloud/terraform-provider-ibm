@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_vpc_dns_resolution_binding"
 description: |-
   Get information about VPCDNSResolutionBinding
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 -> **NOTE:** `ibm_is_vpc_dns_resolution_binding` datasource is a select location availability, invitation only feature. In other regions value might not be present.

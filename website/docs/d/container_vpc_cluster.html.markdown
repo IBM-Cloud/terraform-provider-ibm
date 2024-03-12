@@ -91,6 +91,7 @@ In addition to all argument reference list, you can access the following attribu
 - `public_service_endpoint_url` - (String) The URL of the public service endpoint for your cluster.
 - `private_service_endpoint` -  (Bool) Indicates if the private service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
 - `private_service_endpoint_url` - (String) The URL of the private service endpoint for your cluster.
+- `vpe_service_endpoint_url` - (String) The URL of the virtual private endpoint for your cluster.
 - `status` - (String) The status of the cluster master.
 - `worker_count` - (Integer) The number of worker nodes per zone in the default worker pool. Default value ‘1’.
 - `workers` - List of objects - A list of worker nodes that belong to the cluster. 

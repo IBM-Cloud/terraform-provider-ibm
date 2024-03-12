@@ -597,7 +597,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	ingressConfig = append(ingressConfig, ingressConfigItem)
 
 	albs, err := albsAPI.ListClusterALBs(name, targetEnv)
-	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") && !strings.Contains(err.Error(), "The specified cluster is a free cluster.") {
+	if err != nil && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 		return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", name, err)
 	}
 

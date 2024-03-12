@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package flex
@@ -1215,9 +1215,9 @@ func IntValue(i64 *int64) (i int) {
 	return
 }
 
-func float64Value(f32 *float32) (f float64) {
-	if f32 != nil {
-		f = float64(*f32)
+func StringValue(strPtr *string) (_ string) {
+	if strPtr != nil {
+		return *strPtr
 	}
 	return
 }
@@ -2711,43 +2711,6 @@ func ResourceValidateAccessTags(diff *schema.ResourceDiff, meta interface{}) err
 			return fmt.Errorf("[ERROR] Error : Access tag(s) %s does not exist", errStatement)
 		}
 	}
-	return nil
-}
-
-func ResourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
-	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
-	policyAction := policyActionIntf.(string)
-
-	if policyAction == "forward" {
-		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
-
-		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
-			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
-		}
-	} else if policyAction == "redirect" {
-		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyTargetHTTPStatusCode)
-		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
-
-		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyTargetHTTPStatusCode) {
-			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
-		}
-
-		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
-			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
-		}
-	} else if policyAction == "https_redirect" {
-		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
-		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
-
-		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
-			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
-		}
-
-		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
-			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
-		}
-	}
-
 	return nil
 }
 

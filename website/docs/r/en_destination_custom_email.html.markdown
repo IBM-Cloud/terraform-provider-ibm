@@ -14,10 +14,11 @@ Create, update, or delete a Custom Email destination by using IBM Cloud™ Event
 
 ```terraform
 resource "ibm_en_destination_custom_email" "custom_domain_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Custom Email EN Destination"
-  type          = "smtp_custom"
-  description   = "Destination Custom Email for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Custom Email EN Destination"
+  type                  = "smtp_custom"
+  collect_failed_events = true
+  description           = "Destination Custom Email for event notification"
     config {
       params {
         domain  = "mailx.com"
@@ -53,6 +54,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) smtp_custom.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

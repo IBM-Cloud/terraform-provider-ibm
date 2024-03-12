@@ -22,6 +22,7 @@ const (
 	Arg_SharedProcessorPoolName             = "pi_shared_processor_pool_name"
 	Arg_SharedProcessorPoolPlacementGroupID = "pi_shared_processor_pool_placement_group_id"
 	Arg_SharedProcessorPoolReservedCores    = "pi_shared_processor_pool_reserved_cores"
+	Arg_SnapshotID                          = "pi_snapshot_id"
 	Arg_StoragePool                         = "pi_storage_pool"
 	Arg_StorageType                         = "pi_storage_type"
 	Arg_VTL                                 = "vtl"
@@ -281,6 +282,14 @@ const (
 	Arg_PVMInstanceId           = "pi_instance_id"
 	Arg_PVMInstanceActionType   = "pi_action"
 	Arg_PVMInstanceHealthStatus = "pi_health_status"
+	Arg_IBMiCSS                 = "pi_ibmi_css"
+	Arg_IBMiPHA                 = "pi_ibmi_pha"
+	Arg_IBMiRDSUsers            = "pi_ibmi_rds_users"
+	Attr_IBMiCSS                = "ibmi_css"
+	Attr_IBMiPHA                = "ibmi_pha"
+	Attr_IBMiRDS                = "ibmi_rds"
+	Attr_IBMiRDSUsers           = "ibmi_rds_users"
+	OS_IBMI                     = "ibmi"
 
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
@@ -291,6 +300,7 @@ const (
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
 
+	PIConsoleLanguageCode               = "pi_language_code"
 	PICloudConnectionId                 = "cloud_connection_id"
 	PICloudConnectionStatus             = "status"
 	PICloudConnectionIBMIPAddress       = "ibm_ip_address"
@@ -401,4 +411,5 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
+	PIVirtualOpticalDevice   = "pi_virtual_optical_device"
 )

@@ -18,14 +18,13 @@ data "ibm_pi_images" "ds_images" {
 }
 ```
 
- **Notes:**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+**Notes:**
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
-  
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -41,13 +40,13 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `image_info` - List of images - A list of all supported images. 
+- `image_info` - (List) List of all supported images. 
 
   Nested scheme for `image_info`:
   - `href` - (String) The hyper link of an image. 
   - `id` - (String) The unique identifier of an image.
+  - `image_type` - (String) The identifier of this image type.
   - `name`-  (String) The name of an image.
   - `state` - (String) The state of an image.
   - `storage_pool` - (String) Storage pool where image resides.
   - `storage_type` - (String) The storage type of an image.
-  - `image_type` - (String) The identifier of this image type.
