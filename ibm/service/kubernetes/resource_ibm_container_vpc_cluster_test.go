@@ -803,7 +803,6 @@ func testAccCheckIBMContainerVpcClusterIngressConfigUpdate(name string) string {
 		ingress_config {
 			ingress_status_report {
 				enabled = false
-				ignored_errors = ["ERRHPAIWC"]
 			}
 			ingress_health_checker_enabled = false
 		}

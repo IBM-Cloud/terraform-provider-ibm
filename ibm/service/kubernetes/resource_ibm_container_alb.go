@@ -87,6 +87,7 @@ func ResourceIBMContainerALB() *schema.Resource {
 			"disable_deployment": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Set to true if ALB needs to be disabled",
 				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
 			},

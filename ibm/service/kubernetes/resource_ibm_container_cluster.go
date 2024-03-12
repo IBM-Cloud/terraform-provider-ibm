@@ -464,6 +464,7 @@ func ResourceIBMContainerCluster() *schema.Resource {
 			"ingress_config": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    1,
 				Description: "Represents the Ingress cluster-wide options.",
 				Elem: &schema.Resource{
@@ -481,6 +482,16 @@ func ResourceIBMContainerCluster() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "Enabled or disabled the Ingress status report.",
+									},
+									"ingress_status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Overall Ingress status.",
+									},
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Ingress status summary.",
 									},
 									"ignored_errors": {
 										Type:        schema.TypeSet,
@@ -803,11 +814,22 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
+	csClientV2, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return err
+	}
+
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
 	albsAPI := csClient.Albs()
+	albsV2API := csClientV2.Albs()
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
+
+	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
@@ -927,6 +949,35 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	}
+
+	albHcConf, err := albsV2API.GetAlbClusterHealthCheckConfig(clusterID, targetEnvV2)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ALB in-cluster health checker config of the cluster %s: %s", clusterID, err)
+	}
+
+	ingressStatus, err := albsV2API.GetIngressStatus(clusterID, targetEnvV2)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ingress status of the cluster %s: %s", clusterID, err)
+	}
+
+	ingressConfig := make([]map[string]interface{}, 0)
+	ingressStatusReport := make([]map[string]interface{}, 0)
+
+	ingressStatusConfig := map[string]interface{}{
+		"enabled":        ingressStatus.Enabled,
+		"ingress_status": ingressStatus.Status,
+		"message":        ingressStatus.Message,
+		"ignored_errors": ingressStatus.IgnoredErrors,
+	}
+	ingressStatusReport = append(ingressStatusReport, ingressStatusConfig)
+
+	albConfigItem := map[string]interface{}{
+		"ingress_health_checker_enabled": albHcConf.Enable,
+		"ingress_status_report":          ingressStatusReport,
+	}
+
+	ingressConfig = append(ingressConfig, albConfigItem)
+	d.Set("ingress_config", ingressConfig)
 	d.Set("albs", flex.FlattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint", cls.PublicServiceEndpointEnabled)
@@ -1223,9 +1274,9 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	if d.HasChange("alb_config") {
-		if alb_config, ok := d.GetOk("alb_config"); ok {
-			albConfigList := alb_config.([]interface{})
+	if d.HasChange("ingress_config") {
+		if ingress_config, ok := d.GetOk("ingress_config"); ok {
+			albConfigList := ingress_config.([]interface{})
 
 			for _, l := range albConfigList {
 				albMap, _ := l.(map[string]interface{})

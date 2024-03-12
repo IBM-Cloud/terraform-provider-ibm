@@ -103,6 +103,11 @@ func ResourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Computed:    true,
 				Description: "Status of the ALB",
 			},
+			"ingress_image": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of Ingress image that you want to use for your ALB deployment.",
+			},
 		},
 	}
 }

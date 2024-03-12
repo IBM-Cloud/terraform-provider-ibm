@@ -367,6 +367,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			"ingress_config": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    1,
 				Description: "Represents the Ingress cluster-wide options.",
 				Elem: &schema.Resource{
@@ -384,6 +385,16 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 										Optional:    true,
 										Computed:    true,
 										Description: "Enabled or disabled the Ingress status report.",
+									},
+									"ingress_status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Overall Ingress status.",
+									},
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Ingress status summary.",
 									},
 									"ignored_errors": {
 										Type:        schema.TypeSet,
@@ -914,13 +925,13 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	if d.HasChange("alb_config") {
-		if alb_config, ok := d.GetOk("alb_config"); ok {
-			albConfigList := alb_config.([]interface{})
+	if d.HasChange("ingress_config") {
+		if ingress_config, ok := d.GetOk("ingress_config"); ok {
+			albConfigList := ingress_config.([]interface{})
 
 			for _, l := range albConfigList {
 				albMap, _ := l.(map[string]interface{})
-				if healthChecker := albMap["health_checker"]; healthChecker != nil {
+				if healthChecker := albMap["ingress_health_checker_enabled"]; healthChecker != nil {
 					healthCheckerEnabled := healthChecker.(bool)
 
 					err = csClient.Albs().SetAlbClusterHealthCheckConfig(containerv2.ALBClusterHealthCheckConfig{
@@ -1070,6 +1081,35 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("ingress_hostname", cls.Ingress.HostName)
 	d.Set("ingress_secret", cls.Ingress.SecretName)
 	d.Set("albs", flex.FlattenVpcAlbs(albs, "all"))
+	albHcConf, err := albsAPI.GetAlbClusterHealthCheckConfig(clusterID, targetEnv)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ALB in-cluster health checker config of the cluster %s: %s", clusterID, err)
+	}
+
+	ingressStatus, err := albsAPI.GetIngressStatus(clusterID, targetEnv)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ingress status of the cluster %s: %s", clusterID, err)
+	}
+
+	ingressConfig := make([]map[string]interface{}, 0)
+	ingressStatusReport := make([]map[string]interface{}, 0)
+
+	ingressStatusConfig := map[string]interface{}{
+		"enabled":        ingressStatus.Enabled,
+		"ingress_status": ingressStatus.Status,
+		"message":        ingressStatus.Message,
+		"ignored_errors": ingressStatus.IgnoredErrors,
+	}
+	ingressStatusReport = append(ingressStatusReport, ingressStatusConfig)
+
+	albConfigItem := map[string]interface{}{
+		"ingress_health_checker_enabled": albHcConf.Enable,
+		"ingress_status_report":          ingressStatusReport,
+	}
+
+	ingressConfig = append(ingressConfig, albConfigItem)
+	d.Set("ingress_config", ingressConfig)
+
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)

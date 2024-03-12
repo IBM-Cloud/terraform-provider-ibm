@@ -482,7 +482,7 @@ resource "ibm_container_cluster" "cluster" {
   ingress_config {
 	ingress_status_report {
 		enabled = false
-		ignored_errors=["ERRHPAIWC"]
+		ignored_errors=[]
 	}
 	ingress_health_checker_enabled = false
   }

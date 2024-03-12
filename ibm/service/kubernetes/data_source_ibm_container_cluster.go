@@ -574,7 +574,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	secretStatus := flex.FlattenGeneralIngressStatus(ingressStatus.SecretStatus)
 	subdomainStatus := flex.FlattenGeneralIngressStatus(ingressStatus.SubdomainStatus)
 
-	albConfig := make([]map[string]interface{}, 0)
+	ingressConfig := make([]map[string]interface{}, 0)
 	ingressStatusReport := make([]map[string]interface{}, 0)
 
 	ingressStatusConfig := map[string]interface{}{
@@ -589,12 +589,12 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	}
 	ingressStatusReport = append(ingressStatusReport, ingressStatusConfig)
 
-	albConfigItem := map[string]interface{}{
+	ingressConfigItem := map[string]interface{}{
 		"ingress_health_checker_enabled": albHcConf.Enable,
 		"ingress_status_report":          ingressStatusReport,
 	}
 
-	albConfig = append(albConfig, albConfigItem)
+	ingressConfig = append(ingressConfig, ingressConfigItem)
 
 	albs, err := albsAPI.ListClusterALBs(name, targetEnv)
 	if err != nil && !strings.Contains(err.Error(), "The specified cluster is a lite cluster.") && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") && !strings.Contains(err.Error(), "The specified cluster is a free cluster.") {
@@ -641,7 +641,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set(flex.ResourceCRN, clusterFields.CRN)
 	d.Set(flex.ResourceStatus, clusterFields.State)
 	d.Set(flex.ResourceGroupName, clusterFields.ResourceGroupName)
-	d.Set("ingress_config", albConfig)
+	d.Set("ingress_config", ingressConfig)
 
 	return nil
 }

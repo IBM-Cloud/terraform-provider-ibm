@@ -103,8 +103,6 @@ func dataSourceIBMContainerALBRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("name", &albConfig.Name)
 	d.Set("enable", &albConfig.Enable)
 	d.Set("disable_deployment", &albConfig.DisableDeployment)
-	d.Set("replicas", &albConfig.NumOfInstances)
-	d.Set("resize", &albConfig.Resize)
 	d.Set("user_ip", &albConfig.ALBIP)
 	d.Set("zone", &albConfig.Zone)
 	d.Set("state", &albConfig.State)

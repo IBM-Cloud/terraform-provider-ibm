@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.19
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20240226130409-ce92adb39a22
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20231207111718-a3b74cc935fa
 	github.com/IBM-Cloud/power-go-client v1.5.8
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -232,8 +232,6 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985 => github.com/szombi/bluemix-go v0.0.0-20240216101747-d719dc1d2af5
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
