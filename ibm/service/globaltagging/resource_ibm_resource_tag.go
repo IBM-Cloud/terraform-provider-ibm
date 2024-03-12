@@ -75,11 +75,11 @@ func ResourceIBMResourceTag() *schema.Resource {
 				Description: "The ID of the account that owns the resources to be tagged (required if tag-type is set to service)",
 			},
 			replace: {
-				Type:        schema.TypeBool,
+				Type:             schema.TypeBool,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, it indicates that the attaching operation is a replacement operation",
+				Optional:         true,
+				Default:          false,
+				Description:      "If true, it indicates that the attaching operation is a replacement operation",
 			},
 		},
 	}
