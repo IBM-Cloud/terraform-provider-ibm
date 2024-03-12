@@ -33,6 +33,7 @@ Review the argument references that you can specify for your resource.
 - `resource_type` - (Optional, String) The resource type on which the tags should be attached.
 - `tag_type` - (Optional, String) Type of the tag. Supported values are: `user`, `service`, or `access`. The default value is user.
 - `tags` - (Required, Array of strings) List of tags associated with resource instance.
+- `replace` - (Optional, Bool) If true, it indicates that the attaching operation is a replacement operation
 
 ## Attributes reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
