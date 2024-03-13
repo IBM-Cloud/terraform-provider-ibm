@@ -1,6 +1,6 @@
 schemaVersion: oss-license-declaration.cloud.ibm.com:v4
 name: terraform-provider-ibm
-source: https://github.com/francescadecicco/terraform-provider-ibm
+source: https://github.com/francescadecicco/terraform-provider-ibm:attach_replace
 issues: https://github.ibm.com/blueprint/security-project-management/issues
 objectCodeOnly: false
 additionalDownloads:
