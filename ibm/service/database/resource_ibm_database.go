@@ -2876,6 +2876,7 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 }
 
 func validateMultitenantMemoryCpu(groupId string, resourceName string, resourceDefaults *Group, group *Group) error {
+	// TODO: Replace this with resourceDefaults.Memory.CPUEnforcementRatioCeiling when it is fixed
 	cpuEnforcementRatioCeiling := 16384
 	// members := resourceDefaults.Members.Minimum
 
