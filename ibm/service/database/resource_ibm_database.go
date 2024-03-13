@@ -942,7 +942,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-redis-dev-yp-02, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-redis-dev-yp-03, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1135,7 +1135,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
 		case "databases-for-enterprisedb":
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-		case "databases-for-redis-dev-yp-02":
+		case "databases-for-redis-dev-yp-03":
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
 		case "databases-for-redis":
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
@@ -1790,7 +1790,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
 
-	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-redis-dev-yp-02" || serviceOff == "databases-for-enterprisedb" {
+	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-redis-dev-yp-03" || serviceOff == "databases-for-enterprisedb" {
 		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err))
@@ -2236,7 +2236,7 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 		dbConnection = connection.Postgres
 	case "databases-for-redis":
 		dbConnection = connection.Rediss
-	case "databases-for-redis-dev-yp-02":
+	case "databases-for-redis-dev-yp-03":
 		dbConnection = connection.Rediss
 	case "databases-for-mongodb":
 		dbConnection = connection.Mongo
@@ -2730,8 +2730,8 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 			IsAdjustable:                 *g.Memory.IsAdjustable,
 			IsOptional:                   *g.Memory.IsOptional,
 			CanScaleDown:                 *g.Memory.CanScaleDown,
-			CPUEnforcementRatioCeilingMb: int(*g.Memory.CPUEnforcementRatioCeilingMb),
-			CPUEnforcementRatioMb:        int(*g.Memory.CPUEnforcementRatioMb),
+			CPUEnforcementRatioCeilingMb: getCPUEnforcementRatioCeilingMb(g.Memory),
+			CPUEnforcementRatioMb:        getCPUEnforcementRatioMb(g.Memory),
 		}
 
 		group.Disk = &GroupResource{
@@ -2765,6 +2765,22 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 	}
 
 	return groups
+}
+
+func getCPUEnforcementRatioCeilingMb(groupMemory *clouddatabasesv5.GroupMemory) int {
+	if groupMemory.CPUEnforcementRatioCeilingMb != nil {
+		return int(*groupMemory.CPUEnforcementRatioCeilingMb)
+	}
+
+	return 0
+}
+
+func getCPUEnforcementRatioMb(groupMemory *clouddatabasesv5.GroupMemory) int {
+	if groupMemory.CPUEnforcementRatioMb != nil {
+		return int(*groupMemory.CPUEnforcementRatioMb)
+	}
+
+	return 0
 }
 
 func expandGroups(_groups []interface{}) []*Group {
@@ -2860,29 +2876,23 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 }
 
 func validateMultitenantMemoryCpu(groupId string, resourceName string, resourceDefaults *Group, group *Group) error {
-	cpuCount := 0
 	cpuEnforcementRatioCeiling := 16384
-	fmt.Printf("SEE GROUP %v %v", group.Memory, resourceDefaults)
-	members := resourceDefaults.Members.Minimum
+	// members := resourceDefaults.Members.Minimum
 
-	if group.Members != nil && members < resourceDefaults.Members.Allocation {
-		members = group.Members.Allocation
-	}
+	// if group.Members != nil && members < resourceDefaults.Members.Allocation {
+	// 	members = group.Members.Allocation
+	// }
 
 	if group.CPU != nil && group.CPU.Allocation > 2 {
 		return nil
-	} else if group.CPU != nil {
-		cpuCount = group.CPU.Allocation
 	}
 
 	if group.Memory.Allocation < resourceDefaults.Memory.Minimum {
 		return fmt.Errorf("We were unable to complete your request: group.memory requires a minimum of %d megabytes. Try again with valid values or contact support if the issue persists.", resourceDefaults.Memory.Minimum)
 	}
 
-	fmt.Printf("multiplication %d %d", group.Memory.Allocation*members, cpuEnforcementRatioCeiling*resourceDefaults.Members.Minimum)
-
-	if group.Memory.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Minimum && group.Memory.Allocation > cpuCount*resourceDefaults.Memory.CPUEnforcementRatioMb {
-		return fmt.Errorf("[resource] must be a minimum of __GB and a maximum __GB per member")
+	if group.CPU != nil && group.Memory.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Minimum && group.Memory.Allocation > group.CPU.Allocation*resourceDefaults.Memory.CPUEnforcementRatioMb {
+		return fmt.Errorf("We were unable to complete your request: group.memory %d with group.cpu %d is not valid. Try again with valid values or contact support if the issue persists.", group.Memory.Allocation, group.CPU.Allocation)
 	}
 
 	return nil
@@ -2969,7 +2979,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 
-			if group.Memory != nil && group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" {
+			if group.Memory != nil && group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" && groupDefaults.Memory.CPUEnforcementRatioCeilingMb != 0 && groupDefaults.Memory.CPUEnforcementRatioMb != 0 {
 				err = validateMultitenantMemoryCpu(groupId, "memory", groupDefaults, group)
 				if err != nil {
 					return err
@@ -3042,7 +3052,7 @@ func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interf
 
 			// TODO: Use Capability API
 			// RBAC roles supported for Redis 6.0 and above
-			if (service == "databases-for-redis" || service == "databases-for-redis-dev-yp-02") && !(version > 0 && version < 6) {
+			if (service == "databases-for-redis" || service == "databases-for-redis-dev-yp-03") && !(version > 0 && version < 6) {
 				err = change.New.ValidateRBACRole()
 			} else if service == "databases-for-mongodb" && change.New.Type == "ops_manager" {
 				err = change.New.ValidateOpsManagerRole()
