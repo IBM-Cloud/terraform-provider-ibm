@@ -669,7 +669,6 @@ func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
 }
 
 func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	fmt.Printf("Create Gateway ....")
 	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
@@ -879,15 +878,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		if default_import_route_filter, ok := d.GetOk(dlDefault_import_route_filter); ok {
 			gatewayDedicatedTemplateModel.DefaultImportRouteFilter = NewStrPointer(default_import_route_filter.(string))
 		}
-		vlan := d.Get(dlVlan)
-		fmt.Printf("%v VLAN Value Create ", vlan)
 
 		if vlan, ok := d.GetOk(dlVlan); ok {
 			mapped_vlan := int64(vlan.(int))
 			gatewayDedicatedTemplateModel.Vlan = &mapped_vlan
-		} else {
-			vlan := d.Get(dlVlan)
-			fmt.Printf("%v VLAN Value Create ", vlan)
 		}
 		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
 
@@ -1101,14 +1095,15 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[INFO] Calling getgateway api: %s", dtype)
 
 	instanceIntf, response, err := directLink.GetGateway(getOptions)
-	instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
-	if err != nil {
+	if (err != nil) || (instanceIntf == nil) {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
 	}
+
+	instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 	if instance.Name != nil {
 		d.Set(dlName, *instance.Name)
 	}
@@ -1329,9 +1324,10 @@ func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) resou
 			ID: &id,
 		}
 		instanceIntf, response, err := client.GetGateway(getOptions)
-		if err != nil {
+		if (err != nil) || (instanceIntf == nil) {
 			return nil, "", fmt.Errorf("[ERROR] Error Getting Direct Link: %s\n%s", err, response)
 		}
+
 		instance := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		if *instance.OperationalStatus == "provisioned" || *instance.OperationalStatus == "failed" || *instance.OperationalStatus == "create_rejected" {
 			return instance, dlGatewayProvisioningDone, nil
@@ -1353,7 +1349,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 	instanceIntf, detail, err := directLink.GetGateway(getOptions)
 
-	if err != nil {
+	if (err != nil) || (instanceIntf == nil) {
 		log.Printf("Error fetching Direct Link Gateway :%s", detail)
 		return err
 	}
@@ -1694,13 +1690,14 @@ func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool,
 		ID: &ID,
 	}
 	instanceIntf, response, err := directLink.GetGateway(getOptions)
-	_ = instanceIntf.(*directlinkv1.GetGatewayResponse)
-	if err != nil {
+
+	if (err != nil) || (instanceIntf == nil) {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return false, nil
 		}
 		return false, fmt.Errorf("[ERROR] Error Getting Direct Link Gateway : %s\n%s", err, response)
 	}
+	_ = instanceIntf.(*directlinkv1.GetGatewayResponse)
 	return true, nil
 }

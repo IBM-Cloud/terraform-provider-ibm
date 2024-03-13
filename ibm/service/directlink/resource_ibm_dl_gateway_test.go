@@ -177,11 +177,11 @@ func testAccCheckIBMDLGatewayExists(n string, instance string) resource.TestChec
 			ID: &rs.Primary.ID,
 		}
 		instanceIntf, response, err := directLink.GetGateway(getOptions)
-		instance1 := instanceIntf.(*directlinkv1.GetGatewayResponse)
 
-		if err != nil {
+		if (err != nil) || (instanceIntf == nil) {
 			return fmt.Errorf("[ERROR] Error Getting Direct Link Gateway (Dedicated Template): %s\n%s", err, response)
 		}
+		instance1 := instanceIntf.(*directlinkv1.GetGatewayResponse)
 		instance = *instance1.ID
 		return nil
 	}
