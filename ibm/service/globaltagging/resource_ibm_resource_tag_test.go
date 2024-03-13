@@ -120,7 +120,7 @@ func TestAccResourceTag_replace_Basic(t *testing.T) {
 func testAccCheckResourceTagCreate_replace(name string) string {
 	return fmt.Sprintf(`
 
-        resource "ibm_resource_instance" "resource_instance" {
+        resource "ibm_resource_instance" "resource_1" {
           name              = "%s"
           service           = "cloud-object-storage"
           plan              = "lite"
@@ -129,7 +129,7 @@ func testAccCheckResourceTagCreate_replace(name string) string {
         }
 
         resource "ibm_resource_tag" "tag" {
-            resource_id = resource.ibm_resource_instance.resource_instance.crn
+            resource_id = resource.ibm_resource_instance.resource_1.crn
             tags        = ["test:test"]
             replace     = true
         }
