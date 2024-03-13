@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_virtual_network_interface_floating_ips"
 description: |-
   List information about Virtual Network Interface Floating IPs.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_virtual_network_interface_floating_ips

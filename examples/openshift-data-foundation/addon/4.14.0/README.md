@@ -1,4 +1,4 @@
-# [Tech Preview] Deploying and Managing Openshift Data Foundation
+# Deploying and Managing Openshift Data Foundation
 
 This example shows how to deploy and manage the Openshift Data Foundation (ODF) on IBM Cloud VPC based RedHat Openshift cluster. Note this template is still in development, so please be advised before using in production.
 
@@ -157,7 +157,7 @@ ocsUpgrade = "false" -> "true"
 | cluster | Name of the cluster. | `string` | yes | -
 | region | Region of the cluster | `string` | yes | -
 | odfVersion | Version of the ODF add-on | `string` | yes | 4.12.0
-| osdSize | Enter the size for the storage devices that you want to provision for the Object Storage Daemon (OSD) pods | `string` | yes | 250Gi
+| osdSize | Enter the size for the storage devices that you want to provision for the Object Storage Daemon (OSD) pods | `string` | yes | 512Gi
 | numOfOsd | The Number of OSD | `string` | yes | 1
 | osdStorageClassName | Enter the storage class to be used to provision block volumes for Object Storage Daemon (OSD) pods | `string` | yes | ibmc-vpc-block-metro-10iops-tier
 | autoDiscoverDevices | Set to true if automatically discovering local disks | `string` | no | true

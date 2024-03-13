@@ -109,6 +109,7 @@ const (
 	Attr_IsActive                                    = "is_active"
 	Attr_Jumbo                                       = "jumbo"
 	Attr_Key                                         = "key"
+	Attr_KeyCreationDate                             = "creation_date"
 	Attr_KeyID                                       = "key_id"
 	Attr_KeyName                                     = "name"
 	Attr_Keys                                        = "keys"
@@ -278,10 +279,17 @@ const (
 	Attr_DhcpStatus            = "status"
 
 	// Instance
-	Arg_PVMInstanceId                 = "pi_instance_id"
-	Arg_PVMInstanceActionType         = "pi_action"
-	Arg_PVMInstanceHealthStatus       = "pi_health_status"
-	Arg_PIInstanceSharedProcessorPool = "pi_shared_processor_pool"
+	Arg_PVMInstanceId           = "pi_instance_id"
+	Arg_PVMInstanceActionType   = "pi_action"
+	Arg_PVMInstanceHealthStatus = "pi_health_status"
+	Arg_IBMiCSS                 = "pi_ibmi_css"
+	Arg_IBMiPHA                 = "pi_ibmi_pha"
+	Arg_IBMiRDSUsers            = "pi_ibmi_rds_users"
+	Attr_IBMiCSS                = "ibmi_css"
+	Attr_IBMiPHA                = "ibmi_pha"
+	Attr_IBMiRDS                = "ibmi_rds"
+	Attr_IBMiRDSUsers           = "ibmi_rds_users"
+	OS_IBMI                     = "ibmi"
 
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
@@ -317,6 +325,7 @@ const (
 
 	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
 	Attr_PIInstanceSharedProcessorPoolID = "shared_processor_pool_id"
+	Arg_PIInstanceSharedProcessorPool    = "pi_shared_processor_pool"
 
 	// Placement Group
 	PIPlacementGroupID      = "placement_group_id"
@@ -402,6 +411,5 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
-
-	PIVirtualOpticalDevice = "pi_virtual_optical_device"
+	PIVirtualOpticalDevice   = "pi_virtual_optical_device"
 )

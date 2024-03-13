@@ -38,3 +38,10 @@ vendor/
 !command/test-fixtures/**/.terraform/
 
 *.sh
+
+!createaddon.sh
+!createcrd.sh
+!deleteaddon.sh
+!deletecrd.sh
+!updatecrd.sh
+!updateodf.sh
