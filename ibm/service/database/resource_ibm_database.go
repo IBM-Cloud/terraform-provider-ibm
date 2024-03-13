@@ -942,7 +942,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-redis-dev-yp-03, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1135,8 +1135,6 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
 		case "databases-for-enterprisedb":
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-		case "databases-for-redis-dev-yp-03":
-			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
 		case "databases-for-redis":
 			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
 		case "databases-for-mysql":
@@ -1790,7 +1788,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
 
-	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-redis-dev-yp-03" || serviceOff == "databases-for-enterprisedb" {
+	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
 		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err))
@@ -2235,8 +2233,6 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 	case "databases-for-postgresql":
 		dbConnection = connection.Postgres
 	case "databases-for-redis":
-		dbConnection = connection.Rediss
-	case "databases-for-redis-dev-yp-03":
 		dbConnection = connection.Rediss
 	case "databases-for-mongodb":
 		dbConnection = connection.Mongo
@@ -2878,21 +2874,20 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 func validateMultitenantMemoryCpu(groupId string, resourceName string, resourceDefaults *Group, group *Group) error {
 	// TODO: Replace this with resourceDefaults.Memory.CPUEnforcementRatioCeiling when it is fixed
 	cpuEnforcementRatioCeiling := 16384
-	// members := resourceDefaults.Members.Minimum
-
-	// if group.Members != nil && members < resourceDefaults.Members.Allocation {
-	// 	members = group.Members.Allocation
-	// }
-
-	if group.CPU != nil && group.CPU.Allocation > 2 {
-		return nil
-	}
 
 	if group.Memory.Allocation < resourceDefaults.Memory.Minimum {
 		return fmt.Errorf("We were unable to complete your request: group.memory requires a minimum of %d megabytes. Try again with valid values or contact support if the issue persists.", resourceDefaults.Memory.Minimum)
 	}
 
-	if group.CPU != nil && group.Memory.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Minimum && group.Memory.Allocation > group.CPU.Allocation*resourceDefaults.Memory.CPUEnforcementRatioMb {
+	if group.CPU == nil {
+		return nil
+	}
+
+	if group.CPU != nil && group.CPU.Allocation > 2 {
+		return nil
+	}
+
+	if group.CPU != nil && group.Memory.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Allocation && group.Memory.Allocation > group.CPU.Allocation*resourceDefaults.Memory.CPUEnforcementRatioMb {
 		return fmt.Errorf("We were unable to complete your request: group.memory %d with group.cpu %d is not valid. Try again with valid values or contact support if the issue persists.", group.Memory.Allocation, group.CPU.Allocation)
 	}
 
@@ -3053,7 +3048,7 @@ func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interf
 
 			// TODO: Use Capability API
 			// RBAC roles supported for Redis 6.0 and above
-			if (service == "databases-for-redis" || service == "databases-for-redis-dev-yp-03") && !(version > 0 && version < 6) {
+			if (service == "databases-for-redis") && !(version > 0 && version < 6) {
 				err = change.New.ValidateRBACRole()
 			} else if service == "databases-for-mongodb" && change.New.Type == "ops_manager" {
 				err = change.New.ValidateOpsManagerRole()
