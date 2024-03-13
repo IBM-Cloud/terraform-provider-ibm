@@ -55,7 +55,7 @@ Nested schema for **configs**:
 	* `definition` - (List) The name and description of a project configuration.
 	Nested schema for **definition**:
 		* `description` - (String) A project configuration description.
-		  * Constraints: The default value is `[]`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+		  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 		* `name` - (String) The configuration name. It is unique within the account across projects and regions.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `deployment_model` - (String) The configuration type.
