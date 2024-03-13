@@ -71,6 +71,7 @@ In addition to all argument reference list, you can access the following attribu
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
+- `server_name` - (String) The name of the instance.
 - `shared_processor_pool`- (String) The name of the shared processor pool for the instance.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.
