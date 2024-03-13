@@ -277,6 +277,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 			"ttl": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
 			"expiration_date": &schema.Schema{
