@@ -65,6 +65,7 @@ In addition to all argument reference list, you can access the following attribu
   - `processors` - (Float) The number of processors that are allocated to the instance.
   - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
   - `pvm_instance_id` - (String) The unique identifier of the instance.
+  - `server_name` - (String) The name of the instance.
   - `shared_processor_pool`- (String) The name of the shared processor pool for the instance.
   - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
   - `status` - (String) The status of the instance.
