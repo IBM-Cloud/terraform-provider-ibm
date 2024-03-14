@@ -1242,7 +1242,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 
 	initialNodeCount, err := getInitialNodeCount(serviceName, plan, meta)
-	fmt.Printf("LALALA initialNodeCount %d", initialNodeCount)
 	if err != nil {
 		return diag.FromErr(err)
 	}
