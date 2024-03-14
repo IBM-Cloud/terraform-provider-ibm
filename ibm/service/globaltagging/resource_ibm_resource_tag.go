@@ -161,10 +161,6 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 			AttachTagOptions.AccountID = flex.PtrToString(accountID)
 		}
 	}
-	if v, ok := d.GetOk("replace"); ok && v != nil {
-		replace := v.(bool)
-		AttachTagOptions.Replace = &replace
-	}
 
 	if v, ok := d.GetOk(replace); ok && v != nil {
 		replace := v.(bool)

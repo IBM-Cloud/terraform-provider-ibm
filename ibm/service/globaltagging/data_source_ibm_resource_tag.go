@@ -42,13 +42,6 @@ func DataSourceIBMResourceTag() *schema.Resource {
 				Description:  "Tag type on which the tags should be fetched",
 				Default:      "user",
 			},
-			"replace": {
-				Type:             schema.TypeBool,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Optional:         true,
-				Default:          false,
-				Description:      "If true, it indicates that the attaching operation is a replacement operation",
-			},
 		},
 	}
 }
@@ -67,12 +60,6 @@ func dataSourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) erro
 		tType = t.(string)
 	}
 
-	tReplace := false
-	if b, ok := d.GetOk("replace"); ok && b != nil {
-		tReplace = b.(bool)
-		fmt.Println("replace ", tReplace)
-	}
-
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, rID, rType, tType)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error on get of resource tags (%s) tags: %s", d.Id(), err)
@@ -83,6 +70,5 @@ func dataSourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("resource_type", rType)
 	d.Set("tags", tags)
 	d.Set("tag_type", tType)
-	d.Set("replace", tReplace)
 	return nil
 }
