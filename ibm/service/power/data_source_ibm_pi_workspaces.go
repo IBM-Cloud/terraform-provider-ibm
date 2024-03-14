@@ -128,27 +128,24 @@ func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, 
 	workspaces := make([]map[string]interface{}, 0, len(wsData.Workspaces))
 	for _, ws := range wsData.Workspaces {
 		if ws != nil {
-			wsDetails := map[string]interface{}{
-				Attr_CreationDate: ws.Details.CreationDate.String(),
-				Attr_CRN:          *ws.Details.Crn,
-			}
+			wsDetails := []map[string]interface{}{}
+			detailsData := make(map[string]interface{})
+			detailsData[Attr_CreationDate] = ws.Details.CreationDate.String()
+			detailsData[Attr_CRN] = *ws.Details.Crn
+
 			if ws.Details.PowerEdgeRouter != nil {
 				wsPowerEdge := map[string]interface{}{
 					Attr_MigrationStatus: ws.Details.PowerEdgeRouter.MigrationStatus,
 					Attr_State:           *ws.Details.PowerEdgeRouter.State,
 					Attr_Type:            *ws.Details.PowerEdgeRouter.Type,
 				}
-				wsPowerEdgeList := make([]map[string]interface{}, 0, 1)
-				wsPowerEdgeList = append(wsPowerEdgeList, wsPowerEdge)
-				wsDetails[Attr_PowerEdgeRouter] = wsPowerEdgeList
+				detailsData[Attr_PowerEdgeRouter] = []map[string]interface{}{wsPowerEdge}
+				wsDetails = append(wsDetails, detailsData)
 			}
-
-			wsDetailsList := make([]map[string]interface{}, 0, 1)
-			wsDetailsList = append(wsDetailsList, wsDetails)
 
 			workspace := map[string]interface{}{
 				Attr_WorkspaceCapabilities: ws.Capabilities,
-				Attr_WorkspaceDetails:      wsDetailsList,
+				Attr_WorkspaceDetails:      wsDetails,
 				Attr_WorkspaceID:           ws.ID,
 				Attr_WorkspaceLocation: map[string]interface{}{
 					Attr_Region: *ws.Location.Region,
