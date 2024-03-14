@@ -42,7 +42,7 @@ func DataSourceIBMResourceTag() *schema.Resource {
 				Description:  "Tag type on which the tags should be fetched",
 				Default:      "user",
 			},
-			replace: {
+			"replace": {
 				Type:             schema.TypeBool,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Optional:         true,
@@ -70,6 +70,7 @@ func dataSourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) erro
 	tReplace := false
 	if b, ok := d.GetOk("replace"); ok && b != nil {
 		tReplace = b.(bool)
+		fmt.Println("replace ", tReplace)
 	}
 
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, rID, rType, tType)
