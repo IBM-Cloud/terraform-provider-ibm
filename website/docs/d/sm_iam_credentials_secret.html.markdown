@@ -121,3 +121,4 @@ Nested scheme for **rotation**:
 * `versions_total` - (Integer) The number of versions of the secret.
   * Constraints: The maximum value is `50`. The minimum value is `0`.
 
+* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.

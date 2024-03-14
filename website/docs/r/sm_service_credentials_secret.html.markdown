@@ -155,7 +155,8 @@ In addition to all argument references listed, you can access the following attr
     * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 * `versions_total` - (Integer) The number of versions of the secret.
-  * Constraints: The maximum value is `50`. The minimum value is `0`.
+    * Constraints: The maximum value is `50`. The minimum value is `0`.
+* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
 
 ## Provider Configuration
 
