@@ -528,6 +528,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Sensitive:   true,
 				Description: "Authentication token used to access the specified zip file.",
 			},
 			"rev": &schema.Schema{

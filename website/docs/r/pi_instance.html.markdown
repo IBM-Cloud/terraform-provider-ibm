@@ -67,10 +67,10 @@ Review the argument references that you can specify for your resource.
 - `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC` or `VMNoStorage`.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
 
-**Notes** Ibmi software licenses for IBMi virtual server instances -- only for IBMi instances. Default to `false` and `0` if no values provided
-- `pi_ibmi_css` - (Optional, Boolean) IBMi Cloud Storage Solution.
-- `pi_ibmi_pha` - (Optional, Boolean) IBMi Power High Availability.
-- `pi_ibmi_rds_users` - (Optional, Integer) IBMi Rational Dev Studio Number of User Licenses.
+**Notes** IBM i software licenses for IBM i virtual server instances -- only for IBM i instances. Default to `false` and `0` if no values provided
+- `pi_ibmi_css` - (Optional, Boolean) IBM i Cloud Storage Solution.
+- `pi_ibmi_pha` - (Optional, Boolean) IBM i Power High Availability.
+- `pi_ibmi_rds_users` - (Optional, Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
   - **Note**: only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
@@ -112,7 +112,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `health_status` - (String) The health status of the VM.
-- `ibmi_rds` - (Boolean) IBMi Rational Dev Studio.
+- `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
 - `instance_id` - (String) The unique identifier of the instance. 
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
