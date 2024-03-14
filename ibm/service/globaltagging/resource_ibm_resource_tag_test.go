@@ -133,7 +133,7 @@ func testAccCheckResourceTagCreate_replace(name string) string {
 
         resource "ibm_resource_tag" "tag" {
             resource_id = resource.ibm_resource_instance.resource_1.crn
-            tags        = ["pippo:pippo"]
+            tags        = ["test:test"]
             replace     = true
         }
     `, name)
