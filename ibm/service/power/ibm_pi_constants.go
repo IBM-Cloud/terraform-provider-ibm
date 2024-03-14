@@ -179,6 +179,7 @@ const (
 	Attr_ReservedCores                               = "reserved_cores"
 	Attr_ResultsOnboardedVolumes                     = "results_onboarded_volumes"
 	Attr_ResultsVolumeOnboardingFailures             = "results_volume_onboarding_failures"
+	Attr_ServerName                                  = "server_name"
 	Attr_Shareable                                   = "shreable"
 	Attr_SharedCoreRatio                             = "shared_core_ratio"
 	Attr_SharedProcessorPool                         = "shared_processor_pool"
