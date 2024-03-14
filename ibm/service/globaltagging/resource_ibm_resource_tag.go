@@ -166,6 +166,12 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		AttachTagOptions.Replace = &replace
 	}
 
+	if v, ok := d.GetOk(replace); ok && v != nil {
+		replace := v.(bool)
+		AttachTagOptions.Replace = &replace
+
+	}
+
 	// Fetch tags from schematics only if they are user tags
 	if strings.TrimSpace(tagType) == "" || tagType == "user" {
 		schematicTags := os.Getenv("IC_ENV_TAGS")
