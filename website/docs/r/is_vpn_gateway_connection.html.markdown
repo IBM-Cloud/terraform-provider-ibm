@@ -102,7 +102,7 @@ Review the argument references that you can specify for your resource.
 	  Nested schema for **ike_identities**:
 		- `type` - (Required, String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
 		- `value` - (Optional, String) The IKE identity FQDN value.
-- `local_cidrs` - (Optional, Forces new resource, List) List of local CIDRs for this resource.
+- `local_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of local CIDRs for this resource.
 - `name` - (Required, String) The name of the VPN gateway connection.
 - `peer` - (Optional, List) 
   Nested schema for **peer**:
@@ -114,8 +114,8 @@ Review the argument references that you can specify for your resource.
 		- `value` - (Optional, String) The IKE identity FQDN value.
 	- `type` - (Computed, String) Indicates whether `peer.address` or `peer.fqdn` is used.
 
-- `peer_cidrs` - (Optional, Forces new resource, List) List of peer CIDRs for this resource.
-- `peer_address` - (Required, String) The IP address of the peer VPN gateway.
+- `peer_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of peer CIDRs for this resource.
+- `peer_address` - (Optional, DEPRECATED, String) The IP address of the peer VPN gateway.
 - `preshared_key` - (Required, Forces new resource, String) The preshared key.
 - `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 10.
 - `vpn_gateway` - (Required, Forces new resource, String) The unique identifier of the VPN gateway.
