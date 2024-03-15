@@ -112,6 +112,8 @@ func TestAccResourceTag_replace_Basic(t *testing.T) {
 				ResourceName:      "ibm_resource_tag.tag",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"replace"},
 			},
 		},
 	})
@@ -125,6 +127,7 @@ func testAccCheckResourceTagCreate_replace(name string) string {
           service           = "cloud-object-storage"
           plan              = "lite"
           location          = "global"
+
 
         }
 
