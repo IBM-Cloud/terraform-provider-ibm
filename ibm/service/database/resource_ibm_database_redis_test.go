@@ -36,7 +36,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -52,7 +52,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2304"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "10240"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 				),
@@ -65,7 +65,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
 				),
 			},
@@ -173,7 +173,7 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		group {
 			group_id = "member"
 			memory {
-				allocation_mb = 1024
+				allocation_mb = 4096
 			}
 			host_flavor {
 				id = "multitenant"
@@ -216,7 +216,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		group {
 			group_id = "member"
 			memory {
-				allocation_mb = 1152
+				allocation_mb = 5120
 			}
 			host_flavor {
 				id = "multitenant"
@@ -254,7 +254,7 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		group {
 			group_id = "member"
 			memory {
-				allocation_mb = 1024
+				allocation_mb = 4096
 			}
 			host_flavor {
 				id = "multitenant"
@@ -285,7 +285,7 @@ func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, 
 			group_id = "member"
 
 			memory {
-				allocation_mb = 1024
+				allocation_mb = 8192
 			}
 			host_flavor {
 				id = "multitenant"
