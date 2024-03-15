@@ -33,7 +33,7 @@ func DataSourceIbmSccProfiles() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The profile ID.",
 						},
 						"profile_name": {

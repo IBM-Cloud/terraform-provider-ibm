@@ -136,7 +136,7 @@ Nested schema for **last_scan**:
 You can import the `ibm_scc_profile_attachment` resource by using `id`.
 The `id` property can be formed from `instance_id`, `profiles_id`, and `attachment_id` in the following format:
 
-```
+```bash
 <instance_id>/<profile_id>/<attachment_id>
 ```
 * `instance_id`: A string. The instance ID.
@@ -144,6 +144,11 @@ The `id` property can be formed from `instance_id`, `profiles_id`, and `attachme
 * `attachment_id`: A string. The attachment ID.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_scc_profile_attachment.scc_profile_attachment <instance_id>/<profile_id>/<attachment_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_profile_attachment.scc_profile_attachment 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444/f3517159-889e-4781-819a-89d89b747c85
 ```

@@ -35,7 +35,7 @@ func DataSourceIbmSccControlLibraries() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The ID of the control library.",
 						},
 						"account_id": {
