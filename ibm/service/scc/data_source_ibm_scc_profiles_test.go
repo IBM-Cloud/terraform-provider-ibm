@@ -25,10 +25,35 @@ func TestAccIbmSccProfilesDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmSccProfilesDataSourceAllArgs(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckScc(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmSccProfilesDataSourceConfigAllArgs(acc.SccInstanceID),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.#"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmSccProfilesDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_profiles" "scc_profiles_instance" {
 			instance_id = "%s"
+		}
+	`, instanceID)
+}
+
+func testAccCheckIbmSccProfilesDataSourceConfigAllArgs(instanceID string) string {
+	return fmt.Sprintf(`
+		data "ibm_scc_profiles" "scc_profiles_instance" {
+			instance_id = "%s"
+      profile_type = "predefined"
 		}
 	`, instanceID)
 }

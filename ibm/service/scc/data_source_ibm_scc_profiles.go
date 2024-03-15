@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 )
 
@@ -46,9 +47,10 @@ func DataSourceIbmSccProfiles() *schema.Resource {
 							Description: "The profile description.",
 						},
 						"profile_type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The profile type, such as custom or predefined.",
+							Type:         schema.TypeString,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_scc_profile", "profile_type"),
+							Description:  "The profile type, such as custom or predefined.",
 						},
 						"profile_version": {
 							Type:        schema.TypeString,

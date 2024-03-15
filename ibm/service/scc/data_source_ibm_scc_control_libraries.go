@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 )
 
@@ -21,13 +22,15 @@ func DataSourceIbmSccControlLibraries() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"control_library_type": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Description:  "The type of control library to be found.",
+				ValidateFunc: validate.InvokeValidator("ibm_scc_control_library", "control_library_type"),
+				Optional:     true,
 			},
 			"control_libraries": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The list of control_libraries found.",
+				Description: "The list of control libraries found.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -69,6 +72,11 @@ func DataSourceIbmSccControlLibraries() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The version of the control library.",
+						},
+						"latest": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The latest version of the control library.",
 						},
 						// "hierarchy_enabled": {
 						// 	Type:        schema.TypeBool,
@@ -126,13 +134,13 @@ func dataSourceIbmSccControlLibrariesRead(context context.Context, d *schema.Res
 
 	pager, err := securityandcompliancecenterapiClient.NewControlLibrariesPager(listControlLibrariesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListcontrolLibrarysWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("ListcontrolLibrarysWithContext failed %s", err))
+		log.Printf("[DEBUG] ListControlLibrarysWithContext failed %s", err)
+		return diag.FromErr(fmt.Errorf("ListControlLibrarysWithContext failed %s", err))
 	}
 	controlLibraryList, err := pager.GetAll()
 	if err != nil {
-		log.Printf("[DEBUG] ListcontrolLibrarysWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("ListcontrolLibrarysWithContext failed %s", err))
+		log.Printf("[DEBUG] ListControlLibrarysWithContext failed %s", err)
+		return diag.FromErr(fmt.Errorf("ListControlLibrarysWithContext failed %s", err))
 	}
 	d.SetId(fmt.Sprintf("%s/control_libraries", d.Get("instance_id").(string)))
 	if err = d.Set("instance_id", d.Get("instance_id")); err != nil {
