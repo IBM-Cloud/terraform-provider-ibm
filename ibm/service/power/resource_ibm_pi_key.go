@@ -14,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIBMPIKey() *schema.Resource {
@@ -32,19 +33,22 @@ func ResourceIBMPIKey() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
-				Description: "The GUID of the service instance associated with an account.",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "The GUID of the service instance associated with an account.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_KeyName: {
-				Description: "User defined name for the SSH key.",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "User defined name for the SSH key.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_SSHKey: {
-				Description: "SSH RSA key",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "SSH RSA key.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Attributes
@@ -60,7 +64,7 @@ func ResourceIBMPIKey() *schema.Resource {
 			},
 			Attr_Key: {
 				Computed:    true,
-				Description: "SSH RSA key",
+				Description: "SSH RSA key.",
 				Type:        schema.TypeString,
 			},
 		},
