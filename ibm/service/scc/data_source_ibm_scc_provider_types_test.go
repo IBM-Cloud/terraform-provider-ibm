@@ -19,6 +19,8 @@ func TestAccIbmSccProviderTypesDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_types.scc_provider_types_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_types.scc_provider_types_instance", "provider_types.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_types.scc_provider_types_instance", "provider_types.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_provider_types.scc_provider_types_instance", "provider_types.0.id"),
 				),
 			},
 		},

@@ -19,6 +19,8 @@ func TestAccIbmSccProfilesDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.0.profile_name"),
 				),
 			},
 		},
@@ -35,6 +37,8 @@ func TestAccIbmSccProfilesDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_profiles.scc_profiles_instance", "profiles.0.profile_name"),
 				),
 			},
 		},

@@ -36,14 +36,25 @@ After your data source is created, you can read values from the following attrib
 
     Nested schema for **control_libraries**:
     * `id` - (String) The unique identifier of the scc_control_library.
+
     * `account_id` - (String) The account ID.
+
     * `control_library_description` - (String) The control library description.
+
     * `control_library_name` - (String) The control library name.
+
     * `control_library_type` - (String) The control library type.
+
     * `control_library_version` - (String) The control library version.
+
     * `control_count` - (Integer) The number of controls in the control library.
+
     * `created_by` - (String) The user who created the control library.
+
     * `created_on` - (String) The date when the control library was created.
+
     * `updated_by` - (String) The user who updated the control library.
+
     * `updated_on` - (String) The date when the control library was updated.
+    
     * `version_group_label` - (String) The version group label.
