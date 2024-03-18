@@ -701,7 +701,6 @@ func testAccCheckIBMContainerVpcClusterKMSEnvvar(name string) string {
 
 func TestAccIBMContainerVpcClusterIngressConfig(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
-	//var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
