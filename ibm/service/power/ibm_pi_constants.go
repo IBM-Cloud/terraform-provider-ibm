@@ -22,6 +22,7 @@ const (
 	Arg_DhcpName                            = "pi_dhcp_name"
 	Arg_DhcpSnatEnabled                     = "pi_dhcp_snat_enabled"
 	Arg_HostGroupID                         = "pi_host_group_id"
+	Arg_Hosts                               = "pi_hosts"
 	Arg_IBMiCSS                             = "pi_ibmi_css"
 	Arg_IBMiPHA                             = "pi_ibmi_pha"
 	Arg_IBMiRDSUsers                        = "pi_ibmi_rds_users"
@@ -38,10 +39,12 @@ const (
 	Arg_PVMInstanceActionType               = "pi_action"
 	Arg_PVMInstanceHealthStatus             = "pi_health_status"
 	Arg_PVMInstanceId                       = "pi_instance_id"
+	Arg_Remove                              = "pi_remove"
 	Arg_ReplicationEnabled                  = "pi_replication_enabled"
 	Arg_ResourceGroupID                     = "pi_resource_group_id"
 	Arg_SAP                                 = "sap"
 	Arg_SAPProfileID                        = "pi_sap_profile_id"
+	Arg_Secondaries                         = "pi_secondaries"
 	Arg_SharedProcessorPoolHostGroup        = "pi_shared_processor_pool_host_group"
 	Arg_SharedProcessorPoolID               = "pi_shared_processor_pool_id"
 	Arg_SharedProcessorPoolName             = "pi_shared_processor_pool_name"
@@ -137,6 +140,7 @@ const (
 	Attr_DisasterRecoveryLocations                   = "disaster_recovery_locations"
 	Attr_DiskFormat                                  = "disk_format"
 	Attr_DiskType                                    = "disk_type"
+	Attr_DisplayName                                 = "display_name"
 	Attr_DNS                                         = "dns"
 	Attr_Enabled                                     = "enabled"
 	Attr_Endianness                                  = "endianness"
@@ -153,6 +157,7 @@ const (
 	Attr_GreSourceAddress                            = "gre_source_address"
 	Attr_GroupID                                     = "group_id"
 	Attr_HealthStatus                                = "health_status"
+	Attr_HostGroupID                                 = "host_group_id"
 	Attr_HostGroups                                  = "host_groups"
 	Attr_HostID                                      = "host_id"
 	Attr_Hosts                                       = "hosts"
@@ -335,6 +340,7 @@ const (
 	Attr_VPCCRNs                                     = "vpc_crns"
 	Attr_VPCEnabled                                  = "vpc_enabled"
 	Attr_WorkloadType                                = "workload_type"
+	Attr_Workspace                                   = "workspace"
 	Attr_WorkspaceCapabilities                       = "pi_workspace_capabilities"
 	Attr_WorkspaceDetails                            = "pi_workspace_details"
 	Attr_WorkspaceID                                 = "pi_workspace_id"
@@ -355,6 +361,9 @@ const (
 	Public       = "public"
 
 	// States
+	NotFound                  = "not found"
+	SctionStart               = "start"
+	SctionStop                = "stop"
 	State_Active             = "active"
 	State_ACTIVE             = "ACTIVE"
 	State_Added              = "added"
@@ -374,6 +383,13 @@ const (
 	State_Provisioning       = "provisioning"
 	State_Removed            = "removed"
 	State_Retry              = "retry"
+	StatusActive              = "ACTIVE"
+	StatusBuild               = "BUILD"
+	Status_Deleting           = "deleting"
+	StatusError               = "ERROR"
+	StatusPending             = "PENDING"
+	StatusResize              = "RESIZE"
+	StatusShutoff             = "SHUTOFF"
 
 	// Allowed Values
 	Host      = "host"
@@ -461,17 +477,6 @@ const (
 
 	// Cloud Connections
 	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
-
-	// status
-	// common status states
-	StatusShutoff = "SHUTOFF"
-	StatusActive  = "ACTIVE"
-	StatusResize  = "RESIZE"
-	StatusError   = "ERROR"
-	StatusBuild   = "BUILD"
-	StatusPending = "PENDING"
-	SctionStart   = "start"
-	SctionStop    = "stop"
 
 	// volume clone task status
 	VolumeCloneCompleted = "completed"
