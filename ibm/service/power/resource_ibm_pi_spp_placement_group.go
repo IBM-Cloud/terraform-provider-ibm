@@ -10,8 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	models "github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -34,38 +33,38 @@ func ResourceIBMPISPPPlacementGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			Arg_SPPPlacementGroupName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
 				Description: "Name of the SPP placement group",
+				ForceNew:    true,
+				Required:    true,
+				Type:        schema.TypeString,
 			},
 
 			Arg_SPPPlacementGroupPolicy: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity"}),
 				Description:  "Policy of the SPP placement group",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity"}),
 			},
 
-			helpers.PICloudInstanceId: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+			Arg_CloudInstanceID: {
 				Description: "PI cloud instance ID",
+				ForceNew:    true,
+				Required:    true,
+				Type:        schema.TypeString,
 			},
 
 			Attr_SPPPlacementGroupMembers: {
-				Type:        schema.TypeSet,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Member SPP IDs that are the SPP placement group members",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
 			},
 
 			Attr_SPPPlacementGroupID: {
-				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "SPP placement group ID",
+				Type:        schema.TypeString,
 			},
 		},
 	}
@@ -77,10 +76,10 @@ func resourceIBMPISPPPlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	name := d.Get(Arg_SPPPlacementGroupName).(string)
 	policy := d.Get(Arg_SPPPlacementGroupPolicy).(string)
-	client := st.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 	body := &models.SPPPlacementGroupCreate{
 		Name:   &name,
 		Policy: &policy,
@@ -107,7 +106,7 @@ func resourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	cloudInstanceID := parts[0]
-	client := st.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 
 	response, err := client.Get(parts[1])
 	if err != nil || response == nil {
@@ -134,7 +133,7 @@ func resourceIBMPISPPPlacementGroupDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 	cloudInstanceID := parts[0]
-	client := st.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 	err = client.Delete(parts[1])
 
 	if err != nil {
