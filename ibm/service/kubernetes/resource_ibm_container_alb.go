@@ -126,7 +126,11 @@ func resourceIBMContainerALBCreate(d *schema.ResourceData, meta interface{}) err
 	var userIP string
 	var enable bool
 	albID := d.Get("alb_id").(string)
-	if v, ok := d.GetOkExists("enable"); ok {
+	if v, ok := d.GetOkExists("enable")
+	if !ok {
+	   return fmt.Errorf("[ERROR] Set `enable` field")
+	}
+	enable = v.(bool)
 		enable = v.(bool)
 	} else {
 		return fmt.Errorf("[ERROR] Missing `enable` argument")
