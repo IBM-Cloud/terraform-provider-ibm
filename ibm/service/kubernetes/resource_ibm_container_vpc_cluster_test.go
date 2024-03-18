@@ -778,7 +778,6 @@ func testAccConfigCheckIBMContainerVpcClusterIngressConfig(name string) string {
 		}
 	}
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
-	fmt.Println(config)
 	return config
 }
 
