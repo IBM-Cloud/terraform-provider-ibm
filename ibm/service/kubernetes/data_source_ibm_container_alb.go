@@ -67,7 +67,7 @@ func DataSourceIBMContainerALB() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Set to true if ALB needs to be disabled",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"name": {
 				Type:        schema.TypeString,
