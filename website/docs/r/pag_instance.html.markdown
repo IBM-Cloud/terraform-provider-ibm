@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_pag_instance"
 description: |-
   Create Privileged Access Gateway instance.
-subcategory: "Security Services"
+subcategory: "Privileged Access Gateway"
 ---
 
 # ibm_pag_instance
@@ -146,10 +146,10 @@ Review the argument references that you can specify for your resource.
 
 - `location` - (Required, String) Target location or environment to create the PAG instance.
 - `parameters_json` (Required ,String) Parameters to create PAG instance. The value must be a JSON string.
-- `plan` - (Required, String) The name of the plan type supported by service.
+- `plan` - (Required, String) The name of the plan type supported by service i.e `standard`.
 - `name` - (Required, String) A descriptive name used to identify the resource instance.
 - `resource_group_id` - (Required, String) The ID of the resource group where you want to create the PAG service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
-- `service` - (Required, String) The name of the service.
+- `service` - (Required, String) The name of the service i.e `privileged-access-gateway`.
 - `tags` -  (Optional, Array of Strings) Tags associated with the PAG instance.
 
 

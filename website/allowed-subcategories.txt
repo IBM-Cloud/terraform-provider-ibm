@@ -29,6 +29,7 @@ Metrics Router
 MQ on Cloud
 Object Storage
 Power Systems
+Privileged Access Gateway
 Project
 Push Notifications
 Resource management
@@ -36,7 +37,6 @@ Satellite
 Schematics
 Secrets Manager
 Security and Compliance Center
-Security Services
 Transit Gateway
 Usage Reports
 VPC infrastructure

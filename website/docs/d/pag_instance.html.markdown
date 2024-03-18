@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_pag_instance"
 description: |-
   Get information about Privileged Access Gateway instance.
-subcategory: "Security Services"
+subcategory: "Privileged Access Gateway"
 ---
 
 # ibm_pag_instance
