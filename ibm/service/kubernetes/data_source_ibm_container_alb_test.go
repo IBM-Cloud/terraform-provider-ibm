@@ -61,6 +61,5 @@ func testAccCheckIBMContainerALBDataSourceBasic(clusterName string, enable bool)
 		alb_id = ibm_container_cluster.testacc_cluster.albs[0].id
 	}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID)
 
-	fmt.Println(config)
 	return config
 }
