@@ -634,6 +634,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_disaster_recovery_locations":            power.DataSourceIBMPIDisasterRecoveryLocations(),
 			"ibm_pi_host_group":                             power.DataSourceIBMPIHostGroup(),
 			"ibm_pi_host_groups":                            power.DataSourceIBMPIHostGroups(),
+			"ibm_pi_host":                                   power.DataSourceIBMPIHost(),
+			"ibm_pi_hosts":                                  power.DataSourceIBMPIHosts(),
 			"ibm_pi_image":                                  power.DataSourceIBMPIImage(),
 			"ibm_pi_images":                                 power.DataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":                            power.DataSourceIBMPIInstanceIP(),
