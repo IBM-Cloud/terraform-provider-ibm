@@ -69,7 +69,6 @@ require (
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/vmware-go-sdk v0.1.2
-	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/stretchr/testify v1.9.0
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
@@ -144,6 +143,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hc-install v0.6.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
+	github.com/hashicorp/hcl/v2 v2.19.1 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.19.0 // indirect
 	github.com/hashicorp/terraform-json v0.17.1 // indirect
