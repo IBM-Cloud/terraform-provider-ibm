@@ -2870,14 +2870,14 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 	return nil
 }
 
-func validateMultitenantMemoryCpu(groupId string, resourceName string, resourceDefaults *Group, group *Group) error {
+func validateMultitenantMemoryCpu(groupId string, resourceDefaults *Group, group *Group) error {
 	// TODO: Replace this with resourceDefaults.Memory.CPUEnforcementRatioCeiling when it is fixed
 	cpuEnforcementRatioCeiling := 16384
-	cpuEnforcmentRationMb := resourceDefaults.Memory.CPUEnforcementRatioMb
+	cpuEnforcementRatioMb := resourceDefaults.Memory.CPUEnforcementRatioMb
 
-	// This means the CPUEnforcementRatioMb was not sent, which means we are dealing with a non-multitenant going to a multitenat
-	if cpuEnforcmentRationMb == 0 {
-		cpuEnforcmentRationMb = 8192
+	// This means the cpuEnforcementRatioMb was not sent, which means we are dealing with a non-multitenant going to a multitenat
+	if cpuEnforcementRatioMb == 0 {
+		cpuEnforcementRatioMb = 8192
 	}
 
 	if resourceDefaults.Members == nil {
@@ -2896,7 +2896,7 @@ func validateMultitenantMemoryCpu(groupId string, resourceName string, resourceD
 		return nil
 	}
 
-	if group.CPU != nil && group.Memory.Allocation*resourceDefaults.Members.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Allocation && group.Memory.Allocation*resourceDefaults.Members.Allocation > group.CPU.Allocation*cpuEnforcmentRationMb {
+	if group.CPU != nil && group.Memory.Allocation*resourceDefaults.Members.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Allocation && group.Memory.Allocation*resourceDefaults.Members.Allocation > group.CPU.Allocation*cpuEnforcementRatioMb {
 		return fmt.Errorf("We were unable to complete your request: group.memory %d with group.cpu %d is not valid. Try again with valid values or contact support if the issue persists.", group.Memory.Allocation, group.CPU.Allocation)
 	}
 
@@ -2971,7 +2971,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 			nodeCount := groupDefaults.Members.Allocation
 
 			if group.Memory != nil && group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" && groupDefaults.Memory.CPUEnforcementRatioCeilingMb != 0 && groupDefaults.Memory.CPUEnforcementRatioMb != 0 {
-				err = validateMultitenantMemoryCpu(groupId, "memory", groupDefaults, group)
+				err = validateMultitenantMemoryCpu(groupId, groupDefaults, group)
 				if err != nil {
 					return err
 				}
