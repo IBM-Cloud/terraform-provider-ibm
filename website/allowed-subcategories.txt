@@ -29,6 +29,7 @@ Metrics Router
 MQ on Cloud
 Object Storage
 Power Systems
+Privileged Access Gateway
 Project
 Push Notifications
 Resource management
