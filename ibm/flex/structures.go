@@ -3274,6 +3274,7 @@ type ServiceErrorResponse struct {
 	Message    string
 	StatusCode int
 	Result     interface{}
+	Error      error
 }
 
 func BeautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
@@ -3289,6 +3290,7 @@ func BeautifyError(err error, response *core.DetailedResponse) *ServiceErrorResp
 		Message:    err.Error(),
 		StatusCode: statusCode,
 		Result:     result,
+		Error:      err,
 	}
 }
 
