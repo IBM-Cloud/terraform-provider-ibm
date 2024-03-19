@@ -55,13 +55,13 @@ func ResourceIBMContainerVpcALB() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Disable the ALB instance in the cluster",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"load_balancer_hostname": {
 				Type:        schema.TypeString,
@@ -72,7 +72,7 @@ func ResourceIBMContainerVpcALB() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "boolean value to resize the albs",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -89,7 +89,7 @@ func ResourceIBMContainerVpcALB() *schema.Resource {
 				Computed:    true,
 				Description: "Zone info.",
 			},
-			"ingress_image": {
+			"version": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of Ingress image that you want to use for your ALB deployment.",
@@ -181,7 +181,7 @@ func resourceIBMContainerVpcALBRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("status", albConfig.Status)
 	d.Set("state", albConfig.State)
 	d.Set("load_balancer_hostname", albConfig.LoadBalancerHostname)
-	d.Set("ingress_image", albConfig.AlbBuild)
+	d.Set("version", albConfig.AlbBuild)
 
 	return nil
 }

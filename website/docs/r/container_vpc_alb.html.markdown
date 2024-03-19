@@ -43,7 +43,7 @@ In addition to all argument reference list, you can access the following attribu
 - `alb_type` - (String) The ALB type.
 - `cluster` - (String) The name of the cluster.
 - `id` - (String) The ALB ID.
-- `ingress_image` - (String) The current version of the ALB.
+- `version` - (String) The current version of the ALB.
 - `load_balancer_hostname` - (String) The host name of the ALB.
 - `name` - (Deprecated, String) The name of the ALB.
 - `resize`- (Deprecated, Bool) Resize of the ALB.

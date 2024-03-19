@@ -44,7 +44,7 @@ In addition to all argument reference list, you can access the following attribu
 - `alb_type` - (String) The type of the ALB. Supported values are `public` and `private`.
 - `cluster` - (String) The name of the cluster where the ALB is provisioned.
 - `id` - (String) The unique identifier of the ALB.
-- `ingress_image` - (String) The current version of the ALB.
+- `version` - (String) The current version of the ALB.
 - `name` -  (Deprecated, String) The name of the ALB.
 - `replicas` - (Deprecated, String) Desired number of ALB replicas. 
 - `resize` -  (Deprecated, Bool) Indicate whether resizing should be done.

@@ -35,7 +35,7 @@ func ResourceIBMContainerAlbCreate() *schema.Resource {
 				Default:     true,
 				Description: "If set to true, the ALB is enabled by default.",
 			},
-			"ingress_image": {
+			"version": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
@@ -170,7 +170,7 @@ func resourceIBMContainerClassicAlbCreate(d *schema.ResourceData, meta interface
 		params.EnableByDefault = v.(bool)
 	}
 
-	if v, ok := d.GetOk("ingress_image"); ok {
+	if v, ok := d.GetOk("version"); ok {
 		params.IngressImage = v.(string)
 	}
 

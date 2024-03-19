@@ -53,7 +53,7 @@ func DataSourceIBMContainerALB() *schema.Resource {
 				Computed:    true,
 				Description: "Status of the ALB",
 			},
-			"ingress_image": {
+			"version": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of Ingress image that you want to use for your ALB deployment.",
@@ -73,7 +73,7 @@ func DataSourceIBMContainerALB() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 		},
 	}
@@ -107,6 +107,6 @@ func dataSourceIBMContainerALBRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("zone", &albConfig.Zone)
 	d.Set("state", &albConfig.State)
 	d.Set("status", &albConfig.Status)
-	d.Set("ingress_image", &albConfig.ALBBuild)
+	d.Set("version", &albConfig.ALBBuild)
 	return nil
 }

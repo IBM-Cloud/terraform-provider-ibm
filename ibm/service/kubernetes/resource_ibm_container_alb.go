@@ -73,7 +73,7 @@ func ResourceIBMContainerALB() *schema.Resource {
 				Computed:    true,
 				Description: "Status of the ALB",
 			},
-			"ingress_image": {
+			"version": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of Ingress image that you want to use for your ALB deployment.",
@@ -89,30 +89,30 @@ func ResourceIBMContainerALB() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Set to true if ALB needs to be disabled",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used, use enable instead",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"resize": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicate whether resizing should be done",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"region": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				Deprecated: "This field is deprecated",
+				Deprecated: "This field deprecated and no longer supported",
 			},
 			"replicas": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Desired number of ALB replicas.",
-				Deprecated:  "Remove this attribute's configuration as it no longer is used",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 		},
 	}
@@ -126,25 +126,14 @@ func resourceIBMContainerALBCreate(d *schema.ResourceData, meta interface{}) err
 	var userIP string
 	var enable bool
 	albID := d.Get("alb_id").(string)
-	if v, ok := d.GetOkExists("enable")
+	v, ok := d.GetOkExists("enable")
 	if !ok {
-	   return fmt.Errorf("[ERROR] Set `enable` field")
-	}
-	enable = v.(bool)
-		enable = v.(bool)
-	} else {
 		return fmt.Errorf("[ERROR] Missing `enable` argument")
 	}
+	enable = v.(bool)
 
 	if v, ok := d.GetOk("user_ip"); ok {
 		userIP = v.(string)
-	}
-	params := v1.ALBConfig{
-		ALBID:  albID,
-		Enable: enable,
-	}
-	if userIP != "" {
-		params.ALBIP = userIP
 	}
 
 	_, err = waitForClusterAvailable(d, meta, albID)
@@ -158,6 +147,14 @@ func resourceIBMContainerALBCreate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	if enable {
+		params := v1.ALBConfig{
+			ALBID:  albID,
+			Enable: enable,
+		}
+		if userIP != "" {
+			params.ALBIP = userIP
+		}
+
 		err = albAPI.EnableALB(albID, params, targetEnv)
 		if err != nil {
 			return err
@@ -206,7 +203,7 @@ func resourceIBMContainerALBRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("user_ip", albConfig.ALBIP)
 	d.Set("state", &albConfig.State)
 	d.Set("status", &albConfig.Status)
-	d.Set("ingress_image", &albConfig.ALBBuild)
+	d.Set("version", &albConfig.ALBBuild)
 	d.Set("zone", albConfig.Zone)
 	return nil
 }

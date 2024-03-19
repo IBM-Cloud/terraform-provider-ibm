@@ -70,9 +70,9 @@ func testAccCheckIBMContainerClusterDataSource(clusterName, serviceName string) 
 }
 
 // You need to set up env vars:
-// export IBM_CLUSTER_VPC_ID
-// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
-// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_PUBLIC_VLAN_ID
+// export IBM_PRIVATE_VLAN_ID
+// export IBM_DATACENTER
 func TestAccIBMContainerClusterDataSourceIngressConfig(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{

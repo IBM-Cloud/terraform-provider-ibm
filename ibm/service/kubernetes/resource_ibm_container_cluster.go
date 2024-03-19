@@ -958,7 +958,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("[ERROR] Error retrieving ingress status of the cluster %s: %s", clusterID, err)
 	}
 
-	ingressConfig := make([]map[string]interface{})
+	ingressConfig := make([]map[string]interface{}, 0)
 	ingressStatusReport := make([]map[string]interface{}, 0)
 
 	ingressStatusConfig := map[string]interface{}{

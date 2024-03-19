@@ -33,7 +33,7 @@ In addition to the argument reference list, you can access the following attribu
 - `disable_deployment` - (Deprecated, String) Unsupported, you must use the `enable` parameter.
 - `enable` - (String) Enable an ALB for the cluster.
 - `id` - (String) The ALB ID.
-- `ingress_image` - (String) The current version of the ALB.
+- `version` - (String) The current version of the ALB.
 - `load_balancer_hostname` - (String) The name of the load balancer.
 - `resize` - (String) Resize of the ALB.
 - `state` - (String) ALB state.

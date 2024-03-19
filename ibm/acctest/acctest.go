@@ -524,13 +524,13 @@ func init() {
 	PublicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")
 	if PublicVlanID == "" {
 		PublicVlanID = "2393319"
-		fmt.Println("[WARN] Set the environment variable IBM_PUBLIC_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '2393319'")
+		fmt.Println("[WARN] Set the environment variable IBM_PUBLIC_VLAN_ID for testing ibm_container_cluster resource or ibm_container_alb_create resource else it is set to default value '2393319'")
 	}
 
 	PrivateVlanID = os.Getenv("IBM_PRIVATE_VLAN_ID")
 	if PrivateVlanID == "" {
 		PrivateVlanID = "2393321"
-		fmt.Println("[WARN] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '2393321'")
+		fmt.Println("[WARN] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource or ibm_container_alb_create resource else it is set to default value '2393321'")
 	}
 
 	KubeVersion = os.Getenv("IBM_KUBE_VERSION")
@@ -1379,17 +1379,17 @@ func init() {
 
 	IksClusterVpcID = os.Getenv("IBM_CLUSTER_VPC_ID")
 	if IksClusterVpcID == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_create tests will fail if this is not set")
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_ID for testing ibm_container_vpc_alb_create resources or ibm_container_vpc_cluster resource, ibm_container_vpc_alb_create tests will fail if this is not set")
 	}
 
 	IksClusterSubnetID = os.Getenv("IBM_CLUSTER_VPC_SUBNET_ID")
 	if IksClusterSubnetID == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_SUBNET_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_SUBNET_ID for testing ibm_container_vpc_alb_create resources or ibm_container_vpc_cluster resource, ibm_container_vpc_alb_create, ibm_container_vpc_alb_creates tests will fail if this is not set")
 	}
 
 	IksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
 	if IksClusterResourceGroupID == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources or ibm_container_vpc_cluster resource, ibm_container_vpc_alb_creates tests will fail if this is not set")
 	}
 
 	ClusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
