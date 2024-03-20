@@ -6,7 +6,6 @@ package kms
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -251,11 +250,17 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
-		registrations := d.Get("registration").([]map[string]interface{})
+		registrations := d.Get("registrations").([]interface{})
+		var registrationLog error
 		if registrations != nil && len(registrations) > 0 {
-			log.Fatalf("The key_id %s has the following registrations: %v\n", keyid, registrations)
+			resourceCrns := make([]string, 0)
+			for _, registration := range registrations {
+				r := registration.(map[string]interface{})
+				resourceCrns = append(resourceCrns, r["resource_crn"].(string))
+			}
+			registrationLog = fmt.Errorf(". The key has the following active registrations which may interfere with deletion: %v", resourceCrns)
 		}
-		return fmt.Errorf("[ERROR] Error while deleting: %s", err1)
+		return fmt.Errorf("[ERROR] Error while deleting: %s%s", err1, registrationLog)
 	}
 	d.SetId("")
 	return nil
