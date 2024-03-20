@@ -1262,6 +1262,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
 			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
 			"ibm_pi_host_group":                      power.ResourceIBMPIHostGroup(),
+			"ibm_pi_host":                            power.ResourceIBMPIHost(),
 			"ibm_pi_ike_policy":                      power.ResourceIBMPIIKEPolicy(),
 			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),

@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -149,47 +148,4 @@ func dataSourceIBMPIHostRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	return nil
-}
-
-func hostCapacityToMap(capicity *models.HostCapacity) (hostCapacity []map[string]interface{}) {
-	hostCapacityMap := make(map[string]interface{})
-	if capicity.Cores.Available != nil {
-		hostCapacityMap[Attr_AvailableCores] = capicity.Cores.Available
-	}
-	if capicity.Memory.Available != nil {
-		hostCapacityMap[Attr_AvailableMemory] = capicity.Memory.Available
-	}
-	if capicity.Cores.Reserved != nil {
-		hostCapacityMap[Attr_ReservedCore] = capicity.Cores.Reserved
-	}
-	if capicity.Memory.Reserved != nil {
-		hostCapacityMap[Attr_ReservedMemory] = capicity.Memory.Reserved
-	}
-	if capicity.Cores.Total != nil {
-		hostCapacityMap[Attr_TotalCore] = capicity.Cores.Total
-	}
-	if capicity.Memory.Total != nil {
-		hostCapacityMap[Attr_TotalMemory] = capicity.Memory.Total
-	}
-	if capicity.Cores.Used != nil {
-		hostCapacityMap[Attr_UsedCore] = capicity.Cores.Used
-	}
-	if capicity.Memory.Used != nil {
-		hostCapacityMap[Attr_UsedMemory] = capicity.Memory.Used
-	}
-	hostCapacity = append(hostCapacity, hostCapacityMap)
-	return hostCapacity
-}
-func hostGroupToMap(hostGroup *models.HostGroupSummary) map[string]interface{} {
-	hostGroupMap := make(map[string]interface{})
-	if hostGroup.Access != "" {
-		hostGroupMap[Attr_Access] = hostGroup.Access
-	}
-	if hostGroup.Href != "" {
-		hostGroupMap[Attr_Href] = hostGroup.Href
-	}
-	if hostGroup.Name != "" {
-		hostGroupMap[Attr_Name] = hostGroup.Name
-	}
-	return hostGroupMap
 }
