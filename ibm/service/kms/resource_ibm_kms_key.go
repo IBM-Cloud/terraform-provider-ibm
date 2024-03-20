@@ -6,6 +6,7 @@ package kms
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -139,6 +140,31 @@ func ResourceIBMKmskey() *schema.Resource {
 				Computed:    true,
 				Description: "Key protect or hpcs instance CRN",
 			},
+
+			"registrations": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Registrations of the key across different services",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key id being used in the policy",
+						},
+						"resource_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource crn tied to the registration of the key",
+						},
+						"prevent_key_deletion": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Determines if the registration of a key prevents a deletion.",
+						},
+					},
+				},
+			},
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -225,6 +251,10 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
+		registrations := d.Get("registration").([]map[string]interface{})
+		if registrations != nil && len(registrations) > 0 {
+			log.Fatalf("The key_id %s has the following registrations: %v\n", keyid, registrations)
+		}
 		return fmt.Errorf("[ERROR] Error while deleting: %s", err1)
 	}
 	d.SetId("")
@@ -327,6 +357,23 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
 
+	// Get the Registration of the key
+	registrations, err := kpAPI.ListRegistrations(context.Background(), key.ID, "")
+	if err != nil {
+		return err
+	}
+	// making a map[string]interface{} for terraform key.registration Attribute
+	rSlice := make([]map[string]interface{}, 0)
+	for _, r := range registrations.Registrations {
+		registration := map[string]interface{}{
+			"key_id":               r.KeyID,
+			"resource_crn":         r.ResourceCrn,
+			"prevent_key_deletion": r.PreventKeyDeletion,
+		}
+		rSlice = append(rSlice, registration)
+	}
+	d.Set("registrations", rSlice)
+
 	return nil
 }
 
@@ -396,7 +443,8 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 		return nil, err
 	}
 	// keyid := d.Id()
-	key, err := kpAPI.GetKey(context.Background(), keyid)
+	ctx := context.Background()
+	key, err := kpAPI.GetKey(ctx, keyid)
 	if err != nil {
 		kpError := err.(*kp.Error)
 		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
@@ -413,5 +461,6 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 	if err != nil {
 		return nil, err
 	}
+
 	return kpAPI, nil
 }
