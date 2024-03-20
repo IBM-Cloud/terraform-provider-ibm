@@ -1184,7 +1184,7 @@ func init() {
 	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
 	if Pi_host_group_id == "" {
 		Pi_host_group_id = ""
-		fmt.Println("[WARN] Set the environment variable PI_HOSTGROUP_ID for testing ibm_pi_hostgroup resource else it is set to default value ''")
+		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
 	}
 
 	Pi_host_id = os.Getenv("PI_HOST_ID")
