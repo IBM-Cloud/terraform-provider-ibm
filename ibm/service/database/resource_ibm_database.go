@@ -2870,15 +2870,9 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 	return nil
 }
 
-func validateMultitenantMemoryCpu(groupId string, resourceDefaults *Group, group *Group) error {
-	// TODO: Replace this with resourceDefaults.Memory.CPUEnforcementRatioCeiling when it is fixed
-	cpuEnforcementRatioCeiling := 16384
-	cpuEnforcementRatioMb := resourceDefaults.Memory.CPUEnforcementRatioMb
-
-	// This means the cpuEnforcementRatioMb was not sent, which means we are dealing with a non-multitenant going to a multitenat
-	if cpuEnforcementRatioMb == 0 {
-		cpuEnforcementRatioMb = 8192
-	}
+func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) error {
+	// TODO: Replace this with  cpuEnforcementRatioCeiling when it is fixed
+	cpuEnforcementRatioCeilingTemp := 16384
 
 	if resourceDefaults.Members == nil {
 		return nil
@@ -2896,7 +2890,7 @@ func validateMultitenantMemoryCpu(groupId string, resourceDefaults *Group, group
 		return nil
 	}
 
-	if group.CPU != nil && group.Memory.Allocation*resourceDefaults.Members.Allocation < cpuEnforcementRatioCeiling*resourceDefaults.Members.Allocation && group.Memory.Allocation*resourceDefaults.Members.Allocation > group.CPU.Allocation*cpuEnforcementRatioMb {
+	if group.CPU != nil && group.Memory.Allocation*resourceDefaults.Members.Allocation < cpuEnforcementRatioCeilingTemp*resourceDefaults.Members.Allocation && group.Memory.Allocation*resourceDefaults.Members.Allocation > group.CPU.Allocation*cpuEnforcementRatioMb {
 		return fmt.Errorf("We were unable to complete your request: group.memory %d with group.cpu %d is not valid. Try again with valid values or contact support if the issue persists.", group.Memory.Allocation, group.CPU.Allocation)
 	}
 
@@ -2939,6 +2933,8 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
+		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := getCpuEnforcementRatios(service, plan, meta, group)
+
 		// validate group_ids are unique
 		groupIds = make([]string, 0, len(tfGroups))
 		for _, g := range tfGroups {
@@ -2970,13 +2966,6 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 			// set current nodeCount
 			nodeCount := groupDefaults.Members.Allocation
 
-			if group.Memory != nil && group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" && groupDefaults.Memory.CPUEnforcementRatioCeilingMb != 0 && groupDefaults.Memory.CPUEnforcementRatioMb != 0 {
-				err = validateMultitenantMemoryCpu(groupId, groupDefaults, group)
-				if err != nil {
-					return err
-				}
-			}
-
 			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
 				err = validateGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
@@ -2995,6 +2984,13 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				err = validateGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
+				}
+
+				if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" && cpuEnforcementRatioCeiling != 0 && cpuEnforcementRatioMb != 0 {
+					err = validateMultitenantMemoryCpu(groupDefaults, group, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -3015,6 +3011,41 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	}
 
 	return nil
+}
+
+func getCpuEnforcementRatios(service string, plan string, meta interface{}, group interface{}) (cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
+	var currentGroups []Group
+	defaultList, err := getDefaultScalingGroups(service, plan, "multitenant", meta)
+
+	if err != nil {
+		return 0, 0
+	}
+
+	currentGroups = normalizeGroups(defaultList)
+	tfGroups := expandGroups(group.(*schema.Set).List())
+
+	// Get default or current group scaling values
+	for _, group := range tfGroups {
+		if group == nil {
+			break
+		}
+
+		groupId := group.ID
+		var groupDefaults *Group
+		for _, g := range currentGroups {
+			if g.ID == groupId {
+				groupDefaults = &g
+				break
+			}
+		}
+
+		if groupDefaults.Memory != nil {
+			return groupDefaults.Memory.CPUEnforcementRatioCeilingMb, groupDefaults.Memory.CPUEnforcementRatioMb
+		}
+
+	}
+
+	return 0, 0
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
