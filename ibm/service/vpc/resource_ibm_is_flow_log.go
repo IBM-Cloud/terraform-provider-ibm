@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -256,7 +255,7 @@ func resourceIBMISFlowLogCreate(d *schema.ResourceData, meta interface{}) error 
 
 	flowlogCollector, response, err := sess.CreateFlowLogCollector(createFlowLogCollectorOptionsModel)
 	if err != nil {
-		return fmt.Errorf("Create Flow Log Collector err %s\n%s", err, response)
+		return flex.FmtErrorf("Create Flow Log Collector err %s\n%s", err, response)
 	}
 	d.SetId(*flowlogCollector.ID)
 
@@ -296,7 +295,7 @@ func resourceIBMISFlowLogRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	flowlogCollector, response, err := sess.GetFlowLogCollector(getOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Flow Log Collector: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Flow Log Collector: %s\n%s", err, response)
 	}
 
 	if flowlogCollector.Name != nil {
@@ -383,7 +382,7 @@ func resourceIBMISFlowLogUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 	flowlogCollector, response, err := sess.GetFlowLogCollector(getOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Flow Log Collector: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Flow Log Collector: %s\n%s", err, response)
 	}
 
 	if d.HasChange(isFlowLogTags) {
@@ -416,12 +415,12 @@ func resourceIBMISFlowLogUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 		flowLogCollectorPatch, err := flowLogCollectorPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for FlowLogCollectorPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for FlowLogCollectorPatch: %s", err)
 		}
 		updoptions.FlowLogCollectorPatch = flowLogCollectorPatch
 		_, response, err = sess.UpdateFlowLogCollector(updoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating flow log collector:%s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating flow log collector:%s\n%s", err, response)
 		}
 	}
 
@@ -441,7 +440,7 @@ func resourceIBMISFlowLogDelete(d *schema.ResourceData, meta interface{}) error 
 	response, err := sess.DeleteFlowLogCollector(delOptions)
 
 	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("[ERROR] Error deleting flow log collector:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting flow log collector:%s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -461,7 +460,7 @@ func resourceIBMISFlowLogExists(d *schema.ResourceData, meta interface{}) (bool,
 	}
 	_, response, err := sess.GetFlowLogCollector(getOptions)
 	if err != nil && response.StatusCode != 404 {
-		return false, fmt.Errorf("[ERROR] Error Getting Flow Log Collector : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Flow Log Collector : %s\n%s", err, response)
 	}
 	if response.StatusCode == 404 {
 		d.SetId("")

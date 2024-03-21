@@ -331,7 +331,7 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 				ID: &volSnapshotStr,
 			})
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while getting snapshot details %q for instance %s: %q", volSnapshotStr, d.Id(), err)
+				return flex.FmtErrorf("[ERROR] Error while getting snapshot details %q for instance %s: %q", volSnapshotStr, d.Id(), err)
 			}
 			snapCapacity = int64(int(*snapshotGet.MinimumCapacity))
 		}
@@ -385,7 +385,7 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 	instanceVolAtt, response, err := sess.CreateInstanceVolumeAttachment(instanceVolAttproto)
 	if err != nil {
 		log.Printf("[DEBUG] Instance volume attachment create err %s\n%s", err, response)
-		return fmt.Errorf("[ERROR] Error while attaching volume for instance %s: %q", instanceId, err)
+		return flex.FmtErrorf("[ERROR] Error while attaching volume for instance %s: %q", instanceId, err)
 	}
 	d.SetId(makeTerraformVolAttID(instanceId, *instanceVolAtt.ID))
 	_, err = isWaitForInstanceVolumeAttached(sess, d, instanceId, *instanceVolAtt.ID)
@@ -433,7 +433,7 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance volume attachment : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Instance volume attachment : %s\n%s", err, response)
 	}
 	d.Set(isInstanceId, instanceId)
 
@@ -455,7 +455,7 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 	d.Set(isInstanceVolumeAttStatus, *volumeAtt.Status)
 	d.Set(isInstanceVolumeAttType, *volumeAtt.Type)
 	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return fmt.Errorf("Error setting version: %s", err)
+		return flex.FmtErrorf("Error setting version: %s", err)
 	}
 	volId := *volumeAtt.Volume.ID
 	getVolOptions := &vpcv1.GetVolumeOptions{
@@ -463,7 +463,7 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 	}
 	volumeDetail, _, err := instanceC.GetVolume(getVolOptions)
 	if err != nil || volumeDetail == nil {
-		return fmt.Errorf("[ERROR] Error while getting volume details of volume %s ", id)
+		return flex.FmtErrorf("[ERROR] Error while getting volume details of volume %s ", id)
 	}
 
 	d.Set(isInstanceVolAttVol, *volumeDetail.ID)
@@ -510,7 +510,7 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 	if flag {
 		volAttNamePatchModelAsPatch, err := volAttNamePatchModel.AsPatch()
 		if err != nil || volAttNamePatchModelAsPatch == nil {
-			return fmt.Errorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
+			return flex.FmtErrorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
 		}
 		updateInstanceVolAttOptions.VolumeAttachmentPatch = volAttNamePatchModelAsPatch
 
@@ -532,12 +532,12 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		volumePatch, err := volumePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VolumePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for VolumePatch: %s", err)
 		}
 		voloptions.VolumePatch = volumePatch
 		_, response, err := instanceC.UpdateVolume(voloptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating volume name : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating volume name : %s\n%s", err, response)
 		}
 	}
 
@@ -555,7 +555,7 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", insId, err, response)
+			return flex.FmtErrorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", insId, err, response)
 		}
 
 		if instance != nil && *instance.Status != "running" {
@@ -566,7 +566,7 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", insId, err, response)
+				return flex.FmtErrorf("[ERROR] Error starting Instance (%s) : %s\n%s", insId, err, response)
 			}
 			_, err = isWaitForInstanceAvailable(instanceC, insId, d.Timeout(schema.TimeoutCreate), d)
 			if err != nil {
@@ -613,21 +613,21 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		volumeProfilePatch, err := volumeProfilePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeProfilePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for volumeProfilePatch: %s", err)
 		}
 		optionsget := &vpcv1.GetVolumeOptions{
 			ID: &volId,
 		}
 		_, response, err = instanceC.GetVolume(optionsget)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Boot Volume (%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Boot Volume (%s): %s\n%s", id, err, response)
 		}
 		eTag := response.Headers.Get("ETag")
 		updateVolumeProfileOptions.IfMatch = &eTag
 		updateVolumeProfileOptions.VolumePatch = volumeProfilePatch
 		_, response, err = instanceC.UpdateVolume(updateVolumeProfileOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating volume profile/iops/userTags: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating volume profile/iops/userTags: %s\n%s", err, response)
 		}
 		isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
 	}
@@ -641,11 +641,11 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		vol, response, err := instanceC.GetVolume(getvolumeoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting Volume (%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Volume (%s): %s\n%s", id, err, response)
 		}
 
 		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].Name == "" {
-			return fmt.Errorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
+			return flex.FmtErrorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
 		}
 
 		getinsOptions := &vpcv1.GetInstanceOptions{
@@ -653,7 +653,7 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", instanceId, err, response)
+			return flex.FmtErrorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", instanceId, err, response)
 		}
 		if instance != nil && *instance.Status != "running" {
 			actiontype := "start"
@@ -663,10 +663,10 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
+				return flex.FmtErrorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
 			}
 			_, err = isWaitForInstanceAvailable(instanceC, instanceId, d.Timeout(schema.TimeoutCreate), d)
-			return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
+			return flex.FmtErrorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
 		}
 		capacity := int64(d.Get(isVolumeCapacity).(int))
 		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
@@ -676,12 +676,12 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		volumeCapacityPatchModel.Capacity = &capacity
 		volumeCapacityPatch, err := volumeCapacityPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for volumeCapacityPatchModel: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for volumeCapacityPatchModel: %s", err)
 		}
 		updateVolumeOptions.VolumePatch = volumeCapacityPatch
 		_, response, err = instanceC.UpdateVolume(updateVolumeOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating volume capacity: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating volume capacity: %s\n%s", err, response)
 		}
 		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -717,12 +717,12 @@ func instanceVolAttDelete(d *schema.ResourceData, meta interface{}, instanceId, 
 
 	_, err = instanceC.DeleteInstanceVolumeAttachment(deleteInstanceVolAttOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while deleting volume attachment (%s) from instance (%s) : %q", id, instanceId, err)
+		return flex.FmtErrorf("[ERROR] Error while deleting volume attachment (%s) from instance (%s) : %q", id, instanceId, err)
 	}
 	_, err = isWaitForInstanceVolumeDetached(instanceC, d, instanceId, id)
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while deleting volume attachment (%s) from instance (%s) on wait : %q", id, instanceId, err)
+		return flex.FmtErrorf("[ERROR] Error while deleting volume attachment (%s) from instance (%s) on wait : %q", id, instanceId, err)
 	}
 	if volDelete {
 		deleteVolumeOptions := &vpcv1.DeleteVolumeOptions{
@@ -730,7 +730,7 @@ func instanceVolAttDelete(d *schema.ResourceData, meta interface{}, instanceId, 
 		}
 		response, err := instanceC.DeleteVolume(deleteVolumeOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while deleting volume : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error while deleting volume : %s\n%s", err, response)
 		}
 		_, err = isWaitForVolumeDeleted(instanceC, volId, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
@@ -787,7 +787,7 @@ func instanceVolAttExists(d *schema.ResourceData, meta interface{}, instanceId, 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Instance volume attachment: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Instance volume attachment: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -801,10 +801,10 @@ func makeTerraformVolAttID(id1, id2 string) string {
 func parseVolAttTerraformID(s string) (string, string, error) {
 	segments := strings.Split(s, "/")
 	if len(segments) != 2 {
-		return "", "", fmt.Errorf("invalid terraform Id %s (incorrect number of segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (incorrect number of segments)", s)
 	}
 	if segments[0] == "" || segments[1] == "" {
-		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
 }

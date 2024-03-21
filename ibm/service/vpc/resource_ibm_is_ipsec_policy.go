@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -234,7 +233,7 @@ func ipsecpCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, e
 	}
 	ipSec, response, err := sess.CreateIpsecPolicy(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] ipSec policy err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] ipSec policy err %s\n%s", err, response)
 	}
 	d.SetId(*ipSec.ID)
 	log.Printf("[INFO] ipSec policy : %s", *ipSec.ID)
@@ -261,7 +260,7 @@ func ipsecpGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
 	d.Set(isIpSecName, *ipSec.Name)
 	d.Set(isIpSecAuthenticationAlg, *ipSec.AuthenticationAlgorithm)
@@ -336,13 +335,13 @@ func ipsecpUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for IPsecPolicyPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for IPsecPolicyPatch: %s", err)
 		}
 		options.IPsecPolicyPatch = ipsecPolicyPatch
 
 		_, response, err := sess.UpdateIpsecPolicy(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on update of IPSEC Policy(%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error on update of IPSEC Policy(%s): %s\n%s", id, err, response)
 		}
 	}
 	return nil
@@ -368,14 +367,14 @@ func ipsecpDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
 	deleteIpsecPolicyOptions := &vpcv1.DeleteIpsecPolicyOptions{
 		ID: &id,
 	}
 	response, err = sess.DeleteIpsecPolicy(deleteIpsecPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting IPSEC Policy(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
 	d.SetId("")
 	return nil
@@ -400,7 +399,7 @@ func ipsecpExists(d *schema.ResourceData, meta interface{}, id string) (bool, er
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting IPSEC Policy(%s): %s\n%s", id, err, response)
 	}
 	return true, nil
 }

@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
@@ -342,7 +341,7 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		}
 		lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Load Balancers %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Load Balancers %s\n%s", err, response)
 		}
 		start = flex.GetNext(lbs.Next)
 		allrecs = append(allrecs, lbs.LoadBalancers...)
@@ -541,5 +540,5 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Load balancer found with name %s", name)
+	return flex.FmtErrorf("[ERROR] No Load balancer found with name %s", name)
 }

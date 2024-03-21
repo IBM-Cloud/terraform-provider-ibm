@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -306,7 +305,7 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		}
 		lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Load Balancers %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Load Balancers %s\n%s", err, response)
 		}
 		start = flex.GetNext(lbs.Next)
 		allrecs = append(allrecs, lbs.LoadBalancers...)

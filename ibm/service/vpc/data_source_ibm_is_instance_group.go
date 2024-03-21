@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -115,7 +114,7 @@ func dataSourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) 
 		}
 		instanceGroupsCollection, response, err := sess.ListInstanceGroups(&listInstanceGroupOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching InstanceGroups %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching InstanceGroups %s\n%s", err, response)
 		}
 		start = flex.GetNext(instanceGroupsCollection.Next)
 		allrecs = append(allrecs, instanceGroupsCollection.InstanceGroups...)
@@ -161,5 +160,5 @@ func dataSourceIBMISInstanceGroupRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 	}
-	return fmt.Errorf("Instance group %s not found", name)
+	return flex.FmtErrorf("Instance group %s not found", name)
 }

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -289,7 +290,7 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Routing table route: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPC Routing table route: %s\n%s", err, response)
 	}
 
 	d.Set(rID, *route.ID)
@@ -308,7 +309,7 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 		}
 	}
 	if err = d.Set("origin", route.Origin); err != nil {
-		return fmt.Errorf("[ERROR] Error setting origin %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting origin %s", err)
 	}
 	if route.Zone != nil {
 		d.Set(rZone, *route.Zone.Name)
@@ -380,7 +381,7 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 	if hasChange {
 		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 		if patchErr != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for VPC Routing Table Route Patch: %s", patchErr)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for VPC Routing Table Route Patch: %s", patchErr)
 		}
 		updateVpcRoutingTableRouteOptions.RoutePatch = routePatchModelAsPatch
 		_, response, err := sess.UpdateVPCRoutingTableRoute(updateVpcRoutingTableRouteOptions)
@@ -418,7 +419,7 @@ func resourceIBMISVPCRoutingTableRouteExists(d *schema.ResourceData, meta interf
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) != 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID/routeID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID/routeID", d.Id())
 	}
 	getVpcRoutingTableRouteOptions := sess.NewGetVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2])
 	_, response, err := sess.GetVPCRoutingTableRoute(getVpcRoutingTableRouteOptions)
@@ -427,7 +428,7 @@ func resourceIBMISVPCRoutingTableRouteExists(d *schema.ResourceData, meta interf
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting VPC Routing table route : %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting VPC Routing table route : %s\n%s", err, response)
 	}
 	return true, nil
 }

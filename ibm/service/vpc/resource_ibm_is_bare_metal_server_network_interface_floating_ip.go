@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -132,7 +133,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpCreate(context contex
 
 	fip, response, err := sess.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil || fip == nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface (%s) floating ip (%s) err %s\n%s", bareMetalServerId, bareMetalServerNicId, bareMetalServerNicFipId, err, response))
+		return diag.FromErr(flex.FmtErrorf("[DEBUG] Create bare metal server (%s) network interface (%s) floating ip (%s) err %s\n%s", bareMetalServerId, bareMetalServerNicId, bareMetalServerNicFipId, err, response))
 	}
 	d.SetId(MakeTerraformNICFipID(bareMetalServerId, bareMetalServerNicId, *fip.ID))
 	err = bareMetalServerNICFipGet(d, fip, bareMetalServerId, bareMetalServerNicId)
@@ -165,7 +166,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpRead(context context.
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerId, nicID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) network interface (%s): %s\n%s", bareMetalServerId, nicID, err, response))
 	}
 	err = bareMetalServerNICFipGet(d, fip, bareMetalServerId, nicID)
 	if err != nil {
@@ -216,7 +217,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceFloatingIpUpdate(context contex
 
 		fip, response, err := sess.AddBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response))
 		}
 		d.SetId(MakeTerraformNICFipID(bareMetalServerId, nicId, *fip.ID))
 		return diag.FromErr(bareMetalServerNICFipGet(d, fip, bareMetalServerId, nicId))
@@ -254,7 +255,7 @@ func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) network interface(%s) Floating Ip(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) network interface(%s) Floating Ip(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
 	}
 
 	options := &vpcv1.RemoveBareMetalServerNetworkInterfaceFloatingIPOptions{
@@ -264,7 +265,7 @@ func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema
 	}
 	response, err = sess.RemoveBareMetalServerNetworkInterfaceFloatingIPWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Bare Metal Server (%s) network interface (%s) Floating Ip(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Bare Metal Server (%s) network interface (%s) Floating Ip(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
 	}
 	_, err = isWaitForBareMetalServerNetworkInterfaceFloatingIpDeleted(sess, bareMetalServerId, nicId, fipId, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -302,7 +303,7 @@ func isBareMetalServerNetworkInterfaceFloatingIpDeleteRefreshFunc(bmsC *vpcv1.Vp
 			if response != nil && response.StatusCode == 404 {
 				return fip, isBareMetalServerNetworkInterfaceFloatingIpDeleted, nil
 			}
-			return fip, isBareMetalServerNetworkInterfaceFloatingIpFailed, fmt.Errorf("[ERROR] Error getting Bare Metal Server(%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
+			return fip, isBareMetalServerNetworkInterfaceFloatingIpFailed, flex.FmtErrorf("[ERROR] Error getting Bare Metal Server(%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
 		}
 		return fip, isBareMetalServerNetworkInterfaceFloatingIpDeleting, err
 	}
@@ -331,7 +332,7 @@ func isBareMetalServerNetworkInterfaceFloatingIpRefreshFunc(client *vpcv1.VpcV1,
 		}
 		fip, response, err := client.GetBareMetalServerNetworkInterfaceFloatingIP(getBmsNicFloatingIpOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) Network Interface (%s) FloatingIp(%s) : %s\n%s", bareMetalServerId, nicId, fipId, err, response)
 		}
 		status := ""
 
@@ -364,10 +365,10 @@ func MakeTerraformNICFipID(id1, id2, id3 string) string {
 func ParseNICFipTerraformID(s string) (string, string, string, error) {
 	segments := strings.Split(s, "/")
 	if len(segments) != 3 {
-		return "", "", "", fmt.Errorf("invalid terraform Id %s (incorrect number of segments)", s)
+		return "", "", "", flex.FmtErrorf("invalid terraform Id %s (incorrect number of segments)", s)
 	}
 	if segments[0] == "" || segments[1] == "" || segments[2] == "" {
-		return "", "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
+		return "", "", "", flex.FmtErrorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], segments[2], nil
 }

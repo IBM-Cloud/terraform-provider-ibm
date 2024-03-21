@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"time"
 
@@ -221,7 +220,7 @@ func dataSourceIBMISBareMetalServerNetworkInterfacesRead(context context.Context
 	nics := []vpcv1.BareMetalServerNetworkInterfaceIntf{}
 	bmsNics, response, err := sess.ListBareMetalServerNetworkInterfacesWithContext(context, options)
 	if err != nil || bmsNics == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error listing Bare Metal Server (%s) network interfaces : %s\n%s", bareMetalServerID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error listing Bare Metal Server (%s) network interfaces : %s\n%s", bareMetalServerID, err, response))
 	}
 	nics = append(nics, bmsNics.NetworkInterfaces...)
 	nicsInfo := make([]map[string]interface{}, 0)

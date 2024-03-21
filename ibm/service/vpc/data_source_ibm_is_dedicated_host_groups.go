@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -215,11 +214,11 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 		d.SetId(dataSourceIbmIsDedicatedHostGroupsID(d))
 		err = d.Set("host_groups", dataSourceDedicatedHostGroupCollectionFlattenGroups(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting groups %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting groups %s", err))
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting total_count: %s", err))
 		}
 
 	}

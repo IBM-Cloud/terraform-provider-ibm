@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -466,11 +465,11 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 
 		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(allrecs, meta))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting dedicated_hosts %s", err))
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting total_count: %s", err))
 		}
 	}
 	return nil

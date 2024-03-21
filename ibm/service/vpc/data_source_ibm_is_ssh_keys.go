@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -148,7 +147,7 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 		keyCollection, response, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
 		if err != nil || keyCollection == nil {
 			log.Printf("[DEBUG] ListKeysWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListKeysWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListKeysWithContext failed %s\n%s", err, response))
 		}
 
 		start = flex.GetNext(keyCollection.Next)
@@ -163,7 +162,7 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 	d.SetId(dataSourceIBMIsSshKeysID(d))
 	err = d.Set(isKeys, dataSourceKeyCollectionFlattenKeys(allrecs, d, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting keys %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting keys %s", err))
 	}
 
 	return nil

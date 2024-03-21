@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -296,7 +295,7 @@ func dataSourceIBMIsRouteCreatorToMap(model vpcv1.RouteCreatorIntf) (map[string]
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("[Error] unrecognized vpcv1.RouteCreatorIntf subtype encountered")
+		return nil, flex.FmtErrorf("[Error] unrecognized vpcv1.RouteCreatorIntf subtype encountered")
 	}
 }
 

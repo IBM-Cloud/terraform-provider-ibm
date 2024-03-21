@@ -4,11 +4,11 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -215,7 +215,7 @@ func resourceIBMISSubnetNetworkACLAttachmentCreate(d *schema.ResourceData, meta 
 
 	if err != nil {
 		log.Printf("[DEBUG] Error while attaching a network ACL to a subnet %s\n%s", err, response)
-		return fmt.Errorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
 	}
 	d.SetId(subnet)
 	log.Printf("[INFO] Network ACL : %s", *resultACL.ID)
@@ -241,7 +241,7 @@ func resourceIBMISSubnetNetworkACLAttachmentRead(d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting subnet's (%s) attached network ACL: %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting subnet's (%s) attached network ACL: %s\n%s", id, err, response)
 	}
 	d.Set(isNetworkACLName, *nwacl.Name)
 	d.Set(isNetworkACLCRN, *nwacl.CRN)
@@ -356,7 +356,7 @@ func resourceIBMISSubnetNetworkACLAttachmentUpdate(d *schema.ResourceData, meta 
 
 		if err != nil {
 			log.Printf("[DEBUG] Error while attaching a network ACL to a subnet %s\n%s", err, response)
-			return fmt.Errorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
 		}
 		log.Printf("[INFO] Updated subnet %s with Network ACL : %s", subnet, *resultACL.ID)
 
@@ -383,7 +383,7 @@ func resourceIBMISSubnetNetworkACLAttachmentDelete(d *schema.ResourceData, meta 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
 	}
 	// Fetch VPC
 	vpcID := *subnet.VPC.ID
@@ -397,7 +397,7 @@ func resourceIBMISSubnetNetworkACLAttachmentDelete(d *schema.ResourceData, meta 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting VPC : %s\n%s", err, response)
 	}
 
 	// Fetch default network ACL
@@ -415,7 +415,7 @@ func resourceIBMISSubnetNetworkACLAttachmentDelete(d *schema.ResourceData, meta 
 
 		if err != nil {
 			log.Printf("[DEBUG] Error while attaching a network ACL to a subnet %s\n%s", err, response)
-			return fmt.Errorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error while attaching a network ACL to a subnet %s\n%s", err, response)
 		}
 		log.Printf("[INFO] Updated subnet %s with VPC default Network ACL : %s", id, *resultACL.ID)
 	} else {
@@ -440,7 +440,7 @@ func resourceIBMISSubnetNetworkACLAttachmentExists(d *schema.ResourceData, meta 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting subnet's attached network ACL: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting subnet's attached network ACL: %s\n%s", err, response)
 	}
 	return true, nil
 }

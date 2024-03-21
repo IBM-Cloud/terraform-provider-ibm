@@ -390,7 +390,7 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 	d.Set("mount_target", *shareTarget.ID)
 	if shareTarget.VPC != nil && shareTarget.VPC.ID != nil {
 		if err = d.Set("vpc", *shareTarget.VPC.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 		}
 	}
 	if shareTarget.VirtualNetworkInterface != nil {
@@ -401,29 +401,29 @@ func resourceIBMIsShareMountTargetRead(context context.Context, d *schema.Resour
 		d.Set("virtual_network_interface", vniList)
 	}
 	if err = d.Set("name", *shareTarget.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	if shareTarget.TransitEncryption != nil {
 		if err = d.Set("transit_encryption", *shareTarget.TransitEncryption); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting transit_encryption: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting transit_encryption: %s", err))
 		}
 	}
 
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("href", shareTarget.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", shareTarget.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("mount_path", shareTarget.MountPath); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mount_path: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting mount_path: %s", err))
 	}
 	if err = d.Set("resource_type", shareTarget.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	return nil
@@ -512,7 +512,7 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 				}
 				_, response, err := vpcClient.CreateSecurityGroupTargetBinding(createsgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error while creating security group %q for virtual network interface of share mount target %s\n%s: %q", add[i], d.Id(), err, response))
 				}
 				_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
@@ -534,7 +534,7 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 				}
 				response, err := vpcClient.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error while removing security group %q for virtual network interface of share mount target %s\n%s: %q", remove[i], d.Id(), err, response))
 				}
 				_, err = WaitForVNIAvailable(vpcClient, networkID, d, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
@@ -571,16 +571,16 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		}
 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err))
 		}
 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 		_, response, err := vpcClient.UpdateSubnetReservedIP(updateripoptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response))
 		}
 		_, err = isWaitForReservedIpAvailable(sess, subnetId, ripId, d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error waiting for the reserved IP to be available: %s", err))
 		}
 	}
 
@@ -660,7 +660,7 @@ func mountTargetRefresh(context context.Context, vpcClient *vpcv1.VpcV1, shareid
 
 		target, response, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting target: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("Error Getting target: %s\n%s", err, response)
 		}
 		d.Set("lifecycle_state", *target.LifecycleState)
 		if *target.LifecycleState == "stable" || *target.LifecycleState == "failed" {
@@ -688,10 +688,10 @@ func isWaitForMountTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1,
 				if response != nil && response.StatusCode == 404 {
 					return target, "done", nil
 				}
-				return nil, "", fmt.Errorf("Error Getting Target: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("Error Getting Target: %s\n%s", err, response)
 			}
 			if *target.LifecycleState == isInstanceFailed {
-				return target, *target.LifecycleState, fmt.Errorf("The  target %s failed to delete: %v", targetid, err)
+				return target, *target.LifecycleState, flex.FmtErrorf("The  target %s failed to delete: %v", targetid, err)
 			}
 			return target, "deleting", nil
 		},
@@ -808,7 +808,7 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 		reservedIpName := primaryIpMap["name"].(string)
 
 		if reservedIp != "" && (reservedIpAddress != "" || reservedIpName != "") {
-			return vniPrototype, fmt.Errorf("[ERROR] Error creating instance, virtual_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return vniPrototype, flex.FmtErrorf("[ERROR] Error creating instance, virtual_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primaryIpPrototype.ID = &reservedIp
@@ -874,10 +874,10 @@ func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *s
 				if response != nil && response.StatusCode == 404 {
 					return target, "done", nil
 				}
-				return nil, "", fmt.Errorf("Error Getting Target: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("Error Getting Target: %s\n%s", err, response)
 			}
 			if *target.LifecycleState == isInstanceFailed {
-				return target, *target.LifecycleState, fmt.Errorf("The  target %s failed to delete: %v", targetid, err)
+				return target, *target.LifecycleState, flex.FmtErrorf("The  target %s failed to delete: %v", targetid, err)
 			}
 			return target, "deleting", nil
 		},
@@ -911,11 +911,11 @@ func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData
 		}
 		vni, response, err := vpcClient.GetVirtualNetworkInterface(getVNIOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting virtual network interface : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting virtual network interface : %s\n%s", err, response)
 		}
 
 		if *vni.LifecycleState == "failed" {
-			return vni, *vni.LifecycleState, fmt.Errorf(" Virtualk Network Interface creating failed with status %s ", *vni.LifecycleState)
+			return vni, *vni.LifecycleState, flex.FmtErrorf(" Virtualk Network Interface creating failed with status %s ", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil
 	}
@@ -945,7 +945,7 @@ func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, sha
 
 		target, response, err := vpcClient.GetShareMountTargetWithContext(context, shareTargetOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("Error Getting target: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("Error Getting target: %s\n%s", err, response)
 		}
 		d.Set("lifecycle_state", *target.LifecycleState)
 		if *target.LifecycleState == "stable" || *target.LifecycleState == "failed" {

@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -144,7 +144,7 @@ func resourceIBMISSubnetRoutingTableAttachmentCreate(context context.Context, d 
 
 	if err != nil {
 		log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
 	}
 	d.SetId(subnet)
 	log.Printf("[INFO] Routing Table : %s", *resultRT.ID)
@@ -170,7 +170,7 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting subnet's (%s) attached routing table: %s\n%s", id, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting subnet's (%s) attached routing table: %s\n%s", id, err, response))
 	}
 	d.Set(isRoutingTableName, *subRT.Name)
 	d.Set(isSubnetID, id)
@@ -225,7 +225,7 @@ func resourceIBMISSubnetRoutingTableAttachmentUpdate(context context.Context, d 
 
 		if err != nil {
 			log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
 		}
 		log.Printf("[INFO] Updated subnet %s with Routing Table : %s", subnet, *resultRT.ID)
 
@@ -252,7 +252,7 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response))
 	}
 	// Fetch VPC
 	vpcID := *subnet.VPC.ID
@@ -266,7 +266,7 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting VPC : %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting VPC : %s\n%s", err, response))
 	}
 
 	// Fetch default routing table
@@ -284,7 +284,7 @@ func resourceIBMISSubnetRoutingTableAttachmentDelete(context context.Context, d 
 
 		if err != nil {
 			log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
 		}
 		log.Printf("[INFO] Updated subnet %s with VPC default Routing Table : %s", id, *resultRT.ID)
 	} else {

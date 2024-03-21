@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -191,7 +190,7 @@ func resourceIbmIsPlacementGroupCreate(context context.Context, d *schema.Resour
 
 	_, err = isWaitForPlacementGroupAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for placement group to be available %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error waiting for placement group to be available %s", err))
 	}
 	if _, ok := d.GetOk(isPlacementGroupTags); ok {
 		oldList, newList := d.GetChange(isPlacementGroupTags)
@@ -236,30 +235,30 @@ func resourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resource
 	}
 
 	if err = d.Set("strategy", placementGroup.Strategy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting strategy: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting strategy: %s", err))
 	}
 	if err = d.Set("name", placementGroup.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if placementGroup.ResourceGroup != nil {
 		if err = d.Set("resource_group", *placementGroup.ResourceGroup.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group: %s", err))
 		}
 	}
 	if err = d.Set("created_at", placementGroup.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", placementGroup.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 	}
 	if err = d.Set("href", placementGroup.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", placementGroup.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("resource_type", placementGroup.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *placementGroup.CRN, "", isUserTagType)
 	if err != nil {
@@ -344,10 +343,10 @@ func resourceIbmIsPlacementGroupDelete(context context.Context, d *schema.Resour
 		if response.StatusCode == 409 {
 			_, err = isWaitForPlacementGroupDeleteRetry(vpcClient, d, d.Id())
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error deleting PLacementGroup: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error deleting PLacementGroup: %s", err))
 			}
 		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error deleting PLacementGroup: %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error deleting PLacementGroup: %s\n%s", err, response))
 		}
 	}
 	_, err = isWaitForPlacementGroupDelete(vpcClient, d, d.Id())
@@ -374,12 +373,12 @@ func isWaitForPlacementGroupDelete(vpcClient *vpcv1.VpcV1, d *schema.ResourceDat
 				if response != nil && response.StatusCode == 404 {
 					return placementGroup, isPlacementGroupDeleteDone, nil
 				} else if response != nil && response.StatusCode == 409 {
-					return placementGroup, *placementGroup.LifecycleState, fmt.Errorf("[ERROR] The  PLacementGroup %s failed to delete: %v", id, err)
+					return placementGroup, *placementGroup.LifecycleState, flex.FmtErrorf("[ERROR] The  PLacementGroup %s failed to delete: %v", id, err)
 				}
-				return nil, "", fmt.Errorf("[ERROR] Error Getting PLacementGroup: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error Getting PLacementGroup: %s\n%s", err, response)
 			}
 			if *placementGroup.LifecycleState == isPlacementGroupFailed {
-				return placementGroup, *placementGroup.LifecycleState, fmt.Errorf("[ERROR] The  PLacementGroup %s failed to delete: %v", id, err)
+				return placementGroup, *placementGroup.LifecycleState, flex.FmtErrorf("[ERROR] The  PLacementGroup %s failed to delete: %v", id, err)
 			}
 			return placementGroup, isPlacementGroupDeleting, nil
 		},
@@ -408,7 +407,7 @@ func isWaitForPlacementGroupDeleteRetry(vpcClient *vpcv1.VpcV1, d *schema.Resour
 				} else if response != nil && response.StatusCode == 404 {
 					return response, isPlacementGroupDeleteDone, nil
 				}
-				return response, "", fmt.Errorf("[ERROR] Error deleting PLacementGroup: %s\n%s", err, response)
+				return response, "", flex.FmtErrorf("[ERROR] Error deleting PLacementGroup: %s\n%s", err, response)
 			}
 			return response, isPlacementGroupDeleting, nil
 		},
@@ -442,14 +441,14 @@ func isPlacementGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.Re
 		}
 		placementGroup, response, err := vpcClient.GetPlacementGroup(getinsOptions)
 		if placementGroup == nil || err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting placementGroup : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting placementGroup : %s\n%s", err, response)
 		}
 
 		d.Set("lifecycle_state", *placementGroup.LifecycleState)
 
 		if *placementGroup.LifecycleState == isPlacementGroupSuspended || *placementGroup.LifecycleState == isPlacementGroupFailed {
 
-			return placementGroup, *placementGroup.LifecycleState, fmt.Errorf("status of placement group is %s : \n%s", *placementGroup.LifecycleState, response)
+			return placementGroup, *placementGroup.LifecycleState, flex.FmtErrorf("status of placement group is %s : \n%s", *placementGroup.LifecycleState, response)
 
 		}
 		return placementGroup, *placementGroup.LifecycleState, nil

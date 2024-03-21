@@ -5,11 +5,11 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -155,7 +155,7 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		capacityMap := dataSourceShareProfileCapacityToMap(*capacity)
 		capacityList = append(capacityList, capacityMap)
 		if err = d.Set("capacity", capacityList); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting capacity: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting capacity: %s", err))
 		}
 	}
 	if shareProfile.Iops != nil {
@@ -164,18 +164,18 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		iopsMap := dataSourceShareProfileIopsToMap(*iops)
 		iopsList = append(iopsList, iopsMap)
 		if err = d.Set("iops", iopsList); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting iops: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting iops: %s", err))
 		}
 	}
 	d.SetId(*shareProfile.Name)
 	if err = d.Set("family", shareProfile.Family); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting family: %s", err))
 	}
 	if err = d.Set("href", shareProfile.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("resource_type", shareProfile.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	return nil

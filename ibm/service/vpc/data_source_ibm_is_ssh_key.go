@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -128,7 +127,7 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 
 		keys, response, err := sess.ListKeys(listKeysOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching Keys %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching Keys %s\n%s", err, response)
 		}
 		start = flex.GetNext(keys.Next)
 		allrecs = append(allrecs, keys.Keys...)
@@ -173,5 +172,5 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No SSH Key found with name %s", name)
+	return flex.FmtErrorf("[ERROR] No SSH Key found with name %s", name)
 }

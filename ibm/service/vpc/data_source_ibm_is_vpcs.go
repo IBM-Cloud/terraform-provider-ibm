@@ -7,7 +7,6 @@ import (
 	//"encoding/json"
 
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"time"
@@ -618,7 +617,7 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			}
 			s, response, err := sess.ListSubnetsWithContext(context, options)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error fetching subnets %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching subnets %s\n%s", err, response))
 			}
 			startSub = flex.GetNext(s.Next)
 			allrecsSub = append(allrecsSub, s.Subnets...)
@@ -659,7 +658,7 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			}
 			sgs, response, err := sess.ListSecurityGroupsWithContext(context, listSgOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error fetching Security Groups %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching Security Groups %s\n%s", err, response))
 			}
 			if *sgs.TotalCount == int64(0) {
 				break

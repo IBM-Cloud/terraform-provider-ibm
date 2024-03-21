@@ -10,7 +10,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -128,7 +127,7 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 
 	initialization, response, err := sess.GetBareMetalServerInitializationWithContext(context, options)
 	if err != nil || initialization == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) initialization : %s\n%s", bareMetalServerID, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) initialization : %s\n%s", bareMetalServerID, err, response))
 	}
 	d.SetId(bareMetalServerID)
 	if initialization.Image != nil {
@@ -165,14 +164,14 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err))
 					}
 					isEncrypted := false
 					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err))
 						}
 					} else {
 						isEncrypted = x509.IsEncryptedPEMBlock(block)
@@ -183,24 +182,24 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 						if pass, ok := d.GetOk(isBareMetalServerPassphrase); ok {
 							passphrase = pass.(string)
 						} else {
-							return diag.FromErr(fmt.Errorf("[ERROR] Mandatory field 'passphrase' not provided"))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Mandatory field 'passphrase' not provided"))
 						}
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, []byte(passphrase))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Fail to decrypting the private key: %s", err))
 						}
 					} else {
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, nil)
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Fail to decrypting the private key: %s", err))
 						}
 					}
 					var ok bool
 					rsaKey, ok = privateKey.(*rsa.PrivateKey)
 					if !ok {
-						return diag.FromErr(fmt.Errorf("[ERROR] Failed to convert to RSA private key"))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Failed to convert to RSA private key"))
 					}
 				}
 			}
@@ -212,7 +211,7 @@ func dataSourceIBMISBareMetalServerInitializationRead(context context.Context, d
 					rng := rand.Reader
 					clearPassword, err := rsa.DecryptPKCS1v15(rng, rsaKey, ciphertext)
 					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Can not decrypt the password with the given key, %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Can not decrypt the password with the given key, %s", err))
 					}
 					password = string(clearPassword)
 				}

@@ -216,7 +216,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 		rt, response, err := vpcClient.GetVPCRoutingTableWithContext(context, getVPCRoutingTableOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetVPCRoutingTableWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] GetVPCRoutingTableWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPCRoutingTableWithContext failed %s\n%s", err, response))
 		}
 		routingTable = rt
 	} else {
@@ -232,7 +232,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 			result, detail, err := vpcClient.ListVPCRoutingTables(listOptions)
 			if err != nil {
 				log.Printf("[ERROR] Error reading list of VPC Routing Tables:%s\n%s", err, detail)
-				return diag.FromErr(fmt.Errorf("[ERROR] ListVPCRoutingTables failed %s\n%s", err, detail))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] ListVPCRoutingTables failed %s\n%s", err, detail))
 			}
 			start = flex.GetNext(result.Next)
 			allrecs = append(allrecs, result.RoutingTables...)
@@ -253,7 +253,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 	d.SetId(*routingTable.ID)
 
 	if err = d.Set(rtCreateAt, flex.DateTimeToString(routingTable.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	acceptRoutesFromInfo := make([]map[string]interface{}, 0)
 	if routingTable.AcceptRoutesFrom != nil {
@@ -266,50 +266,50 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 		}
 	}
 	if err = d.Set(isRoutingTableAcceptRoutesFrom, acceptRoutesFromInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting accept_routes_from %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting accept_routes_from %s", err))
 	}
 
 	if err = d.Set(isRoutingTableID, routingTable.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting routing_table: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting routing_table: %s", err))
 	}
 
 	if err = d.Set(rtHref, routingTable.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 
 	if err = d.Set(rtIsDefault, routingTable.IsDefault); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting is_default: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting is_default: %s", err))
 	}
 
 	if err = d.Set(rtLifecycleState, routingTable.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 
 	if err = d.Set(rName, routingTable.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 
 	if err = d.Set(rtResourceType, routingTable.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 
 	if err = d.Set(rtRouteDirectLinkIngress, routingTable.RouteDirectLinkIngress); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_direct_link_ingress: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting route_direct_link_ingress: %s", err))
 	}
 
 	if err = d.Set(rtRouteInternetIngress, routingTable.RouteInternetIngress); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_internet_ingress: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting route_internet_ingress: %s", err))
 	}
 	if err = d.Set(rtRouteTransitGatewayIngress, routingTable.RouteTransitGatewayIngress); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_transit_gateway_ingress: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting route_transit_gateway_ingress: %s", err))
 	}
 
 	if err = d.Set(rtRouteVPCZoneIngress, routingTable.RouteVPCZoneIngress); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting route_vpc_zone_ingress: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting route_vpc_zone_ingress: %s", err))
 	}
 
 	if err = d.Set("advertise_routes_to", routingTable.AdvertiseRoutesTo); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting value of advertise_routes_to: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting value of advertise_routes_to: %s", err))
 	}
 	routes := []map[string]interface{}{}
 	if routingTable.Routes != nil {
@@ -322,7 +322,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 		}
 	}
 	if err = d.Set(rtRoutes, routes); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting routes %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting routes %s", err))
 	}
 
 	subnets := []map[string]interface{}{}
@@ -336,7 +336,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 		}
 	}
 	if err = d.Set(rtSubnets, subnets); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnets %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting subnets %s", err))
 	}
 
 	return nil

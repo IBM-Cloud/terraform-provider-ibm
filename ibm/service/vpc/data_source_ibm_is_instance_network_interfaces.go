@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -282,7 +281,7 @@ func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *sc
 
 		instances, response, err := vpcClient.ListInstances(listInstancesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error Fetching Instances %s\n%s", err, response))
 		}
 		start = flex.GetNext(instances.Next)
 		allrecs = append(allrecs, instances.Instances...)
@@ -302,7 +301,7 @@ func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *sc
 
 			if err != nil {
 				log.Printf("[DEBUG] ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response))
 			}
 
 			d.SetId(ins_id)
@@ -310,14 +309,14 @@ func dataSourceIBMIsInstanceNetworkInterfacesRead(context context.Context, d *sc
 			if networkInterfaceCollection.NetworkInterfaces != nil {
 				err = d.Set("network_interfaces", dataSourceNetworkInterfaceCollectionFlattenNetworkInterfaces(networkInterfaceCollection.NetworkInterfaces))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting network_interfaces %s", err))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting network_interfaces %s", err))
 				}
 			}
 			return nil
 		}
 	}
 
-	return diag.FromErr(fmt.Errorf("Instance %s not found. %s", instance_name, err))
+	return diag.FromErr(flex.FmtErrorf("Instance %s not found. %s", instance_name, err))
 }
 
 // dataSourceIBMIsInstanceNetworkInterfacesID returns a reasonable ID for the list.

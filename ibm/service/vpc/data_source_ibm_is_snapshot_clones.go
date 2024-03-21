@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -84,7 +83,7 @@ func getSnapshotClones(context context.Context, d *schema.ResourceData, meta int
 
 	clonesCollection, response, err := sess.ListSnapshotClonesWithContext(context, listSnapshotClonesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching snapshot(%s) clones %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching snapshot(%s) clones %s\n%s", id, err, response)
 	}
 	clones := clonesCollection.Clones
 

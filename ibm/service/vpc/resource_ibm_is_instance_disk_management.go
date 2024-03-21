@@ -4,8 +4,7 @@
 package vpc
 
 import (
-	"fmt"
-
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -93,13 +92,13 @@ func resourceIBMisInstanceDiskManagementCreate(d *schema.ResourceData, meta inte
 
 		instanceDiskPatch, err := instanceDiskPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceDiskPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceDiskPatch: %s", err)
 		}
 		updateInstanceDiskOptions.SetInstanceDiskPatch(instanceDiskPatch)
 
 		_, response, err := sess.UpdateInstanceDisk(updateInstanceDiskOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling UpdateInstanceDisk: %s %s", err, response)
+			return flex.FmtErrorf("[ERROR] Error calling UpdateInstanceDisk: %s %s", err, response)
 		}
 
 	}
@@ -131,13 +130,13 @@ func resourceIBMisInstanceDiskManagementUpdate(d *schema.ResourceData, meta inte
 
 			instanceDiskPatch, err := instanceDiskPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch for InstanceDiskPatch: %s", err)
+				return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceDiskPatch: %s", err)
 			}
 			updateInstanceDiskOptions.SetInstanceDiskPatch(instanceDiskPatch)
 
 			_, _, err = sess.UpdateInstanceDisk(updateInstanceDiskOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating instance disk: %s", err)
+				return flex.FmtErrorf("[ERROR] Error updating instance disk: %s", err)
 			}
 
 		}

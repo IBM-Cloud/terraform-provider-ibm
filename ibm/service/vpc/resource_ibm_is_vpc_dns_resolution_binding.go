@@ -265,7 +265,7 @@ func resourceIBMIsVPCDnsResolutionBindingCreate(context context.Context, d *sche
 	vpcdnsResolutionBinding, response, err := sess.CreateVPCDnsResolutionBindingWithContext(context, createVPCDnsResolutionBindingOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("CreateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
 	}
 	d.SetId(MakeTerraformVPCDNSID(spokeVPCID, *vpcdnsResolutionBinding.ID))
 
@@ -293,7 +293,7 @@ func resourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *schema
 	if err != nil {
 		log.Printf("[DEBUG] GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
 		if response.StatusCode != 404 {
-			return diag.FromErr(fmt.Errorf("GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
 		} else {
 			d.SetId("")
 			return nil
@@ -307,7 +307,7 @@ func resourceIBMIsVPCDnsResolutionBindingRead(context context.Context, d *schema
 }
 func resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding *vpcv1.VpcdnsResolutionBinding, d *schema.ResourceData) error {
 	if err := d.Set("created_at", flex.DateTimeToString(vpcdnsResolutionBinding.CreatedAt)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting created_at: %s", err)
 	}
 
 	endpointGateways := []map[string]interface{}{}
@@ -321,23 +321,23 @@ func resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding *vpcv1.Vpcd
 		}
 	}
 	if err := d.Set("endpoint_gateways", endpointGateways); err != nil {
-		return fmt.Errorf("[ERROR] Error setting endpoint_gateways %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting endpoint_gateways %s", err)
 	}
 
 	if err := d.Set("href", vpcdnsResolutionBinding.Href); err != nil {
-		return fmt.Errorf("[ERROR] Error setting href: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting href: %s", err)
 	}
 
 	if err := d.Set("lifecycle_state", vpcdnsResolutionBinding.LifecycleState); err != nil {
-		return fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err)
 	}
 
 	if err := d.Set("name", vpcdnsResolutionBinding.Name); err != nil {
-		return fmt.Errorf("[ERROR] Error setting name: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting name: %s", err)
 	}
 
 	if err := d.Set("resource_type", vpcdnsResolutionBinding.ResourceType); err != nil {
-		return fmt.Errorf("[ERROR] Error setting resource_type: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err)
 	}
 
 	vpc := []map[string]interface{}{}
@@ -349,7 +349,7 @@ func resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding *vpcv1.Vpcd
 		vpc = append(vpc, modelMap)
 	}
 	if err := d.Set("vpc", vpc); err != nil {
-		return fmt.Errorf("[ERROR] Error setting vpc %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting vpc %s", err)
 	}
 	return nil
 }
@@ -380,7 +380,7 @@ func resourceIBMIsVPCDnsResolutionBindingUpdate(context context.Context, d *sche
 		vpcdnsResolutionBinding, response, err := sess.UpdateVPCDnsResolutionBindingWithContext(context, updateVPCDnsResolutionBindingOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("UpdateVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
 		}
 		err = resourceIBMIsVPCDnsResolutionBindingGet(vpcdnsResolutionBinding, d)
 		if err != nil {
@@ -408,7 +408,7 @@ func resourceIBMIsVPCDnsResolutionBindingDelete(context context.Context, d *sche
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response)
 		if response.StatusCode != 404 {
-			return diag.FromErr(fmt.Errorf("DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("DeleteVPCDnsResolutionBindingWithContext failed %s\n%s", err, response))
 		}
 	}
 	d.SetId("")
@@ -423,10 +423,10 @@ func MakeTerraformVPCDNSID(id1, id2 string) string {
 func ParseVPCDNSTerraformID(s string) (string, string, error) {
 	segments := strings.Split(s, "/")
 	if len(segments) != 2 {
-		return "", "", fmt.Errorf("invalid terraform Id %s (incorrect number of segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (incorrect number of segments)", s)
 	}
 	if segments[0] == "" || segments[1] == "" {
-		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
 }

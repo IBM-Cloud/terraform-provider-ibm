@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -379,11 +378,11 @@ func dataSourceIbmIsDedicatedHostProfilesRead(context context.Context, d *schema
 
 		err = d.Set("profiles", dataSourceDedicatedHostProfileCollectionFlattenProfiles(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting profiles %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting profiles %s", err))
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting total_count: %s", err))
 		}
 	}
 	return nil

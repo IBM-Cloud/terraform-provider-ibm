@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -239,7 +238,7 @@ func ikepCreate(d *schema.ResourceData, meta interface{}, authenticationAlg, enc
 	}
 	ike, response, err := sess.CreateIkePolicy(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] ike policy err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] ike policy err %s\n%s", err, response)
 	}
 	d.SetId(*ike.ID)
 	log.Printf("[INFO] ike policy : %s", *ike.ID)
@@ -266,7 +265,7 @@ func ikepGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting IKE Policy(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
 
 	d.Set(isIKEName, *ike.Name)
@@ -340,13 +339,13 @@ func ikepUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 		ikePolicyPatchModel.IkeVersion = &ikeVersion
 		ikePolicyPatch, err := ikePolicyPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for IkePolicyPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for IkePolicyPatch: %s", err)
 		}
 		options.IkePolicyPatch = ikePolicyPatch
 
 		_, response, err := sess.UpdateIkePolicy(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on update of IKE Policy(%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error on update of IKE Policy(%s): %s\n%s", id, err, response)
 		}
 	}
 	return nil
@@ -372,7 +371,7 @@ func ikepDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting IKE Policy(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
 
 	deleteIkePolicyOptions := &vpcv1.DeleteIkePolicyOptions{
@@ -380,7 +379,7 @@ func ikepDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteIkePolicy(deleteIkePolicyOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting IKE Policy(%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting IKE Policy(%s): %s\n%s", id, err, response)
 	}
 	d.SetId("")
 	return nil
@@ -405,7 +404,7 @@ func ikepExists(d *schema.ResourceData, meta interface{}, id string) (bool, erro
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting IKE Policy(%s): %s\n%s", id, err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting IKE Policy(%s): %s\n%s", id, err, response)
 	}
 
 	return true, nil

@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -1114,7 +1113,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			}
 			instanceGroupsCollection, response, err := sess.ListInstanceGroups(&listInstanceGroupOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching InstanceGroups %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Fetching InstanceGroups %s\n%s", err, response)
 			}
 			start = flex.GetNext(instanceGroupsCollection.Next)
 			allrecs = append(allrecs, instanceGroupsCollection.InstanceGroups...)
@@ -1174,7 +1173,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 
 		instances, response, err := sess.ListInstances(listInstancesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Instances %s\n%s", err, response)
 		}
 		start = flex.GetNext(instances.Next)
 		allrecs = append(allrecs, instances.Instances...)
@@ -1195,7 +1194,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			}
 			instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
 			}
 
 			start = flex.GetNext(instanceGroupMembershipCollection.Next)
@@ -1376,7 +1375,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			}
 			insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 			}
 			currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 			if len(insnic.SecurityGroups) != 0 {
@@ -1437,7 +1436,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 					}
 					insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+						return flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 					}
 					currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 					if len(insnic.SecurityGroups) != 0 {

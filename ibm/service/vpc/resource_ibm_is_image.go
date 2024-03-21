@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -360,7 +359,7 @@ func imgCreateByFile(d *schema.ResourceData, meta interface{}, href, name, opera
 	}
 	image, response, err := sess.CreateImage(options)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Image creation err %s\n%s", err, response)
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
@@ -404,14 +403,14 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	}
 	vol, response, err := sess.GetVolume(options)
 	if err != nil || vol == nil {
-		return fmt.Errorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volume, err, response)
+		return flex.FmtErrorf("[ERROR] Error retrieving Volume (%s) details: %s\n%s", volume, err, response)
 	}
 	if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 {
-		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance", volume)
+		return flex.FmtErrorf("[ERROR] Error creating Image because the specified source_volume %s is not attached to a virtual server instance", volume)
 	}
 	volAtt := &vol.VolumeAttachments[0]
 	if *volAtt.Type != "boot" {
-		return fmt.Errorf("[ERROR] Error creating Image because the specified source_volume %s is not boot volume", volume)
+		return flex.FmtErrorf("[ERROR] Error creating Image because the specified source_volume %s is not boot volume", volume)
 	}
 	insId = *volAtt.Instance.ID
 	getinsOptions := &vpcv1.GetInstanceOptions{
@@ -419,7 +418,7 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	}
 	instance, response, err := sess.GetInstance(getinsOptions)
 	if err != nil || instance == nil {
-		return fmt.Errorf("[ERROR] Error retrieving Instance (%s) to which the source_volume (%s) is attached : %s\n%s", insId, volume, err, response)
+		return flex.FmtErrorf("[ERROR] Error retrieving Instance (%s) to which the source_volume (%s) is attached : %s\n%s", insId, volume, err, response)
 	}
 	if instance != nil && *instance.Status == "running" {
 		actiontype := "stop"
@@ -429,7 +428,7 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 		}
 		_, response, err = sess.CreateInstanceAction(createinsactoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error stopping Instance (%s) to which the source_volume (%s) is attached  : %s\n%s", insId, volume, err, response)
+			return flex.FmtErrorf("[ERROR] Error stopping Instance (%s) to which the source_volume (%s) is attached  : %s\n%s", insId, volume, err, response)
 		}
 		_, err = isWaitForInstanceActionStop(sess, d.Timeout(schema.TimeoutCreate), insId, d)
 		if err != nil {
@@ -475,7 +474,7 @@ func imgCreateByVolume(d *schema.ResourceData, meta interface{}, name, volume st
 	}
 	image, response, err := sess.CreateImage(imagOptions)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Image creation err %s\n%s", err, response)
+		return flex.FmtErrorf("[DEBUG] Image creation err %s\n%s", err, response)
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
@@ -524,7 +523,7 @@ func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFun
 		}
 		image, response, err := imageC.GetImage(getimgoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Image: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Image: %s\n%s", err, response)
 		}
 
 		if *image.Status == "available" || *image.Status == "failed" {
@@ -566,7 +565,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			}
 			response, err := sess.DeprecateImage(deprecateImageOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error during deprecate Image : %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error during deprecate Image : %s\n%s", err, response)
 			}
 			_, err = isWaitForImageDeprecate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
@@ -582,7 +581,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			}
 			response, err := sess.ObsoleteImage(obsoleteImageOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error during obsolete Image : %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error during obsolete Image : %s\n%s", err, response)
 			}
 			_, err = isWaitForImageObsolete(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 			if err != nil {
@@ -596,7 +595,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 		image, response, err := sess.GetImage(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Image IP: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Image IP: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isImageTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageUserTagType)
@@ -611,7 +610,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 		image, response, err := sess.GetImage(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Image crn: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting Image crn: %s\n%s", err, response)
 		}
 		oldList, newList := d.GetChange(isImageAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *image.CRN, "", isImageAccessTagType)
@@ -657,7 +656,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 	}
 	imagePatch, err := imagePatchModel.AsPatch()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
+		return flex.FmtErrorf("[ERROR] Error calling asPatch for ImagePatch: %s", err)
 	}
 	if nullDeprecate {
 		imagePatch["deprecation_at"] = nil
@@ -668,7 +667,7 @@ func imgUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 	options.ImagePatch = imagePatch
 	_, response, err := sess.UpdateImage(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error on update of resource vpc Image: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error on update of resource vpc Image: %s\n%s", err, response)
 	}
 
 	return nil
@@ -698,7 +697,7 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
 	}
 	// d.Set(isImageArchitecure, image.Architecture)
 	if image.MinimumProvisionedSize != nil {
@@ -792,7 +791,7 @@ func imgDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Image (%s): %s\n%s", id, err, response)
 	}
 
 	options := &vpcv1.DeleteImageOptions{
@@ -800,7 +799,7 @@ func imgDelete(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	response, err = sess.DeleteImage(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Image : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Image : %s\n%s", err, response)
 	}
 	_, err = isWaitForImageDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -836,7 +835,7 @@ func isImageDeleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefr
 			if response != nil && response.StatusCode == 404 {
 				return image, isImageDeleted, nil
 			}
-			return image, "", fmt.Errorf("[ERROR] Error Getting Image: %s\n%s", err, response)
+			return image, "", flex.FmtErrorf("[ERROR] Error Getting Image: %s\n%s", err, response)
 		}
 		return image, isImageDeleting, err
 	}
@@ -860,7 +859,7 @@ func imgExists(d *schema.ResourceData, meta interface{}, id string) (bool, error
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Image: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Image: %s\n%s", err, response)
 	}
 	return true, nil
 }

@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -131,7 +130,7 @@ func dataSourceIBMISInstanceGroupMembershipsRead(d *schema.ResourceData, meta in
 		}
 		instanceGroupMembershipCollection, response, err := sess.ListInstanceGroupMemberships(&listInstanceGroupMembershipsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Membership Collection %s\n%s", err, response)
 		}
 
 		start = flex.GetNext(instanceGroupMembershipCollection.Next)

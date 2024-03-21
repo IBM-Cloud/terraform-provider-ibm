@@ -151,7 +151,7 @@ func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone
 	}
 	addrPrefix, response, err := sess.CreateVPCAddressPrefix(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating VPC Address Prefix %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating VPC Address Prefix %s\n%s", err, response)
 	}
 
 	addrPrefixID := *addrPrefix.ID
@@ -191,7 +191,7 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
 	d.Set(isVPCAddressPrefixVPCID, vpcID)
 	d.Set(isVPCAddressPrefixDefault, *addrPrefix.IsDefault)
@@ -207,7 +207,7 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 	}
 	vpc, response, err := sess.GetVPC(getVPCOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting VPC : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPC : %s\n%s", err, response)
 	}
 	d.Set(flex.RelatedCRN, *vpc.CRN)
 
@@ -268,12 +268,12 @@ func vpcAddressPrefixUpdate(d *schema.ResourceData, meta interface{}, vpcID, add
 		}
 		addressPrefixPatch, err := addressPrefixPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for AddressPrefixPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for AddressPrefixPatch: %s", err)
 		}
 		updatevpcAddressPrefixoptions.AddressPrefixPatch = addressPrefixPatch
 		_, response, err := sess.UpdateVPCAddressPrefix(updatevpcAddressPrefixoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating VPC Address Prefix: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating VPC Address Prefix: %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -316,7 +316,7 @@ func vpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, add
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
 
 	deletevpcAddressPrefixOptions := &vpcv1.DeleteVPCAddressPrefixOptions{
@@ -328,7 +328,7 @@ func vpcAddressPrefixDelete(d *schema.ResourceData, meta interface{}, vpcID, add
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting VPC Address Prefix (%s): %s\n%s", addrPrefixID, err, response)
 	}
 	d.SetId("")
 	return nil
@@ -338,7 +338,7 @@ func resourceIBMISVpcAddressPrefixExists(d *schema.ResourceData, meta interface{
 
 	parts, err := flex.IdParts(d.Id())
 	if len(parts) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/addrPrefixID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/addrPrefixID", d.Id())
 	}
 	if err != nil {
 		return false, err
@@ -364,7 +364,7 @@ func vpcAddressPrefixExists(d *schema.ResourceData, meta interface{}, vpcID, add
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting VPC Address Prefix: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting VPC Address Prefix: %s\n%s", err, response)
 	}
 	return true, nil
 }

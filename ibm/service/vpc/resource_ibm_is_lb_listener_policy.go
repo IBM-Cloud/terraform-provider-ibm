@@ -715,7 +715,7 @@ func lbListenerPolicyExists(d *schema.ResourceData, meta interface{}, ID string)
 		return false, err
 	}
 	if len(parts) != 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/listenerID/policyID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/listenerID/policyID", d.Id())
 	}
 
 	lbID := parts[0]
@@ -735,7 +735,7 @@ func lbListenerPolicyExists(d *schema.ResourceData, meta interface{}, ID string)
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Load balancer policy: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Load balancer policy: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -962,13 +962,13 @@ func lbListenerPolicyDelete(d *schema.ResourceData, meta interface{}, lbID, list
 
 	_, err = isWaitForLbAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf(
+		return flex.FmtErrorf(
 			"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
 	}
 
 	response, err = sess.DeleteLoadBalancerListenerPolicy(deleteLbListenerPolicyOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in lbListenerPolicyDelete: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error in lbListenerPolicyDelete: %s\n%s", err, response)
 	}
 	_, err = isWaitForLbListnerPolicyDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {

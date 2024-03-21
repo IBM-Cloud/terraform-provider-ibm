@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"time"
@@ -344,7 +343,7 @@ func dataSourceIBMIsSecurityGroupsRead(context context.Context, d *schema.Resour
 		securityGroupCollection, response, err := vpcClient.ListSecurityGroupsWithContext(context, listSecurityGroupsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListSecurityGroupsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListSecurityGroupsWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListSecurityGroupsWithContext failed %s\n%s", err, response))
 		}
 
 		start = flex.GetNext(securityGroupCollection.Next)
@@ -358,7 +357,7 @@ func dataSourceIBMIsSecurityGroupsRead(context context.Context, d *schema.Resour
 	d.SetId(dataSourceIBMIsSecurityGroupsID(d))
 	err = d.Set("security_groups", dataSourceSecurityGroupCollectionFlattenSecurityGroups(allrecs, d, meta))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting security_groups %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting security_groups %s", err))
 	}
 	return nil
 }

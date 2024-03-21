@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -390,7 +389,7 @@ func resourceIBMISReservationCreate(d *schema.ResourceData, meta interface{}) er
 	reservation, response, err := sess.CreateReservation(createReservationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Reservation creation err %s\n%s", err, response)
-		return fmt.Errorf("[ERROR] Error while creating Reservation %s\n%v", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Reservation %s\n%v", err, response)
 	}
 	d.SetId(*reservation.ID)
 	log.Printf("[INFO] Reservation : %s", *reservation.ID)
@@ -415,13 +414,13 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Reservation (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Reservation (%s): %s\n%s", id, err, response)
 	}
 
 	if reservation.AffinityPolicy != nil {
 		if err = d.Set(isReservationAffinityPolicy, reservation.AffinityPolicy); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationAffinityPolicy, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationAffinityPolicy, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationAffinityPolicy, err)
 		}
 	}
 
@@ -468,35 +467,35 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 	if reservation.CreatedAt != nil {
 		if err = d.Set(isReservationCreatedAt, flex.DateTimeToString(reservation.CreatedAt)); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationCreatedAt, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationCreatedAt, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationCreatedAt, err)
 		}
 	}
 
 	if reservation.CRN != nil {
 		if err = d.Set(isReservationCrn, reservation.CRN); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationCrn, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationCrn, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationCrn, err)
 		}
 	}
 
 	if reservation.Href != nil {
 		if err = d.Set(isReservationHref, reservation.Href); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationHref, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationHref, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationHref, err)
 		}
 	}
 
 	if reservation.LifecycleState != nil {
 		if err = d.Set(isReservationLifecycleState, reservation.LifecycleState); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationLifecycleState, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationLifecycleState, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationLifecycleState, err)
 		}
 	}
 
 	if reservation.Name != nil {
 		if err = d.Set(isReservationName, reservation.Name); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationName, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationName, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationName, err)
 		}
 	}
 
@@ -539,14 +538,14 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 	if reservation.ResourceType != nil {
 		if err = d.Set(isReservationResourceType, reservation.ResourceType); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationResourceType, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationResourceType, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationResourceType, err)
 		}
 	}
 
 	if reservation.Status != nil {
 		if err = d.Set(isReservationStatus, reservation.Status); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationStatus, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationStatus, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationStatus, err)
 		}
 	}
 
@@ -563,7 +562,7 @@ func resourceIBMISReservationRead(d *schema.ResourceData, meta interface{}) erro
 	if reservation.Zone != nil && reservation.Zone.Name != nil {
 		if err = d.Set(isReservationZone, reservation.Zone.Name); err != nil {
 			log.Printf("[ERROR] Error setting %s: %s", isReservationZone, err)
-			return fmt.Errorf("[ERROR] Error setting %s: %s", isReservationZone, err)
+			return flex.FmtErrorf("[ERROR] Error setting %s: %s", isReservationZone, err)
 		}
 	}
 	return nil
@@ -637,14 +636,14 @@ func resourceIBMISReservationUpdate(d *schema.ResourceData, meta interface{}) er
 	if hasChanged {
 		reservationPatch, err := reservationPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for ReservationPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for ReservationPatch: %s", err)
 		}
 		updateReservationOptions := &vpcv1.UpdateReservationOptions{}
 		updateReservationOptions.ReservationPatch = reservationPatch
 		updateReservationOptions.ID = core.StringPtr(d.Id())
 		_, response, err := sess.UpdateReservation(updateReservationOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Reservation : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Reservation : %s\n%s", err, response)
 		}
 	}
 	return resourceIBMISReservationRead(d, meta)
@@ -662,7 +661,7 @@ func resourceIBMISReservationDelete(d *schema.ResourceData, meta interface{}) er
 	}
 	_, _, err = sess.DeleteReservation(deleteReservationOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Reservation : %s", err)
+		return flex.FmtErrorf("[ERROR] Error Deleting Reservation : %s", err)
 	}
 	d.SetId("")
 	return nil

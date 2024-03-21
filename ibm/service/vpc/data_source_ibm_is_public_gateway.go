@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -131,7 +130,7 @@ func dataSourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) 
 		}
 		publicgws, response, err := sess.ListPublicGateways(listPublicGatewaysOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching public gateways %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching public gateways %s\n%s", err, response)
 		}
 		start = flex.GetNext(publicgws.Next)
 		allrecs = append(allrecs, publicgws.PublicGateways...)
@@ -185,5 +184,5 @@ func dataSourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Public gateway found with name %s", name)
+	return flex.FmtErrorf("[ERROR] No Public gateway found with name %s", name)
 }

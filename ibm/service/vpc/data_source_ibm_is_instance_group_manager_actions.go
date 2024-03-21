@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -171,7 +170,7 @@ func dataSourceIBMISInstanceGroupManagerActionsRead(d *schema.ResourceData, meta
 		}
 		instanceGroupManagerActionsCollection, response, err := sess.ListInstanceGroupManagerActions(&listInstanceGroupManagerActionsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Actions %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Manager Actions %s\n%s", err, response)
 		}
 		if instanceGroupManagerActionsCollection != nil && *instanceGroupManagerActionsCollection.TotalCount == int64(0) {
 			break

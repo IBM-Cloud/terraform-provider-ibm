@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -208,7 +209,7 @@ func bareMetalServerActionGet(context context.Context, sess *vpcv1.VpcV1, id str
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	d.SetId(*bms.ID)
 	d.Set(isBareMetalServerStatus, *bms.Status)
@@ -324,7 +325,7 @@ func isBareMetalServerActionRefreshFunc(client *vpcv1.VpcV1, id string, d *schem
 		}
 		bms, response, err := client.GetBareMetalServer(bmsgetoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
 		}
 		d.Set(isBareMetalServerStatus, *bms.Status)
 
@@ -344,7 +345,7 @@ func isBareMetalServerActionRefreshFunc(client *vpcv1.VpcV1, id string, d *schem
 		if *bms.Status == "failed" {
 			// let know the isRestartStartAction() to stop
 			close(communicator)
-			return bms, *bms.Status, fmt.Errorf("[ERROR] Error Bare Metal Server is in failed state")
+			return bms, *bms.Status, flex.FmtErrorf("[ERROR] Error Bare Metal Server is in failed state")
 
 		}
 		return bms, isBareMetalServerStatusPending, nil

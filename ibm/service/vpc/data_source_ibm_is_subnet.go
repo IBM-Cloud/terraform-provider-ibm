@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -224,7 +223,7 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 		}
 		subnetinfo, response, err := sess.GetSubnet(getSubnetOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response)
 		}
 		subnet = subnetinfo
 	} else if v, ok := d.GetOk(isSubnetName); ok {
@@ -242,7 +241,7 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 			}
 			subnetsCollection, response, err := sess.ListSubnets(getSubnetsListOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching subnets List %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Fetching subnets List %s\n%s", err, response)
 			}
 			start = flex.GetNext(subnetsCollection.Next)
 			allrecs = append(allrecs, subnetsCollection.Subnets...)
@@ -258,7 +257,7 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 		if subnet == nil {
-			return fmt.Errorf("[ERROR] No subnet found with name (%s)", name)
+			return flex.FmtErrorf("[ERROR] No subnet found with name (%s)", name)
 		}
 	}
 
@@ -267,7 +266,7 @@ func subnetGetByNameOrID(d *schema.ResourceData, meta interface{}) error {
 	if subnet.RoutingTable != nil {
 		err = d.Set("routing_table", dataSourceSubnetFlattenroutingTable(*subnet.RoutingTable))
 		if err != nil {
-			return fmt.Errorf("Error setting routing_table %s", err)
+			return flex.FmtErrorf("Error setting routing_table %s", err)
 		}
 	}
 	d.Set(isSubnetName, *subnet.Name)

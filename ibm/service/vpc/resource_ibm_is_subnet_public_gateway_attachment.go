@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -132,7 +131,7 @@ func resourceIBMISSubnetPublicGatewayAttachmentCreate(context context.Context, d
 
 	if err != nil {
 		log.Printf("[DEBUG] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response))
 	}
 	d.SetId(subnet)
 	_, err = isWaitForSubnetPublicGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
@@ -162,7 +161,7 @@ func resourceIBMISSubnetPublicGatewayAttachmentRead(context context.Context, d *
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response))
 	}
 	d.Set(isPublicGatewayName, pg.Name)
 	d.Set(isSubnetID, id)
@@ -211,7 +210,7 @@ func resourceIBMISSubnetPublicGatewayAttachmentUpdate(context context.Context, d
 
 		if err != nil || pg == nil {
 			log.Printf("[DEBUG] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error while attaching public gateway(%s) to subnet(%s) %s\n%s", publicGateway, subnet, err, response))
 		}
 		log.Printf("[INFO] Updated subnet %s with public gateway(%s)", subnet, publicGateway)
 
@@ -238,7 +237,7 @@ func resourceIBMISSubnetPublicGatewayAttachmentDelete(context context.Context, d
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Subnet (%s): %s\n%s", id, err, response))
 	}
 
 	// Construct an instance of the UnsetSubnetPublicGatewayOptions model
@@ -249,7 +248,7 @@ func resourceIBMISSubnetPublicGatewayAttachmentDelete(context context.Context, d
 
 	if err != nil {
 		log.Printf("[DEBUG] Error while detaching public gateway to subnet %s\n%s", err, res)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error while detaching public gateway to subnet %s\n%s", err, res))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error while detaching public gateway to subnet %s\n%s", err, res))
 	}
 	_, err = isWaitForSubnetPublicGatewayDelete(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -283,13 +282,13 @@ func isSubnetPublicGatewayRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.
 
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return pg, "", fmt.Errorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response)
+				return pg, "", flex.FmtErrorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response)
 			}
-			return pg, "", fmt.Errorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response)
+			return pg, "", flex.FmtErrorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response)
 		}
 
 		if *pg.Status == "failed" {
-			return pg, IsPublicGatewayAttachmentFailed, fmt.Errorf("[ERROR] Error subnet (%s) public gateway attachment failed: %s\n%s", id, err, response)
+			return pg, IsPublicGatewayAttachmentFailed, flex.FmtErrorf("[ERROR] Error subnet (%s) public gateway attachment failed: %s\n%s", id, err, response)
 		}
 
 		return pg, *pg.Status, nil
@@ -322,11 +321,11 @@ func isSubnetPublicGatewayDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) res
 			if response != nil && response.StatusCode == 404 {
 				return pg, "", nil
 			}
-			return pg, "", fmt.Errorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response)
+			return pg, "", flex.FmtErrorf("[ERROR] Error getting subnet's (%s) attached public gateway: %s\n%s", id, err, response)
 		}
 
 		if *pg.Status == "failed" {
-			return pg, IsPublicGatewayAttachmentFailed, fmt.Errorf("[ERROR] Error subnet (%s) public gateway attachment failed: %s\n%s", id, err, response)
+			return pg, IsPublicGatewayAttachmentFailed, flex.FmtErrorf("[ERROR] Error subnet (%s) public gateway attachment failed: %s\n%s", id, err, response)
 		}
 
 		return pg, *pg.Status, nil

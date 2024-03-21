@@ -155,7 +155,7 @@ func dataSourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta 
 		}
 		instanceGroupManagerActionsCollection, response, err := sess.ListInstanceGroupManagerActions(&listInstanceGroupManagerActionsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Actions %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Manager Actions %s\n%s", err, response)
 		}
 		if instanceGroupManagerActionsCollection != nil && *instanceGroupManagerActionsCollection.TotalCount == int64(0) {
 			break
@@ -173,47 +173,47 @@ func dataSourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta 
 			d.SetId(fmt.Sprintf("%s/%s/%s", instanceGroupID, instanceGroupManagerID, *instanceGroupManagerAction.ID))
 
 			if err = d.Set("auto_delete", *instanceGroupManagerAction.AutoDelete); err != nil {
-				return fmt.Errorf("[ERROR] Error setting auto_delete: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting auto_delete: %s", err)
 			}
 
 			if err = d.Set("auto_delete_timeout", flex.IntValue(instanceGroupManagerAction.AutoDeleteTimeout)); err != nil {
-				return fmt.Errorf("[ERROR] Error setting auto_delete_timeout: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting auto_delete_timeout: %s", err)
 			}
 			if err = d.Set("created_at", instanceGroupManagerAction.CreatedAt.String()); err != nil {
-				return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting created_at: %s", err)
 			}
 
 			if err = d.Set("action_id", *instanceGroupManagerAction.ID); err != nil {
-				return fmt.Errorf("[ERROR] Error setting instance_group_manager_action : %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting instance_group_manager_action : %s", err)
 			}
 
 			if err = d.Set("resource_type", *instanceGroupManagerAction.ResourceType); err != nil {
-				return fmt.Errorf("[ERROR] Error setting resource_type: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err)
 			}
 			if err = d.Set("status", *instanceGroupManagerAction.Status); err != nil {
-				return fmt.Errorf("[ERROR] Error setting status: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting status: %s", err)
 			}
 			if err = d.Set("updated_at", instanceGroupManagerAction.UpdatedAt.String()); err != nil {
-				return fmt.Errorf("[ERROR] Error setting updated_at: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting updated_at: %s", err)
 			}
 			if err = d.Set("action_type", *instanceGroupManagerAction.ActionType); err != nil {
-				return fmt.Errorf("[ERROR] Error setting action_type: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting action_type: %s", err)
 			}
 
 			if instanceGroupManagerAction.CronSpec != nil {
 				if err = d.Set("cron_spec", *instanceGroupManagerAction.CronSpec); err != nil {
-					return fmt.Errorf("[ERROR] Error setting cron_spec: %s", err)
+					return flex.FmtErrorf("[ERROR] Error setting cron_spec: %s", err)
 				}
 			}
 
 			if instanceGroupManagerAction.LastAppliedAt != nil {
 				if err = d.Set("last_applied_at", instanceGroupManagerAction.LastAppliedAt.String()); err != nil {
-					return fmt.Errorf("[ERROR] Error setting last_applied_at: %s", err)
+					return flex.FmtErrorf("[ERROR] Error setting last_applied_at: %s", err)
 				}
 			}
 			if instanceGroupManagerAction.NextRunAt != nil {
 				if err = d.Set("next_run_at", instanceGroupManagerAction.NextRunAt.String()); err != nil {
-					return fmt.Errorf("[ERROR] Error setting next_run_at: %s", err)
+					return flex.FmtErrorf("[ERROR] Error setting next_run_at: %s", err)
 				}
 			}
 
@@ -237,5 +237,5 @@ func dataSourceIBMISInstanceGroupManagerActionRead(d *schema.ResourceData, meta 
 			return nil
 		}
 	}
-	return fmt.Errorf("instance group manager action %s not found", actionName)
+	return flex.FmtErrorf("instance group manager action %s not found", actionName)
 }

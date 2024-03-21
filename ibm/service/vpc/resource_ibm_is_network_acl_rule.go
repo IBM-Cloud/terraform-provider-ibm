@@ -443,7 +443,7 @@ func nwaclRuleCreate(d *schema.ResourceData, meta interface{}, nwACLID string) e
 	}
 	nwaclRule, response, err := sess.CreateNetworkACLRule(createNetworkAclRuleOptions)
 	if err != nil || nwaclRule == nil {
-		return fmt.Errorf("[ERROR] Error Creating network ACL rule : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Creating network ACL rule : %s\n%s", err, response)
 	}
 	err = nwaclRuleGet(d, meta, nwACLID, nwaclRule)
 	if err != nil {
@@ -471,7 +471,7 @@ func resourceIBMISNetworkACLRuleRead(d *schema.ResourceData, meta interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Network ACL Rule (%s) : %s\n%s", ruleId, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Network ACL Rule (%s) : %s\n%s", ruleId, err, response)
 	}
 	err = nwaclRuleGet(d, meta, nwACLID, nwaclRule)
 	if err != nil {
@@ -744,7 +744,7 @@ func nwaclRuleUpdate(d *schema.ResourceData, meta interface{}, id, nwACLId strin
 	if hasChanged {
 		updateNetworkACLOptionsPatch, err := updateNetworkACLOptionsPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for NetworkACLOptionsPatch : %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for NetworkACLOptionsPatch : %s", err)
 		}
 		if aclRuleBeforeNull {
 			updateNetworkACLOptionsPatch["before"] = nil
@@ -752,7 +752,7 @@ func nwaclRuleUpdate(d *schema.ResourceData, meta interface{}, id, nwACLId strin
 		updateNetworkACLRuleOptions.NetworkACLRulePatch = updateNetworkACLOptionsPatch
 		_, response, err := sess.UpdateNetworkACLRule(updateNetworkACLRuleOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Network ACL Rule : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating Network ACL Rule : %s\n%s", err, response)
 		}
 	}
 	return nil
@@ -789,7 +789,7 @@ func nwaclRuleDelete(d *schema.ResourceData, meta interface{}, id, nwACLId strin
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Network ACL Rule  (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Network ACL Rule  (%s): %s\n%s", id, err, response)
 	}
 
 	deleteNetworkAclRuleOptions := &vpcv1.DeleteNetworkACLRuleOptions{
@@ -798,7 +798,7 @@ func nwaclRuleDelete(d *schema.ResourceData, meta interface{}, id, nwACLId strin
 	}
 	response, err = sess.DeleteNetworkACLRule(deleteNetworkAclRuleOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Network ACL Rule : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Network ACL Rule : %s\n%s", err, response)
 	}
 	d.SetId("")
 	return nil
@@ -818,7 +818,7 @@ func nwaclRuleExists(d *schema.ResourceData, meta interface{}, id, nwACLId strin
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Network ACL Rule: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Network ACL Rule: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -832,10 +832,10 @@ func makeTerraformACLRuleID(id1, id2 string) string {
 func parseNwACLTerraformID(s string) (string, string, error) {
 	segments := strings.Split(s, "/")
 	if len(segments) != 2 {
-		return "", "", fmt.Errorf("invalid terraform Id %s (incorrect number of segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (incorrect number of segments)", s)
 	}
 	if segments[0] == "" || segments[1] == "" {
-		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
 }

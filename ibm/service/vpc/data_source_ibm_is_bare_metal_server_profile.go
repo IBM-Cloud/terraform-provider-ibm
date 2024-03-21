@@ -423,7 +423,7 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 	}
 	bmsProfile, response, err := sess.GetBareMetalServerProfileWithContext(context, options)
 	if err != nil || bmsProfile == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Bare Metal Server Profile (%s): %s\n%s", name, err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server Profile (%s): %s\n%s", name, err, response))
 	}
 	d.SetId(*bmsProfile.Name)
 	d.Set(isBareMetalServerProfileName, *bmsProfile.Name)
@@ -466,7 +466,7 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 		consoleTypes = append(consoleTypes, modelMap)
 	}
 	if err = d.Set("console_types", consoleTypes); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting console_types %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting console_types %s", err))
 	}
 
 	networkInterfaceCount := []map[string]interface{}{}
@@ -478,7 +478,7 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 		networkInterfaceCount = append(networkInterfaceCount, modelMap)
 	}
 	if err = d.Set("network_interface_count", networkInterfaceCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting network_interface_count %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting network_interface_count %s", err))
 	}
 
 	if bmsProfile.CpuArchitecture != nil {
@@ -641,7 +641,7 @@ func dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkInterface
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.BareMetalServerProfileNetworkInterfaceCountIntf subtype encountered")
+		return nil, flex.FmtErrorf("Unrecognized vpcv1.BareMetalServerProfileNetworkInterfaceCountIntf subtype encountered")
 	}
 }
 

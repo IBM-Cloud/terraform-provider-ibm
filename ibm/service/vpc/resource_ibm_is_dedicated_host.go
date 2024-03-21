@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -517,17 +516,17 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 	}
 
 	if err = d.Set("available_memory", flex.IntValue(dedicatedHost.AvailableMemory)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting available_memory: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting available_memory: %s", err))
 	}
 	availableVcpuMap := resourceIbmIsDedicatedHostVCPUToMap(*dedicatedHost.AvailableVcpu)
 	if err = d.Set("available_vcpu", []map[string]interface{}{availableVcpuMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting available_vcpu: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting available_vcpu: %s", err))
 	}
 	if err = d.Set("created_at", dedicatedHost.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", dedicatedHost.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 	}
 	disks := []map[string]interface{}{}
 	for _, disksItem := range dedicatedHost.Disks {
@@ -535,15 +534,15 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		disks = append(disks, disksItemMap)
 	}
 	if err = d.Set("disks", disks); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting disks: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting disks: %s", err))
 	}
 	d.Set("host_group", *dedicatedHost.Group.ID)
 
 	if err = d.Set("href", dedicatedHost.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("instance_placement_enabled", dedicatedHost.InstancePlacementEnabled); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting instance_placement_enabled: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting instance_placement_enabled: %s", err))
 	}
 	instances := []map[string]interface{}{}
 	for _, instancesItem := range dedicatedHost.Instances {
@@ -551,40 +550,40 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		instances = append(instances, instancesItemMap)
 	}
 	if err = d.Set("instances", instances); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting instances: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting instances: %s", err))
 	}
 	if err = d.Set("lifecycle_state", dedicatedHost.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if err = d.Set("memory", flex.IntValue(dedicatedHost.Memory)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting memory: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting memory: %s", err))
 	}
 	if err = d.Set("name", dedicatedHost.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if dedicatedHost.Numa != nil {
 		if err = d.Set("numa", dataSourceDedicatedHostFlattenNumaNodes(*dedicatedHost.Numa)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting numa: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting numa: %s", err))
 		}
 	}
 
 	if err = d.Set("profile", *dedicatedHost.Profile.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting profile: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting profile: %s", err))
 	}
 	if err = d.Set("provisionable", dedicatedHost.Provisionable); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting provisionable: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting provisionable: %s", err))
 	}
 	if err = d.Set("resource_group", *dedicatedHost.ResourceGroup.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group: %s", err))
 	}
 	if err = d.Set("resource_type", dedicatedHost.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set("socket_count", flex.IntValue(dedicatedHost.SocketCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting socket_count: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting socket_count: %s", err))
 	}
 	if err = d.Set("state", dedicatedHost.State); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting state: %s", err))
 	}
 	supportedInstanceProfiles := []map[string]interface{}{}
 	for _, supportedInstanceProfilesItem := range dedicatedHost.SupportedInstanceProfiles {
@@ -592,15 +591,15 @@ func resourceIbmIsDedicatedHostRead(context context.Context, d *schema.ResourceD
 		supportedInstanceProfiles = append(supportedInstanceProfiles, supportedInstanceProfilesItemMap)
 	}
 	if err = d.Set("supported_instance_profiles", supportedInstanceProfiles); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting supported_instance_profiles: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting supported_instance_profiles: %s", err))
 	}
 	vcpuMap := resourceIbmIsDedicatedHostVCPUToMap(*dedicatedHost.Vcpu)
 	if err = d.Set("vcpu", []map[string]interface{}{vcpuMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vcpu: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vcpu: %s", err))
 	}
 
 	if err = d.Set("zone", *dedicatedHost.Zone.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting zone: %s", err))
 	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
 	if err != nil {
@@ -773,10 +772,10 @@ func isWaitForDedicatedHostDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData
 				if response != nil && response.StatusCode == 404 {
 					return dedicatedhost, isDedicatedHostDeleteDone, nil
 				}
-				return nil, "", fmt.Errorf("[ERROR] Error getting dedicated Host: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error getting dedicated Host: %s\n%s", err, response)
 			}
 			if *dedicatedhost.State == isDedicatedHostFailed {
-				return dedicatedhost, *dedicatedhost.State, fmt.Errorf("[ERROR] The  Dedicated host %s failed to delete: %v", d.Id(), err)
+				return dedicatedhost, *dedicatedhost.State, flex.FmtErrorf("[ERROR] The  Dedicated host %s failed to delete: %v", d.Id(), err)
 			}
 			return dedicatedhost, isDedicatedHostDeleting, nil
 		},
@@ -810,14 +809,14 @@ func isDedicatedHostRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Res
 		}
 		dhost, response, err := instanceC.GetDedicatedHost(getinsOptions)
 		if dhost == nil || err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting dedicated host : %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting dedicated host : %s\n%s", err, response)
 		}
 		d.Set("state", *dhost.State)
 		d.Set("lifecycle_state", *dhost.LifecycleState)
 
 		if *dhost.LifecycleState == isDedicatedHostSuspended || *dhost.LifecycleState == isDedicatedHostFailed {
 
-			return dhost, *dhost.LifecycleState, fmt.Errorf("status of dedicated host is %s : \n%s", *dhost.LifecycleState, response)
+			return dhost, *dhost.LifecycleState, flex.FmtErrorf("status of dedicated host is %s : \n%s", *dhost.LifecycleState, response)
 
 		}
 		return dhost, *dhost.LifecycleState, nil

@@ -85,7 +85,7 @@ func dataSourceIBMISInstanceGroupManagerPolicyRead(d *schema.ResourceData, meta 
 		}
 		instanceGroupManagerPolicyCollection, response, err := sess.ListInstanceGroupManagerPolicies(&listInstanceGroupManagerPoliciesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Policies %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Manager Policies %s\n%s", err, response)
 		}
 		start = flex.GetNext(instanceGroupManagerPolicyCollection.Next)
 		allrecs = append(allrecs, instanceGroupManagerPolicyCollection.Policies...)
@@ -105,5 +105,5 @@ func dataSourceIBMISInstanceGroupManagerPolicyRead(d *schema.ResourceData, meta 
 			return nil
 		}
 	}
-	return fmt.Errorf("Instance group manager policy %s not found", policyName)
+	return flex.FmtErrorf("Instance group manager policy %s not found", policyName)
 }

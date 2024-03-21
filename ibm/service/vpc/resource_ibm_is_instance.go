@@ -152,7 +152,7 @@ func ResourceIBMISInstance() *schema.Resource {
 						d.SetId("")
 						return nil, nil
 					}
-					return nil, fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+					return nil, flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 				}
 				var volumes []string
 				volumes = make([]string, 0)
@@ -1903,10 +1903,10 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -1994,10 +1994,10 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2330,10 +2330,10 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2421,10 +2421,10 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2752,10 +2752,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2842,10 +2842,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3173,10 +3173,10 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3263,10 +3263,10 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3567,10 +3567,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			autodelete = reservedipautodeleteok.(bool)
 		}
 		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 		}
 		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			return flex.FmtErrorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3657,10 +3657,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				autodelete = reservedipautodeleteok.(bool)
 			}
 			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
 			}
 			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
-				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -3860,7 +3860,7 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 		}
 		instance, response, err := instanceC.GetInstance(getinsOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 		}
 		d.Set(isInstanceStatus, *instance.Status)
 
@@ -3897,9 +3897,9 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 
 				out, err := json.MarshalIndent(instanceStatusReason, "", "    ")
 				if err != nil {
-					return instance, *instance.Status, fmt.Errorf("[ERROR] Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+					return instance, *instance.Status, flex.FmtErrorf("[ERROR] Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
 				}
-				return instance, *instance.Status, fmt.Errorf("[ERROR] Instance (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID, string(out))
+				return instance, *instance.Status, flex.FmtErrorf("[ERROR] Instance (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID, string(out))
 			}
 			return instance, *instance.Status, nil
 
@@ -3923,7 +3923,7 @@ func isRestartStartAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceD
 			}
 			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				communicator <- fmt.Errorf("[ERROR] Error retrying instance action start: %s\n%s", err, response)
+				communicator <- flex.FmtErrorf("[ERROR] Error retrying instance action start: %s\n%s", err, response)
 				return
 			}
 			waitTimeout := time.Duration(1) * time.Minute
@@ -3935,7 +3935,7 @@ func isRestartStartAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceD
 			}
 			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				communicator <- fmt.Errorf("[ERROR] Error retrying instance action start: %s\n%s", err, response)
+				communicator <- flex.FmtErrorf("[ERROR] Error retrying instance action start: %s\n%s", err, response)
 				return
 			}
 		case <-communicator:
@@ -3974,11 +3974,11 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Instance: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Instance: %s\n%s", err, response)
 	}
 	instanceInitialization, response, err := instanceC.GetInstanceInitialization(getinsIniOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting Instance initialization details: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Instance initialization details: %s\n%s", err, response)
 	}
 	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.AutoLink != nil {
 		d.Set(isInstanceDefaultTrustedProfileAutoLink, *instanceInitialization.DefaultTrustedProfile.AutoLink)
@@ -4069,7 +4069,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		insRip, response, err := instanceC.GetSubnetReservedIP(getripoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *instance.PrimaryNetworkInterface.PrimaryIP.ID, *instance.PrimaryNetworkInterface.ID, err, response)
+			return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *instance.PrimaryNetworkInterface.PrimaryIP.ID, *instance.PrimaryNetworkInterface.ID, err, response)
 		}
 		currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
 
@@ -4082,7 +4082,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
 		currentPrimNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 		if insnic.PortSpeed != nil {
@@ -4160,14 +4160,14 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		pna, response, err := instanceC.GetInstanceNetworkAttachment(getInstanceNetworkAttachment)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
 		}
 		primaryNetworkAttachmentMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment, pna, instanceC, autoDelete)
 		if err != nil {
 			return err
 		}
 		if err = d.Set("primary_network_attachment", []map[string]interface{}{primaryNetworkAttachmentMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting primary_network_attachment: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting primary_network_attachment: %s", err)
 		}
 	}
 
@@ -4206,7 +4206,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				insRip, response, err := instanceC.GetSubnetReservedIP(getripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *intfc.PrimaryIP.ID, *intfc.ID, err, response)
+					return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *intfc.PrimaryIP.ID, *intfc.ID, err, response)
 				}
 				currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
 
@@ -4219,7 +4219,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				insnic, response, err := instanceC.GetInstanceNetworkInterface(getnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
 				currentNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
 				currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
@@ -4253,7 +4253,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				na, response, err := instanceC.GetInstanceNetworkAttachment(getInstanceNetworkAttachment)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
 				}
 				networkAttachmentsItemMap, err := resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&networkAttachmentsItem, na, instanceC, autoDelete)
 				if err != nil {
@@ -4263,7 +4263,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		if err = d.Set("network_attachments", networkAttachments); err != nil {
-			return fmt.Errorf("[ERROR] Error setting network_attachments: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting network_attachments: %s", err)
 		}
 	}
 	if instance.Image != nil {
@@ -4333,7 +4333,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 			bootVolumeAtt, response, err := instanceC.GetInstanceVolumeAttachment(getinsVolAttOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting Instance boot volume attachment : %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error getting Instance boot volume attachment : %s\n%s", err, response)
 			}
 
 			bootVol[isInstanceVolAttVolAutoDelete] = *bootVolumeAtt.DeleteVolumeOnInstanceDelete
@@ -4410,7 +4410,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			disks = append(disks, disksItemMap)
 		}
 		if err = d.Set(isInstanceDisks, disks); err != nil {
-			return fmt.Errorf("[ERROR] Error setting disks: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting disks: %s", err)
 		}
 	}
 
@@ -4420,7 +4420,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		placementTarget = append(placementTarget, placementTargetMap)
 	}
 	if err = d.Set(isInstancePlacementTarget, placementTarget); err != nil {
-		return fmt.Errorf("[ERROR] Error setting placement_target: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting placement_target: %s", err)
 	}
 	return nil
 }
@@ -4463,7 +4463,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						res, err := instanceC.DeleteInstanceNetworkAttachment(deleteInstanceNetworkAttachmentOptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while deleting network attachment(%s) of instance(%s) \n%s: %q", nacIdStr, d.Id(), err, res)
+							return flex.FmtErrorf("[ERROR] Error while deleting network attachment(%s) of instance(%s) \n%s: %q", nacIdStr, d.Id(), err, res)
 						}
 					}
 				}
@@ -4494,7 +4494,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				_, res, err := instanceC.CreateInstanceNetworkAttachment(createInstanceNetworkAttachmentOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating network attachment(%s) of instance(%s) \n%s: %q", nacNameStr, d.Id(), err, res)
+					return flex.FmtErrorf("[ERROR] Error while creating network attachment(%s) of instance(%s) \n%s: %q", nacNameStr, d.Id(), err, res)
 				}
 			} else {
 				log.Printf("[DEBUG] nacId is not empty")
@@ -4513,12 +4513,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					}
 					instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
 					if err != nil {
-						return (fmt.Errorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of network attachment(%s) of instance(%s) %s", nacId, id, err))
+						return (flex.FmtErrorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of network attachment(%s) of instance(%s) %s", nacId, id, err))
 					}
 					updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch = instanceNetworkAttachmentPatchAsPatch
 					_, res, err := instanceC.UpdateInstanceNetworkAttachment(updateInstanceNetworkAttachmentOptions)
 					if err != nil {
-						return (fmt.Errorf("[ERROR] Error encountered while updating network attachment(%s) name of instance(%s) %s/n%s", nacId, id, err, res))
+						return (flex.FmtErrorf("[ERROR] Error encountered while updating network attachment(%s) name of instance(%s) %s/n%s", nacId, id, err, res))
 					}
 					// output, err := json.MarshalIndent(updateInstanceNetworkAttachmentOptions, "", "    ")
 					// if err == nil {
@@ -4556,13 +4556,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					}
 					virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
+						return flex.FmtErrorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
 					}
 					updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
 					_, response, err := instanceC.UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions)
 					if err != nil {
 						log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-						return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
+						return flex.FmtErrorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
 					}
 
 					if d.HasChange(ipsName) {
@@ -4597,7 +4597,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 									_, response, err := instanceC.AddVirtualNetworkInterfaceIP(addVirtualNetworkInterfaceIPOptions)
 									if err != nil {
 										log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-										return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+										return flex.FmtErrorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
 									}
 								}
 							}
@@ -4611,7 +4611,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 									response, err := instanceC.RemoveVirtualNetworkInterfaceIP(removeVirtualNetworkInterfaceIPOptions)
 									if err != nil {
 										log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-										return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+										return flex.FmtErrorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
 									}
 								}
 							}
@@ -4640,12 +4640,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
+							return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
 						}
 						updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 						_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
+							return flex.FmtErrorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
 						}
 					}
 					if d.HasChange(sgName) {
@@ -4662,7 +4662,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 								}
 								_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
 								if err != nil {
-									return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
+									return flex.FmtErrorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
 								}
 								_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 								if err != nil {
@@ -4679,7 +4679,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 								}
 								response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 								if err != nil {
-									return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
+									return flex.FmtErrorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
 								}
 								_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 								if err != nil {
@@ -4713,12 +4713,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			instanceNetworkAttachmentPatchAsPatch, err := instanceNetworkAttachmentPatch.AsPatch()
 			if err != nil {
-				return (fmt.Errorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of pna of instance(%s) %s", id, err))
+				return (flex.FmtErrorf("[ERROR] Error encountered while apply as patch for instanceNetworkAttachmentPatchAsPatch of pna of instance(%s) %s", id, err))
 			}
 			updateInstanceNetworkAttachmentOptions.InstanceNetworkAttachmentPatch = instanceNetworkAttachmentPatchAsPatch
 			_, res, err := instanceC.UpdateInstanceNetworkAttachment(updateInstanceNetworkAttachmentOptions)
 			if err != nil {
-				return (fmt.Errorf("[ERROR] Error encountered while updating pna name of instance(%s) %s/n%s", id, err, res))
+				return (flex.FmtErrorf("[ERROR] Error encountered while updating pna name of instance(%s) %s/n%s", id, err, res))
 			}
 		}
 		if d.HasChange(nacVniName) {
@@ -4752,13 +4752,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
+				return flex.FmtErrorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of instance(%s) vni (%s) %s", d.Id(), vniId, err)
 			}
 			updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
 			_, response, err := instanceC.UpdateVirtualNetworkInterface(updateVirtualNetworkInterfaceOptions)
 			if err != nil {
 				log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
+				return flex.FmtErrorf("UpdateVirtualNetworkInterfaceWithContext failed during instance(%s) network attachment patch %s\n%s", d.Id(), err, response)
 			}
 
 			if d.HasChange(ipsName) {
@@ -4793,7 +4793,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							_, response, err := instanceC.AddVirtualNetworkInterfaceIP(addVirtualNetworkInterfaceIPOptions)
 							if err != nil {
 								log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-								return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+								return flex.FmtErrorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
 							}
 						}
 					}
@@ -4807,7 +4807,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 							response, err := instanceC.RemoveVirtualNetworkInterfaceIP(removeVirtualNetworkInterfaceIPOptions)
 							if err != nil {
 								log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
-								return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
+								return flex.FmtErrorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during instance nac patch %s\n%s", err, response)
 							}
 						}
 					}
@@ -4836,12 +4836,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
+					return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 				_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
+					return flex.FmtErrorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
 				}
 			}
 			if d.HasChange(sgName) {
@@ -4858,7 +4858,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
+							return flex.FmtErrorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], vniId, err, response)
 						}
 						_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
@@ -4875,7 +4875,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
+							return flex.FmtErrorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
 						_, err = isWaitForVirtualNetworkInterfaceAvailable(instanceC, vniId, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
@@ -4899,7 +4899,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			_, response, err := instanceC.GetInstance(getinsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response)
+				return flex.FmtErrorf("[ERROR] Error getting instance (%s): %s\n%s", id, err, response)
 			}
 			eTag := response.Headers.Get("ETag")
 
@@ -4935,7 +4935,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			mpatch, err := instancePatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch with reservation affinity: %s", err)
+				return flex.FmtErrorf("[ERROR] Error calling asPatch with reservation affinity: %s", err)
 			}
 			//Detaching the reservation from the reserved instance
 			if policyStr == "disabled" && idStr == "" {
@@ -4959,7 +4959,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange(bootVolSize) && !d.IsNewResource() {
 		old, new := d.GetChange(bootVolSize)
 		if new.(int) < old.(int) {
-			return fmt.Errorf("[ERROR] Error while updating boot volume size of the instance, only expansion is possible")
+			return flex.FmtErrorf("[ERROR] Error while updating boot volume size of the instance, only expansion is possible")
 		}
 		bootVol := int64(new.(int))
 		volId := d.Get("boot_volume.0.volume_id").(string)
@@ -4972,7 +4972,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		volPatchModelAsPatch, err := volPatchModel.AsPatch()
 
 		if err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err))
+			return (flex.FmtErrorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err))
 		}
 
 		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
@@ -4980,7 +4980,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
 
 		if vol == nil || err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while expanding boot volume of instance %s/n%s", err, res))
+			return (flex.FmtErrorf("[ERROR] Error encountered while expanding boot volume of instance %s/n%s", err, res))
 		}
 
 		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
@@ -5007,21 +5007,21 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				volumePatchModel.UserTags = userTagsArray
 				volumePatch, err := volumePatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err)
+					return flex.FmtErrorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err)
 				}
 				optionsget := &vpcv1.GetVolumeOptions{
 					ID: &volId,
 				}
 				_, response, err := instanceC.GetVolume(optionsget)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting Boot Volume (%s): %s\n%s", id, err, response)
+					return flex.FmtErrorf("[ERROR] Error getting Boot Volume (%s): %s\n%s", id, err, response)
 				}
 				eTag := response.Headers.Get("ETag")
 				updateVolumeOptions.IfMatch = &eTag
 				updateVolumeOptions.VolumePatch = volumePatch
 				vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
 				if vol == nil || err != nil {
-					return (fmt.Errorf("[ERROR] Error encountered while applying tags for boot volume of instance %s/n%s", err, res))
+					return (flex.FmtErrorf("[ERROR] Error encountered while applying tags for boot volume of instance %s/n%s", err, res))
 				}
 				_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
 				if err != nil {
@@ -5043,7 +5043,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		volPatchModelAsPatch, err := volPatchModel.AsPatch()
 
 		if err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume name update of instance %s", err))
+			return (flex.FmtErrorf("[ERROR] Error encountered while apply as patch for boot volume name update of instance %s", err))
 		}
 
 		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
@@ -5051,7 +5051,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
 
 		if vol == nil || err != nil {
-			return (fmt.Errorf("[ERROR] Error encountered while updating name of boot volume of instance %s/n%s", err, res))
+			return (flex.FmtErrorf("[ERROR] Error encountered while updating name of boot volume of instance %s/n%s", err, res))
 		}
 	}
 	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
@@ -5077,7 +5077,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				volAttNamePatchModelAsPatch, err := volAttNamePatchModel.AsPatch()
 				if err != nil || volAttNamePatchModelAsPatch == nil {
-					return fmt.Errorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
+					return flex.FmtErrorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
 				}
 				updateInstanceVolAttOptions.VolumeAttachmentPatch = volAttNamePatchModelAsPatch
 
@@ -5095,7 +5095,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		actiontype := "stop"
 
 		if dedicatedHost == "" && dedicatedHostGroup == "" {
-			return fmt.Errorf("[ERROR] Error: Instances cannot be moved from private to public hosts")
+			return flex.FmtErrorf("[ERROR] Error: Instances cannot be moved from private to public hosts")
 		}
 
 		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
@@ -5107,7 +5107,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
 		}
 		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
@@ -5134,7 +5134,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
 		}
 
 		updateOptions.InstancePatch = instancePatch
@@ -5154,7 +5154,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
 		}
 		_, err = isWaitForInstanceActionStart(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
@@ -5171,14 +5171,14 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			instance, response, err := instanceC.GetInstance(getinsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+				return flex.FmtErrorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
 			}
 			if (actiontype == "stop" || actiontype == "reboot") && *instance.Status != isInstanceStatusRunning {
 				d.Set(isInstanceAction, nil)
-				return fmt.Errorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
+				return flex.FmtErrorf("[ERROR] Error with stop/reboot action: Cannot invoke stop/reboot action while instance is not in running state")
 			} else if actiontype == "start" && *instance.Status != isInstanceActionStatusStopped {
 				d.Set(isInstanceAction, nil)
-				return fmt.Errorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state")
+				return flex.FmtErrorf("[ERROR] Error with start action: Cannot invoke start action while instance is not in stopped state")
 			}
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
@@ -5190,7 +5190,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
 			}
 			if actiontype == "stop" {
 				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
@@ -5237,7 +5237,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				vol, _, err := instanceC.CreateInstanceVolumeAttachment(createvolattoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while attaching volume %q for instance %s: %q", add[i], d.Id(), err)
+					return flex.FmtErrorf("[ERROR] Error while attaching volume %q for instance %s: %q", add[i], d.Id(), err)
 				}
 				_, err = isWaitForInstanceVolumeAttached(instanceC, d, id, *vol.ID)
 				if err != nil {
@@ -5263,7 +5263,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
+							return flex.FmtErrorf("[ERROR] Error while removing volume %q for instance %s: %q", remove[i], d.Id(), err)
 						}
 						_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
 						if err != nil {
@@ -5291,7 +5291,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while creating security group %q for primary network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
+					return flex.FmtErrorf("[ERROR] Error while creating security group %q for primary network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 				}
 				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
@@ -5309,7 +5309,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while removing security group %q for primary network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+					return flex.FmtErrorf("[ERROR] Error while removing security group %q for primary network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 				}
 				_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 				if err != nil {
@@ -5337,12 +5337,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+			return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err)
 		}
 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 		_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+			return flex.FmtErrorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
 		}
 	}
 
@@ -5361,13 +5361,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		networkInterfacePatch, err := networkInterfacePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for NetworkInterfacePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for NetworkInterfacePatch: %s", err)
 		}
 		updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
 
 		_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating name %s for primary network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
+			return flex.FmtErrorf("[ERROR] Error while updating name %s for primary network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
 		}
 		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
@@ -5403,12 +5403,12 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+					return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err)
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 				_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+					return flex.FmtErrorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
 				}
 			}
 
@@ -5428,7 +5428,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						_, response, err := instanceC.CreateSecurityGroupTargetBinding(createsgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
+							return flex.FmtErrorf("[ERROR] Error while creating security group %q for network interface of instance %s\n%s: %q", add[i], d.Id(), err, response)
 						}
 						_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 						if err != nil {
@@ -5447,7 +5447,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 						}
 						response, err := instanceC.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+							return flex.FmtErrorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 						}
 						_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 						if err != nil {
@@ -5474,13 +5474,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				}
 				networkInterfacePatch, err := instancePatchModel.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling asPatch for NetworkInterfacePatch: %s", err)
+					return flex.FmtErrorf("[ERROR] Error calling asPatch for NetworkInterfacePatch: %s", err)
 				}
 				updatepnicfoptions.NetworkInterfacePatch = networkInterfacePatch
 
 				_, response, err := instanceC.UpdateInstanceNetworkInterface(updatepnicfoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while updating name %s for network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
+					return flex.FmtErrorf("[ERROR] Error while updating name %s for network interface of instance %s\n%s: %q", newName, d.Id(), err, response)
 				}
 				if err != nil {
 					return err
@@ -5501,7 +5501,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
 		}
 		updnetoptions.InstancePatch = instancePatch
 
@@ -5522,7 +5522,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updnetoptions.InstancePatch = instancePatch
 
@@ -5544,7 +5544,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updatedoptions.InstancePatch = instancePatch
 
@@ -5587,7 +5587,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updatedoptions.InstancePatch = instancePatch
 
@@ -5610,7 +5610,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updatedoptions.InstancePatch = instancePatch
 
@@ -5631,7 +5631,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
 		}
 
 		if instance != nil && *instance.Status == "running" {
@@ -5645,7 +5645,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 				if response != nil && response.StatusCode == 404 {
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
 			}
 			_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 			if err != nil {
@@ -5666,13 +5666,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updnetoptions.InstancePatch = instancePatch
 
 		_, response, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error in UpdateInstancePatch: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error in UpdateInstancePatch: %s\n%s", err, response)
 		}
 
 		actiontype := "start"
@@ -5685,7 +5685,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
 		}
 		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
@@ -5699,7 +5699,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	instance, response, err := instanceC.GetInstance(getinsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 	}
 	if d.HasChange(isInstanceTags) {
 		oldList, newList := d.GetChange(isInstanceTags)
@@ -5746,7 +5746,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
 	}
 
 	bootvolid := ""
@@ -5762,7 +5762,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			if response != nil && response.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
 		}
 		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutDelete), id, d)
 		if err != nil {
@@ -5773,7 +5773,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		vols, response, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Listing volume attachments to the instance: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Listing volume attachments to the instance: %s\n%s", err, response)
 		}
 		for _, vol := range vols.VolumeAttachments {
 			if *vol.Type == "data" {
@@ -5783,7 +5783,7 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				_, err := instanceC.DeleteInstanceVolumeAttachment(delvolattoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
+					return flex.FmtErrorf("[ERROR] Error while removing volume Attachment %q for instance %s: %q", *vol.ID, d.Id(), err)
 				}
 				_, err = isWaitForInstanceVolumeDetached(instanceC, d, d.Id(), *vol.ID)
 				if err != nil {
@@ -5845,7 +5845,7 @@ func instanceExists(d *schema.ResourceData, meta interface{}, id string) (bool, 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 	}
 	return true, nil
 }
@@ -5873,10 +5873,10 @@ func isWaitForInstanceDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id 
 				if response != nil && response.StatusCode == 404 {
 					return instance, isInstanceDeleteDone, nil
 				}
-				return nil, "", fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 			}
 			if *instance.Status == isInstanceFailed {
-				return instance, *instance.Status, fmt.Errorf("[ERROR] The  instance %s failed to delete: %v", d.Id(), err)
+				return instance, *instance.Status, flex.FmtErrorf("[ERROR] The  instance %s failed to delete: %v", d.Id(), err)
 			}
 			return instance, isInstanceDeleting, nil
 		},
@@ -5899,7 +5899,7 @@ func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, 
 			}
 			instance, response, err := instanceC.GetInstance(getinsoptions)
 			if err != nil {
-				return nil, "", fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 			}
 			select {
 			case data := <-communicator:
@@ -5910,7 +5910,7 @@ func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, 
 			if *instance.Status == isInstanceStatusFailed {
 				// let know the isRestartStopAction() to stop
 				close(communicator)
-				return instance, *instance.Status, fmt.Errorf("[ERROR] The  instance %s failed to stop: %v", id, err)
+				return instance, *instance.Status, flex.FmtErrorf("[ERROR] The  instance %s failed to stop: %v", id, err)
 			}
 			return instance, *instance.Status, nil
 		},
@@ -5938,7 +5938,7 @@ func isWaitForInstanceActionStart(instanceC *vpcv1.VpcV1, timeout time.Duration,
 			}
 			instance, response, err := instanceC.GetInstance(getinsoptions)
 			if err != nil {
-				return nil, "", fmt.Errorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error Getting Instance: %s\n%s", err, response)
 			}
 			select {
 			case data := <-communicator:
@@ -5949,7 +5949,7 @@ func isWaitForInstanceActionStart(instanceC *vpcv1.VpcV1, timeout time.Duration,
 			if *instance.Status == isInstanceStatusFailed {
 				// let know the isRestartStopAction() to stop
 				close(communicator)
-				return instance, *instance.Status, fmt.Errorf("[ERROR] The  instance %s failed to start: %v", id, err)
+				return instance, *instance.Status, flex.FmtErrorf("[ERROR] The  instance %s failed to start: %v", id, err)
 			}
 			return instance, *instance.Status, nil
 		},
@@ -5981,7 +5981,7 @@ func isRestartStopAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 			}
 			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
 			if err != nil {
-				communicator <- fmt.Errorf("[ERROR] Error retrying instance action stop: %s\n%s", err, response)
+				communicator <- flex.FmtErrorf("[ERROR] Error retrying instance action stop: %s\n%s", err, response)
 				return
 			}
 		case <-communicator:
@@ -6016,7 +6016,7 @@ func isInstanceVolumeRefreshFunc(instanceC *vpcv1.VpcV1, id, volID string) resou
 		}
 		vol, response, err := instanceC.GetInstanceVolumeAttachment(getvolattoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Attaching volume: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Attaching volume: %s\n%s", err, response)
 		}
 
 		if *vol.Status == isInstanceVolumeAttached {
@@ -6042,10 +6042,10 @@ func isWaitForInstanceVolumeDetached(instanceC *vpcv1.VpcV1, d *schema.ResourceD
 				if response != nil && response.StatusCode == 404 {
 					return vol, isInstanceDeleteDone, nil
 				}
-				return nil, "", fmt.Errorf("[ERROR] Error Detaching: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error Detaching: %s\n%s", err, response)
 			}
 			if *vol.Status == isInstanceFailed {
-				return vol, *vol.Status, fmt.Errorf("[ERROR] The instance %s failed to detach volume %s: %v", d.Id(), volID, err)
+				return vol, *vol.Status, flex.FmtErrorf("[ERROR] The instance %s failed to detach volume %s: %v", d.Id(), volID, err)
 			}
 			return vol, isInstanceVolumeDetaching, nil
 		},
@@ -6167,7 +6167,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 	}
 	vniDetails, response, err := instanceC.GetVirtualNetworkInterface(getVirtualNetworkInterfaceOptions)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
+		return nil, flex.FmtErrorf("[ERROR] Error on GetInstanceNetworkAttachment in instance : %s\n%s", err, response)
 	}
 	vniMap["allow_ip_spoofing"] = vniDetails.AllowIPSpoofing
 	vniMap["auto_delete"] = vniDetails.AutoDelete

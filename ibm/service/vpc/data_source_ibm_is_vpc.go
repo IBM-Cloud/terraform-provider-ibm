@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
@@ -518,7 +517,7 @@ func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 		}
 		vpcGet, response, err := sess.GetVPC(getVpcsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching vpc %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching vpc %s\n%s", err, response)
 		}
 		flag = true
 		setVpcDetails(d, vpcGet, meta, sess)
@@ -532,7 +531,7 @@ func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 			}
 			vpcs, response, err := sess.ListVpcs(listVpcsOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching vpcs %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Fetching vpcs %s\n%s", err, response)
 			}
 			start = flex.GetNext(vpcs.Next)
 			allrecs = append(allrecs, vpcs.Vpcs...)
@@ -548,7 +547,7 @@ func vpcGetByNameOrId(d *schema.ResourceData, meta interface{}, name, id string)
 		}
 	}
 	if !flag {
-		return fmt.Errorf("[ERROR] No VPC found with name %s", name)
+		return flex.FmtErrorf("[ERROR] No VPC found with name %s", name)
 	}
 	return nil
 }
@@ -606,11 +605,11 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			}
 		}
 		if err = d.Set("health_reasons", healthReasons); err != nil {
-			return fmt.Errorf("[ERROR] Error setting health_reasons %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting health_reasons %s", err)
 		}
 
 		if err = d.Set("health_state", vpc.HealthState); err != nil {
-			return fmt.Errorf("[ERROR] Error setting health_state: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting health_state: %s", err)
 		}
 
 		controller, err := flex.GetBaseController(meta)
@@ -650,7 +649,7 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			}
 			s, response, err := sess.ListSubnets(options)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error fetching subnets %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error fetching subnets %s\n%s", err, response)
 			}
 			startSub = flex.GetNext(s.Next)
 			allrecsSub = append(allrecsSub, s.Subnets...)
@@ -691,7 +690,7 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 			}
 			sgs, response, err := sess.ListSecurityGroups(listSgOptions)
 			if err != nil || sgs == nil {
-				return fmt.Errorf("[ERROR] Error fetching Security Groups %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error fetching Security Groups %s\n%s", err, response)
 			}
 			if *sgs.TotalCount == int64(0) {
 				break
@@ -815,7 +814,7 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 				return err
 			}
 			if err = d.Set(isVPCDns, []map[string]interface{}{dnsMap}); err != nil {
-				return fmt.Errorf("[ERROR] Error setting dns: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting dns: %s", err)
 			}
 		}
 		return nil
@@ -879,7 +878,7 @@ func dataSourceIBMIsVPCVpcdnsResolverToMap(model vpcv1.VpcdnsResolverIntf) (map[
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized vpcv1.VpcdnsResolverIntf subtype encountered")
+		return nil, flex.FmtErrorf("Unrecognized vpcv1.VpcdnsResolverIntf subtype encountered")
 	}
 }
 

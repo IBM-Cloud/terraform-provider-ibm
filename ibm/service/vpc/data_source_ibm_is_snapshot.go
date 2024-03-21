@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -411,7 +410,7 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 			}
 			snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching snapshots %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error Fetching snapshots %s\n%s", err, response)
 			}
 			start = flex.GetNext(snapshots.Next)
 			allrecs = append(allrecs, snapshots.Snapshots...)
@@ -478,7 +477,7 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 					for _, copiesItem := range snapshot.Copies {
 						copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+							return flex.FmtErrorf("[ERROR] Error fetching snapshot copies: %s", err)
 						}
 						snapshotCopies = append(snapshotCopies, copiesMap)
 					}
@@ -487,7 +486,7 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 
 				if snapshot.UserTags != nil {
 					if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
-						return fmt.Errorf("[ERROR] Error setting user tags: %s", err)
+						return flex.FmtErrorf("[ERROR] Error setting user tags: %s", err)
 					}
 				}
 				if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
@@ -538,17 +537,17 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 				return nil
 			}
 		}
-		return fmt.Errorf("[ERROR] No snapshot found with name %s", name)
+		return flex.FmtErrorf("[ERROR] No snapshot found with name %s", name)
 	} else {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 			ID: &id,
 		}
 		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
 		}
 		if (response != nil && response.StatusCode == 404) || snapshot == nil {
-			return fmt.Errorf("[ERROR] No snapshot found with id %s", id)
+			return flex.FmtErrorf("[ERROR] No snapshot found with id %s", id)
 		}
 		d.SetId(*snapshot.ID)
 		d.Set(isSnapshotName, *snapshot.Name)
@@ -586,7 +585,7 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 			for _, copiesItem := range snapshot.Copies {
 				copiesMap, err := dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(&copiesItem)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error fetching snapshot copies: %s", err)
+					return flex.FmtErrorf("[ERROR] Error fetching snapshot copies: %s", err)
 				}
 				snapshotCopies = append(snapshotCopies, copiesMap)
 			}
@@ -598,7 +597,7 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		}
 		if snapshot.UserTags != nil {
 			if err = d.Set(isSnapshotUserTags, snapshot.UserTags); err != nil {
-				return fmt.Errorf("[ERROR] Error setting user tags: %s", err)
+				return flex.FmtErrorf("[ERROR] Error setting user tags: %s", err)
 			}
 		}
 		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {

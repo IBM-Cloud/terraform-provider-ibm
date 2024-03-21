@@ -1119,12 +1119,12 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 
 	instances, response, err := sess.ListInstances(listInstancesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Fetching Instances %s\n%s", err, response)
 	}
 	allrecs := instances.Instances
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No Instance found with name %s", name)
+		return flex.FmtErrorf("[ERROR] No Instance found with name %s", name)
 	}
 	instance := allrecs[0]
 	d.SetId(*instance.ID)
@@ -1245,7 +1245,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		}
 		insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
 		if insnic.PortSpeed != nil {
 			currentPrimNic[isInstanceNicPortSpeed] = *insnic.PortSpeed
@@ -1310,7 +1310,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				}
 				insnic, response, err := sess.GetInstanceNetworkInterface(getnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
+					return flex.FmtErrorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 				}
 				currentNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 				if len(insnic.SecurityGroups) != 0 {
@@ -1354,14 +1354,14 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
+						return flex.FmtErrorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
 					}
 					isEncrypted := false
 					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
+							return flex.FmtErrorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
 						}
 					} else {
 						isEncrypted = x509.IsEncryptedPEMBlock(block)
@@ -1372,24 +1372,24 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 						if pass, ok := d.GetOk(isInstancePassphrase); ok {
 							passphrase = pass.(string)
 						} else {
-							return fmt.Errorf("[ERROR] Mandatory field 'passphrase' not provided")
+							return flex.FmtErrorf("[ERROR] Mandatory field 'passphrase' not provided")
 						}
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, []byte(passphrase))
 						if err != nil {
-							return fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err)
+							return flex.FmtErrorf("[ERROR] Fail to decrypting the private key: %s", err)
 						}
 					} else {
 						var err error
 						privateKey, err = sshkeys.ParseEncryptedRawPrivateKey(keybytes, nil)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Fail to decrypting the private key: %s", err)
+							return flex.FmtErrorf("[ERROR] Fail to decrypting the private key: %s", err)
 						}
 					}
 					var ok bool
 					rsaKey, ok = privateKey.(*rsa.PrivateKey)
 					if !ok {
-						return fmt.Errorf("[ERROR] Failed to convert to RSA private key")
+						return flex.FmtErrorf("[ERROR] Failed to convert to RSA private key")
 					}
 				}
 			}
@@ -1401,7 +1401,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 	initParms, response, err := sess.GetInstanceInitialization(getInstanceInitializationOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting instance Initialization: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting instance Initialization: %s\n%s", err, response)
 	}
 	if initParms.Keys != nil {
 		initKeyList := make([]map[string]interface{}, 0)
@@ -1438,7 +1438,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			rng := rand.Reader
 			clearPassword, err := rsa.DecryptPKCS1v15(rng, rsaKey, ciphertext)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Can not decrypt the password with the given key, %s", err)
+				return flex.FmtErrorf("[ERROR] Can not decrypt the password with the given key, %s", err)
 			}
 			password = string(clearPassword)
 		}

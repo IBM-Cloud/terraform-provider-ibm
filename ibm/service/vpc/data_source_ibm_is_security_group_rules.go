@@ -4,10 +4,10 @@
 package vpc
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -146,7 +146,7 @@ func dataSourceIBMIsSecurityGroupRulesRead(d *schema.ResourceData, meta interfac
 
 	ruleList, response, err := sess.ListSecurityGroupRules(&listSecurityGroupRuleOptions)
 	if err != nil {
-		return fmt.Errorf("Error fetching security group rules %s\n%s", err, response)
+		return flex.FmtErrorf("Error fetching security group rules %s\n%s", err, response)
 	}
 
 	rulesInfo := make([]map[string]interface{}, 0)

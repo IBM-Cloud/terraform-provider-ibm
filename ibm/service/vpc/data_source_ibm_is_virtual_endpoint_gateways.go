@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -196,7 +195,7 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 		}
 		result, response, err := sess.ListEndpointGateways(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.EndpointGateways...)

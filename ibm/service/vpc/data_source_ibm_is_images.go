@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -338,7 +337,7 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 		}
 		availableImages, response, err := sess.ListImages(listImagesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Images %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Images %s\n%s", err, response)
 		}
 		start = flex.GetNext(availableImages.Next)
 		allrecs = append(allrecs, availableImages.Images...)

@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -103,7 +102,7 @@ func dataSourceIBMISEndpointGatewayIPsRead(d *schema.ResourceData, meta interfac
 		}
 		result, response, err := sess.ListEndpointGatewayIps(options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error fetching endpoint gateway ips %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error fetching endpoint gateway ips %s\n%s", err, response)
 		}
 		start = flex.GetNext(result.Next)
 		allrecs = append(allrecs, result.Ips...)

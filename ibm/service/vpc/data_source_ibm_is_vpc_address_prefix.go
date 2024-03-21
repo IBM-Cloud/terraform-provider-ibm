@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -119,7 +118,7 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 			}
 			vpcs, response, err := vpcClient.ListVpcs(listVpcsOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("Error Fetching vpcs %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("Error Fetching vpcs %s\n%s", err, response))
 			}
 			start = flex.GetNext(vpcs.Next)
 			allrecs = append(allrecs, vpcs.Vpcs...)
@@ -137,7 +136,7 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 		}
 		if !vpc_found {
 			log.Printf("[DEBUG] VPC with given name not found %s\n", vpc_name)
-			return diag.FromErr(fmt.Errorf("VPC with given name not found %s\n", vpc_name))
+			return diag.FromErr(flex.FmtErrorf("VPC with given name not found %s\n", vpc_name))
 		}
 	}
 	if address_prefix_id != "" {
@@ -149,7 +148,7 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 		addressPrefix1, response, err := vpcClient.GetVPCAddressPrefixWithContext(context, getVPCAddressPrefixOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetVPCAddressPrefixWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetVPCAddressPrefixWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("GetVPCAddressPrefixWithContext failed %s\n%s", err, response))
 		}
 		addressPrefix = addressPrefix1
 
@@ -166,7 +165,7 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 			addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
 			if err != nil {
 				log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
 			}
 			start = flex.GetNext(addressPrefixCollection.Next)
 			allrecs = append(allrecs, addressPrefixCollection.AddressPrefixes...)
@@ -184,32 +183,32 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 		}
 		if !address_prefix_found {
 			log.Printf("[DEBUG] Address Prefix with given name not found %s\n", address_prefix_name)
-			return diag.FromErr(fmt.Errorf("Address Prefix with given name not found %s\n", address_prefix_name))
+			return diag.FromErr(flex.FmtErrorf("Address Prefix with given name not found %s\n", address_prefix_name))
 		}
 	}
 	d.SetId(*addressPrefix.ID)
 	if err = d.Set("cidr", addressPrefix.CIDR); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting cidr: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting cidr: %s", err))
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(addressPrefix.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if err = d.Set("has_subnets", addressPrefix.HasSubnets); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting has_subnets: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting has_subnets: %s", err))
 	}
 
 	if err = d.Set("href", addressPrefix.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("is_default", addressPrefix.IsDefault); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_default: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting is_default: %s", err))
 	}
 
 	if err = d.Set("name", addressPrefix.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	zone := []map[string]interface{}{}
@@ -221,7 +220,7 @@ func dataSourceIBMIsVPCAddressPrefixRead(context context.Context, d *schema.Reso
 		zone = append(zone, modelMap)
 	}
 	if err = d.Set("zone", zone); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting zone %s", err))
 	}
 
 	return nil

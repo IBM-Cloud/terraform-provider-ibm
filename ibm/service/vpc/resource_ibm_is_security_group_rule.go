@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -248,7 +247,7 @@ func resourceIBMISSecurityGroupRuleCreate(d *schema.ResourceData, meta interface
 
 	rule, response, err := sess.CreateSecurityGroupRule(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while creating Security Group Rule %s\n%s", err, response)
 	}
 	switch reflect.TypeOf(rule).String() {
 	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
@@ -296,7 +295,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
 	}
 	d.Set(isSecurityGroupID, secgrpID)
 	getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
@@ -304,7 +303,7 @@ func resourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 	}
 	sg, response, err := sess.GetSecurityGroup(getSecurityGroupOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Security Group : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Security Group : %s\n%s", err, response)
 	}
 	d.Set(flex.RelatedCRN, *sg.CRN)
 	switch reflect.TypeOf(sgrule).String() {
@@ -421,7 +420,7 @@ func resourceIBMISSecurityGroupRuleUpdate(d *schema.ResourceData, meta interface
 	updateSecurityGroupRuleOptions := sgTemplate
 	_, response, err := sess.UpdateSecurityGroupRule(updateSecurityGroupRuleOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Updating Security Group Rule : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Updating Security Group Rule : %s\n%s", err, response)
 	}
 	return resourceIBMISSecurityGroupRuleRead(d, meta)
 }
@@ -451,7 +450,7 @@ func resourceIBMISSecurityGroupRuleDelete(d *schema.ResourceData, meta interface
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
 	}
 
 	deleteSecurityGroupRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{
@@ -460,7 +459,7 @@ func resourceIBMISSecurityGroupRuleDelete(d *schema.ResourceData, meta interface
 	}
 	response, err = sess.DeleteSecurityGroupRule(deleteSecurityGroupRuleOptions)
 	if err != nil && response.StatusCode != 404 {
-		return fmt.Errorf("[ERROR] Error Deleting Security Group Rule : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Security Group Rule : %s\n%s", err, response)
 	}
 	d.SetId("")
 	return nil
@@ -485,7 +484,7 @@ func resourceIBMISSecurityGroupRuleExists(d *schema.ResourceData, meta interface
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Security Group Rule (%s): %s\n%s", ruleID, err, response)
 	}
 	return true, nil
 }
@@ -493,10 +492,10 @@ func resourceIBMISSecurityGroupRuleExists(d *schema.ResourceData, meta interface
 func parseISTerraformID(s string) (string, string, error) {
 	segments := strings.Split(s, ".")
 	if len(segments) != 2 {
-		return "", "", fmt.Errorf("invalid terraform Id %s (incorrect number of segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (incorrect number of segments)", s)
 	}
 	if segments[0] == "" || segments[1] == "" {
-		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
+		return "", "", flex.FmtErrorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
 }
@@ -599,7 +598,7 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 				if res != nil && res.StatusCode == 404 {
 					return nil, nil, nil, err
 				}
-				return nil, nil, nil, fmt.Errorf("Error getting Security Group in remote (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
+				return nil, nil, nil, flex.FmtErrorf("Error getting Security Group in remote (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
 			}
 		}
 		sgTemplate.Remote = remoteTemplate
@@ -621,7 +620,7 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			}
 			if value, ok := d.GetOk("icmp.0.code"); ok {
 				if !haveType {
-					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
+					return nil, nil, nil, flex.FmtErrorf("icmp code requires icmp type")
 				}
 				parsed.icmpCode = int64(value.(int))
 				sgTemplate.Code = &parsed.icmpCode
@@ -671,7 +670,7 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	}
 	securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
+		return nil, nil, nil, flex.FmtErrorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
 	}
 	if _, ok := d.GetOk("icmp"); ok {
 

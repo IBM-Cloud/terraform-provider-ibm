@@ -178,7 +178,7 @@ func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta int
 
 	instanceGroupMembership, response, err := sess.GetInstanceGroupMembership(&getInstanceGroupMembershipOptions)
 	if err != nil || instanceGroupMembership == nil {
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Membership: %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", instanceGroupID, instanceGroupMembershipID))
 
@@ -201,12 +201,12 @@ func resourceIBMISInstanceGroupMembershipUpdate(d *schema.ResourceData, meta int
 			updateInstanceGroupMembershipOptions.InstanceGroupID = &instanceGroupID
 			instanceGroupMembershipPatch, err := instanceGroupMembershipPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch for InstanceGroupMembershipPatch: %s", err)
+				return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceGroupMembershipPatch: %s", err)
 			}
 			updateInstanceGroupMembershipOptions.InstanceGroupMembershipPatch = instanceGroupMembershipPatch
 			_, response, err := sess.UpdateInstanceGroupMembership(&updateInstanceGroupMembershipOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating InstanceGroup Membership: %s\n%s", err, response)
+				return flex.FmtErrorf("[ERROR] Error updating InstanceGroup Membership: %s\n%s", err, response)
 			}
 		}
 	}
@@ -236,7 +236,7 @@ func resourceIBMISInstanceGroupMembershipRead(d *schema.ResourceData, meta inter
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Membership: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Membership: %s\n%s", err, response)
 	}
 	d.Set(isInstanceGroupMemershipDeleteInstanceOnMembershipDelete, *instanceGroupMembership.DeleteInstanceOnMembershipDelete)
 	d.Set(isInstanceGroupMembership, *instanceGroupMembership.ID)
@@ -293,7 +293,7 @@ func resourceIBMISInstanceGroupMembershipDelete(d *schema.ResourceData, meta int
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup Membership: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting the InstanceGroup Membership: %s\n%s", err, response)
 	}
 	return nil
 }

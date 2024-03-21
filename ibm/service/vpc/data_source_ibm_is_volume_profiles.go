@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -67,7 +66,7 @@ func volumeProfilesList(d *schema.ResourceData, meta interface{}) error {
 		}
 		availableProfiles, response, err := sess.ListVolumeProfiles(listVolumeProfilesOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Volume Profiles %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching Volume Profiles %s\n%s", err, response)
 		}
 		start = flex.GetNext(availableProfiles.Next)
 		allrecs = append(allrecs, availableProfiles.Profiles...)
@@ -79,7 +78,7 @@ func volumeProfilesList(d *schema.ResourceData, meta interface{}) error {
 	// listVolumeProfilesOptions := &vpcv1.ListVolumeProfilesOptions{}
 	// availableProfiles, response, err := sess.ListVolumeProfiles(listVolumeProfilesOptions)
 	// if err != nil {
-	// 	return fmt.Errorf("[ERROR] Error Fetching Volume Profiles %s\n%s", err, response)
+	// 	return flex.FmtErrorf("[ERROR] Error Fetching Volume Profiles %s\n%s", err, response)
 	// }
 	profilesInfo := make([]map[string]interface{}, 0)
 	for _, profile := range allrecs {

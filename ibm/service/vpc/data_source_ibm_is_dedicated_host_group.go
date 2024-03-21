@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -157,58 +157,58 @@ func dataSourceIbmIsDedicatedHostGroupRead(context context.Context, d *schema.Re
 
 		d.SetId(*dedicatedHostGroup.ID)
 		if err = d.Set("class", dedicatedHostGroup.Class); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting class: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting class: %s", err))
 		}
 		if dedicatedHostGroup.CreatedAt != nil {
 			if err = d.Set("created_at", dedicatedHostGroup.CreatedAt.String()); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 			}
 		}
 
 		if err = d.Set("crn", dedicatedHostGroup.CRN); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 		}
 
 		if dedicatedHostGroup.DedicatedHosts != nil {
 			err = d.Set("dedicated_hosts", dataSourceDedicatedHostGroupFlattenDedicatedHosts(dedicatedHostGroup.DedicatedHosts))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting dedicated_hosts %s", err))
 			}
 		}
 		if err = d.Set("family", dedicatedHostGroup.Family); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting family: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting family: %s", err))
 		}
 		if err = d.Set("href", dedicatedHostGroup.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 		}
 
 		if dedicatedHostGroup.ResourceGroup != nil {
 			err = d.Set("resource_group", *dedicatedHostGroup.ResourceGroup.ID)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group %s", err))
 			}
 		}
 		if err = d.Set("resource_type", dedicatedHostGroup.ResourceType); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 		}
 
 		if dedicatedHostGroup.SupportedInstanceProfiles != nil {
 			err = d.Set("supported_instance_profiles", dataSourceDedicatedHostGroupFlattenSupportedInstanceProfiles(dedicatedHostGroup.SupportedInstanceProfiles))
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting supported_instance_profiles %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting supported_instance_profiles %s", err))
 			}
 		}
 
 		if dedicatedHostGroup.Zone != nil {
 			err = d.Set("zone", *dedicatedHostGroup.Zone.Name)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting zone %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting zone %s", err))
 			}
 		}
 		return nil
 
 	}
-	return diag.FromErr(fmt.Errorf("[ERROR] No Dedicated Host Group found with name %s", name))
+	return diag.FromErr(flex.FmtErrorf("[ERROR] No Dedicated Host Group found with name %s", name))
 }
 
 func dataSourceDedicatedHostGroupFlattenDedicatedHosts(result []vpcv1.DedicatedHostReference) (dedicatedHosts []map[string]interface{}) {

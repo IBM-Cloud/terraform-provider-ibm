@@ -1459,7 +1459,7 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			}
 		}
 		if !flag {
-			return diag.FromErr(fmt.Errorf("[ERROR] No Instance Template found with name %s", name))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] No Instance Template found with name %s", name))
 		}
 	}
 	return nil

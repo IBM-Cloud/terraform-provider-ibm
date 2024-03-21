@@ -4,8 +4,7 @@
 package vpc
 
 import (
-	"fmt"
-
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -92,13 +91,13 @@ func resourceIBMisDedicatedHostDiskManagementCreate(d *schema.ResourceData, meta
 
 		dedicatedHostDiskPatch, err := dedicatedHostDiskPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err)
 		}
 		updateDedicatedHostDiskOptions.SetDedicatedHostDiskPatch(dedicatedHostDiskPatch)
 
 		_, _, err = sess.UpdateDedicatedHostDisk(updateDedicatedHostDiskOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling UpdateDedicatedHostDisk: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling UpdateDedicatedHostDisk: %s", err)
 		}
 
 	}
@@ -129,13 +128,13 @@ func resourceIBMisDedicatedHostDiskManagementUpdate(d *schema.ResourceData, meta
 
 			dedicatedHostDiskPatch, err := dedicatedHostDiskPatchModel.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err)
+				return flex.FmtErrorf("[ERROR] Error calling asPatch for DedicatedHostDiskPatch: %s", err)
 			}
 			updateDedicatedHostDiskOptions.SetDedicatedHostDiskPatch(dedicatedHostDiskPatch)
 
 			_, response, err := sess.UpdateDedicatedHostDisk(updateDedicatedHostDiskOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating dedicated host disk: %s %s", err, response)
+				return flex.FmtErrorf("[ERROR] Error updating dedicated host disk: %s %s", err, response)
 			}
 
 		}

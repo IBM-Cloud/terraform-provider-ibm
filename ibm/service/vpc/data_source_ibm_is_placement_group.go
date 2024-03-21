@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -127,32 +126,32 @@ func dataSourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resour
 
 			d.SetId(*placementGroup.ID)
 			if err = d.Set("created_at", placementGroup.CreatedAt.String()); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 			}
 			if err = d.Set("crn", placementGroup.CRN); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting crn: %s", err))
 			}
 			if err = d.Set("href", placementGroup.Href); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 			}
 			if err = d.Set("lifecycle_state", placementGroup.LifecycleState); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 			}
 			if err = d.Set("name", placementGroup.Name); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 			}
 
 			if placementGroup.ResourceGroup != nil {
 				err = d.Set("resource_group", dataSourcePlacementGroupFlattenResourceGroup(*placementGroup.ResourceGroup))
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group %s", err))
+					return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_group %s", err))
 				}
 			}
 			if err = d.Set("resource_type", placementGroup.ResourceType); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 			}
 			if err = d.Set("strategy", placementGroup.Strategy); err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error setting strategy: %s", err))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting strategy: %s", err))
 			}
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, *placementGroup.CRN, "", isUserTagType)
 			if err != nil {
@@ -171,7 +170,7 @@ func dataSourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resour
 			return nil
 		}
 	}
-	return diag.FromErr(fmt.Errorf("[ERROR] No placement group found with name %s", pgname))
+	return diag.FromErr(flex.FmtErrorf("[ERROR] No placement group found with name %s", pgname))
 }
 
 func dataSourcePlacementGroupFlattenResourceGroup(result vpcv1.ResourceGroupReference) (finalList []map[string]interface{}) {

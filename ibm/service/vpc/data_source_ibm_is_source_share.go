@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,25 +70,25 @@ func dataSourceIbmIsSourceShareRead(context context.Context, d *schema.ResourceD
 			return nil
 		}
 		log.Printf("[DEBUG] GetShareWithContext failed %s\n", err)
-		return diag.FromErr(fmt.Errorf("[DEBUG] GetShareWithContext failed %s\n", err))
+		return diag.FromErr(flex.FmtErrorf("[DEBUG] GetShareWithContext failed %s\n", err))
 	}
 
 	d.SetId(*share.ID)
 
 	if err = d.Set("crn", share.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting crn: %s", err))
 	}
 
 	if err = d.Set("href", share.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("name", share.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	if err = d.Set("resource_type", share.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	return nil

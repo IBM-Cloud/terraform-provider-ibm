@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -95,30 +94,30 @@ func dataSourceIBMIsLbListenerPolicyRuleRead(context context.Context, d *schema.
 	loadBalancerListenerPolicyRule, response, err := vpcClient.GetLoadBalancerListenerPolicyRuleWithContext(context, getLoadBalancerListenerPolicyRuleOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetLoadBalancerListenerPolicyRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLoadBalancerListenerPolicyRuleWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetLoadBalancerListenerPolicyRuleWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*loadBalancerListenerPolicyRule.ID)
 	if err = d.Set("condition", loadBalancerListenerPolicyRule.Condition); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting condition: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting condition: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(loadBalancerListenerPolicyRule.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("field", loadBalancerListenerPolicyRule.Field); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting field: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting field: %s", err))
 	}
 	if err = d.Set("href", loadBalancerListenerPolicyRule.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("provisioning_status", loadBalancerListenerPolicyRule.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting provisioning_status: %s", err))
 	}
 	if err = d.Set("type", loadBalancerListenerPolicyRule.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting type: %s", err))
 	}
 	if err = d.Set("value", loadBalancerListenerPolicyRule.Value); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting value: %s", err))
 	}
 
 	return nil

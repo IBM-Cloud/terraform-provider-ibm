@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
@@ -185,7 +184,7 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 		}
 		sgs, response, err := sess.ListSecurityGroups(listSgOptions)
 		if err != nil || sgs == nil {
-			return fmt.Errorf("[ERROR] Error Getting Security Groups %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting Security Groups %s\n%s", err, response)
 		}
 		if *sgs.TotalCount == int64(0) {
 			break
@@ -332,6 +331,6 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Security Group found with name %s", name)
+	return flex.FmtErrorf("[ERROR] No Security Group found with name %s", name)
 
 }

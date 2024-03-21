@@ -1498,7 +1498,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			}
 		}
 		if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-			return fmt.Errorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+			return flex.FmtErrorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -1591,10 +1591,10 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 				// }
 			}
 			if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+				return flex.FmtErrorf("[ERROR] Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
 			}
 			if reservedIp != "" && (PrimaryIpv4Address != "" || reservedIpAddress != "" || reservedIpName != "" || okAuto) {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -1657,7 +1657,7 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 
 	instanceIntf, response, err := sess.CreateInstanceTemplate(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating InstanceTemplate: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error creating InstanceTemplate: %s\n%s", err, response)
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.SetId(*instance.ID)
@@ -1974,7 +1974,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			}
 		}
 		if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-			return fmt.Errorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+			return flex.FmtErrorf("[ERROR] Error creating instance template, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
 		}
 		if reservedIp != "" {
 			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2067,10 +2067,10 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 				// }
 			}
 			if PrimaryIpv4Address != "" && reservedIpAddress != "" && PrimaryIpv4Address != reservedIpAddress {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
+				return flex.FmtErrorf("[ERROR] Error creating instance template, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", PrimaryIpv4Address, reservedIpAddress)
 			}
 			if reservedIp != "" && (PrimaryIpv4Address != "" || reservedIpAddress != "" || reservedIpName != "" || okAuto) {
-				return fmt.Errorf("[ERROR] Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+				return flex.FmtErrorf("[ERROR] Error creating instance template, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
 			}
 			if reservedIp != "" {
 				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
@@ -2133,7 +2133,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 
 	instanceIntf, response, err := sess.CreateInstanceTemplate(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating InstanceTemplate: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error creating InstanceTemplate: %s\n%s", err, response)
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.SetId(*instance.ID)
@@ -2150,7 +2150,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	}
 	instanceIntf, response, err := instanceC.GetInstanceTemplate(getinsOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Instance template: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Instance template: %s\n%s", err, response)
 	}
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.Set(isInstanceTemplateName, *instance.Name)
@@ -2276,7 +2276,7 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		placementTargetMap = resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
 	}
 	if err = d.Set(isInstanceTemplatePlacementTarget, []map[string]interface{}{placementTargetMap}); err != nil {
-		return fmt.Errorf("[ERROR] Error setting placement_target: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting placement_target: %s", err)
 	}
 
 	if instance.PrimaryNetworkInterface != nil {
@@ -2504,7 +2504,7 @@ func instanceTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		instanceTemplatePatch, err := instanceTemplatePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceTemplatePatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceTemplatePatch: %s", err)
 		}
 		updnetoptions.InstanceTemplatePatch = instanceTemplatePatch
 
@@ -2545,7 +2545,7 @@ func instanceTemplateExists(d *schema.ResourceData, meta interface{}, ID string)
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting InstanceTemplate: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting InstanceTemplate: %s\n%s", err, response)
 	}
 	return true, nil
 }

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -173,7 +172,7 @@ func dataSourceIBMIsIkePoliciesRead(context context.Context, d *schema.ResourceD
 		ikePolicyCollection, response, err := vpcClient.ListIkePoliciesWithContext(context, listIkePoliciesOptions)
 		if err != nil || ikePolicyCollection == nil {
 			log.Printf("[DEBUG] ListIkePoliciesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListIkePoliciesWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListIkePoliciesWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(ikePolicyCollection.Next)
 		allrecs = append(allrecs, ikePolicyCollection.IkePolicies...)
@@ -186,7 +185,7 @@ func dataSourceIBMIsIkePoliciesRead(context context.Context, d *schema.ResourceD
 
 	err = d.Set("ike_policies", dataSourceIkePolicyCollectionFlattenIkePolicies(allrecs))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ike_policies %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting ike_policies %s", err))
 	}
 
 	return nil

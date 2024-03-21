@@ -209,14 +209,14 @@ func resourceIBMIsVPNServerRouteCreate(context context.Context, d *schema.Resour
 	vpnServerRoute, response, err := sess.CreateVPNServerRouteWithContext(context, createVPNServerRouteOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateVPNServerRouteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] CreateVPNServerRouteWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] CreateVPNServerRouteWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createVPNServerRouteOptions.VPNServerID, *vpnServerRoute.ID))
 
 	_, err = isWaitForVPNServerRouteStable(context, sess, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] VPNServer Route failed %s\n", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] VPNServer Route failed %s\n", err))
 	}
 	return resourceIBMIsVPNServerRouteRead(context, d, meta)
 }
@@ -233,7 +233,7 @@ func isWaitForVPNServerRouteStable(context context.Context, sess *vpcv1.VpcV1, d
 			parts, err := flex.SepIdParts(d.Id(), "/")
 			if err != nil {
 				log.Printf("[DEBUG] Getting ID failed %s", err)
-				return nil, "", fmt.Errorf("Error Getting VPC Server: %s", err)
+				return nil, "", flex.FmtErrorf("Error Getting VPC Server: %s", err)
 			}
 
 			getVPNServerRouteOptions.SetVPNServerID(parts[0])
@@ -242,7 +242,7 @@ func isWaitForVPNServerRouteStable(context context.Context, sess *vpcv1.VpcV1, d
 			vpnServerRoute, response, err := sess.GetVPNServerRouteWithContext(context, getVPNServerRouteOptions)
 			if err != nil {
 				log.Printf("[DEBUG] GetVPNServerRouteWithContext failed %s\n%s", err, response)
-				return vpnServerRoute, "", fmt.Errorf("Error Getting VPC Server Route: %s\n%s", err, response)
+				return vpnServerRoute, "", flex.FmtErrorf("Error Getting VPC Server Route: %s\n%s", err, response)
 			}
 
 			if *vpnServerRoute.LifecycleState == "stable" || *vpnServerRoute.LifecycleState == "failed" {
@@ -280,49 +280,49 @@ func resourceIBMIsVPNServerRouteRead(context context.Context, d *schema.Resource
 			return nil
 		}
 		log.Printf("[DEBUG] GetVPNServerRouteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] GetVPNServerRouteWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] GetVPNServerRouteWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("vpn_server", getVPNServerRouteOptions.VPNServerID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpn_server: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vpn_server: %s", err))
 	}
 	if err = d.Set("vpn_route", getVPNServerRouteOptions.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting vpn_route: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting vpn_route: %s", err))
 	}
 
 	if err = d.Set("destination", vpnServerRoute.Destination); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting destination: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting destination: %s", err))
 	}
 	if err = d.Set("action", vpnServerRoute.Action); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting action: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting action: %s", err))
 	}
 	if err = d.Set("name", vpnServerRoute.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(vpnServerRoute.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("health_state", vpnServerRoute.HealthState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting health_state: %s", err))
 	}
 	if vpnServerRoute.HealthReasons != nil {
 		if err := d.Set("health_reasons", resourceVPNServerRouteFlattenHealthReasons(vpnServerRoute.HealthReasons)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_reasons: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting health_reasons: %s", err))
 		}
 	}
 	if err = d.Set("href", vpnServerRoute.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("lifecycle_state", vpnServerRoute.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_state: %s", err))
 	}
 	if vpnServerRoute.LifecycleReasons != nil {
 		if err := d.Set("lifecycle_reasons", resourceVPNServerRouteFlattenLifecycleReasons(vpnServerRoute.LifecycleReasons)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting lifecycle_reasons: %s", err))
 		}
 	}
 	if err = d.Set("resource_type", vpnServerRoute.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 
 	return nil
@@ -358,11 +358,11 @@ func resourceIBMIsVPNServerRouteUpdate(context context.Context, d *schema.Resour
 		_, response, err := sess.UpdateVPNServerRouteWithContext(context, updateVPNServerRouteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateVPNServerRouteWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] UpdateVPNServerRouteWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] UpdateVPNServerRouteWithContext failed %s\n%s", err, response))
 		}
 		_, err = isWaitForVPNServerRouteStable(context, sess, d, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] VPNServer Route failed %s\n", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] VPNServer Route failed %s\n", err))
 		}
 	}
 
@@ -388,11 +388,11 @@ func resourceIBMIsVPNServerRouteDelete(context context.Context, d *schema.Resour
 	response, err := sess.DeleteVPNServerRouteWithContext(context, deleteVPNServerRouteOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVPNServerRouteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("[ERROR] DeleteVPNServerRouteWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] DeleteVPNServerRouteWithContext failed %s\n%s", err, response))
 	}
 	_, err = isWaitForVPNServerRouteDeleted(context, sess, d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] VPNServer Route failed %s\n", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] VPNServer Route failed %s\n", err))
 	}
 	d.SetId("")
 
@@ -411,7 +411,7 @@ func isWaitForVPNServerRouteDeleted(context context.Context, sess *vpcv1.VpcV1, 
 			parts, err := flex.SepIdParts(d.Id(), "/")
 			if err != nil {
 				log.Printf("[DEBUG] Getting ID failed %s", err)
-				return nil, "", fmt.Errorf("Error Getting VPC Server: %s", err)
+				return nil, "", flex.FmtErrorf("Error Getting VPC Server: %s", err)
 			}
 
 			getVPNServerRouteOptions.SetVPNServerID(parts[0])
@@ -422,7 +422,7 @@ func isWaitForVPNServerRouteDeleted(context context.Context, sess *vpcv1.VpcV1, 
 				if response != nil && response.StatusCode == 404 {
 					return vpnServerRoute, isVPNServerRouteStatusDeleted, nil
 				}
-				return vpnServerRoute, *vpnServerRoute.LifecycleState, fmt.Errorf("The VPC route %s failed to delete: %s\n%s", d.Id(), err, response)
+				return vpnServerRoute, *vpnServerRoute.LifecycleState, flex.FmtErrorf("The VPC route %s failed to delete: %s\n%s", d.Id(), err, response)
 			}
 			return vpnServerRoute, *vpnServerRoute.LifecycleState, nil
 

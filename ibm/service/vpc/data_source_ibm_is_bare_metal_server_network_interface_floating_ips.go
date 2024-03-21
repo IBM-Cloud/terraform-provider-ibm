@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -104,7 +104,7 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceFloatingIPsRead(context conte
 
 	fips, response, err := sess.ListBareMetalServerNetworkInterfaceFloatingIpsWithContext(context, options)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error fetching floating IPs for bare metal server %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error fetching floating IPs for bare metal server %s\n%s", err, response))
 	}
 	allFloatingIPs = append(allFloatingIPs, fips.FloatingIps...)
 	fipInfo := make([]map[string]interface{}, 0)

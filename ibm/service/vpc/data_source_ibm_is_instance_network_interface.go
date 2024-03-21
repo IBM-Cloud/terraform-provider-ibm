@@ -267,7 +267,7 @@ func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *sch
 
 		instances, response, err := vpcClient.ListInstancesWithContext(context, listInstancesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Fetching Instances %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error Fetching Instances %s\n%s", err, response))
 		}
 		start = flex.GetNext(instances.Next)
 		allrecs = append(allrecs, instances.Instances...)
@@ -287,36 +287,36 @@ func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *sch
 
 			if err != nil {
 				log.Printf("[DEBUG] ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response))
+				return diag.FromErr(flex.FmtErrorf("ListSecurityGroupNetworkInterfacesWithContext failed %s\n%s", err, response))
 			}
 			network_interface_name := d.Get("network_interface_name").(string)
 			for _, networkInterface := range networkInterfaceCollection.NetworkInterfaces {
 				if *networkInterface.Name == network_interface_name {
 					d.SetId(fmt.Sprintf("%s/%s", ins_id, *networkInterface.ID))
 					if err = d.Set("allow_ip_spoofing", networkInterface.AllowIPSpoofing); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting allow_ip_spoofing: %s", err))
 					}
 					if err = d.Set("created_at", flex.DateTimeToString(networkInterface.CreatedAt)); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 					}
 
 					if networkInterface.FloatingIps != nil {
 						err = d.Set("floating_ips", dataSourceNetworkInterfaceFlattenFloatingIps(networkInterface.FloatingIps))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error setting floating_ips %s", err))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting floating_ips %s", err))
 						}
 					}
 					if err = d.Set("href", networkInterface.Href); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 					}
 					if err = d.Set("name", networkInterface.Name); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 					}
 					if err = d.Set("port_speed", flex.IntValue(networkInterface.PortSpeed)); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting port_speed: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting port_speed: %s", err))
 					}
 					if err = d.Set("primary_ipv4_address", networkInterface.PrimaryIP.Address); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_ipv4_address: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting primary_ipv4_address: %s", err))
 					}
 					if networkInterface.PrimaryIP != nil {
 						// reserved ip changes
@@ -341,36 +341,36 @@ func dataSourceIBMIsInstanceNetworkInterfaceRead(context context.Context, d *sch
 						d.Set(isInstanceNicPrimaryIP, primaryIpList)
 					}
 					if err = d.Set("resource_type", networkInterface.ResourceType); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 					}
 
 					if networkInterface.SecurityGroups != nil {
 						err = d.Set("security_groups", dataSourceNetworkInterfaceFlattenSecurityGroups(networkInterface.SecurityGroups))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error setting security_groups %s", err))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting security_groups %s", err))
 						}
 					}
 					if err = d.Set("status", networkInterface.Status); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting status: %s", err))
 					}
 
 					if networkInterface.Subnet != nil {
 						err = d.Set("subnet", dataSourceNetworkInterfaceFlattenSubnet(*networkInterface.Subnet))
 						if err != nil {
-							return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnet %s", err))
+							return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting subnet %s", err))
 						}
 					}
 					if err = d.Set("type", networkInterface.Type); err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+						return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting type: %s", err))
 					}
 					return nil
 				}
 			}
-			return diag.FromErr(fmt.Errorf("Network interface %s not found.", network_interface_name))
+			return diag.FromErr(flex.FmtErrorf("Network interface %s not found.", network_interface_name))
 		}
 	}
 
-	return diag.FromErr(fmt.Errorf("Instance %s not found. %s", instance_name, err))
+	return diag.FromErr(flex.FmtErrorf("Instance %s not found. %s", instance_name, err))
 }
 
 func dataSourceNetworkInterfaceFlattenFloatingIps(result []vpcv1.FloatingIPReference) (floatingIps []map[string]interface{}) {

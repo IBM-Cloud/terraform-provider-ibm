@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -161,7 +160,7 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 		}
 		publicgws, response, err := sess.ListPublicGateways(listPublicGatewaysOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching public gateways %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Fetching public gateways %s\n%s", err, response)
 		}
 		start = flex.GetNext(publicgws.Next)
 		allrecs = append(allrecs, publicgws.PublicGateways...)

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -154,7 +153,7 @@ func dataSourceIBMIsVPNServerRoutesRead(context context.Context, d *schema.Resou
 		vpnServerRouteCollection, response, err := sess.ListVPNServerRoutesWithContext(context, listVPNServerRoutesOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVPNServerRoutesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("[ERROR] ListVPNServerRoutesWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] ListVPNServerRoutesWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(vpnServerRouteCollection.Next)
 		allrecs = append(allrecs, vpnServerRouteCollection.Routes...)
@@ -168,7 +167,7 @@ func dataSourceIBMIsVPNServerRoutesRead(context context.Context, d *schema.Resou
 	if allrecs != nil {
 		err = d.Set("routes", dataSourceVPNServerRouteCollectionFlattenRoutes(allrecs))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting routes %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting routes %s", err))
 		}
 	}
 

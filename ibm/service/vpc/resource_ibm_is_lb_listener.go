@@ -470,7 +470,7 @@ func isLBListenerRefreshFunc(sess *vpcv1.VpcV1, lbID, lbListenerID string) resou
 		}
 		lblis, response, err := sess.GetLoadBalancerListener(getLoadBalancerListenerOptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Load Balancer Listener: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Load Balancer Listener: %s\n%s", err, response)
 		}
 
 		if *lblis.ProvisioningStatus == "active" || *lblis.ProvisioningStatus == "failed" {
@@ -847,7 +847,7 @@ func isLBListenerDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbListenerID string) 
 			if response != nil && response.StatusCode == 404 {
 				return lbLis, isLBListenerDeleted, nil
 			}
-			return nil, "", fmt.Errorf("[ERROR] The vpc load balancer listener %s failed to delete: %s\n%s", lbListenerID, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] The vpc load balancer listener %s failed to delete: %s\n%s", lbListenerID, err, response)
 		}
 		return lbLis, isLBListenerDeleting, nil
 	}
@@ -860,7 +860,7 @@ func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bo
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbListenerID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbListenerID", d.Id())
 	}
 	lbID := parts[0]
 	lbListenerID := parts[1]
@@ -885,7 +885,7 @@ func lbListenerExists(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting Load balancer Listener: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error getting Load balancer Listener: %s\n%s", err, response)
 	}
 	return true, nil
 }

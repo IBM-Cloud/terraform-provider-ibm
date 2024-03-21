@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -119,7 +118,7 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 		addressPrefixCollection, response, err := vpcClient.ListVPCAddressPrefixesWithContext(context, listVpcAddressPrefixesOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVpcAddressPrefixesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ListVpcAddressPrefixesWithContext failed %s\n%s", err, response))
 		}
 		start = flex.GetNext(addressPrefixCollection.Next)
 		allrecs = append(allrecs, addressPrefixCollection.AddressPrefixes...)
@@ -147,7 +146,7 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 
 	if suppliedFilter {
 		if len(matchAddressPrefixes) == 0 {
-			return diag.FromErr(fmt.Errorf("no AddressPrefixes found with name %s", name))
+			return diag.FromErr(flex.FmtErrorf("no AddressPrefixes found with name %s", name))
 		}
 		d.SetId(name)
 	} else {
@@ -157,7 +156,7 @@ func dataSourceIbmIsVpcAddressPrefixRead(context context.Context, d *schema.Reso
 	if matchAddressPrefixes != nil {
 		err = d.Set("address_prefixes", dataSourceAddressPrefixCollectionFlattenAddressPrefixes(matchAddressPrefixes))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting address_prefixes %s", err))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting address_prefixes %s", err))
 		}
 	}
 

@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -202,33 +201,33 @@ func dataSourceIBMIsLbListenerPolicyRead(context context.Context, d *schema.Reso
 	loadBalancerListenerPolicy, response, err := vpcClient.GetLoadBalancerListenerPolicyWithContext(context, getLoadBalancerListenerPolicyOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetLoadBalancerListenerPolicyWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetLoadBalancerListenerPolicyWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetLoadBalancerListenerPolicyWithContext failed %s\n%s", err, response))
 	}
 	d.SetId(*loadBalancerListenerPolicy.ID)
 	if err = d.Set("action", loadBalancerListenerPolicy.Action); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting action: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting action: %s", err))
 	}
 
 	if err = d.Set("created_at", loadBalancerListenerPolicy.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("href", loadBalancerListenerPolicy.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("name", loadBalancerListenerPolicy.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 	if err = d.Set("priority", flex.IntValue(loadBalancerListenerPolicy.Priority)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting priority: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting priority: %s", err))
 	}
 	if err = d.Set("provisioning_status", loadBalancerListenerPolicy.ProvisioningStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provisioning_status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting provisioning_status: %s", err))
 	}
 
 	if loadBalancerListenerPolicy.Rules != nil {
 		err = d.Set("rules", dataSourceLoadBalancerListenerPolicyFlattenRules(loadBalancerListenerPolicy.Rules))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting rules %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting rules %s", err))
 		}
 	}
 
@@ -236,7 +235,7 @@ func dataSourceIBMIsLbListenerPolicyRead(context context.Context, d *schema.Reso
 		target := loadBalancerListenerPolicy.Target.(*vpcv1.LoadBalancerListenerPolicyTarget)
 		err = d.Set("target", dataSourceLoadBalancerListenerPolicyFlattenTarget(*target))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting target %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting target %s", err))
 		}
 	}
 

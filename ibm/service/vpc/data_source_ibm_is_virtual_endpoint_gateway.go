@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -158,12 +157,12 @@ func dataSourceIBMISEndpointGatewayRead(
 
 	results, response, err := sess.ListEndpointGateways(options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching endpoint gateways %s\n%s", err, response)
 	}
 	allrecs := results.EndpointGateways
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No Virtual Endpoints Gateway found with given name %s", name)
+		return flex.FmtErrorf("[ERROR] No Virtual Endpoints Gateway found with given name %s", name)
 	}
 	result := allrecs[0]
 	d.SetId(*result.ID)

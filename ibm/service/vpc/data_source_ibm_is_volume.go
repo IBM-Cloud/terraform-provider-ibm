@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -307,12 +306,12 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 	listVolumesOptions.Name = &name
 	vols, response, err := sess.ListVolumes(listVolumesOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Fetching volumes %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Fetching volumes %s\n%s", err, response)
 	}
 	allrecs := vols.Volumes
 
 	if len(allrecs) == 0 {
-		return fmt.Errorf("[ERROR] No Volume found with name %s", name)
+		return flex.FmtErrorf("[ERROR] No Volume found with name %s", name)
 	}
 	vol := allrecs[0]
 	d.SetId(*vol.ID)

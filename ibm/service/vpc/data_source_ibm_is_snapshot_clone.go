@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -68,7 +67,7 @@ func getSnapshotClone(context context.Context, d *schema.ResourceData, meta inte
 
 	clone, response, err := sess.GetSnapshotCloneWithContext(context, getSnapshotCloneOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error fetching snapshot(%s) clone(%s) %s\n%s", id, zone, err, response)
+		return flex.FmtErrorf("[ERROR] Error fetching snapshot(%s) clone(%s) %s\n%s", id, zone, err, response)
 	}
 
 	if clone != nil && clone.Zone != nil {
@@ -79,7 +78,7 @@ func getSnapshotClone(context context.Context, d *schema.ResourceData, meta inte
 			d.Set(isSnapshotCloneCreatedAt, flex.DateTimeToString(clone.CreatedAt))
 		}
 	} else {
-		return fmt.Errorf("[ERROR] No snapshot(%s) clone(%s) found", id, zone)
+		return flex.FmtErrorf("[ERROR] No snapshot(%s) clone(%s) found", id, zone)
 	}
 	return nil
 }

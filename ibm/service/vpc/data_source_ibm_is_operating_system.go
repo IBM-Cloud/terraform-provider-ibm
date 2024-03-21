@@ -4,8 +4,7 @@
 package vpc
 
 import (
-	"fmt"
-
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -93,7 +92,7 @@ func osGet(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 	os, response, err := sess.GetOperatingSystem(getOperatingSystemOptions)
 	if err != nil || os == nil {
-		return fmt.Errorf("[ERROR] Error Getting Operating System Details %s , %s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Operating System Details %s , %s", err, response)
 	}
 	d.Set(isOperatingSystemName, *os.Name)
 	d.SetId(*os.Name)

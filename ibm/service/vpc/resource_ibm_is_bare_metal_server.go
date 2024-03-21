@@ -1856,7 +1856,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	createbmsoptions.BareMetalServerPrototype = options
 	bms, response, err := sess.CreateBareMetalServerWithContext(context, createbmsoptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
 	}
 	d.SetId(*bms.ID)
 	log.Printf("[INFO] Bare Metal Server : %s", *bms.ID)
@@ -1909,7 +1909,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	d.SetId(*bms.ID)
 	d.Set(isBareMetalServerBandwidth, bms.Bandwidth)
@@ -1932,7 +1932,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
-		return fmt.Errorf("[ERROR] Error setting enable_secure_boot: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting enable_secure_boot: %s", err)
 	}
 
 	// tpm
@@ -1942,7 +1942,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			return (err)
 		}
 		if err = d.Set(isBareMetalServerTrustedPlatformModule, []map[string]interface{}{trustedPlatformModuleMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting trusted_platform_module: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting trusted_platform_module: %s", err)
 		}
 	}
 
@@ -1975,7 +1975,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) initialization: %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s) initialization: %s\n%s", id, err, response)
 	}
 	if bmsinitialization != nil && bmsinitialization.Image.ID != nil {
 		d.Set(isBareMetalServerImage, *bmsinitialization.Image.ID)
@@ -2006,7 +2006,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 		bmsnic, response, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, getnicoptions)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting primary network interface attached to the bare metal server %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error getting primary network interface attached to the bare metal server %s\n%s", err, response)
 		}
 
 		if bms.PrimaryNetworkInterface.PrimaryIP != nil {
@@ -2037,7 +2037,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			}
 			bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server primary network interface(%s): %s\n%s", *bms.PrimaryNetworkInterface.PrimaryIP.ID, *bms.PrimaryNetworkInterface.ID, err, response)
+				return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server primary network interface(%s): %s\n%s", *bms.PrimaryNetworkInterface.PrimaryIP.ID, *bms.PrimaryNetworkInterface.ID, err, response)
 			}
 			currentIP[isBareMetalServerNicIpAutoDelete] = bmsRip.AutoDelete
 		}
@@ -2143,7 +2143,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				}
 				bmsnicintf, response, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, getnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interface(%s) attached to the bare metal server(%s) %s\n%s", nicId, id, err, response)
+					return flex.FmtErrorf("[ERROR] Error getting network interface(%s) attached to the bare metal server(%s) %s\n%s", nicId, id, err, response)
 				}
 				if intfc.PrimaryIP != nil {
 					primaryIpList := make([]map[string]interface{}, 0)
@@ -2166,7 +2166,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 						}
 						bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", ripId, nicId, err, response)
+							return flex.FmtErrorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", ripId, nicId, err, response)
 						}
 						if bmsRip.AutoDelete != nil {
 							currentIP[isBareMetalServerNicIpAutoDelete] = *bmsRip.AutoDelete
@@ -2838,7 +2838,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					d.SetId("")
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
+				return flex.FmtErrorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
 			}
 			bmscrn = *bms.CRN
 		}
@@ -2915,12 +2915,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						}
 						networkInterfacePatch, err := bmsPatchModel.AsPatch()
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch: %s", err)
+							return flex.FmtErrorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch: %s", err)
 						}
 						updatepnicfoptions.BareMetalServerNetworkInterfacePatch = networkInterfacePatch
 						_, response, err := sess.UpdateBareMetalServerNetworkInterface(updatepnicfoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while updating network interface(%s) of bar emetal server(%s) \n%s: %q", networkId, d.Id(), err, response)
+							return flex.FmtErrorf("[ERROR] Error while updating network interface(%s) of bar emetal server(%s) \n%s: %q", networkId, d.Id(), err, response)
 						}
 						ns.Remove(nA)
 						os.Remove(oA)
@@ -3355,12 +3355,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		// 		}
 		// 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 		// 		if err != nil {
-		// 			return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+		// 			return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err)
 		// 		}
 		// 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 		// 		_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
 		// 		if err != nil {
-		// 			return fmt.Errorf("[ERROR] Error updating bare metal server network interface reserved ip(%s): %s\n%s", ripId, err, response)
+		// 			return flex.FmtErrorf("[ERROR] Error updating bare metal server network interface reserved ip(%s): %s\n%s", ripId, err, response)
 		// 		}
 		// 	}
 
@@ -3380,7 +3380,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		// 				}
 		// 				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
 		// 				if err != nil {
-		// 					return fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
+		// 					return flex.FmtErrorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
 		// 				}
 		// 			}
 
@@ -3395,7 +3395,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		// 				}
 		// 				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 		// 				if err != nil {
-		// 					return fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+		// 					return flex.FmtErrorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
 		// 				}
 		// 			}
 		// 		}
@@ -3453,12 +3453,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			}
 			reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+				return flex.FmtErrorf("[ERROR] Error calling reserved ip as patch \n%s", err)
 			}
 			updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
 			_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating bare metal server primary network interface reserved ip(%s): %s\n%s", ripId, err, response)
+				return flex.FmtErrorf("[ERROR] Error updating bare metal server primary network interface reserved ip(%s): %s\n%s", ripId, err, response)
 			}
 		}
 		bmsNicUpdateOptions := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
@@ -3509,7 +3509,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					}
 					_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error while creating security group %q for primary network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
+						return flex.FmtErrorf("[ERROR] Error while creating security group %q for primary network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
 					}
 					_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
 					if err != nil {
@@ -3527,7 +3527,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					}
 					response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error while removing security group %q for primary network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response)
+						return flex.FmtErrorf("[ERROR] Error while removing security group %q for primary network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response)
 					}
 					_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
 					if err != nil {
@@ -3570,12 +3570,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	if flag {
 		bmsPatch, err := bmsPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerPatch: %s", err)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for BareMetalServerPatch: %s", err)
 		}
 		options.BareMetalServerPatch = bmsPatch
 		_, response, err := sess.UpdateBareMetalServerWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response)
 		}
 	}
 
@@ -3631,7 +3631,7 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	if *bms.Status == "running" {
 
@@ -3642,7 +3642,7 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 
 		response, err := sess.StopBareMetalServerWithContext(context, options)
 		if err != nil && response != nil && response.StatusCode != 204 {
-			return fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+			return flex.FmtErrorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
 		}
 		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
 
@@ -3652,7 +3652,7 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 	}
 	response, err = sess.DeleteBareMetalServerWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Bare Metal Server : %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting Bare Metal Server : %s\n%s", err, response)
 	}
 	_, err = isWaitForBareMetalServerDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -3687,10 +3687,10 @@ func isBareMetalServerDeleteRefreshFunc(bmsC *vpcv1.VpcV1, id string) resource.S
 			if response != nil && response.StatusCode == 404 {
 				return bms, isBareMetalServerActionDeleted, nil
 			}
-			return bms, "", fmt.Errorf("[ERROR] Error Getting Bare Metal Server: %s\n%s", err, response)
+			return bms, "", flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server: %s\n%s", err, response)
 		}
 		if *bms.Status == isBareMetalServerStatusFailed {
-			return bms, *bms.Status, fmt.Errorf("[ERROR] The Bare Metal Server (%s) failed to delete: %v", *bms.ID, err)
+			return bms, *bms.Status, flex.FmtErrorf("[ERROR] The Bare Metal Server (%s) failed to delete: %v", *bms.ID, err)
 		}
 		return bms, isBareMetalServerActionDeleting, err
 	}
@@ -3717,7 +3717,7 @@ func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.Reso
 		}
 		bms, response, err := client.GetBareMetalServer(bmsgetoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
 		}
 		d.Set(isBareMetalServerStatus, *bms.Status)
 
@@ -3753,9 +3753,9 @@ func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.Reso
 
 				out, err := json.MarshalIndent(bmsStatusReason, "", "    ")
 				if err != nil {
-					return bms, *bms.Status, fmt.Errorf("[ERROR] The Bare Metal Server (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted bare metal server and attempt to create the bare metal server again replacing the previous configuration", *bms.ID)
+					return bms, *bms.Status, flex.FmtErrorf("[ERROR] The Bare Metal Server (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted bare metal server and attempt to create the bare metal server again replacing the previous configuration", *bms.ID)
 				}
-				return bms, *bms.Status, fmt.Errorf("[ERROR] Bare Metal Server (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted Bare Metal Server and attempt to create the Bare Metal Server again replacing the previous configuration", *bms.ID, string(out))
+				return bms, *bms.Status, flex.FmtErrorf("[ERROR] Bare Metal Server (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted Bare Metal Server and attempt to create the Bare Metal Server again replacing the previous configuration", *bms.ID, string(out))
 			}
 			return bms, *bms.Status, nil
 
@@ -3775,7 +3775,7 @@ func isWaitForBareMetalServerActionStop(bmsC *vpcv1.VpcV1, timeout time.Duration
 			}
 			bms, response, err := bmsC.GetBareMetalServer(getbmsoptions)
 			if err != nil {
-				return nil, "", fmt.Errorf("[ERROR] Error Getting Bare Metal Server: %s\n%s", err, response)
+				return nil, "", flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server: %s\n%s", err, response)
 			}
 			select {
 			case data := <-communicator:
@@ -3786,7 +3786,7 @@ func isWaitForBareMetalServerActionStop(bmsC *vpcv1.VpcV1, timeout time.Duration
 			if *bms.Status == isBareMetalServerStatusFailed {
 				// let know the isRestartStopAction() to stop
 				close(communicator)
-				return bms, *bms.Status, fmt.Errorf("[ERROR] The  Bare Metal Server %s failed to stop: %v", id, err)
+				return bms, *bms.Status, flex.FmtErrorf("[ERROR] The  Bare Metal Server %s failed to stop: %v", id, err)
 			}
 			return bms, *bms.Status, nil
 		},
@@ -3812,7 +3812,7 @@ func isBareMetalServerRestartStopAction(bmsC *vpcv1.VpcV1, id string, d *schema.
 			}
 			response, err := bmsC.StopBareMetalServer(createbmssactoptions)
 			if err != nil {
-				communicator <- fmt.Errorf("[ERROR] Error retrying Bare Metal Server action stop: %s\n%s", err, response)
+				communicator <- flex.FmtErrorf("[ERROR] Error retrying Bare Metal Server action stop: %s\n%s", err, response)
 				return
 			}
 		case <-communicator:
@@ -3833,7 +3833,7 @@ func isBareMetalServerStart(bmsC *vpcv1.VpcV1, id string, d *schema.ResourceData
 		if response != nil && response.StatusCode == 404 {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
+		return nil, flex.FmtErrorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
 	}
 	_, err = isWaitForBareMetalServerAvailable(bmsC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
@@ -3852,7 +3852,7 @@ func isBareMetalServerStop(bmsC *vpcv1.VpcV1, id string, d *schema.ResourceData,
 		if response != nil && response.StatusCode == 404 {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("[ERROR] Error creating Bare Metal Server Action stop: %s\n%s", err, response)
+		return nil, flex.FmtErrorf("[ERROR] Error creating Bare Metal Server Action stop: %s\n%s", err, response)
 	}
 	_, err = isWaitForBareMetalServerActionStop(bmsC, d.Timeout(schema.TimeoutUpdate), d.Id(), d)
 	if err != nil {
@@ -3869,7 +3869,7 @@ func isBareMetalServerRestart(bmsC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 		if response != nil && response.StatusCode == 404 {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("[ERROR] Error creating Bare Metal Server action restart: %s\n%s", err, response)
+		return nil, flex.FmtErrorf("[ERROR] Error creating Bare Metal Server action restart: %s\n%s", err, response)
 	}
 	_, err = isWaitForBareMetalServerAvailable(bmsC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
@@ -3897,7 +3897,7 @@ func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData
 		if response != nil && response.StatusCode == 404 {
 			return isServerStopped, nil
 		}
-		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return isServerStopped, flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	if *bms.Status == "running" {
 
@@ -3908,7 +3908,7 @@ func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData
 
 		response, err := sess.StopBareMetalServerWithContext(context, options)
 		if err != nil && response != nil && response.StatusCode != 204 {
-			return isServerStopped, fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+			return isServerStopped, flex.FmtErrorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
 		}
 		isServerStopped = true
 		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
@@ -3925,7 +3925,7 @@ func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceDat
 		if response != nil && response.StatusCode == 404 {
 			return isServerStopped, nil
 		}
-		return isServerStopped, fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		return isServerStopped, flex.FmtErrorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
 	}
 	if *bms.Status == "stopped" {
 
@@ -3937,7 +3937,7 @@ func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceDat
 			if response != nil && response.StatusCode == 404 {
 				return isServerStopped, nil
 			}
-			return isServerStopped, fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
+			return isServerStopped, flex.FmtErrorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
 		}
 		isServerStopped = true
 		_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)

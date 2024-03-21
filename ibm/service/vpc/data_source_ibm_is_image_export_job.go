@@ -156,45 +156,45 @@ func DataSourceIBMIsImageExportRead(context context.Context, d *schema.ResourceD
 	imageExportJob, response, err := vpcClient.GetImageExportJobWithContext(context, getImageExportJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetImageExportJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetImageExportJobWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetImageExportJobWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getImageExportJobOptions.ImageID, *getImageExportJobOptions.ID))
 
 	if err = d.Set("completed_at", flex.DateTimeToString(imageExportJob.CompletedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting completed_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting completed_at: %s", err))
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(imageExportJob.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if err = d.Set("encrypted_data_key", imageExportJob.EncryptedDataKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encrypted_data_key: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting encrypted_data_key: %s", err))
 	}
 
 	if err = d.Set("format", imageExportJob.Format); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting format: %s", err))
 	}
 
 	if err = d.Set("href", imageExportJob.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 
 	if err = d.Set("name", imageExportJob.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	if err = d.Set("resource_type", imageExportJob.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting resource_type: %s", err))
 	}
 
 	if err = d.Set("started_at", flex.DateTimeToString(imageExportJob.StartedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting started_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting started_at: %s", err))
 	}
 
 	if err = d.Set("status", imageExportJob.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status: %s", err))
 	}
 
 	statusReasons := []map[string]interface{}{}
@@ -208,7 +208,7 @@ func DataSourceIBMIsImageExportRead(context context.Context, d *schema.ResourceD
 		}
 	}
 	if err = d.Set("status_reasons", statusReasons); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status_reasons %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting status_reasons %s", err))
 	}
 
 	storageBucket := []map[string]interface{}{}
@@ -220,11 +220,11 @@ func DataSourceIBMIsImageExportRead(context context.Context, d *schema.ResourceD
 		storageBucket = append(storageBucket, modelMap)
 	}
 	if err = d.Set("storage_bucket", storageBucket); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_bucket %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting storage_bucket %s", err))
 	}
 
 	if err = d.Set("storage_href", imageExportJob.StorageHref); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting storage_href: %s", err))
 	}
 
 	storageObject := []map[string]interface{}{}
@@ -236,7 +236,7 @@ func DataSourceIBMIsImageExportRead(context context.Context, d *schema.ResourceD
 		storageObject = append(storageObject, modelMap)
 	}
 	if err = d.Set("storage_object", storageObject); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting storage_object %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting storage_object %s", err))
 	}
 
 	return nil

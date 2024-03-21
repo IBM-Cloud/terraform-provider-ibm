@@ -4,8 +4,6 @@
 package vpc
 
 import (
-	"fmt"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -87,7 +85,7 @@ func dataSourceIBMISSecurityGroupTargetsRead(d *schema.ResourceData, meta interf
 		}
 		groups, response, err := sess.ListSecurityGroupTargets(listSecurityGroupTargetsOptions)
 		if err != nil || groups == nil {
-			return fmt.Errorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Managers %s\n%s", err, response)
 		}
 		if *groups.TotalCount == int64(0) {
 			break

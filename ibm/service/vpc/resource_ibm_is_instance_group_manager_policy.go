@@ -143,7 +143,7 @@ func resourceIBMISInstanceGroupManagerPolicyCreate(d *schema.ResourceData, meta 
 
 	data, response, err := sess.CreateInstanceGroupManagerPolicy(&createInstanceGroupManagerPolicyOptions)
 	if err != nil || data == nil {
-		return fmt.Errorf("[ERROR] Error Creating InstanceGroup Manager Policy: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Creating InstanceGroup Manager Policy: %s\n%s", err, response)
 	}
 	instanceGroupManagerPolicy := data.(*vpcv1.InstanceGroupManagerPolicy)
 
@@ -195,7 +195,7 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(d *schema.ResourceData, meta 
 
 		instanceGroupManagerPolicyAsPatch, asPatchErr := instanceGroupManagerPolicyPatchModel.AsPatch()
 		if asPatchErr != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for InstanceGroupManagerPolicyPatchModel: %s", asPatchErr)
+			return flex.FmtErrorf("[ERROR] Error calling asPatch for InstanceGroupManagerPolicyPatchModel: %s", asPatchErr)
 		}
 		updateInstanceGroupManagerPolicyOptions.InstanceGroupManagerPolicyPatch = instanceGroupManagerPolicyAsPatch
 
@@ -210,7 +210,7 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(d *schema.ResourceData, meta 
 
 		_, response, err := sess.UpdateInstanceGroupManagerPolicy(&updateInstanceGroupManagerPolicyOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating InstanceGroup Manager Policy: %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error Updating InstanceGroup Manager Policy: %s\n%s", err, response)
 		}
 	}
 	return resourceIBMISInstanceGroupManagerPolicyRead(d, meta)
@@ -241,7 +241,7 @@ func resourceIBMISInstanceGroupManagerPolicyRead(d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Policy: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Manager Policy: %s\n%s", err, response)
 	}
 	instanceGroupManagerPolicy := data.(*vpcv1.InstanceGroupManagerPolicy)
 	d.Set("name", *instanceGroupManagerPolicy.Name)
@@ -289,7 +289,7 @@ func resourceIBMISInstanceGroupManagerPolicyDelete(d *schema.ResourceData, meta 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Deleting the InstanceGroup Manager Policy: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error Deleting the InstanceGroup Manager Policy: %s\n%s", err, response)
 	}
 	return nil
 }
@@ -306,7 +306,7 @@ func resourceIBMISInstanceGroupManagerPolicyExists(d *schema.ResourceData, meta 
 	}
 
 	if len(parts) != 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of instanceGroupID/instanceGroupManagerID/instanceGroupManagerPolicyID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: ID should be a combination of instanceGroupID/instanceGroupManagerID/instanceGroupManagerPolicyID", d.Id())
 	}
 	instanceGroupID := parts[0]
 	instanceGroupManagerID := parts[1]
@@ -323,7 +323,7 @@ func resourceIBMISInstanceGroupManagerPolicyExists(d *schema.ResourceData, meta 
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting InstanceGroup Manager Policy: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting InstanceGroup Manager Policy: %s\n%s", err, response)
 	}
 	return true, nil
 }

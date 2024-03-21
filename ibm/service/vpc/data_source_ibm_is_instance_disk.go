@@ -5,10 +5,10 @@ package vpc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -83,22 +83,22 @@ func dataSourceIbmIsInstanceDiskRead(context context.Context, d *schema.Resource
 
 	d.SetId(*instanceDisk.ID)
 	if err = d.Set("created_at", instanceDisk.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("href", instanceDisk.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting href: %s", err))
 	}
 	if err = d.Set("interface_type", instanceDisk.InterfaceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting interface_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting interface_type: %s", err))
 	}
 	if err = d.Set("name", instanceDisk.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting name: %s", err))
 	}
 	if err = d.Set("resource_type", instanceDisk.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting resource_type: %s", err))
 	}
 	if err = d.Set("size", instanceDisk.Size); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting size: %s", err))
+		return diag.FromErr(flex.FmtErrorf("[ERROR] Error setting size: %s", err))
 	}
 
 	return nil
