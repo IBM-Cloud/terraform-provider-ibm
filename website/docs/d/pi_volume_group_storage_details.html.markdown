@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume_group_storage_details"
@@ -19,13 +18,14 @@ data "ibm_pi_volume_group_storage_details" "ds_volume_group_storage_details" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
+
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -48,7 +48,7 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the volume group.
 - `number_of_volumes` - (Integer) The number of volumes in volume group.
 - `primary_role` - (String) Indicates whether master/aux volume is playing the primary role.
-- `remote_copy_relationship_names` - (List of strings) List of remote-copy relationship names in a volume group.
-- `replication_type` - (String) The type of replication(metro,global).
+- `remote_copy_relationship_names` - (List) List of remote-copy relationship names in a volume group.
+- `replication_type` - (String) The type of replication (metro, global).
 - `state` - (String) The relationship state.
 - `synchronized` - (String) Indicates whether the relationship is synchronized.
