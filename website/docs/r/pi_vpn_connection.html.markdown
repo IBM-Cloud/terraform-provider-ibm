@@ -11,7 +11,7 @@ description: |-
 Update or delete a VPN connection. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ~> **Deprecated:**
-  Create VPN connection is deprecated and no longer supported. Existing `pi_vpn_connection` will still have support for `update` and `delete`.
+  Create VPN connection is deprecated and no longer supported. Existing `pi_vpn_connection` will still have support for `update` and `delete`. See [a new method for creating a VPN connection](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-VPN-connections)
   
 ## Example usage
 The following example creates a VPN Connection.
@@ -48,7 +48,7 @@ The following example creates a VPN Connection.
 
 ibm_pi_vpn_connection provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create** - (Default 20 minutes) Used for creating VPN connection.
+
 - **update** - (Default 20 minutes) Used for updating VPN connection.
 - **delete** - (Default 20 minutes) Used for deleting VPN connection.
 
