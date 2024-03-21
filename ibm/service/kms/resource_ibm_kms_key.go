@@ -149,17 +149,17 @@ func ResourceIBMKmskey() *schema.Resource {
 						"key_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The key id being used in the policy",
+							Description: "The id of the key being used in the registration",
 						},
 						"resource_crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The resource crn tied to the registration of the key",
+							Description: "The CRN of the resource tied to the key registration",
 						},
 						"prevent_key_deletion": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Determines if the registration of a key prevents a deletion.",
+							Description: "Determines if the registration of the key prevents a deletion.",
 						},
 					},
 				},
