@@ -919,27 +919,23 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	authenticator := new(core.IamAuthenticator)
-	authenticator.ApiKey = apiKey
-	authenticator.URL = authEndpointPath
-	optionsRC := new(rcsdk.ResourceConfigurationV1Options)
-	optionsRC.Authenticator = authenticator
+	sess, err := meta.(conns.ClientSession).CosConfigV1API()
+	if err != nil {
+		return err
+	}
 	if endpointType == "private" {
-		optionsRC.URL = "https://config.private.cloud-object-storage.cloud.ibm.com/v1"
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
 	if endpointType == "direct" {
-		optionsRC.URL = "https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
 	}
 
 	if apiType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
 
-		optionsRC.URL = satconfig
+		sess.SetServiceURL(satconfig)
 	}
-	rcClient, clientErr := rcsdk.NewResourceConfigurationV1(optionsRC)
-	if clientErr != nil {
-		return clientErr
-	}
+
 	hasChanged := false
 
 	//BucketName
@@ -1030,7 +1026,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		setOptions := new(rcsdk.UpdateBucketConfigOptions)
 		setOptions.SetBucket(bucketName)
 		setOptions.BucketPatch = bucketPatchModelAsPatch
-		response, err := rcClient.UpdateBucketConfig(setOptions)
+		response, err := sess.UpdateBucketConfig(setOptions)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, response)
 		}
@@ -1158,31 +1154,27 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if endpointType != "" {
 		d.Set("endpoint_type", endpointType)
 	}
-	authenticator := new(core.IamAuthenticator)
-	authenticator.ApiKey = apiKey
-	authenticator.URL = authEndpointPath
-	optionsRC := new(rcsdk.ResourceConfigurationV1Options)
-	optionsRC.Authenticator = authenticator
+	sess, err := meta.(conns.ClientSession).CosConfigV1API()
+	if err != nil {
+		return err
+	}
 	if endpointType == "private" {
-		optionsRC.URL = "https://config.private.cloud-object-storage.cloud.ibm.com/v1"
+		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
 	if endpointType == "direct" {
-		optionsRC.URL = "https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
 	}
 
 	if apiType == "sl" {
 
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
 
-		optionsRC.URL = satconfig
+		sess.SetServiceURL(satconfig)
 	}
-	rcClient, clientErr := rcsdk.NewResourceConfigurationV1(optionsRC)
-	if clientErr != nil {
-		return clientErr
-	}
+
 	getOptions := new(rcsdk.GetBucketConfigOptions)
 	getOptions.SetBucket(bucketName)
-	bucketPtr, response, err := rcClient.GetBucketConfig(getOptions)
+	bucketPtr, response, err := sess.GetBucketConfig(getOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
