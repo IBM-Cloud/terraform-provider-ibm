@@ -1,12 +1,12 @@
 ---
 subcategory: "Global Tagging"
 layout: "ibm"
-page_title: "IBM : resource_tag"
+page_title: "IBM : resource_access_tag"
 description: |-
-  Manages resource tags.
+  Manages resource access tags.
 ---
 
-# ibm_resource_tag
+# ibm_resource_access_tag
 
 Create, update, or delete IBM Cloud access management tags. For more information, about tagging, see [IBM Cloud access management tags](https://cloud.ibm.com/apidocs/tagging#create-tag).
 
@@ -36,18 +36,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_resource_tag` resource can be imported by using the resource CRN.
+The `ibm_resource_access_tag` resource can be imported by using the resource CRN.
 
 **Syntax**
 
 ```
-$ terraform import ibm_resource_tag.tag tag_name
+$ terraform import ibm_resource_access_tag.tag tag_name
 ```
 
 **Example**
 
 ```
-$ terraform import ibm_resource_tag.tag  crn:v1:bluemix:public:satellite:us-east:a/ab3ed67929c2a81285fbb5f9eb22800a:c1ga7h9w0angomd44654::
+$ terraform import ibm_resource_access_tag.tag  crn:v1:bluemix:public:satellite:us-east:a/ab3ed67929c2a81285fbb5f9eb22800a:c1ga7h9w0angomd44654::
 
 ```
 
