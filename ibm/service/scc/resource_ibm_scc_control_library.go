@@ -889,12 +889,18 @@ func resourceIbmSccControlLibraryControlsInControlLibToMap(model *securityandcom
 
 // using the assessment_id for comparison
 func compareAssessmentSetFunc(v interface{}) int {
+	if v == nil {
+		return 0
+	}
 	m := v.(map[string]interface{})
 	id := (m["assessment_id"]).(*string)
 	assId := (*id)[5:18]
 	var i big.Int
 	i.SetString(strings.Replace(assId, "-", "", 4), 16)
-	val, _ := strconv.Atoi(i.String())
+	val, err := strconv.Atoi(i.String())
+	if err != nil {
+		log.Printf("[ERROR] Setting the Assessments for Control Library failed %s\n", err)
+	}
 	return val
 }
 
