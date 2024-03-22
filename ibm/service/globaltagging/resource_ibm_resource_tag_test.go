@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package globaltagging_test
@@ -91,4 +91,50 @@ func testAccCheckResourceTagCreate(name, managed_from string) string {
 		tags        = ["env:dev", "cpu:4"]
 	}
 `, name, managed_from)
+}
+
+func TestAccResourceTag_replace_Basic(t *testing.T) {
+	name := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccCheckResourceTagCreate_replace(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
+					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_resource_tag.tag",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"replace"},
+			},
+		},
+	})
+}
+
+func testAccCheckResourceTagCreate_replace(name string) string {
+	return fmt.Sprintf(`
+
+        resource "ibm_resource_instance" "resource_1" {
+          name              = "%s"
+          service           = "cloud-object-storage"
+          plan              = "lite"
+          location          = "global"
+
+
+        }
+
+        resource "ibm_resource_tag" "tag" {
+            resource_id = resource.ibm_resource_instance.resource_1.crn
+            tags        = ["test:test"]
+            replace     = true
+        }
+    `, name)
 }

@@ -31,14 +31,16 @@ Review the argument reference that you can specify for your data source.
 	* Constraints: Allowable values are: `id`, `created_at`, `updated_at`, `expiration_date`, `secret_type`, `name`.
 * `search` - (Optional, String) - Obtain a collection of secrets that contain the specified string in one or more of the fields: `id`, `name`, `description`, `labels`, `secret_type`.
 * `groups` - (Optional, String) - Filter secrets by groups. You can apply multiple filters by using a comma-separated list of secret group IDs. If you need to filter secrets that are in the default secret group, use the `default` keyword.
+* `secret_types` - (Optional, String) - Filter secrets by secret types. You can apply multiple filters by using a comma-separated list of secret types.
+* `match_all_labels` - (Optional, String) - Filter secrets by a label or a combination of labels (comma-separated list).
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the sm_secrets.
-* `secrets` - (List) A collection of secret metadata.
-  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+* `secrets` - (List) A collection of secret metadata. Note that the list of metadata attributes conatains attributes that are common to all types of secrets, as well as attributes that are specific to cetrain secret types. A type specific attribute is included in every secret but the value is empty for secrets of other types. The common attributes are: `name, id, description, secret_type, crn, created_by, created_at, updated_at, downloaded, secret_group_id, state, state_description, versions_total`.
+  * Constraints: The maximum length is `1000` items. The minimum length is `0` items. 
 Nested scheme for **secrets**:
 	* `access_groups` - (List) Access Groups that you can use for an `iam_credentials` secret.Up to 10 Access Groups can be used for each secret.
 	  * Constraints: The list items must match regular expression `/^AccessGroupId-[a-z0-9-]+[a-z0-9]$/`. The maximum length is `10` items. The minimum length is `1` item.

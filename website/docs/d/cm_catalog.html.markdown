@@ -77,36 +77,6 @@ Nested scheme for **features**:
 
 * `short_description` - (String) Description in the requested language.
 
-* `syndication_settings` - (List) Feature information.
-Nested scheme for **syndication_settings**:
-	* `authorization` - (List) Feature information.
-	Nested scheme for **authorization**:
-		* `last_run` - (String) Date and time last updated.
-		* `token` - (String) Array of syndicated namespaces.
-	* `clusters` - (List) Syndication clusters.
-	Nested scheme for **clusters**:
-		* `all_namespaces` - (Boolean) Syndicated to all namespaces on cluster.
-		* `id` - (String) Cluster ID.
-		* `name` - (String) Cluster name.
-		* `namespaces` - (List) Syndicated namespaces.
-		* `region` - (String) Cluster region.
-		* `resource_group_name` - (String) Resource group ID.
-		* `type` - (String) Syndication type.
-	* `history` - (List) Feature information.
-	Nested scheme for **history**:
-		* `clusters` - (List) Array of syndicated namespaces.
-		Nested scheme for **clusters**:
-			* `all_namespaces` - (Boolean) Syndicated to all namespaces on cluster.
-			* `id` - (String) Cluster ID.
-			* `name` - (String) Cluster name.
-			* `namespaces` - (List) Syndicated namespaces.
-			* `region` - (String) Cluster region.
-			* `resource_group_name` - (String) Resource group ID.
-			* `type` - (String) Syndication type.
-		* `last_run` - (String) Date and time last syndicated.
-		* `namespaces` - (List) Array of syndicated namespaces.
-	* `remove_related_components` - (Boolean) Remove related components.
-
 * `tags` - (List) List of tags associated with this catalog.
 
 * `target_account_contexts` - (List) List of target account contexts for this catalog.

@@ -25,7 +25,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
@@ -3274,6 +3274,7 @@ type ServiceErrorResponse struct {
 	Message    string
 	StatusCode int
 	Result     interface{}
+	Error      error
 }
 
 func BeautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
@@ -3289,6 +3290,7 @@ func BeautifyError(err error, response *core.DetailedResponse) *ServiceErrorResp
 		Message:    err.Error(),
 		StatusCode: statusCode,
 		Result:     result,
+		Error:      err,
 	}
 }
 

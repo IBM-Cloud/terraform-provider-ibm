@@ -226,7 +226,6 @@ func TestAccIBMIAMUserPolicy_With_Resource_Attributes_Without_Wildcard(t *testin
 	})
 }
 
-
 func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
 	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -847,7 +846,6 @@ func testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard() string {
 	  
 `, acc.IAMUser)
 }
-
 
 func testAccCheckIBMIAMUserPolicyResourceAttributesUpdate() string {
 	return fmt.Sprintf(`
