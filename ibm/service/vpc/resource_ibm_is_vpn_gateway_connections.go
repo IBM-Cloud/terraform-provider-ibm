@@ -363,9 +363,26 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
 	}
-	vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
-	d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
-	log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+
+	if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode)
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
+		log.Printf("[INFO] VPNGatewayConnection : %s/%s", gatewayID, *vpnGatewayConnection.ID)
+		d.SetId(fmt.Sprintf("%s/%s", gatewayID, *vpnGatewayConnection.ID))
+	} else {
+		return fmt.Errorf("[ERROR] Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered")
+	}
 	return nil
 }
 
@@ -404,63 +421,216 @@ func vpngwconGet(d *schema.ResourceData, meta interface{}, gID, gConnID string) 
 		return fmt.Errorf("[ERROR] Error Getting Vpn Gateway Connection (%s): %s\n%s", gConnID, err, response)
 	}
 	d.Set(isVPNGatewayConnection, gConnID)
-	vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
-	d.Set(isVPNGatewayConnectionName, *vpnGatewayConnection.Name)
 	d.Set(isVPNGatewayConnectionVPNGateway, gID)
-	d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
-	d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
-	d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
 
-	if vpnGatewayConnection.LocalCIDRs != nil {
-		d.Set(isVPNGatewayConnectionLocalCIDRS, flex.FlattenStringList(vpnGatewayConnection.LocalCIDRs))
-	}
-	if vpnGatewayConnection.PeerCIDRs != nil {
-		d.Set(isVPNGatewayConnectionPeerCIDRS, flex.FlattenStringList(vpnGatewayConnection.PeerCIDRs))
-	}
-	if vpnGatewayConnection.IkePolicy != nil {
-		d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
-	}
-	if vpnGatewayConnection.IpsecPolicy != nil {
-		d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
-	}
-	if vpnGatewayConnection.AuthenticationMode != nil {
-		d.Set(isVPNGatewayConnectionAdminAuthenticationmode, *vpnGatewayConnection.AuthenticationMode)
-	}
-	if vpnGatewayConnection.Status != nil {
-		d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
-	}
-	if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
-		return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
-	}
-	if vpnGatewayConnection.ResourceType != nil {
-		d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
-	}
-	if vpnGatewayConnection.CreatedAt != nil {
-		d.Set(isVPNGatewayConnectionCreatedat, vpnGatewayConnection.CreatedAt.String())
-	}
+	if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
 
-	if vpnGatewayConnection.Mode != nil {
-		d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
-	}
-	vpcTunnelsList := make([]map[string]interface{}, 0)
-	if vpnGatewayConnection.Tunnels != nil {
-		for _, vpcTunnel := range vpnGatewayConnection.Tunnels {
-			currentTunnel := map[string]interface{}{}
-			if vpcTunnel.PublicIP != nil {
-				publicIP := *vpcTunnel.PublicIP
-				currentTunnel["address"] = *publicIP.Address
-			}
-			if vpcTunnel.Status != nil {
-				currentTunnel["status"] = *vpcTunnel.Status
-			}
-			vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+		d.Set(isVPNGatewayConnectionName, *vpnGatewayConnection.Name)
+		d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
+		d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
+		d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
+		if vpnGatewayConnection.LocalCIDRs != nil {
+			d.Set(isVPNGatewayConnectionLocalCIDRS, flex.FlattenStringList(vpnGatewayConnection.LocalCIDRs))
 		}
-	}
-	d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
+		if vpnGatewayConnection.PeerCIDRs != nil {
+			d.Set(isVPNGatewayConnectionPeerCIDRS, flex.FlattenStringList(vpnGatewayConnection.PeerCIDRs))
+		}
+		if vpnGatewayConnection.IkePolicy != nil {
+			d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
+		}
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
+		}
+		if vpnGatewayConnection.AuthenticationMode != nil {
+			d.Set(isVPNGatewayConnectionAdminAuthenticationmode, *vpnGatewayConnection.AuthenticationMode)
+		}
+		if vpnGatewayConnection.Status != nil {
+			d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
+		}
+		if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
+		}
 
-	d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
-	d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
-	d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+		if vpnGatewayConnection.ResourceType != nil {
+			d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
+		}
+		if vpnGatewayConnection.CreatedAt != nil {
+			d.Set(isVPNGatewayConnectionCreatedat, vpnGatewayConnection.CreatedAt.String())
+		}
+
+		if vpnGatewayConnection.Mode != nil {
+			d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
+		}
+		vpcTunnelsList := make([]map[string]interface{}, 0)
+		d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode)
+		d.Set(isVPNGatewayConnectionName, *vpnGatewayConnection.Name)
+		d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
+		d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
+		d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
+		if vpnGatewayConnection.IkePolicy != nil {
+			d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
+		}
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
+		}
+		if vpnGatewayConnection.AuthenticationMode != nil {
+			d.Set(isVPNGatewayConnectionAdminAuthenticationmode, *vpnGatewayConnection.AuthenticationMode)
+		}
+		if vpnGatewayConnection.Status != nil {
+			d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
+		}
+		if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
+		}
+
+		if vpnGatewayConnection.ResourceType != nil {
+			d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
+		}
+		if vpnGatewayConnection.CreatedAt != nil {
+			d.Set(isVPNGatewayConnectionCreatedat, vpnGatewayConnection.CreatedAt.String())
+		}
+
+		if vpnGatewayConnection.Mode != nil {
+			d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
+		}
+		vpcTunnelsList := make([]map[string]interface{}, 0)
+		if vpnGatewayConnection.Tunnels != nil {
+			for _, vpcTunnel := range vpnGatewayConnection.Tunnels {
+				currentTunnel := map[string]interface{}{}
+				if vpcTunnel.PublicIP != nil {
+					publicIP := *vpcTunnel.PublicIP
+					currentTunnel["address"] = *publicIP.Address
+				}
+				if vpcTunnel.Status != nil {
+					currentTunnel["status"] = *vpcTunnel.Status
+				}
+				vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+			}
+		}
+		d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+		d.Set(isVPNGatewayConnectionName, *vpnGatewayConnection.Name)
+		d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
+		d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
+		d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
+		if vpnGatewayConnection.IkePolicy != nil {
+			d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
+		}
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
+		}
+		if vpnGatewayConnection.AuthenticationMode != nil {
+			d.Set(isVPNGatewayConnectionAdminAuthenticationmode, *vpnGatewayConnection.AuthenticationMode)
+		}
+		if vpnGatewayConnection.Status != nil {
+			d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
+		}
+		if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
+		}
+
+		if vpnGatewayConnection.ResourceType != nil {
+			d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
+		}
+		if vpnGatewayConnection.CreatedAt != nil {
+			d.Set(isVPNGatewayConnectionCreatedat, vpnGatewayConnection.CreatedAt.String())
+		}
+
+		if vpnGatewayConnection.Mode != nil {
+			d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
+		}
+		vpcTunnelsList := make([]map[string]interface{}, 0)
+		if vpnGatewayConnection.Tunnels != nil {
+			for _, vpcTunnel := range vpnGatewayConnection.Tunnels {
+				currentTunnel := map[string]interface{}{}
+				if vpcTunnel.PublicIP != nil {
+					publicIP := *vpcTunnel.PublicIP
+					currentTunnel["address"] = *publicIP.Address
+				}
+				if vpcTunnel.Status != nil {
+					currentTunnel["status"] = *vpcTunnel.Status
+				}
+				vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+			}
+		}
+		d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+
+	} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection); ok {
+		vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
+		d.Set(isVPNGatewayConnectionName, *vpnGatewayConnection.Name)
+		d.Set(isVPNGatewayConnectionAdminStateup, *vpnGatewayConnection.AdminStateUp)
+		d.Set(isVPNGatewayConnectionPeerAddress, *vpnGatewayConnection.PeerAddress)
+		d.Set(isVPNGatewayConnectionPreSharedKey, *vpnGatewayConnection.Psk)
+		if vpnGatewayConnection.LocalCIDRs != nil {
+			d.Set(isVPNGatewayConnectionLocalCIDRS, flex.FlattenStringList(vpnGatewayConnection.LocalCIDRs))
+		}
+		if vpnGatewayConnection.PeerCIDRs != nil {
+			d.Set(isVPNGatewayConnectionPeerCIDRS, flex.FlattenStringList(vpnGatewayConnection.PeerCIDRs))
+		}
+		if vpnGatewayConnection.IkePolicy != nil {
+			d.Set(isVPNGatewayConnectionIKEPolicy, *vpnGatewayConnection.IkePolicy.ID)
+		}
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			d.Set(isVPNGatewayConnectionIPSECPolicy, *vpnGatewayConnection.IpsecPolicy.ID)
+		}
+		if vpnGatewayConnection.AuthenticationMode != nil {
+			d.Set(isVPNGatewayConnectionAdminAuthenticationmode, *vpnGatewayConnection.AuthenticationMode)
+		}
+		if vpnGatewayConnection.Status != nil {
+			d.Set(isVPNGatewayConnectionStatus, *vpnGatewayConnection.Status)
+		}
+		if err := d.Set(isVPNGatewayConnectionStatusreasons, resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return fmt.Errorf("[ERROR] Error setting status_reasons: %s", err)
+		}
+
+		if vpnGatewayConnection.ResourceType != nil {
+			d.Set(isVPNGatewayConnectionResourcetype, *vpnGatewayConnection.ResourceType)
+		}
+		if vpnGatewayConnection.CreatedAt != nil {
+			d.Set(isVPNGatewayConnectionCreatedat, vpnGatewayConnection.CreatedAt.String())
+		}
+
+		if vpnGatewayConnection.Mode != nil {
+			d.Set(isVPNGatewayConnectionMode, *vpnGatewayConnection.Mode)
+		}
+		vpcTunnelsList := make([]map[string]interface{}, 0)
+		if vpnGatewayConnection.Tunnels != nil {
+			for _, vpcTunnel := range vpnGatewayConnection.Tunnels {
+				currentTunnel := map[string]interface{}{}
+				if vpcTunnel.PublicIP != nil {
+					publicIP := *vpcTunnel.PublicIP
+					currentTunnel["address"] = *publicIP.Address
+				}
+				if vpcTunnel.Status != nil {
+					currentTunnel["status"] = *vpcTunnel.Status
+				}
+				vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+			}
+		}
+		d.Set(isVPNGatewayConnectionTunnels, vpcTunnelsList)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionAction, *vpnGatewayConnection.DeadPeerDetection.Action)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionInterval, *vpnGatewayConnection.DeadPeerDetection.Interval)
+		d.Set(isVPNGatewayConnectionDeadPeerDetectionTimeout, *vpnGatewayConnection.DeadPeerDetection.Timeout)
+
+	} else {
+		return fmt.Errorf("[ERROR] Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered")
+	}
+
 	getVPNGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 		ID: &gID,
 	}
