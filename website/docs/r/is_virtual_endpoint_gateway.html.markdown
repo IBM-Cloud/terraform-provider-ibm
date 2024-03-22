@@ -89,7 +89,6 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 
-    -> **NOTE:** `allow_dns_resolution_binding` is a select location availability, invitation only feature. If used in other regions may lead to inconsistencies in state management.
 - `allow_dns_resolution_binding` - (Optional, bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
 - `name` - (Required, Forces new resource, String) The endpoint gateway name.
 - `ips`  (Optional, List) The reserved IPs to bind to this endpoint gateway. At most one reserved IP per zone is allowed.
