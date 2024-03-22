@@ -17,7 +17,6 @@ import (
 func DataSourceIBMContainerCluster() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMContainerClusterRead,
-
 		Schema: map[string]*schema.Schema{
 			"cluster_name_id": {
 				Description:  "Name or id of the cluster",
@@ -179,6 +178,130 @@ func DataSourceIBMContainerCluster() *schema.Resource {
 				Optional:     true,
 				Default:      "all",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"private", "public", "all"}),
+			},
+			"ingress_config": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Represents the Ingress cluster-wide options.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ingress_status_report": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Configuration of the Ingress status report behavior",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Enabled or disabled the Ingress status report.",
+									},
+									"ingress_status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Overall Ingress status.",
+									},
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Ingress status summary.",
+									},
+									"ignored_errors": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The list of the ignored warnings for a cluster.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"general_ingress_component_status": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Current status of cluster-wide Ingress resources.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"component": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the Ingress component",
+												},
+												"status": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the Ingress component",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+											},
+										},
+									},
+									"alb_status": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Current status of the ALBs.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"component": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the ALB",
+												},
+												"status": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the ALB",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+											},
+										},
+									},
+									"secret_status": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Current status of Ingress secrets.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"component": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the Ingress secret",
+												},
+												"status": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the Ingress subdomain",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+											},
+										},
+									},
+									"subdomain_status": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Current status of Ingress subdomains.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"component": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name of the Ingress subdomain",
+												},
+												"status": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The status of the Ingress subdomain",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"ingress_health_checker_enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Enable or disable the Ingress health checker.",
+						},
+					},
+				},
 			},
 			"albs": {
 				Type:     schema.TypeList,
@@ -372,12 +495,23 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
+	csClientV2, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return err
+	}
+
 	csAPI := csClient.Clusters()
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
 	albsAPI := csClient.Albs()
+	albsV2API := csClientV2.Albs()
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
+
+	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
@@ -425,6 +559,43 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error retrieving worker pools of the cluster %s: %s", name, err)
 	}
 
+	albHcConf, err := albsV2API.GetAlbClusterHealthCheckConfig(name, targetEnvV2)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ALB in-cluster health checker config of the cluster %s: %s", name, err)
+	}
+
+	ingressStatus, err := albsV2API.GetIngressStatus(name, targetEnvV2)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ingress status of the cluster %s: %s", name, err)
+	}
+
+	generalComponentList := flex.FlattenGeneralIngressStatus(ingressStatus.GeneralComponentStatus)
+	albStatus := flex.FlattenGeneralIngressStatus(ingressStatus.ALBStatus)
+	secretStatus := flex.FlattenGeneralIngressStatus(ingressStatus.SecretStatus)
+	subdomainStatus := flex.FlattenGeneralIngressStatus(ingressStatus.SubdomainStatus)
+
+	ingressConfig := make([]map[string]interface{}, 0)
+	ingressStatusReport := make([]map[string]interface{}, 0)
+
+	ingressStatusConfig := map[string]interface{}{
+		"enabled":                          ingressStatus.Enabled,
+		"ingress_status":                   ingressStatus.Status,
+		"message":                          ingressStatus.Message,
+		"ignored_errors":                   ingressStatus.IgnoredErrors,
+		"general_ingress_component_status": generalComponentList,
+		"alb_status":                       albStatus,
+		"secret_status":                    secretStatus,
+		"subdomain_status":                 subdomainStatus,
+	}
+	ingressStatusReport = append(ingressStatusReport, ingressStatusConfig)
+
+	ingressConfigItem := map[string]interface{}{
+		"ingress_health_checker_enabled": albHcConf.Enable,
+		"ingress_status_report":          ingressStatusReport,
+	}
+
+	ingressConfig = append(ingressConfig, ingressConfigItem)
+
 	albs, err := albsAPI.ListClusterALBs(name, targetEnv)
 	if err != nil && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 		return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", name, err)
@@ -470,6 +641,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set(flex.ResourceCRN, clusterFields.CRN)
 	d.Set(flex.ResourceStatus, clusterFields.State)
 	d.Set(flex.ResourceGroupName, clusterFields.ResourceGroupName)
+	d.Set("ingress_config", ingressConfig)
 
 	return nil
 }

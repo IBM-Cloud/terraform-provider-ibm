@@ -32,9 +32,10 @@ The `ibm_container_alb` provides the following [Timeouts](https://www.terraform.
 Review the argument references that you can specify for your resource. 
   
 - `alb_id` - (Required, Forces new resource, String) The unique identifier of the ALB. To retrieve the ID, run `ibmcloud ks alb ls`.
-- `disable_deployment` - (Optional, Forces new resource, Bool) If set to **true**, the default Ingress ALB in your cluster is disabled. If set to **false**, the default Ingress ALB is enabled in your cluster and configured with the IBM-provided Ingress subdomain. If you do not specify this option, you must specify the `enable` parameter.
-- `enable` - (Optional, Bool) If set to **true**, the default Ingress ALB in your cluster is enabled and configured with the IBM-provided Ingress subdomain. If set to **false**, the default Ingress ALB is disabled in your cluster. If you do not specify this option, you must specify the `disable_deployment` parameter.
-- `region` - (Optional, Forces new resource, String) The region where the Ingress ALB is provisioned.
+- `disable_deployment` - (Deprecated, Optional, Forces new resource, Bool) Unsupported, you must specify the `enable` parameter.
+- `enable` - (Required, Bool) If set to **true**, the default Ingress ALB in your cluster is enabled and configured with the IBM-provided Ingress subdomain. If set to **false**, the default Ingress ALB is disabled in your cluster. 
+- `region` - (Deprecated, Optional, Forces new resource, String) The region where the Ingress ALB is provisioned.
+- `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 - `user_ip` - (Optional, Forces new resource, String) For a private ALB only. The private ALB is deployed with an IP address from a user-provided private subnet. If no IP address is provided, the ALB is deployed with a random IP address from a private subnet in the IBM Cloud account.
 
 ## Attribute reference
@@ -42,7 +43,10 @@ In addition to all argument reference list, you can access the following attribu
 
 - `alb_type` - (String) The type of the ALB. Supported values are `public` and `private`.
 - `cluster` - (String) The name of the cluster where the ALB is provisioned.
-- `id` - (String) The unique identifier of the ALB. 
-- `name` -  (String) The name of the ALB.
-- `replicas` - (String) Desired number of ALB replicas. 
-- `resize` -  (Bool) Indicate whether resizing should be done
+- `id` - (String) The unique identifier of the ALB.
+- `version` - (String) The current version of the ALB.
+- `name` -  (Deprecated, String) The name of the ALB.
+- `replicas` - (Deprecated, String) Desired number of ALB replicas. 
+- `resize` -  (Deprecated, Bool) Indicate whether resizing should be done.
+- `state` - (String) The current state of the ALB. Supported values are `enabled` or `disabled`.
+- `status` - (String) The current status of the ALB.

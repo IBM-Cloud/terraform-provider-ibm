@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -460,6 +461,57 @@ func ResourceIBMContainerCluster() *schema.Resource {
 					},
 				},
 			},
+			"ingress_config": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Represents the Ingress cluster-wide options.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ingress_status_report": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							MaxItems:    1,
+							Description: "Configure the Ingress status report behavior",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Enabled or disabled the Ingress status report.",
+									},
+									"ingress_status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Overall Ingress status.",
+									},
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Ingress status summary.",
+									},
+									"ignored_errors": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "Overall Ingress status.",
+									},
+								},
+							},
+						},
+						"ingress_health_checker_enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Enable or disable the Ingress health checker.",
+						},
+					},
+				},
+			},
 			"albs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -762,11 +814,22 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
+	csClientV2, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return err
+	}
+
 	wrkAPI := csClient.Workers()
 	workerPoolsAPI := csClient.WorkerPools()
 	albsAPI := csClient.Albs()
+	albsV2API := csClientV2.Albs()
 
 	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
+
+	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
@@ -884,6 +947,35 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	}
+
+	albHcConf, err := albsV2API.GetAlbClusterHealthCheckConfig(clusterID, targetEnvV2)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ALB in-cluster health checker config of the cluster %s: %s", clusterID, err)
+	}
+
+	ingressStatus, err := albsV2API.GetIngressStatus(clusterID, targetEnvV2)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving ingress status of the cluster %s: %s", clusterID, err)
+	}
+
+	ingressConfig := make([]map[string]interface{}, 0)
+	ingressStatusReport := make([]map[string]interface{}, 0)
+
+	ingressStatusConfig := map[string]interface{}{
+		"enabled":        ingressStatus.Enabled,
+		"ingress_status": ingressStatus.Status,
+		"message":        ingressStatus.Message,
+		"ignored_errors": ingressStatus.IgnoredErrors,
+	}
+	ingressStatusReport = append(ingressStatusReport, ingressStatusConfig)
+
+	albConfigItem := map[string]interface{}{
+		"ingress_health_checker_enabled": albHcConf.Enable,
+		"ingress_status_report":          ingressStatusReport,
+	}
+
+	ingressConfig = append(ingressConfig, albConfigItem)
+	d.Set("ingress_config", ingressConfig)
 	d.Set("albs", flex.FlattenAlbs(albs, "all"))
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint", cls.PublicServiceEndpointEnabled)
@@ -1177,6 +1269,55 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			csClientV2.Clusters().EnableImageSecurityEnforcement(clusterID, targetEnvV2)
 		} else {
 			csClientV2.Clusters().DisableImageSecurityEnforcement(clusterID, targetEnvV2)
+		}
+	}
+
+	if d.HasChange("ingress_config") {
+		if ingress_config, ok := d.GetOk("ingress_config"); ok {
+			albConfigList := ingress_config.([]interface{})
+
+			for _, l := range albConfigList {
+				albMap, _ := l.(map[string]interface{})
+				if healthChecker := albMap["ingress_health_checker_enabled"]; healthChecker != nil {
+					healthCheckerEnabled := healthChecker.(bool)
+
+					err = csClientV2.Albs().SetAlbClusterHealthCheckConfig(containerv2.ALBClusterHealthCheckConfig{
+						Cluster: d.Id(),
+						Enable:  healthCheckerEnabled,
+					}, targetEnvV2)
+					if err != nil {
+						return err
+					}
+				}
+				if ingressStatusReport := albMap["ingress_status_report"]; ingressStatusReport != nil {
+					ingressStatusReportConfig := ingressStatusReport.([]interface{})
+					for _, ingressStatusReportConfigMap := range ingressStatusReportConfig {
+						ingressStatusReportConfigMap, _ := ingressStatusReportConfigMap.(map[string]interface{})
+						if enabled := ingressStatusReportConfigMap["enabled"]; enabled != nil {
+							ingressStatusReportEnabled := enabled.(bool)
+							csClientV2.Albs().SetIngressStatusState(containerv2.IngressStatusState{
+								Cluster: d.Id(),
+								Enable:  ingressStatusReportEnabled,
+							}, targetEnvV2)
+							if err != nil {
+								return err
+							}
+						}
+						if ignoredErrors := ingressStatusReportConfigMap["ignored_errors"]; ignoredErrors != nil {
+
+							ignoredErrorCodes := flex.FlattenSet(ignoredErrors.(*schema.Set))
+							csClientV2.Albs().AddIgnoredIngressStatusErrors(containerv2.IgnoredIngressStatusErrors{
+								Cluster:       d.Id(),
+								IgnoredErrors: ignoredErrorCodes,
+							}, targetEnvV2)
+							if err != nil {
+								return err
+							}
+						}
+					}
+				}
+
+			}
 		}
 	}
 

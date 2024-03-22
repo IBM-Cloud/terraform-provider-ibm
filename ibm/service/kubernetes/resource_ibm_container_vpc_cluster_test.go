@@ -698,3 +698,113 @@ func testAccCheckIBMContainerVpcClusterKMSEnvvar(name string) string {
 	fmt.Println(config)
 	return config
 }
+
+func TestAccIBMContainerVpcClusterIngressConfig(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccConfigCheckIBMContainerVpcClusterIngressConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_health_checker_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.ignored_errors.#", "1"),
+					resource.TestCheckTypeSetElemAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.*.ingress_status_report.*.ignored_errors.*", "ERRHPAIWC"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerVpcClusterIngressConfigUpdate(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_health_checker_enabled", "false"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till", "update_all_workers", "ingress_config", "force_delete_storage", "wait_for_worker_update"},
+			},
+		},
+	})
+}
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+func testAccConfigCheckIBMContainerVpcClusterIngressConfig(name string) string {
+	config := fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "IngressReady"
+		ingress_config {
+			ingress_status_report {
+				enabled = true
+				ignored_errors = ["ERRHPAIWC"]
+			}
+			ingress_health_checker_enabled = true
+		}
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
+	return config
+}
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+func testAccCheckIBMContainerVpcClusterIngressConfigUpdate(name string) string {
+	config := fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		wait_till = "IngressReady"
+		ingress_config {
+			ingress_status_report {
+				enabled = false
+			}
+			ingress_health_checker_enabled = false
+		}
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID)
+	return config
+}

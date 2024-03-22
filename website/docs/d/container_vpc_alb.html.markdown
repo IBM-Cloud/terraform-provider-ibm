@@ -30,9 +30,10 @@ In addition to the argument reference list, you can access the following attribu
 
 - `alb_type` - (String) The ALB type.
 - `cluster` - (String) The name of the cluster.
-- `disable_deployment` - (String) Disable the ALB deployment details.
+- `disable_deployment` - (Deprecated, String) Unsupported, you must use the `enable` parameter.
 - `enable` - (String) Enable an ALB for the cluster.
 - `id` - (String) The ALB ID.
+- `version` - (String) The current version of the ALB.
 - `load_balancer_hostname` - (String) The name of the load balancer.
 - `resize` - (String) Resize of the ALB.
 - `state` - (String) ALB state.

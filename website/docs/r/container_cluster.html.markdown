@@ -285,6 +285,18 @@ In addition to all argument reference list, you can access the following attribu
   - `state` - (String) The state of the ALB. Supported values are `enabled` or `disabled`. 
 - `crn` - (String) The CRN of the cluster.
 - `id` - (String) The unique identifier of the cluster.
+- `ingress_config` - List of objects - Ingress related configuration options and Ingress status report. 
+
+  Nested scheme for `ingress_config`:
+  - `ingress_health_checker_enabled` - (Bool) The state of the Ingress health checker. Supported values are `enabled` or `disabled`.
+  - `ingress_status_report` - List of objects. Ingress status report and related configurations. 
+    
+    Nested scheme for `ingress_status_report`:
+    - `enabled` - (Bool) The state of the Ingress status report. Supported values are `enabled` or `disabled`.
+    - `ingress_status` - (String) The overall Ingress status.
+    - `message` - (String) Ingress status detailed summary.
+    - `ignored_errors` - List of strings - Ignored Ingress status warnings for a cluster.
+
 - `ingress_hostname` - (String) The Ingress host name.
 - `ingress_secret` - (String) The name of the Ingress secret.
 - `name` - (String) The name of the cluster.

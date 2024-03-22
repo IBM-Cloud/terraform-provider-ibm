@@ -104,3 +104,50 @@ func TestAccIBMContainerVPCClusterDataSourceEnvvar(t *testing.T) {
 		},
 	})
 }
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+func TestAccIBMContainerVPCClusterDataSourceIngressConfig(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterDatasourceIngressConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.#", "1"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.#", "1"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.enabled", "true"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.ingress_status"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.message"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.general_ingress_component_status.#"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.alb_status.#"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.secret_status.#"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_status_report.0.subdomain_status.#"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_vpc_cluster.cluster", "ingress_config.0.ingress_health_checker_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMContainerVPCClusterDatasourceIngressConfig(name string) string {
+	return testAccConfigCheckIBMContainerVpcClusterIngressConfig(name) + `
+	data "ibm_container_vpc_cluster" "cluster" {
+	     cluster_name_id = ibm_container_vpc_cluster.cluster.id
+	}
+	`
+}

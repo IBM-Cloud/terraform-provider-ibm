@@ -392,3 +392,100 @@ resource "ibm_container_cluster" "testacc_cluster" {
   image_security_enforcement = %s
 }	`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, imageSecuritySetting)
 }
+
+// You need to set up env vars:
+// export IBM_PUBLIC_VLAN_ID
+// export IBM_PRIVATE_VLAN_ID
+// export IBM_DATACENTER
+func TestAccIBMContainerClusterIngressConfig(t *testing.T) {
+	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerClusterIngressConfig(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_status_report.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_status_report.0.enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_health_checker_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_status_report.0.ignored_errors.#", "1"),
+					resource.TestCheckTypeSetElemAttr(
+						"ibm_container_cluster.cluster", "ingress_config.*.ingress_status_report.*.ignored_errors.*", "ERRHPAIWC"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerClusterIngressConfigUpdate(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_status_report.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_status_report.0.enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.cluster", "ingress_config.0.ingress_health_checker_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+// You need to set up env vars:
+// export IBM_PUBLIC_VLAN_ID
+// export IBM_PRIVATE_VLAN_ID
+// export IBM_DATACENTER
+func testAccCheckIBMContainerClusterIngressConfig(clusterName string) string {
+	return fmt.Sprintf(`
+resource "ibm_container_cluster" "cluster" {
+  name       = "%s"
+  datacenter = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  ingress_config {
+	ingress_status_report {
+		enabled = true
+		ignored_errors=["ERRHPAIWC"]
+	}
+	ingress_health_checker_enabled=true
+  }
+  wait_till         = "IngressReady"
+}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID)
+}
+
+// You need to set up env vars:
+// export IBM_PUBLIC_VLAN_ID
+// export IBM_PRIVATE_VLAN_ID
+// export IBM_DATACENTER
+func testAccCheckIBMContainerClusterIngressConfigUpdate(clusterName string) string {
+	return fmt.Sprintf(`
+resource "ibm_container_cluster" "cluster" {
+  name       = "%s"
+  datacenter = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  ingress_config {
+	ingress_status_report {
+		enabled = false
+		ignored_errors=[]
+	}
+	ingress_health_checker_enabled = false
+  }
+  wait_till         = "IngressReady"
+}	`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID)
+}

@@ -47,23 +47,21 @@ func ResourceIBMContainerVpcALB() *schema.Resource {
 				Description: "cluster id",
 			},
 			"enable": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				ConflictsWith: []string{"disable_deployment"},
-				Description:   "Enable the ALB instance in the cluster",
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "Enable the ALB instance in the cluster",
 			},
 			"disable_deployment": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"enable"},
-				Description:   "Disable the ALB instance in the cluster",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Disable the ALB instance in the cluster",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ALB name",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"load_balancer_hostname": {
 				Type:        schema.TypeString,
@@ -74,6 +72,7 @@ func ResourceIBMContainerVpcALB() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "boolean value to resize the albs",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -90,6 +89,11 @@ func ResourceIBMContainerVpcALB() *schema.Resource {
 				Computed:    true,
 				Description: "Zone info.",
 			},
+			"version": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of Ingress image that you want to use for your ALB deployment.",
+			},
 			"resource_group_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -105,14 +109,12 @@ func resourceIBMContainerVpcALBEnable(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	var enable, disableDeployment bool
+	var enable bool
 	albID := d.Get("alb_id").(string)
 	if v, ok := d.GetOkExists("enable"); ok {
 		enable = v.(bool)
-	} else if v, ok := d.GetOkExists("disable_deployment"); ok {
-		disableDeployment = v.(bool)
 	} else {
-		return fmt.Errorf("[ERROR] Provide either `enable` or `disable_deployment`")
+		return fmt.Errorf("[ERROR] Missing `enable` argument")
 	}
 
 	_, err = waitForVpcClusterAvailable(d, meta, albID, schema.TimeoutCreate)
@@ -144,7 +146,7 @@ func resourceIBMContainerVpcALBEnable(d *schema.ResourceData, meta interface{}) 
 	}
 
 	d.SetId(albID)
-	_, err = waitForVpcContainerALB(d, meta, albID, schema.TimeoutCreate, enable, disableDeployment)
+	_, err = waitForVpcContainerALB(d, meta, albID, schema.TimeoutCreate, enable)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error waiting for create resource alb (%s) : %s", d.Id(), err)
 	}
@@ -179,6 +181,7 @@ func resourceIBMContainerVpcALBRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("status", albConfig.Status)
 	d.Set("state", albConfig.State)
 	d.Set("load_balancer_hostname", albConfig.LoadBalancerHostname)
+	d.Set("version", albConfig.AlbBuild)
 
 	return nil
 }
@@ -192,7 +195,6 @@ func resourceIBMContainerVpcALBUpdate(d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("enable") {
 		enable := d.Get("enable").(bool)
-		disableDeployment := d.Get("disable_deployment").(bool)
 		albID := d.Id()
 
 		_, err = waitForVpcClusterAvailable(d, meta, albID, schema.TimeoutCreate)
@@ -219,7 +221,7 @@ func resourceIBMContainerVpcALBUpdate(d *schema.ResourceData, meta interface{}) 
 			}
 		}
 
-		_, err = waitForVpcContainerALB(d, meta, albID, schema.TimeoutUpdate, enable, disableDeployment)
+		_, err = waitForVpcContainerALB(d, meta, albID, schema.TimeoutUpdate, enable)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error waiting for updating resource alb (%s) : %s", d.Id(), err)
 		}
@@ -228,7 +230,7 @@ func resourceIBMContainerVpcALBUpdate(d *schema.ResourceData, meta interface{}) 
 	return resourceIBMContainerVpcALBRead(d, meta)
 }
 
-func waitForVpcContainerALB(d *schema.ResourceData, meta interface{}, albID, timeout string, enable, disableDeployment bool) (interface{}, error) {
+func waitForVpcContainerALB(d *schema.ResourceData, meta interface{}, albID, timeout string, enable bool) (interface{}, error) {
 	albClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return false, err
@@ -249,7 +251,7 @@ func waitForVpcContainerALB(d *schema.ResourceData, meta interface{}, albID, tim
 				if !alb.Enable {
 					return alb, "pending", nil
 				}
-			} else if disableDeployment {
+			} else {
 				if alb.Enable {
 					return alb, "pending", nil
 				}

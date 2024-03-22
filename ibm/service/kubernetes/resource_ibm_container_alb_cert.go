@@ -80,7 +80,7 @@ func ResourceIBMContainerALBCert() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "certificate issuer name",
-				Deprecated:  "This field is depricated and is not available in v2 version of ingress api",
+				Deprecated:  "This field deprecated and no longer supported",
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -96,7 +96,7 @@ func ResourceIBMContainerALBCert() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Deprecated:  "This field is deprecated",
+				Deprecated:  "This field deprecated and no longer supported",
 				Description: "region name",
 			},
 		},
