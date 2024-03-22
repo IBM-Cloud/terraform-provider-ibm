@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume_remote_copy_relationship"
@@ -19,13 +18,14 @@ data "ibm_pi_volume_remote_copy_relationship" "ds_volume_remote_copy_relationshi
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
+
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -44,7 +44,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `auxiliary_changed_volume_name` - (String) The name of the volume that is acting as the auxiliary change volume for the relationship.
 - `auxiliary_volume_name` - (String) The auxiliary volume name at storage host level.
-- `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
+- `consistency_group_name` - (String) The consistency group name if volume is a part of volume group.
 - `copy_type` (String) The copy type.
 - `cycling_mode` - (String) The type of cycling mode used.
 - `cycle_period_seconds` - (Integer) The minimum period in seconds between multiple cycles.

@@ -124,7 +124,6 @@ Review the argument references that you can specify for your resource.
 - `default_security_group_name` - (Optional, String) Enter the name of the default security group.
 - `default_routing_table_name` - (Optional, String) Enter the name of the default routing table.
 
--> **NOTE:** `dns` attribute is a select location availability, invitation only feature. If used in other regions may lead to inconsistencies in state management.
 - `dns` - (Optional, List) The DNS configuration for this VPC.
   
   Nested scheme for `dns`:

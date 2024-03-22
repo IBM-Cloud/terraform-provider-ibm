@@ -352,6 +352,19 @@ var IamIdentityAssignmentTargetAccountId string
 // Projects
 var ProjectsConfigApiKey string
 
+// For PAG
+var (
+	PagCosInstanceName         string
+	PagCosBucketName           string
+	PagCosBucketRegion         string
+	PagVpcName                 string
+	PagServicePlan             string
+	PagVpcSubnetNameInstance_1 string
+	PagVpcSubnetNameInstance_2 string
+	PagVpcSgInstance_1         string
+	PagVpcSgInstance_2         string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -1673,6 +1686,49 @@ func init() {
 	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
 	if MqCloudQueueManagerVersionUpdate == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	PagCosInstanceName = os.Getenv("IBM_PAG_COS_INSTANCE_NAME")
+	if PagCosInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_COS_INSTANCE_NAME for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagCosBucketName = os.Getenv("IBM_PAG_COS_BUCKET_NAME")
+	if PagCosBucketName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_COS_BUCKET_NAME for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagCosBucketRegion = os.Getenv("IBM_PAG_COS_BUCKET_REGION")
+	if PagCosBucketRegion == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_COS_BUCKET_REGION for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagVpcName = os.Getenv("IBM_PAG_VPC_NAME")
+	if PagVpcName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_NAME for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagServicePlan = os.Getenv("IBM_PAG_SERVICE_PLAN")
+	if PagServicePlan == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_SERVICE_PLAN for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagVpcSubnetNameInstance_1 = os.Getenv("IBM_PAG_VPC_SUBNET_INS_1")
+	if PagVpcSubnetNameInstance_1 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_1 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	PagVpcSubnetNameInstance_2 = os.Getenv("IBM_PAG_VPC_SUBNET_INS_2")
+	if PagVpcSubnetNameInstance_2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+	PagVpcSgInstance_1 = os.Getenv("IBM_PAG_VPC_SG_SUBNET_INS_1")
+	if PagVpcSubnetNameInstance_2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+	PagVpcSgInstance_2 = os.Getenv("IBM_PAG_VPC_SG_SUBNET_INS_2")
+	if PagVpcSubnetNameInstance_2 == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
 	}
 }
 

@@ -161,6 +161,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The procurement type of the instance. Supported values are shared and dedicated.",
 				Type:        schema.TypeString,
 			},
+			Attr_ServerName: {
+				Computed:    true,
+				Description: "The name of the instance.",
+				Type:        schema.TypeString,
+			},
 			Attr_SharedProcessorPool: {
 				Computed:    true,
 				Description: "The name of the shared processor pool for the instance.",
@@ -235,6 +240,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_PinPolicy, powervmdata.PinPolicy)
 	d.Set(Attr_Processors, powervmdata.Processors)
 	d.Set(Attr_ProcType, powervmdata.ProcType)
+	d.Set(Attr_ServerName, powervmdata.ServerName)
 	d.Set(Attr_SharedProcessorPool, powervmdata.SharedProcessorPool)
 	d.Set(Attr_SharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 	d.Set(Attr_Status, powervmdata.Status)

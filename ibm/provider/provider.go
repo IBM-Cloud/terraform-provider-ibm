@@ -40,6 +40,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -793,6 +794,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_report_violation_drift":   scc.DataSourceIbmSccReportViolationDrift(),
 			"ibm_scc_rule":                     scc.DataSourceIbmSccRule(),
 
+			// Security Services
+			"ibm_pag_instance": pag.DataSourceIBMPag(),
+
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
@@ -1303,7 +1307,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
 
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
@@ -1335,6 +1340,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
 			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
+
+			// Security Services
+			"ibm_pag_instance": pag.ResourceIBMPag(),
 
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
@@ -1594,6 +1602,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_key":                        resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
+				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),

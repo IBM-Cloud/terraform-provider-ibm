@@ -27,6 +27,7 @@ const (
 	Arg_StorageType                         = "pi_storage_type"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeID                            = "pi_volume_id"
+	Arg_VolumeName                          = "pi_volume_name"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
 	Arg_VTL                                 = "vtl"
 
@@ -104,6 +105,7 @@ const (
 	Attr_Instances                                   = "instances"
 	Attr_InstanceSnapshots                           = "instance_snapshots"
 	Attr_InstanceVolumes                             = "instance_volumes"
+	Attr_IOThrottleRate                              = "io_throttle_rate"
 	Attr_IP                                          = "ip"
 	Attr_IPAddress                                   = "ipaddress"
 	Attr_IPOctet                                     = "ipoctet"
@@ -180,6 +182,7 @@ const (
 	Attr_ReservedCores                               = "reserved_cores"
 	Attr_ResultsOnboardedVolumes                     = "results_onboarded_volumes"
 	Attr_ResultsVolumeOnboardingFailures             = "results_volume_onboarding_failures"
+	Attr_ServerName                                  = "server_name"
 	Attr_Shareable                                   = "shreable"
 	Attr_SharedCoreRatio                             = "shared_core_ratio"
 	Attr_SharedProcessorPool                         = "shared_processor_pool"

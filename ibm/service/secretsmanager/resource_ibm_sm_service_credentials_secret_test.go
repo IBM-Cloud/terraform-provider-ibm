@@ -76,6 +76,7 @@ func TestAccIbmSmServiceCredentialsSecretAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "next_rotation_date"),
 					resource.TestCheckResourceAttr(resourceName, "state", "1"),
 					resource.TestCheckResourceAttr(resourceName, "versions_total", "1"),
+					resource.TestCheckResourceAttr(resourceName, "ttl", serviceCredentialsTtl),
 				),
 			},
 			resource.TestStep{
