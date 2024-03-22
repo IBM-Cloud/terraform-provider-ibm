@@ -177,7 +177,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 						},
 						"assessment_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The implementation ID of the parameter.",
 						},
 						"parameter_name": {

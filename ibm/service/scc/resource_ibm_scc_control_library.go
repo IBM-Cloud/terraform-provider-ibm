@@ -163,7 +163,7 @@ func ResourceIbmSccControlLibrary() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"assessment_id": {
 													Type:        schema.TypeString,
-													Optional:    true,
+													Required:    true,
 													Description: "The assessment ID.",
 												},
 												"assessment_method": {
