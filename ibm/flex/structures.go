@@ -36,6 +36,7 @@ import (
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
@@ -2558,9 +2559,42 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error updating database tags %v : %s\n%s", add, err, resp)
 		}
+		response, errored := waitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
+		if errored != nil {
+			log.Printf(`[ERROR] Error waiting for tags database tags %s : %v
+%v`, resourceID, errored, response)
+		}
 	}
 
 	return nil
+}
+
+func waitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for tag attachment (%s) to be successful.", resourceID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"success", "error"},
+		Refresh:    tagsRefreshFunc(meta, resourceID, resourceType, tagType, desired),
+		Timeout:    timeout,
+		Delay:      3 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+
+func tagsRefreshFunc(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		tags, err := GetGlobalTagsUsingCRN(meta, resourceID, resourceType, tagType)
+		if err != nil {
+			return tags, "error", fmt.Errorf("[ERROR] Error on get of resource tags (%s) tags: %s", resourceID, err)
+		}
+		if tags.Equal(desired) {
+			return tags, "success", nil
+		} else {
+			return tags, "pending", nil
+		}
+	}
 }
 
 func ResourceIBMVPCHash(v interface{}) int {
