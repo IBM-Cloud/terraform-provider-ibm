@@ -193,13 +193,19 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_scc_rule` resource by using `id`. The rule ID.
 The `id` property can be formed from `instance_id` and `rule_id` in the following format:
 
-```
+```bash
 <instance_id>/<rule_id>
 ```
 * `instance_id`: A string. The instance ID.
 * `rule_id`: A string. The rule ID.
 
 # Syntax
-```
+
+```bash
 $ terraform import ibm_scc_rule.scc_rule <instance_id>/<rule_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_rule.scc_rule 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444
 ```

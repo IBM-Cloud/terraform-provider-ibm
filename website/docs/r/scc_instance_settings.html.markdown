@@ -60,6 +60,11 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_scc_instance_settings` resource by using `instance_id`. The unique identifier of the scc_instance_settings.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_scc_instance_settings.scc_instance_settings <instance_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_instance_settings.scc_instance_settings 00000000-1111-2222-3333-444444444444
 ```
