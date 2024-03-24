@@ -2874,27 +2874,19 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	// TODO: Replace this with  cpuEnforcementRatioCeiling when it is fixed
 	cpuEnforcementRatioCeilingTemp := 16384
 
-	if resourceDefaults.Members == nil {
-		return nil
-	}
-
-	if group.Memory.Allocation < resourceDefaults.Memory.Minimum/resourceDefaults.Members.Allocation {
-		return fmt.Errorf("We were unable to complete your request: group.memory requires a minimum of %d megabytes. Try again with valid values or contact support if the issue persists.", resourceDefaults.Memory.Minimum/resourceDefaults.Members.Allocation)
-	}
-
 	if group.CPU == nil {
 		return nil
 	}
 
-	if group.CPU != nil && group.CPU.Allocation > 2 {
+	if group.CPU.Allocation == 0 {
 		return nil
 	}
 
-	if group.CPU != nil && group.Memory.Allocation*resourceDefaults.Members.Allocation < cpuEnforcementRatioCeilingTemp*resourceDefaults.Members.Allocation && group.Memory.Allocation*resourceDefaults.Members.Allocation > group.CPU.Allocation*cpuEnforcementRatioMb {
-		return fmt.Errorf("We were unable to complete your request: group.memory %d with group.cpu %d is not valid. Try again with valid values or contact support if the issue persists.", group.Memory.Allocation, group.CPU.Allocation)
+	if group.CPU.Allocation >= cpuEnforcementRatioCeilingTemp/cpuEnforcementRatioMb {
+		return nil
+	} else {
+		return fmt.Errorf("The current cpu alloaction of %d is not valid for your current configuration.", group.CPU.Allocation)
 	}
-
-	return nil
 }
 
 func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
