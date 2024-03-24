@@ -2561,7 +2561,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		}
 		response, errored := waitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
 		if errored != nil {
-			log.Printf(`[ERROR] Error waiting for tags database tags %s : %v
+			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
 %v`, resourceID, errored, response)
 		}
 	}
