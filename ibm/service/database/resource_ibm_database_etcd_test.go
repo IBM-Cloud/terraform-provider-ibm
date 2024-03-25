@@ -36,7 +36,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "root"),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "9216"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "12288"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "184320"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -69,7 +69,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-etcd"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "9216"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "12288"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "193536"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
@@ -135,7 +135,7 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 		group {
 			group_id = "member"
 			memory {
-			  allocation_mb = 3072
+			  allocation_mb = 4096
 			}
 			host_flavor {
 				id = "multitenant"
@@ -217,7 +217,7 @@ func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, na
 		group {
 			group_id = "member"
 			memory {
-			  allocation_mb = 3072
+			  allocation_mb = 4096
 			}
 			host_flavor {
 				id = "multitenant"
