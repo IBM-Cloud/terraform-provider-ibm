@@ -2874,11 +2874,7 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	// TODO: Replace this with  cpuEnforcementRatioCeiling when it is fixed
 	cpuEnforcementRatioCeilingTemp := 16384
 
-	if group.CPU == nil {
-		return nil
-	}
-
-	if group.CPU.Allocation == 0 {
+	if group.CPU == nil || group.CPU.Allocation == 0 {
 		return nil
 	}
 
@@ -2925,7 +2921,11 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
-		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := getCpuEnforcementRatios(service, plan, meta, group)
+		err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := getCpuEnforcementRatios(service, plan, meta, group)
+
+		if err != nil {
+			return err
+		}
 
 		// validate group_ids are unique
 		groupIds = make([]string, 0, len(tfGroups))
@@ -3005,12 +3005,12 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	return nil
 }
 
-func getCpuEnforcementRatios(service string, plan string, meta interface{}, group interface{}) (cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
+func getCpuEnforcementRatios(service string, plan string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
 	var currentGroups []Group
 	defaultList, err := getDefaultScalingGroups(service, plan, "multitenant", meta)
 
 	if err != nil {
-		return 0, 0
+		return err, 0, 0
 	}
 
 	currentGroups = normalizeGroups(defaultList)
@@ -3019,7 +3019,7 @@ func getCpuEnforcementRatios(service string, plan string, meta interface{}, grou
 	// Get default or current group scaling values
 	for _, group := range tfGroups {
 		if group == nil {
-			break
+			continue
 		}
 
 		groupId := group.ID
@@ -3032,12 +3032,12 @@ func getCpuEnforcementRatios(service string, plan string, meta interface{}, grou
 		}
 
 		if groupDefaults.Memory != nil {
-			return groupDefaults.Memory.CPUEnforcementRatioCeilingMb, groupDefaults.Memory.CPUEnforcementRatioMb
+			return nil, groupDefaults.Memory.CPUEnforcementRatioCeilingMb, groupDefaults.Memory.CPUEnforcementRatioMb
 		}
 
 	}
 
-	return 0, 0
+	return nil, 0, 0
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
