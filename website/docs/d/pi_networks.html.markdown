@@ -44,7 +44,6 @@ In addition to all argument reference list, you can access the following attribu
   - `access_config` - (String) The network communication configuration option of the network (for satellite locations only).
   - `dhcp_managed` - (Boolean) Indicates if the network DHCP Managed.
   - `href` - (String) The hyper link of a network. 
-  - `jumbo` - (Deprecated, Boolean) MTU Jumbo option of the network (for multi-zone locations only).
   - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
   - `name` - (String) The name of a network.
   - `network_id` - (String) The ID of the network.

@@ -48,12 +48,6 @@ func DataSourceIBMPINetworks() *schema.Resource {
 							Description: "The hyper link of a network.",
 							Type:        schema.TypeString,
 						},
-						Attr_Jumbo: {
-							Computed:    true,
-							Deprecated:  "This field is deprecated, use mtu instead.",
-							Description: "MTU Jumbo option of the network (for multi-zone locations only).",
-							Type:        schema.TypeBool,
-						},
 						Attr_MTU: {
 							Computed:    true,
 							Description: "Maximum Transmission Unit option of the network.",
@@ -115,7 +109,6 @@ func flattenNetworks(list []*models.NetworkReference) []map[string]interface{} {
 			Attr_AccessConfig: i.AccessConfig,
 			Attr_DhcpManaged:  i.DhcpManaged,
 			Attr_Href:         *i.Href,
-			Attr_Jumbo:        i.Jumbo,
 			Attr_MTU:          i.Mtu,
 			Attr_Name:         *i.Name,
 			Attr_NetworkID:    *i.NetworkID,
