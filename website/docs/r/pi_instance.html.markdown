@@ -113,7 +113,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `health_status` - (String) The health status of the VM.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
-- `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
+- `id` - (String) The unique identifier of the instance. The ID is composed of `<cloud_instance_id>/<instance_id_1>/.../<instance_id_n>`.
 - `instance_id` - (String) The unique identifier of the instance. 
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
@@ -135,7 +135,7 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the instance.
 ## Import
 
-The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.
+The `ibm_pi_instance` can be imported using `cloud_instance_id` and `instance_id`.
 
 **Example**
 

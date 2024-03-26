@@ -183,7 +183,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				Computed:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
@@ -405,7 +405,13 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		instanceReadyStatus = r.(string)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *(*pvmList)[0].PvmInstanceID))
+	// id is a combination of the cloud instance id and all of the pvm instance ids
+	id := cloudInstanceID
+	for _, pvm := range *pvmList {
+		id += "/" + *pvm.PvmInstanceID
+	}
+
+	d.SetId(id)
 
 	for _, s := range *pvmList {
 		if dt, ok := d.GetOk(PIInstanceDeploymentType); ok && dt.(string) == "VMNoStorage" {
@@ -419,7 +425,6 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 		}
-
 	}
 
 	// If Storage Pool Affinity is given as false we need to update the vm instance.
@@ -454,7 +459,6 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
-
 }
 
 func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -463,10 +467,13 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID, instanceID, err := splitID(d.Id())
+	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	cloudInstanceID := idArr[0]
+	instanceID := idArr[1]
 
 	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := client.Get(instanceID)
@@ -840,20 +847,23 @@ func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID, instanceID, err := splitID(d.Id())
+	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
-	err = client.Delete(instanceID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	cloudInstanceID := idArr[0]
+	for _, instanceID := range idArr[1:] {
+		client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
+		err = client.Delete(instanceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	_, err = isWaitForPIInstanceDeleted(ctx, client, instanceID)
-	if err != nil {
-		return diag.FromErr(err)
+		_, err = isWaitForPIInstanceDeleted(ctx, client, instanceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId("")
