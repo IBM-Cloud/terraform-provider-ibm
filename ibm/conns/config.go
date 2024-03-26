@@ -30,7 +30,7 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
-	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
+	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1" // to add rulesets
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
 	cisbotmanagementv1 "github.com/IBM/networking-go-sdk/botmanagementv1"
@@ -248,7 +248,8 @@ type ClientSession interface {
 	UkoV4() (*ukov4.UkoV4, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
-	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
+	CisAlertsSession() (*cisalertsv1.AlertsV1, error) //to be updated
+	CisRuleSetsSession() (*cisalertsv1.RulesetsV1, error)
 	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
@@ -428,6 +429,10 @@ type clientSession struct {
 	// CIS Alerts
 	cisAlertsClient *cisalertsv1.AlertsV1
 	cisAlertsErr    error
+
+	// CIS Rulesets
+	cisRulesetsClient *cisalertsv1.RulesetsV1
+	cisRulesetsErr    error
 
 	// CIS Authenticated Origin Pull
 	cisOriginAuthClient  *cisoriginpull.AuthenticatedOriginPullApiV1
@@ -982,6 +987,14 @@ func (sess clientSession) CisAlertsSession() (*cisalertsv1.AlertsV1, error) {
 		return sess.cisAlertsClient, sess.cisAlertsErr
 	}
 	return sess.cisAlertsClient.Clone(), nil
+}
+
+// CIS Rulesets
+func (sess clientSession) CisRulesetsSession() (*cisalertsv1.RulesetsV1, error) {
+	if sess.cisRulesetsErr != nil {
+		return sess.cisRulesetsClient, sess.cisRulesetsErr
+	}
+	return sess.cisRulesetsClient.Clone(), nil
 }
 
 // CIS Routing
@@ -2431,6 +2444,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisAlertsClient != nil && session.cisAlertsClient.Service != nil {
 		session.cisAlertsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisAlertsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Network CIS Rulesets
+	cisRulesetsOpt := &cisalertsv1.RulesetsV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisRulesetsClient, session.cisRulesetsErr = cisalertsv1.NewRulesetsV1(cisRulesetsOpt)
+	if session.cisRulesetsErr != nil {
+		session.cisRulesetsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Rulesets : %s",
+			session.cisRulesetsErr)
+	}
+	if session.cisRulesetsClient != nil && session.cisRulesetsClient.Service != nil {
+		session.cisRulesetsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRulesetsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

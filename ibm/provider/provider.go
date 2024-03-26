@@ -280,6 +280,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_mtls_apps":                            cis.DataSourceIBMCISMtlsApp(),
 			"ibm_cis_bot_managements":                      cis.DataSourceIBMCISBotManagement(),
 			"ibm_cis_bot_analytics":                        cis.DataSourceIBMCISBotAnalytics(),
+			"ibm_cis_rulesets":                             cis.DataSourceIBMCISRulesets(),
 			"ibm_cis_webhooks":                             cis.DataSourceIBMCISWebhooks(),
 			"ibm_cis_logpush_jobs":                         cis.DataSourceIBMCISLogPushJobs(),
 			"ibm_cis_edge_functions_actions":               cis.DataSourceIBMCISEdgeFunctionsActions(),
