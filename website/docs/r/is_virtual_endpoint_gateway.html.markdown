@@ -89,17 +89,16 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 
-    -> **NOTE:** `allow_dns_resolution_binding` is a select location availability, invitation only feature. If used in other regions may lead to inconsistencies in state management.
 - `allow_dns_resolution_binding` - (Optional, bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
 - `name` - (Required, Forces new resource, String) The endpoint gateway name.
-- `ips`  (Optional, List) The endpoint gateway resource group.
+- `ips`  (Optional, List) The reserved IPs to bind to this endpoint gateway. At most one reserved IP per zone is allowed.
 
   Nested scheme for `ips`:
-  - `id` - (Optional, String) The endpoint gateway resource group IPs ID.
-  - `name` - (Optional, String) The endpoint gateway resource group IPs name.
-  - `subnet` - (Optional, String) The endpoint gateway resource group subnet ID.
+  - `id` - (Optional, String) The unique identifier for this reserved IP. Conflicts with other properties (**name**,  **subnet**)
+  - `name` - (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
+  - `subnet` - (Optional, String) The subnet in which to create this reserved IP.
   
-  ~> **NOTE:** `id` and `subnet` are mutually exclusive.
+  ~> **NOTE:** `id` and (`name`, `subnet`) are mutually exclusive.
 
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `security_groups` - (Optional, list) The security groups to use for this endpoint gateway. If unspecified, the VPC's default security group is used.

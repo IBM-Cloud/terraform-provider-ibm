@@ -197,51 +197,161 @@ func dataSourceIBMVPNGatewayConnectionsRead(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("[ERROR] Error reading list of VPN Gateway Connections:%s\n%s", err, detail)
 	}
 	vpngatewayconnections := make([]map[string]interface{}, 0)
-	for _, instance := range availableVPNGatewayConnections.Connections {
+	for _, vpnGatewayConnectionIntf := range availableVPNGatewayConnections.Connections {
 		gatewayconnection := map[string]interface{}{}
-		data := instance.(*vpcv1.VPNGatewayConnection)
-		gatewayconnection[isVPNGatewayConnectionAdminAuthenticationmode] = *data.AuthenticationMode
-		gatewayconnection[isVPNGatewayConnectionCreatedat] = data.CreatedAt.String()
-		gatewayconnection[isVPNGatewayConnectionAdminStateup] = *data.AdminStateUp
-		gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = *data.DeadPeerDetection.Action
-		gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = *data.DeadPeerDetection.Interval
-		gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = *data.DeadPeerDetection.Timeout
-		gatewayconnection[isVPNGatewayConnectionID] = *data.ID
+		if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode); ok {
+			data := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
+			gatewayconnection[isVPNGatewayConnectionAdminAuthenticationmode] = *data.AuthenticationMode
+			gatewayconnection[isVPNGatewayConnectionCreatedat] = data.CreatedAt.String()
+			gatewayconnection[isVPNGatewayConnectionAdminStateup] = *data.AdminStateUp
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = *data.DeadPeerDetection.Action
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = *data.DeadPeerDetection.Interval
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = *data.DeadPeerDetection.Timeout
+			gatewayconnection[isVPNGatewayConnectionID] = *data.ID
 
-		if data.IkePolicy != nil {
-			gatewayconnection[isVPNGatewayConnectionIKEPolicy] = *data.IkePolicy.ID
-		}
-		if data.IpsecPolicy != nil {
-			gatewayconnection[isVPNGatewayConnectionIPSECPolicy] = *data.IpsecPolicy.ID
-		}
-		if data.LocalCIDRs != nil {
-			gatewayconnection[isVPNGatewayConnectionLocalCIDRS] = flex.FlattenStringList(data.LocalCIDRs)
-		}
-		if data.PeerCIDRs != nil {
-			gatewayconnection[isVPNGatewayConnectionPeerCIDRS] = flex.FlattenStringList(data.PeerCIDRs)
-		}
-		gatewayconnection[isVPNGatewayConnectionMode] = *data.Mode
-		gatewayconnection[isVPNGatewayConnectionName] = *data.Name
-		gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
-		gatewayconnection[isVPNGatewayConnectionResourcetype] = *data.ResourceType
-		gatewayconnection[isVPNGatewayConnectionStatus] = *data.Status
-		gatewayconnection[isVPNGatewayConnectionStatusreasons] = resourceVPNGatewayConnectionFlattenLifecycleReasons(data.StatusReasons)
-		//if data.Tunnels != nil {
-		if len(data.Tunnels) > 0 {
-			vpcTunnelsList := make([]map[string]interface{}, 0)
-			for _, vpcTunnel := range data.Tunnels {
-				currentTunnel := map[string]interface{}{}
-				if vpcTunnel.PublicIP != nil {
-					if vpcTunnel.PublicIP != nil {
-						currentTunnel["address"] = *vpcTunnel.PublicIP.Address
-					}
-					if vpcTunnel.Status != nil {
-						currentTunnel["status"] = *vpcTunnel.Status
-					}
-					vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
-				}
+			if data.IkePolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIKEPolicy] = *data.IkePolicy.ID
 			}
-			gatewayconnection[isVPNGatewayConnectionTunnels] = vpcTunnelsList
+			if data.IpsecPolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIPSECPolicy] = *data.IpsecPolicy.ID
+			}
+			if data.LocalCIDRs != nil {
+				gatewayconnection[isVPNGatewayConnectionLocalCIDRS] = flex.FlattenStringList(data.LocalCIDRs)
+			}
+			if data.PeerCIDRs != nil {
+				gatewayconnection[isVPNGatewayConnectionPeerCIDRS] = flex.FlattenStringList(data.PeerCIDRs)
+			}
+			gatewayconnection[isVPNGatewayConnectionMode] = *data.Mode
+			gatewayconnection[isVPNGatewayConnectionName] = *data.Name
+			gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
+			gatewayconnection[isVPNGatewayConnectionResourcetype] = *data.ResourceType
+			gatewayconnection[isVPNGatewayConnectionStatus] = *data.Status
+			gatewayconnection[isVPNGatewayConnectionStatusreasons] = resourceVPNGatewayConnectionFlattenLifecycleReasons(data.StatusReasons)
+		} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode); ok {
+			data := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode)
+			gatewayconnection[isVPNGatewayConnectionAdminAuthenticationmode] = *data.AuthenticationMode
+			gatewayconnection[isVPNGatewayConnectionCreatedat] = data.CreatedAt.String()
+			gatewayconnection[isVPNGatewayConnectionAdminStateup] = *data.AdminStateUp
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = *data.DeadPeerDetection.Action
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = *data.DeadPeerDetection.Interval
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = *data.DeadPeerDetection.Timeout
+			gatewayconnection[isVPNGatewayConnectionID] = *data.ID
+
+			if data.IkePolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIKEPolicy] = *data.IkePolicy.ID
+			}
+			if data.IpsecPolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIPSECPolicy] = *data.IpsecPolicy.ID
+			}
+			gatewayconnection[isVPNGatewayConnectionMode] = *data.Mode
+			gatewayconnection[isVPNGatewayConnectionName] = *data.Name
+			gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
+			gatewayconnection[isVPNGatewayConnectionResourcetype] = *data.ResourceType
+			gatewayconnection[isVPNGatewayConnectionStatus] = *data.Status
+			gatewayconnection[isVPNGatewayConnectionStatusreasons] = resourceVPNGatewayConnectionFlattenLifecycleReasons(data.StatusReasons)
+			//if data.Tunnels != nil {
+			if len(data.Tunnels) > 0 {
+				vpcTunnelsList := make([]map[string]interface{}, 0)
+				for _, vpcTunnel := range data.Tunnels {
+					currentTunnel := map[string]interface{}{}
+					if vpcTunnel.PublicIP != nil {
+						if vpcTunnel.PublicIP != nil {
+							currentTunnel["address"] = *vpcTunnel.PublicIP.Address
+						}
+						if vpcTunnel.Status != nil {
+							currentTunnel["status"] = *vpcTunnel.Status
+						}
+						vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+					}
+				}
+				gatewayconnection[isVPNGatewayConnectionTunnels] = vpcTunnelsList
+			}
+		} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode); ok {
+			data := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+			gatewayconnection[isVPNGatewayConnectionAdminAuthenticationmode] = *data.AuthenticationMode
+			gatewayconnection[isVPNGatewayConnectionCreatedat] = data.CreatedAt.String()
+			gatewayconnection[isVPNGatewayConnectionAdminStateup] = *data.AdminStateUp
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = *data.DeadPeerDetection.Action
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = *data.DeadPeerDetection.Interval
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = *data.DeadPeerDetection.Timeout
+			gatewayconnection[isVPNGatewayConnectionID] = *data.ID
+
+			if data.IkePolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIKEPolicy] = *data.IkePolicy.ID
+			}
+			if data.IpsecPolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIPSECPolicy] = *data.IpsecPolicy.ID
+			}
+			gatewayconnection[isVPNGatewayConnectionMode] = *data.Mode
+			gatewayconnection[isVPNGatewayConnectionName] = *data.Name
+			gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
+			gatewayconnection[isVPNGatewayConnectionResourcetype] = *data.ResourceType
+			gatewayconnection[isVPNGatewayConnectionStatus] = *data.Status
+			gatewayconnection[isVPNGatewayConnectionStatusreasons] = resourceVPNGatewayConnectionFlattenLifecycleReasons(data.StatusReasons)
+			//if data.Tunnels != nil {
+			if len(data.Tunnels) > 0 {
+				vpcTunnelsList := make([]map[string]interface{}, 0)
+				for _, vpcTunnel := range data.Tunnels {
+					currentTunnel := map[string]interface{}{}
+					if vpcTunnel.PublicIP != nil {
+						if vpcTunnel.PublicIP != nil {
+							currentTunnel["address"] = *vpcTunnel.PublicIP.Address
+						}
+						if vpcTunnel.Status != nil {
+							currentTunnel["status"] = *vpcTunnel.Status
+						}
+						vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+					}
+				}
+				gatewayconnection[isVPNGatewayConnectionTunnels] = vpcTunnelsList
+			}
+		} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection); ok {
+			data := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
+			gatewayconnection[isVPNGatewayConnectionAdminAuthenticationmode] = *data.AuthenticationMode
+			gatewayconnection[isVPNGatewayConnectionCreatedat] = data.CreatedAt.String()
+			gatewayconnection[isVPNGatewayConnectionAdminStateup] = *data.AdminStateUp
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = *data.DeadPeerDetection.Action
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = *data.DeadPeerDetection.Interval
+			gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = *data.DeadPeerDetection.Timeout
+			gatewayconnection[isVPNGatewayConnectionID] = *data.ID
+
+			if data.IkePolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIKEPolicy] = *data.IkePolicy.ID
+			}
+			if data.IpsecPolicy != nil {
+				gatewayconnection[isVPNGatewayConnectionIPSECPolicy] = *data.IpsecPolicy.ID
+			}
+			if data.LocalCIDRs != nil {
+				gatewayconnection[isVPNGatewayConnectionLocalCIDRS] = flex.FlattenStringList(data.LocalCIDRs)
+			}
+			if data.PeerCIDRs != nil {
+				gatewayconnection[isVPNGatewayConnectionPeerCIDRS] = flex.FlattenStringList(data.PeerCIDRs)
+			}
+			gatewayconnection[isVPNGatewayConnectionMode] = *data.Mode
+			gatewayconnection[isVPNGatewayConnectionName] = *data.Name
+			gatewayconnection[isVPNGatewayConnectionPeerAddress] = *data.PeerAddress
+			gatewayconnection[isVPNGatewayConnectionResourcetype] = *data.ResourceType
+			gatewayconnection[isVPNGatewayConnectionStatus] = *data.Status
+			gatewayconnection[isVPNGatewayConnectionStatusreasons] = resourceVPNGatewayConnectionFlattenLifecycleReasons(data.StatusReasons)
+			//if data.Tunnels != nil {
+			if len(data.Tunnels) > 0 {
+				vpcTunnelsList := make([]map[string]interface{}, 0)
+				for _, vpcTunnel := range data.Tunnels {
+					currentTunnel := map[string]interface{}{}
+					if vpcTunnel.PublicIP != nil {
+						if vpcTunnel.PublicIP != nil {
+							currentTunnel["address"] = *vpcTunnel.PublicIP.Address
+						}
+						if vpcTunnel.Status != nil {
+							currentTunnel["status"] = *vpcTunnel.Status
+						}
+						vpcTunnelsList = append(vpcTunnelsList, currentTunnel)
+					}
+				}
+				gatewayconnection[isVPNGatewayConnectionTunnels] = vpcTunnelsList
+			}
+		} else {
+			return fmt.Errorf("[ERROR] Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered")
 		}
 
 		vpngatewayconnections = append(vpngatewayconnections, gatewayconnection)

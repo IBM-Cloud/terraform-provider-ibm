@@ -543,7 +543,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupResourceGroupReferenceToMap(model *v
 	return modelMap, nil
 }
 
-func dataSourceIBMIsSnapshotConsistencyGroupSnapshotConsistencyGroupSnapshotsItemToMap(model *vpcv1.SnapshotConsistencyGroupSnapshotsItem) (map[string]interface{}, error) {
+func dataSourceIBMIsSnapshotConsistencyGroupSnapshotConsistencyGroupSnapshotsItemToMap(model *vpcv1.SnapshotReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["crn"] = model.CRN
 	if model.Deleted != nil {

@@ -13,7 +13,6 @@ import (
 )
 
 func TestAccIBMPIInstancesDataSource_basic(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -30,9 +29,7 @@ func TestAccIBMPIInstancesDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIInstancesDataSourceConfig() string {
 	return fmt.Sprintf(`
-	
-	data "ibm_pi_instances" "testacc_ds_instance" {
-		pi_cloud_instance_id = "%s"
-	}`, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_instances" "testacc_ds_instance" {
+			pi_cloud_instance_id = "%s"
+		}`, acc.Pi_cloud_instance_id)
 }

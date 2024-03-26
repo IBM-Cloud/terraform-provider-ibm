@@ -31,8 +31,6 @@ func TestAccIBMIsVPNGatewayConnectionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.action"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.interval"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.timeout"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.public_ip_address"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "mode"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "name"),
@@ -51,8 +49,6 @@ func TestAccIBMIsVPNGatewayConnectionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.action"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.interval"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.timeout"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.public_ip_address"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example1", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example1", "mode"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example1", "name"),
@@ -71,8 +67,6 @@ func TestAccIBMIsVPNGatewayConnectionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.action"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.interval"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.timeout"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.public_ip_address"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example2", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example2", "mode"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example2", "name"),
@@ -91,8 +85,6 @@ func TestAccIBMIsVPNGatewayConnectionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.action"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.interval"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "dead_peer_detection.0.timeout"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.public_ip_address"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example", "tunnels.0.status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example3", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example3", "mode"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway_connection.example3", "name"),
@@ -108,45 +100,46 @@ func TestAccIBMIsVPNGatewayConnectionDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMIsVPNGatewayConnectionDataSourceConfigBasic(vpc, subnet, vpngwname, name string) string {
 	return fmt.Sprintf(`
-    	resource "ibm_is_vpc" "example" {
-    		name = "%s"
-    		
-    	}
-    	resource "ibm_is_subnet" "example" {
-    		name = "%s"
-    		vpc = "${ibm_is_vpc.example.id}"
-    		zone = "%s"
-    		ipv4_cidr_block = "%s"
-    		
-    	}
-    	resource "ibm_is_vpn_gateway" "example" {
-			name = "%s"
-			subnet = "${ibm_is_subnet.example.id}"
-			
-    	
-    	}
-    	resource "ibm_is_vpn_gateway_connection" "example" {
-    		name = "%s"
-    		vpn_gateway = "${ibm_is_vpn_gateway.example.id}"
-    		peer_address = "1.2.3.4"
-			local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
-    		preshared_key = "VPNDemoPassword"
-    	}
-		data "ibm_is_vpn_gateway_connection" "example" {
-    		vpn_gateway = ibm_is_vpn_gateway.example.id
-    		vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
-    	}
-    	data "ibm_is_vpn_gateway_connection" "example1" {
-    		vpn_gateway = ibm_is_vpn_gateway.example.id
-    		vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
-    	}
-    	data "ibm_is_vpn_gateway_connection" "example2" {
-    		vpn_gateway_name = ibm_is_vpn_gateway.example.name
-    		vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
-    	}
-    	data "ibm_is_vpn_gateway_connection" "example3" {
-    		vpn_gateway_name = ibm_is_vpn_gateway.example.name
-    		vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
-    	}
+	resource "ibm_is_vpc" "example" {
+		name = "%s"
+	  
+	  }
+	  resource "ibm_is_subnet" "example" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.example.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  
+	  }
+	  resource "ibm_is_vpn_gateway" "example" {
+		name   = "%s"
+		subnet = ibm_is_subnet.example.id
+		mode   = "policy"
+	  
+	  }
+	  resource "ibm_is_vpn_gateway_connection" "example" {
+		name          = "%s"
+		vpn_gateway   = ibm_is_vpn_gateway.example.id
+		peer_address  = "1.2.3.4"
+		peer_cidrs    = [ibm_is_subnet.example.ipv4_cidr_block]
+		local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
+		preshared_key = "VPNDemoPassword"
+	  }
+	  data "ibm_is_vpn_gateway_connection" "example" {
+		vpn_gateway            = ibm_is_vpn_gateway.example.id
+		vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
+	  }
+	  data "ibm_is_vpn_gateway_connection" "example1" {
+		vpn_gateway                 = ibm_is_vpn_gateway.example.id
+		vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+	  }
+	  data "ibm_is_vpn_gateway_connection" "example2" {
+		vpn_gateway_name       = ibm_is_vpn_gateway.example.name
+		vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
+	  }
+	  data "ibm_is_vpn_gateway_connection" "example3" {
+		vpn_gateway_name            = ibm_is_vpn_gateway.example.name
+		vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+	  }
 	`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, vpngwname, name)
 }

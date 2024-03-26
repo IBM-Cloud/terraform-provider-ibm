@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_binding
 
-Create, update, and delete code_engine_bindings with this resource.
+Create, update, and delete code_engine_bindings with this resource. A `secret` with format `service_access` is required to create a binding.
 
 ## Example Usage
 

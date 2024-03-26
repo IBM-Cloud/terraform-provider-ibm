@@ -1,6 +1,6 @@
 # IBM Power Virtual Server in IBM Cloud
 
-This example creates a Power Systems Virtual Server running AIX or IBMi. The
+This example creates a Power Systems Virtual Server running AIX or IBM i. The
 server is configured to allow incoming SSH connections through a publicly
 accessible IP address and authenticated using the provided SSH key.
 

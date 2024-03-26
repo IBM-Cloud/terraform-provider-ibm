@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_bare_metal_server_network_attachment"
 description: |-
   Get information about is_bare_metal_server_network_attachment
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_bare_metal_server_network_attachment

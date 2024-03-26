@@ -29,9 +29,8 @@ func TestAccIBMPIVolumeRemoteCopyRelationshipDataSource_basics(t *testing.T) {
 
 func testAccCheckIBMPIVolumeRemoteCopyRelationshipsDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume_remote_copy_relationship" "testacc_volume_remote_copy_relationship" {
-    pi_cloud_instance_id = "%s"
-	pi_volume_id         = "%s"
-}`, acc.Pi_cloud_instance_id, acc.Pi_volume_id)
-
+		data "ibm_pi_volume_remote_copy_relationship" "testacc_volume_remote_copy_relationship" {
+			pi_cloud_instance_id = "%s"
+			pi_volume_id         = "%s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_volume_id)
 }

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_virtual_network_interface_ip"
 description: |-
   Manages virtual_network_interface reserved ip attachment.
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_virtual_network_interface_ip

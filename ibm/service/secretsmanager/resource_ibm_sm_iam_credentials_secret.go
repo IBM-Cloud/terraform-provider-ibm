@@ -65,6 +65,11 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 				ValidateFunc: StringIsIntBetween(60, 7776000),
 				Description:  "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value is an integer that specifies the number of seconds .Minimum duration is 1 minute. Maximum is 90 days.",
 			},
+			"expiration_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date a secret is expired. The date format follows RFC 3339.",
+			},
 			"access_groups": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -422,6 +427,12 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	if versionMetadata.VersionCustomMetadata != nil {
 		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
+		}
+	}
+
+	if secret.ExpirationDate != nil {
+		if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 		}
 	}
 

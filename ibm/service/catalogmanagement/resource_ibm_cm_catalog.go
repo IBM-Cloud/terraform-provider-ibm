@@ -174,151 +174,6 @@ func ResourceIBMCmCatalog() *schema.Resource {
 					},
 				},
 			},
-			"syndication_settings": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Feature information.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"remove_related_components": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Remove related components.",
-						},
-						"clusters": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Syndication clusters.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"region": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Cluster region.",
-									},
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Cluster ID.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Cluster name.",
-									},
-									"resource_group_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Resource group ID.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Syndication type.",
-									},
-									"namespaces": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "Syndicated namespaces.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"all_namespaces": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Syndicated to all namespaces on cluster.",
-									},
-								},
-							},
-						},
-						"history": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Feature information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"namespaces": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "Array of syndicated namespaces.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"clusters": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "Array of syndicated namespaces.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"region": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Cluster region.",
-												},
-												"id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Cluster ID.",
-												},
-												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Cluster name.",
-												},
-												"resource_group_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Resource group ID.",
-												},
-												"type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Syndication type.",
-												},
-												"namespaces": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Description: "Syndicated namespaces.",
-													Elem:        &schema.Schema{Type: schema.TypeString},
-												},
-												"all_namespaces": &schema.Schema{
-													Type:        schema.TypeBool,
-													Optional:    true,
-													Description: "Syndicated to all namespaces on cluster.",
-												},
-											},
-										},
-									},
-									"last_run": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Date and time last syndicated.",
-									},
-								},
-							},
-						},
-						"authorization": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Feature information.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"token": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Array of syndicated namespaces.",
-									},
-									"last_run": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Date and time last updated.",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 			"kind": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -476,13 +331,6 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 		}
 		createCatalogOptions.SetCatalogFilters(catalogFiltersModel)
 	}
-	if _, ok := d.GetOk("syndication_settings"); ok {
-		syndicationSettingsModel, err := resourceIBMCmCatalogMapToSyndicationResource(d.Get("syndication_settings.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createCatalogOptions.SetSyndicationSettings(syndicationSettingsModel)
-	}
 	if _, ok := d.GetOk("kind"); ok {
 		createCatalogOptions.SetKind(d.Get("kind").(string))
 	}
@@ -578,15 +426,6 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 		}
 		if err = d.Set("catalog_filters", []map[string]interface{}{catalogFiltersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting catalog_filters: %s", err))
-		}
-	}
-	if catalog.SyndicationSettings != nil {
-		syndicationSettingsMap, err := resourceIBMCmCatalogSyndicationResourceToMap(catalog.SyndicationSettings)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("syndication_settings", []map[string]interface{}{syndicationSettingsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting syndication_settings: %s", err))
 		}
 	}
 	if err = d.Set("kind", catalog.Kind); err != nil {
@@ -693,13 +532,6 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		replaceCatalogOptions.SetCatalogFilters(catalogFilters)
-	}
-	if _, ok := d.GetOk("syndication_settings"); ok {
-		syndicationSettings, err := resourceIBMCmCatalogMapToSyndicationResource(d.Get("syndication_settings.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		replaceCatalogOptions.SetSyndicationSettings(syndicationSettings)
 	}
 	if _, ok := d.GetOk("kind"); ok {
 		replaceCatalogOptions.SetKind(d.Get("kind").(string))
@@ -873,110 +705,6 @@ func resourceIBMCmCatalogMapToIDFilter(modelMap map[string]interface{}) (*catalo
 	return model, nil
 }
 
-func resourceIBMCmCatalogMapToSyndicationResource(modelMap map[string]interface{}) (*catalogmanagementv1.SyndicationResource, error) {
-	model := &catalogmanagementv1.SyndicationResource{}
-	if modelMap["remove_related_components"] != nil {
-		model.RemoveRelatedComponents = core.BoolPtr(modelMap["remove_related_components"].(bool))
-	}
-	if modelMap["clusters"] != nil {
-		clusters := []catalogmanagementv1.SyndicationCluster{}
-		for _, clustersItem := range modelMap["clusters"].([]interface{}) {
-			clustersItemModel, err := resourceIBMCmCatalogMapToSyndicationCluster(clustersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			clusters = append(clusters, *clustersItemModel)
-		}
-		model.Clusters = clusters
-	}
-	if modelMap["history"] != nil && len(modelMap["history"].([]interface{})) > 0 {
-		var HistoryModel *catalogmanagementv1.SyndicationHistory
-		var err error
-		if modelMap["history"].([]interface{})[0] != nil {
-			HistoryModel, err = resourceIBMCmCatalogMapToSyndicationHistory(modelMap["history"].([]interface{})[0].(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-		}
-		model.History = HistoryModel
-	}
-	if modelMap["authorization"] != nil && len(modelMap["authorization"].([]interface{})) > 0 {
-		AuthorizationModel, err := resourceIBMCmCatalogMapToSyndicationAuthorization(modelMap["authorization"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Authorization = AuthorizationModel
-	}
-	return model, nil
-}
-
-func resourceIBMCmCatalogMapToSyndicationCluster(modelMap map[string]interface{}) (*catalogmanagementv1.SyndicationCluster, error) {
-	model := &catalogmanagementv1.SyndicationCluster{}
-	if modelMap["region"] != nil && modelMap["region"].(string) != "" {
-		model.Region = core.StringPtr(modelMap["region"].(string))
-	}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["resource_group_name"] != nil && modelMap["resource_group_name"].(string) != "" {
-		model.ResourceGroupName = core.StringPtr(modelMap["resource_group_name"].(string))
-	}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
-		model.Type = core.StringPtr(modelMap["type"].(string))
-	}
-	if modelMap["namespaces"] != nil {
-		namespaces := []string{}
-		for _, namespacesItem := range modelMap["namespaces"].([]interface{}) {
-			namespaces = append(namespaces, namespacesItem.(string))
-		}
-		model.Namespaces = namespaces
-	}
-	if modelMap["all_namespaces"] != nil {
-		model.AllNamespaces = core.BoolPtr(modelMap["all_namespaces"].(bool))
-	}
-	return model, nil
-}
-
-func resourceIBMCmCatalogMapToSyndicationHistory(modelMap map[string]interface{}) (*catalogmanagementv1.SyndicationHistory, error) {
-	model := &catalogmanagementv1.SyndicationHistory{}
-	if modelMap["namespaces"] != nil {
-		namespaces := []string{}
-		for _, namespacesItem := range modelMap["namespaces"].([]interface{}) {
-			namespaces = append(namespaces, namespacesItem.(string))
-		}
-		model.Namespaces = namespaces
-	}
-	if modelMap["clusters"] != nil {
-		clusters := []catalogmanagementv1.SyndicationCluster{}
-		for _, clustersItem := range modelMap["clusters"].([]interface{}) {
-			clustersItemModel, err := resourceIBMCmCatalogMapToSyndicationCluster(clustersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			clusters = append(clusters, *clustersItemModel)
-		}
-		model.Clusters = clusters
-	}
-	if modelMap["last_run"] != nil {
-
-	}
-	return model, nil
-}
-
-func resourceIBMCmCatalogMapToSyndicationAuthorization(modelMap map[string]interface{}) (*catalogmanagementv1.SyndicationAuthorization, error) {
-	model := &catalogmanagementv1.SyndicationAuthorization{}
-	if modelMap["token"] != nil && modelMap["token"].(string) != "" {
-		model.Token = core.StringPtr(modelMap["token"].(string))
-	}
-	if modelMap["last_run"] != nil {
-
-	}
-	return model, nil
-}
-
 func resourceIBMCmCatalogFeatureToMap(model *catalogmanagementv1.Feature) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Title != nil {
@@ -1082,98 +810,6 @@ func resourceIBMCmCatalogIDFilterToMap(model *catalogmanagementv1.IDFilter) (map
 			return modelMap, err
 		}
 		modelMap["exclude"] = []map[string]interface{}{excludeMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCmCatalogSyndicationResourceToMap(model *catalogmanagementv1.SyndicationResource) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.RemoveRelatedComponents != nil {
-		modelMap["remove_related_components"] = model.RemoveRelatedComponents
-	}
-	if model.Clusters != nil {
-		clusters := []map[string]interface{}{}
-		for _, clustersItem := range model.Clusters {
-			clustersItemMap, err := resourceIBMCmCatalogSyndicationClusterToMap(&clustersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			clusters = append(clusters, clustersItemMap)
-		}
-		modelMap["clusters"] = clusters
-	}
-	if model.History != nil {
-		historyMap, err := resourceIBMCmCatalogSyndicationHistoryToMap(model.History)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["history"] = []map[string]interface{}{historyMap}
-	}
-	if model.Authorization != nil {
-		authorizationMap, err := resourceIBMCmCatalogSyndicationAuthorizationToMap(model.Authorization)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["authorization"] = []map[string]interface{}{authorizationMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCmCatalogSyndicationClusterToMap(model *catalogmanagementv1.SyndicationCluster) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Region != nil {
-		modelMap["region"] = model.Region
-	}
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.ResourceGroupName != nil {
-		modelMap["resource_group_name"] = model.ResourceGroupName
-	}
-	if model.Type != nil {
-		modelMap["type"] = model.Type
-	}
-	if model.Namespaces != nil {
-		modelMap["namespaces"] = model.Namespaces
-	}
-	if model.AllNamespaces != nil {
-		modelMap["all_namespaces"] = model.AllNamespaces
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCmCatalogSyndicationHistoryToMap(model *catalogmanagementv1.SyndicationHistory) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Namespaces != nil {
-		modelMap["namespaces"] = model.Namespaces
-	}
-	if model.Clusters != nil {
-		clusters := []map[string]interface{}{}
-		for _, clustersItem := range model.Clusters {
-			clustersItemMap, err := resourceIBMCmCatalogSyndicationClusterToMap(&clustersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			clusters = append(clusters, clustersItemMap)
-		}
-		modelMap["clusters"] = clusters
-	}
-	if model.LastRun != nil {
-		modelMap["last_run"] = model.LastRun.String()
-	}
-	return modelMap, nil
-}
-
-func resourceIBMCmCatalogSyndicationAuthorizationToMap(model *catalogmanagementv1.SyndicationAuthorization) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Token != nil {
-		modelMap["token"] = model.Token
-	}
-	if model.LastRun != nil {
-		modelMap["last_run"] = model.LastRun.String()
 	}
 	return modelMap, nil
 }

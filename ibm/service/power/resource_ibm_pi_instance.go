@@ -356,24 +356,24 @@ func ResourceIBMPIInstance() *schema.Resource {
 			Arg_IBMiCSS: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "IBMi Cloud Storage Solution",
+				Description: "IBM i Cloud Storage Solution",
 			},
 			Arg_IBMiPHA: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "IBMi Power High Availability",
+				Description: "IBM i Power High Availability",
 			},
 			Attr_IBMiRDS: {
 				Type:        schema.TypeBool,
 				Optional:    false,
 				Required:    false,
 				Computed:    true,
-				Description: "IBMi Rational Dev Studio",
+				Description: "IBM i Rational Dev Studio",
 			},
 			Arg_IBMiRDSUsers: {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "IBMi Rational Dev Studio Number of User Licenses",
+				Description: "IBM i Rational Dev Studio Number of User Licenses",
 			},
 		},
 	}
@@ -816,7 +816,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
 		ibmrdsUsers := d.Get(Arg_IBMiRDSUsers).(int)
 		if ibmrdsUsers < 0 {
-			return diag.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+			return diag.Errorf("request with  IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 		}
 		sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
 		sl.IbmiRDSUsers = int64(ibmrdsUsers)
@@ -1481,7 +1481,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		}
 		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
 			if ibmrdsUsers.(int) < 0 {
-				return nil, fmt.Errorf("request with IBMi Rational Dev Studio property requires IBMi Rational Dev Studio number of users")
+				return nil, fmt.Errorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 			}
 			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers.(int) > 0)
 			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
