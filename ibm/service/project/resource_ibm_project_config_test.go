@@ -34,7 +34,7 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 				ResourceName:            "ibm_project_config.project_config_instance",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"definition.0.resource_crns", "definition.0.settings", "approved_version", "deployed_version"},
+				ImportStateVerifyIgnore: []string{"project_id"},
 			},
 		},
 	})

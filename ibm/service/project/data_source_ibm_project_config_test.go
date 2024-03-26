@@ -35,12 +35,6 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
 				),
 			},
-			resource.TestStep{
-				ResourceName:            "data.ibm_project_config.project_config_instance",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"definition.0.resource_crns", "definition.0.settings", "approved_version", "deployed_version"},
-			},
 		},
 	})
 }

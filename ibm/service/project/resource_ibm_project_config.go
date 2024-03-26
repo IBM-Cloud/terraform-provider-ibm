@@ -453,6 +453,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 			"approved_version": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "A summary of a project configuration version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -497,6 +498,7 @@ func ResourceIbmProjectConfig() *schema.Resource {
 			"deployed_version": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Description: "A summary of a project configuration version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -694,7 +696,6 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("href", projectConfig.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-
 	if !core.IsNil(projectConfig.ApprovedVersion) {
 		approvedVersionMap, err := resourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.ApprovedVersion)
 		if err != nil {
@@ -713,7 +714,6 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting deployed_version: %s", err))
 		}
 	}
-
 	if err = d.Set("project_config_id", projectConfig.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting project_config_id: %s", err))
 	}
