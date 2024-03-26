@@ -777,9 +777,12 @@ func Provider() *schema.Provider {
 			// Security and Compliance Center
 			"ibm_scc_instance_settings":        scc.DataSourceIbmSccInstanceSettings(),
 			"ibm_scc_control_library":          scc.DataSourceIbmSccControlLibrary(),
+			"ibm_scc_control_libraries":        scc.DataSourceIbmSccControlLibraries(),
 			"ibm_scc_profile":                  scc.DataSourceIbmSccProfile(),
+			"ibm_scc_profiles":                 scc.DataSourceIbmSccProfiles(),
 			"ibm_scc_profile_attachment":       scc.DataSourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type":            scc.DataSourceIbmSccProviderType(),
+			"ibm_scc_provider_types":           scc.DataSourceIbmSccProviderTypes(),
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
 			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),
@@ -1306,7 +1309,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
 
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
@@ -1600,6 +1604,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_key":                        resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
+				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),

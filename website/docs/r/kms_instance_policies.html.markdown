@@ -57,6 +57,8 @@ The following arguments are supported:
 
 
 - `instance_id` - (Required, String) The key-protect instance ID for creating policies.
+- `endpoint_type` - (Optional, String) The type of the public endpoint, or private endpoint to be used for creating keys.
+
 - `rotation` - (Optional,list) The Instance rotation time interval in months, with a minimum of 1, and a maximum of 12.
   Nested scheme for `rotation`:
 

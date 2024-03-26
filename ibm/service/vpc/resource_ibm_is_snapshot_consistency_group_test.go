@@ -108,7 +108,7 @@ func testAccCheckIBMIsSnapshotConsistencyGroupConfig(vpcname, subnetname, sshnam
 		}
 		name = "%s"
 	  }
-	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b", acc.InstanceProfileName, acc.ISZoneName, deleteSnapshotsOnDelete, scgname, snapname)
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, deleteSnapshotsOnDelete, scgname, snapname)
 }
 
 func testAccCheckIBMIsSnapshotConsistencyGroupExists(n string, obj vpcv1.SnapshotConsistencyGroup) resource.TestCheckFunc {
