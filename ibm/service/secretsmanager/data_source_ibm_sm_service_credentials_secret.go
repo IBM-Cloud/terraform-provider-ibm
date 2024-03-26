@@ -118,6 +118,11 @@ func DataSourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
+			"expiration_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date a secret is expired. The date format follows RFC 3339.",
+			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -398,6 +403,12 @@ func dataSourceIbmSmServiceCredentialsSecretRead(context context.Context, d *sch
 		}
 	}
 
+	if ServiceCredentialsSecret.ExpirationDate != nil {
+		if err = d.Set("expiration_date", DateTimeToRFC3339(ServiceCredentialsSecret.ExpirationDate)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -415,7 +426,7 @@ func dataSourceIbmSmServiceCredentialsSecretRotationPolicyToMap(model *secretsma
 	return modelMap, nil
 }
 
-func dataSourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *secretsmanagerv2.ServiceCredentialsSecretSourceService) (map[string]interface{}, error) {
+func dataSourceIbmSmServiceCredentialsSecretSourceServiceToMap(sourceService *secretsmanagerv2.ServiceCredentialsSecretSourceServiceRO) (map[string]interface{}, error) {
 	mainModelMap := make(map[string]interface{})
 	if sourceService.Instance != nil {
 		instanceMap := make(map[string]interface{})

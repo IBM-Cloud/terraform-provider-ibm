@@ -41,7 +41,7 @@ func testAccCheckIBMISVpnGatewayconnectionsDataSourceConfig(vpc, subnet, vpngwna
 	return fmt.Sprintf(`
 	
 	data "ibm_resource_group" "rg" {
-		name = "Proof of Concepts"
+		is_default = true
 	}
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"

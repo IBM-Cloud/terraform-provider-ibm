@@ -14,10 +14,11 @@ Create, update, or delete a IBM Cloud Object Storage destination by using IBM Cl
 
 ```terraform
 resource "ibm_en_destination_cos" "cos_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "COS Test Destination"
-  type          = "ibmcos"
-  description   = "IBM Cloud Object Storage Destination for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "COS Test Destination"
+  type                  = "ibmcos"
+  collect_failed_events = true
+  description           = "IBM Cloud Object Storage Destination for event notification"
   config {
     params {
       bucket_name     = "cos-test-bucket"
@@ -39,6 +40,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) ibmcos.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

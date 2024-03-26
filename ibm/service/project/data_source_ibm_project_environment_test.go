@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package project_test
@@ -43,6 +43,7 @@ func testAccCheckIbmProjectEnvironmentDataSourceConfigBasic() string {
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
+                monitoring_enabled = true
             }
         }
 

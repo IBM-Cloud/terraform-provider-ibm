@@ -14,10 +14,11 @@ Create, update, or delete a Code Engine destination by using IBM Cloud™ Event 
 
 ```terraform
 resource "ibm_en_destination_ce" "codeengine_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "Code engine Destination"
-  type          = "ibmce"
-  description   = "Code Engine destination for event notification"
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Code engine Destination"
+  type                  = "ibmce"
+  collect_failed_events = false
+  description           = "Code Engine destination for event notification"
   config {
     params {
       verb = "POST"
@@ -42,6 +43,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Destination description.
 
 - `type` - (Required, String) ibmce.
+
+- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

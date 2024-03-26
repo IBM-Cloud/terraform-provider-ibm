@@ -47,3 +47,8 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference listed, you can access the following attribute references after your resource source is created.
 
 - `id` - (String) Workspace ID.
+- `workspace_details` - (Map) Workspace information.
+
+    Nested schema for `workspace_details`:
+  - `creation_date` - (String) Date of workspace creation.
+  - `crn` - (String) Workspace crn.

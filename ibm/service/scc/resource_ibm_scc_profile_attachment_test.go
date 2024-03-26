@@ -90,8 +90,8 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 						assessment_description = "assessment_description"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
-							parameter_type = "numeric"
+							parameter_name         = "session_invalidation_in_seconds"
+							parameter_type         = "numeric"
 						}
 					}
 				}

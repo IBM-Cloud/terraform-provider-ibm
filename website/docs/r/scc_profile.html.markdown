@@ -186,13 +186,20 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_scc_profile` resource by using `id`.
 The `id` property can be formed from `instance_id` and `profiles_id` in the following format:
 
-```
+```bash
 <instance_id>/<profile_id>
 ```
+
 * `instance_id`: A string. The instance ID.
 * `profile_id`: A string. The profile ID.
 
 # Syntax
-```
+
+```bash
 $ terraform import ibm_scc_profile.scc_profile <instance_id>/<profile_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_profile.scc_profile 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444
 ```
