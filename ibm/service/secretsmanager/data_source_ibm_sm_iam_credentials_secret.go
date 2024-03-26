@@ -6,12 +6,9 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -22,9 +19,11 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"secret_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the secret.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"secret_id", "name"},
+				Description:  "The ID of the secret.",
 			},
 			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
@@ -73,14 +72,23 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Description: "The number of locks of the secret.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The human-readable name of your secret.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"secret_id", "name"},
+				RequiredWith: []string{"secret_group_name"},
+				Description:  "The human-readable name of your secret.",
 			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A v4 UUID identifier, or `default` secret group.",
+			},
+			"secret_group_name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"name"},
+				Description:  "The human-readable name of your secret group.",
 			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -111,6 +119,11 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.",
+			},
+			"expiration_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date a secret is expired. The date format follows RFC 3339.",
 			},
 			"access_groups": &schema.Schema{
 				Type:        schema.TypeList,
@@ -161,11 +174,6 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 							Computed:    true,
 							Description: "The units for the secret rotation time interval.",
 						},
-						"rotate_keys": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.",
-						},
 					},
 				},
 			},
@@ -185,29 +193,16 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 }
 
 func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
-	if err != nil {
-		return diag.FromErr(err)
+
+	iAMCredentialsSecretIntf, region, instanceId, diagError := getSecretByIdOrByName(context, d, meta, IAMCredentialsSecretType)
+	if diagError != nil {
+		return diagError
 	}
 
-	region := getRegion(secretsManagerClient, d)
-	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
-
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-	secretId := d.Get("secret_id").(string)
-	getSecretOptions.SetID(secretId)
-
-	iAMCredentialsSecretIntf, response, err := secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
-	}
-
-	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 	iAMCredentialsSecret := iAMCredentialsSecretIntf.(*secretsmanagerv2.IAMCredentialsSecret)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *iAMCredentialsSecret.ID))
 
+	var err error
 	if err = d.Set("region", region); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
@@ -317,6 +312,11 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting api_key: %s", err))
 	}
 
+	if iAMCredentialsSecret.ExpirationDate != nil {
+		if err = d.Set("expiration_date", DateTimeToRFC3339(iAMCredentialsSecret.ExpirationDate)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
+		}
+	}
 	return nil
 }
 
@@ -334,9 +334,6 @@ func dataSourceIbmSmIamCredentialsSecretRotationPolicyToMap(model secretsmanager
 		}
 		if model.Unit != nil {
 			modelMap["unit"] = *model.Unit
-		}
-		if model.RotateKeys != nil {
-			modelMap["rotate_keys"] = *model.RotateKeys
 		}
 		return modelMap, nil
 	} else {

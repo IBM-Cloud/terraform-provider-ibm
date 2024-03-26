@@ -41,9 +41,9 @@ In addition to all argument references listed, you can access the following attr
 
 - `topic_id` - (String) Topic ID.
 
-- `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
+- `attributes` - (Required, List)
 
-- `additional_properties` - (Required, List)
+  - `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
 
   - `reply_to_name` - (String) The Email User Name to reply to.
 

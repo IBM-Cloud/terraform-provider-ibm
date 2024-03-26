@@ -75,7 +75,6 @@ In addition to all argument references list, you can access the following attrib
     - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
     - `rate_units` - (String) Auto scaling rate in units.
 - `allowlist`  - (List) A list of allowed IP addresses or ranges.
-- `whitelist`  - **Deprecated** - (List) A list of allowed IP addresses or ranges.  - replaced by `allowlist`
 
 
 **Note**

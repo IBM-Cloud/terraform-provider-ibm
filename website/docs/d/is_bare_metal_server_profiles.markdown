@@ -38,8 +38,13 @@ Review the attribute references that you can access after you retrieve your data
   - `bandwidth` - (List) The total bandwidth (in megabits per second) shared across the network interfaces of a bare metal server with this profile.
     
       Nested scheme for `bandwidth`:
+      - `default` - (Integer) The default value for this profile field.
+      - `max` - (Integer) The maximum value for this profile field.
+      - `min` - (Integer) The minimum value for this profile field.
+      - `step` - (Integer) The increment step value for this profile field.
       - `type` - (String) The type for this profile field.
       - `value` - (Integer) The value for this profile field.
+      - `values` - (List) The permitted values for this profile field.
   - `cpu_architecture` - (List) The CPU architecture for a bare metal server with this profile.
     
       Nested scheme for `cpu_architecture`:
@@ -55,6 +60,12 @@ Review the attribute references that you can access after you retrieve your data
       Nested scheme for `cpu_socket_count`:
       - `type` - (String) The type for this profile field.
       - `value` - (Integer) The value for this profile field.
+  - `console_types` - (List) The console type configuration for a bare metal server with this profile.
+    
+    Nested schema for  `console_types`:
+    - `type` - (String) The type for this profile field.
+    - `values` - (List) The console types for a bare metal server with this profile.
+
   - `disks` - (List) A nested block describing the collection of the bare metal server profile's disks.
     
       Nested scheme for `disk`:
@@ -83,6 +94,12 @@ Review the attribute references that you can access after you retrieve your data
       - `type` - (String) The type for this profile field.
       - `value` - (String) The value for this profile field.
   - `name` - (String) The name of the profile.
+  - `network_interface_count` - (List) 
+  
+    Nested schema for **network_interface_count**:
+    - `max` - (Integer) The maximum value for this profile field.
+    - `min` - (Integer) The minimum value for this profile field.
+    - `type` - (String) The type for this profile field.
   - `os_architecture` - (List) The supported OS architecture(s) for a bare metal server with this profile.
 
         Nested scheme for `os_architecture`:
@@ -96,3 +113,9 @@ Review the attribute references that you can access after you retrieve your data
       Nested scheme for `supported_trusted_platform_module_modes`:
       - `type` - (String) The type for this profile field.
       - `values` - (Array) The supported trusted platform module (TPM) modes.
+
+  - `virtual_network_interfaces_supported` - (List) Indicates whether this profile supports virtual network interfaces.
+
+      Nested schema for **virtual_network_interfaces_supported**:
+      - `type` - (String) The type for this profile field.
+      - `value` - (Boolean) The value for this profile field.

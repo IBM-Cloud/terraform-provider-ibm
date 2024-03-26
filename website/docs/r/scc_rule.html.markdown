@@ -8,221 +8,204 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_rule
 
-Provides a resource for scc_rule. This allows scc_rule to be created, updated and deleted. For more information about Security and Compliance Center rules, see [Defining Rules](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-rules-define&interface=ui).
+Create, update, and delete rules with this resource.
+
+~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
 ```hcl
-resource "ibm_scc_rule" "scc_rule_tf_example" {
-  account_id  = "thisIsAFake32CharacterAccountID"
-  name        = "Terraform rule"
-  description = "Cloud Object Storage buckets can only be created in us-south."
-  labels      = ["example"]
-  target {
-    service_name  = "cloud-object-storage"
-    resource_kind = "bucket"
+resource "ibm_scc_rule" "scc_rule_instance" {
+  instance_id = "00000000-1111-2222-3333-444444444444"
+  description = "Example rule"
+  import {
+		parameters {
+			name = "name"
+			display_name = "display_name"
+			description = "description"
+			type = "string"
+		}
   }
   required_config {
-    // example of a Cloud Object Storage configuration
-    description = "Cloud Object Storage buckets can only be created in us-south."
-    property    = "location"
-    operator    = "string_equals"
-    value       = "us-south"
+		description = "description"
+		and {
+			or {
+				description = "description"
+				property = "property"
+				operator = "string_equals"
+				value = "anything as a string"
+			}
+		}
   }
-  enforcement_actions {
-    action = "disallow"
+  target {
+		service_name = "service_name"
+		service_display_name = "service_display_name"
+		resource_kind = "resource_kind"
+		additional_target_attributes {
+			name = "name"
+			operator = "string_equals"
+			value = "value"
+		}
   }
+  version = "1.0.0"
 }
 ```
 
-In the above example, COS buckets must have `location` set to `us-south` to be compliant.
+## Timeouts
+
+scc_rule provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
+
+* `create` - (Default 60 minutes) Used for creating a scc_rule.
+* `update` - (Default 60 minutes) Used for updating a scc_rule.
+* `delete` - (Default 20 minutes) Used for deleting a scc_rule.
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
-* `account_id` - (Required, String) Your IBM Cloud account ID, or the account ID that you want to target.
-* `name` - (Required, String) A human-readable alias to assign to your rule.
-    * Constraints: The maximum length is `32` characters. The minimum length is `1` character.
-* `description` - (Required, String) An extended description of your rule.
-    * Constraints: The maximum length is `256` characters. The minimum length is `1` character.
-* `labels` - (Optional, List) Labels that you can use to group and search for similar rules, such as those that help you to meet a specific organization guideline.
-    * Constraints: The maximum length is `32` items.
-* `enforcement_actions` - (Optional, List) The actions that the service must run on your behalf when a request to create or modify the target resource does not comply with your conditions.
-    * Constraints: The maximum length is `1` items.
-Nested scheme for **enforcement_actions**:
-    * `action` - (Required, String) To block a request from completing, use `disallow`.
-        * Constraints: Allowable values are: `disallow`.
-* `target` - (Required, List) The properties that describe the resource that you want the rule or template to target.
-  Nested scheme for **target**:
-    * `additional_target_attributes` - (Optional, List) An extra qualifier for the resource kind. When you include additional attributes, only the resources that match the definition are included in the rule or template.
-      Nested scheme for **additional_target_attributes**:
-        * `name` - (Required, String) The name of the additional attribute that you want to use to further qualify the target. Options differ depending on the service or resource that you are targeting with a rule or template. For more information, refer to the service documentation.
-        * `operator` - (Required, String) The way in which the `name` field is compared to its value.There are three types of operators: string, numeric, and boolean.
-            * Constraints: Allowable values are:
-                * `string_equals`
-                * `string_not_equals`
-                * `string_match`
-                * `string_not_match`
-                * `num_equals`
-                * `num_not_equals`
-                * `num_less_than`
-                * `num_less_than_equals`
-                * `num_greater_than`
-                * `num_greater_than_equals`
-                * `is_empty`
-                * `is_not_empty`
-                * `is_true`
-                * `is_false`
-        * `value` - (Optional, String) The value that you want to apply to `name` field. Options differ depending on the rule or template that you configure. For more information, refer to the service documentation.
-    * `resource_kind` - (Required, String) The type of resource that you want to target.
-    * `service_name` - (Required, String) The programmatic name of the IBM Cloud service that you want to target with the rule or template.
-        * Constraints: The value must match regular expression `/^[a-z-]*$/`.
-* `required_config` - (Required, List)
-Nested scheme for **required_config**:
-    * `description` - (Optional, String)
-    One of the following:
-    1. `rule_condition`:
-        ~> **NOTE**: Currently the `ips_in_range` and `strings_in_list` cannot be used due to a limitation of the scc-go-sdk
-        * `operator` - (Required, String) The way in which the `property` field is compared to its value. To learn more, see the [docs](/docs/security-compliance?topic=security-compliance-what-is-rule#rule-operators).
-            * Constraints: Allowable values are:
-                * `is_true`
-                * `is_false`
-                * `is_empty`
-                * `is_not_empty`
-                * `string_equals`
-                * `string_not_equals`
-                * `string_match`
-                * `string_not_match`
-                * `num_equals`
-                * `num_not_equals`
-                * `num_less_than`
-                * `num_less_than_equals`
-                * `num_greater_than`
-                * `num_greater_than_equals`
-        * `property` - (Required, String) A resource configuration variable that describes the property that you want to apply to the target resource.Available options depend on the target service and resource.
-        * `value` - (Optional, String) The way in which you want your property to be applied. Value options differ depending on the rule that you configure. If you use a boolean operator, you do not need to input a value.
-
-        example schema for using `rule_condition`:
-        ```terraform
-        required_config {
-            description	= "test config"
-            property	= "location"
-            operator	= "string_not_equals"
-            value	= "eu-de"
-        }
-        ```
-        The above example details a `required_config` that has a single rule_condition
-    2. `and/or` - (Optional, List) A list of `rule_condition` that should be set for the rule. If `and` is being used, it means that every `rule_condition` in the list must be true. If `or` is being used, it means that at least one `rule_condition` in the list needs to be true.
-
-        ~> **NOTE**: The required_config must have only one of following: `and`, `or`, or `rule_condtion`. These values cannot be mixed with each other at the same depth (i.e. 'or' and 'and' cannot be defined at the same level/depth)
-
-        example schema for using `and/or`:
-
-        <table>
-        <tr>
-        <td> Terraform </td> <td> JSON </td>
-        </tr>
-        <tr>
-        <td>
-
-        ```hcl
-        required_config {
-            description = "test config"
-            and {		// rule_condition[0]
-                property = "storage_class"
-                operator = "string_equals"
-                value    = "smart"
-            }
-            and {		// rule_condition[1]
-                property = "location"
-                operator = "string_equals"
-                value    = "us-south"
-            } 
-        }
-        ``` 
-
-        </td>
-        <td>
-
-        ```json
-        required_config: {
-            "description": "test config",
-            "and": [
-                {
-                    "property": "storage_class",
-                    "operator": "string_equals",
-                    "value": "smart"
-                },
-                {
-                    "property": "location",
-                    "operator": "string_equals",
-                    "value": "us-south"
-                }
-            ]
-        }
-        ```
-
-        </td>
-        </tr>
-        </table>
-        The above example details a `required_config` that has two `rule_condition`s and it is equivalent to: 
-        ```
-        rule_condtion[0] && rule_condition[1]
-        ```
-
-        Replace both `and` with `or` in the example above if you want the following logic:
-        ```
-        rule_condition[0] || rule_condition[1]
-        ```
-
-        Users can also create nested rules (with a maximum depth of 2 levels).
-        Example (with a depth of 2):
-        ```hcl
-        required_config {
-            and {
-                // A
-            }
-            and {
-                or {
-                    // B
-                }
-                or {
-                    // C
-                }
-            }
-        ```
-        The above example is equivalent to: `A && (B || C)`
-
+* `instance_id` - (Required, Forces new resource, String) The ID of the SCC instance in a particular region.
+* `description` - (Required, String) The details of a rule's response.
+  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `import` - (Optional, List) The collection of import parameters.
+Nested schema for **import**:
+	* `parameters` - (Optional, List) The list of import parameters.
+	  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
+	Nested schema for **parameters**:
+		* `description` - (Optional, String) The propery description.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `display_name` - (Optional, String) The display name of the property.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `name` - (Optional, String) The import parameter name.
+		  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `type` - (Optional, String) The property type.
+		  * Constraints: Allowable values are: `string`, `numeric`, `general`, `boolean`, `string_list`, `ip_list`, `timestamp`. The maximum length is `11` characters. The minimum length is `6` characters. The value must match regular expression `/[A-Za-z]+/`.
+* `labels` - (Optional, List) The list of labels.
+  * Constraints: The list items must match regular expression `/[A-Za-z0-9]+/`. The maximum length is `32` items. The minimum length is `0` items.
+* `required_config` - (Required, List) The required configurations.
+Nested schema for **required_config**:
+	* `and` - (Optional, List) The `AND` required configurations.
+	  * Constraints: The maximum length is `64` items. The minimum length is `1` item.
+	Nested schema for **and**:
+		* `and` - (Optional, List) The `AND` required configurations.
+		  * Constraints: The maximum length is `64` items. The minimum length is `1` item.
+		Nested schema for **and**:
+			* `description` - (Optional, String) The required config description.
+			  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `operator` - (Required, String) The operator.
+			  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+			* `property` - (Required, String) The property.
+			  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `value` - (Optional, String) Schema for any JSON type.
+		* `description` - (Optional, String) The required config description.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `operator` - (Optional, String) The operator.
+		  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+		* `or` - (Optional, List) The `OR` required configurations.
+		  * Constraints: The maximum length is `64` items. The minimum length is `1` item.
+		Nested schema for **or**:
+			* `description` - (Optional, String) The required config description.
+			  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `operator` - (Required, String) The operator.
+			  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+			* `property` - (Required, String) The property.
+			  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `value` - (Optional, String) Schema for any JSON type.
+		* `property` - (Optional, String) The property.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `value` - (Optional, String) Schema for any JSON type.
+	* `description` - (Optional, String) The required config description.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+	* `operator` - (Optional, String) The operator.
+	  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+	* `or` - (Optional, List) The `OR` required configurations.
+	  * Constraints: The maximum length is `64` items. The minimum length is `1` item.
+	Nested schema for **or**:
+		* `and` - (Optional, List) The `AND` required configurations.
+		  * Constraints: The maximum length is `64` items. The minimum length is `1` item.
+		Nested schema for **and**:
+			* `description` - (Optional, String) The required config description.
+			  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `operator` - (Required, String) The operator.
+			  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+			* `property` - (Required, String) The property.
+			  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `value` - (Optional, String) Schema for any JSON type.
+		* `description` - (Optional, String) The required config description.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `operator` - (Optional, String) The operator.
+		  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+		* `or` - (Optional, List) The `OR` required configurations.
+		  * Constraints: The maximum length is `64` items. The minimum length is `1` item.
+		Nested schema for **or**:
+			* `description` - (Optional, String) The required config description.
+			  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `operator` - (Required, String) The operator.
+			  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
+			* `property` - (Required, String) The property.
+			  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+			* `value` - (Optional, String) Schema for any JSON type.
+		* `property` - (Optional, String) The property.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `value` - (Optional, String) Schema for any JSON type.
+	* `property` - (Optional, String) The property.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+	* `value` - (Optional, String) Schema for any JSON type.
+* `target` - (Required, List) The rule target.
+Nested schema for **target**:
+	* `additional_target_attributes` - (Optional, List) The list of targets supported properties.
+	  * Constraints: The maximum length is `99999` items. The minimum length is `0` items.
+	Nested schema for **additional_target_attributes**:
+		* `name` - (Optional, String) The additional target attribute name.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+		* `operator` - (Optional, String) The operator.
+		  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`.
+		* `value` - (Optional, String) The value.
+		  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+	* `resource_kind` - (Required, String) The target resource kind.
+	  * Constraints: The maximum length is `99999` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+	* `service_display_name` - (Optional, String) The display name of the target service.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+	* `service_name` - (Required, String) The target service name.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `version` - (Optional, String) The version number of a rule.
+  * Constraints: The maximum length is `10` characters. The minimum length is `5` characters. The value must match regular expression `/^[0-9][0-9.]*$/`.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
-* `id` - The unique identifier of the ibm_scc_rule.
-* `created_by` - (Optional, String) The unique identifier for the user or application that created the resource.
-* `creation_date` - (Optional, String) The date the resource was created.
-* `enforcement_actions` - (Required, List) The actions that the service must run on your behalf when a request to create or modify the target resource does not comply with your conditions.
-  * Constraints: The maximum length is `1` items.
-Nested scheme for **enforcement_actions**:
-	* `action` - (Required, String) To block a request from completing, use `disallow`.
-	  * Constraints: Allowable values are: `disallow`.
-* `modification_date` - (Optional, String) The date the resource was last modified.
-* `modified_by` - (Optional, String) The unique identifier for the user or application that last modified the resource.
-* `version` - Version of the ibm_scc_rule.
-* `rule_type` - (Optional, String) The type of rule. Rules that you create are `user_defined`.
-  * Constraints: Allowable values are: `user_defined`.
+* `id` - The unique identifier of the scc_rule.
+* `rule_id` - (String) The ID that is associated with the created `rule`
+* `account_id` - (String) The account ID.
+  * Constraints: The maximum length is `32` characters. The minimum length is `3` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `created_by` - (String) The user who created the rule.
+  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `created_on` - (String) The date when the rule was created.
+* `type` - (String) The rule type (allowable values are `user_defined` or `system_defined`).
+  * Constraints: Allowable values are: `user_defined`, `system_defined`. The maximum length is `14` characters. The minimum length is `12` characters. The value must match regular expression `/[A-Za-z]+_[A-Za-z]+/`.
+* `updated_by` - (String) The user who modified the rule.
+  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `updated_on` - (String) The date when the rule was modified.
+
 
 ## Import
 
-You can import the `ibm_scc_rule` resource by using `rule_id`. The UUID that uniquely identifies the rule.
+You can import the `ibm_scc_rule` resource by using `id`. The rule ID.
+The `id` property can be formed from `instance_id` and `rule_id` in the following format:
+
+```bash
+<instance_id>/<rule_id>
+```
+* `instance_id`: A string. The instance ID.
+* `rule_id`: A string. The rule ID.
 
 # Syntax
-```
-$ terraform import ibm_scc_rule.scc_rule <rule_id>
+
+```bash
+$ terraform import ibm_scc_rule.scc_rule <instance_id>/<rule_id>
 ```
 
 # Example
-```
-$ terraform import ibm_scc_rule.scc_rule rule-81f3db5e-f9db-4c46-9de3-a4a76e66adbf
+```bash
+$ terraform import ibm_scc_rule.scc_rule 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444
 ```

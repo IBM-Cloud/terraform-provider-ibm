@@ -41,6 +41,8 @@ In addition to the argument reference list, you can access the following attribu
   
   Nested scheme for `virtual_endpoint_gateways`:
   - `access_tags`  - (List) Access management tags associated for the virtual endpoint gateway.
+
+  - `allow_dns_resolution_binding` - (Bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
   - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
   - `crn` - (String) The CRN for this endpoint gateway.
   - `health_state` - (String) The endpoint gateway health state. **ok: Healthy**, **degraded: Suffering from compromised performance, capacity, or connectivity**, **faulted: Completely unreachable, inoperative, or entirely incapacitated**, **inapplicable: The health state does not apply because of the current lifecycle state**. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.

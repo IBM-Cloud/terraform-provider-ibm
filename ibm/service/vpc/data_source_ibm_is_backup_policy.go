@@ -69,6 +69,17 @@ func DataSourceIBMIsBackupPolicy() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"match_resource_type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag will be subject to the backup policy.",
+			},
+			"included_content": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The included content for backups created using this policy",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"match_user_tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -149,6 +160,59 @@ func DataSourceIBMIsBackupPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The type of resource referenced.",
 			},
+			"health_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current health_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state.",
+						},
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state.",
+						},
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state.",
+						},
+					},
+				},
+			},
+			"health_state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health of this resource",
+			},
+			"scope": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The scope for this backup policy.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this enterprise.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this enterprise or account.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -170,7 +234,7 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 			log.Printf("[DEBUG] GetBackupPolicyWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("[ERROR] GetBackupPolicyWithContext failed %s\n%s", err, response))
 		}
-		backupPolicy = backupPolicyInfo
+		backupPolicy = backupPolicyInfo.(*vpcv1.BackupPolicy)
 
 	} else if v, ok := d.GetOk("name"); ok {
 
@@ -191,7 +255,10 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 				break
 			}
 			start = flex.GetNext(backupPolicyCollection.Next)
-			allrecs = append(allrecs, backupPolicyCollection.BackupPolicies...)
+			for _, backupPolicyInfo := range backupPolicyCollection.BackupPolicies {
+				backupPolicies := backupPolicyInfo.(*vpcv1.BackupPolicy)
+				allrecs = append(allrecs, *backupPolicies)
+			}
 			if start == "" {
 				break
 			}
@@ -237,13 +304,46 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	matchResourceType := make([]string, 0)
-	if backupPolicy.MatchResourceTypes != nil {
-		for _, matchResourceTyp := range backupPolicy.MatchResourceTypes {
-			matchResourceType = append(matchResourceType, matchResourceTyp)
+	if backupPolicy.HealthReasons != nil {
+		healthReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range backupPolicy.HealthReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR["code"] = *sr.Code
+				currentSR["message"] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR["more_info"] = *sr.Message
+				}
+				healthReasonsList = append(healthReasonsList, currentSR)
+			}
+		}
+		d.Set("health_reasons", healthReasonsList)
+	}
+	if err = d.Set("health_state", backupPolicy.HealthState); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting health_state: %s", err))
+	}
+
+	if backupPolicy.Scope != nil {
+		err = d.Set("scope", dataSourceBackupPolicyFlattenScope(*backupPolicy.Scope.(*vpcv1.BackupPolicyScope)))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting scope: %s", err))
 		}
 	}
-	d.Set("match_resource_types", matchResourceType)
+
+	if backupPolicy.MatchResourceType != nil {
+		if err = d.Set("match_resource_types", []string{*backupPolicy.MatchResourceType}); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_types: %s", err))
+		}
+		if err = d.Set("match_resource_type", *backupPolicy.MatchResourceType); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting match_resource_type: %s", err))
+		}
+	}
+
+	if backupPolicy.IncludedContent != nil {
+		if err = d.Set("included_content", backupPolicy.IncludedContent); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting included_content: %s", err))
+		}
+	}
 
 	matchUserTags := make([]string, 0)
 	if backupPolicy.MatchUserTags != nil {
@@ -264,6 +364,29 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 	}
 
 	return nil
+}
+
+func dataSourceBackupPolicyFlattenScope(result vpcv1.BackupPolicyScope) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceBackupPolicyScopeToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+func dataSourceBackupPolicyScopeToMap(scopeItem vpcv1.BackupPolicyScope) (scopeMap map[string]interface{}) {
+	scopeMap = map[string]interface{}{}
+
+	if scopeItem.CRN != nil {
+		scopeMap["crn"] = scopeItem.CRN
+	}
+	if scopeItem.ID != nil {
+		scopeMap["id"] = scopeItem.ID
+	}
+	if scopeItem.ResourceType != nil {
+		scopeMap["resource_type"] = scopeItem.ResourceType
+	}
+
+	return scopeMap
 }
 
 func dataSourceBackupPolicyFlattenPlans(result []vpcv1.BackupPolicyPlanReference) (plans []map[string]interface{}) {

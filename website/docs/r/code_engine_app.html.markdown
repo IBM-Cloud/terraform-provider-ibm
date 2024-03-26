@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_app
 
-Provides a resource for code_engine_app. This allows code_engine_app to be created, updated and deleted.
+Create, update, and delete code_engine_apps with this resource.
 
 ## Example Usage
 
@@ -23,6 +23,12 @@ resource "ibm_code_engine_app" "code_engine_app_instance" {
     name  = "name"
     value = "value"
   }
+
+  run_env_variables {
+    type      = "secret_full_reference"
+    name      = "secret_env_var"
+    reference = "secret_name"
+  }
 }
 ```
 
@@ -35,7 +41,7 @@ code_engine_app provides the following [Timeouts](https://www.terraform.io/docs/
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `image_port` - (Optional, Integer) Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image.
   * Constraints: The default value is `8080`.
@@ -45,16 +51,17 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 * `managed_domain_mappings` - (Optional, String) Optional value controlling which of the system managed domain mappings will be setup for the application. Valid values are 'local_public', 'local_private' and 'local'. Visibility can only be 'local_private' if the project supports application private visibility.
   * Constraints: The default value is `local_public`. Allowable values are: `local`, `local_private`, `local_public`.
-* `name` - (Required, String) The name of the app. Use a name that is unique within the project.
+* `name` - (Required, Forces new resource, String) The name of the app. Use a name that is unique within the project.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `run_arguments` - (Optional, List) Optional arguments for the app that are passed to start the container. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `run_as_user` - (Optional, Integer) Optional user ID (UID) to run the app (e.g., `1001`).
+  * Constraints: The default value is `0`.
 * `run_commands` - (Optional, List) Optional commands for the app that are passed to start the container. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_env_variables` - (Optional, List) Optional references to config maps, secrets or a literal values that are exposed as environment variables within the running application.
+* `run_env_variables` - (Optional, List) Optional references to config maps, secrets or literal values that are exposed as environment variables within the running application.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested scheme for **run_env_variables**:
 	* `key` - (Optional, String) The key to reference as environment variable.
@@ -66,7 +73,7 @@ Nested scheme for **run_env_variables**:
 	* `reference` - (Optional, String) The name of the secret or config map.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 	* `type` - (Optional, String) Specify the type of the environment variable.
-	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`. When referencing a secret or configmap, the `reference` must be specified. When referencing a secret or configmap key, a `key` must also be specified.
 	* `value` - (Optional, String) The literal value of the environment variable.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
 * `run_service_account` - (Optional, String) Optional name of the service account. For built-in service accounts, you can use the shortened names `manager` , `none`, `reader`, and `writer`.
@@ -83,10 +90,12 @@ Nested scheme for **run_volume_mounts**:
 	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.
 	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `secret`. The value must match regular expression `/^(config_map|secret)$/`.
 * `scale_concurrency` - (Optional, Integer) Optional maximum number of requests that can be processed concurrently per instance.
-	* Constraints: The default value is `100`.
+  * Constraints: The default value is `100`.
 * `scale_concurrency_target` - (Optional, Integer) Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.
 * `scale_cpu_limit` - (Optional, String) Optional number of CPU set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).
   * Constraints: The default value is `1`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
+* `scale_down_delay` - (Optional, Integer) Optional amount of time in seconds that delays the scale down behavior for an app instance.
+  * Constraints: The default value is `0`. The maximum value is `3600`. The minimum value is `0`.
 * `scale_ephemeral_storage_limit` - (Optional, String) Optional amount of ephemeral storage to set for the instance of the app. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).
   * Constraints: The default value is `400M`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_initial_instances` - (Optional, Integer) Optional initial number of instances that are created upon app creation or app update.
@@ -102,7 +111,7 @@ Nested scheme for **run_volume_mounts**:
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the code_engine_app.
 * `app_id` - (String) The identifier of the resource.
@@ -117,7 +126,7 @@ In addition to all argument references listed, you can access the following attr
 * `resource_type` - (String) The type of the app.
   * Constraints: Allowable values are: `app_v2`.
 * `status` - (String) The current status of the app.
-  * Constraints: Possible values are: `ready`, `deploying`, `failed`, `warning`.
+  * Constraints: Allowable values are: `ready`, `deploying`, `failed`, `warning`.
 * `status_details` - (List) The detailed status of the application.
 Nested scheme for **status_details**:
 	* `latest_created_revision` - (String) Latest app revision that has been created.
@@ -140,9 +149,4 @@ The `name` property can be formed from `project_id`, and `name` in the following
 # Syntax
 ```
 $ terraform import ibm_code_engine_app.code_engine_app <project_id>/<name>
-```
-
-# Example
-```
-$ terraform import ibm_code_engine_app.code_engine_app "15314cc3-85b4-4338-903f-c28cdee6d005/my-app"
 ```

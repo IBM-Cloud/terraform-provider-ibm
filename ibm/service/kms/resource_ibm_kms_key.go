@@ -84,6 +84,12 @@ func ResourceIBMKmskey() *schema.Resource {
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "description of the key",
+			},
 			"standard_key": {
 				Type:        schema.TypeBool,
 				Default:     false,
@@ -92,10 +98,11 @@ func ResourceIBMKmskey() *schema.Resource {
 				Description: "Standard key type",
 			},
 			"payload": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+				Type:      schema.TypeString,
+				Sensitive: true,
+				Computed:  true,
+				Optional:  true,
+				ForceNew:  true,
 			},
 			"encrypted_nonce": {
 				Type:        schema.TypeString,
@@ -131,6 +138,31 @@ func ResourceIBMKmskey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Key protect or hpcs instance CRN",
+			},
+
+			"registrations": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Registrations of the key across different services",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The id of the key being used in the registration",
+						},
+						"resource_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN of the resource tied to the key registration",
+						},
+						"prevent_key_deletion": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Determines if the registration of the key prevents a deletion.",
+						},
+					},
+				},
 			},
 			flex.ResourceName: {
 				Type:        schema.TypeString,
@@ -176,7 +208,10 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
 
-	key, err := kpAPI.CreateImportedKey(context.Background(), keyData.Name, keyData.Expiration, keyData.Payload, keyData.EncryptedNonce, keyData.IV, keyData.Extractable)
+	key, err := kpAPI.CreateKeyWithOptions(context.Background(), keyData.Name, keyData.Extractable,
+		kp.WithExpiration(keyData.Expiration),
+		kp.WithPayload(keyData.Payload, &keyData.EncryptedNonce, &keyData.IV, false),
+		kp.WithDescription(keyData.Description))
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating key: %s", err)
 	}
@@ -215,7 +250,17 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
-		return fmt.Errorf("[ERROR] Error while deleting: %s", err1)
+		registrations := d.Get("registrations").([]interface{})
+		var registrationLog error
+		if registrations != nil && len(registrations) > 0 {
+			resourceCrns := make([]string, 0)
+			for _, registration := range registrations {
+				r := registration.(map[string]interface{})
+				resourceCrns = append(resourceCrns, r["resource_crn"].(string))
+			}
+			registrationLog = fmt.Errorf(". The key has the following active registrations which may interfere with deletion: %v", resourceCrns)
+		}
+		return fmt.Errorf("[ERROR] Error while deleting: %s%s", err1, registrationLog)
 	}
 	d.SetId("")
 	return nil
@@ -283,6 +328,7 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 	d.Set("key_id", key.ID)
 	d.Set("standard_key", key.Extractable)
 	d.Set("payload", d.Get("payload"))
+	d.Set("description", key.Description)
 	d.Set("encrypted_nonce", key.EncryptedNonce)
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)
@@ -315,6 +361,23 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 	crn1 := strings.TrimSuffix(key.CRN, ":key:"+id)
 
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
+
+	// Get the Registration of the key
+	registrations, err := kpAPI.ListRegistrations(context.Background(), key.ID, "")
+	if err != nil {
+		return err
+	}
+	// making a map[string]interface{} for terraform key.registration Attribute
+	rSlice := make([]map[string]interface{}, 0)
+	for _, r := range registrations.Registrations {
+		registration := map[string]interface{}{
+			"key_id":               r.KeyID,
+			"resource_crn":         r.ResourceCrn,
+			"prevent_key_deletion": r.PreventKeyDeletion,
+		}
+		rSlice = append(rSlice, registration)
+	}
+	d.Set("registrations", rSlice)
 
 	return nil
 }
@@ -369,6 +432,7 @@ func ExtractAndValidateKeyDataFromSchema(d *schema.ResourceData, meta interface{
 		Extractable:    d.Get("standard_key").(bool),
 		Expiration:     expiration,
 		Payload:        d.Get("payload").(string),
+		Description:    d.Get("description").(string),
 		EncryptedNonce: d.Get("encrypted_nonce").(string),
 		IV:             d.Get("iv_value").(string),
 	}
@@ -384,7 +448,8 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 		return nil, err
 	}
 	// keyid := d.Id()
-	key, err := kpAPI.GetKey(context.Background(), keyid)
+	ctx := context.Background()
+	key, err := kpAPI.GetKey(ctx, keyid)
 	if err != nil {
 		kpError := err.(*kp.Error)
 		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
@@ -401,5 +466,6 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 	if err != nil {
 		return nil, err
 	}
+
 	return kpAPI, nil
 }

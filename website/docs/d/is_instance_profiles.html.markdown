@@ -80,6 +80,7 @@ You can access the following attribute references after your data source is crea
         - `default` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally, halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
         - `type` - (String) The type for this profile field.
         - `values` - (String) The supported disk interfaces used for attaching the disk.
+    - `status` - (String) The status of the instance profile. Values coule be, `previous`: This instance profile is an older revision, but remains provisionable and usable. `current`: This profile is the latest revision.
   - `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
     
       Nested scheme for `gpu_count`:
@@ -107,6 +108,10 @@ You can access the following attribute references after your data source is crea
       Nested scheme for `gpu_model`:
       - `type` - (String) The type for this profile field.
       - `values` - (String) The permitted values for this profile field.
+  - `reservation_terms` - (List) Nested `reservation_terms` blocks have the following structure:
+      Nested scheme for `reservation_terms`:
+      - `type` - (String) The type for this profile field.
+      - `values` - (String) The supported committed use terms for a reservation using this profile.
   - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
       Nested scheme for `total_volume_bandwidth`:
       - `type` - The type for this profile field.
@@ -128,13 +133,21 @@ You can access the following attribute references after your data source is crea
     - `value` - (String) The value for this profile field.
     - `values` - (String) The permitted values for this profile field.
 
+    - `network_attachment_count` - (List) The number of network attachments supported on an instance with this profile
+
+        Nested scheme for `network_attachment_count`:
+        - `max` - (Integer) The maximum number of network attachments supported by an instance using this profile.
+        - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
+        - `type` - (String) The type for this profile field, Ex: range or dependent.
+
+
   - `network_interface_count` - (List)
   
       Nested scheme for `network_interface_count`:
       - `max` - (Integer) The maximum number of vNICs supported by an instance using this profile.
       - `min` - (Integer) The minimum number of vNICs supported by an instance using this profile.
       - `type` - (String) The type for this profile field, Ex: range or dependent.
-
+  - `numa_count` - (Integer) The number of NUMA nodes for the Instance Profile.
   - `port_speed` - (List) Nested `port_speed` blocks have the following structure:
 
       Nested scheme for `port_speed`:

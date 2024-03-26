@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -18,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/ScaleFT/sshkeys"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/crypto/ssh"
 )
@@ -34,11 +36,18 @@ const (
 	isInstanceNicReservedIpName         = "name"
 	isInstanceNicReservedIpId           = "reserved_ip"
 	isInstanceNicReservedIpResourceType = "resource_type"
+
+	isInstanceReservation           = "reservation"
+	isReservationDeleted            = "deleted"
+	isReservationDeletedMoreInfo    = "more_info"
+	isReservationAffinity           = "reservation_affinity"
+	isReservationAffinityPool       = "pool"
+	isReservationAffinityPolicyResp = "policy"
 )
 
 func DataSourceIBMISInstance() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISInstanceRead,
+		ReadContext: dataSourceIBMISInstanceRead,
 
 		Schema: map[string]*schema.Schema{
 
@@ -378,6 +387,145 @@ func DataSourceIBMISInstance() *schema.Resource {
 				},
 			},
 
+			"primary_network_attachment": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The primary network attachment for this virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this network attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this network attachment.",
+						},
+						"name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						"subnet": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The subnet of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this subnet.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this subnet.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this subnet.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+
 			isInstanceNetworkInterfaces: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -444,6 +592,145 @@ func DataSourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Instance Network Interface subnet",
+						},
+					},
+				},
+			},
+
+			"network_attachments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The network attachments for this virtual server instance, including the primary network attachment.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this network attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this network attachment.",
+						},
+						"name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"primary_ip": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary IP address of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reserved IP.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						"subnet": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The subnet of the virtual network interface for the network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this subnet.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this subnet.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this subnet.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -529,6 +816,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Instance memory",
+			},
+
+			"numa_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
 			},
 
 			isInstanceStatus: {
@@ -691,17 +984,126 @@ func DataSourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			isInstanceReservation: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reservation used by this virtual server instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isReservationId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this reservation.",
+						},
+						isReservationCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this reservation.",
+						},
+						isReservationName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this reservation. The name is unique across all reservations in the region.",
+						},
+						isReservationHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this reservation.",
+						},
+						isReservationResourceType: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+						isReservationDeleted: &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationDeletedMoreInfo: &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			isReservationAffinity: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isReservationAffinityPolicyResp: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The reservation affinity policy to use for this virtual server instance.",
+						},
+						isReservationAffinityPool: &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The pool of reservations available for use by this virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isReservationId: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this reservation.",
+									},
+									isReservationCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this reservation.",
+									},
+									isReservationName: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this reservation. The name is unique across all reservations in the region.",
+									},
+									isReservationHref: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reservation.",
+									},
+									isReservationResourceType: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									isReservationDeleted: &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												isReservationDeletedMoreInfo: &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func dataSourceIBMISInstanceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	name := d.Get(isInstanceName).(string)
 
 	err := instanceGetByName(d, meta, name)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }
@@ -779,7 +1181,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	}
 
 	d.Set(isInstanceMemory, *instance.Memory)
-
+	if instance.NumaCount != nil {
+		d.Set("numa_count", *instance.NumaCount)
+	}
 	gpuList := make([]map[string]interface{}, 0)
 	if instance.Gpu != nil {
 		currentGpu := map[string]interface{}{}
@@ -858,6 +1262,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		primaryNicList = append(primaryNicList, currentPrimNic)
 		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
+	primaryNetworkAttachment := []map[string]interface{}{}
+	if instance.PrimaryNetworkAttachment != nil {
+		modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment)
+		if err != nil {
+			return err
+		}
+		primaryNetworkAttachment = append(primaryNetworkAttachment, modelMap)
+	}
+	if err = d.Set("primary_network_attachment", primaryNetworkAttachment); err != nil {
+		return fmt.Errorf("Error setting primary_network_attachment %s", err)
+	}
 
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
@@ -912,6 +1327,19 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 
 		d.Set(isInstanceNetworkInterfaces, interfacesList)
 	}
+	networkAttachments := []map[string]interface{}{}
+	if instance.NetworkAttachments != nil {
+		for _, modelItem := range instance.NetworkAttachments {
+			modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(&modelItem)
+			if err != nil {
+				return err
+			}
+			networkAttachments = append(networkAttachments, modelMap)
+		}
+	}
+	if err = d.Set("network_attachments", networkAttachments); err != nil {
+		return fmt.Errorf("Error setting network_attachments %s", err)
+	}
 
 	var rsaKey *rsa.PrivateKey
 	if instance.Image != nil {
@@ -926,20 +1354,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 				if keyFlag != "" {
 					block, err := pem.Decode(keybytes)
 					if block == nil {
-						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format")
+						return fmt.Errorf("[ERROR] Failed to load the private key from the given key contents. Instead of the key file path, please make sure the private key is pem format (%v)", err)
 					}
 					isEncrypted := false
-					switch block.Type {
-					case "RSA PRIVATE KEY":
-						isEncrypted = x509.IsEncryptedPEMBlock(block)
-					case "OPENSSH PRIVATE KEY":
+					if block.Type == "OPENSSH PRIVATE KEY" {
 						var err error
 						isEncrypted, err = isOpenSSHPrivKeyEncrypted(block.Bytes)
 						if err != nil {
 							return fmt.Errorf("[ERROR] Failed to check if the provided open ssh key is encrypted or not %s", err)
 						}
-					default:
-						return fmt.Errorf("PEM and OpenSSH private key formats with RSA key type are supported, can not support this key file type: %s", err)
+					} else {
+						isEncrypted = x509.IsEncryptedPEMBlock(block)
 					}
 					passphrase := ""
 					var privateKey interface{}
@@ -1107,8 +1532,64 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		d.Set(isInstanceResourceGroup, instance.ResourceGroup.ID)
 		d.Set(flex.ResourceGroupName, instance.ResourceGroup.Name)
 	}
+	if instance.ReservationAffinity != nil {
+		reservationAffinity := []map[string]interface{}{}
+		reservationAffinityMap := map[string]interface{}{}
+
+		reservationAffinityMap[isReservationAffinityPolicyResp] = instance.ReservationAffinity.Policy
+		if instance.ReservationAffinity.Pool != nil {
+			poolList := make([]map[string]interface{}, 0)
+			for _, pool := range instance.ReservationAffinity.Pool {
+				res := map[string]interface{}{}
+
+				res[isReservationId] = *pool.ID
+				res[isReservationHref] = *pool.Href
+				res[isReservationName] = *pool.Name
+				res[isReservationCrn] = *pool.CRN
+				res[isReservationResourceType] = *pool.ResourceType
+				if pool.Deleted != nil {
+					deletedList := []map[string]interface{}{}
+					deletedMap := dataSourceInstanceReservationDeletedToMap(*pool.Deleted)
+					deletedList = append(deletedList, deletedMap)
+					res[isReservationDeleted] = deletedList
+				}
+				poolList = append(poolList, res)
+			}
+			reservationAffinityMap[isReservationAffinityPool] = poolList
+		}
+		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
+		d.Set(isReservationAffinity, reservationAffinity)
+	}
+	if instance.Reservation != nil {
+		resList := make([]map[string]interface{}, 0)
+		res := map[string]interface{}{}
+
+		res[isReservationId] = *instance.Reservation.ID
+		res[isReservationHref] = *instance.Reservation.Href
+		res[isReservationName] = *instance.Reservation.Name
+		res[isReservationCrn] = *instance.Reservation.CRN
+		res[isReservationResourceType] = *instance.Reservation.ResourceType
+		if instance.Reservation.Deleted != nil {
+			deletedList := []map[string]interface{}{}
+			deletedMap := dataSourceInstanceReservationDeletedToMap(*instance.Reservation.Deleted)
+			deletedList = append(deletedList, deletedMap)
+			res[isReservationDeleted] = deletedList
+		}
+		resList = append(resList, res)
+		d.Set(isInstanceReservation, resList)
+	}
 	return nil
 
+}
+
+func dataSourceInstanceReservationDeletedToMap(deletedItem vpcv1.ReservationReferenceDeleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
 }
 
 const opensshv1Magic = "openssh-key-v1"
@@ -1190,4 +1671,78 @@ func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.Instance
 		}
 	}
 	return lifecycleReasonsList
+}
+
+func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.InstanceNetworkAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	primaryIPMap, err := dataSourceIBMIsInstanceReservedIPReferenceToMap(model.PrimaryIP)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
+	modelMap["resource_type"] = model.ResourceType
+	subnetMap, err := dataSourceIBMIsInstanceSubnetReferenceToMap(model.Subnet)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	return modelMap, nil
+}
+func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model *vpcv1.InstanceNetworkAttachmentReferenceDeleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = model.MoreInfo
+	return modelMap, nil
+}
+func dataSourceIBMIsInstanceReservedIPReferenceToMap(model *vpcv1.ReservedIPReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["address"] = model.Address
+	if model.Deleted != nil {
+		deletedMap, err := dataSourceIBMIsInstanceReservedIPReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	modelMap["resource_type"] = model.ResourceType
+	return modelMap, nil
+}
+func dataSourceIBMIsInstanceSubnetReferenceToMap(model *vpcv1.SubnetReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["crn"] = model.CRN
+	if model.Deleted != nil {
+		deletedMap, err := dataSourceIBMIsInstanceSubnetReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	modelMap["resource_type"] = model.ResourceType
+	return modelMap, nil
+}
+func dataSourceIBMIsInstanceSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = model.MoreInfo
+	return modelMap, nil
+}
+
+func dataSourceIBMIsInstanceReservedIPReferenceDeletedToMap(model *vpcv1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = model.MoreInfo
+	return modelMap, nil
 }

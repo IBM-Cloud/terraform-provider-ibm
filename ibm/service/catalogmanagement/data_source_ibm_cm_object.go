@@ -326,12 +326,6 @@ func dataSourceIBMCmObjectPublishObjectToMap(model *catalogmanagementv1.PublishO
 	if model.PublicApproved != nil {
 		modelMap["public_approved"] = *model.PublicApproved
 	}
-	if model.PortalApprovalRecord != nil {
-		modelMap["portal_approval_record"] = *model.PortalApprovalRecord
-	}
-	if model.PortalURL != nil {
-		modelMap["portal_url"] = *model.PortalURL
-	}
 	return modelMap, nil
 }
 

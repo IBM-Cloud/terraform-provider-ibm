@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -47,7 +47,7 @@ func TestAccIBMIAMUserPolicy_Basic(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -75,7 +75,7 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_ServiceType(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -95,7 +95,7 @@ func TestAccIBMIAMUserPolicy_With_ServiceType(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -116,7 +116,7 @@ func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -136,7 +136,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Group(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -155,7 +155,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Type(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_import(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -180,8 +180,9 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 		},
 	})
 }
+
 func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -205,8 +206,28 @@ func TestAccIBMIAMUserPolicy_With_Resource_Attributes(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMIAMUserPolicy_With_Resource_Attributes_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMUserPolicy_account_management(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_user_policy.policy"
 
@@ -242,7 +263,7 @@ func TestAccIBMIAMUserPolicy_Invalid_User(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	crName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 	displayName := fmt.Sprintf("Terraform%d", acctest.RandIntRange(10, 100))
 
@@ -264,7 +285,7 @@ func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicyWithSpecificServiceRole(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -284,7 +305,7 @@ func TestAccIBMIAMUserPolicyWithSpecificServiceRole(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -314,7 +335,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Transaction_Id(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -333,7 +354,7 @@ func TestAccIBMIAMUserPolicy_With_Transaction_Id(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Weekly_Custom(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -366,7 +387,7 @@ func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Weekly_Custom(t *testing
 }
 
 func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Weekly_All_Day(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -390,7 +411,7 @@ func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Weekly_All_Day(t *testin
 }
 
 func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Once(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -413,7 +434,7 @@ func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_Once(t *testing.T) {
 }
 
 func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_With_Resource_Attributes(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -436,7 +457,7 @@ func TestAccIBMIAMUserPolicy_With_Time_Based_Conditions_With_Resource_Attributes
 }
 
 func TestAccIBMIAMUserPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -459,7 +480,7 @@ func TestAccIBMIAMUserPolicy_With_Update_To_Time_Based_Conditions(t *testing.T) 
 }
 
 func TestAccIBMIAMUSerPolicy_With_ServiceGroupID(t *testing.T) {
-	var conf iampolicymanagementv1.V2Policy
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -473,6 +494,34 @@ func TestAccIBMIAMUSerPolicy_With_ServiceGroupID(t *testing.T) {
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_attributes.0.value", "IAM"),
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMUserPolicy_With_Attribute_Based_Condition(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyAttributeBasedCondition(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Attribute Based Condition Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMUserPolicyUpdateAttributeBasedCondition(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "pattern", "attribute-based-condition:resource:literal-and-wildcard"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Attribute Based Condition Update for test scenario"),
 				),
 			},
 		},
@@ -513,7 +562,7 @@ func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMIAMUserPolicyExists(n string, obj iampolicymanagementv1.V2Policy) resource.TestCheckFunc {
+func testAccCheckIBMIAMUserPolicyExists(n string, obj iampolicymanagementv1.V2PolicyTemplateMetaData) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -777,6 +826,27 @@ func testAccCheckIBMIAMUserPolicyResourceAttributes() string {
 	  
 `, acc.IAMUser)
 }
+
+func testAccCheckIBMIAMUserPolicyResourceAttributesWithoutWildcard() string {
+	return fmt.Sprintf(`
+  
+	  resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	  
+`, acc.IAMUser)
+}
+
 func testAccCheckIBMIAMUserPolicyResourceAttributesUpdate() string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_user_policy" "policy" {
@@ -989,7 +1059,7 @@ func testAccCheckIBMIAMUserPolicyTimeBasedWithResourceAttributes() string {
 			}
 			rule_operator = "and"
 		  pattern = "time-based-conditions:once"
-			description = "IAM User Policy Once Time-Based Conditions with Resource Attributes Creation for test scenario"
+			description = "IAM User Policy Once Time-Based Conditions Creation for test scenario"
 		}
 	`, acc.IAMUser)
 }
@@ -1005,6 +1075,133 @@ func testAccCheckIBMIAMUserPolicyWithServiceGroupId(name string) string {
          		operator = "stringEquals"
          		value    = "IAM"
 			}
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyAttributeBasedCondition() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM User Policy Attribute Based Condition Creation for test scenario"
+		}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyUpdateAttributeBasedCondition() string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Reader", "Writer"]
+			resource_attributes {
+				value = "cloud-object-storage"
+				operator = "stringEquals"
+				name = "serviceName"
+			}
+			resource_attributes {
+				value = "cos-instance"
+				operator = "stringEquals"
+				name = "serviceInstance"
+			}
+			resource_attributes {
+				value = "bucket"
+				operator = "stringEquals"
+				name = "resourceType"
+			}
+			resource_attributes {
+				value = "fgac-tf-test"
+				operator = "stringEquals"
+				name = "resource"
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringMatch"
+					value = ["folder1/subfolder1/*"]
+				}
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringEqualsAnyOf"
+					value = ["/",""]
+				}
+			}
+			rule_conditions {
+				key = "{{resource.attributes.path}}"
+				operator = "stringMatch"
+				value = ["folder1/subfolder1/*"]
+			}
+			rule_conditions {
+				operator = "and"
+				conditions {
+					key = "{{resource.attributes.delimiter}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+				conditions {
+					key = "{{resource.attributes.prefix}}"
+					operator = "stringExists"
+					value = ["false"]
+				}
+			}
+			rule_operator = "or"
+		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
+			description = "IAM User Policy Attribute Based Condition Update for test scenario"
 		}
 	`, acc.IAMUser)
 }

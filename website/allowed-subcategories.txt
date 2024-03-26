@@ -26,8 +26,10 @@ Internet services
 Key Management Service
 Kubernetes Service
 Metrics Router
+MQ on Cloud
 Object Storage
 Power Systems
+Privileged Access Gateway
 Project
 Push Notifications
 Resource management
@@ -36,4 +38,5 @@ Schematics
 Secrets Manager
 Security and Compliance Center
 Transit Gateway
+Usage Reports
 VPC infrastructure

@@ -10,14 +10,6 @@ subcategory: "VPC infrastructure"
 
 Provides a read-only data source for Share. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-
-~> **NOTE**
-IBM Cloud® File Storage for VPC is available for customers with special approval. Contact your IBM Sales representative if you are interested in getting access.
-
-~> **NOTE**
-This is a Beta feature and it is subject to change in the GA release 
-
-
 ## Example Usage
 
 ```hcl
@@ -56,9 +48,14 @@ The following attributes are exported:
 - `created_at` - The date and time that the file share is created.
 - `crn` - The CRN for this share.
 - `encryption` - The type of encryption used for this file share.
-- `encryption_key` - The CRN of the key used to encrypt this file share. Nested `encryption_key` blocks have the following structure:
+- `encryption_key` - The CRN of the key used to encrypt this file share.
 - `href` - The URL for this share.
 - `iops` - The maximum input/output operation performance bandwidth per second for the file share.
+- `latest_sync` - (List) Information about the latest synchronization for this file share.
+Nested `latest_sync` blocks have the following structure:
+  - `completed_at` - (String) The completed date and time of last synchronization between the replica share and its source.
+  - `data_transferred` - (Integer) The data transferred (in bytes) in the last synchronization between the replica and its source.
+  - `started_at` - (String) The start date and time of last synchronization between the replica share and its source.
 - `latest_job` - The latest job associated with this file share.This property will be absent if no jobs have been created for this file share. Nested `latest_job` blocks have the following structure:
   - `status` - The status of the file share job
   - `status_reasons` - The reasons for the file share job status (if any). Nested `status_reasons` blocks have the following structure:

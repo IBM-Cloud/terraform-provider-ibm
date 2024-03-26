@@ -83,7 +83,7 @@ resource "kubernetes_namespace" "example" {
   }
 }
 ```
-## Example usage
+## Example usage5
 Example usage for connecting to Kubernetes provider for classic OpenShift cluster with host and token.
 
 ```terraform
@@ -103,6 +103,18 @@ resource "kubernetes_namespace" "example" {
 }
 ```
 
+## Example usage6
+Example for getting kubeconfig for VPC Kubernetes cluster with admin certificates and with VPE Gateway as server URL
+
+```terraform
+data "ibm_container_cluster_config" "cluster_foo" {
+  cluster_name_id = "FOO"
+  config_dir      = "/home/foo_config"
+  admint          = "true"
+  endpoint_type   = "vpe"
+}
+```
+
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
@@ -113,6 +125,7 @@ Review the argument references that you can specify for your data source.
 - `download` - (Optional, Bool) Set the value to **false** to skip downloading the configuration for the administrator. The default value is **true**. The configuration files and certificates are downloaded to the directory that you specified in `config_dir` every time that you run your infrastructure code.
 - `network` - (Optional, Bool) If set to **true**, the Calico configuration file, TLS certificates, and permission files that are required to run `calicoctl` commands in your cluster are downloaded in addition to the configuration files for the administrator. The default value is **false**. 
 - `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To find the resource group, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If this parameter is not provided, the `default` resource group is used.
+- `endpoint_type` - (Optional, String) The server URL for the cluster context. If you do not include this parameter, the default cluster service endpoint is used. Available options: `private`, `link` (Satellite), `vpe` (VPC). For Satellite clusters, the `link` endpoint is the default. When the public service endpoint is disabled in Red Hat OpenShift on IBM Cloud clusters, the `endpoint_type` parameter will also influence the communication method used by the provider plugin with the cluster when generating the cluster config. If you set it to `private`, the plugin will utilize the cluster's Private Service Endpoint URL for communication, while setting it to `vpe` will make it use the cluster's Virtual Private Endpoint gateway URL for communication purposes.
 
 **Deprecated reference**
 

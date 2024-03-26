@@ -43,6 +43,40 @@ func TestAccIBMISVPCDatasource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVPCDatasource_dns(t *testing.T) {
+	var vpc string
+	name := acc.ISDelegegatedVPC
+	enableHubTrue := true
+	server1Add := "192.168.3.4"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPCDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testDSCheckIBMISVPCDnsConfig(name, server1Add, enableHubTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPCExists("ibm_is_vpc.testacc_vpc1", vpc),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_vpc.ds_vpc", "name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "cse_source_addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_network_acl_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_security_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_routing_table_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "cse_source_addresses.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_network_acl_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_security_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "default_routing_table_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "dns.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "dns.0.enable_hub"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "dns.0.resolver.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "dns.0.resolver.0.servers.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpc.ds_vpc", "dns.0.resolver.0.type"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISVPCDatasource_securityGroup(t *testing.T) {
 	var vpc string
@@ -80,6 +114,12 @@ func testDSCheckIBMISVPCConfig(name string) string {
 		data "ibm_is_vpc" "ds_vpc_by_id" {
 		    identifier = "${ibm_is_vpc.testacc_vpc.id}"
 		}`, name)
+}
+func testDSCheckIBMISVPCDnsConfig(name, server1Add string, enableHubTrue bool) string {
+	return testAccCheckIBMISVPCDnsManualConfig(name, server1Add, enableHubTrue) + fmt.Sprintf(`
+		data "ibm_is_vpc" "ds_vpc" {
+		    name = ibm_is_vpc.testacc_vpc1.name
+		}`)
 }
 
 func testDSCheckIBMISVPCSgConfig(vpcname, sgname string) string {

@@ -55,7 +55,6 @@ Nested scheme for **rotation**:
 	* `auto_rotate` - (Optional, Boolean) Determines whether Secrets Manager rotates your secret automatically.Default is `false`. If `auto_rotate` is set to `true` the service rotates your secret based on the defined interval.
 	* `interval` - (Optional, Integer) The length of the secret rotation time interval.
 	  * Constraints: The minimum value is `1`.
-	* `rotate_keys` - (Optional, Boolean) Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.
 	* `unit` - (Optional, String) The units for the secret rotation time interval.
 	  * Constraints: Allowable values are: `day`, `month`.
 * `secret_group_id` - (Optional, Forces new resource, String) A v4 UUID identifier, or `default` secret group.
@@ -91,7 +90,8 @@ In addition to all argument references listed, you can access the following attr
     * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `updated_at` - (String) The date when a resource was recently modified. The date format follows RFC 3339.
 * `versions_total` - (Integer) The number of versions of the secret.
-  * Constraints: The maximum value is `50`. The minimum value is `0`.
+    * Constraints: The maximum value is `50`. The minimum value is `0`.
+* `expiration_date` - (String) The date a secret is expired. The date format follows RFC 3339.
 
 ## Provider Configuration
 

@@ -47,7 +47,7 @@ func ResourceIBMCbrZone() *schema.Resource {
 			},
 			"addresses": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The list of addresses in the zone.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -249,8 +249,8 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("description"); ok {
 		createZoneOptions.SetDescription(d.Get("description").(string))
 	}
+	addresses := []contextbasedrestrictionsv1.AddressIntf{}
 	if _, ok := d.GetOk("addresses"); ok {
-		var addresses []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("addresses").([]interface{}) {
 			value := e.(map[string]interface{})
 			addressesItem, err := resourceIBMCbrZoneMapToAddress(value)
@@ -259,8 +259,8 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 			}
 			addresses = append(addresses, addressesItem)
 		}
-		createZoneOptions.SetAddresses(addresses)
 	}
+	createZoneOptions.SetAddresses(addresses)
 	if _, ok := d.GetOk("excluded"); ok {
 		var excluded []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("excluded").([]interface{}) {
@@ -401,8 +401,8 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("description"); ok {
 		replaceZoneOptions.SetDescription(d.Get("description").(string))
 	}
+	addresses := []contextbasedrestrictionsv1.AddressIntf{}
 	if _, ok := d.GetOk("addresses"); ok {
-		var addresses []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("addresses").([]interface{}) {
 			value := e.(map[string]interface{})
 			addressesItem, err := resourceIBMCbrZoneMapToAddress(value)
@@ -411,8 +411,8 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 			}
 			addresses = append(addresses, addressesItem)
 		}
-		replaceZoneOptions.SetAddresses(addresses)
 	}
+	replaceZoneOptions.SetAddresses(addresses)
 	if _, ok := d.GetOk("excluded"); ok {
 		var excluded []contextbasedrestrictionsv1.AddressIntf
 		for _, e := range d.Get("excluded").([]interface{}) {

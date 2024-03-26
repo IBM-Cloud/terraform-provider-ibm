@@ -34,10 +34,10 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
@@ -51,9 +51,9 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2304"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "10240"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 				),
 			},
@@ -63,22 +63,23 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "4096"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "users.#", "1"),
+					resource.TestCheckResourceAttr(name, "users.0.name", "coolguy"),
+					resource.TestCheckResourceAttr(name, "users.0.role", "-@all +@read"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 				),
 			},
 		},
@@ -106,7 +107,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
 					resource.TestCheckResourceAttr(resourceName, "auto_scaling.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.disk.0.capacity_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "auto_scaling.0.memory.0.io_enabled", "true"),
@@ -117,7 +118,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation"},
+					"wait_time_minutes"},
 			},
 		},
 	})
@@ -168,9 +169,19 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 2048
-		members_disk_allocation_mb   = 2048
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 4096
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 1024
+			}
+		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
@@ -185,7 +196,7 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		}
 		CONFIGURATION
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup string, name string) string {
@@ -201,9 +212,19 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 2304
-		members_disk_allocation_mb   = 4096
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 5120
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 2048
+			}
+		}
 		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
@@ -213,7 +234,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		  description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, name string) string {
@@ -229,14 +250,24 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 2048
-		members_disk_allocation_mb   = 4096
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 4096
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 2048
+			}
+		}
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
-func testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -248,20 +279,29 @@ func testAccCheckIBMDatabaseInstanceRedisGroupMigration(databaseResourceGroup st
 		service                      = "databases-for-redis"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
+		adminpassword                = "password12345678"
 
 		group {
 			group_id = "member"
 
 			memory {
-				allocation_mb = 1024
+				allocation_mb = 8192
 			}
-			 disk {
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
 				allocation_mb = 2048
 			}
-	  }
-  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+		}
+
+		users {
+			name = "coolguy"
+    		password = "securepassword123"
+      		role     = "-@all +@read"
+	 	}
+  	}
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, name string) string {
@@ -300,7 +340,7 @@ func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, na
 			}
 		}
 	  }
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string, kpInstanceName, kpKeyName, kpByokName, name string) string {
 	return fmt.Sprintf(`
@@ -339,5 +379,5 @@ func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string,
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, name, acc.Region())
 }

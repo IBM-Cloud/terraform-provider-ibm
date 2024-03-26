@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume"
@@ -19,13 +18,14 @@ data "ibm_pi_volume" "ds_volume" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
+
 **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
-  Example usage:
+Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -42,19 +42,20 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `auxiliary` - (Bool) Indicates if the volume is auxiliary or not.
+- `auxiliary` - (Boolean) Indicates if the volume is auxiliary or not.
 - `auxiliary_volume_name` - (String) The auxiliary volume name.
+- `bootable` -  (Boolean) Indicates if the volume is boot capable.
 - `consistency_group_name` - (String) Consistency group name if volume is a part of volume group.
 - `disk_type` - (String) The disk type that is used for the volume.
-- `bootable` -  (Bool) Indicates if the volume is boot capable.
 - `group_id` - (String) The volume group id in which the volume belongs.
 - `id` - (String) The unique identifier of the volume.
+- `io_throttle_rate` - (String) Amount of iops assigned to the volume.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
-- `replication_enabled` - (Bool) Indicates if the volume should be replication enabled or not.
+- `replication_enabled` - (Boolean) Indicates if the volume should be replication enabled or not.
 - `replication_status` - (String) The replication status of the volume.
-- `replication_type` - (String) The replication type of the volume `metro` or `global`.
+- `replication_type` - (String) The replication type of the volume, `metro` or `global`.
 - `shareable` - (String) Indicates if the volume is shareable between VMs. 
 - `size` - (Integer) The size of the volume in gigabytes.
 - `state` - (String) The state of the volume.

@@ -112,6 +112,11 @@ func DataSourceIbmSmIamCredentialsSecretMetadata() *schema.Resource {
 				Computed:    true,
 				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.For `iam_credentials` secrets, the TTL defines for how long each generated API key remains valid. The value can be either an integer that specifies the number of seconds, or the string representation of a duration, such as `120m` or `24h`.Minimum duration is 1 minute. Maximum is 90 days.",
 			},
+			"expiration_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date a secret is expired. The date format follows RFC 3339.",
+			},
 			"access_groups": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -160,11 +165,6 @@ func DataSourceIbmSmIamCredentialsSecretMetadata() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The units for the secret rotation time interval.",
-						},
-						"rotate_keys": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Determines whether Secrets Manager rotates the private key for your public certificate automatically.Default is `false`. If it is set to `true`, the service generates and stores a new private key for your rotated certificate.",
 						},
 					},
 				},
@@ -307,6 +307,12 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRead(context context.Context, d 
 		return diag.FromErr(fmt.Errorf("Error setting next_rotation_date: %s", err))
 	}
 
+	if iAMCredentialsSecretMetadata.ExpirationDate != nil {
+		if err = d.Set("expiration_date", DateTimeToRFC3339(iAMCredentialsSecretMetadata.ExpirationDate)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -324,9 +330,6 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRotationPolicyToMap(model secret
 		}
 		if model.Unit != nil {
 			modelMap["unit"] = *model.Unit
-		}
-		if model.RotateKeys != nil {
-			modelMap["rotate_keys"] = *model.RotateKeys
 		}
 		return modelMap, nil
 	} else {

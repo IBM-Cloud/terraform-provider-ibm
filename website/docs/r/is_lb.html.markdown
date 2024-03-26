@@ -90,7 +90,7 @@ Review the argument references that you can specify for your resource.
 - `route_mode` - (Optional, Forces new resource, Bool) Indicates whether route mode is enabled for this load balancer.
 
   ~> **NOTE:** Currently, `route_mode` enabled is supported only by private network load balancers.
-- `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
+- `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported for both application and network load balancers.
 - `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
 
   ~> **NOTE:** 

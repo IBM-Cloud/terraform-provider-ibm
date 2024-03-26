@@ -100,14 +100,15 @@ Review the argument references that you can specify for your resource.
 
 - `endpoint_type` - (Optional, String) The type of the public or private endpoint to be used for creating keys.
 - `encrypted_nonce` - (Optional, Forces new resource, String) The encrypted nonce value that verifies your request to import a key to Key Protect. This value must be encrypted by using the key that you want to import to the service. To retrieve a nonce, use the `ibmcloud kp import-token get` command. Then, encrypt the value by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
-- `expiration_date` - (Optional, Forces new resource, String)  Expiry date of the key material. The date format follows with RFC 3339. You can set an expiration date on any key on its creation. A key moves into the deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire. For example, `2018-12-01T23:20:50.52Z`.
+- `expiration_date` - (Optional, Forces new resource, String)  Expiry date of the key material. The date format follows with RFC 3339. You can set an expiration date on any key on its creation. A key moves into the deactivated state within one hour past its expiration date, if one is assigned. If you create a key without specifying an expiration date, the key does not expire. For example, `2018-12-01T23:20:50Z`.
 - `force_delete` - (Optional, Bool) If set to **true**, Key Protect forces the deletion of a root or standard key, even if this key is still in use, such as to protect an IBM Cloud Object Storage bucket. Note that the key cannot be deleted if the protected cloud resource is set up with a retention policy. Successful deletion includes the removal of any registrations that are associated with the key. Default value is **false**. **Note** Before Terraform destroy if `force_delete` flag is introduced after provisioning keys, a Terraform apply must be done before Terraform destroy for `force_delete` flag to take effect.
 - `instance_id` - (Required, Forces new resource, String) The HPCS or key-protect instance ID.
 - `iv_value` - (Optional, Forces new resource, String)  Used with import tokens. The initialization vector (IV) that is generated when you encrypt a nonce. The IV value is required to decrypt the encrypted nonce value that you provide when you make a key import request to the service. To generate an IV, encrypt the nonce by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
 - `key_name` - (Required, Forces new resource, String) The name of the key.
 - `key_ring_id` - (Optional, Forces new resource, String) The ID of the key ring where you want to add your Key Protect key. The default value is `default`.
 - `payload` - (Optional, Forces new resource, String) The base64 encoded key that you want to store and manage in the service. To import an existing key, provide a 256-bit key. To generate a new key, omit this parameter.
-- `standard_key`- (Optional, Bool) Set flag **true** for standard key, and **false** for root key. Default value is **false**.Yes.
+- `standard_key`- (Optional, Bool) Set flag **true** for standard key, and **false** for root key. Default value is **false**.
+- `description`- (Optional, Forces new resource, String) An optional description that can be added to the key during creation.
 - `policies` - (Optional, List) Set policies for a key, for an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys. Policies follow the following structure. (This attribute is deprecated)
 
   Nested scheme for `policies`:
@@ -130,6 +131,13 @@ In addition to all argument reference list, you can access the following attribu
 - `key_id` - (String) The ID of the key.
 - `key_ring_id` - (String) The ID of the key ring that your Key Protect key belongs to.
 - `type` - (String) The type of the key KMS or HPCS.
+- `registrations` - (List) The registrations associated with the key.
+
+  Nested scheme for `registrations`:
+  - `key_id` - (String) The id of the key associated with the association.
+  - `resource_crn` - (String) The CRN of the resource that has a registration to the key.
+  - `prevent_key_deletion` - (Boolean) Determines if the resource prevents the key deletion.
+
 - `policy` - (String) The policies associated with the key.
 
   Nested scheme for `policy`:
@@ -153,6 +161,7 @@ In addition to all argument reference list, you can access the following attribu
      - `id` - (String) The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
      - `updated_by` - (String) The unique ID for the resource that updated the policy.
+
 
 ## Import
 The `ibm_kms_key` can be imported by using the `id` and `crn`.

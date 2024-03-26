@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 func DataSourceIbmIsShares() *schema.Resource {
@@ -77,6 +77,30 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The maximum input/output operation performance bandwidth per second for the file share.",
+						},
+						"latest_sync": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Information about the latest synchronization for this file share.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"completed_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The completed date and time of last synchronization between the replica share and its source.",
+									},
+									"data_transferred": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The data transferred (in bytes) in the last synchronization between the replica and its source.",
+									},
+									"started_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The start date and time of last synchronization between the replica share and its source.",
+									},
+								},
+							},
 						},
 						"latest_job": &schema.Schema{
 							Type:        schema.TypeList,
@@ -361,7 +385,7 @@ func DataSourceIbmIsShares() *schema.Resource {
 }
 
 func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -373,7 +397,7 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 	if resGrpIntf, ok := d.GetOk("resource_group"); ok {
 		resGrp = resGrpIntf.(string)
 	}
-	listSharesOptions := &vpcbetav1.ListSharesOptions{}
+	listSharesOptions := &vpcv1.ListSharesOptions{}
 
 	if shareName != "" {
 		listSharesOptions.Name = &shareName
@@ -382,7 +406,7 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		listSharesOptions.ResourceGroupID = &resGrp
 	}
 	start := ""
-	allrecs := []vpcbetav1.Share{}
+	allrecs := []vpcv1.Share{}
 	totalCount := 0
 	for {
 		if start != "" {
@@ -423,7 +447,7 @@ func dataSourceIbmIsSharesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcbetav1.Share) (shares []map[string]interface{}) {
+func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcv1.Share) (shares []map[string]interface{}) {
 	for _, sharesItem := range result {
 		shares = append(shares, dataSourceShareCollectionSharesToMap(meta, sharesItem))
 	}
@@ -431,7 +455,7 @@ func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcbetav1
 	return shares
 }
 
-func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcbetav1.Share) (sharesMap map[string]interface{}) {
+func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Share) (sharesMap map[string]interface{}) {
 	sharesMap = map[string]interface{}{}
 
 	if sharesItem.CreatedAt != nil {
@@ -455,6 +479,17 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcbetav1
 	if sharesItem.Iops != nil {
 		sharesMap["iops"] = sharesItem.Iops
 	}
+	latest_syncs := []map[string]interface{}{}
+	if sharesItem.LatestSync != nil {
+		latest_sync := make(map[string]interface{})
+		latest_sync["completed_at"] = flex.DateTimeToString(sharesItem.LatestSync.CompletedAt)
+		if sharesItem.LatestSync.DataTransferred != nil {
+			latest_sync["data_transferred"] = *sharesItem.LatestSync.DataTransferred
+		}
+		latest_sync["started_at"] = flex.DateTimeToString(sharesItem.LatestSync.CompletedAt)
+		latest_syncs = append(latest_syncs, latest_sync)
+	}
+	sharesMap["latest_sync"] = latest_syncs
 	if sharesItem.LifecycleState != nil {
 		sharesMap["lifecycle_state"] = sharesItem.LifecycleState
 	}
@@ -518,7 +553,7 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcbetav1
 	return sharesMap
 }
 
-func dataSourceShareCollectionSharesTargetsToMap(targetsItem vpcbetav1.ShareMountTargetReference) (targetsMap map[string]interface{}) {
+func dataSourceShareCollectionSharesTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (targetsMap map[string]interface{}) {
 	targetsMap = map[string]interface{}{}
 
 	if targetsItem.Deleted != nil {

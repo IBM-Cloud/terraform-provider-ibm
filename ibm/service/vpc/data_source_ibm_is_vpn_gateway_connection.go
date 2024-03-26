@@ -205,6 +205,30 @@ func DataSourceIBMISVPNGatewayConnection() *schema.Resource {
 				Computed:    true,
 				Description: "The status of a VPN gateway connection.",
 			},
+			"status_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current status (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the status reason.",
+						},
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the status reason.",
+						},
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason.",
+						},
+					},
+				},
+			},
 			"routing_protocol": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -259,7 +283,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 	vpn_gateway_connection := d.Get("vpn_gateway_connection").(string)
 	vpn_gateway_connection_name := d.Get("vpn_gateway_connection_name").(string)
 
-	vpnGatewayConnection := &vpcv1.VPNGatewayConnection{}
+	var vpnGatewayConnectionInterface *vpcv1.VPNGatewayConnectionIntf
 
 	if vpn_gateway_name != "" {
 		listvpnGWOptions := vpcClient.NewListVPNGatewaysOptions()
@@ -304,12 +328,37 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 		}
 
 		vpn_gateway_conn_found := false
-		for _, connectionItem := range availableVPNGatewayConnections.Connections {
-			connection := connectionItem.(*vpcv1.VPNGatewayConnection)
-			if *connection.Name == vpn_gateway_connection_name {
-				vpnGatewayConnection = connection
-				vpn_gateway_conn_found = true
-				break
+		for _, vpnGatewayConnectionIntf := range availableVPNGatewayConnections.Connections {
+			if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode); ok {
+				vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
+				if *vpnGatewayConnection.Name == vpn_gateway_connection_name {
+					vpnGatewayConnectionInterface = &vpnGatewayConnectionIntf
+					vpn_gateway_conn_found = true
+					break
+				}
+			} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode); ok {
+				vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteMode)
+				if *vpnGatewayConnection.Name == vpn_gateway_connection_name {
+					vpnGatewayConnectionInterface = &vpnGatewayConnectionIntf
+					vpn_gateway_conn_found = true
+					break
+				}
+			} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode); ok {
+				vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+				if *vpnGatewayConnection.Name == vpn_gateway_connection_name {
+					vpnGatewayConnectionInterface = &vpnGatewayConnectionIntf
+					vpn_gateway_conn_found = true
+					break
+				}
+			} else if _, ok := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection); ok {
+				vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
+				if *vpnGatewayConnection.Name == vpn_gateway_connection_name {
+					vpnGatewayConnectionInterface = &vpnGatewayConnectionIntf
+					vpn_gateway_conn_found = true
+					break
+				}
+			} else {
+				return diag.FromErr(fmt.Errorf("[ERROR] Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered"))
 			}
 		}
 		if !vpn_gateway_conn_found {
@@ -322,90 +371,306 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 		getVPNGatewayConnectionOptions.SetID(vpn_gateway_connection)
 
 		vpnGatewayConnectionIntf, response, err := vpcClient.GetVPNGatewayConnectionWithContext(context, getVPNGatewayConnectionOptions)
-		if err != nil || vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection) == nil {
+		vpnGatewayConnectionInterface = &vpnGatewayConnectionIntf
+		if err != nil {
 			log.Printf("[DEBUG] GetVPNGatewayConnectionWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("GetVPNGatewayConnectionWithContext failed %s\n%s", err, response))
 		}
-		vpnGatewayConnection = vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", vpn_gateway_id, *vpnGatewayConnection.ID))
+	if _, ok := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnectionPolicyMode); ok {
+		vpnGatewayConnection := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnectionPolicyMode)
+		d.SetId(fmt.Sprintf("%s/%s", vpn_gateway_id, *vpnGatewayConnection.ID))
 
-	if err = d.Set("admin_state_up", vpnGatewayConnection.AdminStateUp); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting admin_state_up: %s", err))
-	}
-	if err = d.Set("authentication_mode", vpnGatewayConnection.AuthenticationMode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting authentication_mode: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(vpnGatewayConnection.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-
-	if vpnGatewayConnection.DeadPeerDetection != nil {
-		err = d.Set("dead_peer_detection", dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting dead_peer_detection %s", err))
+		if err = d.Set("admin_state_up", vpnGatewayConnection.AdminStateUp); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting admin_state_up: %s", err))
 		}
-	}
-	if err = d.Set("href", vpnGatewayConnection.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		if err = d.Set("authentication_mode", vpnGatewayConnection.AuthenticationMode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting authentication_mode: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(vpnGatewayConnection.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+
+		if vpnGatewayConnection.DeadPeerDetection != nil {
+			err = d.Set("dead_peer_detection", dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting dead_peer_detection %s", err))
+			}
+		}
+		if err = d.Set("href", vpnGatewayConnection.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
+
+		if vpnGatewayConnection.IkePolicy != nil {
+			err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ike_policy %s", err))
+			}
+		}
+
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ipsec_policy %s", err))
+			}
+		}
+		if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
+		}
+		if err = d.Set("name", vpnGatewayConnection.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+		if err = d.Set("peer_address", vpnGatewayConnection.PeerAddress); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting peer_address: %s", err))
+		}
+		if err = d.Set("psk", vpnGatewayConnection.Psk); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting psk: %s", err))
+		}
+		if err = d.Set("resource_type", vpnGatewayConnection.ResourceType); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		}
+		if err = d.Set("status", vpnGatewayConnection.Status); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		}
+		if err := d.Set("status_reasons", resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_reasons: %s", err))
+		}
+		if len(vpnGatewayConnection.LocalCIDRs) > 0 {
+			err = d.Set("local_cidrs", vpnGatewayConnection.LocalCIDRs)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting local CIDRs %s", err))
+			}
+		}
+
+		if len(vpnGatewayConnection.PeerCIDRs) > 0 {
+			err = d.Set("peer_cidrs", vpnGatewayConnection.PeerCIDRs)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting Peer CIDRs %s", err))
+			}
+		}
+	} else if _, ok := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnectionRouteMode); ok {
+		vpnGatewayConnection := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnectionRouteMode)
+		d.SetId(fmt.Sprintf("%s/%s", vpn_gateway_id, *vpnGatewayConnection.ID))
+
+		if err = d.Set("admin_state_up", vpnGatewayConnection.AdminStateUp); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting admin_state_up: %s", err))
+		}
+		if err = d.Set("authentication_mode", vpnGatewayConnection.AuthenticationMode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting authentication_mode: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(vpnGatewayConnection.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+
+		if vpnGatewayConnection.DeadPeerDetection != nil {
+			err = d.Set("dead_peer_detection", dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting dead_peer_detection %s", err))
+			}
+		}
+		if err = d.Set("href", vpnGatewayConnection.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
+
+		if vpnGatewayConnection.IkePolicy != nil {
+			err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ike_policy %s", err))
+			}
+		}
+
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ipsec_policy %s", err))
+			}
+		}
+		if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
+		}
+		if err = d.Set("name", vpnGatewayConnection.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+		if err = d.Set("peer_address", vpnGatewayConnection.PeerAddress); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting peer_address: %s", err))
+		}
+		if err = d.Set("psk", vpnGatewayConnection.Psk); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting psk: %s", err))
+		}
+		if err = d.Set("resource_type", vpnGatewayConnection.ResourceType); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		}
+		if err = d.Set("status", vpnGatewayConnection.Status); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		}
+		if err := d.Set("status_reasons", resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_reasons: %s", err))
+		}
+		if err = d.Set("routing_protocol", vpnGatewayConnection.RoutingProtocol); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting routing_protocol: %s", err))
+		}
+
+		if vpnGatewayConnection.Tunnels != nil {
+			err = d.Set("tunnels", dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting tunnels %s", err))
+			}
+		}
+	} else if _, ok := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode); ok {
+		vpnGatewayConnection := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+		d.SetId(fmt.Sprintf("%s/%s", vpn_gateway_id, *vpnGatewayConnection.ID))
+
+		if err = d.Set("admin_state_up", vpnGatewayConnection.AdminStateUp); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting admin_state_up: %s", err))
+		}
+		if err = d.Set("authentication_mode", vpnGatewayConnection.AuthenticationMode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting authentication_mode: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(vpnGatewayConnection.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+
+		if vpnGatewayConnection.DeadPeerDetection != nil {
+			err = d.Set("dead_peer_detection", dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting dead_peer_detection %s", err))
+			}
+		}
+		if err = d.Set("href", vpnGatewayConnection.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
+
+		if vpnGatewayConnection.IkePolicy != nil {
+			err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ike_policy %s", err))
+			}
+		}
+
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ipsec_policy %s", err))
+			}
+		}
+		if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
+		}
+		if err = d.Set("name", vpnGatewayConnection.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+		if err = d.Set("peer_address", vpnGatewayConnection.PeerAddress); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting peer_address: %s", err))
+		}
+		if err = d.Set("psk", vpnGatewayConnection.Psk); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting psk: %s", err))
+		}
+		if err = d.Set("resource_type", vpnGatewayConnection.ResourceType); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		}
+		if err = d.Set("status", vpnGatewayConnection.Status); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		}
+		if err := d.Set("status_reasons", resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_reasons: %s", err))
+		}
+		if err = d.Set("routing_protocol", vpnGatewayConnection.RoutingProtocol); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting routing_protocol: %s", err))
+		}
+
+		if vpnGatewayConnection.Tunnels != nil {
+			err = d.Set("tunnels", dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting tunnels %s", err))
+			}
+		}
+	} else if _, ok := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnection); ok {
+		vpnGatewayConnection := (*vpnGatewayConnectionInterface).(*vpcv1.VPNGatewayConnection)
+		d.SetId(fmt.Sprintf("%s/%s", vpn_gateway_id, *vpnGatewayConnection.ID))
+
+		if err = d.Set("admin_state_up", vpnGatewayConnection.AdminStateUp); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting admin_state_up: %s", err))
+		}
+		if err = d.Set("authentication_mode", vpnGatewayConnection.AuthenticationMode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting authentication_mode: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(vpnGatewayConnection.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+
+		if vpnGatewayConnection.DeadPeerDetection != nil {
+			err = d.Set("dead_peer_detection", dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting dead_peer_detection %s", err))
+			}
+		}
+		if err = d.Set("href", vpnGatewayConnection.Href); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		}
+
+		if vpnGatewayConnection.IkePolicy != nil {
+			err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ike_policy %s", err))
+			}
+		}
+
+		if vpnGatewayConnection.IpsecPolicy != nil {
+			err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting ipsec_policy %s", err))
+			}
+		}
+		if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
+		}
+		if err = d.Set("name", vpnGatewayConnection.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+		if err = d.Set("peer_address", vpnGatewayConnection.PeerAddress); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting peer_address: %s", err))
+		}
+		if err = d.Set("psk", vpnGatewayConnection.Psk); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting psk: %s", err))
+		}
+		if err = d.Set("resource_type", vpnGatewayConnection.ResourceType); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
+		}
+		if err = d.Set("status", vpnGatewayConnection.Status); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		}
+		if err := d.Set("status_reasons", resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status_reasons: %s", err))
+		}
+		if err = d.Set("routing_protocol", vpnGatewayConnection.RoutingProtocol); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting routing_protocol: %s", err))
+		}
+
+		if vpnGatewayConnection.Tunnels != nil {
+			err = d.Set("tunnels", dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting tunnels %s", err))
+			}
+		}
+
+		if len(vpnGatewayConnection.LocalCIDRs) > 0 {
+			err = d.Set("local_cidrs", vpnGatewayConnection.LocalCIDRs)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting local CIDRs %s", err))
+			}
+		}
+
+		if len(vpnGatewayConnection.PeerCIDRs) > 0 {
+			err = d.Set("peer_cidrs", vpnGatewayConnection.PeerCIDRs)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting Peer CIDRs %s", err))
+			}
+		}
+	} else {
+		return diag.FromErr(fmt.Errorf("[ERROR] Unrecognized vpcv1.vpnGatewayConnectionIntf subtype encountered"))
 	}
 
-	if vpnGatewayConnection.IkePolicy != nil {
-		err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting ike_policy %s", err))
-		}
-	}
-
-	if vpnGatewayConnection.IpsecPolicy != nil {
-		err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting ipsec_policy %s", err))
-		}
-	}
-	if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
-	}
-	if err = d.Set("name", vpnGatewayConnection.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if err = d.Set("peer_address", vpnGatewayConnection.PeerAddress); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting peer_address: %s", err))
-	}
-	if err = d.Set("psk", vpnGatewayConnection.Psk); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting psk: %s", err))
-	}
-	if err = d.Set("resource_type", vpnGatewayConnection.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
-	}
-	if err = d.Set("status", vpnGatewayConnection.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
-	}
-	if err = d.Set("routing_protocol", vpnGatewayConnection.RoutingProtocol); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting routing_protocol: %s", err))
-	}
-
-	if vpnGatewayConnection.Tunnels != nil {
-		err = d.Set("tunnels", dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tunnels %s", err))
-		}
-	}
-
-	if len(vpnGatewayConnection.LocalCIDRs) > 0 {
-		err = d.Set("local_cidrs", vpnGatewayConnection.LocalCIDRs)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting local CIDRs %s", err))
-		}
-	}
-
-	if len(vpnGatewayConnection.PeerCIDRs) > 0 {
-		err = d.Set("peer_cidrs", vpnGatewayConnection.PeerCIDRs)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting Peer CIDRs %s", err))
-		}
-	}
 	return nil
 }
 

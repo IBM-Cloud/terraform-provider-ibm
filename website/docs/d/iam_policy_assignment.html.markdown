@@ -1,0 +1,76 @@
+---
+layout: "ibm"
+page_title: "IBM : ibm_iam_policy_assignment"
+description: |-
+  Get information about policy_assignments
+subcategory: "Identity & Access Management (IAM)"
+---
+
+# ibm_iam_policy_assignment
+
+Provides a read-only data source to retrieve information about policy_assignments. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+
+## Example Usage
+
+```hcl
+data "ibm_iam_policy_assignments" "policy_assignment" {
+}
+```
+
+## Argument Reference
+
+
+## Attribute Reference
+
+After your data source is created, you can read values from the following attributes.
+
+* `id` - The unique identifier of the policy_assignment.
+* `policy_assignments` - (List) List of policy assignments.
+  * Constraints: The minimum length is `0` items.
+Nested schema for **policy_assignments**:
+	* `assignment_id` - (String) Passed in value to correlate with other assignments.
+	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character.
+	* `created_at` - (String) The UTC timestamp when the policy assignment was created.
+	* `created_by_id` - (String) The iam ID of the entity that created the policy assignment.
+	* `href` - (String) The href URL that links to the policies assignments API by policy assignment ID.
+	* `id` - (String) Policy assignment ID.
+	* `last_modified_at` - (String) The UTC timestamp when the policy assignment was last modified.
+	* `last_modified_by_id` - (String) The iam ID of the entity that last modified the policy assignment.
+	* `options` - (List) List of objects with required properties for a policy assignment.
+  		* Constraints: The maximum length is `5` items. The minimum length is `1` item.
+	Nested schema for **options**:
+        * `root_requester_id` - (String) The policy assignment requester id.
+        * `root_template_id` - (String) The template id where this policy is being assigned from.
+        * `root_template_version` - (String) The template version where this policy is being assigned from.
+        * `subject_id` - (String) The policy subject id.
+        * `subject_type` - (String) The policy subject type; either 'iam_id' or 'access_group_id'.
+	* `resources` - (List) Object for each account assigned.
+	  * Constraints: The minimum length is `1` item.
+	Nested schema for **resources**:
+		* `policy` - (List) Set of properties for the assigned resource.
+		Nested schema for **policy**:
+			* `error_message` - (List) The error response from API.
+			Nested schema for **error_message**:
+				* `errors` - (List) The errors encountered during the response.
+				Nested schema for **errors**:
+					* `code` - (String) The API error code for the error.
+					* `details` - (List) Additional error details.
+					Nested schema for **details**:
+						Nested schema for **conflicts_with**:
+							* `etag` - (String) The revision number of the resource.
+							* `policy` - (String) The conflicting policy id.
+							* `role` - (String) The conflicting role id.
+					* `message` - (String) The error message returned by the API.
+					* `more_info` - (String) Additional info for error.
+				* `status_code` - (Integer) The http error code of the response.
+				* `trace` - (String) The unique transaction id for the request.
+			* `resource_created` - (List) On success, includes the  policy assigned.
+			Nested schema for **resource_created**:
+				* `id` - (String) policy id.
+			* `status` - (String) The policy assignment status.
+		* `target` - (String) Account ID where resources are assigned.
+	* `target` - (String) assignment target id.
+	* `target_type` - (String) Assignment target type.
+	* `template_id` - (String) policy template id.
+	* `template_version` - (String) policy template version.
+	* `account_id` - (String) Enterprise account ID where template will be created.

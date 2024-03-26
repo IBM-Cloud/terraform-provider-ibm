@@ -33,10 +33,10 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mysql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "12288"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -54,9 +54,9 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mysql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "92160"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "15360"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
@@ -86,13 +86,23 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 		service                      = "databases-for-mysql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 3072
-		members_disk_allocation_mb   = 61440
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 4096
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+				allocation_mb = 20480
+			}
+		}
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -104,7 +114,7 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup string, name string) string {
@@ -119,19 +129,31 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		service                      = "databases-for-mysql"
 		plan                         = "standard"
 		location                     = "%[3]s"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 6144
-		members_disk_allocation_mb   = 92160
-		members_cpu_allocation_count = 12
+		adminpassword                = "password12345678"
+		group {
+			group_id = "member"
+			memory {
+				allocation_mb = 5120
+			}
+			disk {
+				allocation_mb = 30720
+			}
+			cpu {
+				allocation_count = 4
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+		}
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"
-			password = "password12"
+			password = "password12345678"
 		}
 		users {
 			name     = "user124"
-			password = "password12"
+			password = "password12345678"
 		}
 		allowlist {
 			address     = "172.168.1.2/32"
@@ -153,5 +175,5 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.IcdDbRegion)
+				`, databaseResourceGroup, name, acc.Region())
 }

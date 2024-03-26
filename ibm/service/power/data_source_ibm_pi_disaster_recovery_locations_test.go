@@ -27,5 +27,5 @@ func TestAccIBMPIDisasterRecoveryLocationsDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMPIDisasterRecoveryLocationsDataSourceConfig() string {
-	return "data \"ibm_pi_disaster_recovery_locations\" \"testacc_disaster_recovery_locations\" {}"
+	return `data "ibm_pi_disaster_recovery_locations" "testacc_disaster_recovery_locations" {}`
 }

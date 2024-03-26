@@ -15,6 +15,12 @@ variable "atracker_target_target_type" {
   default     = "cloud_object_storage"
 }
 
+variable "atracker_target_region" {
+  description = "Included this optional field if you used it to create a target in a different region other than the one you are connected."
+  type        = string
+  default     = "us-south"
+}
+
 // Resource arguments for atracker_route
 variable "atracker_route_name" {
   description = "The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`."
@@ -66,5 +72,4 @@ variable "atracker_settings_permitted_target_regions" {
   type        = list(string)
   default     = [ "us-south" ]
 }
-
 // Data source arguments for atracker_endpoints

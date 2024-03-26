@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_job
 
-Provides a resource for code_engine_job. This allows code_engine_job to be created, updated and deleted.
+Create, update, and delete code_engine_job with this resource.
 
 ## Example Usage
 
@@ -23,27 +23,34 @@ resource "ibm_code_engine_job" "code_engine_job_instance" {
     name  = "name"
     value = "value"
   }
+
+  run_env_variables {
+    type      = "secret_full_reference"
+    name      = "secret_env_var"
+    reference = "secret_name"
+  }
 }
 ```
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `image_reference` - (Required, String) The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z0-9][a-z0-9\\-_.]+[a-z0-9][\/])?([a-z0-9][a-z0-9\\-_]+[a-z0-9][\/])?[a-z0-9][a-z0-9\\-_.\/]+[a-z0-9](:[\\w][\\w.\\-]{0,127})?(@sha256:[a-fA-F0-9]{64})?$/`.
 * `image_secret` - (Optional, String) The name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the job / job runs will be created but submitted job runs will fail, until this property is provided, too. This property must not be set on a job run, which references a job template.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-* `name` - (Required, String) The name of the job. Use a name that is unique within the project.
+* `name` - (Required, Forces new resource, String) The name of the job. Use a name that is unique within the project.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `run_arguments` - (Optional, List) Set arguments for the job that are passed to start job run containers. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_as_user` - (Optional, Integer) The user ID (UID) to run the application (e.g., 1001).
+* `run_as_user` - (Optional, Integer) The user ID (UID) to run the job (e.g., 1001).
+  * Constraints: The default value is `0`.
 * `run_commands` - (Optional, List) Set commands for the job that are passed to start job run containers. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_env_variables` - (Optional, List) Optional references to config maps, secrets or a literal values.
+* `run_env_variables` - (Optional, List) Optional references to config maps, secrets or literal values.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested scheme for **run_env_variables**:
 	* `key` - (Optional, String) The key to reference as environment variable.
@@ -55,7 +62,7 @@ Nested scheme for **run_env_variables**:
 	* `reference` - (Optional, String) The name of the secret or config map.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 	* `type` - (Optional, String) Specify the type of the environment variable.
-	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`. When referencing a secret or configmap, the `reference` must be specified. When referencing a secret or configmap key, a `key` must also be specified.
 	* `value` - (Optional, String) The literal value of the environment variable.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
 * `run_mode` - (Optional, String) The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `max_execution_time` and `retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `max_execution_time` and `retry_limit` properties are not allowed.
@@ -88,7 +95,7 @@ Nested scheme for **run_volume_mounts**:
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the code_engine_job.
 * `job_id` - (String) The identifier of the resource.
@@ -116,9 +123,4 @@ The `name` property can be formed from `project_id`, and `name` in the following
 # Syntax
 ```
 $ terraform import ibm_code_engine_job.code_engine_job <project_id>/<name>
-```
-
-# Example
-```
-$ terraform import ibm_code_engine_job.code_engine_job "15314cc3-85b4-4338-903f-c28cdee6d005/my-job"
 ```

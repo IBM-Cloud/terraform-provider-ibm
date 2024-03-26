@@ -44,4 +44,5 @@ In addition to all argument reference list, you can access the following attribu
 - `fingerprint`-  (String) The SHA256 fingerprint of the public key.
 - `length` - (String) The length of the SSH key.
 - `public_key` - (String) The public SSH key value.
+- `tags` - (List) User tags associated for the ssh key.
 - `type` - (String) The crypto system that is used by this key.

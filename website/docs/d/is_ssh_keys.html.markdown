@@ -47,3 +47,4 @@ In addition to all argument references listed, you can access the following attr
 		- `name` - (String) The user-defined name for this resource group.
 		  - Constraints: The maximum length is `40` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-_ ]+$/`.
 	- `type` - (String) The crypto-system used by this key.
+	- `tags` - (List) User tags associated for the ssh key.

@@ -36,6 +36,38 @@ func TestAccIBMISVirtualEndpointGateway_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVirtualEndpointGateway_AllowDnsResolutionBinding(t *testing.T) {
+	var endpointGateway string
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	enable_hub := false
+	name1 := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
+	allowDnsResolutionBindingTrue := true
+	allowDnsResolutionBindingFalse := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1, enable_hub, allowDnsResolutionBindingTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttr(name, "allow_dns_resolution_binding", fmt.Sprintf("%t", allowDnsResolutionBindingTrue)),
+				),
+			},
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1, enable_hub, allowDnsResolutionBindingFalse),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttr(name, "allow_dns_resolution_binding", fmt.Sprintf("%t", allowDnsResolutionBindingFalse)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVirtualEndpointGateway_CharacterCount(t *testing.T) {
 	var endpointGateway string
 	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
@@ -123,6 +155,37 @@ func TestAccIBMISVirtualEndpointGateway_FullySpecified(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckisVirtualEndpointGatewayExists(name, &monitor),
 					resource.TestCheckResourceAttr(name, "name", name1),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISVirtualEndpointGateway_OptionalName(t *testing.T) {
+	var monitor string
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname1 := fmt.Sprintf("tfvpngw-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpngw-createname-%d", acctest.RandIntRange(10, 100))
+	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckisVirtualEndpointGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				ExpectNonEmptyPlan: true,
+				Config:             testAccCheckisVirtualEndpointGatewayConfigOptionalName(vpcname1, subnetname1, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &monitor),
+					resource.TestCheckResourceAttr(name, "name", name1),
+					resource.TestCheckResourceAttrSet(name, "ips.#"),
+					resource.TestCheckResourceAttrSet(name, "target.#"),
+					resource.TestCheckResourceAttrSet(name, "created_at"),
+					resource.TestCheckResourceAttrSet(name, "crn"),
+					resource.TestCheckResourceAttr(name, "health_state", "ok"),
+					resource.TestCheckResourceAttr(name, "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttrSet(name, "resource_group"),
+					resource.TestCheckResourceAttrSet(name, "resource_type"),
 				),
 			},
 		},
@@ -253,6 +316,54 @@ func testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name
 	}`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, name1)
 }
 
+func testAccCheckisVirtualEndpointGatewayConfigAllowDnsResolutionBinding(vpcname1, name1 string, enable_hub, allowDnsResolutionBinding bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+		dns {
+			enable_hub = %t
+		}
+	}
+	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+		name 							= "%s"
+		target {
+			name          = "ibm-ntp-server"
+			resource_type = "provider_infrastructure_service"
+		}
+		vpc 							= ibm_is_vpc.testacc_vpc.id
+		allow_dns_resolution_binding 	= %t
+	}`, vpcname1, enable_hub, name1, allowDnsResolutionBinding)
+}
+
+func testAccCheckisVirtualEndpointGatewayConfigOptionalName(vpcname1, subnetname1, name1 string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+	  }
+	  resource "ibm_is_vpc" "testacc_vpc" {
+		name           = "%[1]s"
+		resource_group = data.ibm_resource_group.test_acc.id
+	  }
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%[2]s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%[3]s"
+		ipv4_cidr_block = "%[4]s"
+		resource_group  = data.ibm_resource_group.test_acc.id
+	  }
+	  resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
+		name = "%[5]s"
+		target {
+		  name          = "ibm-dns-server2"
+		  resource_type = "provider_infrastructure_service"
+		}
+		vpc = ibm_is_vpc.testacc_vpc.id
+		ips {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		resource_group = data.ibm_resource_group.test_acc.id
+	  }`, vpcname1, subnetname1, acc.ISZoneName, acc.ISCIDR, name1)
+}
 func testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetname1, name1 string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
