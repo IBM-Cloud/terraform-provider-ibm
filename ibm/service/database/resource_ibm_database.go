@@ -251,8 +251,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "public",
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == "" {
+						return true
+					}
+					return false
+				},
 			},
 			"backup_id": {
 				Description: "The CRN of backup source database",
@@ -957,7 +962,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			AllowedValues:              "public, private, public-and-private",
-			Required:                   true})
+			Required:                   false})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "group_id",
