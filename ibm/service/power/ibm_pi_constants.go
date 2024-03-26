@@ -27,6 +27,7 @@ const (
 	Arg_StorageType                         = "pi_storage_type"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeID                            = "pi_volume_id"
+	Arg_VolumeName                          = "pi_volume_name"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
 	Arg_VTL                                 = "vtl"
 
@@ -103,6 +104,7 @@ const (
 	Attr_Instances                                   = "instances"
 	Attr_InstanceSnapshots                           = "instance_snapshots"
 	Attr_InstanceVolumes                             = "instance_volumes"
+	Attr_IOThrottleRate                              = "io_throttle_rate"
 	Attr_IP                                          = "ip"
 	Attr_IPAddress                                   = "ipaddress"
 	Attr_IPOctet                                     = "ipoctet"
