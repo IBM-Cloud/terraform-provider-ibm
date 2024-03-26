@@ -32,6 +32,5 @@ func testAccCheckIBMPIStorageTypeCapacityDataSourceConfig() string {
 		data "ibm_pi_storage_type_capacity" "type" {
 			pi_cloud_instance_id = "%s"
 			pi_storage_type = "%s"
-		}
-	`, acc.Pi_cloud_instance_id, acc.PiStorageType)
+		}`, acc.Pi_cloud_instance_id, acc.PiStorageType)
 }

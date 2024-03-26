@@ -28,7 +28,7 @@ func DataSourceIBMPIStoragePoolsCapacity() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			//  Attributes
+			// Attributes
 			Attr_MaximumStorageAllocation: {
 				Computed:    true,
 				Description: "Maximum storage allocation.",

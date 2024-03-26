@@ -32,6 +32,5 @@ func testAccCheckIBMPIStoragePoolCapacityDataSourceConfig() string {
 		data "ibm_pi_storage_pool_capacity" "pool" {
 			pi_cloud_instance_id = "%s"
 			pi_storage_pool = "%s"
-		}
-	`, acc.Pi_cloud_instance_id, acc.PiStoragePool)
+		}`, acc.Pi_cloud_instance_id, acc.PiStoragePool)
 }
