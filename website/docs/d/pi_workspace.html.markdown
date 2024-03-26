@@ -44,11 +44,17 @@ In addition to all argument reference listed, you can access the following attri
     Some of `pi_workspace_capabilities` are:
   - `cloud-connections`, `power-edge-router`, `power-vpn-connections`,  `transit-gateway-connection`
 
-- `pi_workspace_details` - (Map) Workspace information.
+- `pi_workspace_details` - (List) Workspace information.
 
     Nested schema for `pi_workspace_details`:
   - `creation_date` - (String) Date of workspace creation.
   - `crn` - (String) Workspace crn.
+  - `power_edge_router` - (List) Power Edge Router information.
+
+      Nested schema for `power_edge_router`:
+      - `migration_status` - (String) The migration status of a Power Edge Router.
+      - `status` - (String) The state of a Power Edge Router.
+      - `type` - (String) The Power Edge Router type.
 - `pi_workspace_location` - (Map) Workspace location.
 
     Nested schema for `Workspace location`:
