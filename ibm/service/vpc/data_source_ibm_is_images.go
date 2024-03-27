@@ -108,6 +108,11 @@ func DataSourceIBMISImages() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									isOperatingSystemAllowUserImageCreation: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Users may create new images with this operating system",
+									},
 									"architecture": {
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -147,6 +152,11 @@ func DataSourceIBMISImages() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The major release version of this operating system",
+									},
+									isOperatingSystemUserDataFormat: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user data format for this image",
 									},
 								},
 							},
@@ -250,6 +260,11 @@ func DataSourceIBMISImages() *schema.Resource {
 									},
 								},
 							},
+						},
+						isImageUserDataFormat: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user data format for this image",
 						},
 						isImageAccessTags: {
 							Type:        schema.TypeSet,
@@ -371,13 +386,14 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	for _, image := range allrecs {
 
 		l := map[string]interface{}{
-			"name":         *image.Name,
-			"id":           *image.ID,
-			"status":       *image.Status,
-			"crn":          *image.CRN,
-			"visibility":   *image.Visibility,
-			"os":           *image.OperatingSystem.Name,
-			"architecture": *image.OperatingSystem.Architecture,
+			"name":             *image.Name,
+			"id":               *image.ID,
+			"status":           *image.Status,
+			"crn":              *image.CRN,
+			"visibility":       *image.Visibility,
+			"os":               *image.OperatingSystem.Name,
+			"architecture":     *image.OperatingSystem.Architecture,
+			"user_data_format": *image.UserDataFormat,
 		}
 		if len(image.StatusReasons) > 0 {
 			l["status_reasons"] = dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)

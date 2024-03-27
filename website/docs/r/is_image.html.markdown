@@ -160,6 +160,13 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the image.
 - `resourceGroup` - (String) The resource group to which the image belongs to.
 - `status`- (String) The status of an image such as `corrupt`, or `available`.
+- `user_data_format` - (String) The user data format for this image.
+  
+  ~> **Note:** </br> Allowed values are : </br>
+  **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>
+  **&#x2022;** `esxi_kickstart`: user_data will be interpreted as a VMware ESXi installation script.</br>
+  **&#x2022;**  `ipxe`: user_data will be interpreted as a single URL to an iPXE script or as the text of an iPXE script.</br>
+  
 - `visibility` - (String) The access scope of an image such as `private` or `public`.
 
 

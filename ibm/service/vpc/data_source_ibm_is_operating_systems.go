@@ -27,6 +27,11 @@ func DataSourceIBMISOperatingSystems() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isOperatingSystemAllowUserImageCreation: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Users may create new images with this operating system",
+						},
 						isOperatingSystemName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -70,6 +75,11 @@ func DataSourceIBMISOperatingSystems() *schema.Resource {
 							Computed:    true,
 							Description: "The vendor of the operating system",
 						},
+						isOperatingSystemUserDataFormat: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user data format for this operating system",
+						},
 					},
 				},
 			},
@@ -111,14 +121,16 @@ func osList(d *schema.ResourceData, meta interface{}) error {
 	osInfo := make([]map[string]interface{}, 0)
 	for _, os := range allrecs {
 		l := map[string]interface{}{
-			isOperatingSystemName:         *os.Name,
-			isOperatingSystemArchitecture: *os.Architecture,
-			isOperatingSystemDHOnly:       *os.DedicatedHostOnly,
-			isOperatingSystemFamily:       *os.Family,
-			isOperatingSystemHref:         *os.Href,
-			isOperatingSystemDisplayName:  *os.DisplayName,
-			isOperatingSystemVendor:       *os.Vendor,
-			isOperatingSystemVersion:      *os.Version,
+			isOperatingSystemName:                   *os.Name,
+			isOperatingSystemArchitecture:           *os.Architecture,
+			isOperatingSystemDHOnly:                 *os.DedicatedHostOnly,
+			isOperatingSystemFamily:                 *os.Family,
+			isOperatingSystemHref:                   *os.Href,
+			isOperatingSystemDisplayName:            *os.DisplayName,
+			isOperatingSystemVendor:                 *os.Vendor,
+			isOperatingSystemVersion:                *os.Version,
+			isOperatingSystemAllowUserImageCreation: *os.AllowUserImageCreation,
+			isOperatingSystemUserDataFormat:         *os.UserDataFormat,
 		}
 		osInfo = append(osInfo, l)
 	}

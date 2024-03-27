@@ -106,6 +106,11 @@ func DataSourceIBMISImage() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isOperatingSystemAllowUserImageCreation: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Users may create new images with this operating system",
+						},
 						"architecture": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -146,6 +151,11 @@ func DataSourceIBMISImage() *schema.Resource {
 							Computed:    true,
 							Description: "The major release version of this operating system",
 						},
+						isOperatingSystemUserDataFormat: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user data format for this image",
+						},
 					},
 				},
 			},
@@ -153,6 +163,11 @@ func DataSourceIBMISImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Image Operating system",
+			},
+			isImageUserDataFormat: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The user data format for this image",
 			},
 			"architecture": {
 				Type:        schema.TypeString,
@@ -385,6 +400,7 @@ func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) e
 		d.Set("status_reasons", dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons))
 	}
 	d.Set("name", *image.Name)
+	d.Set("user_data_format", *image.UserDataFormat)
 	d.Set("visibility", *image.Visibility)
 	if image.OperatingSystem != nil {
 		operatingSystemList := []map[string]interface{}{}
@@ -424,7 +440,9 @@ func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) e
 
 func dataSourceIBMISImageOperatingSystemToMap(operatingSystemItem vpcv1.OperatingSystem) (operatingSystemMap map[string]interface{}) {
 	operatingSystemMap = map[string]interface{}{}
-
+	if operatingSystemItem.AllowUserImageCreation != nil {
+		operatingSystemMap["allow_user_image_creation"] = operatingSystemItem.AllowUserImageCreation
+	}
 	if operatingSystemItem.Architecture != nil {
 		operatingSystemMap["architecture"] = operatingSystemItem.Architecture
 	}
@@ -448,6 +466,9 @@ func dataSourceIBMISImageOperatingSystemToMap(operatingSystemItem vpcv1.Operatin
 	}
 	if operatingSystemItem.Version != nil {
 		operatingSystemMap["version"] = operatingSystemItem.Version
+	}
+	if operatingSystemItem.UserDataFormat != nil {
+		operatingSystemMap["user_data_format"] = operatingSystemItem.UserDataFormat
 	}
 	return operatingSystemMap
 }
