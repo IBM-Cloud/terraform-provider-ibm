@@ -75,6 +75,7 @@ func testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, name, descriptio
 		description = "%s"
 		config {
 			params {
+				type = "application"
 				verb = "POST"
 				url  = "https://test.codetestcodeengine.com"
 			}

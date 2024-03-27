@@ -109,7 +109,7 @@ func dataSourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enSlackDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enCustomSMSDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -135,7 +135,7 @@ func dataSourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.
 
 func enCustomSMSDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enCustomEmailDestinationConfigToMap(result)
+	finalMap := enCustomSMSDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList

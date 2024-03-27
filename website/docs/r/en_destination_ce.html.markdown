@@ -21,12 +21,30 @@ resource "ibm_en_destination_ce" "codeengine_en_destination" {
   description           = "Code Engine destination for event notification"
   config {
     params {
+      type = "application"
       verb = "POST"
       url  = "https://test.codetestcodeengine.com"
       custom_headers = {
         "authorization" = "authorization"
       }
       sensitive_headers = ["authorization"]
+    }
+  }
+}
+```
+
+```terraform
+resource "ibm_en_destination_ce" "codeengine_en_destination" {
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Code engine Destination"
+  type                  = "ibmce"
+  collect_failed_events = false
+  description           = "Code Engine destination for event notification"
+  config {
+    params {
+      job_name = "custom_job"
+      project_crn = "crn:v1:staging:public:codeengine:us-south:a/e7e5820aeccb40efb78fd69a7858ef23:xxxxxxxxxxxxxx::"
+      type = "job"
     }
   }
 }
@@ -58,6 +76,11 @@ Review the argument reference that you can specify for your resource.
   - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
   - `url` - (Optional, String) URL of code engine project.
   - `verb` - (Optional, String) HTTP method of code engine . Allowable values are: `GET`, `POST`.
+  - `type` - (Optional, String) The code engine destination type . Allowable values are: `application`, `job`.
+  - `job_name` - (Optional, String) name of the code engine job.
+  - `project_crn` - (Optional, String) CRN of the code engine project.
+  - `custom_headers` - (Optional, String) Custom headers (Key-Value pair) for webhook call.
+  - `sensitive_headers` - (Optional, array) List of sensitive headers from custom headers.
 
 ## Attribute reference
 

@@ -176,7 +176,7 @@ func dataSourceIBMEnCustomSMSSubscriptionRead(context context.Context, d *schema
 	}
 
 	if result.Attributes != nil {
-		if err = d.Set("attributes", enSMSSubscriptionFlattenAttributes(result.Attributes)); err != nil {
+		if err = d.Set("attributes", enCustomSMSSubscriptionFlattenAttributes(result.Attributes)); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting attributes %s", err))
 		}
 	}
@@ -189,7 +189,7 @@ func enCustomSMSSubscriptionFlattenAttributes(result en.SubscriptionAttributesIn
 
 	attributes := result.(*en.SubscriptionAttributes)
 
-	finalMap := enSMSSubscriptionToMap(attributes)
+	finalMap := enCustomSMSSubscriptionToMap(attributes)
 	finalList = append(finalList, finalMap)
 
 	return finalList
