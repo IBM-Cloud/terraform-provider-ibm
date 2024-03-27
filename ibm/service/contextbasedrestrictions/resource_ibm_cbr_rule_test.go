@@ -57,7 +57,7 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, enforcementModeUpdate, accountID),
+				Config: testAccCheckIBMCbrRuleConfigUpdate(descriptionUpdate, enforcementModeUpdate, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementModeUpdate),
@@ -140,6 +140,51 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string, ac
       				name = "serviceName"
       				value = "containers-kubernetes"
     			}
+				tags {
+					name = "name"
+					value = "value"
+					operator = "stringEquals"
+				}
+			}
+			operations {
+				api_types {
+					api_type_id = "crn:v1:bluemix:public:containers-kubernetes::::api-type:management"
+				}
+			}
+			enforcement_mode = "%s"
+		}
+	`, accountID, description, accountID, enforcementMode)
+}
+
+func testAccCheckIBMCbrRuleConfigUpdate(description string, enforcementMode string, accountID string) string {
+	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
+
+		resource "ibm_cbr_rule" "cbr_rule" {
+			description = "%s"
+			contexts {
+				attributes {
+					name = "networkZoneId"
+					value = ibm_cbr_zone.cbr_zone.id
+				}
+			}
+			resources {
+				attributes {
+					name = "serviceName"
+					value = "containers-kubernetes"
+				}
+				attributes {
+					name = "accountId"
+					value = "%s"
+				}
 				tags {
 					name = "name"
 					value = "value"
