@@ -1985,6 +1985,18 @@ func TestAccPreCheckMqcloud(t *testing.T) {
 	}
 }
 
+func TestAccPreCheckCbr(t *testing.T) {
+	TestAccPreCheck(t)
+	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+	cbrEndpoint := os.Getenv("IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT")
+	if cbrEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+}
+
 func TestAccProviderFactories() map[string]func() (*schema.Provider, error) {
 	return map[string]func() (*schema.Provider, error){
 		ProviderName:          func() (*schema.Provider, error) { return provider.Provider(), nil },

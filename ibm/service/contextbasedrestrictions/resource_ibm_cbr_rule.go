@@ -68,7 +68,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"attributes": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Required:    true,
 							Description: "The resource attributes.",
 							Elem: &schema.Resource{
@@ -505,7 +505,9 @@ func resourceIBMCbrRuleMapToRuleContextAttribute(modelMap map[string]interface{}
 func resourceIBMCbrRuleMapToResource(modelMap map[string]interface{}) (*contextbasedrestrictionsv1.Resource, error) {
 	model := &contextbasedrestrictionsv1.Resource{}
 	attributes := []contextbasedrestrictionsv1.ResourceAttribute{}
-	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
+	attributeList := modelMap["attributes"].(*schema.Set).List()
+	// for _, attributesItem := range modelMap["attributes"].([]interface{}) {
+	for _, attributesItem := range attributeList {
 		attributesItemModel, err := resourceIBMCbrRuleMapToResourceAttribute(attributesItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -588,9 +590,16 @@ func resourceIBMCbrRuleRuleContextAttributeToMap(model *contextbasedrestrictions
 	return modelMap, nil
 }
 
+func compareResAttrSetFunc(v interface{}) int {
+	m := v.(map[string]interface{})
+	name := (m["name"]).(*string)
+	return schema.HashString(*name)
+}
+
 func resourceIBMCbrRuleResourceToMap(model *contextbasedrestrictionsv1.Resource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	attributes := []map[string]interface{}{}
+	attributes := []interface{}{}
+	//attributes := []map[string]interface{}{}
 	for _, attributesItem := range model.Attributes {
 		attributesItemMap, err := resourceIBMCbrRuleResourceAttributeToMap(&attributesItem)
 		if err != nil {
@@ -598,7 +607,8 @@ func resourceIBMCbrRuleResourceToMap(model *contextbasedrestrictionsv1.Resource)
 		}
 		attributes = append(attributes, attributesItemMap)
 	}
-	modelMap["attributes"] = attributes
+	attributeSet := schema.NewSet(compareResAttrSetFunc, attributes)
+	modelMap["attributes"] = attributeSet
 	if model.Tags != nil {
 		tags := []map[string]interface{}{}
 		for _, tagsItem := range model.Tags {

@@ -19,13 +19,14 @@ import (
 func TestAccIBMCbrRuleBasic(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Rule
 
+	accountID, _ := getTestAccountAndZoneID()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfigBasic(),
+				Config: testAccCheckIBMCbrRuleConfigBasic(accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
 				),
@@ -41,13 +42,14 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	enforcementModeUpdate := "report"
 
+	accountID, _ := getTestAccountAndZoneID()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode),
+				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", description),
@@ -55,7 +57,7 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, enforcementModeUpdate),
+				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, enforcementModeUpdate, accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementModeUpdate),
@@ -70,15 +72,24 @@ func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCbrRuleConfigBasic() string {
+func testAccCheckIBMCbrRuleConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
 
 		resource "ibm_cbr_rule" "cbr_rule" {
   			description = "test rule config basic"
   			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "%s"
+      				value = ibm_cbr_zone.cbr_zone.id
     			}
   			}
 			resources {
@@ -97,18 +108,27 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
   			}
 			enforcement_mode = "disabled"
 		}
-	`, testZoneID, testAccountID)
+	`, accountID, accountID)
 }
 
-func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) string {
+func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string, accountID string) string {
 	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
 
 		resource "ibm_cbr_rule" "cbr_rule" {
 			description = "%s"
 			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "%s"
+      				value = ibm_cbr_zone.cbr_zone.id
     			}
 			}
 			resources {
@@ -133,7 +153,7 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) st
 			}
 			enforcement_mode = "%s"
 		}
-	`, description, testZoneID, testAccountID, enforcementMode)
+	`, accountID, description, accountID, enforcementMode)
 }
 
 func testAccCheckIBMCbrRuleExists(n string, obj contextbasedrestrictionsv1.Rule) resource.TestCheckFunc {
