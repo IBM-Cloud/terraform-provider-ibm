@@ -18,14 +18,15 @@ import (
 
 func TestAccIBMCbrZoneBasic(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Zone
+	accountID, _ := getTestAccountAndZoneID()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrZoneDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrZoneConfigBasic(),
+				Config: testAccCheckIBMCbrZoneConfigBasic(accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrZoneExists("ibm_cbr_zone.cbr_zone", conf),
 				),
@@ -37,14 +38,14 @@ func TestAccIBMCbrZoneBasic(t *testing.T) {
 func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Zone
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountID := testAccountID
+	accountID, _ := getTestAccountAndZoneID()
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := testAccountID
+	accountIDUpdate := accountID
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrZoneDestroy,
 		Steps: []resource.TestStep{
@@ -74,7 +75,7 @@ func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCbrZoneConfigBasic() string {
+func testAccCheckIBMCbrZoneConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Resource Config Basic"
@@ -85,7 +86,7 @@ func testAccCheckIBMCbrZoneConfigBasic() string {
 				value = "169.23.22.0-169.23.22.255"
 			}
 		}
-	`, testAccountID)
+	`, accountID)
 }
 
 func testAccCheckIBMCbrZoneConfig(name string, accountID string, description string) string {

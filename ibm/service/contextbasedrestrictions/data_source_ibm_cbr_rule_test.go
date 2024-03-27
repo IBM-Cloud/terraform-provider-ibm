@@ -13,18 +13,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-const (
-	testAccountID = "12ab34cd56ef78ab90cd12ef34ab56cd"
-	testZoneID    = "559052eb8f43302824e7ae490c0281eb"
-)
-
 func TestAccIBMCbrRuleDataSourceBasic(t *testing.T) {
+	accountID, _ := getTestAccountAndZoneID()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleDataSourceConfigBasic(),
+				Config: testAccCheckIBMCbrRuleDataSourceConfigBasic(accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "rule_id"),
@@ -47,13 +43,14 @@ func TestAccIBMCbrRuleDataSourceBasic(t *testing.T) {
 func TestAccIBMCbrRuleDataSourceAllArgs(t *testing.T) {
 	ruleDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	ruleEnforcementMode := "enabled"
+	accountID, _ := getTestAccountAndZoneID()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription, ruleEnforcementMode),
+				Config: testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription, ruleEnforcementMode, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_rule.cbr_rule", "rule_id"),
@@ -75,14 +72,24 @@ func TestAccIBMCbrRuleDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
+func testAccCheckIBMCbrRuleDataSourceConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
+
 		resource "ibm_cbr_rule" "cbr_rule" {
  			description = "Test Rule Data Source Config Basic"
   			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "%s"
+      				value = ibm_cbr_zone.cbr_zone.id
     			}
   			}
   			resources {
@@ -96,20 +103,30 @@ func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
     			}
   			}
 		}
+
 		data "ibm_cbr_rule" "cbr_rule" {
 			rule_id = ibm_cbr_rule.cbr_rule.id
 		}
-	`, testZoneID, testAccountID)
+	`, accountID, accountID)
 }
 
-func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleEnforcementMode string) string {
+func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription, ruleEnforcementMode, accountID string) string {
 	return fmt.Sprintf(`
+		resource "ibm_cbr_zone" "cbr_zone" {
+			name = "Test Zone Data Source Config Basic"
+			description = "Test Zone Data Source Config Basic"
+			account_id = "%s"
+			addresses {
+				type = "ipRange"
+				value = "169.23.22.0-169.23.22.255"
+			}
+		}
 		resource "ibm_cbr_rule" "cbr_rule" {
 			description = "%s"
 			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "%s"
+      				value = resource.ibm_cbr_zone.cbr_zone.id
     			}
 			}
 			resources {
@@ -138,5 +155,5 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleEnforcem
 		data "ibm_cbr_rule" "cbr_rule" {
 			rule_id = ibm_cbr_rule.cbr_rule.id
 		}
-	`, ruleDescription, testZoneID, testAccountID, ruleEnforcementMode)
+	`, accountID, ruleDescription, accountID, ruleEnforcementMode)
 }
