@@ -107,7 +107,7 @@ func DataSourceIBMISImage() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isOperatingSystemAllowUserImageCreation: {
-							Type:        schema.TypeString,
+							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Users may create new images with this operating system",
 						},
@@ -312,6 +312,7 @@ func imageGetByName(d *schema.ResourceData, meta interface{}, name, visibility s
 	}
 	image := allrecs[0]
 	d.SetId(*image.ID)
+	d.Set(isImageUserDataFormat, *image.UserDataFormat)
 	d.Set("status", *image.Status)
 	if *image.Status == "deprecated" {
 		fmt.Printf("[WARN] Given image %s is deprecated and soon will be obsolete.", name)
@@ -400,7 +401,7 @@ func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) e
 		d.Set("status_reasons", dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons))
 	}
 	d.Set("name", *image.Name)
-	d.Set("user_data_format", *image.UserDataFormat)
+	d.Set(isImageUserDataFormat, *image.UserDataFormat)
 	d.Set("visibility", *image.Visibility)
 	if image.OperatingSystem != nil {
 		operatingSystemList := []map[string]interface{}{}
@@ -441,7 +442,7 @@ func imageGetById(d *schema.ResourceData, meta interface{}, identifier string) e
 func dataSourceIBMISImageOperatingSystemToMap(operatingSystemItem vpcv1.OperatingSystem) (operatingSystemMap map[string]interface{}) {
 	operatingSystemMap = map[string]interface{}{}
 	if operatingSystemItem.AllowUserImageCreation != nil {
-		operatingSystemMap["allow_user_image_creation"] = operatingSystemItem.AllowUserImageCreation
+		operatingSystemMap[isOperatingSystemAllowUserImageCreation] = operatingSystemItem.AllowUserImageCreation
 	}
 	if operatingSystemItem.Architecture != nil {
 		operatingSystemMap["architecture"] = operatingSystemItem.Architecture
@@ -468,7 +469,7 @@ func dataSourceIBMISImageOperatingSystemToMap(operatingSystemItem vpcv1.Operatin
 		operatingSystemMap["version"] = operatingSystemItem.Version
 	}
 	if operatingSystemItem.UserDataFormat != nil {
-		operatingSystemMap["user_data_format"] = operatingSystemItem.UserDataFormat
+		operatingSystemMap[isOperatingSystemUserDataFormat] = operatingSystemItem.UserDataFormat
 	}
 	return operatingSystemMap
 }

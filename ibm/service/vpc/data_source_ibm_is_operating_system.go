@@ -29,7 +29,7 @@ func DataSourceIBMISOperatingSystem() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isOperatingSystemAllowUserImageCreation: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Users may create new images with this operating system",
 			},
