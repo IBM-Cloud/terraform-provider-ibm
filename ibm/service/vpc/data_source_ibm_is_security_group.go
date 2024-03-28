@@ -82,10 +82,24 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 							Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
 						},
 
-						isSgRuleLocal: {
-							Type:        schema.TypeString,
+						"local": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Security group local ip: an IP address, a CIDR block",
+							Description: "The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+									},
+									"cidr_block": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.",
+									},
+								},
+							},
 						},
 
 						isSgRuleType: {
@@ -257,12 +271,11 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 						}
 						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
 						if ok {
-							if local != nil && reflect.ValueOf(local).IsNil() == false {
-								if local.Address != nil {
-									r[isSgRuleLocal] = local.Address
-								} else if local.CIDRBlock != nil {
-									r[isSgRuleLocal] = local.CIDRBlock
-								}
+							if local != nil && !reflect.ValueOf(local).IsNil() {
+								localList := []map[string]interface{}{}
+								localMap := dataSourceSecurityGroupRuleLocalToMap(local)
+								localList = append(localList, localMap)
+								r["local"] = localList
 							}
 						}
 						rules = append(rules, r)
@@ -292,12 +305,11 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 						}
 						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
 						if ok {
-							if local != nil && reflect.ValueOf(local).IsNil() == false {
-								if local.Address != nil {
-									r[isSgRuleLocal] = local.Address
-								} else if local.CIDRBlock != nil {
-									r[isSgRuleLocal] = local.CIDRBlock
-								}
+							if local != nil && !reflect.ValueOf(local).IsNil() {
+								localList := []map[string]interface{}{}
+								localMap := dataSourceSecurityGroupRuleLocalToMap(local)
+								localList = append(localList, localMap)
+								r["local"] = localList
 							}
 						}
 						rules = append(rules, r)
@@ -332,12 +344,11 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 						}
 						local, ok := rule.Local.(*vpcv1.SecurityGroupRuleLocal)
 						if ok {
-							if local != nil && reflect.ValueOf(local).IsNil() == false {
-								if local.Address != nil {
-									r[isSgRuleLocal] = local.Address
-								} else if local.CIDRBlock != nil {
-									r[isSgRuleLocal] = local.CIDRBlock
-								}
+							if local != nil && !reflect.ValueOf(local).IsNil() {
+								localList := []map[string]interface{}{}
+								localMap := dataSourceSecurityGroupRuleLocalToMap(local)
+								localList = append(localList, localMap)
+								r["local"] = localList
 							}
 						}
 						rules = append(rules, r)
