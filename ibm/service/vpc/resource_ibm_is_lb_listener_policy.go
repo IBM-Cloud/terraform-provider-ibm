@@ -500,7 +500,7 @@ func lbListenerPolicyCreate(d *schema.ResourceData, meta interface{}, lbID, list
 			target = &urlPrototype
 		} else if actionChk.(string) == "https_redirect" {
 
-			urlPrototype := vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerHTTPSRedirectPrototype{}
+			urlPrototype := vpcv1.LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyHTTPSRedirectPrototype{}
 
 			if listenerSet {
 				listener := listener.(string)
@@ -838,7 +838,7 @@ func lbListenerPolicyUpdate(d *schema.ResourceData, meta interface{}, lbID, list
 			}
 		} else if d.Get(isLBListenerPolicyAction).(string) == "https_redirect" {
 
-			httpsRedirectPatch := vpcv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerHTTPSRedirectPatch{}
+			httpsRedirectPatch := vpcv1.LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyHTTPSRedirectPatch{}
 
 			targetChange := false
 			if d.HasChange(isLBListenerPolicyHTTPSRedirectListener) {
@@ -1121,8 +1121,8 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 					}
 				}
 			} else if *(policy.Action) == "https_redirect" {
-				if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect" {
-					target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect)
+				if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect" {
+					target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect)
 					if ok {
 						d.Set(isLBListenerPolicyHTTPSRedirectListener, target.Listener.ID)
 						d.Set(isLBListenerPolicyHTTPSRedirectStatusCode, target.HTTPStatusCode)
@@ -1180,8 +1180,8 @@ func resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetToMap(model vp
 		return resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerPoolReferenceToMap(model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerPoolReference))
 	} else if _, ok := model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL); ok {
 		return resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURLToMap(model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL))
-	} else if _, ok := model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect); ok {
-		return resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirectToMap(model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect))
+	} else if _, ok := model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect); ok {
+		return resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirectToMap(model.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect))
 	} else if _, ok := model.(*vpcv1.LoadBalancerListenerPolicyTarget); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*vpcv1.LoadBalancerListenerPolicyTarget)
@@ -1271,7 +1271,7 @@ func resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerLi
 	return modelMap, nil
 }
 
-func resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirectToMap(model *vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect) (map[string]interface{}, error) {
+func resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirectToMap(model *vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["http_status_code"] = flex.IntValue(model.HTTPStatusCode)
 	listenerMap, err := resourceIBMIsLbListenerPolicyLoadBalancerListenerReferenceToMap(model.Listener)
