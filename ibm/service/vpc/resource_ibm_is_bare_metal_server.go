@@ -65,6 +65,7 @@ const (
 	isBareMetalServerStatusReasonsMoreInfo               = "more_info"
 	isBareMetalServerDeleteType                          = "delete_type"
 	isBareMetalServerImage                               = "image"
+	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmwate_update_type_available"
 	isBareMetalServerKeys                                = "keys"
 	isBareMetalServerUserData                            = "user_data"
 	isBareMetalServerNicName                             = "name"
@@ -216,6 +217,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this bare metal server",
+			},
+			isBareMetalServerFirmwareUpdateTypeAvailable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of firmware update available",
 			},
 			isBareMetalServerDisks: {
 				Type:        schema.TypeList,
@@ -1929,6 +1935,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	d.Set(isBareMetalServerCPU, cpuList)
 	d.Set(isBareMetalServerCRN, *bms.CRN)
+	d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update)
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
