@@ -41,6 +41,6 @@ In addition to all argument reference list, you can access the following attribu
 - `keys` - (List) List of all the SSH keys.
 
   Nested scheme for `keys`:
-  - `name` - (String) User defined name for the SSH key
   - `creation_date` - (String) Date of SSH Key creation. 
+  - `name` - (String) User defined name for the SSH key.
   - `ssh_key` - (String) SSH RSA key.
