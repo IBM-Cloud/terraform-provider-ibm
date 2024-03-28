@@ -52,6 +52,13 @@ func DataSourceIBMISImages() *schema.Resource {
 				Optional:    true,
 				Description: "Whether the image is publicly visible or private to the account",
 			},
+			isImageUserDataFormat: {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Optional:    true,
+				Description: "Filters the collection to images with a user_data_format property matching one of the specified comma-separated values.",
+			},
 
 			isImages: {
 				Type:        schema.TypeList,
@@ -345,6 +352,17 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	}
 	if visibility != "" {
 		listImagesOptions.SetVisibility(visibility)
+	}
+
+	if userDataFormat, ok := d.GetOk(isImageUserDataFormat); ok {
+		userDataFormats := userDataFormat.(*schema.Set)
+		if userDataFormats.Len() != 0 {
+			userDataFormatsArray := make([]string, userDataFormats.Len())
+			for i, key := range userDataFormats.List() {
+				userDataFormatsArray[i] = key.(string)
+			}
+			listImagesOptions.SetUserDataFormat(userDataFormatsArray)
+		}
 	}
 
 	for {
