@@ -5,6 +5,7 @@ package contextbasedrestrictions_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -157,6 +158,7 @@ func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string, ac
 }
 
 func testAccCheckIBMCbrRuleConfigUpdate(description string, enforcementMode string, accountID string) string {
+	os.Setenv("IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", "https://testing-2-eu-gb.network-policy.test.cloud.ibm.com")
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Data Source Config Basic"

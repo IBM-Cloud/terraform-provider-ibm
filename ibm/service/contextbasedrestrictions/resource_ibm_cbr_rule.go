@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,6 +20,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 )
 
+const (
+	cbrRuleReadPending  = "pending"
+	cbrRuleReadComplete = "finished"
+	cbrRuleReadError    = "error"
+)
+
 func ResourceIBMCbrRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCbrRuleCreate,
@@ -25,6 +33,12 @@ func ResourceIBMCbrRule() *schema.Resource {
 		UpdateContext: resourceIBMCbrRuleUpdate,
 		DeleteContext: resourceIBMCbrRuleDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"description": &schema.Schema{
@@ -247,7 +261,6 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	createRuleOptions := &contextbasedrestrictionsv1.CreateRuleOptions{}
 
 	if _, ok := d.GetOk("description"); ok {
@@ -305,6 +318,30 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIBMCbrRuleRead(context, d, meta)
 }
 
+func waitForCbrRuleRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{cbrRuleReadPending},
+		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
+		Refresh: func() (interface{}, string, error) {
+			log.Printf("[DEBUG] Retrying cbr rule (%s) read", id)
+			getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
+			getRuleOptions.SetRuleID(id)
+			_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
+			if err != nil && response.StatusCode == 404 {
+				return response, cbrRuleReadPending, nil
+			} else if err != nil {
+				return response, cbrRuleReadError, err
+			} else {
+				return response, cbrRuleReadComplete, nil
+			}
+		},
+		Timeout:    timeout,
+		Delay:      20 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(context)
+}
+
 func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	contextBasedRestrictionsClient, err := meta.(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
@@ -312,17 +349,23 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
-
 	getRuleOptions.SetRuleID(d.Id())
 
 	rule, response, err := contextBasedRestrictionsClient.GetRuleWithContext(context, getRuleOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+			log.Printf("[INFO] Read cbr rule response status code: 404, provider will try again. %s", err)
+			_, err := waitForCbrRuleRead(contextBasedRestrictionsClient, context, d.Id(), d.Timeout(schema.TimeoutRead))
+			if err != nil {
+				log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
+				d.SetId("")
+				return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
+			}
+			rule, _, _ = contextBasedRestrictionsClient.GetRuleWithContext(context, getRuleOptions)
+		} else {
+			log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
 		}
-		log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("x_correlation_id", getRuleOptions.XCorrelationID); err != nil {

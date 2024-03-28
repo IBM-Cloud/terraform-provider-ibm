@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,6 +20,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 )
 
+const (
+	cbrZoneReadPending  = "pending"
+	cbrZoneReadComplete = "finished"
+	cbrZoneReadError    = "error"
+)
+
 func ResourceIBMCbrZone() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCbrZoneCreate,
@@ -25,6 +33,12 @@ func ResourceIBMCbrZone() *schema.Resource {
 		UpdateContext: resourceIBMCbrZoneUpdate,
 		DeleteContext: resourceIBMCbrZoneDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -291,6 +305,30 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIBMCbrZoneRead(context, d, meta)
 }
 
+func waitForCbrZoneRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{cbrRuleReadPending},
+		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
+		Refresh: func() (interface{}, string, error) {
+			log.Printf("[INFO] Retrying cbr rule (%s) read", id)
+			getZoneOptions := &contextbasedrestrictionsv1.GetZoneOptions{}
+			getZoneOptions.SetZoneID(id)
+			_, response, err := cbrClient.GetZoneWithContext(context, getZoneOptions)
+			if err != nil && response.StatusCode == 404 {
+				return response, cbrZoneReadPending, nil
+			} else if err != nil {
+				return response, cbrZoneReadError, err
+			} else {
+				return response, cbrZoneReadComplete, nil
+			}
+		},
+		Timeout:    timeout,
+		Delay:      20 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(context)
+}
+
 func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	contextBasedRestrictionsClient, err := meta.(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
@@ -298,17 +336,23 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	getZoneOptions := &contextbasedrestrictionsv1.GetZoneOptions{}
-
 	getZoneOptions.SetZoneID(d.Id())
 
 	zone, response, err := contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+			log.Printf("[INFO] Read cbr zone response status code: 404, provider will try again. %s", err)
+			_, err := waitForCbrZoneRead(contextBasedRestrictionsClient, context, d.Id(), d.Timeout(schema.TimeoutRead))
+			if err != nil {
+				log.Printf("[DEBUG] GetZoneWithContext failed %s\n%s", err, response)
+				d.SetId("")
+				return diag.FromErr(fmt.Errorf("GetZoneWithContext failed %s\n%s", err, response))
+			}
+			zone, _, _ = contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
+		} else {
+			log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
 		}
-		log.Printf("[DEBUG] GetZoneWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetZoneWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("x_correlation_id", getZoneOptions.XCorrelationID); err != nil {
