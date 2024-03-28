@@ -44,7 +44,7 @@ Review the argument reference that you can specify to create a new account in an
 - `traits` - (Optional, set) The traits object can be used to set properties on child accounts of an enterprise. 
 By default MFA will be enabled on a child account. To opt out, pass the traits object with the mfa field set to empty string `traits {mfa = "NONE"}` mfa is an optional property.
 The Enterprise IAM settings property will be turned off for a newly created child account by default. You can enable this property by passing 'true' in this boolean field `traits { enterprise_iam_managed = true }` enterprise_iam_managed an optional property.
-- `options` - (Optional, map) The options object can be used to set properties on child accounts of an enterprise. You can pass a field to to create IAM service id with IAM api key when creating a child account in the enterprise."
+- `options` - (Optional, set) The options object can be used to set properties on child accounts of an enterprise. You can pass a field to to create IAM service id with IAM api key when creating a child account in the enterprise."
 The create_iam_service_id_with_apikey_and_owner_policies property will be turned off for a newly created child account by default. You can enable this property by passing 'true' in this boolean field `options = { create_iam_service_id_with_apikey_and_owner_policies = true }` create_iam_service_id_with_apikey_and_owner_policies is an optional property.
 
 Review the argument reference that you can specify to import a new account in an enterprise resource. 

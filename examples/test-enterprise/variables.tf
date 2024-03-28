@@ -66,7 +66,7 @@ variable "enterprise_account_traits" {
 
 variable "enterprise_account_options" {
   description = "The options object can be used to set properties on child accounts of an enterprise. You can pass a field to to create IAM service id with IAM api key when creating a child account in the enterprise."
-  type        = map()
+  type        = set()
   default     = { create_iam_service_id_with_apikey_and_owner_policies : false }
 }
 

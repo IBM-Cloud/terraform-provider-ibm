@@ -165,7 +165,7 @@ func testAccCheckForOptionsFieldIbmEnterpriseAccountConfigBasic(name string) str
 			parent = data.ibm_enterprises.enterprises_instance.enterprises[0].crn
 			name = "%s"
 			owner_iam_id = data.ibm_enterprises.enterprises_instance.enterprises[0].primary_contact_iam_id
-			options = {
+			options {
 				create_iam_service_id_with_apikey_and_owner_policies =  true
 			}
 		}
