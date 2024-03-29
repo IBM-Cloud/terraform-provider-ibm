@@ -36,6 +36,13 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				Description:      "Key protect or hpcs instance GUID or CRN",
 				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+				Description:  "public or private",
+			},
 			"dual_auth_delete": {
 				Type:         schema.TypeList,
 				Optional:     true,
