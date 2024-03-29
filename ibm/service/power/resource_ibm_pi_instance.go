@@ -77,12 +77,12 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Maximum memory size",
 			},
 			helpers.PIInstanceVolumeIds: {
-				Type:        schema.TypeSet,
-				ForceNew:    true,
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "List of PI volumes",
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              schema.HashString,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "List of PI volumes",
 			},
 			helpers.PIInstanceUserData: {
 				Type:        schema.TypeString,
@@ -147,10 +147,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
 			},
 			PIInstanceNetwork: {
-				Type:        schema.TypeSet,
-				ForceNew:    true,
-				Required:    true,
-				Description: "List of one or more networks to attach to the instance",
+				Type:             schema.TypeSet,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Required:         true,
+				Description:      "List of one or more networks to attach to the instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip_address": {
@@ -183,7 +183,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
