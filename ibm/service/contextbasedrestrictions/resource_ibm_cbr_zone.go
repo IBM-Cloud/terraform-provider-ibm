@@ -305,6 +305,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIBMCbrZoneRead(context, d, meta)
 }
 
+// waitForCbrZoneRead will leverage use retry.StateChangeConf due to the service's eventual consistency
 func waitForCbrZoneRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{cbrRuleReadPending},
@@ -341,6 +342,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 	zone, response, err := contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
+			//  Manual change. leverage retry for the read due to eventual consistency of the service.
 			log.Printf("[INFO] Read cbr zone response status code: 404, provider will try again. %s", err)
 			_, err := waitForCbrZoneRead(contextBasedRestrictionsClient, context, d.Id(), d.Timeout(schema.TimeoutRead))
 			if err != nil {
@@ -348,7 +350,9 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 				d.SetId("")
 				return diag.FromErr(fmt.Errorf("GetZoneWithContext failed %s\n%s", err, response))
 			}
+			// Read the zone again because there are no errors
 			zone, _, _ = contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
+			// end Manual Change
 		} else {
 			log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))

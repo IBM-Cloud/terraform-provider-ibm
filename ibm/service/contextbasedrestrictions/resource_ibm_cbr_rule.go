@@ -318,12 +318,13 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	return resourceIBMCbrRuleRead(context, d, meta)
 }
 
+// waitForCbrRuleRead will leverage use retry.StateChangeConf due to the service's eventual consistency
 func waitForCbrRuleRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{cbrRuleReadPending},
 		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
 		Refresh: func() (interface{}, string, error) {
-			log.Printf("[DEBUG] Retrying cbr rule (%s) read", id)
+			log.Printf("[DEBUG] Read cbr rule (%s) read", id)
 			getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
 			getRuleOptions.SetRuleID(id)
 			_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
@@ -353,6 +354,7 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 
 	rule, response, err := contextBasedRestrictionsClient.GetRuleWithContext(context, getRuleOptions)
 	if err != nil {
+		//  Manual change. leverage retry for the read due to eventual consistency of the service.
 		if response != nil && response.StatusCode == 404 {
 			log.Printf("[INFO] Read cbr rule response status code: 404, provider will try again. %s", err)
 			_, err := waitForCbrRuleRead(contextBasedRestrictionsClient, context, d.Id(), d.Timeout(schema.TimeoutRead))
@@ -361,7 +363,9 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 				d.SetId("")
 				return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
 			}
+			// Read the rule again because there are no errors
 			rule, _, _ = contextBasedRestrictionsClient.GetRuleWithContext(context, getRuleOptions)
+			// end Manual Change
 		} else {
 			log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
