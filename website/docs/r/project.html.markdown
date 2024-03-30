@@ -32,7 +32,7 @@ You can specify the following arguments for this resource.
 * `definition` - (Required, List) The definition of the project.
 Nested schema for **definition**:
 	* `description` - (Required, String) A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.
-	  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+	  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `destroy_on_delete` - (Required, Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.
 	* `monitoring_enabled` - (Optional, Boolean) A boolean flag to enable automatic drift detection. Use this field to run a daily check to compare your configurations to your deployed resources to detect any difference.
 	  * Constraints: The default value is `false`.
@@ -68,7 +68,7 @@ Nested schema for **configs**:
 	* `definition` - (List) The description of a project configuration.
 	Nested schema for **definition**:
 		* `description` - (String) A project configuration description.
-		  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+		  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 		* `locator_id` - (Forces new resource, String) A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).
 		  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
 		* `name` - (String) The configuration name. It's unique within the account across projects and regions.
@@ -130,7 +130,7 @@ Nested schema for **environments**:
 	* `definition` - (List) The environment definition that is used in the project collection.
 	Nested schema for **definition**:
 		* `description` - (String) The description of the environment.
-		  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+		  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 		* `name` - (String) The name of the environment. It's unique within the account across projects and regions.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"<>{}\\x00-\\x1F]+$/`.
 	* `href` - (String) A URL.

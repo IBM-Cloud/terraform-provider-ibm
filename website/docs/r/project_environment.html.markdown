@@ -53,7 +53,7 @@ Nested schema for **definition**:
 		* `profile_name` - (Optional, String) The name of the compliance profile.
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 	* `description` - (Required, String) The description of the environment.
-	  * Constraints: The default value is ``. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+	  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `inputs` - (Optional, Map) The input variables that are used for configuration definition and environment.
 	* `name` - (Required, String) The name of the environment. It's unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"<>{}\\x00-\\x1F]+$/`.
