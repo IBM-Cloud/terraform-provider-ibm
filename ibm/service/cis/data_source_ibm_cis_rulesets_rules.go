@@ -13,11 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	CISRulesets = "rulesets"
-)
-
-func DataSourceIBMCISRulesets() *schema.Resource {
+func DataSourceIBMCISRulesetsRules() *schema.Resource {
 	return &schema.Resource{
 		Read: dataIBMCISRulesetsRead,
 		Schema: map[string]*schema.Schema{
@@ -26,7 +22,7 @@ func DataSourceIBMCISRulesets() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets",
+					"ibm_cis_rulesets_rules",
 					"cis_id"),
 			},
 			CISRulesets: {
@@ -37,7 +33,7 @@ func DataSourceIBMCISRulesets() *schema.Resource {
 		},
 	}
 }
-func DataSourceIBMCISRulesetsValidator() *validate.ResourceValidator {
+func DataSourceIBMCISRulesetsRulesValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -50,12 +46,12 @@ func DataSourceIBMCISRulesetsValidator() *validate.ResourceValidator {
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 
-	iBMCISRulesetsValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets",
+	iBMCISRulesetsRulesValidator := validate.ResourceValidator{
+		ResourceName: "ibm_cis_rulesets_rules",
 		Schema:       validateSchema}
-	return &iBMCISRulesetsValidator
+	return &iBMCISRulesetsRulesValidator
 }
-func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return err
@@ -66,7 +62,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 	opt := sess.NewGetAccountRulesetsOptions()
 	_, resp, err := sess.GetAccountRulesets(opt)
 	if err != nil {
-		log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+		log.Printf("[WARN] List all account rulesets rules failed: %v\n", resp)
 		return err
 	}
 
@@ -75,6 +71,6 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 
 	return nil
 }
-func dataSourceCISRulesetsCheckID(d *schema.ResourceData) string {
+func dataSourceCISRulesetsRulesCheckID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
