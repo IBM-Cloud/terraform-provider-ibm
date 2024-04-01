@@ -853,13 +853,15 @@ func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	cloudInstanceID := idArr[0]
+	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	for _, instanceID := range idArr[1:] {
-		client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 		err = client.Delete(instanceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
 
+	for _, instanceID := range idArr[1:] {
 		_, err = isWaitForPIInstanceDeleted(ctx, client, instanceID)
 		if err != nil {
 			return diag.FromErr(err)
