@@ -249,7 +249,7 @@ type ClientSession interface {
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error) //to be updated
-	CisRuleSetsSession() (*cisalertsv1.RulesetsV1, error)
+	CisRulesetsSession() (*cisalertsv1.RulesetsV1, error)
 	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
