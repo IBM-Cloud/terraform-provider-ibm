@@ -619,7 +619,7 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 			diag.FromErr(err)
 		}
 		defPool = lbpool
-		loadBalancerListenerPatchModel.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
+		loadBalancerListenerPatchModel.DefaultPool = &vpcv1.LoadBalancerListenerDefaultPoolPatch{
 			ID: &defPool,
 		}
 		hasChanged = true

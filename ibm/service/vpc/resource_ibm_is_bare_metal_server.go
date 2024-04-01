@@ -794,6 +794,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			"network_attachments": &schema.Schema{
 				Type:          schema.TypeList,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"primary_network_interface", "network_interfaces"},
 				Description:   "The network attachments for this bare metal server, including the primary network attachment.",
 				Elem: &schema.Resource{
