@@ -101,6 +101,7 @@ Review the argument references that you can specify for your resource.
 
 - `direction` - (Required, String) The direction of the traffic either `inbound` or `outbound`.
 - `group` - (Required, Forces new resource, String) The security group ID.
+- `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
 - `ip_version` - (Optional, String) The IP version either `IPv4` or `IPv6`. Default `IPv4`.
 - `icmp` - (Optional, List) A nested block describes the `icmp` protocol of this security group rule.
 
