@@ -194,7 +194,7 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 				status = "enabled"
 			}
 		}
-
+		
 		resource "ibm_scc_profile" "scc_profile_instance" {
 			instance_id = resource.ibm_scc_control_library.scc_control_library_instance.instance_id
 			profile_name = "%s"
@@ -207,11 +207,11 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			}
 			default_parameters {
 				assessment_type = "automated"
-				assessment_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_specifications[0].assessments[0].assessment_id
+				assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
 				parameter_name = "session_invalidation_in_seconds"
 				parameter_type = "numeric"
 				parameter_default_value = "9"
-				parameter_display_name = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_specifications[0].assessments[0].parameters[0].parameter_display_name
+				parameter_display_name = "Sign out due to inactivity in seconds"
 			}
 		}
 
