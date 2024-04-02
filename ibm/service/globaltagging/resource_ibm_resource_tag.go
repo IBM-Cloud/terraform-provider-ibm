@@ -44,6 +44,10 @@ func ResourceIBMResourceTag() *schema.Resource {
 			},
 		),
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+		},
+
 		Schema: map[string]*schema.Schema{
 			resourceID: {
 				Type:         schema.TypeString,
@@ -187,7 +191,7 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error attaching resource tags : %v\n%s", resp, err)
 		}
-		response, errored := flex.WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
+		response, errored := flex.WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, d.Timeout(schema.TimeoutCreate))
 		if errored != nil {
 			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
 %v`, resourceID, errored, response)
