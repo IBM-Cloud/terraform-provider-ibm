@@ -179,13 +179,14 @@ func TestAccIBMContainerVpcClusterSecurityGroups(t *testing.T) {
 	})
 }
 
-func testAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T) {
+func TestAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	var conf *v2.ClusterInfo
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name),
@@ -193,14 +194,9 @@ func testAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T)
 					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "disable_outbound_traffic_protection", "true"),
 				),
-			},
-			{
-				ResourceName:      "ibm_container_vpc_cluster.cluster",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
 			},
 		},
 	})
@@ -331,9 +327,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
 
 func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name string) string {
 	return fmt.Sprintf(`
-provider "ibm" {
-	region ="eu-de"
-}
 data "ibm_resource_group" "resource_group" {
 	is_default = "true"
 	//name = "Default"
@@ -344,14 +337,14 @@ resource "ibm_is_vpc" "vpc" {
 resource "ibm_is_subnet" "subnet" {
 	name                     = "%[1]s"
 	vpc                      = ibm_is_vpc.vpc.id
-	zone                     = "eu-de-1"
+	zone                     = "us-south-1"
 	total_ipv4_address_count = 256
 }
 resource "ibm_resource_instance" "kms_instance" {
 	name              = "%[1]s"
 	service           = "kms"
 	plan              = "tiered-pricing"
-	location          = "eu-de"
+	location          = "us-south"
 }
 
 resource "ibm_kms_key" "test" {
@@ -368,8 +361,8 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	wait_till         = "OneWorkerNodeReady"
 	resource_group_id = data.ibm_resource_group.resource_group.id
 	zones {
-		 subnet_id = ibm_is_subnet.subnet.id
-		 name      = "eu-de-1"
+			subnet_id = ibm_is_subnet.subnet.id
+			name      = "us-south-1"
 	}
 	kms_config {
 		instance_id = ibm_resource_instance.kms_instance.guid
@@ -382,7 +375,8 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	"test2" = "test-default-pool2"
 	}
 	disable_outbound_traffic_protection = true
-  }`, name)
+
+}`, name)
 }
 
 // preveously you have to create securitygroups and use them instead
