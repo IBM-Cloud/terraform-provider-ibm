@@ -121,16 +121,20 @@ func osList(d *schema.ResourceData, meta interface{}) error {
 	osInfo := make([]map[string]interface{}, 0)
 	for _, os := range allrecs {
 		l := map[string]interface{}{
-			isOperatingSystemName:                   *os.Name,
-			isOperatingSystemArchitecture:           *os.Architecture,
-			isOperatingSystemDHOnly:                 *os.DedicatedHostOnly,
-			isOperatingSystemFamily:                 *os.Family,
-			isOperatingSystemHref:                   *os.Href,
-			isOperatingSystemDisplayName:            *os.DisplayName,
-			isOperatingSystemVendor:                 *os.Vendor,
-			isOperatingSystemVersion:                *os.Version,
-			isOperatingSystemAllowUserImageCreation: *os.AllowUserImageCreation,
-			isOperatingSystemUserDataFormat:         *os.UserDataFormat,
+			isOperatingSystemName:         *os.Name,
+			isOperatingSystemArchitecture: *os.Architecture,
+			isOperatingSystemDHOnly:       *os.DedicatedHostOnly,
+			isOperatingSystemFamily:       *os.Family,
+			isOperatingSystemHref:         *os.Href,
+			isOperatingSystemDisplayName:  *os.DisplayName,
+			isOperatingSystemVendor:       *os.Vendor,
+			isOperatingSystemVersion:      *os.Version,
+		}
+		if os.AllowUserImageCreation != nil {
+			l[isOperatingSystemAllowUserImageCreation] = *os.AllowUserImageCreation
+		}
+		if os.UserDataFormat != nil {
+			l[isOperatingSystemUserDataFormat] = *os.UserDataFormat
 		}
 		osInfo = append(osInfo, l)
 	}

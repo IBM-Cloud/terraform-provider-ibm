@@ -404,14 +404,16 @@ func imageList(d *schema.ResourceData, meta interface{}) error {
 	for _, image := range allrecs {
 
 		l := map[string]interface{}{
-			"name":             *image.Name,
-			"id":               *image.ID,
-			"status":           *image.Status,
-			"crn":              *image.CRN,
-			"visibility":       *image.Visibility,
-			"os":               *image.OperatingSystem.Name,
-			"architecture":     *image.OperatingSystem.Architecture,
-			"user_data_format": *image.UserDataFormat,
+			"name":         *image.Name,
+			"id":           *image.ID,
+			"status":       *image.Status,
+			"crn":          *image.CRN,
+			"visibility":   *image.Visibility,
+			"os":           *image.OperatingSystem.Name,
+			"architecture": *image.OperatingSystem.Architecture,
+		}
+		if image.UserDataFormat != nil {
+			l["user_data_format"] = *image.UserDataFormat
 		}
 		if len(image.StatusReasons) > 0 {
 			l["status_reasons"] = dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)

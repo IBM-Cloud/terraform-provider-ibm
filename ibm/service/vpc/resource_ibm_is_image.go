@@ -739,7 +739,9 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isImageHref, *image.Href)
 	d.Set(isImageStatus, *image.Status)
 	d.Set(isImageVisibility, *image.Visibility)
-	d.Set(isImageUserDataFormat, *image.UserDataFormat)
+	if image.UserDataFormat != nil {
+		d.Set(isImageUserDataFormat, *image.UserDataFormat)
+	}
 	if image.Encryption != nil {
 		d.Set(isImageEncryption, *image.Encryption)
 	}

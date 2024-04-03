@@ -115,7 +115,9 @@ func osGet(d *schema.ResourceData, meta interface{}, name string) error {
 	d.Set(isOperatingSystemHref, *os.Href)
 	d.Set(isOperatingSystemVendor, *os.Vendor)
 	d.Set(isOperatingSystemVersion, *os.Version)
-	d.Set(isOperatingSystemAllowUserImageCreation, *os.AllowUserImageCreation)
+	if os.AllowUserImageCreation != nil {
+		d.Set(isOperatingSystemAllowUserImageCreation, *os.AllowUserImageCreation)
+	}
 	d.Set(isOperatingSystemUserDataFormat, *os.UserDataFormat)
 	return nil
 }
