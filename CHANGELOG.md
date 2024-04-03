@@ -1,3 +1,51 @@
+# 1.64.0 (Apr 03, 2024)
+Features
+* Support for Privileged Access Gateway
+    - **Datasources**
+        - ibm_pag_instance      
+    - **Resources**
+        - ibm_pag_instance
+* Support for Resource Access Tag     
+    - **Resources**
+        - ibm_resource_access_tag
+* Support for SCC
+    - **Datasources**
+        - ibm_scc_control_libraries
+        - ibm_scc_profiles
+        - ibm_scc_provider_types
+        
+Enhancements
+* Direct Link: Dedicated VLAN Mapping ([4900](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4900))
+* Add filter attributes in sm_secrets ([5193](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5193))
+* Add server_name to instance and instances data source ([5184](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5184))
+* Adding expiration_date field to IAM and Service Credentials ([5195](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5195))
+* support replace argument for resource tags ([5192](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5192))
+* Added computed to network_attachments for is_bare_metal_server ([5215](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5215))
+* fix(CatalogManagement): Bump Go SDK to v0.61.2, remove catalog syndication ([5219](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5219))
+* GO RC SDK v2 migration ([5214](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5214))
+* added support for health reasons and health state in vpc dns bindings ([5222](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5222))
+* adding datasources for automated WP connection and Profile attachments ([5179](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5179))
+* Adding attribute registrations for resource instance key and attribute endpoint_type for key policies ([5221](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5221))
+* Deprecate Power VPN ([5226](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5226))
+* add wait logic for tags async ([5174](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5174))
+* Minimum validation for multitenant formations ([5199](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5199))
+* Feature is sg rule local ip ([5244](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5244))
+* Added support for options field in child enterprise account ([5243](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5243)) 
+* fix(flex): add Stringify function and tests ([5240](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5240)) 
+* add utility function for unit testing ([5225](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5225)) 
+* DiffSuppressFunc for ICD service_endpoints argument ([5218](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5218)) 
+* Extended wait logic to ibm_resource_tag ([5251](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5251))
+* Add support to the --disable-outbound-traffic-protection VPC cluster create flag ([5247](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5247))
+
+
+BugFixes
+* x_auth_token is not marked as sensitive and thus leaks in logs ([5181](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5181))
+* Added a empty string check on ips for endpoint gateway resource ([5201](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5201))
+* Update terraform docs for drift and formatting ([5194](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5194))
+* Update code engine documentation ([5213](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5213))
+* Update docs for SC secret ([5241](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5241))
+* Change network type from list to set in resource instance ([5253](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5253))
+
 # 1.64.0-beta0 (Mar 25, 2024)
 Features
 * Support for Privileged Access Gateway
