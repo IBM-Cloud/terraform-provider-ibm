@@ -172,7 +172,7 @@ func ResourceIBMCISInstanceCreate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return err
 	}
-	serviceName := "internet-svcs-ci"
+	serviceName := "internet-svcs"
 	plan := d.Get("plan").(string)
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
