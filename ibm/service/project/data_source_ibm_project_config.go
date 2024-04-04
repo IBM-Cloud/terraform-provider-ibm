@@ -5,6 +5,7 @@ package project
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -117,6 +118,12 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Description: "A short explanation of the output value.",
 						},
 						"value": &schema.Schema{
+							Type:        schema.TypeMap,
+							Deprecated:  "This property will be deprecated, the new property will be of type String.",
+							Computed:    true,
+							Description: "This property can be any value - a string, number, boolean, array, or object.",
+						},
+						"value_json": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "This property can be any value - a string, number, boolean, array, or object.",
@@ -730,7 +737,15 @@ func dataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (m
 		modelMap["description"] = model.Description
 	}
 	if model.Value != nil {
-		modelMap["value"] = stringify(model.Value)
+		modelMap["value_json"] = stringify(model.Value)
+		jsonStr, err := json.Marshal(model.Value)
+		if err != nil {
+			b := []byte(jsonStr)
+			var f interface{}
+			json.Unmarshal(b, &f)
+			valueMap := f.(map[string]interface{})
+			modelMap["value"] = valueMap
+		}
 	}
 	return modelMap, nil
 }
