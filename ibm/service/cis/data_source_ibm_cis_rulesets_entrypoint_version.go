@@ -13,22 +13,51 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	CISRulesetsEntryPointOutput = "rulesets"
+	CISRulesetPhase             = "ruleset_phase"
+	CISRulesetsPhaseListAll     = "list_all"
+	CISRulesetVersion           = "ruleset_version"
+)
+
 func DataSourceIBMCISRulesetsEntrypointVersions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISRulesetsRead,
+		Read: dataIBMCISRulesetsEntrypointVersionsRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_entrypoint_versions",
+					"ibm_cis_rulesets_versions",
 					"cis_id"),
 			},
-			CISRulesets: {
+			CISRulesetsId: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Id",
+			},
+			CISRulesetPhase: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Ruleset phase",
+			},
+			CISRulesetsPhaseListAll: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Ruleset phase",
+				Default:     false,
+			},
+			CISRulesetsEntryPointOutput: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
+				Elem:        CISResponseObject,
+			},
+			CISRulesetVersion: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Ruleset phase",
 			},
 		},
 	}
@@ -59,15 +88,247 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
 
-	opt := sess.NewGetAccountRulesetsOptions()
-	_, resp, err := sess.GetAccountRulesets(opt)
-	if err != nil {
-		log.Printf("[WARN] List all account rulesets entrypoint Versions failed: %v\n", resp)
-		return err
-	}
+	zoneId := d.Get(cisDomainID).(string)
+	ruleset_phase := d.Get(CISRulesetPhase).(string)
+	ruleset_version := d.Get(CISRulesetVersion).(string)
+	list_all := d.Get(CISRulesetsPhaseListAll).(bool)
 
-	d.SetId(dataSourceCISRulesetsCheckID(d))
-	d.Set(cisID, crn)
+	if list_all == true {
+		opt := sess.NewGetZoneEntryPointRulesetVersionsOptions(ruleset_phase)
+		result, resp, err := sess.GetZoneEntryPointRulesetVersions(opt)
+		if err != nil {
+			log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+			return err
+		}
+
+		rulesetList := make([]map[string]interface{}, 0)
+		for _, rulesetObj := range result.Result {
+			rulesetOutput := map[string]interface{}{}
+			rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+			rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+			rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+			rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+			rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+			rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+		}
+
+		d.SetId(dataSourceCISRulesetsCheckID(d))
+		d.Set(CISRulesetsOutput, rulesetList)
+		d.Set(cisID, crn)
+
+	} else {
+
+		if zoneId != "" {
+			sess.ZoneIdentifier = core.StringPtr(zoneId)
+
+			if ruleset_version != "" {
+				opt := sess.NewGetZoneEntryPointRulesetVersionOptions(ruleset_phase, ruleset_version)
+				result, resp, err := sess.GetZoneEntryPointRulesetVersion(opt)
+				if err != nil {
+					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					return err
+				}
+				rulesetObj := result.Result
+
+				rulesetOutput := map[string]interface{}{}
+				rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+				rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+				rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+				ruleDetailsList := make([]map[string]interface{}, 0)
+				for _, ruleDetailsObj := range rulesetObj.Rules {
+					ruleDetails := map[string]interface{}{}
+					ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
+					ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
+					ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
+					ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
+					ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
+					ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
+
+					ruleDetailsLoggingObj := map[string]interface{}{}
+					ruleDetailsLogging := *&ruleDetailsObj.Logging
+					ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
+					ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
+
+					ruleDetailsActionParametersObj := map[string]interface{}{}
+					ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
+					ruleDetailsActionParametersResponseObj := map[string]interface{}{}
+					ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
+					ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+
+					ruleDetailsList = append(ruleDetailsList, ruleDetails)
+				}
+
+				rulesetOutput[CISRulesetsRules] = ruleDetailsList
+
+				d.SetId(dataSourceCISRulesetsCheckID(d))
+				d.Set(CISRulesetsOutput, rulesetOutput)
+				d.Set(cisID, crn)
+
+			} else {
+				opt := sess.NewGetZoneEntrypointRulesetOptions(ruleset_phase)
+				result, resp, err := sess.GetZoneEntrypointRuleset(opt)
+				if err != nil {
+					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					return err
+				}
+
+				rulesetObj := result.Result
+
+				rulesetOutput := map[string]interface{}{}
+				rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+				rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+				rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+				ruleDetailsList := make([]map[string]interface{}, 0)
+				for _, ruleDetailsObj := range rulesetObj.Rules {
+					ruleDetails := map[string]interface{}{}
+					ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
+					ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
+					ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
+					ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
+					ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
+					ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
+
+					ruleDetailsLoggingObj := map[string]interface{}{}
+					ruleDetailsLogging := *&ruleDetailsObj.Logging
+					ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
+					ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
+
+					ruleDetailsActionParametersObj := map[string]interface{}{}
+					ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
+					ruleDetailsActionParametersResponseObj := map[string]interface{}{}
+					ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
+					ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+
+					ruleDetailsList = append(ruleDetailsList, ruleDetails)
+				}
+
+				rulesetOutput[CISRulesetsRules] = ruleDetailsList
+
+				d.SetId(dataSourceCISRulesetsCheckID(d))
+				d.Set(CISRulesetsOutput, rulesetOutput)
+				d.Set(cisID, crn)
+			}
+
+		} else {
+
+			if ruleset_version != "" {
+				opt := sess.NewGetAccountEntryPointRulesetVersionOptions(ruleset_phase, ruleset_version)
+				result, resp, err := sess.GetAccountEntryPointRulesetVersion(opt)
+				if err != nil {
+					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					return err
+				}
+
+				rulesetObj := result.Result
+
+				rulesetOutput := map[string]interface{}{}
+				rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+				rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+				rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+				ruleDetailsList := make([]map[string]interface{}, 0)
+				for _, ruleDetailsObj := range rulesetObj.Rules {
+					ruleDetails := map[string]interface{}{}
+					ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
+					ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
+					ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
+					ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
+					ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
+					ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
+
+					ruleDetailsLoggingObj := map[string]interface{}{}
+					ruleDetailsLogging := *&ruleDetailsObj.Logging
+					ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
+					ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
+
+					ruleDetailsActionParametersObj := map[string]interface{}{}
+					ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
+					ruleDetailsActionParametersResponseObj := map[string]interface{}{}
+					ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
+					ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+
+					ruleDetailsList = append(ruleDetailsList, ruleDetails)
+				}
+
+				rulesetOutput[CISRulesetsRules] = ruleDetailsList
+
+				d.SetId(dataSourceCISRulesetsCheckID(d))
+				d.Set(CISRulesetsOutput, rulesetOutput)
+				d.Set(cisID, crn)
+
+			} else {
+				opt := sess.NewGetAccountEntrypointRulesetOptions(ruleset_phase)
+				result, resp, err := sess.GetAccountEntrypointRuleset(opt)
+				if err != nil {
+					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					return err
+				}
+
+				rulesetObj := result.Result
+
+				rulesetOutput := map[string]interface{}{}
+				rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+				rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+				rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+				ruleDetailsList := make([]map[string]interface{}, 0)
+				for _, ruleDetailsObj := range rulesetObj.Rules {
+					ruleDetails := map[string]interface{}{}
+					ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
+					ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
+					ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
+					ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
+					ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
+					ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
+
+					ruleDetailsLoggingObj := map[string]interface{}{}
+					ruleDetailsLogging := *&ruleDetailsObj.Logging
+					ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
+					ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
+
+					ruleDetailsActionParametersObj := map[string]interface{}{}
+					ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
+					ruleDetailsActionParametersResponseObj := map[string]interface{}{}
+					ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
+					ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
+					ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+
+					ruleDetailsList = append(ruleDetailsList, ruleDetails)
+				}
+
+				rulesetOutput[CISRulesetsRules] = ruleDetailsList
+
+				d.SetId(dataSourceCISRulesetsCheckID(d))
+				d.Set(CISRulesetsOutput, rulesetOutput)
+				d.Set(cisID, crn)
+			}
+		}
+	}
 
 	return nil
 }

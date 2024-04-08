@@ -47,182 +47,226 @@ const (
 	CISRulesetOverridesRules                           = "rules"
 )
 
-var CISRulesetsRuleElement = &schema.Resource{
+var CISResponseObject = &schema.Resource{
 	Schema: map[string]*schema.Schema{
-		CISRulesetsRuleId: {
+		CISRulesetsDescription: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Id of the Rulesets Rule",
+			Description: "Description of the Rulesets",
 		},
-		CISRulesetsRuleVersion: {
+		CISRulesetsKind: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Version of the Rulesets Rule",
+			Description: "Kind of the Rulesets",
 		},
-		CISRulesetsRuleAction: {
+		CISRulesetsName: {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Action of the Rulesets Rule",
+			Description: "Name of the Rulesets",
 		},
-		CISRulesetsRuleActionParameters: {
-			Type:        schema.TypeSet,
+		CISRulesetsPhase: {
+			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Action parameters of the Rulesets Rule",
+			Description: "Phase of the Rulesets",
+		},
+		CISRulesetsLastUpdatedAt: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Rulesets Last Updated At",
+		},
+		CISRulesetsVersion: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Version of the Rulesets",
+		},
+		CISRulesetsRules: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Rules of the Rulesets",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					CISRulesetsRuleActionParametersResponse: {
-						Type:        schema.TypeSet,
-						Computed:    true,
-						Description: "Action parameters response of the Rulesets Rule",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								CISRulesetsRuleActionParametersResponseContent: {
-									Type:        schema.TypeString,
-									Computed:    true,
-									Description: "Action parameters response content of the Rulesets Rule",
-								},
-								CISRulesetsRuleActionParametersResponseContentType: {
-									Type:        schema.TypeString,
-									Computed:    true,
-									Description: "Action parameters response type of the Rulesets Rule",
-								},
-								CISRulesetsRuleActionParametersResponseStatusCode: {
-									Type:        schema.TypeString,
-									Computed:    true,
-									Description: "Action parameters response status code of the Rulesets Rule",
-								},
-							},
-						},
-					},
 					CISRulesetsRuleId: {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "Id of the Rulesets Rule",
 					},
-					CISRuleset: {
+					CISRulesetsRuleVersion: {
 						Type:        schema.TypeString,
 						Computed:    true,
-						Description: "Ruleset ID of the ruleset to apply action to.",
+						Description: "Version of the Rulesets Rule",
 					},
-					CISRulesetsVersion: {
+					CISRulesetsRuleAction: {
 						Type:        schema.TypeString,
 						Computed:    true,
-						Description: "Version of the Ruleset",
+						Description: "Action of the Rulesets Rule",
 					},
-					CISRulesetList: {
-						Type:        schema.TypeList,
+					CISRulesetsRuleActionParameters: {
+						Type:        schema.TypeSet,
 						Computed:    true,
-						Description: "List of Ruleset IDs of the ruleset to apply action to.",
-						Elem:        schema.TypeString,
-					},
-					CISRulesetOverrides: {
-						Type:        schema.TypeMap,
-						Computed:    true,
-						Description: "Override options",
+						Description: "Action parameters of the Rulesets Rule",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								CISRulesetOverridesAction: {
-									Type:        schema.TypeString,
+								CISRulesetsRuleActionParametersResponse: {
+									Type:        schema.TypeSet,
 									Computed:    true,
-									Description: "Action to perform",
-								},
-								CISRulesetOverridesEnabled: {
-									Type:        schema.TypeBool,
-									Computed:    true,
-									Description: "Enable Disable Rule",
-								},
-								CISRulesetOverridesSensitivityLevel: {
-									Type:        schema.TypeString,
-									Computed:    true,
-									Description: "Sensitivity Level",
-								},
-								CISRulesetOverridesCategories: {
-									Type:        schema.TypeList,
-									Computed:    true,
-									Description: "Categories",
+									Description: "Action parameters response of the Rulesets Rule",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											CISRulesetOverridesCategoriesCategory: {
+											CISRulesetsRuleActionParametersResponseContent: {
 												Type:        schema.TypeString,
 												Computed:    true,
-												Description: "Category",
+												Description: "Action parameters response content of the Rulesets Rule",
 											},
-											CISRulesetOverridesEnabled: {
-												Type:        schema.TypeBool,
-												Computed:    true,
-												Description: "Enable Disable Rule",
-											},
-											CISRulesetOverridesAction: {
+											CISRulesetsRuleActionParametersResponseContentType: {
 												Type:        schema.TypeString,
 												Computed:    true,
-												Description: "Action to perform",
+												Description: "Action parameters response type of the Rulesets Rule",
+											},
+											CISRulesetsRuleActionParametersResponseStatusCode: {
+												Type:        schema.TypeString,
+												Computed:    true,
+												Description: "Action parameters response status code of the Rulesets Rule",
 											},
 										},
 									},
 								},
-								CISRulesetOverridesRules: {
+								CISRulesetsRuleId: {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Id of the Rulesets Rule",
+								},
+								CISRuleset: {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Ruleset ID of the ruleset to apply action to.",
+								},
+								CISRulesetsVersion: {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Version of the Ruleset",
+								},
+								CISRulesetList: {
 									Type:        schema.TypeList,
 									Computed:    true,
-									Description: "Rules",
+									Description: "List of Ruleset IDs of the ruleset to apply action to.",
+									Elem:        schema.TypeString,
+								},
+								CISRulesetOverrides: {
+									Type:        schema.TypeMap,
+									Computed:    true,
+									Description: "Override options",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											CISRulesetsId: {
+											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
 												Computed:    true,
-												Description: "Id",
+												Description: "Action to perform",
 											},
 											CISRulesetOverridesEnabled: {
 												Type:        schema.TypeBool,
 												Computed:    true,
 												Description: "Enable Disable Rule",
-											},
-											CISRulesetOverridesAction: {
-												Type:        schema.TypeString,
-												Computed:    true,
-												Description: "Action to perform",
 											},
 											CISRulesetOverridesSensitivityLevel: {
 												Type:        schema.TypeString,
 												Computed:    true,
 												Description: "Sensitivity Level",
 											},
+											CISRulesetOverridesCategories: {
+												Type:        schema.TypeList,
+												Computed:    true,
+												Description: "Categories",
+												Elem: &schema.Resource{
+													Schema: map[string]*schema.Schema{
+														CISRulesetOverridesCategoriesCategory: {
+															Type:        schema.TypeString,
+															Computed:    true,
+															Description: "Category",
+														},
+														CISRulesetOverridesEnabled: {
+															Type:        schema.TypeBool,
+															Computed:    true,
+															Description: "Enable Disable Rule",
+														},
+														CISRulesetOverridesAction: {
+															Type:        schema.TypeString,
+															Computed:    true,
+															Description: "Action to perform",
+														},
+													},
+												},
+											},
+											CISRulesetOverridesRules: {
+												Type:        schema.TypeList,
+												Computed:    true,
+												Description: "Rules",
+												Elem: &schema.Resource{
+													Schema: map[string]*schema.Schema{
+														CISRulesetsId: {
+															Type:        schema.TypeString,
+															Computed:    true,
+															Description: "Id",
+														},
+														CISRulesetOverridesEnabled: {
+															Type:        schema.TypeBool,
+															Computed:    true,
+															Description: "Enable Disable Rule",
+														},
+														CISRulesetOverridesAction: {
+															Type:        schema.TypeString,
+															Computed:    true,
+															Description: "Action to perform",
+														},
+														CISRulesetOverridesSensitivityLevel: {
+															Type:        schema.TypeString,
+															Computed:    true,
+															Description: "Sensitivity Level",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
 							},
 						},
 					},
-				},
-			},
-		},
-		CISRulesetsRuleExpression: {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Experession of the Rulesets Rule",
-		},
-		CISRulesetsRuleRef: {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Reference of the Rulesets Rule",
-		},
-		CISRulesetsRuleLogging: {
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Description: "Logging of the Rulesets Rule",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					CISRulesetsRuleLoggingEnabled: {
-						Type:        schema.TypeBool,
+					CISRulesetsRuleExpression: {
+						Type:        schema.TypeString,
 						Computed:    true,
-						Description: "Logging Enabled",
+						Description: "Experession of the Rulesets Rule",
+					},
+					CISRulesetsRuleRef: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Reference of the Rulesets Rule",
+					},
+					CISRulesetsRuleLogging: {
+						Type:        schema.TypeSet,
+						Computed:    true,
+						Description: "Logging of the Rulesets Rule",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								CISRulesetsRuleLoggingEnabled: {
+									Type:        schema.TypeBool,
+									Computed:    true,
+									Description: "Logging Enabled",
+								},
+							},
+						},
+					},
+					CISRulesetsRuleLastUpdatedAt: {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Rulesets Rule Last Updated At",
 					},
 				},
 			},
 		},
-		CISRulesetsRuleLastUpdatedAt: {
+		CISRulesetsId: {
 			Type:        schema.TypeString,
+			Description: "Associated Ruleset ID",
 			Computed:    true,
-			Description: "Rulesets Rule Last Updated At",
 		},
 	},
 }
@@ -254,55 +298,12 @@ func DataSourceIBMCISRulesets() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						CISRulesetsDescription: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Description of the Rulesets",
-						},
-						CISRulesetsKind: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Kind of the Rulesets",
-						},
-						CISRulesetsName: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the Rulesets",
-						},
-						CISRulesetsPhase: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Phase of the Rulesets",
-						},
-						CISRulesetsLastUpdatedAt: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Rulesets Last Updated At",
-						},
-						CISRulesetsVersion: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Version of the Rulesets",
-						},
-						CISRulesetsRules: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Rules of the Rulesets",
-							Elem:        CISRulesetsRuleElement,
-						},
-						CISRulesetsId: {
-							Type:        schema.TypeString,
-							Description: "Associated Ruleset ID",
-							Computed:    true,
-						},
-					},
-				},
+				Elem:        CISResponseObject,
 			},
 		},
 	}
 }
+
 func DataSourceIBMCISRulesetsValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)

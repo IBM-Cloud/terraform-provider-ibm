@@ -22,13 +22,30 @@ func DataSourceIBMCISRulesetsRules() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_rules",
+					"ibm_cis_rulesets_versions",
 					"cis_id"),
 			},
-			CISRulesets: {
+			CISRulesetsId: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Id",
+			},
+			CISRulesetPhase: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Ruleset phase",
+			},
+			CISRulesetsPhaseListAll: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Ruleset phase",
+				Default:     false,
+			},
+			CISRulesetsEntryPointOutput: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
+				Elem:        CISResponseObject,
 			},
 		},
 	}
