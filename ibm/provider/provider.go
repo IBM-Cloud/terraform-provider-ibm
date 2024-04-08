@@ -941,6 +941,7 @@ func Provider() *schema.Provider {
 			"ibm_function_rule":                            functions.ResourceIBMFunctionRule(),
 			"ibm_function_trigger":                         functions.ResourceIBMFunctionTrigger(),
 			"ibm_function_namespace":                       functions.ResourceIBMFunctionNamespace(),
+
 			"ibm_cis":                                      cis.ResourceIBMCISInstance(),
 			"ibm_database":                                 database.ResourceIBMDatabaseInstance(),
 			"ibm_cis_domain":                               cis.ResourceIBMCISDomain(),
@@ -974,6 +975,11 @@ func Provider() *schema.Provider {
 			"ibm_cis_certificate_order":                    cis.ResourceIBMCISCertificateOrder(),
 			"ibm_cis_filter":                               cis.ResourceIBMCISFilter(),
 			"ibm_cis_firewall_rule":                        cis.ResourceIBMCISFirewallrules(),
+			"ibm_cis_ruleset":                             cis.ResourceIBMCISRuleset(),
+			"ibm_cis_rulesets_version":                    cis.ResourceIBMCISRulesetsVersion(),
+			"ibm_cis_rulesets_rule":                       cis.ResourceIBMCISRulesetsRule(),
+			"ibm_cis_rulesets_entrypoint_version":         cis.ResourceIBMCISRulesetsEntryPointVersion(),
+
 			"ibm_cloudant":                                 cloudant.ResourceIBMCloudant(),
 			"ibm_cloudant_database":                        cloudant.ResourceIBMCloudantDatabase(),
 			"ibm_cloud_shell_account_settings":             cloudshell.ResourceIBMCloudShellAccountSettings(),
