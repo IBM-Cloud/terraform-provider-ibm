@@ -6,6 +6,7 @@ package power
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 
@@ -52,11 +53,11 @@ func ResourceIBMPIInstanceAction() *schema.Resource {
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"start", "stop", "hard-reboot", "soft-reboot", "immediate-shutdown", "reset-state"}),
 				Description:  "PVM instance action type",
 			},
-			Arg_PVMInstanceHealthStatus: {
+			Arg_HealthStatus: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{PVMInstanceHealthOk, PVMInstanceHealthWarning}),
-				Default:      PVMInstanceHealthOk,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{OK, Warning}),
+				Default:      OK,
 				Description:  "Set the health status of the PVM instance to connect it faster",
 			},
 
@@ -147,17 +148,17 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	id := d.Get(Arg_PVMInstanceId).(string)
 	action := d.Get(Arg_PVMInstanceActionType).(string)
-	targetHealthStatus := d.Get(Arg_PVMInstanceHealthStatus).(string)
+	targetHealthStatus := d.Get(Arg_HealthStatus).(string)
 
 	var targetStatus string
 	if action == "stop" || action == "immediate-shutdown" {
-		targetStatus = "SHUTOFF"
+		targetStatus = State_Shutoff
 	} else if action == "reset-state" {
-		targetStatus = "ACTIVE"
+		targetStatus = State_Active
 		targetHealthStatus = "CRITICAL"
 	} else {
 		// action is "start" or "soft-reboot" or "hard-reboot"
-		targetStatus = "ACTIVE"
+		targetStatus = State_Active
 	}
 
 	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
@@ -170,7 +171,7 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 			return diag.FromErr(err)
 		}
 
-		if *pvm.Status == targetStatus && pvm.Health != nil && (pvm.Health.Status == targetHealthStatus || pvm.Health.Status == PVMInstanceHealthOk) {
+		if strings.ToLower(*pvm.Status) == targetStatus && pvm.Health != nil && (pvm.Health.Status == targetHealthStatus || pvm.Health.Status == OK) {
 			log.Printf("[DEBUG] skipping as action %s not needed on the instance %s", action, id)
 			return nil
 		}
@@ -200,8 +201,8 @@ func isWaitForPIInstanceActionStatus(ctx context.Context, client *st.IBMPIInstan
 	log.Printf("Waiting for the action to be performed on the instance %s", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{StatusPending},
-		Target:     []string{targetStatus, StatusError, ""},
+		Pending:    []string{State_Pending},
+		Target:     []string{targetStatus, State_Error, ""},
 		Refresh:    isPIActionRefreshFunc(client, id, targetStatus, targetHealthStatus),
 		Delay:      30 * time.Second,
 		MinTimeout: 2 * time.Minute,
@@ -219,12 +220,12 @@ func isPIActionRefreshFunc(client *st.IBMPIInstanceClient, id, targetStatus, tar
 			return nil, "", err
 		}
 
-		if *pvm.Status == targetStatus && (pvm.Health.Status == targetHealthStatus || pvm.Health.Status == PVMInstanceHealthOk) {
+		if strings.ToLower(*pvm.Status) == targetStatus && (pvm.Health.Status == targetHealthStatus || pvm.Health.Status == OK) {
 			log.Printf("The health status is now %s", pvm.Health.Status)
 			return pvm, targetStatus, nil
 		}
 
-		if *pvm.Status == "ERROR" {
+		if strings.ToLower(*pvm.Status) == State_Error {
 			if pvm.Fault != nil {
 				err = fmt.Errorf("failed to perform the action on the instance: %s", pvm.Fault.Message)
 			} else {
@@ -233,6 +234,6 @@ func isPIActionRefreshFunc(client *st.IBMPIInstanceClient, id, targetStatus, tar
 			return pvm, *pvm.Status, err
 		}
 
-		return pvm, StatusPending, nil
+		return pvm, State_Pending, nil
 	}
 }

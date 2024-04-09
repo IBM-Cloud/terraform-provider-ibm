@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -79,7 +80,7 @@ func ResourceIBMPIDhcp() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the DHCP Server",
 			},
-			Attr_DhcpLeases: {
+			Attr_Leases: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The list of DHCP Server PVM Instance leases",
@@ -108,7 +109,7 @@ func ResourceIBMPIDhcp() *schema.Resource {
 				Computed:    true,
 				Description: "The name of the DHCP Server private network",
 			},
-			Attr_DhcpStatus: {
+			Attr_Status: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the DHCP Server",
@@ -200,7 +201,7 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 	// set attributes
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *dhcpServer.ID))
 	d.Set(Attr_DhcpID, *dhcpServer.ID)
-	d.Set(Attr_DhcpStatus, *dhcpServer.Status)
+	d.Set(Attr_Status, *dhcpServer.Status)
 
 	if dhcpServer.Network != nil {
 		dhcpNetwork := dhcpServer.Network
@@ -220,7 +221,7 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 				Attr_DhcpLeaseInstanceMac: *lease.InstanceMacAddress,
 			}
 		}
-		d.Set(Attr_DhcpLeases, leaseList)
+		d.Set(Attr_Leases, leaseList)
 	}
 
 	return nil
@@ -274,7 +275,7 @@ func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhc
 				log.Printf("[DEBUG] get DHCP failed %v", err)
 				return nil, "", err
 			}
-			if *dhcpServer.Status != StatusActive {
+			if strings.ToLower(*dhcpServer.Status) != State_Active {
 				return dhcpServer, "building", nil
 			}
 			return dhcpServer, "active", nil
