@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -89,6 +89,12 @@ func ResourceIBMIAMApiKey() *schema.Resource {
 				Computed:    true,
 				Description: "The API key cannot be changed if set to true.",
 			},
+			"entity_disable": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "false",
+				Description: "Indicates if the API key is disabled. False by default.",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -103,6 +109,16 @@ func ResourceIBMIAMApiKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "If set contains a date time string of the last modification date in ISO format.",
+			},
+			"support_sessions": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Defines if the API key supports sessions. Sessions are only supported for user apikeys.",
+			},
+			"action_when_leaked": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Defines the action to take when API key is leaked, valid values are 'none', 'disable' and 'delete'.",
 			},
 		},
 	}
@@ -138,6 +154,15 @@ func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData,
 	}
 	if _, ok := d.GetOk("locked"); ok {
 		createApiKeyOptions.SetEntityLock(d.Get("locked").(string))
+	}
+	if _, ok := d.GetOk("disabled"); ok {
+		createApiKeyOptions.SetEntityDisable(d.Get("disabled").(bool))
+	}
+	if _, ok := d.GetOk("support_sessions"); ok {
+		createApiKeyOptions.SetSupportSessions(d.Get("support_sessions").(bool))
+	}
+	if _, ok := d.GetOk("action_when_leaked"); ok {
+		createApiKeyOptions.SetActionWhenLeaked(d.Get("action_when_leaked").(string))
 	}
 
 	apiKey, response, err := iamIdentityClient.CreateAPIKey(createApiKeyOptions)
@@ -192,6 +217,15 @@ func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, m
 	}
 	if err = d.Set("locked", apiKey.Locked); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_lock: %s", err))
+	}
+	if err = d.Set("disabled", apiKey.Disabled); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_disable: %s", err))
+	}
+	if err = d.Set("support_sessions", apiKey.SupportSessions); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting support_sessions: %s", err))
+	}
+	if err = d.Set("action_when_leaked", apiKey.ActionWhenLeaked); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting action_when_leaked: %s", err))
 	}
 	if err = d.Set("apikey_id", apiKey.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting id: %s", err))

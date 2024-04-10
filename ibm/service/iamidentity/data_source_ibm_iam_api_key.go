@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -40,6 +40,11 @@ func DataSourceIBMIamApiKey() *schema.Resource {
 				Computed:    true,
 				Description: "The API key cannot be changed if set to true.",
 			},
+			"disabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Defines if API key is disabled, API key cannot be used if 'disabled' is set to true.",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -59,6 +64,16 @@ func DataSourceIBMIamApiKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the API key. The name is not checked for uniqueness. Therefore multiple names with the same value can exist. Access is done via the UUID of the API key.",
+			},
+			"support_sessions": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Defines if the API key supports sessions. Sessions are only supported for user apikeys.",
+			},
+			"action_when_leaked": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Defines the action to take when API key is leaked, valid values are 'none', 'disable' and 'delete'.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -106,6 +121,9 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("locked", apiKey.Locked); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting locked: %s", err))
 	}
+	if err = d.Set("disabled", apiKey.Disabled); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting disabled: %s", err))
+	}
 	if err = d.Set("created_at", apiKey.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
 	}
@@ -126,6 +144,12 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 	}
 	if err = d.Set("account_id", apiKey.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting account_id: %s", err))
+	}
+	if err = d.Set("support_sessions", apiKey.SupportSessions); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting support_sessions: %s", err))
+	}
+	if err = d.Set("action_when_leaked", apiKey.ActionWhenLeaked); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting action_when_leaked: %s", err))
 	}
 
 	return nil

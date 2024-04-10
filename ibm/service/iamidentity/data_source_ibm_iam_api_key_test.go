@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -27,6 +27,7 @@ func TestAccIbmIamApiKeyDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "locked"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "disabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "modified_at"),
@@ -57,6 +58,7 @@ func TestAccIbmIamApiKeyDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "locked"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "disabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "modified_at"),

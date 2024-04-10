@@ -29,6 +29,11 @@ variable "iam_api_key_entity_lock" {
   type        = string
   default     = "placeholder"
 }
+variable "iam_api_key_entity_disable" {
+  description = "Indicates if the API key is disabled. False by default."
+  type        = string
+  default     = "placeholder"
+}
 
 // Data source arguments for iam_api_key
 variable "iam_api_key_id" {
