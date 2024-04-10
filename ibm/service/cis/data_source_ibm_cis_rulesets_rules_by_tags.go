@@ -22,7 +22,7 @@ func DataSourceIBMCISRulesetsRules() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_versions",
+					"ibm_cis_rulesets_rules_by_tag",
 					"cis_id"),
 			},
 			CISRulesetsId: {
@@ -64,7 +64,7 @@ func DataSourceIBMCISRulesetsRulesValidator() *validate.ResourceValidator {
 			Required:                   true})
 
 	iBMCISRulesetsRulesValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_rules",
+		ResourceName: "ibm_cis_rulesets_rules_by_tag",
 		Schema:       validateSchema}
 	return &iBMCISRulesetsRulesValidator
 }

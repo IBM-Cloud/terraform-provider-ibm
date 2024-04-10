@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMCisRulesetsRulesDataSource_Basic(t *testing.T) {
-	name := "data.ibm_cis_rulesets_rules.test"
+	name := "data.ibm_cis_rulesets_rules_by_tag.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
 		Providers: acc.TestAccProviders,
@@ -29,7 +29,7 @@ func TestAccIBMCisRulesetsRulesDataSource_Basic(t *testing.T) {
 }
 func testAccCheckCisRulesetsRulesDataSource_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_rulesets_rules" "%[1]s" {
+	data "ibm_cis_rulesets_rules_by_tag" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 	  }
 `, id, acc.CisDomainStatic)
