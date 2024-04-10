@@ -26,6 +26,7 @@ const (
 	Arg_IBMiCSS                             = "pi_ibmi_css"
 	Arg_IBMiPHA                             = "pi_ibmi_pha"
 	Arg_IBMiRDSUsers                        = "pi_ibmi_rds_users"
+	Arg_HostID                              = "pi_host_id"
 	Arg_ImageName                           = "pi_image_name"
 	Arg_InstanceName                        = "pi_instance_name"
 	Arg_KeyName                             = "pi_key_name"
