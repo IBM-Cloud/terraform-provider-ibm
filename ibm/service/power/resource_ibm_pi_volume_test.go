@@ -11,13 +11,12 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 )
 
 func TestAccIBMPIVolumebasic(t *testing.T) {
@@ -48,8 +47,8 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 		},
 	})
 }
-func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 
+func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -62,7 +61,7 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		volumeC := st.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
+		volumeC := instance.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
 		volume, err := volumeC.Get(volumeID)
 		if err == nil {
 			log.Println("volume*****", volume.State)
@@ -72,6 +71,7 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 
 	return nil
 }
+
 func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
@@ -93,7 +93,7 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		client := st.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(volumeID)
 		if err != nil {
@@ -106,26 +106,24 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 
 func testAccCheckIBMPIVolumeConfig(name string) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume"{
-		pi_volume_size       = 20
-		pi_volume_name       = "%s"
-		pi_volume_type       = "tier1"
-		pi_volume_shareable  = true
-		pi_cloud_instance_id = "%s"
-	  }
-	`, name, acc.Pi_cloud_instance_id)
+    resource "ibm_pi_volume" "power_volume"{
+        pi_volume_size       = 20
+        pi_volume_name       = "%s"
+        pi_volume_type       = "tier1"
+        pi_volume_shareable  = true
+        pi_cloud_instance_id = "%s"
+      }`, name, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPIVolumeSizeConfig(name string) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume"{
-		pi_volume_size       = 30
-		pi_volume_name       = "%s"
-		pi_volume_type       = "tier1"
-		pi_volume_shareable  = true
-		pi_cloud_instance_id = "%s"
-	  }
-	`, name, acc.Pi_cloud_instance_id)
+    resource "ibm_pi_volume" "power_volume"{
+        pi_volume_size       = 30
+        pi_volume_name       = "%s"
+        pi_volume_type       = "tier1"
+        pi_volume_shareable  = true
+        pi_cloud_instance_id = "%s"
+      }`, name, acc.Pi_cloud_instance_id)
 }
 
 func TestAccIBMPIVolumePool(t *testing.T) {
@@ -142,7 +140,7 @@ func TestAccIBMPIVolumePool(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_pi_volume.power_volume", "pi_volume_name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_pi_volume.power_volume", "pi_volume_pool", "Tier3-Flash-1"),
+						"ibm_pi_volume.power_volume", "pi_volume_pool", acc.PiStoragePool),
 				),
 			},
 		},
@@ -151,14 +149,13 @@ func TestAccIBMPIVolumePool(t *testing.T) {
 
 func testAccCheckIBMPIVolumePoolConfig(name string) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume"{
-		pi_volume_size       = 20
-		pi_volume_name       = "%s"
-		pi_volume_pool       = "Tier3-Flash-1"
-		pi_volume_shareable  = true
-		pi_cloud_instance_id = "%s"
-	  }
-	`, name, acc.Pi_cloud_instance_id)
+    resource "ibm_pi_volume" "power_volume"{
+        pi_volume_size       = 20
+        pi_volume_name       = "%[1]s"
+        pi_volume_pool       = "%[3]s"
+        pi_volume_shareable  = true
+        pi_cloud_instance_id = "%[2]s"
+      }`, name, acc.Pi_cloud_instance_id, acc.PiStoragePool)
 }
 
 // TestAccIBMPIVolumeGRS test the volume replication feature which is part of global replication service(GRS)
@@ -207,16 +204,15 @@ func testAccCheckIBMPIVolumeGRSUpdateConfig(name string) string {
 
 func testAccCheckIBMPIVolumeGRSBasicConfig(name, piCloudInstanceId, piStoragePool string, replicationEnabled bool) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume"{
-		pi_volume_size         = 20
-		pi_volume_name         = "%[1]s"
-		pi_volume_pool         = "%[3]s"
-		pi_volume_shareable    = true
-		pi_cloud_instance_id   = "%[2]s"
-		pi_replication_enabled = %[4]v
-		pi_volume_type       = "tier3"
-	  }
-	`, name, piCloudInstanceId, piStoragePool, replicationEnabled)
+    resource "ibm_pi_volume" "power_volume"{
+        pi_volume_size         = 20
+        pi_volume_name         = "%[1]s"
+        pi_volume_pool         = "%[3]s"
+        pi_volume_shareable    = true
+        pi_cloud_instance_id   = "%[2]s"
+        pi_replication_enabled = %[4]v
+        pi_volume_type       = "tier3"
+      }`, name, piCloudInstanceId, piStoragePool, replicationEnabled)
 }
 
 // TestAccIBMPIVolumeUpdate test the volume update
@@ -256,13 +252,12 @@ func testAccCheckIBMPIVolumeUpdateStorageConfig(name, piStorageType string) stri
 
 func testAccCheckIBMPIVolumeUpdateBasicConfig(name, piCloudInstanceId, piStoragePool, piStorageType string) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume"{
-		pi_volume_size         = 20
-		pi_volume_name         = "%[1]s"
-		pi_volume_pool         = "%[3]s"
-		pi_volume_shareable    = true
-		pi_cloud_instance_id   = "%[2]s"
-		pi_volume_type = "%[4]v"
-	  }
-	`, name, piCloudInstanceId, piStoragePool, piStorageType)
+    resource "ibm_pi_volume" "power_volume"{
+        pi_volume_size         = 20
+        pi_volume_name         = "%[1]s"
+        pi_volume_pool         = "%[3]s"
+        pi_volume_shareable    = true
+        pi_cloud_instance_id   = "%[2]s"
+        pi_volume_type = "%[4]v"
+      }`, name, piCloudInstanceId, piStoragePool, piStorageType)
 }
