@@ -40,6 +40,13 @@ resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
       threshold_limit = 14
     }
   }
+  attachment_parameters {
+    parameter_value = "22"
+    assessment_id = "rule-this-is-a-fake-ruleid"
+    parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
+    parameter_name = "ssh_port"
+    parameter_type = "numeric"
+	}
 }
 ```
 
