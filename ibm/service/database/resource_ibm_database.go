@@ -2926,10 +2926,14 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
-		err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := getCpuEnforcementRatios(service, plan, meta, group)
+		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := 0, 0
 
-		if err != nil {
-			return err
+		if memberGroup.HostFlavor != nil && memberGroup.HostFlavor.ID == "multitenant" {
+			err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb = getCpuEnforcementRatios(service, plan, memberGroup.HostFlavor.ID, meta, group)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		// validate group_ids are unique
@@ -3010,9 +3014,9 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	return nil
 }
 
-func getCpuEnforcementRatios(service string, plan string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
+func getCpuEnforcementRatios(service string, plan string, hostFlavor string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
 	var currentGroups []Group
-	defaultList, err := getDefaultScalingGroups(service, plan, "multitenant", meta)
+	defaultList, err := getDefaultScalingGroups(service, plan, hostFlavor, meta)
 
 	if err != nil {
 		return err, 0, 0
