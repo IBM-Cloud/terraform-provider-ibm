@@ -13,6 +13,7 @@ const (
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
 	Arg_Datacenter                          = "pi_datacenter"
 	Arg_DatacenterZone                      = "pi_datacenter_zone"
+	Arg_DeploymentTarget                    = "pi_deployment_target"
 	Arg_Description                         = "pi_description"
 	Arg_DhcpCidr                            = "pi_cidr"
 	Arg_DhcpCloudConnectionID               = "pi_cloud_connection_id"
@@ -355,6 +356,9 @@ const (
 	State_Removed            = "removed"
 	State_Retry              = "retry"
 
+	// Allowed Values
+	Host      = "host"
+	HostGroup = "hostGroup"
 	// Health
 	Health_OK = "OK"
 
