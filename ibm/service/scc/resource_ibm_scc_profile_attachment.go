@@ -437,7 +437,7 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		}
 	}
 	if !core.IsNil(attachmentItem.AttachmentParameters) {
-		attachmentParameters := d.Get("attachment_parameters").(*schema.Set)
+		attachmentParameters := &schema.Set{F: hashAttachmentParameters}
 		for _, attachmentParametersItem := range attachmentItem.AttachmentParameters {
 			attachmentParametersItemMap, err := resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(&attachmentParametersItem)
 			if err != nil {

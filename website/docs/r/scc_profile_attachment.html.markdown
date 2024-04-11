@@ -74,10 +74,10 @@ Nested schema for **notifications**:
 	* `enabled` - (Boolean) enabled notifications.
 * `attachment_parameters` - (List) The request payload of the attachment parameters.
 Nested schema for **attachment_parameters**:
-    * `parameter_name` - (String) The name of the parameter to target.
-    * `parameter_display_name` - (String) The display name of the parameter shown in the UI.
-    * `parameter_type` - (String) The type of the parameter value.
-    * `parameter_value` - (String) The value of the parameter.
+    * `parameter_name` - (Required, String) The name of the parameter to target.
+    * `parameter_display_name` - (Required, String) The display name of the parameter shown in the UI.
+    * `parameter_type` - (Required, String) The type of the parameter value.
+    * `parameter_value` - (Required, String) The value of the parameter.
     * `assessment_type` - (String) The type of assessment the parameter uses. 
 * `schedule` - (String) The schedule of an attachment evaluation.
   * Constraints: Allowable values are: `daily`, `every_7_days`, `every_30_days`.
