@@ -4,6 +4,11 @@ import "time"
 
 const (
 	// Arguments
+	Arg_AffinityPolicy                      = "pi_affinity_policy"
+	Arg_AffinityVolume                      = "pi_affinity_volume"
+	Arg_AffinityInstance                    = "pi_affinity_instance"
+	Arg_AntiAffinityInstances               = "pi_anti_affinity_instances"
+	Arg_AntiAffinityVolumes                 = "pi_anti_affinity_volumes"
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
 	Arg_ImageName                           = "pi_image_name"
@@ -11,6 +16,7 @@ const (
 	Arg_KeyName                             = "pi_key_name"
 	Arg_NetworkName                         = "pi_network_name"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
+	Arg_ReplicationEnabled                  = "pi_replication_enabled"
 	Arg_SAP                                 = "sap"
 	Arg_SAPProfileID                        = "pi_sap_profile_id"
 	Arg_SharedProcessorPoolHostGroup        = "pi_shared_processor_pool_host_group"
@@ -29,6 +35,10 @@ const (
 	Arg_VolumeID                            = "pi_volume_id"
 	Arg_VolumeName                          = "pi_volume_name"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
+	Arg_VolumeSize                          = "pi_volume_size"
+	Arg_VolumeShareable                     = "pi_volume_shareable"
+	Arg_VolumePool                          = "pi_volume_pool"
+	Arg_VolumeType                          = "pi_volume_type"
 	Arg_VTL                                 = "vtl"
 
 	// Attributes
@@ -71,6 +81,7 @@ const (
 	Attr_CyclingMode                                 = "cycling_mode"
 	Attr_Datacenters                                 = "datacenters"
 	Attr_Default                                     = "default"
+	Attr_DeleteOnTermination                         = "delete_on_termination"
 	Attr_DeploymentType                              = "deployment_type"
 	Attr_Description                                 = "description"
 	Attr_DisasterRecoveryLocations                   = "disaster_recovery_locations"
@@ -248,10 +259,26 @@ const (
 	Attr_VolumePool                                  = "volume_pool"
 	Attr_Volumes                                     = "volumes"
 	Attr_VolumeSnapshots                             = "volume_snapshots"
+	Attr_VolumeStatus                                = "volume_status"
 	Attr_VPCCRNs                                     = "vpc_crns"
 	Attr_VPCEnabled                                  = "vpc_enabled"
 	Attr_Workspaces                                  = "workspaces"
 	Attr_WWN                                         = "wwn"
+
+	// States
+	State_Active              = "active"
+	State_Available           = "available"
+	State_Creating            = "creating"
+	State_Deleted             = "deleted"
+	State_Deleting            = "deleting"
+	State_Failed              = "failed"
+	State_Inactive            = "inactive"
+	State_InProgress          = "in progress"
+	State_InUse               = "in-use"
+	State_PendingReclaimation = "pending_reclamation"
+	State_Provisioning        = "provisioning"
+	State_Removed             = "removed"
+	State_Retry               = "retry"
 
 	// TODO: Second Half Cleanup, remove extra variables
 
