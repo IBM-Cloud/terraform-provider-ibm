@@ -17,7 +17,6 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 func ResourceIBMPIImageExport() *schema.Resource {
@@ -68,11 +67,10 @@ func ResourceIBMPIImageExport() *schema.Resource {
 				ForceNew:    true,
 			},
 			helpers.PIImageBucketRegion: {
-				Type:         schema.TypeString,
-				Description:  "Cloud Object Storage region",
-				ForceNew:     true,
-				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"au-syd", "br-sao", "ca-tor", "eu-de", "eu-es", "eu-gb", "jp-osa", "jp-tok", "us-east", "us-south"}),
+				Type:        schema.TypeString,
+				Description: "Cloud Object Storage region",
+				ForceNew:    true,
+				Required:    true,
 			},
 		},
 	}

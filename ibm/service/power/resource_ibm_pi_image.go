@@ -101,7 +101,6 @@ func ResourceIBMPIImage() *schema.Resource {
 				ConflictsWith: []string{helpers.PIImageId},
 				RequiredWith:  []string{helpers.PIImageBucketName},
 				ForceNew:      true,
-				ValidateFunc:  validate.ValidateAllowedStringValues([]string{"au-syd", "br-sao", "ca-tor", "eu-de", "eu-es", "eu-gb", "jp-osa", "jp-tok", "us-east", "us-south"}),
 			},
 			helpers.PIImageBucketFileName: {
 				Type:          schema.TypeString,
