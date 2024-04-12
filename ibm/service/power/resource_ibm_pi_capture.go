@@ -78,10 +78,11 @@ func ResourceIBMPICapture() *schema.Resource {
 			},
 
 			helpers.PIInstanceCaptureCloudStorageRegion: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "List of Regions to use",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Description:  "List of Regions to use",
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"au-syd", "br-sao", "ca-tor", "eu-de", "eu-es", "eu-gb", "jp-osa", "jp-tok", "us-east", "us-south"}),
 			},
 
 			helpers.PIInstanceCaptureCloudStorageAccessKey: {
