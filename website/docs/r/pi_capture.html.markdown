@@ -67,7 +67,7 @@ Review the argument references that you can specify for your resource.
 - `pi_capture_destination`- (Required, String) Destination for the deployable image.
 `[image-catalog,cloud-storage,both]`
 - `pi_capture_volume_ids`- (Optional, List of String)  List of Data volume IDs to include in the captured   PVMInstance.
-- `pi_capture_cloud_storage_region`- (Optional,String) The Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`,`eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
+- `pi_capture_cloud_storage_region`- (Optional,String) The Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
 - `pi_capture_cloud_storage_access_key`- (Optional,String) Cloud Storage Access key
 - `pi_capture_cloud_storage_secret_key`- (Optional,String) Cloud Storage Secret key
 - `pi_capture_storage_image_path` - (Optional,String) Cloud Storage Image Path (bucket-name [/folder/../..])
