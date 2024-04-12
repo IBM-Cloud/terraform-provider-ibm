@@ -53,7 +53,7 @@ Review the argument references that you can specify for your resource.
 - `pi_image_id` - (Required, String) The Image ID of existing source image; required for image export.
 - `pi_image_bucket_name` - (Required, String) The Cloud Object Storage bucket name; `bucket-name[/optional/folder]`
 - `pi_image_access_key` - (Required, String, Sensitive) The Cloud Object Storage access key; required for buckets with private access.
-- `pi_image_bucket_region` - (Required, String) The Cloud Object Storage region. Supported COS regions are:`au-syd`, `br-sao`, `ca-tor`, `eu-de`,  `eu-es`,`eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
+- `pi_image_bucket_region` - (Required, String) The Cloud Object Storage region. Supported COS regions are:`au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`,`eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
 - `pi_image_secret_key` - (Required, String, Sensitive) The Cloud Object Storage secret key; required for buckets with private access.
 
 
