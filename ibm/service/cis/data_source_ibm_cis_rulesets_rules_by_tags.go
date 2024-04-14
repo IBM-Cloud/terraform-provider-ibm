@@ -13,7 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceIBMCISRulesetsRules() *schema.Resource {
+const (
+	CISRulesetsRuleTag = "rulesets_rule_tag"
+)
+
+func DataSourceIBMCISRulesetsRulesByTag() *schema.Resource {
 	return &schema.Resource{
 		Read: dataIBMCISRulesetsRead,
 		Schema: map[string]*schema.Schema{
@@ -30,18 +34,17 @@ func DataSourceIBMCISRulesetsRules() *schema.Resource {
 				Required:    true,
 				Description: "Id",
 			},
-			CISRulesetPhase: {
+			CISRulesetVersion: {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Ruleset phase",
+				Required:    true,
+				Description: "Ruleset version",
 			},
-			CISRulesetsPhaseListAll: {
+			CISRulesetsRuleTag: {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Ruleset phase",
-				Default:     false,
+				Required:    true,
+				Description: "Rulesets rule tag",
 			},
-			CISRulesetsEntryPointOutput: {
+			CISRulesetsOutput: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
@@ -50,7 +53,7 @@ func DataSourceIBMCISRulesetsRules() *schema.Resource {
 		},
 	}
 }
-func DataSourceIBMCISRulesetsRulesValidator() *validate.ResourceValidator {
+func DataSourceIBMCISRulesetsRulesByTagValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -76,14 +79,58 @@ func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
 
-	opt := sess.NewGetAccountRulesetsOptions()
-	_, resp, err := sess.GetAccountRulesets(opt)
+	rulesetId := d.Get(CISRulesetsId).(string)
+	rulesetVersion := d.Get(CISRulesetVersion).(string)
+	rulesetRuleTag := d.Get(CISRulesetsRuleTag).(string)
+
+	opt := sess.NewGetAccountRulesetVersionByTagOptions(rulesetId, rulesetVersion, rulesetRuleTag)
+	result, resp, err := sess.GetAccountRulesetVersionByTag(opt)
 	if err != nil {
-		log.Printf("[WARN] List all account rulesets rules failed: %v\n", resp)
+		log.Printf("[WARN] List all rulesets version rules by tag failed: %v\n", resp)
 		return err
 	}
 
+	rulesetObj := result.Result
+
+	rulesetOutput := map[string]interface{}{}
+	rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+	rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+	rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+	rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+	rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+	rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+	ruleDetailsList := make([]map[string]interface{}, 0)
+	for _, ruleDetailsObj := range rulesetObj.Rules {
+		ruleDetails := map[string]interface{}{}
+		ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
+		ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
+		ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
+		ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
+		ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
+		ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
+
+		ruleDetailsLoggingObj := map[string]interface{}{}
+		ruleDetailsLogging := *&ruleDetailsObj.Logging
+		ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
+		ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
+
+		ruleDetailsActionParametersObj := map[string]interface{}{}
+		ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
+		ruleDetailsActionParametersResponseObj := map[string]interface{}{}
+		ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
+		ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
+		ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
+		ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
+		ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+
+		ruleDetailsList = append(ruleDetailsList, ruleDetails)
+	}
+
+	rulesetOutput[CISRulesetsRules] = ruleDetailsList
+
 	d.SetId(dataSourceCISRulesetsCheckID(d))
+	d.Set(CISRulesetsOutput, rulesetOutput)
 	d.Set(cisID, crn)
 
 	return nil
