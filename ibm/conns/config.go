@@ -121,6 +121,7 @@ import (
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
 )
 
 // RetryAPIDelay - retry api delay
@@ -301,6 +302,7 @@ type ClientSession interface {
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 	VmwareV1() (*vmwarev1.VmwareV1, error)
+	LogsV0() (*logsv0.LogsV0, error)
 }
 
 type clientSession struct {
@@ -632,6 +634,10 @@ type clientSession struct {
 	// VMware as a Service
 	vmwareClient    *vmwarev1.VmwareV1
 	vmwareClientErr error
+
+	// Cloud Logs
+	logsClient    *logsv0.LogsV0
+	logsClientErr error
 }
 
 // Usage Reports
@@ -1221,6 +1227,11 @@ func (session clientSession) VmwareV1() (*vmwarev1.VmwareV1, error) {
 	return session.vmwareClient, session.vmwareClientErr
 }
 
+// Cloud Logs
+func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
+	return session.logsClient, session.logsClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1315,6 +1326,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
 		session.mqcloudClientErr = errEmptyBluemixCredentials
+		session.logsClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1548,6 +1560,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.projectClientErr = fmt.Errorf("Error occurred while configuring Projects API Specification service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client.
+	logsEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.logs", c.Region), cloudEndpoint)
+
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_API_ENDPOINT", c.Region, logsEndpoint)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s.logs", c.Region), cloudEndpoint)
+	}
+
+	logsClientOptions := &logsv0.LogsV0Options{
+		Authenticator: authenticator,
+		URL:           logsEndpoint,
+	}
+
+	// Construct the service client.
+	session.logsClient, err = logsv0.NewLogsV0(logsClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.logsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.logsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.logsClientErr = fmt.Errorf("Error occurred while configuring Cloud Logs API service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the service client.
