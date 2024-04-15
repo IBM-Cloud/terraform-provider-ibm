@@ -1054,8 +1054,11 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 		getDefaultScalingGroupsOptions.SetHostFlavor(_hostFlavor)
 	}
 
-	getDefaultScalingGroupsResponse, _, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
+	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
 	if err != nil {
+		if response.StatusCode == 422 {
+			return groups, fmt.Errorf("%s is not available on multitenant", service)
+		}
 		return groups, err
 	}
 
