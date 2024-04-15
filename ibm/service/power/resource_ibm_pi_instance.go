@@ -147,7 +147,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
 			},
 			PIInstanceNetwork: {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeList,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Required:         true,
 				Description:      "List of one or more networks to attach to the instance",
@@ -1201,7 +1201,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 	profileID := d.Get(PISAPInstanceProfileID).(string)
 	imageid := d.Get(helpers.PIInstanceImageId).(string)
 
-	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).(*schema.Set).List())
+	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).([]interface{}))
 
 	var replicants int64
 	if r, ok := d.GetOk(helpers.PIInstanceReplicants); ok {
@@ -1335,7 +1335,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		return nil, fmt.Errorf("%s is required for creating pvm instances", helpers.PIInstanceProcType)
 	}
 
-	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).(*schema.Set).List())
+	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).([]interface{}))
 
 	var volids []string
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {
