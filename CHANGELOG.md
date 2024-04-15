@@ -1,3 +1,8 @@
+# 1.64.1 (Apr 12, 2024)
+BugFixes
+* The terraform-provider-ibm_v1.64.0 plugin crashed! ([5258](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5258))
+* ibm_pi_instance: pi_network attribute :: Provider incorrectly seems to detect a change, applies it - next apply incorrectly detects the same change ([5201](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5201))
+
 # 1.64.0 (Apr 03, 2024)
 Features
 * Support for Privileged Access Gateway
