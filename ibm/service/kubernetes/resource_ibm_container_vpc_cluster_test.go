@@ -198,6 +198,16 @@ func TestAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T)
 						"ibm_container_vpc_cluster.cluster", "disable_outbound_traffic_protection", "true"),
 				),
 			},
+			{
+				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "disable_outbound_traffic_protection", "false"),
+				),
+			},
 		},
 	})
 }
@@ -358,6 +368,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	vpc_id            = ibm_is_vpc.vpc.id
 	flavor            = "cx2.2x4"
 	worker_count      = 1
+	kube_version      = "1.30"
 	wait_till         = "OneWorkerNodeReady"
 	resource_group_id = data.ibm_resource_group.resource_group.id
 	zones {
@@ -375,6 +386,59 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	"test2" = "test-default-pool2"
 	}
 	disable_outbound_traffic_protection = true
+
+}`, name)
+}
+
+func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "resource_group" {
+	is_default = "true"
+}
+resource "ibm_is_vpc" "vpc" {
+	name = "%[1]s"
+}
+resource "ibm_is_subnet" "subnet" {
+	name                     = "%[1]s"
+	vpc                      = ibm_is_vpc.vpc.id
+	zone                     = "us-south-1"
+	total_ipv4_address_count = 256
+}
+resource "ibm_resource_instance" "kms_instance" {
+	name              = "%[1]s"
+	service           = "kms"
+	plan              = "tiered-pricing"
+	location          = "us-south"
+}
+
+resource "ibm_kms_key" "test" {
+	instance_id = ibm_resource_instance.kms_instance.guid
+	key_name = "%[1]s"
+	standard_key =  false
+	force_delete = true
+}
+resource "ibm_container_vpc_cluster" "cluster" {
+	name              = "%[1]s"
+	vpc_id            = ibm_is_vpc.vpc.id
+	flavor            = "cx2.2x4"
+	worker_count      = 1
+	wait_till         = "OneWorkerNodeReady"
+	resource_group_id = data.ibm_resource_group.resource_group.id
+	zones {
+			subnet_id = ibm_is_subnet.subnet.id
+			name      = "us-south-1"
+	}
+	kms_config {
+		instance_id = ibm_resource_instance.kms_instance.guid
+		crk_id = ibm_kms_key.test.key_id
+		private_endpoint = false
+	}
+	worker_labels = {
+	"test"  = "test-default-pool"
+	"test1" = "test-default-pool1"
+	"test2" = "test-default-pool2"
+	}
+	disable_outbound_traffic_protection = false
 
 }`, name)
 }
