@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -73,6 +73,12 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
 				Description:  "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
+			},
+			"locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "When true, this property cannot be overridden at runtime. Attempting to override it will result in run requests being rejected. The default is false.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -170,6 +176,9 @@ func resourceIBMCdTektonPipelineTriggerPropertyCreate(context context.Context, d
 	if _, ok := d.GetOk("path"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetPath(d.Get("path").(string))
 	}
+	if _, ok := d.GetOk("locked"); ok {
+		createTektonPipelineTriggerPropertiesOptions.SetLocked(d.Get("locked").(bool))
+	}
 
 	triggerProperty, response, err := cdTektonPipelineClient.CreateTektonPipelineTriggerPropertiesWithContext(context, createTektonPipelineTriggerPropertiesOptions)
 	if err != nil {
@@ -234,6 +243,11 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 	if !core.IsNil(triggerProperty.Path) {
 		if err = d.Set("path", triggerProperty.Path); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
+		}
+	}
+	if !core.IsNil(triggerProperty.Locked) {
+		if err = d.Set("locked", triggerProperty.Locked); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting locked: %s", err))
 		}
 	}
 	if !core.IsNil(triggerProperty.Href) {

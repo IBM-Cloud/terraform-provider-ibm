@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -60,6 +60,12 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "type"),
 				Description:  "Property type.",
+			},
+			"locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "When true, this property cannot be overridden by a trigger property or at runtime. Attempting to override it will result in run requests being rejected. The default is false.",
 			},
 			"path": &schema.Schema{
 				Type:         schema.TypeString,
@@ -150,6 +156,9 @@ func resourceIBMCdTektonPipelinePropertyCreate(context context.Context, d *schem
 		}
 		createTektonPipelinePropertiesOptions.SetEnum(enum)
 	}
+	if _, ok := d.GetOk("locked"); ok {
+		createTektonPipelinePropertiesOptions.SetLocked(d.Get("locked").(bool))
+	}
 	if _, ok := d.GetOk("path"); ok {
 		createTektonPipelinePropertiesOptions.SetPath(d.Get("path").(string))
 	}
@@ -209,6 +218,11 @@ func resourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.
 	}
 	if err = d.Set("type", property.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+	}
+	if !core.IsNil(property.Locked) {
+		if err = d.Set("locked", property.Locked); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting locked: %s", err))
+		}
 	}
 	if !core.IsNil(property.Path) {
 		if err = d.Set("path", property.Path); err != nil {
