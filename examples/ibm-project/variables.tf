@@ -36,7 +36,7 @@ variable "data_project_config_project_id" {
   default     = "project_id"
 }
 variable "data_project_config_project_config_id" {
-  description = "The unique config ID."
+  description = "The unique configuration ID."
   type        = string
   default     = "project_config_id"
 }

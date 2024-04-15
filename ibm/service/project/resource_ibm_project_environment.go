@@ -51,7 +51,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The name of the environment.  It is unique within the account across projects and regions.",
+							Description: "The name of the environment. It's unique within the account across projects and regions.",
 						},
 						"authorizations": &schema.Schema{
 							Type:        schema.TypeList,
@@ -74,7 +74,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Sensitive:   true,
-										Description: "The IBM Cloud API Key.",
+										Description: "The IBM Cloud API Key. It can be either raw or pulled from the catalog via a `CRN` or `JSON` blob.",
 									},
 								},
 							},
@@ -82,25 +82,25 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 						"inputs": &schema.Schema{
 							Type:        schema.TypeMap,
 							Optional:    true,
-							Description: "The input variables for configuration definition and environment.",
+							Description: "The input variables that are used for configuration definition and environment.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"compliance_profile": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "The profile required for compliance.",
+							Description: "The profile that is required for compliance.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The unique ID for that compliance profile.",
+										Description: "The unique ID for the compliance profile.",
 									},
 									"instance_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "A unique ID for an instance of a compliance profile.",
+										Description: "A unique ID for the instance of a compliance profile.",
 									},
 									"instance_location": &schema.Schema{
 										Type:        schema.TypeString,
@@ -126,13 +126,18 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 			"project": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The project referenced by this resource.",
+				Description: "The project that is referenced by this resource.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique ID.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A URL.",
 						},
 						"definition": &schema.Schema{
 							Type:        schema.TypeList,
@@ -151,12 +156,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "An IBM Cloud resource name, which uniquely identifies a resource.",
-						},
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A URL.",
+							Description: "An IBM Cloud resource name that uniquely identifies a resource.",
 						},
 					},
 				},
@@ -164,17 +164,17 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.",
 			},
 			"target_account": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The target account ID derived from the authentication block values.",
+				Description: "The target account ID derived from the authentication block values. The target account exists only if the environment currently has an authorization block.",
 			},
 			"modified_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.",
+				Description: "A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -184,7 +184,7 @@ func ResourceIbmProjectEnvironment() *schema.Resource {
 			"project_environment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The environment id as a friendly name.",
+				Description: "The environment ID as a friendly name.",
 			},
 		},
 	}
@@ -210,7 +210,9 @@ func ResourceIbmProjectEnvironmentValidator() *validate.ResourceValidator {
 func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createProjectEnvironmentOptions := &projectv1.CreateProjectEnvironmentOptions{}
@@ -222,10 +224,11 @@ func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.Reso
 	}
 	createProjectEnvironmentOptions.SetDefinition(definitionModel)
 
-	environment, response, err := projectClient.CreateProjectEnvironmentWithContext(context, createProjectEnvironmentOptions)
+	environment, _, err := projectClient.CreateProjectEnvironmentWithContext(context, createProjectEnvironmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateProjectEnvironmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateProjectEnvironmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProjectEnvironmentWithContext failed: %s", err.Error()), "ibm_project_environment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *createProjectEnvironmentOptions.ProjectID, *environment.ID))
@@ -236,14 +239,17 @@ func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.Reso
 func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProjectEnvironmentOptions := &projectv1.GetProjectEnvironmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "read")
+		return tfErr.GetDiag()
 	}
 
 	getProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -255,11 +261,12 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetProjectEnvironmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProjectEnvironmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProjectEnvironmentWithContext failed: %s", err.Error()), "ibm_project_environment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	definitionMap, err := resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(environment.Definition)
+	definitionMap, err := resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -297,14 +304,17 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateProjectEnvironmentOptions := &projectv1.UpdateProjectEnvironmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "update")
+		return tfErr.GetDiag()
 	}
 
 	updateProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -313,8 +323,10 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 	hasChange := false
 
 	if d.HasChange("project_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id"))
+		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "project_id")
+		tfErr := flex.TerraformErrorf(err, errMsg, "ibm_project_environment", "update")
+		return tfErr.GetDiag()
 	}
 	if d.HasChange("definition") {
 		definition, err := resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(d.Get("definition.0").(map[string]interface{}))
@@ -326,10 +338,11 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 	}
 
 	if hasChange {
-		_, response, err := projectClient.UpdateProjectEnvironmentWithContext(context, updateProjectEnvironmentOptions)
+		_, _, err = projectClient.UpdateProjectEnvironmentWithContext(context, updateProjectEnvironmentOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateProjectEnvironmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateProjectEnvironmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProjectEnvironmentWithContext failed: %s", err.Error()), "ibm_project_environment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -339,23 +352,27 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 func resourceIbmProjectEnvironmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteProjectEnvironmentOptions := &projectv1.DeleteProjectEnvironmentOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "delete")
+		return tfErr.GetDiag()
 	}
 
 	deleteProjectEnvironmentOptions.SetProjectID(parts[0])
 	deleteProjectEnvironmentOptions.SetID(parts[1])
 
-	_, response, err := projectClient.DeleteProjectEnvironmentWithContext(context, deleteProjectEnvironmentOptions)
+	_, _, err = projectClient.DeleteProjectEnvironmentWithContext(context, deleteProjectEnvironmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteProjectEnvironmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteProjectEnvironmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProjectEnvironmentWithContext failed: %s", err.Error()), "ibm_project_environment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -451,11 +468,9 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(mode
 	return model, nil
 }
 
-func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesToMap(model *projectv1.EnvironmentDefinitionRequiredProperties) (map[string]interface{}, error) {
+func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(model *projectv1.EnvironmentDefinitionRequiredPropertiesResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Description != nil {
-		modelMap["description"] = model.Description
-	}
+	modelMap["description"] = model.Description
 	modelMap["name"] = model.Name
 	if model.Authorizations != nil {
 		authorizationsMap, err := resourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
@@ -522,13 +537,13 @@ func resourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1
 func resourceIbmProjectEnvironmentProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
+	modelMap["href"] = model.Href
 	definitionMap, err := resourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
 	modelMap["crn"] = model.Crn
-	modelMap["href"] = model.Href
 	return modelMap, nil
 }
 
