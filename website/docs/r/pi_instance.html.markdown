@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance"
@@ -31,14 +30,15 @@ resource "ibm_pi_instance" "test-instance" {
 }
 ```
 
+~> **WARNING:** Updating a ibm_pi_instance resource with `pi_replicants` set does not update replicant vms!
+
 **Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
   
-  Example usage:
-  
+Example usage:  
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -113,7 +113,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `health_status` - (String) The health status of the VM.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
-- `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
+- `id` - (String) The unique identifier of the instance. The ID is composed of `<cloud_instance_id>/<instance_id_1>/.../<instance_id_n>`.
 - `instance_id` - (String) The unique identifier of the instance. 
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
@@ -135,7 +135,7 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the instance.
 ## Import
 
-The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.
+The `ibm_pi_instance` can be imported using `cloud_instance_id` and `instance_id`.
 
 **Example**
 
