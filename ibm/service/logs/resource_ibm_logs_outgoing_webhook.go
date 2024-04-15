@@ -42,7 +42,7 @@ func ResourceIbmLogsOutgoingWebhook() *schema.Resource {
 			},
 			"url": &schema.Schema{
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_outgoing_webhook", "url"),
 				Description:  "The URL of the outbound webhook.",
 			},
@@ -141,7 +141,9 @@ func resourceIbmLogsOutgoingWebhookCreate(context context.Context, d *schema.Res
 
 	bodyModelMap["type"] = d.Get("type")
 	bodyModelMap["name"] = d.Get("name")
-	bodyModelMap["url"] = d.Get("url")
+	if _, ok := d.GetOk("url"); ok {
+		bodyModelMap["url"] = d.Get("url")
+	}
 	if _, ok := d.GetOk("ibm_event_notifications"); ok {
 		bodyModelMap["ibm_event_notifications"] = d.Get("ibm_event_notifications")
 	}
@@ -264,7 +266,10 @@ func resourceIbmLogsOutgoingWebhookUpdate(context context.Context, d *schema.Res
 
 		bodyModelMap["type"] = d.Get("type")
 		bodyModelMap["name"] = d.Get("name")
-		bodyModelMap["url"] = d.Get("url")
+
+		if _, ok := d.GetOk("url"); ok {
+			bodyModelMap["url"] = d.Get("url")
+		}
 		if _, ok := d.GetOk("ibm_event_notifications"); ok {
 			bodyModelMap["ibm_event_notifications"] = d.Get("ibm_event_notifications")
 		}
@@ -330,7 +335,9 @@ func ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhookPrototype(modelMap map[st
 	model := &logsv0.OutgoingWebhookPrototype{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["url"] != nil {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
 	if modelMap["ibm_event_notifications"] != nil && len(modelMap["ibm_event_notifications"].([]interface{})) > 0 {
 		IbmEventNotificationsModel, err := ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhooksV1IbmEventNotificationsConfig(modelMap["ibm_event_notifications"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {

@@ -18,7 +18,7 @@ func TestAccIbmLogsRuleGroupDataSourceBasic(t *testing.T) {
 	ruleGroupName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -38,11 +38,11 @@ func TestAccIbmLogsRuleGroupDataSourceAllArgs(t *testing.T) {
 	ruleGroupName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ruleGroupDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	ruleGroupCreator := fmt.Sprintf("tf_creator_%d", acctest.RandIntRange(10, 100))
-	ruleGroupEnabled := "false"
-	ruleGroupOrder := fmt.Sprintf("%d", acctest.RandIntRange(0, 4294967295))
+	ruleGroupEnabled := "true"
+	ruleGroupOrder := fmt.Sprintf("%d", acctest.RandIntRange(0, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -58,8 +58,8 @@ func TestAccIbmLogsRuleGroupDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_subgroups.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_subgroups.0.id"),
 					resource.TestCheckResourceAttr("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_subgroups.0.enabled", ruleGroupEnabled),
-					resource.TestCheckResourceAttr("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_subgroups.0.order", ruleGroupOrder),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "order"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_subgroups.0.order"),
+					resource.TestCheckResourceAttr("data.ibm_logs_rule_group.logs_rule_group_instance", "order", ruleGroupOrder),
 				),
 			},
 		},
@@ -69,70 +69,85 @@ func TestAccIbmLogsRuleGroupDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmLogsRuleGroupDataSourceConfigBasic(ruleGroupName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_rule_group" "logs_rule_group_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
+			description = "test description"
+			creator     = "bot@ibm.com"
+			enabled     = true
+			rule_matchers {
+			subsystem_name {
+				value = "mysql-cloudwatch"
+			}
+			}
 			rule_subgroups {
-				id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-				rules {
-					id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-					name = "name"
-					description = "description"
-					source_field = "logObj.source"
-					parameters {
-						extract_parameters {
-							rule = "rule"
-						}
-					}
-					enabled = true
-					order = 0
+			rules {
+				name         = "mysql-parse"
+				source_field = "text"
+				parameters {
+				parse_parameters {
+					destination_field = "text"
+					rule              = "(?P<timestamp>[^,]+),(?P<hostname>[^,]+),(?P<username>[^,]+),(?P<ip>[^,]+),(?P<connectionId>[0-9]+),(?P<queryId>[0-9]+),(?P<operation>[^,]+),(?P<database>[^,]+),'?(?P<object>.*)'?,(?P<returnCode>[0-9]+)"
+				}
 				}
 				enabled = true
-				order = 0
+				order   = 1
 			}
+		
+			enabled = true
+			order   = 1
+			}
+			order = 1
 		}
 
 		data "ibm_logs_rule_group" "logs_rule_group_instance" {
-			group_id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
+			instance_id = ibm_logs_rule_group.logs_rule_group_instance.instance_id
+			region 		= ibm_logs_rule_group.logs_rule_group_instance.region
+			group_id 	= ibm_logs_rule_group.logs_rule_group_instance.rule_group_id
 		}
-	`, ruleGroupName)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, ruleGroupName)
 }
 
 func testAccCheckIbmLogsRuleGroupDataSourceConfig(ruleGroupName string, ruleGroupDescription string, ruleGroupCreator string, ruleGroupEnabled string, ruleGroupOrder string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_rule_group" "logs_rule_group_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
 			description = "%s"
-			creator = "%s"
-			enabled = %s
+			creator     = "%s"
+			enabled     = %s
 			rule_matchers {
-				application_name {
-					value = "value"
-				}
+			subsystem_name {
+				value = "mysql-cloudwatch"
+			}
 			}
 			rule_subgroups {
-				id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-				rules {
-					id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-					name = "name"
-					description = "description"
-					source_field = "logObj.source"
-					parameters {
-						extract_parameters {
-							rule = "rule"
-						}
-					}
-					enabled = true
-					order = 0
+			rules {
+				name         = "mysql-parse"
+				source_field = "text"
+				parameters {
+				parse_parameters {
+					destination_field = "text"
+					rule              = "(?P<timestamp>[^,]+),(?P<hostname>[^,]+),(?P<username>[^,]+),(?P<ip>[^,]+),(?P<connectionId>[0-9]+),(?P<queryId>[0-9]+),(?P<operation>[^,]+),(?P<database>[^,]+),'?(?P<object>.*)'?,(?P<returnCode>[0-9]+)"
+				}
 				}
 				enabled = true
-				order = 0
+				order   = 1
+			}
+		
+			enabled = true
+			order   = 1
 			}
 			order = %s
 		}
 
 		data "ibm_logs_rule_group" "logs_rule_group_instance" {
-			group_id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
+			instance_id = ibm_logs_rule_group.logs_rule_group_instance.instance_id
+			region 		= ibm_logs_rule_group.logs_rule_group_instance.region
+			group_id 	= ibm_logs_rule_group.logs_rule_group_instance.rule_group_id
 		}
-	`, ruleGroupName, ruleGroupDescription, ruleGroupCreator, ruleGroupEnabled, ruleGroupOrder)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, ruleGroupName, ruleGroupDescription, ruleGroupCreator, ruleGroupEnabled, ruleGroupOrder)
 }
 
 // Todo @kavya498: Fix unit testcases

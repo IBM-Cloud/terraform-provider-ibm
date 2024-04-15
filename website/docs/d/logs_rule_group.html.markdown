@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_rule_group
 
 Provides a read-only data source to retrieve information about a logs_rule_group. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,8 +15,10 @@ Provides a read-only data source to retrieve information about a logs_rule_group
 ## Example Usage
 
 ```hcl
-data "ibm_logs_rule_group" "logs_rule_group" {
-	group_id = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+data "ibm_logs_rule_group" "logs_rule_group_instance" {
+	instance_id = ibm_logs_rule_group.logs_rule_group_instance.instance_id
+	region 		= ibm_logs_rule_group.logs_rule_group_instance.region
+	group_id 	= ibm_logs_rule_group.logs_rule_group_instance.rule_group_id
 }
 ```
 
@@ -22,6 +26,8 @@ data "ibm_logs_rule_group" "logs_rule_group" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `group_id` - (Required, Forces new resource, String) The group id.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 

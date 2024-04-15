@@ -6,99 +6,48 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_alert
 
 Create, update, and delete logs_alerts with this resource.
 
 ## Example Usage
-
 ```hcl
+resource "ibm_resource_instance" "logs_instance" {
+  name     = "logs-instance"
+  service  = "logs"
+  plan     = "experimental"
+  location = "eu-gb"
+}
 resource "ibm_logs_alert" "logs_alert_instance" {
-  active_when {
-		timeframes {
-			days_of_week = [ "monday_or_unspecified" ]
-			range {
-				start {
-					hours = 1
-					minutes = 1
-					seconds = 1
-				}
-				end {
-					hours = 1
-					minutes = 1
-					seconds = 1
-				}
-			}
-		}
-  }
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-alert-decription"
+  is_active   = true
+  severity    = "info_or_unspecified"
   condition {
-		immediate = {  }
+    new_value {
+      parameters {
+        threshold          = 1.0
+        timeframe          = "timeframe_12_h"
+        group_by           = ["ibm.logId"]
+        relative_timeframe = "hour_or_unspecified"
+        cardinality_fields = []
+      }
+    }
   }
-  description = "Example of unique count alert from terraform"
-  expiration {
-		year = 1
-		month = 1
-		day = 1
+  notification_groups {
+    group_by_fields = ["ibm.logId"]
   }
   filters {
-		severities = [ "debug_or_unspecified" ]
-		metadata {
-			categories = [ "categories" ]
-			applications = [ "applications" ]
-			subsystems = [ "subsystems" ]
-			computers = [ "computers" ]
-			classes = [ "classes" ]
-			methods = [ "methods" ]
-			ip_addresses = [ "ip_addresses" ]
-		}
-		alias = "alias"
-		text = "text"
-		ratio_alerts {
-			alias = "alias"
-			text = "text"
-			severities = [ "debug_or_unspecified" ]
-			applications = [ "applications" ]
-			subsystems = [ "subsystems" ]
-			group_by = [ "group_by" ]
-		}
-		filter_type = "text_or_unspecified"
+    text        = "text"
+    filter_type = "text_or_unspecified"
   }
+  meta_labels_strings = []
   incident_settings {
-		retriggering_period_seconds = 0
-		notify_on = "triggered_only"
-		use_as_notification_settings = true
-  }
-  is_active = true
-  meta_labels {
-		key = "key"
-		value = "value"
-  }
-  name = "Unique count alert"
-  notification_groups {
-		group_by_fields = [ "group_by_fields" ]
-		notifications {
-			retriggering_period_seconds = 0
-			notify_on = "triggered_only"
-			integration_id = 0
-		}
-  }
-  severity = "info_or_unspecified"
-  tracing_alert {
-		condition_latency = 0
-		field_filters {
-			field = "field"
-			filters {
-				values = [ "values" ]
-				operator = "operator"
-			}
-		}
-		tag_filters {
-			field = "field"
-			filters {
-				values = [ "values" ]
-				operator = "operator"
-			}
-		}
+    retriggering_period_seconds = 43200
+    notify_on                   = "triggered_only"
   }
 }
 ```

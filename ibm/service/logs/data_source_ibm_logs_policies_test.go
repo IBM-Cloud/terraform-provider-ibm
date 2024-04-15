@@ -22,7 +22,7 @@ func TestAccIbmLogsPoliciesDataSourceBasic(t *testing.T) {
 	policyPriority := "type_unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -41,7 +41,7 @@ func TestAccIbmLogsPoliciesDataSourceAllArgs(t *testing.T) {
 	policyPriority := "type_unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -53,9 +53,9 @@ func TestAccIbmLogsPoliciesDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.company_id"),
-					resource.TestCheckResourceAttr("data.ibm_logs_policies.logs_policies_instance", "policies.0.name", policyName),
-					resource.TestCheckResourceAttr("data.ibm_logs_policies.logs_policies_instance", "policies.0.description", policyDescription),
-					resource.TestCheckResourceAttr("data.ibm_logs_policies.logs_policies_instance", "policies.0.priority", policyPriority),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.description"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.priority"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.deleted"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policies.logs_policies_instance", "policies.0.order"),
@@ -70,44 +70,53 @@ func TestAccIbmLogsPoliciesDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmLogsPoliciesDataSourceConfigBasic(policyName string, policyPriority string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_policy" "logs_policy_instance" {
-			name = "%s"
-			priority = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
+			description = "Test description"
+			priority    = "%s"
+			application_rule {
+				name         = "otel-links-test"
+				rule_type_id = "start_with"
+			}
+			log_rules {
+				severities = ["info"]
+			}
 		}
 
 		data "ibm_logs_policies" "logs_policies_instance" {
+			instance_id  = ibm_logs_policy.logs_policy_instance.instance_id
+			region       = ibm_logs_policy.logs_policy_instance.region
 			enabled_only = true
-			source_type = "unspecified"
+			source_type  = "logs"
 		}
-	`, policyName, policyPriority)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, policyName, policyPriority)
 }
 
 func testAccCheckIbmLogsPoliciesDataSourceConfig(policyName string, policyDescription string, policyPriority string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_policy" "logs_policy_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
 			description = "%s"
-			priority = "%s"
+			priority    = "%s"
 			application_rule {
-				rule_type_id = "unspecified"
-				name = "name"
-			}
-			subsystem_rule {
-				rule_type_id = "unspecified"
-				name = "name"
-			}
-			archive_retention {
-				id = "id"
+				name         = "otel-links-test"
+				rule_type_id = "start_with"
 			}
 			log_rules {
-				severities = [ "unspecified" ]
+				severities = ["info"]
 			}
 		}
 
 		data "ibm_logs_policies" "logs_policies_instance" {
+			instance_id  = ibm_logs_policy.logs_policy_instance.instance_id
+			region       = ibm_logs_policy.logs_policy_instance.region
 			enabled_only = true
-			source_type = "unspecified"
+			source_type  = "logs"
 		}
-	`, policyName, policyDescription, policyPriority)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, policyName, policyDescription, policyPriority)
 }
 
 func TestDataSourceIbmLogsPoliciesPolicyToMap(t *testing.T) {

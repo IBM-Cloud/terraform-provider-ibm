@@ -26,7 +26,7 @@ func TestAccIbmLogsE2mBasic(t *testing.T) {
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsE2mDestroy,
 		Steps: []resource.TestStep{
@@ -51,13 +51,13 @@ func TestAccIbmLogsE2mAllArgs(t *testing.T) {
 	var conf logsv0.Event2Metric
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	typeVar := "unspecified"
+	typeVar := "logs2metrics"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	typeVarUpdate := "spans2metrics"
+	typeVarUpdate := "logs2metrics"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsE2mDestroy,
 		Steps: []resource.TestStep{
@@ -79,7 +79,7 @@ func TestAccIbmLogsE2mAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_e2m.logs_e2m",
+				ResourceName:      "ibm_logs_e2m.logs_e2m_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -89,51 +89,41 @@ func TestAccIbmLogsE2mAllArgs(t *testing.T) {
 
 func testAccCheckIbmLogsE2mConfigBasic(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_e2m" "logs_e2m_instance" {
-			name = "%s"
+	resource "ibm_logs_e2m" "logs_e2m_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "test description"
+		logs_query {
+		  applicationname_filters = []
+		  severity_filters = [
+			"debug", "error"
+		  ]
+		  subsystemname_filters = []
 		}
-	`, name)
+		type = "logs2metrics"
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name)
 }
 
 func testAccCheckIbmLogsE2mConfig(name string, description string, typeVar string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_logs_e2m" "logs_e2m_instance" {
-			name = "%s"
-			description = "%s"
-			metric_labels {
-				target_label = "target_label"
-				source_field = "source_field"
-			}
-			metric_fields {
-				target_base_metric_name = "target_base_metric_name"
-				source_field = "source_field"
-				aggregations {
-					enabled = true
-					agg_type = "unspecified"
-					target_metric_name = "target_metric_name"
-					samples {
-						sample_type = "unspecified"
-					}
-				}
-			}
-			type = "%s"
-			spans_query {
-				lucene = "lucene"
-				applicationname_filters = [ "applicationname_filters" ]
-				subsystemname_filters = [ "subsystemname_filters" ]
-				action_filters = [ "action_filters" ]
-				service_filters = [ "service_filters" ]
-			}
-			logs_query {
-				lucene = "lucene"
-				alias = "alias"
-				applicationname_filters = [ "applicationname_filters" ]
-				subsystemname_filters = [ "subsystemname_filters" ]
-				severity_filters = [ "unspecified" ]
-			}
+	
+	resource "ibm_logs_e2m" "logs_e2m_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "%s"
+		logs_query {
+		  applicationname_filters = []
+		  severity_filters = [
+			"debug", "error"
+		  ]
+		  subsystemname_filters = []
 		}
-	`, name, description, typeVar)
+		type = "%s"
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, typeVar)
 }
 
 func testAccCheckIbmLogsE2mExists(n string, obj logsv0.Event2Metric) resource.TestCheckFunc {

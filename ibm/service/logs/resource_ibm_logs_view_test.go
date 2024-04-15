@@ -28,7 +28,7 @@ func TestAccIbmLogsViewBasic(t *testing.T) {
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsViewDestroy,
 		Steps: []resource.TestStep{
@@ -46,7 +46,7 @@ func TestAccIbmLogsViewBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_view.logs_view",
+				ResourceName:      "ibm_logs_view.logs_view_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -56,19 +56,53 @@ func TestAccIbmLogsViewBasic(t *testing.T) {
 
 func testAccCheckIbmLogsViewConfigBasic(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_view" "logs_view_instance" {
-			name = "%s"
-			search_query {
-				query = "error"
+	resource "ibm_logs_view" "logs_view_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		filters {
+		  filters {
+			name = "applicationName"
+			selected_values = {
+			  demo = true
 			}
-			time_selection {
-				quick_selection {
-					caption = "Last hour"
-					seconds = 3600
-				}
+		  }
+		  filters {
+			name = "subsystemName"
+			selected_values = {
+			  demo = true
 			}
+		  }
+		  filters {
+			name = "operationName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "serviceName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "severity"
+			selected_values = {
+			  demo = true
+			}
+		  }
 		}
-	`, name)
+		search_query {
+		  query = "logs"
+		}
+		time_selection {
+		  custom_selection {
+			from_time = "2024-01-25T11:31:43.152Z"
+			to_time   = "2024-01-25T11:37:13.238Z"
+		  }
+		}
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name)
 }
 
 func testAccCheckIbmLogsViewExists(n string, obj logsv0.View) resource.TestCheckFunc {

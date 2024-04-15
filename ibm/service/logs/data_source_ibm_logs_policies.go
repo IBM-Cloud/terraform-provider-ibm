@@ -30,7 +30,7 @@ func DataSourceIbmLogsPolicies() *schema.Resource {
 			"source_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "unspecified",
+				Default:     "logs",
 				Description: "Source type to filter policies by.",
 			},
 			"policies": &schema.Schema{

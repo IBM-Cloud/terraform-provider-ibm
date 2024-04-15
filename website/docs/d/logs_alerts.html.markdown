@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_alerts
 
 Provides a read-only data source to retrieve information about logs_alerts. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,10 +15,18 @@ Provides a read-only data source to retrieve information about logs_alerts. You 
 ## Example Usage
 
 ```hcl
-data "ibm_logs_alerts" "logs_alerts" {
+data "ibm_logs_alerts" "logs_alerts_instance" {
+	instance_id = ibm_logs_alert.logs_alert_instance.instance_id
+	region 		= ibm_logs_alert.logs_alert_instance.region
 }
 ```
 
+## Argument Reference
+
+You can specify the following arguments for this data source.
+
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 
 ## Attribute Reference
 

@@ -31,7 +31,7 @@ func TestAccIbmLogsAlertBasic(t *testing.T) {
 	severityUpdate := "error"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsAlertDestroy,
 		Steps: []resource.TestStep{
@@ -68,7 +68,7 @@ func TestAccIbmLogsAlertAllArgs(t *testing.T) {
 	severityUpdate := "error"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsAlertDestroy,
 		Steps: []resource.TestStep{
@@ -92,7 +92,7 @@ func TestAccIbmLogsAlertAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_alert.logs_alert",
+				ResourceName:      "ibm_logs_alert.logs_alert_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -102,142 +102,73 @@ func TestAccIbmLogsAlertAllArgs(t *testing.T) {
 
 func testAccCheckIbmLogsAlertConfigBasic(name string, isActive string, severity string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_alert" "logs_alert_instance" {
-			name = "%s"
-			is_active = %s
-			severity = "%s"
-			condition {
-				immediate = {  }
+	resource "ibm_logs_alert" "logs_alert_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		is_active   = %s
+		severity    = "%s"
+		condition {
+		  new_value {
+			parameters {
+			  threshold          = 1.0
+			  timeframe          = "timeframe_12_h"
+			  group_by           = ["ibm.logId"]
+			  relative_timeframe = "hour_or_unspecified"
+			  cardinality_fields = []
 			}
-			notification_groups {
-				group_by_fields = [ "group_by_fields" ]
-				notifications {
-					retriggering_period_seconds = 0
-					notify_on = "triggered_only"
-					integration_id = 0
-				}
-			}
-			filters {
-				severities = [ "debug_or_unspecified" ]
-				metadata {
-					categories = [ "categories" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					computers = [ "computers" ]
-					classes = [ "classes" ]
-					methods = [ "methods" ]
-					ip_addresses = [ "ip_addresses" ]
-				}
-				alias = "alias"
-				text = "text"
-				ratio_alerts {
-					alias = "alias"
-					text = "text"
-					severities = [ "debug_or_unspecified" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					group_by = [ "group_by" ]
-				}
-				filter_type = "text_or_unspecified"
-			}
+		  }
 		}
-	`, name, isActive, severity)
+		notification_groups {
+		  group_by_fields = ["ibm.logId"]
+		}
+		filters {
+		  text        = "text"
+		  filter_type = "text_or_unspecified"
+		}
+		meta_labels_strings = []
+		incident_settings {
+		  retriggering_period_seconds = 43200
+		  notify_on                   = "triggered_only"
+		}
+	}
+`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, isActive, severity)
 }
 
 func testAccCheckIbmLogsAlertConfig(name string, description string, isActive string, severity string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_logs_alert" "logs_alert_instance" {
-			name = "%s"
-			description = "%s"
-			is_active = %s
-			severity = "%s"
-			expiration {
-				year = 1
-				month = 1
-				day = 1
+	resource "ibm_logs_alert" "logs_alert_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "%s"
+		is_active   = %s
+		severity    = "%s"
+		condition {
+			new_value {
+			  parameters {
+				threshold          = 1.0
+				timeframe          = "timeframe_12_h"
+				group_by           = ["ibm.logId"]
+				relative_timeframe = "hour_or_unspecified"
+				cardinality_fields = []
+			  }
 			}
-			condition {
-				immediate = {  }
-			}
-			notification_groups {
-				group_by_fields = [ "group_by_fields" ]
-				notifications {
-					retriggering_period_seconds = 0
-					notify_on = "triggered_only"
-					integration_id = 0
-				}
-			}
-			filters {
-				severities = [ "debug_or_unspecified" ]
-				metadata {
-					categories = [ "categories" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					computers = [ "computers" ]
-					classes = [ "classes" ]
-					methods = [ "methods" ]
-					ip_addresses = [ "ip_addresses" ]
-				}
-				alias = "alias"
-				text = "text"
-				ratio_alerts {
-					alias = "alias"
-					text = "text"
-					severities = [ "debug_or_unspecified" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					group_by = [ "group_by" ]
-				}
-				filter_type = "text_or_unspecified"
-			}
-			active_when {
-				timeframes {
-					days_of_week = [ "monday_or_unspecified" ]
-					range {
-						start {
-							hours = 1
-							minutes = 1
-							seconds = 1
-						}
-						end {
-							hours = 1
-							minutes = 1
-							seconds = 1
-						}
-					}
-				}
-			}
-			notification_payload_filters = "FIXME"
-			meta_labels {
-				key = "key"
-				value = "value"
-			}
-			meta_labels_strings = "FIXME"
-			tracing_alert {
-				condition_latency = 0
-				field_filters {
-					field = "field"
-					filters {
-						values = [ "values" ]
-						operator = "operator"
-					}
-				}
-				tag_filters {
-					field = "field"
-					filters {
-						values = [ "values" ]
-						operator = "operator"
-					}
-				}
-			}
-			incident_settings {
-				retriggering_period_seconds = 0
-				notify_on = "triggered_only"
-				use_as_notification_settings = true
-			}
+		  }
+		  notification_groups {
+			group_by_fields = ["ibm.logId"]
+		  }
+		  filters {
+			text        = "text"
+			filter_type = "text_or_unspecified"
+		  }
+		  meta_labels_strings = []
+		  incident_settings {
+			retriggering_period_seconds = 43200
+			notify_on                   = "triggered_only"
 		}
-	`, name, description, isActive, severity)
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, isActive, severity)
 }
 
 func testAccCheckIbmLogsAlertExists(n string, obj logsv0.Alert) resource.TestCheckFunc {

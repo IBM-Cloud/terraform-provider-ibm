@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_outgoing_webhook
 
 Create, update, and delete logs_outgoing_webhooks with this resource.
@@ -14,13 +16,14 @@ Create, update, and delete logs_outgoing_webhooks with this resource.
 
 ```hcl
 resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-webhook"
+  type        = "ibm_event_notifications"
   ibm_event_notifications {
-		event_notifications_instance_id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-		region_id = "region_id"
+    event_notifications_instance_id = "6b33da73-28b6-4201-bfea-b2054bb6ae8a"
+    region_id                       = "us-south"
   }
-  name = "name"
-  type = "ibm_event_notifications"
-  url = "url"
 }
 ```
 

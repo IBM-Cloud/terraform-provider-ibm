@@ -28,7 +28,7 @@ func TestAccIbmLogsRuleGroupBasic(t *testing.T) {
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsRuleGroupDestroy,
 		Steps: []resource.TestStep{
@@ -53,17 +53,17 @@ func TestAccIbmLogsRuleGroupAllArgs(t *testing.T) {
 	var conf logsv0.RuleGroup
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	creator := fmt.Sprintf("tf_creator_%d", acctest.RandIntRange(10, 100))
+	creator := "bot@ibm.com"
 	enabled := "false"
-	order := fmt.Sprintf("%d", acctest.RandIntRange(0, 4294967295))
+	order := fmt.Sprintf("%d", acctest.RandIntRange(0, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	creatorUpdate := fmt.Sprintf("tf_creator_%d", acctest.RandIntRange(10, 100))
+	creatorUpdate := "bot1@ibm.com"
 	enabledUpdate := "true"
-	orderUpdate := fmt.Sprintf("%d", acctest.RandIntRange(0, 4294967295))
+	orderUpdate := fmt.Sprintf("%d", acctest.RandIntRange(0, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsRuleGroupDestroy,
 		Steps: []resource.TestStep{
@@ -89,7 +89,7 @@ func TestAccIbmLogsRuleGroupAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_rule_group.logs_rule_group",
+				ResourceName:      "ibm_logs_rule_group.logs_rule_group_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -99,64 +99,74 @@ func TestAccIbmLogsRuleGroupAllArgs(t *testing.T) {
 
 func testAccCheckIbmLogsRuleGroupConfigBasic(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_rule_group" "logs_rule_group_instance" {
-			name = "%s"
-			rule_subgroups {
-				id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-				rules {
-					id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-					name = "name"
-					description = "description"
-					source_field = "logObj.source"
-					parameters {
-						extract_parameters {
-							rule = "rule"
-						}
-					}
-					enabled = true
-					order = 0
-				}
-				enabled = true
-				order = 0
-			}
+	resource "ibm_logs_rule_group" "logs_rule_group_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "test description"
+		creator     = "bot@ibm.com"
+		enabled     = true
+		rule_matchers {
+		  subsystem_name {
+			value = "mysql-cloudwatch"
+		  }
 		}
-	`, name)
+		rule_subgroups {
+		  rules {
+			name         = "mysql-parse"
+			source_field = "text"
+			parameters {
+			  parse_parameters {
+				destination_field = "text"
+				rule              = "(?P<timestamp>[^,]+),(?P<hostname>[^,]+),(?P<username>[^,]+),(?P<ip>[^,]+),(?P<connectionId>[0-9]+),(?P<queryId>[0-9]+),(?P<operation>[^,]+),(?P<database>[^,]+),'?(?P<object>.*)'?,(?P<returnCode>[0-9]+)"
+			  }
+			}
+			enabled = true
+			order   = 1
+		  }
+	  
+		  enabled = true
+		  order   = 1
+		}
+		order = 1
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name)
 }
 
 func testAccCheckIbmLogsRuleGroupConfig(name string, description string, creator string, enabled string, order string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_logs_rule_group" "logs_rule_group_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
 			description = "%s"
-			creator = "%s"
-			enabled = %s
+			creator     = "%s"
+			enabled     = %s
 			rule_matchers {
-				application_name {
-					value = "value"
-				}
+			subsystem_name {
+				value = "mysql-cloudwatch"
+			}
 			}
 			rule_subgroups {
-				id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-				rules {
-					id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-					name = "name"
-					description = "description"
-					source_field = "logObj.source"
-					parameters {
-						extract_parameters {
-							rule = "rule"
-						}
-					}
-					enabled = true
-					order = 0
+			rules {
+				name         = "mysql-parse"
+				source_field = "text"
+				parameters {
+				parse_parameters {
+					destination_field = "text"
+					rule              = "(?P<timestamp>[^,]+),(?P<hostname>[^,]+),(?P<username>[^,]+),(?P<ip>[^,]+),(?P<connectionId>[0-9]+),(?P<queryId>[0-9]+),(?P<operation>[^,]+),(?P<database>[^,]+),'?(?P<object>.*)'?,(?P<returnCode>[0-9]+)"
+				}
 				}
 				enabled = true
-				order = 0
+				order   = 1
+			}
+		
+			enabled = true
+			order   = 1
 			}
 			order = %s
 		}
-	`, name, description, creator, enabled, order)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, creator, enabled, order)
 }
 
 func testAccCheckIbmLogsRuleGroupExists(n string, obj logsv0.RuleGroup) resource.TestCheckFunc {

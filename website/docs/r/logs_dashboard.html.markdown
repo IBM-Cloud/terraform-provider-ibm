@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_dashboard
 
 Create, update, and delete logs_dashboards with this resource.
@@ -14,160 +16,120 @@ Create, update, and delete logs_dashboards with this resource.
 
 ```hcl
 resource "ibm_logs_dashboard" "logs_dashboard_instance" {
-  absolute_time_frame {
-		from = "2021-01-31T09:44:12Z"
-		to = "2021-01-31T09:44:12Z"
-  }
-  annotations {
-		href = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-		id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-		name = "Deployments"
-		enabled = true
-		source {
-			metrics {
-				promql_query {
-					value = "sum(up)"
-				}
-				strategy {
-					start_time_metric = {  }
-				}
-				message_template = "message_template"
-				labels = [ "labels" ]
-			}
-		}
-  }
-  description = "This dashboard shows the performance of our production environment."
-  filters {
-		source {
-			logs {
-				operator {
-					equals {
-						selection {
-							all = {  }
-						}
-					}
-				}
-				observation_field {
-					keypath = [ "keypath" ]
-					scope = "unspecified"
-				}
-			}
-		}
-		enabled = true
-		collapsed = true
-  }
-  folder_id {
-		value = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-  }
-  folder_path {
-		segments = [ "segments" ]
-  }
-  href = "6U1Q8Hpa263Se8PkRKaiE"
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-dashboard"
+  description = "example dashboard description"
   layout {
-		sections {
-			href = "href"
-			id {
-				value = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-			}
-			rows {
-				href = "href"
-				id {
-					value = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-				}
-				appearance {
-					height = 5
-				}
-				widgets {
-					href = "href"
-					id {
-						value = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-					}
-					title = "Response time"
-					description = "The average response time of the system"
-					definition {
-						line_chart {
-							legend {
-								is_visible = true
-								columns = [ "unspecified" ]
-								group_by_query = true
-							}
-							tooltip {
-								show_labels = true
-								type = "unspecified"
-							}
-							query_definitions {
-								id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-								query {
-									logs {
-										lucene_query {
-											value = "coralogix.metadata.applicationName:"production""
-										}
-										group_by = [ "group_by" ]
-										aggregations {
-											count = {  }
-										}
-										filters {
-											operator {
-												equals {
-													selection {
-														all = {  }
-													}
-												}
-											}
-											observation_field {
-												keypath = [ "keypath" ]
-												scope = "unspecified"
-											}
-										}
-										group_bys {
-											keypath = [ "keypath" ]
-											scope = "unspecified"
-										}
-									}
-								}
-								series_name_template = "{{severity}}"
-								series_count_limit = "10"
-								unit = "unspecified"
-								scale_type = "unspecified"
-								name = "CPU usage"
-								is_visible = true
-								color_scheme = "classic"
-								resolution {
-									interval = "1m"
-									buckets_presented = 100
-								}
-								data_mode_type = "high_unspecified"
-							}
-						}
-					}
-				}
-			}
-		}
+    sections {
+      id {
+        value = "b9ca2f71-7d7c-10fb-1a08-c78912705095"
+      }
+      rows {
+        id {
+          value = "70b12716-cb18-f933-5a89-3061734eaa2f"
+        }
+        appearance {
+          height = 19
+        }
+        widgets {
+          id {
+            value = "6118b86d-860c-c2cb-0cdf-effd62e9f331"
+          }
+          title       = "test"
+          description = "test"
+          definition {
+            line_chart {
+              legend {
+                is_visible     = true
+                group_by_query = true
+              }
+              tooltip {
+                show_labels = false
+                type        = "all"
+              }
+              query_definitions {
+                id           = "13139dad-3d45-16e1-fce2-03517daa71c4"
+                color_scheme = "cold"
+                name         = "Query 1"
+                is_visible   = true
+                scale_type   = "linear"
+                resolution {
+                  buckets_presented = 96
+                }
+                series_count_limit = 20
+                query {
+                  logs {
+                    group_by = []
+
+                    aggregations {
+                      min {
+                        observation_field {
+                          keypath = [
+                            "timestamp",
+                          ]
+                          scope = "metadata"
+                        }
+                      }
+                    }
+
+                    group_bys {
+                      keypath = [
+                        "severity",
+                      ]
+                      scope = "metadata"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
-  name = "My Dashboard"
-  variables {
-		name = "service_name"
-		definition {
-			multi_select {
-				source {
-					logs_path {
-						observation_field {
-							keypath = [ "keypath" ]
-							scope = "unspecified"
-						}
-					}
-				}
-				selection {
-					all = {  }
-				}
-				values_order_direction = "unspecified"
-			}
-		}
-		display_name = "Service Name"
+  filters {
+    source {
+      logs {
+        operator {
+          equals {
+            selection {
+              list {}
+            }
+          }
+        }
+        observation_field {
+          keypath = ["applicationname"]
+          scope   = "label"
+        }
+      }
+    }
+    enabled   = true
+    collapsed = false
   }
+  filters {
+    source {
+      logs {
+        # field = "field"
+        operator {
+          equals {
+            selection {
+              all {}
+            }
+          }
+        }
+        observation_field {
+          keypath = ["subsystemname"]
+          scope   = "label"
+        }
+      }
+    }
+    enabled   = true
+    collapsed = false
+  }
+  relative_time_frame = "900s"
 }
 ```
-
 ## Argument Reference
 
 You can specify the following arguments for this resource.

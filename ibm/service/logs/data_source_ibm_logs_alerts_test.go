@@ -24,7 +24,7 @@ func TestAccIbmLogsAlertsDataSourceBasic(t *testing.T) {
 	alertSeverity := "info_or_unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -44,7 +44,7 @@ func TestAccIbmLogsAlertsDataSourceAllArgs(t *testing.T) {
 	alertSeverity := "info_or_unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -67,42 +67,33 @@ func TestAccIbmLogsAlertsDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmLogsAlertsDataSourceConfigBasic(alertName string, alertIsActive string, alertSeverity string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_alert" "logs_alert_instance" {
-			name = "%s"
-			is_active = %s
-			severity = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
+			is_active   = false
+			severity    = "info_or_unspecified"
 			condition {
-				immediate = {  }
+			new_value {
+				parameters {
+				threshold          = 1.0
+				timeframe          = "timeframe_12_h"
+				group_by           = ["ibm.logId"]
+				relative_timeframe = "hour_or_unspecified"
+				cardinality_fields = []
+				}
+			}
 			}
 			notification_groups {
-				group_by_fields = [ "group_by_fields" ]
-				notifications {
-					retriggering_period_seconds = 0
-					notify_on = "triggered_only"
-					integration_id = 0
-				}
+			group_by_fields = ["ibm.logId"]
 			}
 			filters {
-				severities = [ "debug_or_unspecified" ]
-				metadata {
-					categories = [ "categories" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					computers = [ "computers" ]
-					classes = [ "classes" ]
-					methods = [ "methods" ]
-					ip_addresses = [ "ip_addresses" ]
-				}
-				alias = "alias"
-				text = "text"
-				ratio_alerts {
-					alias = "alias"
-					text = "text"
-					severities = [ "debug_or_unspecified" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					group_by = [ "group_by" ]
-				}
-				filter_type = "text_or_unspecified"
+			text        = "text"
+			filter_type = "text_or_unspecified"
+			}
+			meta_labels_strings = []
+			incident_settings {
+			retriggering_period_seconds = 43200
+			notify_on                   = "triggered_only"
 			}
 		}
 
@@ -110,385 +101,55 @@ func testAccCheckIbmLogsAlertsDataSourceConfigBasic(alertName string, alertIsAct
 			depends_on = [
 				ibm_logs_alert.logs_alert_instance
 			]
+			instance_id = ibm_logs_alert.logs_alert_instance.instance_id
+			region 		= ibm_logs_alert.logs_alert_instance.region
 		}
-	`, alertName, alertIsActive, alertSeverity)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, alertName)
 }
 
 func testAccCheckIbmLogsAlertsDataSourceConfig(alertName string, alertDescription string, alertIsActive string, alertSeverity string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_alert" "logs_alert_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
 			description = "%s"
-			is_active = %s
-			severity = "%s"
-			expiration {
-				year = 1
-				month = 1
-				day = 1
-			}
+			is_active   = %s
+			severity    = "%s"
 			condition {
-				immediate = {  }
+			new_value {
+				parameters {
+				threshold          = 1.0
+				timeframe          = "timeframe_12_h"
+				group_by           = ["ibm.logId"]
+				relative_timeframe = "hour_or_unspecified"
+				cardinality_fields = []
+				}
+			}
 			}
 			notification_groups {
-				group_by_fields = [ "group_by_fields" ]
-				notifications {
-					retriggering_period_seconds = 0
-					notify_on = "triggered_only"
-					integration_id = 0
-				}
+			group_by_fields = ["ibm.logId"]
 			}
 			filters {
-				severities = [ "debug_or_unspecified" ]
-				metadata {
-					categories = [ "categories" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					computers = [ "computers" ]
-					classes = [ "classes" ]
-					methods = [ "methods" ]
-					ip_addresses = [ "ip_addresses" ]
-				}
-				alias = "alias"
-				text = "text"
-				ratio_alerts {
-					alias = "alias"
-					text = "text"
-					severities = [ "debug_or_unspecified" ]
-					applications = [ "applications" ]
-					subsystems = [ "subsystems" ]
-					group_by = [ "group_by" ]
-				}
-				filter_type = "text_or_unspecified"
+			text        = "text"
+			filter_type = "text_or_unspecified"
 			}
-			active_when {
-				timeframes {
-					days_of_week = [ "monday_or_unspecified" ]
-					range {
-						start {
-							hours = 1
-							minutes = 1
-							seconds = 1
-						}
-						end {
-							hours = 1
-							minutes = 1
-							seconds = 1
-						}
-					}
-				}
-			}
-			notification_payload_filters = "FIXME"
-			meta_labels {
-				key = "key"
-				value = "value"
-			}
-			meta_labels_strings = "FIXME"
-			tracing_alert {
-				condition_latency = 0
-				field_filters {
-					field = "field"
-					filters {
-						values = [ "values" ]
-						operator = "operator"
-					}
-				}
-				tag_filters {
-					field = "field"
-					filters {
-						values = [ "values" ]
-						operator = "operator"
-					}
-				}
-			}
+			meta_labels_strings = []
 			incident_settings {
-				retriggering_period_seconds = 0
-				notify_on = "triggered_only"
-				use_as_notification_settings = true
+			retriggering_period_seconds = 43200
+			notify_on                   = "triggered_only"
 			}
 		}
+
 
 		data "ibm_logs_alerts" "logs_alerts_instance" {
 			depends_on = [
 				ibm_logs_alert.logs_alert_instance
 			]
+			instance_id = ibm_logs_alert.logs_alert_instance.instance_id
+			region 		= ibm_logs_alert.logs_alert_instance.region
 		}
-	`, alertName, alertDescription, alertIsActive, alertSeverity)
-}
-
-func TestDataSourceIbmLogsAlertsAlertToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		alertsV1DateModel := make(map[string]interface{})
-		alertsV1DateModel["year"] = int(38)
-		alertsV1DateModel["month"] = int(38)
-		alertsV1DateModel["day"] = int(38)
-
-		alertsV1MetricAlertConditionParametersModel := make(map[string]interface{})
-		alertsV1MetricAlertConditionParametersModel["metric_field"] = "testString"
-		alertsV1MetricAlertConditionParametersModel["metric_source"] = "logs2metrics_or_unspecified"
-		alertsV1MetricAlertConditionParametersModel["arithmetic_operator"] = "avg_or_unspecified"
-		alertsV1MetricAlertConditionParametersModel["arithmetic_operator_modifier"] = int(0)
-		alertsV1MetricAlertConditionParametersModel["sample_threshold_percentage"] = int(0)
-		alertsV1MetricAlertConditionParametersModel["non_null_percentage"] = int(0)
-		alertsV1MetricAlertConditionParametersModel["swap_null_values"] = true
-
-		alertsV1MetricAlertPromqlConditionParametersModel := make(map[string]interface{})
-		alertsV1MetricAlertPromqlConditionParametersModel["promql_text"] = "testString"
-		alertsV1MetricAlertPromqlConditionParametersModel["arithmetic_operator_modifier"] = int(0)
-		alertsV1MetricAlertPromqlConditionParametersModel["sample_threshold_percentage"] = int(0)
-		alertsV1MetricAlertPromqlConditionParametersModel["non_null_percentage"] = int(0)
-		alertsV1MetricAlertPromqlConditionParametersModel["swap_null_values"] = true
-
-		alertsV1RelatedExtendedDataModel := make(map[string]interface{})
-		alertsV1RelatedExtendedDataModel["cleanup_deadman_duration"] = "cleanup_deadman_duration_never_or_unspecified"
-		alertsV1RelatedExtendedDataModel["should_trigger_deadman"] = true
-
-		alertsV2ConditionParametersModel := make(map[string]interface{})
-		alertsV2ConditionParametersModel["threshold"] = float64(1)
-		alertsV2ConditionParametersModel["timeframe"] = "timeframe_10_min"
-		alertsV2ConditionParametersModel["group_by"] = []string{"coralogix.metadata.applicationName"}
-		alertsV2ConditionParametersModel["metric_alert_parameters"] = []map[string]interface{}{alertsV1MetricAlertConditionParametersModel}
-		alertsV2ConditionParametersModel["metric_alert_promql_parameters"] = []map[string]interface{}{alertsV1MetricAlertPromqlConditionParametersModel}
-		alertsV2ConditionParametersModel["ignore_infinity"] = true
-		alertsV2ConditionParametersModel["relative_timeframe"] = "hour_or_unspecified"
-		alertsV2ConditionParametersModel["cardinality_fields"] = []string{"testString"}
-		alertsV2ConditionParametersModel["related_extended_data"] = []map[string]interface{}{alertsV1RelatedExtendedDataModel}
-
-		alertsV2MoreThanConditionModel := make(map[string]interface{})
-		alertsV2MoreThanConditionModel["parameters"] = []map[string]interface{}{alertsV2ConditionParametersModel}
-		alertsV2MoreThanConditionModel["evaluation_window"] = "rolling_or_unspecified"
-
-		alertsV2AlertConditionModel := make(map[string]interface{})
-		alertsV2AlertConditionModel["more_than"] = []map[string]interface{}{alertsV2MoreThanConditionModel}
-
-		alertsV2AlertNotificationModel := make(map[string]interface{})
-		alertsV2AlertNotificationModel["retriggering_period_seconds"] = int(0)
-		alertsV2AlertNotificationModel["notify_on"] = "triggered_only"
-		alertsV2AlertNotificationModel["integration_id"] = int(0)
-
-		alertsV2AlertNotificationGroupsModel := make(map[string]interface{})
-		alertsV2AlertNotificationGroupsModel["group_by_fields"] = []string{"coralogix.metadata.applicationName"}
-		alertsV2AlertNotificationGroupsModel["notifications"] = []map[string]interface{}{alertsV2AlertNotificationModel}
-
-		alertsV1AlertFiltersMetadataFiltersModel := make(map[string]interface{})
-		alertsV1AlertFiltersMetadataFiltersModel["categories"] = []string{"testString"}
-		alertsV1AlertFiltersMetadataFiltersModel["applications"] = []string{"testString"}
-		alertsV1AlertFiltersMetadataFiltersModel["subsystems"] = []string{"testString"}
-		alertsV1AlertFiltersMetadataFiltersModel["computers"] = []string{"testString"}
-		alertsV1AlertFiltersMetadataFiltersModel["classes"] = []string{"testString"}
-		alertsV1AlertFiltersMetadataFiltersModel["methods"] = []string{"testString"}
-		alertsV1AlertFiltersMetadataFiltersModel["ip_addresses"] = []string{"testString"}
-
-		alertsV1AlertFiltersRatioAlertModel := make(map[string]interface{})
-		alertsV1AlertFiltersRatioAlertModel["alias"] = "testString"
-		alertsV1AlertFiltersRatioAlertModel["text"] = "testString"
-		alertsV1AlertFiltersRatioAlertModel["severities"] = []string{"debug_or_unspecified"}
-		alertsV1AlertFiltersRatioAlertModel["applications"] = []string{"testString"}
-		alertsV1AlertFiltersRatioAlertModel["subsystems"] = []string{"testString"}
-		alertsV1AlertFiltersRatioAlertModel["group_by"] = []string{"testString"}
-
-		alertsV1AlertFiltersModel := make(map[string]interface{})
-		alertsV1AlertFiltersModel["severities"] = []string{"info"}
-		alertsV1AlertFiltersModel["metadata"] = []map[string]interface{}{alertsV1AlertFiltersMetadataFiltersModel}
-		alertsV1AlertFiltersModel["alias"] = "testString"
-		alertsV1AlertFiltersModel["text"] = "initiator.id.keyword:iam-ServiceId-10820fd6-c3fe-414e-8fd5-44ce95f7d34d AND action.keyword:cloud-object-storage.object.create"
-		alertsV1AlertFiltersModel["ratio_alerts"] = []map[string]interface{}{alertsV1AlertFiltersRatioAlertModel}
-		alertsV1AlertFiltersModel["filter_type"] = "text_or_unspecified"
-
-		alertsV1TimeModel := make(map[string]interface{})
-		alertsV1TimeModel["hours"] = int(18)
-		alertsV1TimeModel["minutes"] = int(30)
-		alertsV1TimeModel["seconds"] = int(38)
-
-		alertsV1TimeRangeModel := make(map[string]interface{})
-		alertsV1TimeRangeModel["start"] = []map[string]interface{}{alertsV1TimeModel}
-		alertsV1TimeRangeModel["end"] = []map[string]interface{}{alertsV1TimeModel}
-
-		alertsV1AlertActiveTimeframeModel := make(map[string]interface{})
-		alertsV1AlertActiveTimeframeModel["days_of_week"] = []string{"sunday", "monday_or_unspecified", "tuesday", "wednesday", "thursday", "friday", "saturday"}
-		alertsV1AlertActiveTimeframeModel["range"] = []map[string]interface{}{alertsV1TimeRangeModel}
-
-		alertsV1AlertActiveWhenModel := make(map[string]interface{})
-		alertsV1AlertActiveWhenModel["timeframes"] = []map[string]interface{}{alertsV1AlertActiveTimeframeModel}
-
-		alertsV1MetaLabelModel := make(map[string]interface{})
-		alertsV1MetaLabelModel["key"] = "env"
-		alertsV1MetaLabelModel["value"] = "dev"
-
-		alertsV1FiltersModel := make(map[string]interface{})
-		alertsV1FiltersModel["values"] = []string{"testString"}
-		alertsV1FiltersModel["operator"] = "testString"
-
-		alertsV1FilterDataModel := make(map[string]interface{})
-		alertsV1FilterDataModel["field"] = "testString"
-		alertsV1FilterDataModel["filters"] = []map[string]interface{}{alertsV1FiltersModel}
-
-		alertsV1TracingAlertModel := make(map[string]interface{})
-		alertsV1TracingAlertModel["condition_latency"] = int(0)
-		alertsV1TracingAlertModel["field_filters"] = []map[string]interface{}{alertsV1FilterDataModel}
-		alertsV1TracingAlertModel["tag_filters"] = []map[string]interface{}{alertsV1FilterDataModel}
-
-		alertsV2AlertIncidentSettingsModel := make(map[string]interface{})
-		alertsV2AlertIncidentSettingsModel["retriggering_period_seconds"] = int(300)
-		alertsV2AlertIncidentSettingsModel["notify_on"] = "triggered_only"
-		alertsV2AlertIncidentSettingsModel["use_as_notification_settings"] = true
-
-		model := make(map[string]interface{})
-		model["id"] = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
-		model["name"] = "Unique count alert"
-		model["description"] = "Example of unique count alert from terraform"
-		model["is_active"] = true
-		model["severity"] = "info_or_unspecified"
-		model["expiration"] = []map[string]interface{}{alertsV1DateModel}
-		model["condition"] = []map[string]interface{}{alertsV2AlertConditionModel}
-		model["notification_groups"] = []map[string]interface{}{alertsV2AlertNotificationGroupsModel}
-		model["filters"] = []map[string]interface{}{alertsV1AlertFiltersModel}
-		model["active_when"] = []map[string]interface{}{alertsV1AlertActiveWhenModel}
-		model["notification_payload_filters"] = []string{"testString"}
-		model["meta_labels"] = []map[string]interface{}{alertsV1MetaLabelModel}
-		model["meta_labels_strings"] = []string{"testString"}
-		model["tracing_alert"] = []map[string]interface{}{alertsV1TracingAlertModel}
-		model["unique_identifier"] = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
-		model["incident_settings"] = []map[string]interface{}{alertsV2AlertIncidentSettingsModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	alertsV1DateModel := new(logsv0.AlertsV1Date)
-	alertsV1DateModel.Year = core.Int64Ptr(int64(38))
-	alertsV1DateModel.Month = core.Int64Ptr(int64(38))
-	alertsV1DateModel.Day = core.Int64Ptr(int64(38))
-
-	alertsV1MetricAlertConditionParametersModel := new(logsv0.AlertsV1MetricAlertConditionParameters)
-	alertsV1MetricAlertConditionParametersModel.MetricField = core.StringPtr("testString")
-	alertsV1MetricAlertConditionParametersModel.MetricSource = core.StringPtr("logs2metrics_or_unspecified")
-	alertsV1MetricAlertConditionParametersModel.ArithmeticOperator = core.StringPtr("avg_or_unspecified")
-	alertsV1MetricAlertConditionParametersModel.ArithmeticOperatorModifier = core.Int64Ptr(int64(0))
-	alertsV1MetricAlertConditionParametersModel.SampleThresholdPercentage = core.Int64Ptr(int64(0))
-	alertsV1MetricAlertConditionParametersModel.NonNullPercentage = core.Int64Ptr(int64(0))
-	alertsV1MetricAlertConditionParametersModel.SwapNullValues = core.BoolPtr(true)
-
-	alertsV1MetricAlertPromqlConditionParametersModel := new(logsv0.AlertsV1MetricAlertPromqlConditionParameters)
-	alertsV1MetricAlertPromqlConditionParametersModel.PromqlText = core.StringPtr("testString")
-	alertsV1MetricAlertPromqlConditionParametersModel.ArithmeticOperatorModifier = core.Int64Ptr(int64(0))
-	alertsV1MetricAlertPromqlConditionParametersModel.SampleThresholdPercentage = core.Int64Ptr(int64(0))
-	alertsV1MetricAlertPromqlConditionParametersModel.NonNullPercentage = core.Int64Ptr(int64(0))
-	alertsV1MetricAlertPromqlConditionParametersModel.SwapNullValues = core.BoolPtr(true)
-
-	alertsV1RelatedExtendedDataModel := new(logsv0.AlertsV1RelatedExtendedData)
-	alertsV1RelatedExtendedDataModel.CleanupDeadmanDuration = core.StringPtr("cleanup_deadman_duration_never_or_unspecified")
-	alertsV1RelatedExtendedDataModel.ShouldTriggerDeadman = core.BoolPtr(true)
-
-	alertsV2ConditionParametersModel := new(logsv0.AlertsV2ConditionParameters)
-	alertsV2ConditionParametersModel.Threshold = core.Float64Ptr(float64(1))
-	alertsV2ConditionParametersModel.Timeframe = core.StringPtr("timeframe_10_min")
-	alertsV2ConditionParametersModel.GroupBy = []string{"coralogix.metadata.applicationName"}
-	alertsV2ConditionParametersModel.MetricAlertParameters = alertsV1MetricAlertConditionParametersModel
-	alertsV2ConditionParametersModel.MetricAlertPromqlParameters = alertsV1MetricAlertPromqlConditionParametersModel
-	alertsV2ConditionParametersModel.IgnoreInfinity = core.BoolPtr(true)
-	alertsV2ConditionParametersModel.RelativeTimeframe = core.StringPtr("hour_or_unspecified")
-	alertsV2ConditionParametersModel.CardinalityFields = []string{"testString"}
-	alertsV2ConditionParametersModel.RelatedExtendedData = alertsV1RelatedExtendedDataModel
-
-	alertsV2MoreThanConditionModel := new(logsv0.AlertsV2MoreThanCondition)
-	alertsV2MoreThanConditionModel.Parameters = alertsV2ConditionParametersModel
-	alertsV2MoreThanConditionModel.EvaluationWindow = core.StringPtr("rolling_or_unspecified")
-
-	alertsV2AlertConditionModel := new(logsv0.AlertsV2AlertConditionConditionMoreThan)
-	alertsV2AlertConditionModel.MoreThan = alertsV2MoreThanConditionModel
-
-	alertsV2AlertNotificationModel := new(logsv0.AlertsV2AlertNotificationIntegrationTypeIntegrationID)
-	alertsV2AlertNotificationModel.RetriggeringPeriodSeconds = core.Int64Ptr(int64(0))
-	alertsV2AlertNotificationModel.NotifyOn = core.StringPtr("triggered_only")
-	alertsV2AlertNotificationModel.IntegrationID = core.Int64Ptr(int64(0))
-
-	alertsV2AlertNotificationGroupsModel := new(logsv0.AlertsV2AlertNotificationGroups)
-	alertsV2AlertNotificationGroupsModel.GroupByFields = []string{"coralogix.metadata.applicationName"}
-	alertsV2AlertNotificationGroupsModel.Notifications = []logsv0.AlertsV2AlertNotificationIntf{alertsV2AlertNotificationModel}
-
-	alertsV1AlertFiltersMetadataFiltersModel := new(logsv0.AlertsV1AlertFiltersMetadataFilters)
-	alertsV1AlertFiltersMetadataFiltersModel.Categories = []string{"testString"}
-	alertsV1AlertFiltersMetadataFiltersModel.Applications = []string{"testString"}
-	alertsV1AlertFiltersMetadataFiltersModel.Subsystems = []string{"testString"}
-	alertsV1AlertFiltersMetadataFiltersModel.Computers = []string{"testString"}
-	alertsV1AlertFiltersMetadataFiltersModel.Classes = []string{"testString"}
-	alertsV1AlertFiltersMetadataFiltersModel.Methods = []string{"testString"}
-	alertsV1AlertFiltersMetadataFiltersModel.IpAddresses = []string{"testString"}
-
-	alertsV1AlertFiltersRatioAlertModel := new(logsv0.AlertsV1AlertFiltersRatioAlert)
-	alertsV1AlertFiltersRatioAlertModel.Alias = core.StringPtr("testString")
-	alertsV1AlertFiltersRatioAlertModel.Text = core.StringPtr("testString")
-	alertsV1AlertFiltersRatioAlertModel.Severities = []string{"debug_or_unspecified"}
-	alertsV1AlertFiltersRatioAlertModel.Applications = []string{"testString"}
-	alertsV1AlertFiltersRatioAlertModel.Subsystems = []string{"testString"}
-	alertsV1AlertFiltersRatioAlertModel.GroupBy = []string{"testString"}
-
-	alertsV1AlertFiltersModel := new(logsv0.AlertsV1AlertFilters)
-	alertsV1AlertFiltersModel.Severities = []string{"info"}
-	alertsV1AlertFiltersModel.Metadata = alertsV1AlertFiltersMetadataFiltersModel
-	alertsV1AlertFiltersModel.Alias = core.StringPtr("testString")
-	alertsV1AlertFiltersModel.Text = core.StringPtr("initiator.id.keyword:iam-ServiceId-10820fd6-c3fe-414e-8fd5-44ce95f7d34d AND action.keyword:cloud-object-storage.object.create")
-	alertsV1AlertFiltersModel.RatioAlerts = []logsv0.AlertsV1AlertFiltersRatioAlert{*alertsV1AlertFiltersRatioAlertModel}
-	alertsV1AlertFiltersModel.FilterType = core.StringPtr("text_or_unspecified")
-
-	alertsV1TimeModel := new(logsv0.AlertsV1Time)
-	alertsV1TimeModel.Hours = core.Int64Ptr(int64(18))
-	alertsV1TimeModel.Minutes = core.Int64Ptr(int64(30))
-	alertsV1TimeModel.Seconds = core.Int64Ptr(int64(38))
-
-	alertsV1TimeRangeModel := new(logsv0.AlertsV1TimeRange)
-	alertsV1TimeRangeModel.Start = alertsV1TimeModel
-	alertsV1TimeRangeModel.End = alertsV1TimeModel
-
-	alertsV1AlertActiveTimeframeModel := new(logsv0.AlertsV1AlertActiveTimeframe)
-	alertsV1AlertActiveTimeframeModel.DaysOfWeek = []string{"sunday", "monday_or_unspecified", "tuesday", "wednesday", "thursday", "friday", "saturday"}
-	alertsV1AlertActiveTimeframeModel.Range = alertsV1TimeRangeModel
-
-	alertsV1AlertActiveWhenModel := new(logsv0.AlertsV1AlertActiveWhen)
-	alertsV1AlertActiveWhenModel.Timeframes = []logsv0.AlertsV1AlertActiveTimeframe{*alertsV1AlertActiveTimeframeModel}
-
-	alertsV1MetaLabelModel := new(logsv0.AlertsV1MetaLabel)
-	alertsV1MetaLabelModel.Key = core.StringPtr("env")
-	alertsV1MetaLabelModel.Value = core.StringPtr("dev")
-
-	alertsV1FiltersModel := new(logsv0.AlertsV1Filters)
-	alertsV1FiltersModel.Values = []string{"testString"}
-	alertsV1FiltersModel.Operator = core.StringPtr("testString")
-
-	alertsV1FilterDataModel := new(logsv0.AlertsV1FilterData)
-	alertsV1FilterDataModel.Field = core.StringPtr("testString")
-	alertsV1FilterDataModel.Filters = []logsv0.AlertsV1Filters{*alertsV1FiltersModel}
-
-	alertsV1TracingAlertModel := new(logsv0.AlertsV1TracingAlert)
-	alertsV1TracingAlertModel.ConditionLatency = core.Int64Ptr(int64(0))
-	alertsV1TracingAlertModel.FieldFilters = []logsv0.AlertsV1FilterData{*alertsV1FilterDataModel}
-	alertsV1TracingAlertModel.TagFilters = []logsv0.AlertsV1FilterData{*alertsV1FilterDataModel}
-
-	alertsV2AlertIncidentSettingsModel := new(logsv0.AlertsV2AlertIncidentSettings)
-	alertsV2AlertIncidentSettingsModel.RetriggeringPeriodSeconds = core.Int64Ptr(int64(300))
-	alertsV2AlertIncidentSettingsModel.NotifyOn = core.StringPtr("triggered_only")
-	alertsV2AlertIncidentSettingsModel.UseAsNotificationSettings = core.BoolPtr(true)
-
-	model := new(logsv0.Alert)
-	model.ID = CreateMockUUID("3dc02998-0b50-4ea8-b68a-4779d716fa1f")
-	model.Name = core.StringPtr("Unique count alert")
-	model.Description = core.StringPtr("Example of unique count alert from terraform")
-	model.IsActive = core.BoolPtr(true)
-	model.Severity = core.StringPtr("info_or_unspecified")
-	model.Expiration = alertsV1DateModel
-	model.Condition = alertsV2AlertConditionModel
-	model.NotificationGroups = []logsv0.AlertsV2AlertNotificationGroups{*alertsV2AlertNotificationGroupsModel}
-	model.Filters = alertsV1AlertFiltersModel
-	model.ActiveWhen = alertsV1AlertActiveWhenModel
-	model.NotificationPayloadFilters = []string{"testString"}
-	model.MetaLabels = []logsv0.AlertsV1MetaLabel{*alertsV1MetaLabelModel}
-	model.MetaLabelsStrings = []string{"testString"}
-	model.TracingAlert = alertsV1TracingAlertModel
-	model.UniqueIdentifier = CreateMockUUID("3dc02998-0b50-4ea8-b68a-4779d716fa1f")
-	model.IncidentSettings = alertsV2AlertIncidentSettingsModel
-
-	result, err := logs.DataSourceIbmLogsAlertsAlertToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, alertName, alertDescription, alertIsActive, alertSeverity)
 }
 
 func TestDataSourceIbmLogsAlertsAlertsV1DateToMap(t *testing.T) {

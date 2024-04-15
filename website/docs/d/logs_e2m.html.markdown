@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_e2m
 
 Provides a read-only data source to retrieve information about a logs_e2m. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,8 +15,10 @@ Provides a read-only data source to retrieve information about a logs_e2m. You c
 ## Example Usage
 
 ```hcl
-data "ibm_logs_e2m" "logs_e2m" {
-	logs_e2m_id = "logs_e2m_id"
+data "ibm_logs_e2m" "logs_e2m_instance" {
+  instance_id = ibm_logs_e2m.logs_e2m_instance.instance_id
+  region      = ibm_logs_e2m.logs_e2m_instance.region
+  logs_e2m_id = ibm_logs_e2m.logs_e2m_instance.e2m_id
 }
 ```
 
@@ -22,6 +26,8 @@ data "ibm_logs_e2m" "logs_e2m" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `logs_e2m_id` - (Required, Forces new resource, String) id of e2m to be deleted.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 

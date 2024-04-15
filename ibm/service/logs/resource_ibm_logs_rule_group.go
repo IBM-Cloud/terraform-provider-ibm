@@ -113,7 +113,8 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The id of the rule subgroup.",
 						},
 						"rules": &schema.Schema{
@@ -124,7 +125,8 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Optional:    true,
+										Computed:    true,
 										Description: "Unique identifier of the rule.",
 									},
 									"name": &schema.Schema{
@@ -454,7 +456,7 @@ func resourceIbmLogsRuleGroupCreate(context context.Context, d *schema.ResourceD
 	if _, ok := d.GetOk("description"); ok {
 		createRuleGroupOptions.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("enabled"); ok {
+	if _, ok := d.GetOkExists("enabled"); ok {
 		createRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 	}
 	if _, ok := d.GetOk("creator"); ok {
@@ -596,8 +598,16 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("rule_subgroups") {
+	if d.HasChange("name") ||
+		d.HasChange("rule_subgroups") ||
+		d.HasChange("description") ||
+		d.HasChange("enabled") ||
+		d.HasChange("creator") ||
+		d.HasChange("rule_matchers") ||
+		d.HasChange("order") {
+
 		updateRuleGroupOptions.SetName(d.Get("name").(string))
+
 		var ruleSubgroups []logsv0.RulesV1CreateRuleGroupRequestCreateRuleSubgroup
 		for _, v := range d.Get("rule_subgroups").([]interface{}) {
 			value := v.(map[string]interface{})
@@ -608,35 +618,31 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 			ruleSubgroups = append(ruleSubgroups, *ruleSubgroupsItem)
 		}
 		updateRuleGroupOptions.SetRuleSubgroups(ruleSubgroups)
-		hasChange = true
-	}
-	if d.HasChange("description") {
-		updateRuleGroupOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
-	if d.HasChange("enabled") {
-		updateRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
-		hasChange = true
-	}
-	if d.HasChange("creator") {
-		updateRuleGroupOptions.SetCreator(d.Get("creator").(string))
-		hasChange = true
-	}
-	if d.HasChange("rule_matchers") {
-		var ruleMatchers []logsv0.RulesV1RuleMatcherIntf
-		for _, v := range d.Get("rule_matchers").([]interface{}) {
-			value := v.(map[string]interface{})
-			ruleMatchersItem, err := ResourceIbmLogsRuleGroupMapToRulesV1RuleMatcher(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			ruleMatchers = append(ruleMatchers, ruleMatchersItem)
+
+		if _, ok := d.GetOk("description"); ok {
+			updateRuleGroupOptions.SetDescription(d.Get("description").(string))
 		}
-		updateRuleGroupOptions.SetRuleMatchers(ruleMatchers)
-		hasChange = true
-	}
-	if d.HasChange("order") {
-		updateRuleGroupOptions.SetOrder(int64(d.Get("order").(int)))
+		if _, ok := d.GetOkExists("enabled"); ok {
+			updateRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
+		}
+		if _, ok := d.GetOk("creator"); ok {
+			updateRuleGroupOptions.SetCreator(d.Get("creator").(string))
+		}
+		if _, ok := d.GetOk("rule_matchers"); ok {
+			var ruleMatchers []logsv0.RulesV1RuleMatcherIntf
+			for _, v := range d.Get("rule_matchers").([]interface{}) {
+				value := v.(map[string]interface{})
+				ruleMatchersItem, err := ResourceIbmLogsRuleGroupMapToRulesV1RuleMatcher(value)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				ruleMatchers = append(ruleMatchers, ruleMatchersItem)
+			}
+			updateRuleGroupOptions.SetRuleMatchers(ruleMatchers)
+		}
+		if _, ok := d.GetOk("order"); ok {
+			updateRuleGroupOptions.SetOrder(int64(d.Get("order").(int)))
+		}
 		hasChange = true
 	}
 

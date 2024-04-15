@@ -25,35 +25,31 @@ func TestAccIbmLogsOutgoingWebhookBasic(t *testing.T) {
 	var conf logsv0.OutgoingWebhook
 	typeVar := "ibm_event_notifications"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	url := fmt.Sprintf("tf_url_%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "ibm_event_notifications"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	urlUpdate := fmt.Sprintf("tf_url_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsOutgoingWebhookDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsOutgoingWebhookConfigBasic(typeVar, name, url),
+				Config: testAccCheckIbmLogsOutgoingWebhookConfigBasic(typeVar, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmLogsOutgoingWebhookExists("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", conf),
 					resource.TestCheckResourceAttr("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "url", url),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmLogsOutgoingWebhookConfigBasic(typeVarUpdate, nameUpdate, urlUpdate),
+				Config: testAccCheckIbmLogsOutgoingWebhookConfigBasic(typeVarUpdate, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "type", typeVarUpdate),
 					resource.TestCheckResourceAttr("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "url", urlUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_outgoing_webhook.logs_outgoing_webhook",
+				ResourceName:      "ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -61,14 +57,19 @@ func TestAccIbmLogsOutgoingWebhookBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmLogsOutgoingWebhookConfigBasic(typeVar string, name string, url string) string {
+func testAccCheckIbmLogsOutgoingWebhookConfigBasic(typeVar string, name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
-			type = "%s"
-			name = "%s"
-			url = "%s"
+	resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
+		instance_id            = "%s"
+		region                 = "%s"
+		name                   = "%s"
+		type                   = "%s"
+		ibm_event_notifications {
+		  event_notifications_instance_id = "%s"
+		  region_id                       = "%s"
 		}
-	`, typeVar, name, url)
+	  }
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, typeVar, acc.LogsEventNotificationInstanceId, acc.LogsEventNotificationInstanceRegion)
 }
 
 func testAccCheckIbmLogsOutgoingWebhookExists(n string, obj logsv0.OutgoingWebhook) resource.TestCheckFunc {

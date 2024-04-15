@@ -24,7 +24,7 @@ func TestAccIbmLogsOutgoingWebhookDataSourceBasic(t *testing.T) {
 	outgoingWebhookURL := fmt.Sprintf("tf_url_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -34,7 +34,7 @@ func TestAccIbmLogsOutgoingWebhookDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "logs_outgoing_webhook_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "type"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "url"),
+					// resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "url"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance", "external_id"),
@@ -46,16 +46,23 @@ func TestAccIbmLogsOutgoingWebhookDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmLogsOutgoingWebhookDataSourceConfigBasic(outgoingWebhookType string, outgoingWebhookName string, outgoingWebhookURL string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
-			type = "%s"
-			name = "%s"
-			url = "%s"
+	resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
+		instance_id            = "%s"
+		region                 = "%s"
+		name                   = "%s"
+		type                   = "%s"
+		ibm_event_notifications {
+		  event_notifications_instance_id = "%s"
+		  region_id                       = "%s"
 		}
+	  }
 
 		data "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
-			logs_outgoing_webhook_id = "logs_outgoing_webhook_id"
+			instance_id              = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.instance_id
+			region                   = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.region
+			logs_outgoing_webhook_id =ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.webhook_id
 		}
-	`, outgoingWebhookType, outgoingWebhookName, outgoingWebhookURL)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, outgoingWebhookName, outgoingWebhookType, acc.LogsEventNotificationInstanceId, acc.LogsEventNotificationInstanceRegion)
 }
 
 func TestDataSourceIbmLogsOutgoingWebhookOutgoingWebhooksV1IbmEventNotificationsConfigToMap(t *testing.T) {

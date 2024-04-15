@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -18,12 +19,14 @@ import (
 )
 
 func TestAccIbmLogsOutgoingWebhooksDataSourceBasic(t *testing.T) {
+	outgoingWebhookType := "ibm_event_notifications"
+	outgoingWebhookName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsOutgoingWebhooksDataSourceConfigBasic(),
+				Config: testAccCheckIbmLogsOutgoingWebhooksDataSourceConfigBasic(outgoingWebhookType, outgoingWebhookName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_logs_outgoing_webhooks.logs_outgoing_webhooks_instance", "id"),
 				),
@@ -32,12 +35,24 @@ func TestAccIbmLogsOutgoingWebhooksDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmLogsOutgoingWebhooksDataSourceConfigBasic() string {
+func testAccCheckIbmLogsOutgoingWebhooksDataSourceConfigBasic(outgoingWebhookType string, outgoingWebhookName string) string {
 	return fmt.Sprintf(`
-		data "ibm_logs_outgoing_webhooks" "logs_outgoing_webhooks_instance" {
-			type = "ibm_event_notifications"
+	resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
+		instance_id            = "%s"
+		region                 = "%s"
+		name                   = "%s"
+		type                   = "%s"
+		ibm_event_notifications {
+		  event_notifications_instance_id = "%s"
+		  region_id                       = "%s"
 		}
-	`)
+	  }
+		data "ibm_logs_outgoing_webhooks" "logs_outgoing_webhooks_instance" {
+			instance_id              = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.instance_id
+			region                   = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.region
+			type					 = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.type
+		}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, outgoingWebhookName, outgoingWebhookType, acc.LogsEventNotificationInstanceId, acc.LogsEventNotificationInstanceRegion)
 }
 
 func TestDataSourceIbmLogsOutgoingWebhooksOutgoingWebhookSummaryToMap(t *testing.T) {

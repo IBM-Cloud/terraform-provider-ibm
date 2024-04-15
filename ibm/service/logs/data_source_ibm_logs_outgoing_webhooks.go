@@ -126,7 +126,9 @@ func DataSourceIbmLogsOutgoingWebhooksOutgoingWebhookSummaryToMap(model *logsv0.
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID.String()
 	modelMap["name"] = *model.Name
-	modelMap["url"] = *model.URL
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["updated_at"] = model.UpdatedAt.String()
 	modelMap["external_id"] = flex.IntValue(model.ExternalID)

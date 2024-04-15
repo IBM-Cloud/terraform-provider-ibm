@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_rule_group
 
 Create, update, and delete logs_rule_groups with this resource.
@@ -14,32 +16,35 @@ Create, update, and delete logs_rule_groups with this resource.
 
 ```hcl
 resource "ibm_logs_rule_group" "logs_rule_group_instance" {
-  creator = "terraform-rules-creator"
-  description = "Rule group to extract severity from logs"
-  name = "rule group"
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-rule-group"
+  description = "example rule group decription"
+  creator     = "bot@ibm.com"
+  enabled     = false
   rule_matchers {
-		application_name {
-			value = "value"
-		}
+    subsystem_name {
+      value = "mysql-cloudwatch"
+    }
   }
   rule_subgroups {
-		id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-		rules {
-			id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-			name = "name"
-			description = "description"
-			source_field = "logObj.source"
-			parameters {
-				extract_parameters {
-					rule = "rule"
-				}
-			}
-			enabled = true
-			order = 0
-		}
-		enabled = true
-		order = 0
+    rules {
+      name         = "mysql-parse"
+      source_field = "text"
+      parameters {
+        parse_parameters {
+          destination_field = "text"
+          rule              = "(?P<timestamp>[^,]+),(?P<hostname>[^,]+),(?P<username>[^,]+),(?P<ip>[^,]+),(?P<connectionId>[0-9]+),(?P<queryId>[0-9]+),(?P<operation>[^,]+),(?P<database>[^,]+),'?(?P<object>.*)'?,(?P<returnCode>[0-9]+)"
+        }
+      }
+      enabled = true
+      order   = 1
+    }
+
+    enabled = true
+    order   = 1
   }
+  order = 4294967
 }
 ```
 

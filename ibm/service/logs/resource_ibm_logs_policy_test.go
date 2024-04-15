@@ -28,7 +28,7 @@ func TestAccIbmLogsPolicyBasic(t *testing.T) {
 	priorityUpdate := "type_high"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsPolicyDestroy,
 		Steps: []resource.TestStep{
@@ -61,7 +61,7 @@ func TestAccIbmLogsPolicyAllArgs(t *testing.T) {
 	priorityUpdate := "type_high"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsPolicyDestroy,
 		Steps: []resource.TestStep{
@@ -83,7 +83,7 @@ func TestAccIbmLogsPolicyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_policy.logs_policy",
+				ResourceName:      "ibm_logs_policy.logs_policy_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -93,36 +93,41 @@ func TestAccIbmLogsPolicyAllArgs(t *testing.T) {
 
 func testAccCheckIbmLogsPolicyConfigBasic(name string, priority string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_policy" "logs_policy_instance" {
-			name = "%s"
-			priority = "%s"
+	resource "ibm_logs_policy" "logs_policy_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "Test description"
+		priority    = "%s"
+		application_rule {
+		  name         = "otel-links-test"
+		  rule_type_id = "start_with"
 		}
-	`, name, priority)
+		log_rules {
+		  severities = ["info"]
+		}
+	  }
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, priority)
 }
 
 func testAccCheckIbmLogsPolicyConfig(name string, description string, priority string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_logs_policy" "logs_policy_instance" {
-			name = "%s"
-			description = "%s"
-			priority = "%s"
-			application_rule {
-				rule_type_id = "unspecified"
-				name = "name"
-			}
-			subsystem_rule {
-				rule_type_id = "unspecified"
-				name = "name"
-			}
-			archive_retention {
-				id = "id"
-			}
-			log_rules {
-				severities = [ "unspecified" ]
-			}
+	resource "ibm_logs_policy" "logs_policy_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "%s"
+		priority    = "%s"
+		application_rule {
+		  name         = "otel-links-test"
+		  rule_type_id = "start_with"
 		}
-	`, name, description, priority)
+		log_rules {
+		  severities = ["info"]
+		}
+	  }
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, priority)
 }
 
 func testAccCheckIbmLogsPolicyExists(n string, obj logsv0.Policy) resource.TestCheckFunc {

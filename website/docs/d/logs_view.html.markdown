@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_view
 
 Provides a read-only data source to retrieve information about a logs_view. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,8 +15,10 @@ Provides a read-only data source to retrieve information about a logs_view. You 
 ## Example Usage
 
 ```hcl
-data "ibm_logs_view" "logs_view" {
-	logs_view_id = 2
+data "ibm_logs_view" "logs_view_instance" {
+	instance_id = ibm_logs_view.logs_view_instance.instance_id
+	region      = ibm_logs_view.logs_view_instance.region
+	logs_view_id = ibm_logs_view.logs_view_instance.view_id
 }
 ```
 
@@ -22,6 +26,8 @@ data "ibm_logs_view" "logs_view" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `logs_view_id` - (Required, Forces new resource, Integer) View id.
 
 ## Attribute Reference

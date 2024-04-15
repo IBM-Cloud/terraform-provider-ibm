@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_outgoing_webhook
 
 Provides a read-only data source to retrieve information about a logs_outgoing_webhook. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,15 +15,18 @@ Provides a read-only data source to retrieve information about a logs_outgoing_w
 ## Example Usage
 
 ```hcl
-data "ibm_logs_outgoing_webhook" "logs_outgoing_webhook" {
-	logs_outgoing_webhook_id = "logs_outgoing_webhook_id"
+data "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
+  instance_id              = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.instance_id
+  region                   = ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.region
+  logs_outgoing_webhook_id =ibm_logs_outgoing_webhook.logs_outgoing_webhook_instance.webhook_id
 }
 ```
-
 ## Argument Reference
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `logs_outgoing_webhook_id` - (Required, Forces new resource, String) Outbound webhook ID.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 

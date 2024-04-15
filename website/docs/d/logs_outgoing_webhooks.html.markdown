@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_outgoing_webhooks
 
 Provides a read-only data source to retrieve information about logs_outgoing_webhooks. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,7 +15,10 @@ Provides a read-only data source to retrieve information about logs_outgoing_web
 ## Example Usage
 
 ```hcl
-data "ibm_logs_outgoing_webhooks" "logs_outgoing_webhooks" {
+data "ibm_logs_outgoing_webhooks" "logs_outgoing_webhooks_instance" {
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  type        = "ibm_event_notifications"
 }
 ```
 
@@ -21,6 +26,8 @@ data "ibm_logs_outgoing_webhooks" "logs_outgoing_webhooks" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `type` - (Optional, String) Outbound webhook type.
   * Constraints: The default value is `ibm_event_notifications`. Allowable values are: `ibm_event_notifications`.
 

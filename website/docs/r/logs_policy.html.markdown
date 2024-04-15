@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_policy
 
 Create, update, and delete logs_policys with this resource.
@@ -14,21 +16,17 @@ Create, update, and delete logs_policys with this resource.
 
 ```hcl
 resource "ibm_logs_policy" "logs_policy_instance" {
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-policy"
+  description = "example policy decription"
+  priority    = "type_medium"
   application_rule {
-		rule_type_id = "unspecified"
-		name = "name"
-  }
-  archive_retention {
-		id = "id"
+    name         = "otel-links-test"
+    rule_type_id = "start_with"
   }
   log_rules {
-		severities = [ "unspecified" ]
-  }
-  name = "name"
-  priority = "type_unspecified"
-  subsystem_rule {
-		rule_type_id = "unspecified"
-		name = "name"
+    severities = ["info"]
   }
 }
 ```

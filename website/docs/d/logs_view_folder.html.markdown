@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_view_folder
 
 Provides a read-only data source to retrieve information about a logs_view_folder. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,8 +15,10 @@ Provides a read-only data source to retrieve information about a logs_view_folde
 ## Example Usage
 
 ```hcl
-data "ibm_logs_view_folder" "logs_view_folder" {
-	logs_view_folder_id = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+data "ibm_logs_view_folder" "logs_view_folder_instance" {
+  instance_id = ibm_logs_view_folder.logs_view_folder_instance.instance_id
+  region      = ibm_logs_view_folder.logs_view_folder_instance.region
+  logs_view_folder_id = ibm_logs_view_folder.logs_view_folder_instance.view_folder_id
 }
 ```
 
@@ -22,6 +26,8 @@ data "ibm_logs_view_folder" "logs_view_folder" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `logs_view_folder_id` - (Required, Forces new resource, String) Folder id.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 

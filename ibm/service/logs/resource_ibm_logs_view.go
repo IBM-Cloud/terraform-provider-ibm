@@ -305,7 +305,12 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("search_query") || d.HasChange("time_selection") {
+	if d.HasChange("name") ||
+		d.HasChange("search_query") ||
+		d.HasChange("time_selection") ||
+		d.HasChange("filters") ||
+		d.HasChange("folder_id") {
+
 		replaceViewOptions.SetName(d.Get("name").(string))
 		searchQuery, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
 		if err != nil {
@@ -317,18 +322,17 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 			return diag.FromErr(err)
 		}
 		replaceViewOptions.SetTimeSelection(timeSelection)
-		hasChange = true
-	}
-	if d.HasChange("filters") {
-		filters, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		if _, ok := d.GetOk("filters"); ok {
+			filters, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			replaceViewOptions.SetFilters(filters)
 		}
-		replaceViewOptions.SetFilters(filters)
-		hasChange = true
-	}
-	if d.HasChange("folder_id") {
-		replaceViewOptions.SetFolderID(core.UUIDPtr(strfmt.UUID(d.Get("folder_id").(string))))
+		if _, ok := d.GetOk("folder_id"); ok {
+			replaceViewOptions.SetFolderID(core.UUIDPtr(strfmt.UUID(d.Get("folder_id").(string))))
+		}
+
 		hasChange = true
 	}
 
@@ -464,6 +468,15 @@ func ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(modelMap map[string]inte
 func ResourceIbmLogsViewMapToApisViewsV1Filter(modelMap map[string]interface{}) (*logsv0.ApisViewsV1Filter, error) {
 	model := &logsv0.ApisViewsV1Filter{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["selected_values"] != nil {
+		SelectedValuesMap := make(map[string]bool)
+		selectedValues := modelMap["selected_values"].(map[string]interface{})
+		for key, value := range selectedValues {
+			SelectedValuesMap[key] = value.(bool)
+		}
+		model.SelectedValues = SelectedValuesMap
+	}
+
 	// TODO: handle SelectedValues, map with entry type 'bool'
 	return model, nil
 }
@@ -561,7 +574,7 @@ func ResourceIbmLogsViewApisViewsV1FilterToMap(model *logsv0.ApisViewsV1Filter) 
 	modelMap["name"] = *model.Name
 	selectedValues := make(map[string]interface{})
 	for k, v := range model.SelectedValues {
-		selectedValues[k] = flex.Stringify(v)
+		selectedValues[k] = flex.PtrToBool(v)
 	}
 	modelMap["selected_values"] = selectedValues
 	return modelMap, nil

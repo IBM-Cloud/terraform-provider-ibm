@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_view
 
 Create, update, and delete logs_views with this resource.
@@ -14,22 +16,49 @@ Create, update, and delete logs_views with this resource.
 
 ```hcl
 resource "ibm_logs_view" "logs_view_instance" {
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-view"
   filters {
-		filters {
-			name = "applicationName"
-			selected_values = {"cs-rest-test1":true,"demo":true}
-		}
+    filters {
+      name = "applicationName"
+      selected_values = {
+        demo = true
+      }
+    }
+    filters {
+      name = "subsystemName"
+      selected_values = {
+        demo = true
+      }
+    }
+    filters {
+      name = "operationName"
+      selected_values = {
+        demo = true
+      }
+    }
+    filters {
+      name = "serviceName"
+      selected_values = {
+        demo = true
+      }
+    }
+    filters {
+      name = "severity"
+      selected_values = {
+        demo = true
+      }
+    }
   }
-  folder_id = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
-  name = "name"
   search_query {
-		query = "error"
+    query = "logs"
   }
   time_selection {
-		quick_selection {
-			caption = "Last hour"
-			seconds = 3600
-		}
+    custom_selection {
+      from_time = "2024-01-25T11:31:43.152Z"
+      to_time   = "2024-01-25T11:37:13.238Z"
+    }
   }
 }
 ```

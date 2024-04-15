@@ -22,7 +22,7 @@ func TestAccIbmLogsPolicyDataSourceBasic(t *testing.T) {
 	policyPriority := "type_unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -42,7 +42,7 @@ func TestAccIbmLogsPolicyDataSourceAllArgs(t *testing.T) {
 	policyPriority := "type_unspecified"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -72,42 +72,51 @@ func TestAccIbmLogsPolicyDataSourceAllArgs(t *testing.T) {
 func testAccCheckIbmLogsPolicyDataSourceConfigBasic(policyName string, policyPriority string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_policy" "logs_policy_instance" {
-			name = "%s"
-			priority = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
+			description = "Test description"
+			priority    = "%s"
+			application_rule {
+				name         = "otel-links-test"
+				rule_type_id = "start_with"
+			}
+			log_rules {
+				severities = ["info"]
+			}
 		}
 
 		data "ibm_logs_policy" "logs_policy_instance" {
-			logs_policy_id = "logs_policy_id"
+			instance_id    = ibm_logs_policy.logs_policy_instance.instance_id
+			region         = ibm_logs_policy.logs_policy_instance.region
+			logs_policy_id = ibm_logs_policy.logs_policy_instance.policy_id
 		}
-	`, policyName, policyPriority)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, policyName, policyPriority)
 }
 
 func testAccCheckIbmLogsPolicyDataSourceConfig(policyName string, policyDescription string, policyPriority string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_policy" "logs_policy_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
 			description = "%s"
-			priority = "%s"
+			priority    = "%s"
 			application_rule {
-				rule_type_id = "unspecified"
-				name = "name"
-			}
-			subsystem_rule {
-				rule_type_id = "unspecified"
-				name = "name"
-			}
-			archive_retention {
-				id = "id"
+				name         = "otel-links-test"
+				rule_type_id = "start_with"
 			}
 			log_rules {
-				severities = [ "unspecified" ]
+				severities = ["info"]
 			}
 		}
 
 		data "ibm_logs_policy" "logs_policy_instance" {
-			logs_policy_id = "logs_policy_id"
+			instance_id    = ibm_logs_policy.logs_policy_instance.instance_id
+			region         = ibm_logs_policy.logs_policy_instance.region
+			logs_policy_id = ibm_logs_policy.logs_policy_instance.policy_id
 		}
-	`, policyName, policyDescription, policyPriority)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, policyName, policyDescription, policyPriority)
 }
 
 func TestDataSourceIbmLogsPolicyQuotaV1RuleToMap(t *testing.T) {

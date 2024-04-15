@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_e2m
 
 Create, update, and delete logs_e2ms with this resource.
@@ -14,38 +16,18 @@ Create, update, and delete logs_e2ms with this resource.
 
 ```hcl
 resource "ibm_logs_e2m" "logs_e2m_instance" {
-  description = "avg and max the latency of catalog service"
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-E2M"
+  description = "example E2M decription"
   logs_query {
-		lucene = "lucene"
-		alias = "alias"
-		applicationname_filters = [ "applicationname_filters" ]
-		subsystemname_filters = [ "subsystemname_filters" ]
-		severity_filters = [ "unspecified" ]
+    applicationname_filters = []
+    severity_filters = [
+      "debug", "error"
+    ]
+    subsystemname_filters = []
   }
-  metric_fields {
-		target_base_metric_name = "target_base_metric_name"
-		source_field = "source_field"
-		aggregations {
-			enabled = true
-			agg_type = "unspecified"
-			target_metric_name = "target_metric_name"
-			samples {
-				sample_type = "unspecified"
-			}
-		}
-  }
-  metric_labels {
-		target_label = "target_label"
-		source_field = "source_field"
-  }
-  name = "Service catalog latency"
-  spans_query {
-		lucene = "lucene"
-		applicationname_filters = [ "applicationname_filters" ]
-		subsystemname_filters = [ "subsystemname_filters" ]
-		action_filters = [ "action_filters" ]
-		service_filters = [ "service_filters" ]
-  }
+  type = "logs2metrics"
 }
 ```
 

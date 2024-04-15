@@ -18,7 +18,7 @@ func TestAccIbmLogsViewDataSourceBasic(t *testing.T) {
 	viewName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -37,23 +37,60 @@ func TestAccIbmLogsViewDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmLogsViewDataSourceConfigBasic(viewName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_view" "logs_view_instance" {
-			name = "%s"
-			search_query {
-				query = "error"
+	resource "ibm_logs_view" "logs_view_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		filters {
+		  filters {
+			name = "applicationName"
+			selected_values = {
+			  demo = true
 			}
-			time_selection {
-				quick_selection {
-					caption = "Last hour"
-					seconds = 3600
-				}
+		  }
+		  filters {
+			name = "subsystemName"
+			selected_values = {
+			  demo = true
 			}
+		  }
+		  filters {
+			name = "operationName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "serviceName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "severity"
+			selected_values = {
+			  demo = true
+			}
+		  }
 		}
+		search_query {
+		  query = "logs"
+		}
+		time_selection {
+		  custom_selection {
+			from_time = "2024-01-25T11:31:43.152Z"
+			to_time   = "2024-01-25T11:37:13.238Z"
+		  }
+		}
+	}
 
-		data "ibm_logs_view" "logs_view_instance" {
-			logs_view_id = 2
-		}
-	`, viewName)
+	data "ibm_logs_view" "logs_view_instance" {
+		instance_id = ibm_logs_view.logs_view_instance.instance_id
+		region      = ibm_logs_view.logs_view_instance.region
+		logs_view_id = ibm_logs_view.logs_view_instance.view_id
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, viewName)
+
 }
 
 // Todo @kavya498: Fix unit testcases

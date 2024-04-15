@@ -22,7 +22,7 @@ func TestAccIbmLogsViewFoldersDataSourceBasic(t *testing.T) {
 	viewFolderName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -37,16 +37,20 @@ func TestAccIbmLogsViewFoldersDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmLogsViewFoldersDataSourceConfigBasic(viewFolderName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_view_folder" "logs_view_folder_instance" {
-			name = "%s"
-		}
+	resource "ibm_logs_view_folder" "logs_view_folder_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+	  }
 
-		data "ibm_logs_view_folders" "logs_view_folders_instance" {
-			depends_on = [
-				ibm_logs_view_folder.logs_view_folder_instance
-			]
-		}
-	`, viewFolderName)
+	data "ibm_logs_view_folders" "logs_view_folders_instance" {
+		depends_on = [
+			ibm_logs_view_folder.logs_view_folder_instance
+		]
+		instance_id = ibm_logs_view_folder.logs_view_folder_instance.instance_id
+		region      = ibm_logs_view_folder.logs_view_folder_instance.region
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, viewFolderName)
 }
 
 func TestDataSourceIbmLogsViewFoldersViewFolderToMap(t *testing.T) {

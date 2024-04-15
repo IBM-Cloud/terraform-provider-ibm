@@ -9254,7 +9254,7 @@ func resourceIbmLogsDashboardCreate(context context.Context, d *schema.ResourceD
 	if _, ok := d.GetOk("href"); ok {
 		bodyModelMap["href"] = d.Get("href")
 	}
-	bodyModelMap["id"] = d.Get("id")
+	// bodyModelMap["id"] = d.Get("id")
 	bodyModelMap["name"] = d.Get("name")
 	if _, ok := d.GetOk("description"); ok {
 		bodyModelMap["description"] = d.Get("description")
@@ -9496,7 +9496,7 @@ func resourceIbmLogsDashboardUpdate(context context.Context, d *schema.ResourceD
 		if _, ok := d.GetOk("href"); ok {
 			bodyModelMap["href"] = d.Get("href")
 		}
-		bodyModelMap["id"] = d.Get("id")
+		// bodyModelMap["id"] = d.Get("id")
 		bodyModelMap["name"] = d.Get("name")
 		if _, ok := d.GetOk("description"); ok {
 			bodyModelMap["description"] = d.Get("description")
@@ -10194,18 +10194,30 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEquals(modelMap map[s
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelection(modelMap map[string]interface{}) (logsv0.ApisDashboardsV1AstFilterEqualsSelectionIntf, error) {
 	model := &logsv0.ApisDashboardsV1AstFilterEqualsSelection{}
 	if modelMap["all"] != nil && len(modelMap["all"].([]interface{})) > 0 {
-		AllModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelection(modelMap["all"].([]interface{})[0].(map[string]interface{}))
+		allModelMap := make(map[string]interface{})
+		if modelMap["all"].([]interface{})[0] != nil {
+			allModelMap = modelMap["all"].([]interface{})[0].(map[string]interface{})
+		}
+
+		AllModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelection(allModelMap)
 		if err != nil {
 			return model, err
 		}
 		model.All = AllModel
+
 	}
 	if modelMap["list"] != nil && len(modelMap["list"].([]interface{})) > 0 {
-		ListModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap["list"].([]interface{})[0].(map[string]interface{}))
+		listModelMap := make(map[string]interface{})
+		if modelMap["list"].([]interface{})[0] != nil {
+			listModelMap = modelMap["list"].([]interface{})[0].(map[string]interface{})
+		}
+
+		ListModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(listModelMap)
 		if err != nil {
 			return model, err
 		}
 		model.List = ListModel
+
 	}
 	return model, nil
 }
@@ -13075,7 +13087,9 @@ func ResourceIbmLogsDashboardMapToDashboard(modelMap map[string]interface{}) (lo
 	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
 	}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))

@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_policies
 
 Provides a read-only data source to retrieve information about logs_policies. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,7 +15,11 @@ Provides a read-only data source to retrieve information about logs_policies. Yo
 ## Example Usage
 
 ```hcl
-data "ibm_logs_policies" "logs_policies" {
+data "ibm_logs_policies" "logs_policies_instance" {
+	instance_id  = ibm_logs_policy.logs_policy_instance.instance_id
+	region       = ibm_logs_policy.logs_policy_instance.region
+	enabled_only = true
+	source_type  = "logs"
 }
 ```
 
@@ -21,9 +27,11 @@ data "ibm_logs_policies" "logs_policies" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `enabled_only` - (Optional, Boolean) optionally filter only enabled policies.
 * `source_type` - (Optional, String) Source type to filter policies by.
-  * Constraints: The default value is `unspecified`. Allowable values are: `unspecified`, `logs`, `spans`.
+  * Constraints: The default value is `logs`. Allowable values are: `unspecified`, `logs`, `spans`.
 
 ## Attribute Reference
 

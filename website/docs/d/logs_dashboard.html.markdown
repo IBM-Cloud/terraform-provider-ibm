@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_dashboard
 
 Provides a read-only data source to retrieve information about a logs_dashboard. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
@@ -13,8 +15,10 @@ Provides a read-only data source to retrieve information about a logs_dashboard.
 ## Example Usage
 
 ```hcl
-data "ibm_logs_dashboard" "logs_dashboard" {
-	dashboard_id = "dashboard_id"
+data "ibm_logs_dashboard" "logs_dashboard_instance" {
+  instance_id  = ibm_logs_dashboard.logs_dashboard_instance.instance_id
+  region       = ibm_logs_dashboard.logs_dashboard_instance.region
+  dashboard_id = ibm_logs_dashboard.logs_dashboard_instance.dashboard_id
 }
 ```
 
@@ -22,6 +26,8 @@ data "ibm_logs_dashboard" "logs_dashboard" {
 
 You can specify the following arguments for this data source.
 
+* `instance_id` - (Required, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
 * `dashboard_id` - (Required, Forces new resource, String) The ID of the dashboard.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 

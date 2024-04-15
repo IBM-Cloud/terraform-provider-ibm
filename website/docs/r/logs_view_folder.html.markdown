@@ -6,6 +6,8 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 # ibm_logs_view_folder
 
 Create, update, and delete logs_view_folders with this resource.
@@ -14,8 +16,11 @@ Create, update, and delete logs_view_folders with this resource.
 
 ```hcl
 resource "ibm_logs_view_folder" "logs_view_folder_instance" {
-  name = "My folder"
+  instance_id = ibm_resource_instance.logs_instance.guid
+  region      = ibm_resource_instance.logs_instance.location
+  name        = "example-view-folder"
 }
+
 ```
 
 ## Argument Reference

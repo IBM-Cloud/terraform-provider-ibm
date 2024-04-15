@@ -18,7 +18,7 @@ func TestAccIbmLogsE2msDataSourceBasic(t *testing.T) {
 	event2MetricName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -34,10 +34,10 @@ func TestAccIbmLogsE2msDataSourceBasic(t *testing.T) {
 func TestAccIbmLogsE2msDataSourceAllArgs(t *testing.T) {
 	event2MetricName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	event2MetricDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	event2MetricType := "unspecified"
+	event2MetricType := "logs2metrics"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -60,62 +60,55 @@ func TestAccIbmLogsE2msDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmLogsE2msDataSourceConfigBasic(event2MetricName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_e2m" "logs_e2m_instance" {
-			name = "%s"
+	resource "ibm_logs_e2m" "logs_e2m_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		description = "test description"
+		logs_query {
+		  applicationname_filters = []
+		  severity_filters = [
+			"debug", "error"
+		  ]
+		  subsystemname_filters = []
 		}
-
-		data "ibm_logs_e2ms" "logs_e2ms_instance" {
-			depends_on = [
-				ibm_logs_e2m.logs_e2m_instance
-			]
-		}
-	`, event2MetricName)
+		type = "logs2metrics"
+	  }
+	data "ibm_logs_e2ms" "logs_e2ms_instance" {
+		instance_id = ibm_logs_e2m.logs_e2m_instance.instance_id
+		region      = ibm_logs_e2m.logs_e2m_instance.region
+		depends_on = [
+			ibm_logs_e2m.logs_e2m_instance
+		]
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, event2MetricName)
 }
 
 func testAccCheckIbmLogsE2msDataSourceConfig(event2MetricName string, event2MetricDescription string, event2MetricType string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_e2m" "logs_e2m_instance" {
-			name = "%s"
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
 			description = "%s"
-			metric_labels {
-				target_label = "target_label"
-				source_field = "source_field"
-			}
-			metric_fields {
-				target_base_metric_name = "target_base_metric_name"
-				source_field = "source_field"
-				aggregations {
-					enabled = true
-					agg_type = "unspecified"
-					target_metric_name = "target_metric_name"
-					samples {
-						sample_type = "unspecified"
-					}
-				}
+			logs_query {
+			applicationname_filters = []
+			severity_filters = [
+				"debug", "error"
+			]
+			subsystemname_filters = []
 			}
 			type = "%s"
-			spans_query {
-				lucene = "lucene"
-				applicationname_filters = [ "applicationname_filters" ]
-				subsystemname_filters = [ "subsystemname_filters" ]
-				action_filters = [ "action_filters" ]
-				service_filters = [ "service_filters" ]
-			}
-			logs_query {
-				lucene = "lucene"
-				alias = "alias"
-				applicationname_filters = [ "applicationname_filters" ]
-				subsystemname_filters = [ "subsystemname_filters" ]
-				severity_filters = [ "unspecified" ]
-			}
 		}
 
 		data "ibm_logs_e2ms" "logs_e2ms_instance" {
-			depends_on = [
+			instance_id = ibm_logs_e2m.logs_e2m_instance.instance_id
+			region      = ibm_logs_e2m.logs_e2m_instance.region
+			depends_on  = [
 				ibm_logs_e2m.logs_e2m_instance
 			]
 		}
-	`, event2MetricName, event2MetricDescription, event2MetricType)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, event2MetricName, event2MetricDescription, event2MetricType)
 }
 
 // Todo @kavya498: Fix unit testcases
