@@ -208,6 +208,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			host_flavor {
