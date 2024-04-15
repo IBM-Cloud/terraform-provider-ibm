@@ -296,7 +296,10 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "type"))
 	}
-
+	if d.HasChange("locked") {
+		replaceTektonPipelineTriggerPropertyOptions.SetLocked(d.Get("locked").(bool))
+		hasChange = true
+	}
 	if d.Get("type").(string) == "integration" {
 		if d.HasChange("value") || d.HasChange("path") {
 			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))

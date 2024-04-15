@@ -270,7 +270,10 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "type"))
 	}
-
+	if d.HasChange("locked") {
+		replaceTektonPipelinePropertyOptions.SetLocked(d.Get("locked").(bool))
+		hasChange = true
+	}
 	if d.Get("type").(string) == "integration" {
 		if d.HasChange("value") || d.HasChange("path") {
 			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
