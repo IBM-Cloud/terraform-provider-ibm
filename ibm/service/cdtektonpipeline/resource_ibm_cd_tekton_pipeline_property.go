@@ -275,13 +275,13 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 		hasChange = true
 	}
 	if d.Get("type").(string) == "integration" {
-		if d.HasChange("value") || d.HasChange("path") {
+		if d.HasChange("value") || d.HasChange("path") || d.HasChange("locked") {
 			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
 			replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 			hasChange = true
 		}
 	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("value") {
+		if d.HasChange("enum") || d.HasChange("value") || d.HasChange("locked") {
 			var enum []string
 			for _, v := range d.Get("enum").([]interface{}) {
 				enumItem := v.(string)
@@ -292,7 +292,7 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 			hasChange = true
 		}
 	} else {
-		if d.HasChange("value") {
+		if d.HasChange("value") || d.HasChange("locked") {
 			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
 			hasChange = true
 		}
