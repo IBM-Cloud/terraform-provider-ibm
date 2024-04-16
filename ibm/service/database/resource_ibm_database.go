@@ -544,6 +544,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									"id": {
 										Type:     schema.TypeString,
 										Required: true,
+										ValidateFunc: validation.StringInSlice([]string{
+											"multitenant",
+											"b3c.4x16.encrypted",
+											"b3c.8x32.encrypted",
+											"m3c.8x64.encrypted",
+											"b3c.16x64.encrypted",
+											"b3c.32x128.encrypted",
+											"m3c.30x240.encrypted"}, false),
 									},
 								},
 							},
