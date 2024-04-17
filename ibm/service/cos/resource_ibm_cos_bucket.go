@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -205,7 +204,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 						"management_events": {
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "If set to true, all object write events will be sent to Activity Tracker.",
+							Description: "If set to true, all bucket management events will be sent to Activity Tracker",
 						},
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,
@@ -988,7 +987,6 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 					activityTracker.WriteDataEvents = &writeSet
 				}
 				if managementEventSet, ok := d.GetOkExists("activity_tracking.0.management_events"); ok {
-					println("inside the management events after adding getok exists", managementEventSet)
 					managementEventValue := managementEventSet.(bool)
 					activityTracker.ManagementEvents = &managementEventValue
 				}
@@ -1019,13 +1017,11 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 				//metrics enabled - as its optional check for existence
 				if metricsUsageSet := metricsMap["usage_metrics_enabled"]; metricsUsageSet != nil {
-					println("***inside usage metrics condition***")
 					metrics := metricsUsageSet.(bool)
 					metricsMonitoring.UsageMetricsEnabled = &metrics
 				}
 				// request metrics enabled - as its optional check for existence
 				if metricsRequestSet := metricsMap["request_metrics_enabled"]; metricsRequestSet != nil {
-					println("***inside request metrics condition***")
 					metrics := metricsRequestSet.(bool)
 					metricsMonitoring.RequestMetricsEnabled = &metrics
 				}
@@ -1050,8 +1046,6 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		if asPatchErr != nil {
 			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, bucketPatchModelAsPatch)
 		}
-		println("type of bucket patch", reflect.TypeOf(bucketPatchModelAsPatch))
-		fmt.Println("bucket patch latest after removing default:", bucketPatchModelAsPatch)
 		updateBucketConfig := new(resourceconfigurationv1.UpdateBucketConfigOptions)
 		updateBucketConfig.Bucket = &bucketName
 		updateBucketConfig.BucketPatch = bucketPatchModelAsPatch

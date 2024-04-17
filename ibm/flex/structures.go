@@ -690,6 +690,9 @@ func FlattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interf
 		if in.WriteDataEvents != nil {
 			att["write_data_events"] = *in.WriteDataEvents
 		}
+		if in.ManagementEvents != nil {
+			att["management_events"] = *in.ManagementEvents
+		}
 		if in.ActivityTrackerCrn != nil {
 			att["activity_tracker_crn"] = *in.ActivityTrackerCrn
 		}

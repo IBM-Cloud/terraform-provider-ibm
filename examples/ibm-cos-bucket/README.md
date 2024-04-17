@@ -60,6 +60,7 @@ resource "ibm_cos_bucket" "standard-ams03" {
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
+    management_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
@@ -531,10 +532,11 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 | region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
 | read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `array` | no
 | write_data_events | All object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
-| activity_tracker_crn | Required the first time activity_tracking is configured. | `string` | yes
+| management_events | All the bucket management events will  will be sent to Activity Tracker. | `bool` | no
+| activity_tracker_crn | Required the first time activity_tracking is configured. | `string` | no
 | usage_metrics_enabled | Specify **true or false** to set usage metrics (i.e. bytes_used). | `bool` | no
 | request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get, put, or post request). | `bool` | no
-| metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | yes
+| metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | no
 | regional_loc | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**. | `string` | no
 | type | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**. | `string` |yes
 | rule_id | Unique identifier for the rule. | `string` | no

@@ -133,6 +133,11 @@ func DataSourceIBMCosBucket() *schema.Resource {
 							Computed:    true,
 							Description: "If set to true, all object write events will be sent to Activity Tracker.",
 						},
+						"management_events": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If set to true, all bucket management events will be sent to Activity Tracker",
+						},
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,
 							Computed:    true,

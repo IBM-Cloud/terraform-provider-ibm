@@ -34,6 +34,7 @@ resource "ibm_cos_bucket" "standard-ams03" {
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
+    management_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {

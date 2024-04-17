@@ -75,6 +75,7 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
+    management_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
@@ -93,6 +94,7 @@ resource "ibm_cos_bucket" "smart-us-south-firewall" {
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
+    management_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
@@ -111,6 +113,7 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
+    management_events    = true
     activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
@@ -454,6 +457,7 @@ Review the argument references that you can specify for your resource.
   - `activity_tracker_crn`-  (Required, String) The CRN of your IBM Cloud Activity Tracker service instance that you want to send your events to. This value is required only when you configure your instance for the first time. 
   - `read_data_events`-  (Required, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
   - `write_data_events`-  (Required, Bool) If set to **true**, all write events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
+  - `management_events`-  (Required, Bool) If set to **true**, all the bucketmanagement events are sent to your IBM Cloud Activity Tracker service instance.
 - `archive_rule` - (Required, List) Nested archive_rule block has following structure.
   
   Nested scheme for `archive_rule`:

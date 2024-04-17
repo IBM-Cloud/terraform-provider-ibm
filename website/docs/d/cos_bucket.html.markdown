@@ -141,6 +141,7 @@ In addition to all argument reference list, you can access the following attribu
   - `activity_tracker_crn` - (String) The first time activity_tracking is configured.
   - `read_data_events` - (Array)  Enables sending log data to Activity Tracker to provide visibility into an object read and write events.
   - `write_data_events`- (Bool) If set to **true**, all object write events (that is `uploads`) is sent to Activity Tracker.
+  - `management_events`- (Bool) If set to **true**, all the bucket management events are sent to Activity Tracker.
 - `archive_rule` (List) Nested block with the following structure.
 
   Nested scheme for `archive_rule`:
