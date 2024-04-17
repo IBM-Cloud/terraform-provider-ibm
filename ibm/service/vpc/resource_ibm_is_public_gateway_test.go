@@ -56,6 +56,40 @@ func TestAccIBMISPublicGateway_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISPublicGateway_floatingip(t *testing.T) {
+	var publicgw string
+	vpcname := fmt.Sprintf("tfpgw-vpc-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfpgw-pg-%d", acctest.RandIntRange(10, 100))
+	//name2 := fmt.Sprintf("tfpgw-update-name-%d", acctest.RandIntRange(10, 100))
+
+	fipname := fmt.Sprintf("tfpgw-fip-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISPublicGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISPublicGatewayFloatingIpConfig(vpcname, name1, fipname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISPublicGatewayExists("ibm_is_public_gateway.testacc_public_gateway", publicgw),
+					resource.TestCheckResourceAttr(
+						"ibm_is_public_gateway.testacc_public_gateway", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_public_gateway.testacc_public_gateway", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_public_gateway.testacc_public_gateway", "floating_ip.id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_public_gateway.testacc_public_gateway", "floating_ip.address"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_floating_ip.testacc_fip", "name", fipname),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_floating_ip.testacc_fip", "id"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISPublicGateway_resource_group_change(t *testing.T) {
 	var publicgw string
 	vpcname := fmt.Sprintf("tfpgw-vpc-%d", acctest.RandIntRange(10, 100))
@@ -139,15 +173,36 @@ func testAccCheckIBMISPublicGatewayExists(n, publicgw string) resource.TestCheck
 
 func testAccCheckIBMISPublicGatewayConfig(vpcname, name, zone string) string {
 	return fmt.Sprintf(`
-resource "ibm_is_vpc" "testacc_vpc" {
-	name = "%s"
-}
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
 
-resource "ibm_is_public_gateway" "testacc_public_gateway" {
-	name = "%s"
-	vpc = "${ibm_is_vpc.testacc_vpc.id}"
-	zone = "%s"
-}`, vpcname, name, zone)
+		resource "ibm_is_public_gateway" "testacc_public_gateway" {
+			name = "%s"
+			vpc = "${ibm_is_vpc.testacc_vpc.id}"
+			zone = "%s"
+		}`, vpcname, name, zone)
+
+}
+func testAccCheckIBMISPublicGatewayFloatingIpConfig(vpcname, name, fipname string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_floating_ip" "testacc_fip" {
+			name = "%s"
+			zone = "%s"
+		}
+	  
+
+		resource "ibm_is_public_gateway" "testacc_public_gateway" {
+			name 	= "%s"
+			vpc 	= "${ibm_is_vpc.testacc_vpc.id}"
+			zone 	= "%s"
+		}
+		
+		`, vpcname, fipname, acc.ISZoneName, name, acc.ISZoneName)
 
 }
 func testAccCheckIBMISPublicGatewayRgChangeConfig(vpcname, subnetname, name string, flag bool) string {

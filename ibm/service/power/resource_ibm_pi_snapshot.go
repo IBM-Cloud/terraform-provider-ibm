@@ -63,20 +63,8 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				Optional:    true,
 				Description: "Description of the PVM instance snapshot",
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Snapshot description",
-				Deprecated:  "This field is deprecated, use pi_description instead",
-			},
 
 			// Computed Attributes
-			helpers.PISnapshot: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Id of the snapshot",
-				Deprecated:  "This field is deprecated, use snapshot_id instead",
-			},
 			"snapshot_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -114,9 +102,6 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	name := d.Get(helpers.PISnapshotName).(string)
 
 	var description string
-	if v, ok := d.GetOk("description"); ok {
-		description = v.(string)
-	}
 	if v, ok := d.GetOk("pi_description"); ok {
 		description = v.(string)
 	}
@@ -167,7 +152,6 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	d.Set(helpers.PISnapshotName, snapshotdata.Name)
-	d.Set(helpers.PISnapshot, *snapshotdata.SnapshotID)
 	d.Set("snapshot_id", *snapshotdata.SnapshotID)
 	d.Set("status", snapshotdata.Status)
 	d.Set("creation_date", snapshotdata.CreationDate.String())

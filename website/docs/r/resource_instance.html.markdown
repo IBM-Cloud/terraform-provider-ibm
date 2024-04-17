@@ -132,6 +132,33 @@ resource "ibm_resource_instance" "instance" {
 }
 ```
 
+### Example to provision an OpenPages service instance
+The following example enables you to create a service instance of OpenPages. 
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+resource "ibm_resource_instance" "openpages_instance" {
+  name              = "openpages-instance-1"
+  service           = "openpages"
+  plan              = "essentials"
+  location          = "global"
+  resource_group_id = data.ibm_resource_group.default_group.id
+  parameters_json   = <<EOF
+    {
+      "aws_region": "us-east-1",
+      "baseCurrency": "USD",
+      "selectedSolutions": ["ORM"]
+    }
+  EOF
+
+  timeouts {
+    create = "200m"
+  }
+}
+```
+
 ## Timeouts
 
 The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:

@@ -62,6 +62,7 @@ In addition to all argument references listed, you can access the following attr
 - `vpc_crn` - Filters the collection to resources in the VPC with the specified CRN
 - `resource_group` -  Filters the collection to resources in the resource group with the specified identifier
 - `security_groups` - (List) Collection of security groups.
+	
 	Nested scheme for `security_groups`:
 	- `access_tags`  - (List) Access management tags associated for the security group.
 	- `created_at` - (String) The date and time that this security group was created.
@@ -70,22 +71,30 @@ In addition to all argument references listed, you can access the following attr
 	- `id` - (String) The unique identifier for this security group.
 	- `name` - (String) The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
 	- `resource_group` - (List) The resource group object, for this security group.
+		
 		Nested scheme for `resource_group`:
 		- `href` - (String) The URL for this resource group.
 		- `id` - (String) The unique identifier for this resource group.
 		- `name` - (String) The user-defined name for this resource group.
 	- `rules` - (List) The rules for this security group. If no rules exist, all traffic will be denied.
+		
 		Nested scheme for `rules`:
 		- `code` - (Integer) The ICMP traffic code to allow.
 		- `direction` - (String) The direction of traffic to enforce, either `inbound` or `outbound`.
 		- `href` - (String) The URL for this security group rule.
 		- `id` - (String) The unique identifier for this security group rule.
 		- `ip_version` - (String) The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they are used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network interfaces) in that group matching this IP version.
+		- `local` - (List) The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules).
+			
+			Nested scheme for `local`:
+			- `address` - (String) The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `cidr_block` - (String) The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
 		- `port_max` - (Integer) The inclusive upper bound of TCP/UDP port range.
 		- `port_min` - (Integer) The inclusive lower bound of TCP/UDP port range.
 		- `protocol` - (String) The protocol to enforce.
 		- `remote` - (List) The IP addresses or security groups from which this rule allows traffic (or to which,for outbound rules). Can be specified as an IP address, a CIDR block, or a securitygroup. A CIDR block of `0.0.0.0/0` allows traffic from any source (or to any source,for outbound rules).
-		Nested scheme for `remote`:
+			
+			Nested scheme for `remote`:
 			- `address` - (String) The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
 			- `cidr_block` - (String) The CIDR block. This property may add support for IPv6 CIDR blocks in the future. When processing a value in this property, verify that the CIDR block is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected CIDR block format was encountered.
 			- `crn` - (String) The security group's CRN.

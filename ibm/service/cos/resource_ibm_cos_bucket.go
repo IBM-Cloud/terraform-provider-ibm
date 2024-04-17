@@ -14,7 +14,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	"github.com/IBM/go-sdk-core/core"
+	rcsdk "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
@@ -936,19 +937,18 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	hasChanged := false
-	updateBucketConfigOptions := &resourceconfigurationv1.UpdateBucketConfigOptions{}
 
 	//BucketName
 	bucketName = d.Get("bucket_name").(string)
-	updateBucketConfigOptions.Bucket = &bucketName
-
+	bucketPatchModel := new(rcsdk.BucketPatch)
 	if d.HasChange("hard_quota") {
 		hasChanged = true
-		updateBucketConfigOptions.HardQuota = aws.Int64(int64(d.Get("hard_quota").(int)))
+		bucketPatchModel.HardQuota = core.Int64Ptr(int64(d.Get("hard_quota").(int)))
+
 	}
 
 	if d.HasChange("allowed_ip") {
-		firewall := &resourceconfigurationv1.Firewall{}
+		firewall := &rcsdk.Firewall{}
 		var ips = make([]string, 0)
 		if ip, ok := d.GetOk("allowed_ip"); ok && ip != nil {
 			for _, i := range ip.([]interface{}) {
@@ -959,11 +959,11 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 			firewall.AllowedIp = []string{}
 		}
 		hasChanged = true
-		updateBucketConfigOptions.Firewall = firewall
+		bucketPatchModel.Firewall = firewall
 	}
 
 	if d.HasChange("activity_tracking") {
-		activityTracker := &resourceconfigurationv1.ActivityTracking{}
+		activityTracker := &rcsdk.ActivityTracking{}
 		if activity, ok := d.GetOk("activity_tracking"); ok {
 			activitylist := activity.([]interface{})
 			for _, l := range activitylist {
@@ -987,11 +987,12 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 			}
 		}
 		hasChanged = true
-		updateBucketConfigOptions.ActivityTracking = activityTracker
+		bucketPatchModel.ActivityTracking = activityTracker
+
 	}
 
 	if d.HasChange("metrics_monitoring") {
-		metricsMonitor := &resourceconfigurationv1.MetricsMonitoring{}
+		metricsMonitoring := &rcsdk.MetricsMonitoring{}
 		if metrics, ok := d.GetOk("metrics_monitoring"); ok {
 			metricslist := metrics.([]interface{})
 			for _, l := range metricslist {
@@ -1000,24 +1001,32 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 				//metrics enabled - as its optional check for existence
 				if metricsSet := metricsMap["usage_metrics_enabled"]; metricsSet != nil {
 					metrics := metricsSet.(bool)
-					metricsMonitor.UsageMetricsEnabled = &metrics
+					metricsMonitoring.UsageMetricsEnabled = &metrics
 				}
 				// request metrics enabled - as its optional check for existence
 				if metricsSet := metricsMap["request_metrics_enabled"]; metricsSet != nil {
 					metrics := metricsSet.(bool)
-					metricsMonitor.RequestMetricsEnabled = &metrics
+					metricsMonitoring.RequestMetricsEnabled = &metrics
 				}
 				//crn - Required field
 				crn := metricsMap["metrics_monitoring_crn"].(string)
-				metricsMonitor.MetricsMonitoringCrn = &crn
+				metricsMonitoring.MetricsMonitoringCrn = &crn
 			}
 		}
 		hasChanged = true
-		updateBucketConfigOptions.MetricsMonitoring = metricsMonitor
+		bucketPatchModel.MetricsMonitoring = metricsMonitoring
+
 	}
 
 	if hasChanged {
-		response, err := sess.UpdateBucketConfig(updateBucketConfigOptions)
+		bucketPatchModelAsPatch, asPatchErr := bucketPatchModel.AsPatch()
+		if asPatchErr != nil {
+			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, bucketPatchModelAsPatch)
+		}
+		setOptions := new(rcsdk.UpdateBucketConfigOptions)
+		setOptions.SetBucket(bucketName)
+		setOptions.BucketPatch = bucketPatchModelAsPatch
+		response, err := sess.UpdateBucketConfig(setOptions)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, response)
 		}
@@ -1145,11 +1154,6 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if endpointType != "" {
 		d.Set("endpoint_type", endpointType)
 	}
-
-	getBucketConfigOptions := &resourceconfigurationv1.GetBucketConfigOptions{
-		Bucket: &bucketName,
-	}
-
 	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
@@ -1168,7 +1172,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		sess.SetServiceURL(satconfig)
 	}
 
-	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
+	getOptions := new(rcsdk.GetBucketConfigOptions)
+	getOptions.SetBucket(bucketName)
+	bucketPtr, response, err := sess.GetBucketConfig(getOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
@@ -1565,7 +1571,7 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		fmt.Println(fmt.Errorf("[WARN] Error getting resource instance from cos bucket: %s with resp code: %s", err, resp))
+		return false, fmt.Errorf("[WARN] Error getting resource instance from cos bucket: %s with resp code: %s", err, resp)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, "pending_reclamation")) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state from the cos bucket resource")

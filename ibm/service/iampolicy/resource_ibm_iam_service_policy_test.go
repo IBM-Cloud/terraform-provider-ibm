@@ -505,6 +505,27 @@ func TestAccIBMIAMServicePolicy_With_Attribute_Based_Condition(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicy_With_Resource_Attributes_Without_Wildcard(t *testing.T) {
+	var conf iampolicymanagementv1.V2PolicyTemplateMetaData
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceAttributesWithoutWildcard(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -1236,5 +1257,27 @@ func testAccCheckIBMIAMServicePolicyUpdateAttributeBasedCondition(name string) s
 		  pattern = "attribute-based-condition:resource:literal-and-wildcard"
 			description = "IAM Service Policy Attribute Based Condition Update for test scenario"
 		}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyResourceAttributesWithoutWildcard(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_service_policy" "policy" {
+		iam_service_id     = ibm_iam_service_id.serviceID.id
+		roles              = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
 	`, name)
 }

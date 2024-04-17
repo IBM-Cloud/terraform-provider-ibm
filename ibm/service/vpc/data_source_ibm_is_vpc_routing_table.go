@@ -245,6 +245,9 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 				routingTable = &r
 			}
 		}
+		if routingTable == nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Provided routing table %s cannot be found in the vpc %s", routingTableName, vpcId))
+		}
 	}
 
 	d.SetId(*routingTable.ID)

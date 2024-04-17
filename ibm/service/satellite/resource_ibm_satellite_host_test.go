@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package satellite_test
@@ -20,6 +20,7 @@ import (
 func TestAccFunctionSatelliteHost_Basic(t *testing.T) {
 	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	resource_prefix := "tf-satellite"
+	rhel_image_name := "ibm-redhat-8-8-minimal-amd64-3"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,7 +29,7 @@ func TestAccFunctionSatelliteHost_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteHostCreate(name, resource_prefix),
+				Config: testAccCheckSatelliteHostCreate(name, resource_prefix, rhel_image_name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteHostExists("ibm_satellite_host.assign_host.0"),
 					resource.TestCheckResourceAttr("ibm_satellite_host.assign_host.0", "host_provider", "ibm"),
@@ -112,86 +113,106 @@ func testAccCheckSatelliteHostDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSatelliteHostCreate(name, resource_prefix string) string {
+func testAccCheckSatelliteHostCreate(name, resource_prefix, rhel_image_name string) string {
 	return fmt.Sprintf(`
-
-	provider "ibm" {
-		region = "us-east"
-	}
-
 	variable "location_zones" {
 		description = "Allocate your hosts across these three zones"
 		type        = list(string)
-		default     = ["us-east-1", "us-east-2", "us-east-3"]
-	}
-
-	resource "ibm_satellite_location" "location" {
-		location      = "%s"
-		managed_from  = "wdc04"
-		zones		  = var.location_zones
-	}
-
-	data "ibm_satellite_attach_host_script" "script" {
-		location          = ibm_satellite_location.location.id
-		labels            = ["env:prod"]
-		host_provider     = "ibm"
-	}
-
-	data "ibm_resource_group" "resource_group" {
-		is_default = true
-	}
-	  
-	resource "ibm_is_vpc" "satellite_vpc" {
-		name = "%s-vpc-1"
-	}
-	  
-	resource "ibm_is_subnet" "satellite_subnet" {
-		count                    = 3
-
-		name                     = "%s-subnet-${count.index}"
-		vpc                      = ibm_is_vpc.satellite_vpc.id
-		total_ipv4_address_count = 256
-		zone                     = "us-east-${count.index + 1}"
+		default     = ["location-zone-1", "location-zone-2", "location-zone-3"]
 	  }
 	  
-	  resource "ibm_is_ssh_key" "satellite_ssh" {  
-		name        = "%s-ibm-ssh"
-		public_key  = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+	  resource "ibm_satellite_location" "location" {
+		location     = "%[1]s"
+		managed_from = "dal"
+		zones        = var.location_zones
+	  }
+	  
+	  data "ibm_satellite_attach_host_script" "script" {
+		location      = ibm_satellite_location.location.id
+		host_provider = "ibm"
+	  }
+	  
+	  data "ibm_resource_group" "resource_group" {
+		is_default = true
+	  }
+	  
+	  resource "ibm_is_vpc" "satellite_vpc" {
+		name                        = "%[2]s-vpc-1"
+		resource_group              = data.ibm_resource_group.resource_group.id
+		default_security_group_name = "%[2]s-default-sg"
+		default_network_acl_name    = "%[2]s-default-acl"
+		default_routing_table_name  = "%[2]s-default-rt"
+	  }
+	  
+	  data "ibm_is_security_group" "default_group" {
+		name = ibm_is_vpc.satellite_vpc.default_security_group_name
+	  }
+	  
+	  resource "ibm_is_security_group_rule" "ssh_rule" {
+		group     = data.ibm_is_security_group.default_group.id
+		direction = "inbound"
+		remote    = "0.0.0.0/0"
+		tcp {
+		  port_min = 22
+		  port_max = 22
+		}
+	  }
+	  
+	  resource "ibm_is_security_group_rule" "ping_rule" {
+		group     = data.ibm_is_security_group.default_group.id
+		direction = "inbound"
+		remote    = "0.0.0.0/0"
+		icmp {
+		  type = 8
+		  code = 0
+		}
+	  }
+	  
+	  resource "ibm_is_subnet" "satellite_subnet" {
+		count = 3
+	  
+		name                     = "%[2]s-subnet-${count.index}"
+		vpc                      = ibm_is_vpc.satellite_vpc.id
+		total_ipv4_address_count = 256
+		zone                     = "us-south-${count.index + 1}"
+	  }
+	  
+	  data "ibm_is_image" "rhel8" {
+		name = "%[3]s"
 	  }
 	  
 	  resource "ibm_is_instance" "satellite_instance" {
-		count          = 3
-
-		name           = "%s-instance-${count.index}"
+		count = 3
+	  
+		name           = "%[2]s-instance-${count.index}"
 		vpc            = ibm_is_vpc.satellite_vpc.id
-		zone           = "us-east-${count.index + 1}"
-		image          = "r014-931515d2-fcc3-11e9-896d-3baa2797200f"
+		zone           = "us-south-${count.index + 1}"
+		image          = data.ibm_is_image.rhel8.id
 		profile        = "mx2-8x64"
-		keys           = [ibm_is_ssh_key.satellite_ssh.id]
+		keys           = []
 		resource_group = data.ibm_resource_group.resource_group.id
 		user_data      = data.ibm_satellite_attach_host_script.script.host_script
-		
+	  
 		primary_network_interface {
+		  name   = "eth0"
 		  subnet = ibm_is_subnet.satellite_subnet[count.index].id
 		}
 	  }
 	  
 	  resource "ibm_is_floating_ip" "satellite_ip" {
-		count  = 3
-
-		name   = "%s-fip-${count.index}"
+		count = 3
+	  
+		name   = "%[2]s-fip-${count.index}"
 		target = ibm_is_instance.satellite_instance[count.index].primary_network_interface[0].id
 	  }
 	  
 	  resource "ibm_satellite_host" "assign_host" {
-		count  = 3
+		count = 3
 	  
 		location      = ibm_satellite_location.location.id
 		host_id       = element(ibm_is_instance.satellite_instance[*].name, count.index)
-		labels        = ["env:prod"]
 		zone          = element(var.location_zones, count.index)
 		host_provider = "ibm"
 	  }
-
-`, name, resource_prefix, resource_prefix, resource_prefix, resource_prefix, resource_prefix)
+`, name, resource_prefix, rhel_image_name)
 }

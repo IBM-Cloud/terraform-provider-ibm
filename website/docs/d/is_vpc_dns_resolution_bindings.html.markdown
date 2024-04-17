@@ -3,10 +3,9 @@ layout: "ibm"
 page_title: "IBM : ibm_is_vpc_dns_resolution_bindings"
 description: |-
   List information about VPCDNSResolutionBindings
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
--> **NOTE:** `ibm_is_vpc_dns_resolution_bindings` datasource is a select location availability, invitation only feature. In other regions value might not be present.
 # ibm_is_vpc_dns_resolution_bindings
 
 Provides a read-only data source for VPCDNSResolutionBindings. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
@@ -56,6 +55,13 @@ In addition to all argument references listed, you can access the following attr
 				- `name` - (String) The globally unique name for this region.
 		- `resource_type` - (String) The resource type.
 
+	- `health_reasons` - (List) The reasons for the current `health_state` (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.
+		Nested schema for **health_reasons**:
+		- `code` - (String) A snake case string succinctly identifying the reason for this health state.
+		- `message` - (String) An explanation of the reason for this health state.
+		- `more_info` - (String) Link to documentation about the reason for this health state.
+		
+	- `health_state` - (String) The health of this resource.- `ok`: No abnormal behavior detected- `degraded`: Experiencing compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state. Constraints: Allowable values are: `degraded`, `faulted`, `inapplicable`, `ok`.
 	- `href` - (String) The URL for this DNS resolution binding.
 
 	- `lifecycle_state` - (String) The lifecycle state of the DNS resolution binding.

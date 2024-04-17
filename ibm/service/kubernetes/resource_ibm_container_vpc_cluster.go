@@ -340,6 +340,14 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 
+			"disable_outbound_traffic_protection": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          false,
+				Description:      "Allow outbound connections to public destinations",
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+
 			//Get Cluster info Request
 			"state": {
 				Type:     schema.TypeString,
@@ -411,6 +419,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"private_service_endpoint_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"vpe_service_endpoint_url": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -585,14 +598,17 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		workerpool.Labels = labels
 	}
 
+	disableOutboundTrafficProtection := d.Get("disable_outbound_traffic_protection").(bool)
+
 	params := v2.ClusterCreateRequest{
-		DisablePublicServiceEndpoint: disablePublicServiceEndpoint,
-		Name:                         name,
-		KubeVersion:                  kubeVersion,
-		PodSubnet:                    podSubnet,
-		ServiceSubnet:                serviceSubnet,
-		WorkerPools:                  workerpool,
-		Provider:                     vpcProvider,
+		DisablePublicServiceEndpoint:     disablePublicServiceEndpoint,
+		Name:                             name,
+		KubeVersion:                      kubeVersion,
+		PodSubnet:                        podSubnet,
+		ServiceSubnet:                    serviceSubnet,
+		WorkerPools:                      workerpool,
+		Provider:                         vpcProvider,
+		DisableOutboundTrafficProtection: disableOutboundTrafficProtection,
 	}
 
 	// Update params with Entitlement option if provided
@@ -984,6 +1000,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)
+	d.Set("vpe_service_endpoint_url", cls.VirtualPrivateEndpointURL)
 	if cls.ServiceEndpoints.PublicServiceEndpointEnabled {
 		d.Set("disable_public_service_endpoint", false)
 	} else {

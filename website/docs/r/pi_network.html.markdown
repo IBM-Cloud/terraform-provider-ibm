@@ -69,7 +69,7 @@ Review the argument references that you can specify for your resource.
   The `pi_ipaddress_range` block supports:
   - `pi_ending_ip_address` - (Required, String) The ending ip address.
   - `pi_starting_ip_address` - (Required, String) The staring ip address. **Note** if the `pi_gateway` or `pi_ipaddress_range` is not provided, it will calculate the value based on CIDR respectively.
-- `pi_network_jumbo` - (Optional, Bool) MTU Jumbo option of the network (for multi-zone locations only). `deprecated` use `pi_network_mtu` instead.
+- `pi_network_jumbo` - (Deprecated, Optional, Bool) MTU Jumbo option of the network (for multi-zone locations only).
 - `pi_network_mtu` - (Optional, Integer) Maximum Transmission Unit option of the network, min size = 1450 & max size = 9000.
 - `pi_network_access_config` - (Optional, String) The network communication configuration option of the network (for satellite locations only).
 

@@ -9,7 +9,6 @@ description: |-
 
 # ibm_container_vpc_cluster
 Create, update, or delete a VPC cluster. To create a VPC cluster, make sure to include the VPC infrastructure generation in the `provider` block of your  Terraform configuration file. If you do not set this value, the generation is automatically set to 2. For more information, about how to configure the `provider` block, see [Overview of required input parameters for each resource category](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-You cannot create a free cluster in IBM Cloud Schematics.
 
 If you want to delete a VPC cluster and their associated load balancer. The following order is followed by the resource.
 1. Invokes the cluster deletion.
@@ -169,10 +168,10 @@ ibm_container_vpc_cluster provides the following [Timeouts](https://www.terrafor
 * `update` - (Default 60 minutes) Used for updating Cluster.
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
 - `cos_instance_crn` - (Optional, String) Required for OpenShift clusters only. The standard IBM Cloud Object Storage instance CRN to back up the internal registry in your OpenShift on VPC Generation 2 cluster.
-- `disable_public_service_endpoint` - (Optional, Bool) Disable the public service endpoint to prevent public access to the Kubernetes master. Default value is `false`. 
+- `disable_public_service_endpoint` - (Optional, Bool) Disable the public service endpoint to prevent public access to the Kubernetes master. Default value is `false`.
 - `entitlement` - (Optional, String) Entitlement reduces additional OCP Licence cost in OpenShift clusters. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only when the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
 - `force_delete_storage` - (Optional, Bool) If set to **true**,force the removal of persistent storage associated with the cluster during cluster deletion. Default value is **false**. **Note** If `force_delete_storage` parameter is used after provisioning the cluster, then, you need to execute `terraform apply` before `terraform destroy` for `force_delete_storage` parameter to take effect.
 - `flavor` - (Required, String) The flavor of the VPC worker nodes in the default worker pool. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
@@ -200,7 +199,7 @@ Review the argument references that you can specify for your resource.
   - `key` - (Required, String) Key for taint.
   - `value` - (Required, String) Value for taint.
   - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
- 
+
 - `wait_for_worker_update` - (Optional, Bool) Set to **true** to wait and update the Kubernetes  version of worker nodes. **NOTE** Setting wait_for_worker_update to **false** is not recommended. Setting **false** results in upgrading all the worker nodes in the cluster at the same time causing the cluster downtime.
 - `wait_till` - (Optional, String) The creation of a cluster can take a few minutes (for virtual servers) or even hours (for Bare Metal servers) to complete. To avoid long wait times when you run your  Terraform code, you can specify the stage when you want  Terraform to mark the cluster resource creation as completed. Depending on what stage you choose, the cluster creation might not be fully completed and continues to run in the background. However, your  Terraform code can continue to run without waiting for the cluster to be fully created. Supported stages are: <ul><li><strong>`Normal`</strong>:  Terraform marks the creation of your cluster complete when the cluster is in a [Normal](https://cloud.ibm.com/docs/containers?topic=containers-cluster-states-reference#cluster-state-normal) state. If you plan to do reading on the cluster from a datasource, use `Normal`. At the moment wait_till `Normal` also ignores the critical and warning states that occasionally happen during cluster creation, but cannot distinguish it from actual critical or warning states. </li><li><strong>`MasterNodeReady`</strong>:  Terraform marks the creation of your cluster complete when the cluster master is in a <code>ready</code> state.</li><li><strong>`OneWorkerNodeReady`</strong>:  Terraform marks the creation of your cluster complete when the master and at least one worker node are in a <code>ready</code> state.</li><li><strong>`IngressReady`</strong>:  Terraform marks the creation of your cluster complete when the cluster master and all worker nodes are in a <code>ready</code> state, and the Ingress subdomain is fully set up.</li></ul> If you do not specify this option, <code>`IngressReady`</code> is used by default. You can set this option only when the cluster is created. If this option is set during a cluster update or deletion, the parameter is ignored by the  Terraform provider.
 - `worker_count` - (Optional, Integer) The number of worker nodes per zone in the default worker pool. Default value `1`. **Note** If the requested number of worker nodes is fewer than the minimum 2 worker nodes that are required for an OpenShift cluster, cluster creation will be rejected. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
@@ -219,6 +218,7 @@ Review the argument references that you can specify for your resource.
 - `kms_instance_id` - (Optional, String) Instance ID for boot volume encryption.
 - `kms_account_id` - (Optional, String) Account ID for boot volume encryption, if other account is providing the kms.
 - `security_groups` - (Optional, List) Enables users to define specific security groups for their workers.
+- `disable_outbound_traffic_protection` - (Optional, Bool) Include this option to allow public outbound access from the cluster workers. By default, public outbound access is blocked in OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later.
 
 **Note**
 
@@ -228,9 +228,9 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `albs` - (List of Objects) A list of Application Load Balancers (ALBs) that are attached to the cluster. 
-	
-  Nested scheme for `albs`:	
+- `albs` - (List of Objects) A list of Application Load Balancers (ALBs) that are attached to the cluster.
+
+  Nested scheme for `albs`:
   - `alb_type` - (String) The ALB type. Valid values are `public` or `private`.
   - `disable_deployment`- (Bool) Indicate whether to disable the deployment of the ALB.
   - `enable`- (Bool) Enable (true) or disable (false) the ALB.
@@ -246,12 +246,13 @@ In addition to all argument reference list, you can access the following attribu
 - `master_status` - (String) The status of the Kubernetes master.
 - `master_url` - (String) The URL of the Kubernetes master.
 - `private_service_endpoint_url` - (String) The private service endpoint URL.
+- `vpe_service_endpoint_url` - (String) The virtual private endpoint URL.
 - `public_service_endpoint_url` - (String) The public service endpoint URL.
 - `state` - (String) The state of the VPC cluster.
 
 
 ## Import
-The `ibm_container_vpc_cluster` can be imported by using the cluster ID. 
+The `ibm_container_vpc_cluster` can be imported by using the cluster ID.
 
 **Example**
 
