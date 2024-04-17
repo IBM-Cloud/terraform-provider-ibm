@@ -285,7 +285,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sc
 		return diag.FromErr(fmt.Errorf("Error setting default_access_policy: %s", err))
 	}
 
-	if err = d.Set("endpoint_gateways_count", flex.IntValue(privatePathServiceGateway.EndpointGatewaysCount)); err != nil {
+	if err = d.Set("endpoint_gateways_count", flex.IntValue(privatePathServiceGateway.EndpointGatewayCount)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
 	}
 

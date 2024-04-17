@@ -266,7 +266,7 @@ func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sche
 	if err = d.Set("href", privatePathServiceGateway.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	if err = d.Set("endpoint_gateways_count", privatePathServiceGateway.EndpointGatewaysCount); err != nil {
+	if err = d.Set("endpoint_gateways_count", privatePathServiceGateway.EndpointGatewayCount); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
 	}
 	if err = d.Set("published", privatePathServiceGateway.Published); err != nil {
@@ -335,11 +335,11 @@ func resourceIBMIsPrivatePathServiceGatewayUpdate(context context.Context, d *sc
 		patchVals.ZonalAffinity = &zonalAffinity
 		hasChange = true
 	}
-	if d.HasChange("published") {
-		published := d.Get("published").(bool)
-		patchVals.Published = &published
-		hasChange = true
-	}
+	// if d.HasChange("published") {
+	// 	published := d.Get("published").(bool)
+	// 	patchVals.Published = &published
+	// 	hasChange = true
+	// }
 	if d.HasChange("load_balancer") && !d.IsNewResource() {
 		loadBalancer := d.Get("load_balancer").(string)
 		patchVals.LoadBalancer = &vpcv1.LoadBalancerIdentity{
@@ -373,7 +373,7 @@ func resourceIBMIsPrivatePathServiceGatewayDelete(context context.Context, d *sc
 	deletePrivatePathServiceGatewayOptions := &vpcv1.DeletePrivatePathServiceGatewayOptions{}
 	deletePrivatePathServiceGatewayOptions.SetID(d.Id())
 
-	_, response, err := vpcClient.DeletePrivatePathServiceGatewayWithContext(context, deletePrivatePathServiceGatewayOptions)
+	response, err := vpcClient.DeletePrivatePathServiceGatewayWithContext(context, deletePrivatePathServiceGatewayOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeletePrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeletePrivatePathServiceGatewayWithContext failed %s\n%s", err, response))

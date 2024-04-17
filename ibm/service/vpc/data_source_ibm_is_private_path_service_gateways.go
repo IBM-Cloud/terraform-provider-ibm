@@ -302,8 +302,8 @@ func dataSourceIBMIsPrivatePathServiceGatewaysPrivatePathServiceGatewayToMap(mod
 	if model.DefaultAccessPolicy != nil {
 		modelMap["default_access_policy"] = *model.DefaultAccessPolicy
 	}
-	if model.EndpointGatewaysCount != nil {
-		modelMap["endpoint_gateways_count"] = *model.EndpointGatewaysCount
+	if model.EndpointGatewayCount != nil {
+		modelMap["endpoint_gateways_count"] = *model.EndpointGatewayCount
 	}
 	if model.Href != nil {
 		modelMap["href"] = *model.Href
