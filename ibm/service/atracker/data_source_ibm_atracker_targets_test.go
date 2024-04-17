@@ -114,5 +114,6 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 		data "ibm_atracker_targets" "atracker_targets" {
 			name = ibm_atracker_target.atracker_target.name
 		}
+		
 	`, targetName, targetTargetType, targetRegion, acc.COSApiKey, acc.IngestionKey, acc.IesApiKey)
 }
