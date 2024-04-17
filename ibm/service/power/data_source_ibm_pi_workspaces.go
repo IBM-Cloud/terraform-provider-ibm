@@ -41,9 +41,45 @@ func DatasourceIBMPIWorkspaces() *schema.Resource {
 							Type: schema.TypeMap,
 						},
 						Attr_WorkspaceDetails: {
-							Computed:    true,
-							Description: "Workspace information.",
-							Type:        schema.TypeMap,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_CreationDate: {
+										Computed:    true,
+										Description: "Workspace creation date.",
+										Type:        schema.TypeString,
+									},
+									Attr_CRN: {
+										Computed:    true,
+										Description: "The Workspace crn.",
+										Type:        schema.TypeString,
+									},
+									Attr_PowerEdgeRouter: {
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												Attr_MigrationStatus: {
+													Computed:    true,
+													Description: "The migration status of a Power Edge Router.",
+													Type:        schema.TypeString,
+												},
+												Attr_State: {
+													Computed:    true,
+													Description: "The state of a Power Edge Router.",
+													Type:        schema.TypeString,
+												},
+												Attr_Type: {
+													Computed:    true,
+													Description: "The Power Edge Router type.",
+													Type:        schema.TypeString,
+												},
+											},
+										},
+										Type: schema.TypeList,
+									},
+								},
+							},
+							Type: schema.TypeList,
 						},
 						Attr_WorkspaceID: {
 							Computed:    true,
@@ -76,6 +112,7 @@ func DatasourceIBMPIWorkspaces() *schema.Resource {
 		},
 	}
 }
+
 func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -91,13 +128,25 @@ func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, 
 	workspaces := make([]map[string]interface{}, 0, len(wsData.Workspaces))
 	for _, ws := range wsData.Workspaces {
 		if ws != nil {
+			wsDetails := []map[string]interface{}{}
+			detailsData := make(map[string]interface{})
+			detailsData[Attr_CreationDate] = ws.Details.CreationDate.String()
+			detailsData[Attr_CRN] = *ws.Details.Crn
+
+			if ws.Details.PowerEdgeRouter != nil {
+				wsPowerEdge := map[string]interface{}{
+					Attr_MigrationStatus: ws.Details.PowerEdgeRouter.MigrationStatus,
+					Attr_State:           *ws.Details.PowerEdgeRouter.State,
+					Attr_Type:            *ws.Details.PowerEdgeRouter.Type,
+				}
+				detailsData[Attr_PowerEdgeRouter] = []map[string]interface{}{wsPowerEdge}
+				wsDetails = append(wsDetails, detailsData)
+			}
+
 			workspace := map[string]interface{}{
 				Attr_WorkspaceCapabilities: ws.Capabilities,
-				Attr_WorkspaceDetails: map[string]interface{}{
-					Attr_CreationDate: ws.Details.CreationDate.String(),
-					Attr_CRN:          *ws.Details.Crn,
-				},
-				Attr_WorkspaceID: ws.ID,
+				Attr_WorkspaceDetails:      wsDetails,
+				Attr_WorkspaceID:           ws.ID,
 				Attr_WorkspaceLocation: map[string]interface{}{
 					Attr_Region: *ws.Location.Region,
 					Attr_Type:   ws.Location.Type,
