@@ -91,6 +91,6 @@ The `ibm_pi_volume` resource can be imported by using `cloud_instance_id` and `v
 
 ### Example
 
-```console
+```bash
 terraform import ibm_pi_volume.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
