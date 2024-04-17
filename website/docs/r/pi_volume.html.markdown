@@ -74,7 +74,7 @@ In addition to all argument reference list, you can access the following attribu
 - `consistency_group_name` - (String) The consistency group name if volume is a part of volume group.
 - `delete_on_termination` - (Boolean) Indicates if the volume should be deleted when the server terminates.
 - `group_id` - (String) The volume group id to which volume belongs.
-- `id` - (String) The unique identifier of the volume. The ID is composed of `<power_instance_id>/<volume_id>`.
+- `id` - (String) The unique identifier of the volume. The ID is composed of `<cloud_instance_id>/<volume_id>`.
 - `io_throttle_rate` - (String) Amount of iops assigned to the volume.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
@@ -87,7 +87,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_volume` resource can be imported by using `power_instance_id` and `volume_id`.
+The `ibm_pi_volume` resource can be imported by using `cloud_instance_id` and `volume_id`.
 
 ### Example
 
