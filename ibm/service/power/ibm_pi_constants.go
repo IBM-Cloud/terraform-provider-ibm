@@ -6,6 +6,7 @@ const (
 	// Arguments
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
+	Arg_Description                         = "pi_description"
 	Arg_ImageName                           = "pi_image_name"
 	Arg_InstanceName                        = "pi_instance_name"
 	Arg_KeyName                             = "pi_key_name"
@@ -19,6 +20,7 @@ const (
 	Arg_SharedProcessorPoolPlacementGroupID = "pi_shared_processor_pool_placement_group_id"
 	Arg_SharedProcessorPoolReservedCores    = "pi_shared_processor_pool_reserved_cores"
 	Arg_SnapshotID                          = "pi_snapshot_id"
+	Arg_SnapShotName                        = "pi_snap_shot_name"
 	Arg_SPPPlacementGroupID                 = "pi_spp_placement_group_id"
 	Arg_SPPPlacementGroupName               = "pi_spp_placement_group_name"
 	Arg_SPPPlacementGroupPolicy             = "pi_spp_placement_group_policy"
@@ -27,6 +29,7 @@ const (
 	Arg_StorageType                         = "pi_storage_type"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeID                            = "pi_volume_id"
+	Arg_VolumeIDs                           = "pi_volume_ids"
 	Arg_VolumeName                          = "pi_volume_name"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
 	Arg_VTL                                 = "vtl"
@@ -207,6 +210,7 @@ const (
 	Attr_SharedProcessorPoolStatus                   = "status"
 	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
 	Attr_Size                                        = "size"
+	Attr_SnapshotID                                  = "snapshot_id"
 	Attr_SourceVolumeName                            = "source_volume_name"
 	Attr_Speed                                       = "speed"
 	Attr_SPPPlacementGroups                          = "spp_placement_groups"
@@ -254,6 +258,27 @@ const (
 	Attr_VPCEnabled                                  = "vpc_enabled"
 	Attr_Workspaces                                  = "workspaces"
 	Attr_WWN                                         = "wwn"
+
+	// States
+	State_Active              = "active"
+	State_ACTIVE              = "ACTIVE"
+	State_BUILD               = "BUILD"
+	State_Available           = "available"
+	State_Creating            = "creating"
+	State_Deleted             = "deleted"
+	State_Deleting            = "deleting"
+	State_Failed              = "failed"
+	State_Inactive            = "inactive"
+	State_InProgress          = "in progress"
+	State_InUse               = "in-use"
+	State_PendingReclaimation = "pending_reclamation"
+	State_Provisioning        = "provisioning"
+	State_Removed             = "removed"
+	State_Retry               = "retry"
+	State_NotFound            = "Not Found"
+
+	// Health
+	Health_OK = "OK"
 
 	// TODO: Second Half Cleanup, remove extra variables
 
