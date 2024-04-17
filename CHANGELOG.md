@@ -1,3 +1,8 @@
+# 1.64.2 (Apr 17, 2024)
+BugFixes
+* fix(ibm_database resource): Fix cpuEnforcement multitenant bug
+ ([5271](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5271))
+
 # 1.64.1 (Apr 12, 2024)
 BugFixes
 * The terraform-provider-ibm_v1.64.0 plugin crashed! ([5258](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5258))
