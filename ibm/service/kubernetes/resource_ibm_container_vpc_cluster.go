@@ -945,13 +945,14 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 	}
 
-	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
+	wps, err := csClient.WorkerPools().ListWorkerPools(clusterID, targetEnv)
+	if err != nil || len(wps) == 0 {
+		return fmt.Errorf("[ERROR] Error retrieving workerpools of the cluster %s: %s", clusterID, err)
+	}
+	wp := wps[0]
+	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, wp.ID, targetEnv)
 	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() != 404 && !strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
-				return fmt.Errorf("[ERROR] Error retrieving worker pool of the cluster %s: %s", workerPool.ID, err)
-			}
-		}
+		return fmt.Errorf("[ERROR] Error retrieving worker pool of the cluster %s: %s", workerPool.ID, err)
 	}
 
 	var zones = make([]map[string]interface{}, 0)
@@ -1082,7 +1083,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		listlbOptions := &vpcv1.ListLoadBalancersOptions{}
 		lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
 		if err1 != nil {
-			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
+			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err1, response)
 		}
 		if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
 			for _, lb := range lbs.LoadBalancers {

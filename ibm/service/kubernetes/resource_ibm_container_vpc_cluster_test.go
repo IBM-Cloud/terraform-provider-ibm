@@ -630,7 +630,7 @@ func TestAccIBMContainerVpcClusterBaseEnvvar(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update", "albs"},
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update", "albs", "disable_outbound_traffic_protection"},
 			},
 		},
 	})
