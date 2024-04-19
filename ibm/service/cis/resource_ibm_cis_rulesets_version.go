@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -22,6 +23,22 @@ func ResourceIBMCISRulesetsVersion() *schema.Resource {
 				Required:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cis_rulesets_version",
 					"cis_id"),
+			},
+			cisDomainID: {
+				Type:             schema.TypeString,
+				Description:      "Associated CIS domain",
+				Optional:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
+			},
+			CISRulesetsId: {
+				Type:        schema.TypeString,
+				Description: "Associated Ruleset ID",
+				Required:    true,
+			},
+			CISRulesetsVersion: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Ruleset version",
 			},
 		},
 	}
@@ -44,22 +61,32 @@ func ResourceIBMCISRulesetsVersionValidator() *validate.ResourceValidator {
 
 func ResourceIBMCISRulesetsVersionDelete(d *schema.ResourceData, meta interface{}) error {
 
-	_, err := meta.(conns.ClientSession).CisRulesetsSession()
+	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
-	// alertID, crn, err := flex.ConvertTftoCisTwoVar(d.Id())
-	// if err != nil {
-	// 	return err
-	// }
-	// sess.Crn = core.StringPtr(crn)
-	// opt := sess.NewDeleteRulesetOptions(alertID)
-	// _, response, err := sess.DeleteRuleset(opt)
-	// if err != nil {
-	// 	if response != nil && response.StatusCode == 404 {
-	// 		return nil
-	// 	}
-	// 	return fmt.Errorf("[ERROR] Error deleting the alert %s:%s", err, response)
-	// }
+
+	crn := d.Get(cisID).(string)
+	sess.Crn = core.StringPtr(crn)
+
+	zoneId := d.Get(cisDomainID).(string)
+	rulesetId := d.Get(CISRulesetsId).(string)
+	ruleset_version := d.Get(CISRulesetsVersion).(string)
+
+	if zoneId != "" {
+		opt := sess.NewDeleteZoneRulesetVersionOptions(rulesetId, ruleset_version)
+		res, err := sess.DeleteZoneRulesetVersion(opt)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error deleting the zone ruleset version %s:%s", err, res)
+		}
+	} else {
+		opt := sess.NewDeleteAccountRulesetVersionOptions(rulesetId, ruleset_version)
+		res, err := sess.DeleteAccountRulesetVersion(opt)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error deleting the account ruleset version %s:%s", err, res)
+		}
+	}
+
+	d.SetId("")
 	return nil
 }
