@@ -6,8 +6,6 @@ package kms
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
@@ -25,10 +23,10 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 		Delete:   resourceIBMKmsKMIPAdapterDelete,
 		Exists:   resourceIBMKmsKMIPAdapterExists,
 		Importer: &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-		},
+		// Timeouts: &schema.ResourceTimeout{
+		// 	Create: schema.DefaultTimeout(10 * time.Minute),
+		// 	Update: schema.DefaultTimeout(10 * time.Minute),
+		// },
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:             schema.TypeString,
@@ -101,17 +99,6 @@ func resourceIBMKmsKMIPAdapterProfileToProfileFunc(profile string, profileData m
 	return nil
 }
 
-func resourceIBMKmsKMIPAdapterGetTFID(instanceID, adapterID string) string {
-	return fmt.Sprintf("%s:%s", instanceID, adapterID)
-}
-
-func resourceIBMKmsKMIPAdapterGetIDsFromTFID(tfID string) (instanceID string, adapterID string) {
-	splitData := strings.Split(tfID, ":")
-	instanceID = splitData[0]
-	adapterID = splitData[1]
-	return
-}
-
 func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) error {
 	adapterToCreate, instanceID, err := ExtractAndValidateKMIPAdapterDataFromSchema(d)
 	if err != nil {
@@ -129,12 +116,13 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating KMIP adapter: %s", err)
 	}
-	d.SetId(resourceIBMKmsKMIPAdapterGetTFID(instanceID, adapter.ID))
+	populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
 	return nil
 }
 
 func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) error {
-	instanceID, adapterID := resourceIBMKmsKMIPAdapterGetIDsFromTFID(d.Id())
+	instanceID := d.Get("instance_id").(string)
+	adapterID := d.Id()
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
@@ -156,7 +144,8 @@ func resourceIBMKmsKMIPAdapterUpdate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) error {
-	instanceID, adapterID := resourceIBMKmsKMIPAdapterGetIDsFromTFID(d.Id())
+	instanceID := d.Get("instance_id").(string)
+	adapterID := d.Id()
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
@@ -167,7 +156,8 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	instanceID, adapterID := resourceIBMKmsKMIPAdapterGetIDsFromTFID(d.Id())
+	instanceID := d.Get("instance_id").(string)
+	adapterID := d.Id()
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return false, err
@@ -250,7 +240,7 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 	if err = d.Set("created_at", adapter.CreatedAt.String()); err != nil {
 		return fmt.Errorf("Error setting created_at: %s", err)
 	}
-	if err = d.Set("created_at", adapter.CreatedBy); err != nil {
+	if err = d.Set("created_by", adapter.CreatedBy); err != nil {
 		return fmt.Errorf("Error setting created_by: %s", err)
 	}
 	if err = d.Set("updated_at", adapter.UpdatedAt.String()); err != nil {
@@ -259,5 +249,6 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 	if err = d.Set("updated_by", adapter.UpdatedBy); err != nil {
 		return fmt.Errorf("Error setting updated_by: %s", err)
 	}
+	d.SetId(adapter.ID)
 	return nil
 }
