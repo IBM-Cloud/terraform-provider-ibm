@@ -62,7 +62,7 @@ func dataSourceIBMKMSKmipAdapterBaseSchema() map[string]*schema.Schema {
 
 func DataSourceIBMKMSKmipAdapter() *schema.Resource {
 	baseMap := dataSourceIBMKMSKmipAdapterBaseSchema()
-	baseMap["instance_id"] = *schema.Schema{
+	baseMap["instance_id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      "Key protect or hpcs instance GUID",
@@ -70,7 +70,7 @@ func DataSourceIBMKMSKmipAdapter() *schema.Resource {
 	}
 	adapterIDSchema := baseMap["adapter_id"]
 	adapterIDSchema.Optional = true
-	adapterIDSchema.ExactlyOneOF = []string{"adapter_id", "name"}
+	adapterIDSchema.ExactlyOneOf = []string{"adapter_id", "name"}
 
 	adapterNameSchema := baseMap["name"]
 	adapterNameSchema.Optional = true
@@ -91,18 +91,18 @@ func dataSourceIBMKMSKmipAdapterRead(d *schema.ResourceData, meta interface{}) e
 
 	instanceID := getInstanceIDFromResourceData(d, "instance_id")
 	api.Config.InstanceID = instanceID
-	nameOrID, hasID := d.GetOk("adapter_id").(string)
+	nameOrID, hasID := d.GetOk("adapter_id")
 	if !hasID {
 		nameOrID = d.Get("name")
 	}
-
+	nameOrIDStr := nameOrID.(string)
 	// call GetKMIPAdapter api
-	adapter, err := api.GetKMIPAdapter(context.Background(), nameOrID)
+	adapter, err := api.GetKMIPAdapter(context.Background(), nameOrIDStr)
 	if err != nil {
 		return err
 	}
 
 	// set computed values
-	populateKMIPAdapterSchemaDataFromStruct(d, adapter)
+	populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
 	return nil
 }

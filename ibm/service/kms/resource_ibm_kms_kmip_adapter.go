@@ -22,7 +22,6 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMKmsKMIPAdapterCreate,
 		Read:     resourceIBMKmsKMIPAdapterRead,
-		Update:   resourceIBMKmsKMIPAdapterUpdate,
 		Delete:   resourceIBMKmsKMIPAdapterDelete,
 		Exists:   resourceIBMKmsKMIPAdapterExists,
 		Importer: &schema.ResourceImporter{},
@@ -103,7 +102,7 @@ func resourceIBMKmsKMIPAdapterProfileToProfileFunc(profile string, profileData m
 }
 
 func resourceIBMKmsKMIPAdapterGetTFID(instanceID, adapterID string) string {
-	return fmt.Sprint("%s:%s", instanceID, adapterID)
+	return fmt.Sprintf("%s:%s", instanceID, adapterID)
 }
 
 func resourceIBMKmsKMIPAdapterGetIDsFromTFID(tfID string) (instanceID string, adapterID string) {
@@ -145,7 +144,7 @@ func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	err = populateKMIPAdapterSchemaDataFromStruct(d, adapter)
+	err = populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
 	if err != nil {
 		return err
 	}
@@ -174,7 +173,7 @@ func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (
 		return false, err
 	}
 	ctx := context.Background()
-	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterID)
+	_, err = kpAPI.GetKMIPAdapter(ctx, adapterID)
 	if err != nil {
 		kpError := err.(*kp.Error)
 		if kpError.StatusCode == 404 {
@@ -213,12 +212,21 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 		adapter.Description = descStr
 	}
 	if data, ok := d.GetOk("profile_data"); ok {
-		dataMap, ok2 := data.(map[string]string)
+		dataMap, ok2 := data.(map[string]interface{})
 		if !ok2 {
-			err = fmt.Errorf("Error converting profile data to map[string]string")
+			err = fmt.Errorf("Error converting profile data to map[string]interface{}")
 			return
 		}
-		adapter.ProfileData = dataMap
+		profileData := map[string]string{}
+		for key := range dataMap {
+			if val, ok := dataMap[key].(string); ok {
+				profileData[key] = val
+			} else {
+				err = fmt.Errorf("Error converting value with key {%s} into string", key)
+				return
+			}
+		}
+		adapter.ProfileData = profileData
 	}
 	return
 }
@@ -239,13 +247,13 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 	if err = d.Set("profile_data", adapter.ProfileData); err != nil {
 		return fmt.Errorf("Error setting profile_data: %s", err)
 	}
-	if err = d.Set("created_at", DateTimeToRFC3339(adapter.CreatedAt)); err != nil {
+	if err = d.Set("created_at", adapter.CreatedAt.String()); err != nil {
 		return fmt.Errorf("Error setting created_at: %s", err)
 	}
 	if err = d.Set("created_at", adapter.CreatedBy); err != nil {
 		return fmt.Errorf("Error setting created_by: %s", err)
 	}
-	if err = d.Set("updated_at", DateTimeToRFC3339(adapter.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", adapter.UpdatedAt.String()); err != nil {
 		return fmt.Errorf("Error setting updated_at: %s", err)
 	}
 	if err = d.Set("updated_by", adapter.UpdatedBy); err != nil {

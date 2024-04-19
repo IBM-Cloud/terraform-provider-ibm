@@ -9,7 +9,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	kp "github.com/IBM/keyprotect-go-client"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -64,12 +63,12 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 	opts := &kp.ListKmipAdaptersOptions{}
 	limit, ok := d.GetOk("limit")
 	if ok {
-		limitVal := int32(limit.(int))
+		limitVal := uint32(limit.(int))
 		opts.Limit = &limitVal
 	}
-	offset, ok := d.GetOk("offset").(int)
+	offset, ok := d.GetOk("offset")
 	if ok {
-		offsetVal := int32(offset.(int))
+		offsetVal := uint32(offset.(int))
 		opts.Offset = &offsetVal
 	}
 	showTotalCount, ok := d.GetOk("show_total_count")
@@ -80,7 +79,7 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 
 	adapters, err := api.GetKMIPAdapters(context.Background(), opts)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error listing KMIP adapters: %s", err))
+		return fmt.Errorf("Error listing KMIP adapters: %s", err)
 	}
 
 	adaptersList := adapters.Adapters
