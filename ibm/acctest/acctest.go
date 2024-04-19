@@ -365,6 +365,12 @@ var (
 	PagVpcSgInstance_2         string
 )
 
+// For VMware as a Service
+var (
+    Vmaas_Directorsite_id string
+    Vmaas_Directorsite_pvdc_id string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -1730,6 +1736,17 @@ func init() {
 	if PagVpcSubnetNameInstance_2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
 	}
+
+	// For vmware as a service
+	Vmaas_Directorsite_id = os.Getenv("IBM_VMAAS_DS_ID")
+	if Vmaas_Directorsite_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_Directorsite_pvdc_id = os.Getenv("IBM_VMAAS_DS_PVDC_ID")
+	if Vmaas_Directorsite_pvdc_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_PVDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
 }
 
 var (
@@ -1982,6 +1999,18 @@ func TestAccPreCheckMqcloud(t *testing.T) {
 	}
 	if MqCloudQueueManagerVersionUpdate == "" {
 		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckVMwareService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if Vmaas_Directorsite_id == ""{
+		t.Fatal("IBM_VMAAS_DS_ID must be set for acceptance tests")
+	}
+    if Vmaas_Directorsite_pvdc_id == "" {
+		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
 	}
 }
 
