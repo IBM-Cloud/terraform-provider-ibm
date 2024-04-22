@@ -35,7 +35,7 @@ const (
 	CISRulesetsRuleLogging                             = "rule_logging"
 	CISRulesetsRuleLoggingEnabled                      = "enabled"
 	CISRulesetsRuleLastUpdatedAt                       = "rule_last_updated_at"
-	CISRulesetsId                                      = "id"
+	CISRulesetsId                                      = "ruleset_id"
 	CISRuleset                                         = "ruleset"
 	CISRulesetList                                     = "rulesets"
 	CISRulesetOverrides                                = "overrides"
@@ -152,7 +152,7 @@ var CISResponseObject = &schema.Resource{
 									Elem:        schema.TypeString,
 								},
 								CISRulesetOverrides: {
-									Type:        schema.TypeMap,
+									Type:        schema.TypeSet,
 									Computed:    true,
 									Description: "Override options",
 									Elem: &schema.Resource{
@@ -357,26 +357,14 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 			ruleDetailsList := make([]map[string]interface{}, 0)
 			for _, ruleDetailsObj := range rulesetObj.Rules {
 				ruleDetails := map[string]interface{}{}
-				ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-				ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-				ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-				ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-				ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-				ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-				ruleDetailsLoggingObj := map[string]interface{}{}
-				ruleDetailsLogging := *&ruleDetailsObj.Logging
-				ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-				ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-				ruleDetailsActionParametersObj := map[string]interface{}{}
-				ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-				ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-				ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-				ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+				ruleDetails[CISRulesetsRuleId] = &ruleDetailsObj.ID
+				ruleDetails[CISRulesetsRuleVersion] = &ruleDetailsObj.Version
+				ruleDetails[CISRulesetsRuleAction] = &ruleDetailsObj.Action
+				ruleDetails[CISRulesetsRuleExpression] = &ruleDetailsObj.Expression
+				ruleDetails[CISRulesetsRuleRef] = &ruleDetailsObj.Ref
+				ruleDetails[CISRulesetsRuleLastUpdatedAt] = &ruleDetailsObj.LastUpdated
+				ruleDetails[CISRulesetsRuleLogging] = &ruleDetailsObj.Logging
+				ruleDetails[CISRulesetsRules] = &ruleDetailsObj.ActionParameters
 
 				ruleDetailsList = append(ruleDetailsList, ruleDetails)
 			}
@@ -434,26 +422,14 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 			ruleDetailsList := make([]map[string]interface{}, 0)
 			for _, ruleDetailsObj := range rulesetObj.Rules {
 				ruleDetails := map[string]interface{}{}
-				ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-				ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-				ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-				ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-				ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-				ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-				ruleDetailsLoggingObj := map[string]interface{}{}
-				ruleDetailsLogging := *&ruleDetailsObj.Logging
-				ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-				ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-				ruleDetailsActionParametersObj := map[string]interface{}{}
-				ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-				ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-				ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-				ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
+				ruleDetails[CISRulesetsRuleId] = &ruleDetailsObj.ID
+				ruleDetails[CISRulesetsRuleVersion] = &ruleDetailsObj.Version
+				ruleDetails[CISRulesetsRuleAction] = &ruleDetailsObj.Action
+				ruleDetails[CISRulesetsRuleExpression] = &ruleDetailsObj.Expression
+				ruleDetails[CISRulesetsRuleRef] = &ruleDetailsObj.Ref
+				ruleDetails[CISRulesetsRuleLastUpdatedAt] = &ruleDetailsObj.LastUpdated
+				ruleDetails[CISRulesetsRuleLogging] = &ruleDetailsObj.Logging
+				ruleDetails[CISRulesetsRules] = &ruleDetailsObj.ActionParameters
 
 				ruleDetailsList = append(ruleDetailsList, ruleDetails)
 			}

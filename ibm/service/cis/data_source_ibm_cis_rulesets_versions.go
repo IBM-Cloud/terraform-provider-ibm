@@ -55,6 +55,25 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 	}
 }
 
+func DataSourceIBMCISRulesetsVersionsValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_instance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
+
+	iBMCISRulesetsValidator := validate.ResourceValidator{
+		ResourceName: "ibm_cis_rulesets_versions",
+		Schema:       validateSchema}
+	return &iBMCISRulesetsValidator
+}
+
 func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {

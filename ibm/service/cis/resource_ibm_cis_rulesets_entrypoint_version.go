@@ -18,6 +18,7 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 	return &schema.Resource{
 		Read:     ResourceIBMCISRulesetsEntryPointVersionRead,
 		Update:   ResourceIBMCISRulesetsEntryPointVersionUpdate,
+		Delete:   ResourceIBMCISRulesetsEntryPointVersionDelete,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
@@ -254,4 +255,8 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 
 	}
 	return ResourceIBMCISRulesetsEntryPointVersionRead(d, meta)
+}
+
+func ResourceIBMCISRulesetsEntryPointVersionDelete(d *schema.ResourceData, meta interface{}) error {
+	return nil
 }
