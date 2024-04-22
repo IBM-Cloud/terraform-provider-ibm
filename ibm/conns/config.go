@@ -30,7 +30,8 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
-	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1" // to add rulesets
+	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
+	cisrulesetsv1 "github.com/IBM/networking-go-sdk/rulesetsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
 	cisbotmanagementv1 "github.com/IBM/networking-go-sdk/botmanagementv1"
@@ -248,8 +249,8 @@ type ClientSession interface {
 	UkoV4() (*ukov4.UkoV4, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
-	CisAlertsSession() (*cisalertsv1.AlertsV1, error) //to be updated
-	CisRulesetsSession() (*cisalertsv1.RulesetsV1, error)
+	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
+	CisRulesetsSession() (*cisrulesetsv1.RulesetsV1, error)
 	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
@@ -431,7 +432,7 @@ type clientSession struct {
 	cisAlertsErr    error
 
 	// CIS Rulesets
-	cisRulesetsClient *cisalertsv1.RulesetsV1
+	cisRulesetsClient *cisrulesetsv1.RulesetsV1
 	cisRulesetsErr    error
 
 	// CIS Authenticated Origin Pull
@@ -990,7 +991,7 @@ func (sess clientSession) CisAlertsSession() (*cisalertsv1.AlertsV1, error) {
 }
 
 // CIS Rulesets
-func (sess clientSession) CisRulesetsSession() (*cisalertsv1.RulesetsV1, error) {
+func (sess clientSession) CisRulesetsSession() (*cisrulesetsv1.RulesetsV1, error) {
 	if sess.cisRulesetsErr != nil {
 		return sess.cisRulesetsClient, sess.cisRulesetsErr
 	}
@@ -2449,12 +2450,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// IBM Network CIS Rulesets
-	cisRulesetsOpt := &cisalertsv1.RulesetsV1Options{
+	cisRulesetsOpt := &cisrulesetsv1.RulesetsV1Options{
 		URL:           cisEndPoint,
 		Crn:           core.StringPtr(""),
 		Authenticator: authenticator,
 	}
-	session.cisRulesetsClient, session.cisRulesetsErr = cisalertsv1.NewRulesetsV1(cisRulesetsOpt)
+	session.cisRulesetsClient, session.cisRulesetsErr = cisrulesetsv1.NewRulesetsV1(cisRulesetsOpt)
 	if session.cisRulesetsErr != nil {
 		session.cisRulesetsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Rulesets : %s",
 			session.cisRulesetsErr)
