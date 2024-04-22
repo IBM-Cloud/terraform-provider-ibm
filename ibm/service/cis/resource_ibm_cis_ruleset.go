@@ -10,7 +10,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/networking-go-sdk/alertsv1"
+	"github.com/IBM/networking-go-sdk/rulesetsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -77,8 +77,8 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 
 		opt := sess.NewUpdateZoneRulesetOptions(rulesetId)
 
-		rulesetObject := d.Get(CISRulesetsOutput).(alertsv1.RulesetDetails)
-		ruleObject := d.Get(CISRulesetsRules).([]alertsv1.RuleCreate)
+		rulesetObject := d.Get(CISRulesetsOutput).(rulesetsv1.RulesetDetails)
+		ruleObject := d.Get(CISRulesetsRules).([]rulesetsv1.RuleCreate)
 		opt.SetDescription(*rulesetObject.Description)
 		opt.SetRules(ruleObject)
 
@@ -94,8 +94,8 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 
 		opt := sess.NewUpdateAccountRulesetOptions(rulesetId)
 
-		rulesetObject := d.Get(CISRulesetsOutput).(alertsv1.RulesetDetails)
-		ruleObject := d.Get(CISRulesetsRules).([]alertsv1.RuleCreate)
+		rulesetObject := d.Get(CISRulesetsOutput).(rulesetsv1.RulesetDetails)
+		ruleObject := d.Get(CISRulesetsRules).([]rulesetsv1.RuleCreate)
 		opt.SetDescription(*rulesetObject.Description)
 		opt.SetRules(ruleObject)
 
