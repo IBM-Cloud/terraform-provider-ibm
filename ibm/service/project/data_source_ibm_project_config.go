@@ -123,7 +123,7 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 						},
 						"value_json": &schema.Schema{
 							Type:        schema.TypeString,
-							Deprecated:  "This property will be deprecated, it will be replaced by the new property 'value'.",
+							Deprecated:  "This property will be deprecated, it will be replaced by the existing property 'value'.",
 							Computed:    true,
 							Description: "This property can be any value - a string, number, boolean, array, or object.",
 						},
