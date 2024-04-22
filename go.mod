@@ -61,7 +61,7 @@ require (
 )
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240402122236-5c5b994a3f1a
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20240422122311-65a0b0cf3d72
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/mqcloud-go-sdk v0.0.4
 	github.com/IBM/sarama v1.41.2
@@ -242,5 +242,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM-Cloud/bluemix-go => github.com/golibali/bluemix-go v0.0.0-20240411074144-acd11f450038
