@@ -86,7 +86,7 @@ Nested schema for **definition**:
 	* `name` - (String) The configuration name. It's unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `resource_crns` - (List) The CRNs of the resources that are associated with this configuration.
-	  * Constraints: The list items must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`. The maximum length is `110` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"<>{}\\s\\x00-\\x1F]*/`. The maximum length is `110` items. The minimum length is `0` items.
 	* `settings` - (Map) The Schematics environment variables to use to deploy the configuration. Settings are only available if they are specified when the configuration is initially created.
 * `deployed_version` - (List) A summary of a project configuration version.
 Nested schema for **deployed_version**:
@@ -208,7 +208,7 @@ Nested schema for **schematics**:
 		* `type` - (String) The type of the script.
 		  * Constraints: The maximum length is `7` characters. The minimum length is `7` characters. The value must match regular expression `/^(ansible)$/`.
 	* `workspace_crn` - (String) An IBM Cloud resource name that uniquely identifies a resource.
-	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"`<>{}\\s\\x00-\\x1F]*/`.
+	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"<>{}\\s\\x00-\\x1F]*/`.
 * `state` - (String) The state of the configuration.
   * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
 * `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
