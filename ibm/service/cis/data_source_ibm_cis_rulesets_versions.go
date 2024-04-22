@@ -29,6 +29,12 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 					"ibm_cis_rulesets_versions",
 					"cis_id"),
 			},
+			cisDomainID: {
+				Type:             schema.TypeString,
+				Description:      "Associated CIS domain",
+				Optional:         true,
+				DiffSuppressFunc: suppressDomainIDDiff,
+			},
 			CISRulesetsId: {
 				Type:        schema.TypeString,
 				Required:    true,

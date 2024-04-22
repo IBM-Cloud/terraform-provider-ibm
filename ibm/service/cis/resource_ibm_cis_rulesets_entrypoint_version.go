@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/networking-go-sdk/rulesetsv1"
@@ -23,7 +24,8 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cis_rulesets_entrypoint_version",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_cis_rulesets_versions",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -32,12 +34,12 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: suppressDomainIDDiff,
 			},
-			CISRulesetsPhase: {
+			CISRulesetPhase: {
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Phase of the Rulesets",
+				Optional:    true,
+				Description: "Ruleset phase",
 			},
-			CISRulesetsOutput: {
+			CISRulesetsEntryPointOutput: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
@@ -184,42 +186,72 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	zoneId := d.Get(cisDomainID).(string)
-	rulesetPhase := d.Get(CISRulesetsPhase).(string)
+	ruleset_phase, zoneId, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error while ConvertTftoCisThreeVar %s", err)
+	}
+	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
+		sess.ZoneIdentifier = &zoneId
 
-		opt := sess.NewUpdateZoneEntrypointRulesetOptions(rulesetPhase)
+		opt := sess.NewUpdateZoneEntrypointRulesetOptions(ruleset_phase)
 
-		rulesetObject := d.Get(CISRulesetsOutput).(rulesetsv1.RulesetDetails)
-		ruleObject := d.Get(CISRulesetsRules).([]rulesetsv1.RuleCreate)
-		opt.SetDescription(*rulesetObject.Description)
-		opt.SetRules(ruleObject)
-
-		result, _, err := sess.UpdateZoneEntrypointRuleset(opt)
-
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone entrypoint Ruleset %s", err)
+		if d.HasChange(CISRulesetsDescription) {
+			if val, ok := d.GetOk(CISRulesetsDescription); ok {
+				opt.SetDescription(val.(string))
+			}
+		}
+		if d.HasChange(CISRulesetsKind) {
+			if val, ok := d.GetOk(CISRulesetsKind); ok {
+				opt.SetKind(val.(string))
+			}
+		}
+		if d.HasChange(CISRulesetsName) {
+			if val, ok := d.GetOk(CISRulesetsName); ok {
+				opt.SetName(val.(string))
+			}
+		}
+		if d.HasChange(CISRulesetsRules) {
+			if val, ok := d.GetOk(CISRulesetsRules); ok {
+				opt.SetRules(val.([]rulesetsv1.RuleCreate))
+			}
 		}
 
-		d.SetId(*result.Result.ID)
+		result, resp, err := sess.UpdateZoneEntrypointRuleset(opt)
+		if err != nil || result == nil {
+			return fmt.Errorf("[ERROR] Error while Update Zone Entrypoint Rulesets %s %s", err, resp)
+		}
 
 	} else {
+		opt := sess.NewUpdateAccountEntrypointRulesetOptions(ruleset_phase)
 
-		opt := sess.NewUpdateAccountEntrypointRulesetOptions(rulesetPhase)
-
-		rulesetObject := d.Get(CISRulesetsOutput).(rulesetsv1.RulesetDetails)
-		ruleObject := d.Get(CISRulesetsRules).([]rulesetsv1.RuleCreate)
-		opt.SetDescription(*rulesetObject.Description)
-		opt.SetRules(ruleObject)
-
-		result, _, err := sess.UpdateAccountEntrypointRuleset(opt)
-
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the account entrypoint Ruleset %s", err)
+		if d.HasChange(CISRulesetsDescription) {
+			if val, ok := d.GetOk(CISRulesetsDescription); ok {
+				opt.SetDescription(val.(string))
+			}
 		}
-		d.SetId(*result.Result.ID)
-	}
+		if d.HasChange(CISRulesetsKind) {
+			if val, ok := d.GetOk(CISRulesetsKind); ok {
+				opt.SetKind(val.(string))
+			}
+		}
+		if d.HasChange(CISRulesetsName) {
+			if val, ok := d.GetOk(CISRulesetsName); ok {
+				opt.SetName(val.(string))
+			}
+		}
+		if d.HasChange(CISRulesetsRules) {
+			if val, ok := d.GetOk(CISRulesetsRules); ok {
+				opt.SetRules(val.([]rulesetsv1.RuleCreate))
+			}
+		}
 
+		result, resp, err := sess.UpdateAccountEntrypointRuleset(opt)
+		if err != nil || result == nil {
+			return fmt.Errorf("[ERROR] Error while Update Entrypoint Rulesets %s %s", err, resp)
+		}
+
+	}
 	return ResourceIBMCISRulesetsEntryPointVersionRead(d, meta)
 }
