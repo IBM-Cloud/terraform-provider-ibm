@@ -3181,7 +3181,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
 	}
 	if err != nil {
-		cdToolchainClientURL = cdtoolchainv2.DefaultServiceURL
+		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
