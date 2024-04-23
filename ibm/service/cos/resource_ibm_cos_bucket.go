@@ -204,12 +204,12 @@ func ResourceIBMCOSBucket() *schema.Resource {
 						"management_events": {
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "If set to true, all bucket management events will be sent to Activity Tracker",
+							Description: "This field only applies if `activity_tracker_crn` is not populated. If set to `true`, all bucket management events will be sent to Activity Tracker.",
 						},
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The instance of Activity Tracker that will receive object event data",
+							Description: "When the activity_tracker_crn is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the ATracker Router service configuration. If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled",
 						},
 					},
 				},
@@ -236,7 +236,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Instance of IBM Cloud Monitoring that will receive the bucket metrics.",
+							Description: "When the metrics_monitoring_crn is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration. If metrics_monitoring_crn is populated, then enabled events are sent to the Metrics Monitoring instance specified.",
 						},
 					},
 				},

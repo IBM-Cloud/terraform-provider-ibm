@@ -454,10 +454,14 @@ Review the argument references that you can specify for your resource.
 - `activity_tracking`- (List of objects) Object to enable auditing with IBM Cloud Activity Tracker - Optional - Configure your IBM Cloud Activity Tracker service instance and the type of events that you want to send to your service to audit activity against your bucket. For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
 
   Nested scheme for `activity_tracking`:
-  - `activity_tracker_crn`-  (Required, String) The CRN of your IBM Cloud Activity Tracker service instance that you want to send your events to. This value is required only when you configure your instance for the first time. 
+  - `activity_tracker_crn`-  (Optional, String) The CRN of your IBM Cloud Activity Tracker service instance. If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+  **Note:**
+  When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the ATracker Router service configuration.. 
   - `read_data_events`-  (Required, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
   - `write_data_events`-  (Required, Bool) If set to **true**, all write events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
-  - `management_events`-  (Required, Bool) If set to **true**, all the bucketmanagement events are sent to your IBM Cloud Activity Tracker service instance.
+  - `management_events`-  (Required, Bool) If set to **true**, all the bucket management events are sent to Activity Tracker.
+  **Note:**
+  `management_events` field only applies if `activity_tracker_crn` is not populated.
 - `archive_rule` - (Required, List) Nested archive_rule block has following structure.
   
   Nested scheme for `archive_rule`:
@@ -500,7 +504,9 @@ Review the argument references that you can specify for your resource.
 - `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
 
   Nested scheme for `metrics_monitoring`:
-  - `metrics_monitoring_crn` - (Required, string) Required the first time `metrics_monitoring` is configured. The instance of IBM Cloud Monitoring receives the bucket metrics. 
+  - `metrics_monitoring_crn` - (Optional, string) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.
+  **Note:**
+ When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.. 
   - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service `@1mins` granulatiy.
   - `usage_metrics_enabled` : (Optional, Bool) If set to **true**, all usage metrics that is `bytes_used` is sent to the monitoring service.e.
 
