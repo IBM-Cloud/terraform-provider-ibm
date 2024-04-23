@@ -251,8 +251,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "public",
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == "" {
+						return true
+					}
+					return false
+				},
 			},
 			"backup_id": {
 				Description: "The CRN of backup source database",
@@ -539,6 +544,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									"id": {
 										Type:     schema.TypeString,
 										Required: true,
+										ValidateFunc: validation.StringInSlice([]string{
+											"multitenant",
+											"b3c.4x16.encrypted",
+											"b3c.8x32.encrypted",
+											"m3c.8x64.encrypted",
+											"b3c.16x64.encrypted",
+											"b3c.32x128.encrypted",
+											"m3c.30x240.encrypted"}, false),
 									},
 								},
 							},
@@ -957,7 +970,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			AllowedValues:              "public, private, public-and-private",
-			Required:                   true})
+			Required:                   false})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "group_id",
@@ -1049,8 +1062,11 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 		getDefaultScalingGroupsOptions.SetHostFlavor(_hostFlavor)
 	}
 
-	getDefaultScalingGroupsResponse, _, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
+	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
 	if err != nil {
+		if response.StatusCode == 422 {
+			return groups, fmt.Errorf("%s is not available on multitenant", service)
+		}
 		return groups, err
 	}
 
@@ -2921,10 +2937,14 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
-		err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := getCpuEnforcementRatios(service, plan, meta, group)
+		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := 0, 0
 
-		if err != nil {
-			return err
+		if memberGroup.HostFlavor != nil && memberGroup.HostFlavor.ID == "multitenant" {
+			err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb = getCpuEnforcementRatios(service, plan, memberGroup.HostFlavor.ID, meta, group)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		// validate group_ids are unique
@@ -3005,9 +3025,9 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	return nil
 }
 
-func getCpuEnforcementRatios(service string, plan string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
+func getCpuEnforcementRatios(service string, plan string, hostFlavor string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
 	var currentGroups []Group
-	defaultList, err := getDefaultScalingGroups(service, plan, "multitenant", meta)
+	defaultList, err := getDefaultScalingGroups(service, plan, hostFlavor, meta)
 
 	if err != nil {
 		return err, 0, 0
