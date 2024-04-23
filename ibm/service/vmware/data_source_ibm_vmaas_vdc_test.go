@@ -75,17 +75,17 @@ func TestAccIbmVmaasVdcDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "director_site.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.#"),
 					/*
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.size"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.status"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.version"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.id"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.size"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.status"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.type"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "edges.0.version"),
 					*/
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.#"),
 					/*
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.0.code"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.0.message"),
-					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.0.more_info"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.0.code"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.0.message"),
+						resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "status_reasons.0.more_info"),
 					*/
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_vmaas_vdc.vmaas_vdc_instance", "ordered_at"),
@@ -120,7 +120,7 @@ func testAccCheckIbmVmaasVdcDataSourceConfigBasic(ds_id string, ds_pvdc_id strin
 		data "ibm_vmaas_vdc" "vmaas_vdc_instance" {
 			vmaas_vdc_id = ibm_vmaas_vdc.vmaas_vdc_instance.id
 		}
-	`,ds_id, ds_pvdc_id, vDCName)
+	`, ds_id, ds_pvdc_id, vDCName)
 }
 
 func testAccCheckIbmVmaasVdcDataSourceConfig(vDCCpu string, ds_id string, ds_pvdc_id string, vDCName string, vDCRam string, vDCFastProvisioningEnabled string, vDCRhelByol string, vDCWindowsByol string) string {

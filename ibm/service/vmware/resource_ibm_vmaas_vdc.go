@@ -20,24 +20,24 @@ import (
 
 func ResourceIbmVmaasVdc() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIbmVmaasVdcCreate,
-		ReadContext:     resourceIbmVmaasVdcRead,
-		UpdateContext:   resourceIbmVmaasVdcUpdate,
-		DeleteContext:   resourceIbmVmaasVdcDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIbmVmaasVdcCreate,
+		ReadContext:   resourceIbmVmaasVdcRead,
+		UpdateContext: resourceIbmVmaasVdcUpdate,
+		DeleteContext: resourceIbmVmaasVdcDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"accept_language": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "accept_language"),
-				Description: "Language.",
+				Description:  "Language.",
 			},
 			"cpu": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "cpu"),
-				Description: "The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
+				Description:  "The vCPU usage limit on the virtual data center (VDC). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
 			},
 			"director_site": &schema.Schema{
 				Type:        schema.TypeList,
@@ -92,16 +92,16 @@ func ResourceIbmVmaasVdc() *schema.Resource {
 				},
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "name"),
-				Description: "A human readable ID for the virtual data center (VDC).",
+				Description:  "A human readable ID for the virtual data center (VDC).",
 			},
 			"ram": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
+				Type:         schema.TypeInt,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_vmaas_vdc", "ram"),
-				Description: "The RAM usage limit on the virtual data center (VDC) in GB (1024^3 bytes). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
+				Description:  "The RAM usage limit on the virtual data center (VDC) in GB (1024^3 bytes). Supported for VDCs deployed on a multitenant Cloud Director site. This property is applicable when the resource pool type is reserved.",
 			},
 			"fast_provisioning_enabled": &schema.Schema{
 				Type:        schema.TypeBool,

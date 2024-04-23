@@ -53,8 +53,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -898,7 +898,7 @@ func Provider() *schema.Provider {
 			"ibm_project":             project.DataSourceIbmProject(),
 			"ibm_project_config":      project.DataSourceIbmProjectConfig(),
 			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
-		
+
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
 		},
