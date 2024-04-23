@@ -53,6 +53,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -898,6 +899,9 @@ func Provider() *schema.Provider {
 			"ibm_project":             project.DataSourceIbmProject(),
 			"ibm_project_config":      project.DataSourceIbmProjectConfig(),
 			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
+
+			// Added for VMware as a Service
+			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1191,31 +1195,31 @@ func Provider() *schema.Provider {
 			"ibm_hardware_firewall_shared":                  classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Added for Power Colo
+			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
+			"ibm_pi_cloud_connection_network_attach": power.ResourceIBMPICloudConnectionNetworkAttach(),
+			"ibm_pi_cloud_connection":                power.ResourceIBMPICloudConnection(),
+			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
+			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
+			"ibm_pi_ike_policy":                      power.ResourceIBMPIIKEPolicy(),
+			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
+			"ibm_pi_image":                           power.ResourceIBMPIImage(),
+			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
+			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
+			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
-			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
-			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
-			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
+			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
+			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
+			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
+			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
+			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
+			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
+			"ibm_pi_volume_attach":                   power.ResourceIBMPIVolumeAttach(),
 			"ibm_pi_volume_clone":                    power.ResourceIBMPIVolumeClone(),
 			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
-			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
-			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
-			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
-			"ibm_pi_volume_attach":                   power.ResourceIBMPIVolumeAttach(),
-			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
-			"ibm_pi_image":                           power.ResourceIBMPIImage(),
-			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
-			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
-			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
-			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
-			"ibm_pi_cloud_connection":                power.ResourceIBMPICloudConnection(),
-			"ibm_pi_cloud_connection_network_attach": power.ResourceIBMPICloudConnectionNetworkAttach(),
-			"ibm_pi_ike_policy":                      power.ResourceIBMPIIKEPolicy(),
-			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
+			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
+			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
+			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
 			"ibm_pi_vpn_connection":                  power.ResourceIBMPIVPNConnection(),
-			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
-			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
-			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
-			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
 			"ibm_pi_workspace":                       power.ResourceIBMPIWorkspace(),
 
 			// Private DNS related resources
@@ -1439,6 +1443,9 @@ func Provider() *schema.Provider {
 			"ibm_project":             project.ResourceIbmProject(),
 			"ibm_project_config":      project.ResourceIbmProjectConfig(),
 			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
+
+			// Added for VMware as a Service
+			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1712,6 +1719,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_project":             project.ResourceIbmProjectValidator(),
 				"ibm_project_config":      project.ResourceIbmProjectConfigValidator(),
 				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
+
+				// Added for VMware as a Service
+				"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdcValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
