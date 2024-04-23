@@ -205,6 +205,6 @@ func populateKMIPClientCertSchemaDataFromStruct(d *schema.ResourceData, cert kp.
 	if err = d.Set("created_by", cert.CreatedBy); err != nil {
 		return fmt.Errorf("Error setting created_by: %s", err)
 	}
-	d.SetID(cert.ID)
+	d.SetId(cert.ID)
 	return nil
 }

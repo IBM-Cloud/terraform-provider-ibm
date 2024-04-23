@@ -77,7 +77,7 @@ func dataSourceIBMKMSKMIPObjectBaseSchema(isForList bool) map[string]*schema.Sch
 	}
 }
 
-func DataSourceIBMKmsKMIPObject() *schema.Resource {
+func DataSourceIBMKMSKMIPObject() *schema.Resource {
 	baseMap := dataSourceIBMKMSKMIPObjectBaseSchema(false)
 
 	baseMap["instance_id"] = &schema.Schema{
@@ -139,23 +139,26 @@ func dataSourceIBMKmsKMIPObjectRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error setting adapter_name: %s", err)
 	}
 
-	cert, err := kpAPI.GetKMIPObject(ctx, adapterNameOrID, objectID)
+	object, err := kpAPI.GetKMIPObject(ctx, adapterNameOrID, objectID)
 	if err != nil {
 		return err
 	}
-	err = populateKMIPClientCertSchemaDataFromStruct(d, *cert)
+	err = populateKMIPObjectSchemaDataFromStruct(d, *object)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func populateKMIPObjectSchemaDataFromStruct(d *schema.ResourceData, object kp.GetKMIPObject) (err error) {
-	if err = d.Set("name", object.Name); err != nil {
+func populateKMIPObjectSchemaDataFromStruct(d *schema.ResourceData, object kp.KMIPObject) (err error) {
+	if err = d.Set("object_id", object.ID); err != nil {
 		return fmt.Errorf("Error setting name: %s", err)
 	}
-	if err = d.Set("certificate", object.Certificate); err != nil {
-		return fmt.Errorf("Error setting certificate: %s", err)
+	if err = d.Set("object_type", object.KMIPObjectType); err != nil {
+		return fmt.Errorf("Error setting object_type: %s", err)
+	}
+	if err = d.Set("object_state", object.ObjectState); err != nil {
+		return fmt.Errorf("Error setting object_state: %s", err)
 	}
 	if err = d.Set("created_at", object.CreatedAt.String()); err != nil {
 		return fmt.Errorf("Error setting created_at: %s", err)

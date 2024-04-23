@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceIBMKmsKMIPObjects() *schema.Resource {
+func DataSourceIBMKMSKMIPObjects() *schema.Resource {
 	return &schema.Resource{
 		Read:     resourceIBMKmsKMIPClientCertRead,
 		Importer: &schema.ResourceImporter{},
