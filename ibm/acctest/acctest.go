@@ -367,8 +367,8 @@ var (
 
 // For VMware as a Service
 var (
-    Vmaas_Directorsite_id string
-    Vmaas_Directorsite_pvdc_id string
+	Vmaas_Directorsite_id      string
+	Vmaas_Directorsite_pvdc_id string
 )
 
 func init() {
@@ -2002,14 +2002,26 @@ func TestAccPreCheckMqcloud(t *testing.T) {
 	}
 }
 
+func TestAccPreCheckCbr(t *testing.T) {
+	TestAccPreCheck(t)
+	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+	cbrEndpoint := os.Getenv("IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT")
+	if cbrEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+}
+
 func TestAccPreCheckVMwareService(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
-	if Vmaas_Directorsite_id == ""{
+	if Vmaas_Directorsite_id == "" {
 		t.Fatal("IBM_VMAAS_DS_ID must be set for acceptance tests")
 	}
-    if Vmaas_Directorsite_pvdc_id == "" {
+	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
 	}
 }
