@@ -71,10 +71,12 @@ func DataSourceIBMKMSKmipAdapter() *schema.Resource {
 	adapterIDSchema := baseMap["adapter_id"]
 	adapterIDSchema.Optional = true
 	adapterIDSchema.ExactlyOneOf = []string{"adapter_id", "name"}
+	baseMap["adapter_id"] = adapterIDSchema
 
 	adapterNameSchema := baseMap["name"]
 	adapterNameSchema.Optional = true
 	adapterNameSchema.ExactlyOneOf = []string{"adapter_id", "name"}
+	baseMap["name"] = adapterNameSchema
 
 	return &schema.Resource{
 		Read:   dataSourceIBMKMSKmipAdapterRead,

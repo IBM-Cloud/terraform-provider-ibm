@@ -26,7 +26,7 @@ func ResourceIBMKmsKMIPClientCertificate() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
-			// TODO: consider consolidating into nameOrID
+			// TODO: consider consolidating into nameOrID?
 			"adapter_id": {
 				Type:         schema.TypeString,
 				Optional:     true,

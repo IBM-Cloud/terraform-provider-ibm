@@ -61,18 +61,15 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 
 	// call GetKMIPAdapters api
 	opts := &kp.ListKmipAdaptersOptions{}
-	limit, ok := d.GetOk("limit")
-	if ok {
+	if limit, ok := d.GetOk("limit"); ok {
 		limitVal := uint32(limit.(int))
 		opts.Limit = &limitVal
 	}
-	offset, ok := d.GetOk("offset")
-	if ok {
+	if offset, ok := d.GetOk("offset"); ok {
 		offsetVal := uint32(offset.(int))
 		opts.Offset = &offsetVal
 	}
-	showTotalCount, ok := d.GetOk("show_total_count")
-	if ok {
+	if showTotalCount, ok := d.GetOk("show_total_count"); ok {
 		boolVal := showTotalCount.(bool)
 		opts.TotalCount = &boolVal
 	}
@@ -87,7 +84,7 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 	// set computed values
 	mySlice := make([]map[string]interface{}, 0, len(adaptersList))
 	for _, adapter := range adaptersList {
-		adapterMap, _ := dataSourceIBMKMSKmipAdapterToMap(adapter)
+		adapterMap := dataSourceIBMKMSKmipAdapterToMap(adapter)
 		mySlice = append(mySlice, adapterMap)
 	}
 	d.Set("adapters", mySlice)
@@ -96,7 +93,7 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func dataSourceIBMKMSKmipAdapterToMap(model kp.KMIPAdapter) (map[string]interface{}, error) {
+func dataSourceIBMKMSKmipAdapterToMap(model kp.KMIPAdapter) map[string]interface{} {
 	modelMap := make(map[string]interface{})
 	modelMap["adapter_id"] = model.ID
 	modelMap["name"] = model.Name
@@ -107,5 +104,5 @@ func dataSourceIBMKMSKmipAdapterToMap(model kp.KMIPAdapter) (map[string]interfac
 	modelMap["created_by"] = model.CreatedBy
 	modelMap["updated_at"] = model.UpdatedAt.String()
 	modelMap["updated_by"] = model.CreatedBy
-	return modelMap, nil
+	return modelMap
 }
