@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsRuleGroups() *schema.Resource {
@@ -43,11 +43,11 @@ func DataSourceIbmLogsRuleGroups() *schema.Resource {
 							Computed:    true,
 							Description: "A description for the rule group, should express what is the rule group purpose.",
 						},
-						"creator": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The creator of the rule group.",
-						},
+						// "creator": &schema.Schema{
+						// 	Type:        schema.TypeString,
+						// 	Computed:    true,
+						// 	Description: "The creator of the rule group.",
+						// },
 						"enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -430,9 +430,9 @@ func DataSourceIbmLogsRuleGroupsRuleGroupToMap(model *logsv0.RuleGroup) (map[str
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
-	if model.Creator != nil {
-		modelMap["creator"] = *model.Creator
-	}
+	// if model.Creator != nil {
+	// 	modelMap["creator"] = *model.Creator
+	// }
 	if model.Enabled != nil {
 		modelMap["enabled"] = *model.Enabled
 	}

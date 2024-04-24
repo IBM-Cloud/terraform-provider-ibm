@@ -37,7 +37,6 @@ func TestAccIbmLogsRuleGroupDataSourceBasic(t *testing.T) {
 func TestAccIbmLogsRuleGroupDataSourceAllArgs(t *testing.T) {
 	ruleGroupName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	ruleGroupDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	ruleGroupCreator := fmt.Sprintf("tf_creator_%d", acctest.RandIntRange(10, 100))
 	ruleGroupEnabled := "true"
 	ruleGroupOrder := fmt.Sprintf("%d", acctest.RandIntRange(0, 100))
 
@@ -46,13 +45,12 @@ func TestAccIbmLogsRuleGroupDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsRuleGroupDataSourceConfig(ruleGroupName, ruleGroupDescription, ruleGroupCreator, ruleGroupEnabled, ruleGroupOrder),
+				Config: testAccCheckIbmLogsRuleGroupDataSourceConfig(ruleGroupName, ruleGroupDescription, ruleGroupEnabled, ruleGroupOrder),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "creator"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_matchers.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_rule_group.logs_rule_group_instance", "rule_subgroups.#"),
@@ -73,11 +71,10 @@ func testAccCheckIbmLogsRuleGroupDataSourceConfigBasic(ruleGroupName string) str
 			region      = "%s"
 			name        = "%s"
 			description = "test description"
-			creator     = "bot@ibm.com"
 			enabled     = true
 			rule_matchers {
 			subsystem_name {
-				value = "mysql-cloudwatch"
+				value = "mysql"
 			}
 			}
 			rule_subgroups {
@@ -108,18 +105,17 @@ func testAccCheckIbmLogsRuleGroupDataSourceConfigBasic(ruleGroupName string) str
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion, ruleGroupName)
 }
 
-func testAccCheckIbmLogsRuleGroupDataSourceConfig(ruleGroupName string, ruleGroupDescription string, ruleGroupCreator string, ruleGroupEnabled string, ruleGroupOrder string) string {
+func testAccCheckIbmLogsRuleGroupDataSourceConfig(ruleGroupName string, ruleGroupDescription string, ruleGroupEnabled string, ruleGroupOrder string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_rule_group" "logs_rule_group_instance" {
 			instance_id = "%s"
 			region      = "%s"
 			name        = "%s"
 			description = "%s"
-			creator     = "%s"
 			enabled     = %s
 			rule_matchers {
 			subsystem_name {
-				value = "mysql-cloudwatch"
+				value = "mysql"
 			}
 			}
 			rule_subgroups {
@@ -147,7 +143,7 @@ func testAccCheckIbmLogsRuleGroupDataSourceConfig(ruleGroupName string, ruleGrou
 			region 		= ibm_logs_rule_group.logs_rule_group_instance.region
 			group_id 	= ibm_logs_rule_group.logs_rule_group_instance.rule_group_id
 		}
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, ruleGroupName, ruleGroupDescription, ruleGroupCreator, ruleGroupEnabled, ruleGroupOrder)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, ruleGroupName, ruleGroupDescription, ruleGroupEnabled, ruleGroupOrder)
 }
 
 // Todo @kavya498: Fix unit testcases

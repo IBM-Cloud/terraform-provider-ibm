@@ -7,6 +7,14 @@ variable "resource_name_prefix" {
   type        = string
   default     = "logs"
 }
+variable "en_instance_guid" {
+  description = "GUID of event notifications instance guid to create webhook"
+  type        = string
+}
+variable "en_instance_region" {
+  description = "region of event notifications instance guid to create webhook"
+  type        = string
+}
 
 
 # // Data source arguments for logs_dashboard

@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/stretchr/testify/assert"
 )
 

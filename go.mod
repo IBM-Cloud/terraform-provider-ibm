@@ -22,6 +22,7 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
+	github.com/IBM/logs-go-sdk v0.1.1
 	github.com/IBM/networking-go-sdk v0.45.0
 	github.com/IBM/platform-services-go-sdk v0.62.10
 	github.com/IBM/project-go-sdk v0.2.8-1
@@ -66,7 +67,6 @@ require (
 	github.com/IBM/mqcloud-go-sdk v0.0.4
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/vmware-go-sdk v0.1.2
-	github.com/observability-c/dragonlog-logs-go-sdk v0.1.0
 	github.com/stretchr/testify v1.9.0
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1

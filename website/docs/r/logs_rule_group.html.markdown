@@ -20,11 +20,10 @@ resource "ibm_logs_rule_group" "logs_rule_group_instance" {
   region      = ibm_resource_instance.logs_instance.location
   name        = "example-rule-group"
   description = "example rule group decription"
-  creator     = "bot@ibm.com"
   enabled     = false
   rule_matchers {
     subsystem_name {
-      value = "mysql-cloudwatch"
+      value = "mysql"
     }
   }
   rule_subgroups {
@@ -55,7 +54,6 @@ You can specify the following arguments for this resource.
 * `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
 * `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
-* `creator` - (Optional, String) The creator of the rule group.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 * `description` - (Optional, String) A description for the rule group, should express what is the rule group purpose.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.

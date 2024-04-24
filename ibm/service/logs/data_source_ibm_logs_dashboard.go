@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsDashboard() *schema.Resource {
@@ -724,220 +724,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																													},
 																												},
 																											},
-																											"spans": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Spans specific query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"lucene_query": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Lucene query.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"value": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "The query string.",
-																																	},
-																																},
-																															},
-																														},
-																														"group_by": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Group by fields.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"aggregations": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Aggregations.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metric_aggregation": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Metric aggregation.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metric_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metric field to aggregate.",
-																																				},
-																																				"aggregation_type": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Aggregation type.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"dimension_aggregation": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Dimension aggregation.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"dimension_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Dimension field to aggregate.",
-																																				},
-																																				"aggregation_type": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Aggregation type.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														"filters": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Filters to be applied to query results.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"field": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Group by fields.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metadata_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metadata field.",
-																																				},
-																																				"tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Tag field.",
-																																				},
-																																				"process_tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Process tag field.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"operator": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Operator to use for filtering the logs.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"all": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection of all values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{},
-																																											},
-																																										},
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"not_equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
 																											"dataprime": &schema.Schema{
 																												Type:        schema.TypeList,
 																												Computed:    true,
@@ -1075,126 +861,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																																								Type:        schema.TypeString,
 																																								Computed:    true,
 																																								Description: "Scope of the dataset.",
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"spans": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Filters to be applied to query results.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"field": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Group by fields.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"metadata_field": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Metadata field.",
-																																							},
-																																							"tag_field": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Tag field.",
-																																							},
-																																							"process_tag_field": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Process tag field.",
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"operator": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Operator to use for filtering the logs.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"equals": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"selection": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Selection criteria for the equality comparison.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"all": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "Represents a selection of all values.",
-																																														Elem: &schema.Resource{
-																																															Schema: map[string]*schema.Schema{},
-																																														},
-																																													},
-																																													"list": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "Represents a selection from a list of values.",
-																																														Elem: &schema.Resource{
-																																															Schema: map[string]*schema.Schema{
-																																																"values": &schema.Schema{
-																																																	Type:        schema.TypeList,
-																																																	Computed:    true,
-																																																	Description: "List of values for the selection.",
-																																																	Elem: &schema.Schema{
-																																																		Type: schema.TypeString,
-																																																	},
-																																																},
-																																															},
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																							"not_equals": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"selection": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Selection criteria for the non-equality comparison.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"list": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "Represents a selection from a list of values.",
-																																														Elem: &schema.Resource{
-																																															Schema: map[string]*schema.Schema{
-																																																"values": &schema.Schema{
-																																																	Type:        schema.TypeList,
-																																																	Computed:    true,
-																																																	Description: "List of values for the selection.",
-																																																	Elem: &schema.Schema{
-																																																		Type: schema.TypeString,
-																																																	},
-																																																},
-																																															},
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
 																																							},
 																																						},
 																																					},
@@ -1793,253 +1459,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																										},
 																									},
 																								},
-																								"spans": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Spans specific query.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"lucene_query": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"value": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "The query string.",
-																														},
-																													},
-																												},
-																											},
-																											"filters": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Extra filtering on top of the Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"field": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Group by fields.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"operator": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Operator to use for filtering the logs.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"all": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection of all values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{},
-																																								},
-																																							},
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"not_equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Non-equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"grouping": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Grouping and aggregation.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"group_by": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Fields to group by.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"aggregations": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Aggregations.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"id": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation identifier, must be unique within grouping configuration.",
-																																	},
-																																	"name": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation name, used as column name.",
-																																	},
-																																	"is_visible": &schema.Schema{
-																																		Type:        schema.TypeBool,
-																																		Computed:    true,
-																																		Description: "Whether the aggregation column is visible.",
-																																	},
-																																	"aggregation": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Aggregations.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metric_aggregation": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Metric aggregation.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"metric_field": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Metric field to aggregate.",
-																																							},
-																																							"aggregation_type": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Aggregation type.",
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"dimension_aggregation": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Dimension aggregation.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"dimension_field": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Dimension field to aggregate.",
-																																							},
-																																							"aggregation_type": &schema.Schema{
-																																								Type:        schema.TypeString,
-																																								Computed:    true,
-																																								Description: "Aggregation type.",
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
 																								"metrics": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Computed:    true,
@@ -2301,126 +1720,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																																					Type:        schema.TypeString,
 																																					Computed:    true,
 																																					Description: "Scope of the dataset.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														"spans": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Filters to be applied to query results.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"field": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Group by fields.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metadata_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metadata field.",
-																																				},
-																																				"tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Tag field.",
-																																				},
-																																				"process_tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Process tag field.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"operator": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Operator to use for filtering the logs.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"all": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection of all values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{},
-																																											},
-																																										},
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"not_equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
 																																				},
 																																			},
 																																		},
@@ -3084,196 +2383,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																										},
 																									},
 																								},
-																								"spans": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Spans specific query.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"lucene_query": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"value": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "The query string.",
-																														},
-																													},
-																												},
-																											},
-																											"spans_aggregation": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Aggregations.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metric_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Metric aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metric_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metric field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																														"dimension_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Dimension aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"dimension_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Dimension field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"filters": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Extra filters applied on top of Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"field": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Group by fields.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"operator": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Operator to use for filtering the logs.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"all": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection of all values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{},
-																																								},
-																																							},
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"not_equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Non-equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
 																								"dataprime": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Computed:    true,
@@ -3411,126 +2520,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																																					Type:        schema.TypeString,
 																																					Computed:    true,
 																																					Description: "Scope of the dataset.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														"spans": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Filters to be applied to query results.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"field": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Group by fields.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metadata_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metadata field.",
-																																				},
-																																				"tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Tag field.",
-																																				},
-																																				"process_tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Process tag field.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"operator": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Operator to use for filtering the logs.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"all": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection of all values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{},
-																																											},
-																																										},
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"not_equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
 																																				},
 																																			},
 																																		},
@@ -4110,244 +3099,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																										},
 																									},
 																								},
-																								"spans": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Spans specific query.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"lucene_query": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"value": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "The query string.",
-																														},
-																													},
-																												},
-																											},
-																											"aggregation": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Aggregations.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metric_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Metric aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metric_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metric field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																														"dimension_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Dimension aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"dimension_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Dimension field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"filters": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Extra filters on top of Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"field": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Group by fields.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"operator": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Operator to use for filtering the logs.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"all": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection of all values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{},
-																																								},
-																																							},
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"not_equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Non-equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"group_names": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Fields to group by.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metadata_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Metadata field.",
-																														},
-																														"tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Tag field.",
-																														},
-																														"process_tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Process tag field.",
-																														},
-																													},
-																												},
-																											},
-																											"stacked_group_name": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Group by fields.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metadata_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Metadata field.",
-																														},
-																														"tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Tag field.",
-																														},
-																														"process_tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Process tag field.",
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
 																								"metrics": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Computed:    true,
@@ -4622,126 +3373,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																																					Type:        schema.TypeString,
 																																					Computed:    true,
 																																					Description: "Scope of the dataset.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														"spans": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Filters to be applied to query results.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"field": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Group by fields.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metadata_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metadata field.",
-																																				},
-																																				"tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Tag field.",
-																																				},
-																																				"process_tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Process tag field.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"operator": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Operator to use for filtering the logs.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"all": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection of all values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{},
-																																											},
-																																										},
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"not_equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
 																																				},
 																																			},
 																																		},
@@ -5368,244 +3999,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																										},
 																									},
 																								},
-																								"spans": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Spans specific query.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"lucene_query": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"value": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "The query string.",
-																														},
-																													},
-																												},
-																											},
-																											"aggregation": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Aggregations.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metric_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Metric aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metric_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metric field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																														"dimension_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Dimension aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"dimension_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Dimension field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"filters": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Extra filter on top of the Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"field": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Group by fields.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"operator": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Operator to use for filtering the logs.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"all": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection of all values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{},
-																																								},
-																																							},
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"not_equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Non-equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"group_names": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Fields to group by.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metadata_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Metadata field.",
-																														},
-																														"tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Tag field.",
-																														},
-																														"process_tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Process tag field.",
-																														},
-																													},
-																												},
-																											},
-																											"stacked_group_name": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Group by fields.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metadata_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Metadata field.",
-																														},
-																														"tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Tag field.",
-																														},
-																														"process_tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Process tag field.",
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
 																								"metrics": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Computed:    true,
@@ -5880,126 +4273,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																																					Type:        schema.TypeString,
 																																					Computed:    true,
 																																					Description: "Scope of the dataset.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														"spans": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Filters to be applied to query results.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"field": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Group by fields.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metadata_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metadata field.",
-																																				},
-																																				"tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Tag field.",
-																																				},
-																																				"process_tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Process tag field.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"operator": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Operator to use for filtering the logs.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"all": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection of all values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{},
-																																											},
-																																										},
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"not_equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
 																																				},
 																																			},
 																																		},
@@ -6661,244 +4934,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																										},
 																									},
 																								},
-																								"spans": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Spans specific query.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"lucene_query": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"value": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "The query string.",
-																														},
-																													},
-																												},
-																											},
-																											"aggregation": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Aggregations.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metric_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Metric aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metric_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metric field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																														"dimension_aggregation": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Dimension aggregation.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"dimension_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Dimension field to aggregate.",
-																																	},
-																																	"aggregation_type": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Aggregation type.",
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"filters": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Extra filter on top of the Lucene query.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"field": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Group by fields.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"metadata_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Metadata field.",
-																																	},
-																																	"tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Tag field.",
-																																	},
-																																	"process_tag_field": &schema.Schema{
-																																		Type:        schema.TypeString,
-																																		Computed:    true,
-																																		Description: "Process tag field.",
-																																	},
-																																},
-																															},
-																														},
-																														"operator": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Operator to use for filtering the logs.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"all": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection of all values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{},
-																																								},
-																																							},
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"not_equals": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Non-equality comparison.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"selection": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Selection criteria for the non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"list": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Represents a selection from a list of values.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"values": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "List of values for the selection.",
-																																											Elem: &schema.Schema{
-																																												Type: schema.TypeString,
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																											"group_names": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Fields to group by.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metadata_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Metadata field.",
-																														},
-																														"tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Tag field.",
-																														},
-																														"process_tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Process tag field.",
-																														},
-																													},
-																												},
-																											},
-																											"stacked_group_name": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Group by fields.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"metadata_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Metadata field.",
-																														},
-																														"tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Tag field.",
-																														},
-																														"process_tag_field": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Process tag field.",
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
 																								"metrics": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Computed:    true,
@@ -7173,126 +5208,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																																					Type:        schema.TypeString,
 																																					Computed:    true,
 																																					Description: "Scope of the dataset.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														"spans": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Filters to be applied to query results.",
-																															Elem: &schema.Resource{
-																																Schema: map[string]*schema.Schema{
-																																	"field": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Group by fields.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"metadata_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Metadata field.",
-																																				},
-																																				"tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Tag field.",
-																																				},
-																																				"process_tag_field": &schema.Schema{
-																																					Type:        schema.TypeString,
-																																					Computed:    true,
-																																					Description: "Process tag field.",
-																																				},
-																																			},
-																																		},
-																																	},
-																																	"operator": &schema.Schema{
-																																		Type:        schema.TypeList,
-																																		Computed:    true,
-																																		Description: "Operator to use for filtering the logs.",
-																																		Elem: &schema.Resource{
-																																			Schema: map[string]*schema.Schema{
-																																				"equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"all": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection of all values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{},
-																																											},
-																																										},
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
-																																				},
-																																				"not_equals": &schema.Schema{
-																																					Type:        schema.TypeList,
-																																					Computed:    true,
-																																					Description: "Non-equality comparison.",
-																																					Elem: &schema.Resource{
-																																						Schema: map[string]*schema.Schema{
-																																							"selection": &schema.Schema{
-																																								Type:        schema.TypeList,
-																																								Computed:    true,
-																																								Description: "Selection criteria for the non-equality comparison.",
-																																								Elem: &schema.Resource{
-																																									Schema: map[string]*schema.Schema{
-																																										"list": &schema.Schema{
-																																											Type:        schema.TypeList,
-																																											Computed:    true,
-																																											Description: "Represents a selection from a list of values.",
-																																											Elem: &schema.Resource{
-																																												Schema: map[string]*schema.Schema{
-																																													"values": &schema.Schema{
-																																														Type:        schema.TypeList,
-																																														Computed:    true,
-																																														Description: "List of values for the selection.",
-																																														Elem: &schema.Schema{
-																																															Type: schema.TypeString,
-																																														},
-																																													},
-																																												},
-																																											},
-																																										},
-																																									},
-																																								},
-																																							},
-																																						},
-																																					},
 																																				},
 																																			},
 																																		},
@@ -7892,126 +5807,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 											},
 										},
 									},
-									"spans": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Filters to be applied to query results.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"field": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Group by fields.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"metadata_field": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Metadata field.",
-															},
-															"tag_field": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Tag field.",
-															},
-															"process_tag_field": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Process tag field.",
-															},
-														},
-													},
-												},
-												"operator": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Operator to use for filtering the logs.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"equals": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Equality comparison.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"selection": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Selection criteria for the equality comparison.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"all": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Represents a selection of all values.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{},
-																						},
-																					},
-																					"list": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Represents a selection from a list of values.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"values": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "List of values for the selection.",
-																									Elem: &schema.Schema{
-																										Type: schema.TypeString,
-																									},
-																								},
-																							},
-																						},
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"not_equals": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Non-equality comparison.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"selection": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Selection criteria for the non-equality comparison.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"list": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Represents a selection from a list of values.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"values": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "List of values for the selection.",
-																									Elem: &schema.Schema{
-																										Type: schema.TypeString,
-																									},
-																								},
-																							},
-																						},
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
 									"metrics": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -8328,202 +6123,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																Type:        schema.TypeList,
 																Computed:    true,
 																Description: "Event start timestamp and duration are extracted from the log entry.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"start_timestamp_field": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Field to count distinct values of.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"keypath": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Path within the dataset scope.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																					"scope": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Scope of the dataset.",
-																					},
-																				},
-																			},
-																		},
-																		"duration_field": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Field to count distinct values of.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"keypath": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Path within the dataset scope.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																					"scope": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Scope of the dataset.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-												"message_template": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Template for the annotation message.",
-												},
-												"label_fields": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Labels to display in the annotation.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"keypath": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Path within the dataset scope.",
-																Elem: &schema.Schema{
-																	Type: schema.TypeString,
-																},
-															},
-															"scope": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Scope of the dataset.",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									"spans": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Spans source.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"lucene_query": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Lucene query.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"value": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "The Lucene query string.",
-															},
-														},
-													},
-												},
-												"strategy": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Strategy for turning spans data into annotations.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"instant": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Event timestamp is extracted from the span.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"timestamp_field": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Field to count distinct values of.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"keypath": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Path within the dataset scope.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																					"scope": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Scope of the dataset.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"range": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Event start and end timestamps are extracted from the span.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"start_timestamp_field": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Field to count distinct values of.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"keypath": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Path within the dataset scope.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																					"scope": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Scope of the dataset.",
-																					},
-																				},
-																			},
-																		},
-																		"end_timestamp_field": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Field to count distinct values of.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"keypath": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Path within the dataset scope.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																					"scope": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Scope of the dataset.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"duration": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Event start timestamp and duration are extracted from the span.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"start_timestamp_field": &schema.Schema{
@@ -9117,8 +6716,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryToMap(mod
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueLogs))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueMetrics); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueMetrics))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueDataprime); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryValueDataprimeToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueDataprime))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsLineChartQuery); ok {
@@ -9137,13 +6734,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryToMap(mod
 				return modelMap, err
 			}
 			modelMap["metrics"] = []map[string]interface{}{metricsMap}
-		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartSpansQueryToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
 		}
 		if model.Dataprime != nil {
 			dataprimeMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartDataprimeQueryToMap(model.Dataprime)
@@ -9674,193 +7264,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterMetricsFilterToMap(model
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartSpansQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsLineChartSpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.LuceneQuery != nil {
-		luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonLuceneQueryToMap(model.LuceneQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	}
-	if model.GroupBy != nil {
-		groupBy := []map[string]interface{}{}
-		for _, groupByItem := range model.GroupBy {
-			groupByItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(groupByItem)
-			if err != nil {
-				return modelMap, err
-			}
-			groupBy = append(groupBy, groupByItemMap)
-		}
-		modelMap["group_by"] = groupBy
-	}
-	if model.Aggregations != nil {
-		aggregations := []map[string]interface{}{}
-		for _, aggregationsItem := range model.Aggregations {
-			aggregationsItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(aggregationsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			aggregations = append(aggregations, aggregationsItemMap)
-		}
-		modelMap["aggregations"] = aggregations
-	}
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(model logsv0.ApisDashboardsV1CommonSpanFieldIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpanFieldValueMetadataField); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldValueMetadataFieldToMap(model.(*logsv0.ApisDashboardsV1CommonSpanFieldValueMetadataField))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpanFieldValueTagField); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldValueTagFieldToMap(model.(*logsv0.ApisDashboardsV1CommonSpanFieldValueTagField))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpanFieldValueProcessTagField); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldValueProcessTagFieldToMap(model.(*logsv0.ApisDashboardsV1CommonSpanFieldValueProcessTagField))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpanField); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*logsv0.ApisDashboardsV1CommonSpanField)
-		if model.MetadataField != nil {
-			modelMap["metadata_field"] = *model.MetadataField
-		}
-		if model.TagField != nil {
-			modelMap["tag_field"] = *model.TagField
-		}
-		if model.ProcessTagField != nil {
-			modelMap["process_tag_field"] = *model.ProcessTagField
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized logsv0.ApisDashboardsV1CommonSpanFieldIntf subtype encountered")
-	}
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldValueMetadataFieldToMap(model *logsv0.ApisDashboardsV1CommonSpanFieldValueMetadataField) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MetadataField != nil {
-		modelMap["metadata_field"] = *model.MetadataField
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldValueTagFieldToMap(model *logsv0.ApisDashboardsV1CommonSpanFieldValueTagField) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.TagField != nil {
-		modelMap["tag_field"] = *model.TagField
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldValueProcessTagFieldToMap(model *logsv0.ApisDashboardsV1CommonSpanFieldValueProcessTagField) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ProcessTagField != nil {
-		modelMap["process_tag_field"] = *model.ProcessTagField
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(model logsv0.ApisDashboardsV1CommonSpansAggregationIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpansAggregationAggregationMetricAggregation); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationAggregationMetricAggregationToMap(model.(*logsv0.ApisDashboardsV1CommonSpansAggregationAggregationMetricAggregation))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpansAggregationAggregationDimensionAggregation); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationAggregationDimensionAggregationToMap(model.(*logsv0.ApisDashboardsV1CommonSpansAggregationAggregationDimensionAggregation))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1CommonSpansAggregation); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*logsv0.ApisDashboardsV1CommonSpansAggregation)
-		if model.MetricAggregation != nil {
-			metricAggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationMetricAggregationToMap(model.MetricAggregation)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["metric_aggregation"] = []map[string]interface{}{metricAggregationMap}
-		}
-		if model.DimensionAggregation != nil {
-			dimensionAggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationDimensionAggregationToMap(model.DimensionAggregation)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["dimension_aggregation"] = []map[string]interface{}{dimensionAggregationMap}
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized logsv0.ApisDashboardsV1CommonSpansAggregationIntf subtype encountered")
-	}
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationMetricAggregationToMap(model *logsv0.ApisDashboardsV1CommonSpansAggregationMetricAggregation) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MetricField != nil {
-		modelMap["metric_field"] = *model.MetricField
-	}
-	if model.AggregationType != nil {
-		modelMap["aggregation_type"] = *model.AggregationType
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationDimensionAggregationToMap(model *logsv0.ApisDashboardsV1CommonSpansAggregationDimensionAggregation) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DimensionField != nil {
-		modelMap["dimension_field"] = *model.DimensionField
-	}
-	if model.AggregationType != nil {
-		modelMap["aggregation_type"] = *model.AggregationType
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationAggregationMetricAggregationToMap(model *logsv0.ApisDashboardsV1CommonSpansAggregationAggregationMetricAggregation) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MetricAggregation != nil {
-		metricAggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationMetricAggregationToMap(model.MetricAggregation)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["metric_aggregation"] = []map[string]interface{}{metricAggregationMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationAggregationDimensionAggregationToMap(model *logsv0.ApisDashboardsV1CommonSpansAggregationAggregationDimensionAggregation) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DimensionAggregation != nil {
-		dimensionAggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationDimensionAggregationToMap(model.DimensionAggregation)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["dimension_aggregation"] = []map[string]interface{}{dimensionAggregationMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(model *logsv0.ApisDashboardsV1AstFilterSpansFilter) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Field != nil {
-		fieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(model.Field)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["field"] = []map[string]interface{}{fieldMap}
-	}
-	if model.Operator != nil {
-		operatorMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterOperatorToMap(model.Operator)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["operator"] = []map[string]interface{}{operatorMap}
-	}
-	return modelMap, nil
-}
-
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartDataprimeQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsLineChartDataprimeQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	dataprimeQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonDataprimeQueryToMap(model.DataprimeQuery)
@@ -9893,8 +7296,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1CommonDataprimeQueryToMap(model *
 func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceToMap(model logsv0.ApisDashboardsV1AstFilterSourceIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*logsv0.ApisDashboardsV1AstFilterSourceValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstFilterSourceValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstFilterSourceValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstFilterSourceValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstFilterSourceValueMetrics); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstFilterSourceValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstFilterSource); ok {
@@ -9907,13 +7308,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceToMap(model logsv0
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
 		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
-		}
+
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterMetricsFilterToMap(model.Metrics)
 			if err != nil {
@@ -9935,18 +7330,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceValueLogsToMap(mod
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceValueSpansToMap(model *logsv0.ApisDashboardsV1AstFilterSourceValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -9983,18 +7366,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryValueMetr
 			return modelMap, err
 		}
 		modelMap["metrics"] = []map[string]interface{}{metricsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartQueryValueSpansToMap(model *logsv0.ApisDashboardsV1AstWidgetsLineChartQueryValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartSpansQueryToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -10058,8 +7429,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableToMap(model *l
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryToMap(model logsv0.ApisDashboardsV1AstWidgetsDataTableQueryIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueMetrics); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueDataprime); ok {
@@ -10074,13 +7443,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryToMap(mod
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
 		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
-		}
+
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableMetricsQueryToMap(model.Metrics)
 			if err != nil {
@@ -10171,80 +7534,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableLogsQueryAggre
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsDataTableSpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.LuceneQuery != nil {
-		luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonLuceneQueryToMap(model.LuceneQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	}
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	if model.Grouping != nil {
-		groupingMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryGroupingToMap(model.Grouping)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["grouping"] = []map[string]interface{}{groupingMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryGroupingToMap(model *logsv0.ApisDashboardsV1AstWidgetsDataTableSpansQueryGrouping) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.GroupBy != nil {
-		groupBy := []map[string]interface{}{}
-		for _, groupByItem := range model.GroupBy {
-			groupByItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(groupByItem)
-			if err != nil {
-				return modelMap, err
-			}
-			groupBy = append(groupBy, groupByItemMap)
-		}
-		modelMap["group_by"] = groupBy
-	}
-	if model.Aggregations != nil {
-		aggregations := []map[string]interface{}{}
-		for _, aggregationsItem := range model.Aggregations {
-			aggregationsItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryAggregationToMap(&aggregationsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			aggregations = append(aggregations, aggregationsItemMap)
-		}
-		modelMap["aggregations"] = aggregations
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryAggregationToMap(model *logsv0.ApisDashboardsV1AstWidgetsDataTableSpansQueryAggregation) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID.String()
-	modelMap["name"] = *model.Name
-	if model.IsVisible != nil {
-		modelMap["is_visible"] = *model.IsVisible
-	}
-	if model.Aggregation != nil {
-		aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(model.Aggregation)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["aggregation"] = []map[string]interface{}{aggregationMap}
-	}
-	return modelMap, nil
-}
-
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableMetricsQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsDataTableMetricsQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	promqlQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonPromQlQueryToMap(model.PromqlQuery)
@@ -10295,18 +7584,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryValueLogs
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryValueSpansToMap(model *logsv0.ApisDashboardsV1AstWidgetsDataTableQueryValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableSpansQueryToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -10390,8 +7667,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryToMap(model l
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueDataprime); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryValueDataprimeToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueDataprime))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsGaugeQuery); ok {
@@ -10410,13 +7685,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryToMap(model l
 				return modelMap, err
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
-		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeSpansQueryToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
 		}
 		if model.Dataprime != nil {
 			dataprimeMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeDataprimeQueryToMap(model.Dataprime)
@@ -10483,36 +7751,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeLogsQueryToMap(mod
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeSpansQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsGaugeSpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.LuceneQuery != nil {
-		luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonLuceneQueryToMap(model.LuceneQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	}
-	if model.SpansAggregation != nil {
-		spansAggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(model.SpansAggregation)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans_aggregation"] = []map[string]interface{}{spansAggregationMap}
-	}
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	return modelMap, nil
-}
-
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeDataprimeQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsGaugeDataprimeQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	dataprimeQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonDataprimeQueryToMap(model.DataprimeQuery)
@@ -10554,18 +7792,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryValueLogsToMa
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeQueryValueSpansToMap(model *logsv0.ApisDashboardsV1AstWidgetsGaugeQueryValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsGaugeSpansQueryToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -10625,8 +7851,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartToMap(model *lo
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryToMap(model logsv0.ApisDashboardsV1AstWidgetsPieChartQueryIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueMetrics); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueDataprime); ok {
@@ -10641,13 +7865,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryToMap(mode
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
 		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartSpansQueryToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
-		}
+
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartMetricsQueryToMap(model.Metrics)
 			if err != nil {
@@ -10714,52 +7932,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartLogsQueryToMap(
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartSpansQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsPieChartSpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.LuceneQuery != nil {
-		luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonLuceneQueryToMap(model.LuceneQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	}
-	aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(model.Aggregation)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["aggregation"] = []map[string]interface{}{aggregationMap}
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	if model.GroupNames != nil {
-		groupNames := []map[string]interface{}{}
-		for _, groupNamesItem := range model.GroupNames {
-			groupNamesItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(groupNamesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			groupNames = append(groupNames, groupNamesItemMap)
-		}
-		modelMap["group_names"] = groupNames
-	}
-	if model.StackedGroupName != nil {
-		stackedGroupNameMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(model.StackedGroupName)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["stacked_group_name"] = []map[string]interface{}{stackedGroupNameMap}
-	}
-	return modelMap, nil
-}
-
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartMetricsQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsPieChartMetricsQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	promqlQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonPromQlQueryToMap(model.PromqlQuery)
@@ -10822,18 +7994,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryValueLogsT
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryValueSpansToMap(model *logsv0.ApisDashboardsV1AstWidgetsPieChartQueryValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartSpansQueryToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -10930,8 +8090,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartToMap(model *lo
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryToMap(model logsv0.ApisDashboardsV1AstWidgetsBarChartQueryIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueMetrics); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueDataprime); ok {
@@ -10945,13 +8103,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryToMap(mode
 				return modelMap, err
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
-		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartSpansQueryToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
 		}
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartMetricsQueryToMap(model.Metrics)
@@ -11015,54 +8166,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartLogsQueryToMap(
 			return modelMap, err
 		}
 		modelMap["stacked_group_name_field"] = []map[string]interface{}{stackedGroupNameFieldMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartSpansQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsBarChartSpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.LuceneQuery != nil {
-		luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonLuceneQueryToMap(model.LuceneQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	}
-	if model.Aggregation != nil {
-		aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(model.Aggregation)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["aggregation"] = []map[string]interface{}{aggregationMap}
-	}
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	if model.GroupNames != nil {
-		groupNames := []map[string]interface{}{}
-		for _, groupNamesItem := range model.GroupNames {
-			groupNamesItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(groupNamesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			groupNames = append(groupNames, groupNamesItemMap)
-		}
-		modelMap["group_names"] = groupNames
-	}
-	if model.StackedGroupName != nil {
-		stackedGroupNameMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(model.StackedGroupName)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["stacked_group_name"] = []map[string]interface{}{stackedGroupNameMap}
 	}
 	return modelMap, nil
 }
@@ -11131,18 +8234,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryValueLogsT
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartQueryValueSpansToMap(model *logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartSpansQueryToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -11396,8 +8487,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartToMap
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQueryToMap(model logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueMetrics); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueDataprime); ok {
@@ -11411,13 +8500,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQuery
 				return modelMap, err
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
-		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartSpansQueryToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
 		}
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartMetricsQueryToMap(model.Metrics)
@@ -11483,54 +8565,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartLogsQ
 			return modelMap, err
 		}
 		modelMap["stacked_group_name_field"] = []map[string]interface{}{stackedGroupNameFieldMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartSpansQueryToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartSpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.LuceneQuery != nil {
-		luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonLuceneQueryToMap(model.LuceneQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	}
-	if model.Aggregation != nil {
-		aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpansAggregationToMap(model.Aggregation)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["aggregation"] = []map[string]interface{}{aggregationMap}
-	}
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSpansFilterToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	if model.GroupNames != nil {
-		groupNames := []map[string]interface{}{}
-		for _, groupNamesItem := range model.GroupNames {
-			groupNamesItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(groupNamesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			groupNames = append(groupNames, groupNamesItemMap)
-		}
-		modelMap["group_names"] = groupNames
-	}
-	if model.StackedGroupName != nil {
-		stackedGroupNameMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(model.StackedGroupName)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["stacked_group_name"] = []map[string]interface{}{stackedGroupNameMap}
 	}
 	return modelMap, nil
 }
@@ -11601,18 +8635,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQuery
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueSpansToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartQueryValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartSpansQueryToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }
@@ -11861,8 +8883,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceToMap(model l
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceValueMetricLabelToMap(model.(*logsv0.ApisDashboardsV1AstMultiSelectSourceValueMetricLabel))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstMultiSelectSourceValueConstantList); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceValueConstantListToMap(model.(*logsv0.ApisDashboardsV1AstMultiSelectSourceValueConstantList))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstMultiSelectSourceValueSpanField); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceValueSpanFieldToMap(model.(*logsv0.ApisDashboardsV1AstMultiSelectSourceValueSpanField))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstMultiSelectSource); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstMultiSelectSource)
@@ -11886,13 +8906,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceToMap(model l
 				return modelMap, err
 			}
 			modelMap["constant_list"] = []map[string]interface{}{constantListMap}
-		}
-		if model.SpanField != nil {
-			spanFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSpanFieldSourceToMap(model.SpanField)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["span_field"] = []map[string]interface{}{spanFieldMap}
 		}
 		return modelMap, nil
 	} else {
@@ -11920,16 +8933,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectMetricLabelSourceTo
 func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectConstantListSourceToMap(model *logsv0.ApisDashboardsV1AstMultiSelectConstantListSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["values"] = model.Values
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSpanFieldSourceToMap(model *logsv0.ApisDashboardsV1AstMultiSelectSpanFieldSource) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonSpanFieldToMap(model.Value)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["value"] = []map[string]interface{}{valueMap}
 	return modelMap, nil
 }
 
@@ -11965,18 +8968,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceValueConstant
 			return modelMap, err
 		}
 		modelMap["constant_list"] = []map[string]interface{}{constantListMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSourceValueSpanFieldToMap(model *logsv0.ApisDashboardsV1AstMultiSelectSourceValueSpanField) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.SpanField != nil {
-		spanFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSpanFieldSourceToMap(model.SpanField)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["span_field"] = []map[string]interface{}{spanFieldMap}
 	}
 	return modelMap, nil
 }
@@ -12097,8 +9088,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceToMap(model lo
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceValueMetricsToMap(model.(*logsv0.ApisDashboardsV1AstAnnotationSourceValueMetrics))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSourceValueLogs); ok {
 		return DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceValueLogsToMap(model.(*logsv0.ApisDashboardsV1AstAnnotationSourceValueLogs))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSourceValueSpans); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceValueSpansToMap(model.(*logsv0.ApisDashboardsV1AstAnnotationSourceValueSpans))
 	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSource); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstAnnotationSource)
@@ -12115,13 +9104,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceToMap(model lo
 				return modelMap, err
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
-		}
-		if model.Spans != nil {
-			spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceToMap(model.Spans)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans"] = []map[string]interface{}{spansMap}
 		}
 		return modelMap, nil
 	} else {
@@ -12329,148 +9311,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationLogsSourceStrategyVa
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSource) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	luceneQueryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonLuceneQueryToMap(model.LuceneQuery)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["lucene_query"] = []map[string]interface{}{luceneQueryMap}
-	strategyMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyToMap(model.Strategy)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["strategy"] = []map[string]interface{}{strategyMap}
-	if model.MessageTemplate != nil {
-		modelMap["message_template"] = *model.MessageTemplate
-	}
-	if model.LabelFields != nil {
-		labelFields := []map[string]interface{}{}
-		for _, labelFieldsItem := range model.LabelFields {
-			labelFieldsItemMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonObservationFieldToMap(&labelFieldsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			labelFields = append(labelFields, labelFieldsItemMap)
-		}
-		modelMap["label_fields"] = labelFields
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyToMap(model logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueInstant); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyValueInstantToMap(model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueInstant))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueRange); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyValueRangeToMap(model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueRange))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueDuration); ok {
-		return DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyValueDurationToMap(model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueDuration))
-	} else if _, ok := model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategy); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategy)
-		if model.Instant != nil {
-			instantMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyInstantToMap(model.Instant)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["instant"] = []map[string]interface{}{instantMap}
-		}
-		if model.Range != nil {
-			rangeVarMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyRangeToMap(model.Range)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["range"] = []map[string]interface{}{rangeVarMap}
-		}
-		if model.Duration != nil {
-			durationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyDurationToMap(model.Duration)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["duration"] = []map[string]interface{}{durationMap}
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyIntf subtype encountered")
-	}
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyInstantToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyInstant) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	timestampFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonObservationFieldToMap(model.TimestampField)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["timestamp_field"] = []map[string]interface{}{timestampFieldMap}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyRangeToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyRange) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	startTimestampFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonObservationFieldToMap(model.StartTimestampField)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["start_timestamp_field"] = []map[string]interface{}{startTimestampFieldMap}
-	endTimestampFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonObservationFieldToMap(model.EndTimestampField)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["end_timestamp_field"] = []map[string]interface{}{endTimestampFieldMap}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyDurationToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyDuration) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	startTimestampFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonObservationFieldToMap(model.StartTimestampField)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["start_timestamp_field"] = []map[string]interface{}{startTimestampFieldMap}
-	durationFieldMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonObservationFieldToMap(model.DurationField)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["duration_field"] = []map[string]interface{}{durationFieldMap}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyValueInstantToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueInstant) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Instant != nil {
-		instantMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyInstantToMap(model.Instant)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["instant"] = []map[string]interface{}{instantMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyValueRangeToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueRange) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Range != nil {
-		rangeVarMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyRangeToMap(model.Range)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["range"] = []map[string]interface{}{rangeVarMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyValueDurationToMap(model *logsv0.ApisDashboardsV1AstAnnotationSpansSourceStrategyValueDuration) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Duration != nil {
-		durationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceStrategyDurationToMap(model.Duration)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["duration"] = []map[string]interface{}{durationMap}
-	}
-	return modelMap, nil
-}
-
 func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceValueMetricsToMap(model *logsv0.ApisDashboardsV1AstAnnotationSourceValueMetrics) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Metrics != nil {
@@ -12491,18 +9331,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceValueLogsToMap
 			return modelMap, err
 		}
 		modelMap["logs"] = []map[string]interface{}{logsMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSourceValueSpansToMap(model *logsv0.ApisDashboardsV1AstAnnotationSourceValueSpans) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Spans != nil {
-		spansMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationSpansSourceToMap(model.Spans)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans"] = []map[string]interface{}{spansMap}
 	}
 	return modelMap, nil
 }

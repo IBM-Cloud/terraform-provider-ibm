@@ -36,8 +36,6 @@ After your data source is created, you can read values from the following attrib
 * `rulegroups` - (List) The rule groups.
   * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 Nested schema for **rulegroups**:
-	* `creator` - (String) The creator of the rule group.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 	* `description` - (String) A description for the rule group, should express what is the rule group purpose.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 	* `enabled` - (Boolean) Whether or not the rule is enabled.

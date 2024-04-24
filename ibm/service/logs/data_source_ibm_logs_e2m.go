@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsE2m() *schema.Resource {
@@ -168,52 +168,6 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 				Computed:    true,
 				Description: "a flag that represents if the e2m is for internal usage.",
 			},
-			"spans_query": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "spans query.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"lucene": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "lucene query.",
-						},
-						"applicationname_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "application name filters.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"subsystemname_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "subsystem name filters.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"action_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "action filters.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"service_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "service filters.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
-			},
 			"logs_query": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -360,20 +314,6 @@ func dataSourceIbmLogsE2mRead(context context.Context, d *schema.ResourceData, m
 
 	if err = d.Set("is_internal", event2Metric.IsInternal); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting is_internal: %s", err), "(Data) ibm_logs_e2m", "read")
-		return tfErr.GetDiag()
-	}
-
-	spansQuery := []map[string]interface{}{}
-	if event2Metric.SpansQuery != nil {
-		modelMap, err := DataSourceIbmLogsE2mApisSpans2metricsV2SpansQueryToMap(event2Metric.SpansQuery)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_e2m", "read")
-			return tfErr.GetDiag()
-		}
-		spansQuery = append(spansQuery, modelMap)
-	}
-	if err = d.Set("spans_query", spansQuery); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting spans_query: %s", err), "(Data) ibm_logs_e2m", "read")
 		return tfErr.GetDiag()
 	}
 
@@ -533,26 +473,6 @@ func DataSourceIbmLogsE2mApisEvents2metricsV2AggregationAggMetadataHistogramToMa
 			return modelMap, err
 		}
 		modelMap["histogram"] = []map[string]interface{}{histogramMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsE2mApisSpans2metricsV2SpansQueryToMap(model *logsv0.ApisSpans2metricsV2SpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Lucene != nil {
-		modelMap["lucene"] = *model.Lucene
-	}
-	if model.ApplicationnameFilters != nil {
-		modelMap["applicationname_filters"] = model.ApplicationnameFilters
-	}
-	if model.SubsystemnameFilters != nil {
-		modelMap["subsystemname_filters"] = model.SubsystemnameFilters
-	}
-	if model.ActionFilters != nil {
-		modelMap["action_filters"] = model.ActionFilters
-	}
-	if model.ServiceFilters != nil {
-		modelMap["service_filters"] = model.ServiceFilters
 	}
 	return modelMap, nil
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	// . "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func TestAccIbmLogsDashboardBasic(t *testing.T) {

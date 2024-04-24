@@ -7,8 +7,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
 )
 
 const (

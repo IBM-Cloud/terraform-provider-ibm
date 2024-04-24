@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func ResourceIbmLogsE2m() *schema.Resource {
@@ -141,45 +141,6 @@ func ResourceIbmLogsE2m() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_logs_e2m", "type"),
 				Description:  "e2m type.",
 			},
-			// "spans_query": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	MaxItems:    1,
-			// 	Optional:    true,
-			// 	Description: "spans query.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"lucene": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Optional:    true,
-			// 				Description: "lucene query.",
-			// 			},
-			// 			"applicationname_filters": &schema.Schema{
-			// 				Type:        schema.TypeList,
-			// 				Optional:    true,
-			// 				Description: "application name filters.",
-			// 				Elem:        &schema.Schema{Type: schema.TypeString},
-			// 			},
-			// 			"subsystemname_filters": &schema.Schema{
-			// 				Type:        schema.TypeList,
-			// 				Optional:    true,
-			// 				Description: "subsystem name filters.",
-			// 				Elem:        &schema.Schema{Type: schema.TypeString},
-			// 			},
-			// 			"action_filters": &schema.Schema{
-			// 				Type:        schema.TypeList,
-			// 				Optional:    true,
-			// 				Description: "action filters.",
-			// 				Elem:        &schema.Schema{Type: schema.TypeString},
-			// 			},
-			// 			"service_filters": &schema.Schema{
-			// 				Type:        schema.TypeList,
-			// 				Optional:    true,
-			// 				Description: "service filters.",
-			// 				Elem:        &schema.Schema{Type: schema.TypeString},
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"logs_query": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -287,7 +248,7 @@ func ResourceIbmLogsE2mValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "logs2metrics, spans2metrics, unspecified",
+			AllowedValues:              "logs2metrics, unspecified",
 		},
 	)
 
@@ -326,9 +287,6 @@ func resourceIbmLogsE2mCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("type"); ok {
 		bodyModelMap["type"] = d.Get("type")
 	}
-	// if _, ok := d.GetOk("spans_query"); ok {
-	// 	bodyModelMap["spans_query"] = d.Get("spans_query")
-	// }
 	if _, ok := d.GetOk("logs_query"); ok {
 		bodyModelMap["logs_query"] = d.Get("logs_query")
 	}
@@ -433,15 +391,6 @@ func resourceIbmLogsE2mRead(context context.Context, d *schema.ResourceData, met
 			return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 		}
 	}
-	// if !core.IsNil(event2Metric.SpansQuery) {
-	// 	spansQueryMap, err := ResourceIbmLogsE2mApisSpans2metricsV2SpansQueryToMap(event2Metric.SpansQuery)
-	// 	if err != nil {
-	// 		return diag.FromErr(err)
-	// 	}
-	// 	if err = d.Set("spans_query", []map[string]interface{}{spansQueryMap}); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting spans_query: %s", err))
-	// 	}
-	// }
 	if !core.IsNil(event2Metric.LogsQuery) {
 		logsQueryMap, err := ResourceIbmLogsE2mApisLogs2metricsV2LogsQueryToMap(event2Metric.LogsQuery)
 		if err != nil {
@@ -521,9 +470,6 @@ func resourceIbmLogsE2mUpdate(context context.Context, d *schema.ResourceData, m
 		if _, ok := d.GetOk("type"); ok {
 			bodyModelMap["type"] = d.Get("type")
 		}
-		// if _, ok := d.GetOk("spans_query"); ok {
-		// 	bodyModelMap["spans_query"] = d.Get("spans_query")
-		// }
 		if _, ok := d.GetOk("logs_query"); ok {
 			bodyModelMap["logs_query"] = d.Get("logs_query")
 		}
@@ -701,42 +647,6 @@ func ResourceIbmLogsE2mMapToApisEvents2metricsV2AggregationAggMetadataHistogram(
 	return model, nil
 }
 
-func ResourceIbmLogsE2mMapToApisSpans2metricsV2SpansQuery(modelMap map[string]interface{}) (*logsv0.ApisSpans2metricsV2SpansQuery, error) {
-	model := &logsv0.ApisSpans2metricsV2SpansQuery{}
-	if modelMap["lucene"] != nil && modelMap["lucene"].(string) != "" {
-		model.Lucene = core.StringPtr(modelMap["lucene"].(string))
-	}
-	if modelMap["applicationname_filters"] != nil {
-		applicationnameFilters := []string{}
-		for _, applicationnameFiltersItem := range modelMap["applicationname_filters"].([]interface{}) {
-			applicationnameFilters = append(applicationnameFilters, applicationnameFiltersItem.(string))
-		}
-		model.ApplicationnameFilters = applicationnameFilters
-	}
-	if modelMap["subsystemname_filters"] != nil {
-		subsystemnameFilters := []string{}
-		for _, subsystemnameFiltersItem := range modelMap["subsystemname_filters"].([]interface{}) {
-			subsystemnameFilters = append(subsystemnameFilters, subsystemnameFiltersItem.(string))
-		}
-		model.SubsystemnameFilters = subsystemnameFilters
-	}
-	if modelMap["action_filters"] != nil {
-		actionFilters := []string{}
-		for _, actionFiltersItem := range modelMap["action_filters"].([]interface{}) {
-			actionFilters = append(actionFilters, actionFiltersItem.(string))
-		}
-		model.ActionFilters = actionFilters
-	}
-	if modelMap["service_filters"] != nil {
-		serviceFilters := []string{}
-		for _, serviceFiltersItem := range modelMap["service_filters"].([]interface{}) {
-			serviceFilters = append(serviceFilters, serviceFiltersItem.(string))
-		}
-		model.ServiceFilters = serviceFilters
-	}
-	return model, nil
-}
-
 func ResourceIbmLogsE2mMapToApisLogs2metricsV2LogsQuery(modelMap map[string]interface{}) (*logsv0.ApisLogs2metricsV2LogsQuery, error) {
 	model := &logsv0.ApisLogs2metricsV2LogsQuery{}
 	if modelMap["lucene"] != nil && modelMap["lucene"].(string) != "" {
@@ -803,13 +713,6 @@ func ResourceIbmLogsE2mMapToEvent2MetricPrototype(modelMap map[string]interface{
 	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
 		model.Type = core.StringPtr(modelMap["type"].(string))
 	}
-	// if modelMap["spans_query"] != nil && len(modelMap["spans_query"].([]interface{})) > 0 {
-	// 	SpansQueryModel, err := ResourceIbmLogsE2mMapToApisSpans2metricsV2SpansQuery(modelMap["spans_query"].([]interface{})[0].(map[string]interface{}))
-	// 	if err != nil {
-	// 		return model, err
-	// 	}
-	// 	model.SpansQuery = SpansQueryModel
-	// }
 	if modelMap["logs_query"] != nil && len(modelMap["logs_query"].([]interface{})) > 0 {
 		LogsQueryModel, err := ResourceIbmLogsE2mMapToApisLogs2metricsV2LogsQuery(modelMap["logs_query"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -817,50 +720,6 @@ func ResourceIbmLogsE2mMapToEvent2MetricPrototype(modelMap map[string]interface{
 		}
 		model.LogsQuery = LogsQueryModel
 	}
-	return model, nil
-}
-
-func ResourceIbmLogsE2mMapToEvent2MetricPrototypeApisEvents2metricsV2E2mCreateParamsQuerySpansQuery(modelMap map[string]interface{}) (*logsv0.Event2MetricPrototypeApisEvents2metricsV2E2mCreateParamsQuerySpansQuery, error) {
-	model := &logsv0.Event2MetricPrototypeApisEvents2metricsV2E2mCreateParamsQuerySpansQuery{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
-		model.Description = core.StringPtr(modelMap["description"].(string))
-	}
-	if modelMap["permutations_limit"] != nil {
-		model.PermutationsLimit = core.Int64Ptr(int64(modelMap["permutations_limit"].(int)))
-	}
-	if modelMap["metric_labels"] != nil {
-		metricLabels := []logsv0.ApisEvents2metricsV2MetricLabel{}
-		for _, metricLabelsItem := range modelMap["metric_labels"].([]interface{}) {
-			metricLabelsItemModel, err := ResourceIbmLogsE2mMapToApisEvents2metricsV2MetricLabel(metricLabelsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			metricLabels = append(metricLabels, *metricLabelsItemModel)
-		}
-		model.MetricLabels = metricLabels
-	}
-	if modelMap["metric_fields"] != nil {
-		metricFields := []logsv0.ApisEvents2metricsV2MetricField{}
-		for _, metricFieldsItem := range modelMap["metric_fields"].([]interface{}) {
-			metricFieldsItemModel, err := ResourceIbmLogsE2mMapToApisEvents2metricsV2MetricField(metricFieldsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			metricFields = append(metricFields, *metricFieldsItemModel)
-		}
-		model.MetricFields = metricFields
-	}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
-		model.Type = core.StringPtr(modelMap["type"].(string))
-	}
-	// if modelMap["spans_query"] != nil && len(modelMap["spans_query"].([]interface{})) > 0 {
-	// 	SpansQueryModel, err := ResourceIbmLogsE2mMapToApisSpans2metricsV2SpansQuery(modelMap["spans_query"].([]interface{})[0].(map[string]interface{}))
-	// 	if err != nil {
-	// 		return model, err
-	// 	}
-	// 	model.SpansQuery = SpansQueryModel
-	// }
 	return model, nil
 }
 
@@ -1039,27 +898,6 @@ func ResourceIbmLogsE2mApisEvents2metricsV2AggregationAggMetadataHistogramToMap(
 	}
 	return modelMap, nil
 }
-
-func ResourceIbmLogsE2mApisSpans2metricsV2SpansQueryToMap(model *logsv0.ApisSpans2metricsV2SpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Lucene != nil {
-		modelMap["lucene"] = *model.Lucene
-	}
-	if model.ApplicationnameFilters != nil {
-		modelMap["applicationname_filters"] = model.ApplicationnameFilters
-	}
-	if model.SubsystemnameFilters != nil {
-		modelMap["subsystemname_filters"] = model.SubsystemnameFilters
-	}
-	if model.ActionFilters != nil {
-		modelMap["action_filters"] = model.ActionFilters
-	}
-	if model.ServiceFilters != nil {
-		modelMap["service_filters"] = model.ServiceFilters
-	}
-	return modelMap, nil
-}
-
 func ResourceIbmLogsE2mApisLogs2metricsV2LogsQueryToMap(model *logsv0.ApisLogs2metricsV2LogsQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Lucene != nil {

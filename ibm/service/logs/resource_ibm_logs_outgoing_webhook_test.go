@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -17,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -93,7 +94,7 @@ func testAccCheckIbmLogsOutgoingWebhookExists(n string, obj logsv0.OutgoingWebho
 		}
 		getOutgoingWebhookOptions := &logsv0.GetOutgoingWebhookOptions{}
 
-		getOutgoingWebhookOptions.SetID(resourceID[2])
+		getOutgoingWebhookOptions.SetID(core.UUIDPtr(strfmt.UUID(resourceID[2])))
 
 		outgoingWebhookIntf, _, err := logsClient.GetOutgoingWebhook(getOutgoingWebhookOptions)
 		if err != nil {
@@ -123,7 +124,7 @@ func testAccCheckIbmLogsOutgoingWebhookDestroy(s *terraform.State) error {
 		}
 		getOutgoingWebhookOptions := &logsv0.GetOutgoingWebhookOptions{}
 
-		getOutgoingWebhookOptions.SetID(resourceID[2])
+		getOutgoingWebhookOptions.SetID(core.UUIDPtr(strfmt.UUID(resourceID[2])))
 
 		// Try to find the key
 		_, response, err := logsClient.GetOutgoingWebhook(getOutgoingWebhookOptions)

@@ -96,7 +96,6 @@ resource "ibm_logs_alert" "logs_alert_instance" {
 resource "ibm_logs_rule_group" "logs_rule_group_instance" {
   name = var.logs_rule_group_name
   description = var.logs_rule_group_description
-  creator = var.logs_rule_group_creator
   enabled = var.logs_rule_group_enabled
   rule_matchers = var.logs_rule_group_rule_matchers
   rule_subgroups = var.logs_rule_group_rule_subgroups
@@ -111,7 +110,6 @@ resource "ibm_logs_rule_group" "logs_rule_group_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | The name of the rule group. | `string` | true |
 | description | A description for the rule group, should express what is the rule group purpose. | `string` | false |
-| creator | The creator of the rule group. | `string` | false |
 | enabled | Whether or not the rule is enabled. | `bool` | false |
 | rule_matchers | // Optional rule matchers which if matched will make the rule go through the rule group. | `list()` | false |
 | rule_subgroups | Rule subgroups. Will try to execute the first rule subgroup, and if not matched will try to match the next one in order. | `list()` | true |
@@ -368,7 +366,6 @@ data "ibm_logs_rule_group" "logs_rule_group_instance" {
 |------|-------------|
 | name | The name of the rule group. |
 | description | A description for the rule group, should express what is the rule group purpose. |
-| creator | The creator of the rule group. |
 | enabled | Whether or not the rule is enabled. |
 | rule_matchers | // Optional rule matchers which if matched will make the rule go through the rule group. |
 | rule_subgroups | Rule subgroups. Will try to execute the first rule subgroup, and if not matched will try to match the next one in order. |

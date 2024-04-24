@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsE2ms() *schema.Resource {
@@ -175,52 +175,6 @@ func DataSourceIbmLogsE2ms() *schema.Resource {
 							Computed:    true,
 							Description: "a flag that represents if the e2m is for internal usage.",
 						},
-						"spans_query": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "spans query.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"lucene": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "lucene query.",
-									},
-									"applicationname_filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "application name filters.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"subsystemname_filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "subsystem name filters.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"action_filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "action filters.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"service_filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "service filters.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-								},
-							},
-						},
 						"logs_query": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -319,9 +273,7 @@ func dataSourceIbmLogsE2msID(d *schema.ResourceData) string {
 }
 
 func DataSourceIbmLogsE2msEvent2MetricToMap(model logsv0.Event2MetricIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*logsv0.Event2MetricApisEvents2metricsV2E2mQuerySpansQuery); ok {
-		return DataSourceIbmLogsE2msEvent2MetricApisEvents2metricsV2E2mQuerySpansQueryToMap(model.(*logsv0.Event2MetricApisEvents2metricsV2E2mQuerySpansQuery))
-	} else if _, ok := model.(*logsv0.Event2MetricApisEvents2metricsV2E2mQueryLogsQuery); ok {
+	if _, ok := model.(*logsv0.Event2MetricApisEvents2metricsV2E2mQueryLogsQuery); ok {
 		return DataSourceIbmLogsE2msEvent2MetricApisEvents2metricsV2E2mQueryLogsQueryToMap(model.(*logsv0.Event2MetricApisEvents2metricsV2E2mQueryLogsQuery))
 	} else if _, ok := model.(*logsv0.Event2Metric); ok {
 		modelMap := make(map[string]interface{})
@@ -371,13 +323,6 @@ func DataSourceIbmLogsE2msEvent2MetricToMap(model logsv0.Event2MetricIntf) (map[
 		modelMap["type"] = *model.Type
 		if model.IsInternal != nil {
 			modelMap["is_internal"] = *model.IsInternal
-		}
-		if model.SpansQuery != nil {
-			spansQueryMap, err := DataSourceIbmLogsE2msApisSpans2metricsV2SpansQueryToMap(model.SpansQuery)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["spans_query"] = []map[string]interface{}{spansQueryMap}
 		}
 		if model.LogsQuery != nil {
 			logsQueryMap, err := DataSourceIbmLogsE2msApisLogs2metricsV2LogsQueryToMap(model.LogsQuery)
@@ -535,26 +480,6 @@ func DataSourceIbmLogsE2msApisEvents2metricsV2AggregationAggMetadataHistogramToM
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsE2msApisSpans2metricsV2SpansQueryToMap(model *logsv0.ApisSpans2metricsV2SpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Lucene != nil {
-		modelMap["lucene"] = *model.Lucene
-	}
-	if model.ApplicationnameFilters != nil {
-		modelMap["applicationname_filters"] = model.ApplicationnameFilters
-	}
-	if model.SubsystemnameFilters != nil {
-		modelMap["subsystemname_filters"] = model.SubsystemnameFilters
-	}
-	if model.ActionFilters != nil {
-		modelMap["action_filters"] = model.ActionFilters
-	}
-	if model.ServiceFilters != nil {
-		modelMap["service_filters"] = model.ServiceFilters
-	}
-	return modelMap, nil
-}
-
 func DataSourceIbmLogsE2msApisLogs2metricsV2LogsQueryToMap(model *logsv0.ApisLogs2metricsV2LogsQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Lucene != nil {
@@ -571,64 +496,6 @@ func DataSourceIbmLogsE2msApisLogs2metricsV2LogsQueryToMap(model *logsv0.ApisLog
 	}
 	if model.SeverityFilters != nil {
 		modelMap["severity_filters"] = model.SeverityFilters
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsE2msEvent2MetricApisEvents2metricsV2E2mQuerySpansQueryToMap(model *logsv0.Event2MetricApisEvents2metricsV2E2mQuerySpansQuery) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID.String()
-	}
-	modelMap["name"] = *model.Name
-	if model.Description != nil {
-		modelMap["description"] = *model.Description
-	}
-	if model.CreateTime != nil {
-		modelMap["create_time"] = *model.CreateTime
-	}
-	if model.UpdateTime != nil {
-		modelMap["update_time"] = *model.UpdateTime
-	}
-	if model.Permutations != nil {
-		permutationsMap, err := DataSourceIbmLogsE2msApisEvents2metricsV2E2mPermutationsToMap(model.Permutations)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["permutations"] = []map[string]interface{}{permutationsMap}
-	}
-	if model.MetricLabels != nil {
-		metricLabels := []map[string]interface{}{}
-		for _, metricLabelsItem := range model.MetricLabels {
-			metricLabelsItemMap, err := DataSourceIbmLogsE2msApisEvents2metricsV2MetricLabelToMap(&metricLabelsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			metricLabels = append(metricLabels, metricLabelsItemMap)
-		}
-		modelMap["metric_labels"] = metricLabels
-	}
-	if model.MetricFields != nil {
-		metricFields := []map[string]interface{}{}
-		for _, metricFieldsItem := range model.MetricFields {
-			metricFieldsItemMap, err := DataSourceIbmLogsE2msApisEvents2metricsV2MetricFieldToMap(&metricFieldsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			metricFields = append(metricFields, metricFieldsItemMap)
-		}
-		modelMap["metric_fields"] = metricFields
-	}
-	modelMap["type"] = *model.Type
-	if model.IsInternal != nil {
-		modelMap["is_internal"] = *model.IsInternal
-	}
-	if model.SpansQuery != nil {
-		spansQueryMap, err := DataSourceIbmLogsE2msApisSpans2metricsV2SpansQueryToMap(model.SpansQuery)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["spans_query"] = []map[string]interface{}{spansQueryMap}
 	}
 	return modelMap, nil
 }

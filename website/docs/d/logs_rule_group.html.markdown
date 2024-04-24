@@ -36,9 +36,6 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the logs_rule_group.
-* `creator` - (String) The creator of the rule group.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-
 * `description` - (String) A description for the rule group, should express what is the rule group purpose.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 

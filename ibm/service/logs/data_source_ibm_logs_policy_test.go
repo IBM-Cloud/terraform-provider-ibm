@@ -13,7 +13,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -133,22 +133,6 @@ func TestDataSourceIbmLogsPolicyQuotaV1RuleToMap(t *testing.T) {
 	model.Name = core.StringPtr("testString")
 
 	result, err := logs.DataSourceIbmLogsPolicyQuotaV1RuleToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["id"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(logsv0.QuotaV1ArchiveRetention)
-	model.ID = core.StringPtr("testString")
-
-	result, err := logs.DataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

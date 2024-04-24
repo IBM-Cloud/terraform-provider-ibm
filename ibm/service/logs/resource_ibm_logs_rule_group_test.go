@@ -18,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,12 +53,10 @@ func TestAccIbmLogsRuleGroupAllArgs(t *testing.T) {
 	var conf logsv0.RuleGroup
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	creator := "bot@ibm.com"
 	enabled := "false"
 	order := fmt.Sprintf("%d", acctest.RandIntRange(0, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	creatorUpdate := "bot1@ibm.com"
 	enabledUpdate := "true"
 	orderUpdate := fmt.Sprintf("%d", acctest.RandIntRange(0, 100))
 
@@ -68,22 +66,20 @@ func TestAccIbmLogsRuleGroupAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmLogsRuleGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsRuleGroupConfig(name, description, creator, enabled, order),
+				Config: testAccCheckIbmLogsRuleGroupConfig(name, description, enabled, order),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmLogsRuleGroupExists("ibm_logs_rule_group.logs_rule_group_instance", conf),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "description", description),
-					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "creator", creator),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "enabled", enabled),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "order", order),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmLogsRuleGroupConfig(nameUpdate, descriptionUpdate, creatorUpdate, enabledUpdate, orderUpdate),
+				Config: testAccCheckIbmLogsRuleGroupConfig(nameUpdate, descriptionUpdate, enabledUpdate, orderUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "creator", creatorUpdate),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "enabled", enabledUpdate),
 					resource.TestCheckResourceAttr("ibm_logs_rule_group.logs_rule_group_instance", "order", orderUpdate),
 				),
@@ -104,11 +100,10 @@ func testAccCheckIbmLogsRuleGroupConfigBasic(name string) string {
 		region      = "%s"
 		name        = "%s"
 		description = "test description"
-		creator     = "bot@ibm.com"
 		enabled     = true
 		rule_matchers {
 		  subsystem_name {
-			value = "mysql-cloudwatch"
+			value = "mysql"
 		  }
 		}
 		rule_subgroups {
@@ -133,18 +128,17 @@ func testAccCheckIbmLogsRuleGroupConfigBasic(name string) string {
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name)
 }
 
-func testAccCheckIbmLogsRuleGroupConfig(name string, description string, creator string, enabled string, order string) string {
+func testAccCheckIbmLogsRuleGroupConfig(name string, description string, enabled string, order string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_rule_group" "logs_rule_group_instance" {
 			instance_id = "%s"
 			region      = "%s"
 			name        = "%s"
 			description = "%s"
-			creator     = "%s"
 			enabled     = %s
 			rule_matchers {
 			subsystem_name {
-				value = "mysql-cloudwatch"
+				value = "mysql"
 			}
 			}
 			rule_subgroups {
@@ -166,7 +160,7 @@ func testAccCheckIbmLogsRuleGroupConfig(name string, description string, creator
 			}
 			order = %s
 		}
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, creator, enabled, order)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, enabled, order)
 }
 
 func testAccCheckIbmLogsRuleGroupExists(n string, obj logsv0.RuleGroup) resource.TestCheckFunc {

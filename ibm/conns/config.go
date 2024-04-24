@@ -119,9 +119,9 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
 )
 
 // RetryAPIDelay - retry api delay

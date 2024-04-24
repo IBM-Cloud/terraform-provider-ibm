@@ -43,11 +43,10 @@ resource "ibm_logs_rule_group" "logs_rule_group_instance" {
   region      = ibm_resource_instance.logs_instance.location
   name        = "${var.resource_name_prefix}-rule-group"
   description = "example rule group decription"
-  creator     = "bot@ibm.com"
   enabled     = false
   rule_matchers {
     subsystem_name {
-      value = "mysql-cloudwatch"
+      value = "mysql"
     }
   }
   rule_subgroups {
@@ -154,8 +153,8 @@ resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
   name        = "${var.resource_name_prefix}-webhook"
   type        = "ibm_event_notifications"
   ibm_event_notifications {
-    event_notifications_instance_id = "6b33da73-28b6-4201-bfea-b2054bb6ae8a"
-    region_id                       = "us-south"
+    event_notifications_instance_id = var.en_instance_guid
+    region_id                       = var.en_instance_region
   }
 }
 resource "ibm_logs_dashboard" "logs_dashboard_instance" {

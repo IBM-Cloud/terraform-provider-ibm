@@ -15,7 +15,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsRuleGroup() *schema.Resource {
@@ -38,11 +38,11 @@ func DataSourceIbmLogsRuleGroup() *schema.Resource {
 				Computed:    true,
 				Description: "A description for the rule group, should express what is the rule group purpose.",
 			},
-			"creator": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The creator of the rule group.",
-			},
+			// "creator": &schema.Schema{
+			// 	Type:        schema.TypeString,
+			// 	Computed:    true,
+			// 	Description: "The creator of the rule group.",
+			// },
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -403,10 +403,10 @@ func dataSourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceD
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("creator", ruleGroup.Creator); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting creator: %s", err), "(Data) ibm_logs_rule_group", "read")
-		return tfErr.GetDiag()
-	}
+	// if err = d.Set("creator", ruleGroup.Creator); err != nil {
+	// 	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting creator: %s", err), "(Data) ibm_logs_rule_group", "read")
+	// 	return tfErr.GetDiag()
+	// }
 
 	if err = d.Set("enabled", ruleGroup.Enabled); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting enabled: %s", err), "(Data) ibm_logs_rule_group", "read")

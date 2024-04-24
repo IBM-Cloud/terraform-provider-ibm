@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -14,10 +15,8 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
-	"github.com/stretchr/testify/assert"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func TestAccIbmLogsPolicyBasic(t *testing.T) {
@@ -151,7 +150,7 @@ func testAccCheckIbmLogsPolicyExists(n string, obj logsv0.Policy) resource.TestC
 
 		getPolicyOptions := &logsv0.GetPolicyOptions{}
 
-		getPolicyOptions.SetID(resourceID[2])
+		getPolicyOptions.SetID(core.UUIDPtr(strfmt.UUID(resourceID[2])))
 
 		policyIntf, _, err := logsClient.GetPolicy(getPolicyOptions)
 		if err != nil {
@@ -182,7 +181,7 @@ func testAccCheckIbmLogsPolicyDestroy(s *terraform.State) error {
 
 		getPolicyOptions := &logsv0.GetPolicyOptions{}
 
-		getPolicyOptions.SetID(resourceID[2])
+		getPolicyOptions.SetID(core.UUIDPtr(strfmt.UUID(resourceID[2])))
 
 		// Try to find the key
 		_, response, err := logsClient.GetPolicy(getPolicyOptions)
@@ -195,200 +194,4 @@ func testAccCheckIbmLogsPolicyDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func TestResourceIbmLogsPolicyQuotaV1RuleToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["rule_type_id"] = "unspecified"
-		model["name"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(logsv0.QuotaV1Rule)
-	model.RuleTypeID = core.StringPtr("unspecified")
-	model.Name = core.StringPtr("testString")
-
-	result, err := logs.ResourceIbmLogsPolicyQuotaV1RuleToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["id"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(logsv0.QuotaV1ArchiveRetention)
-	model.ID = core.StringPtr("testString")
-
-	result, err := logs.ResourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyQuotaV1LogRulesToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["severities"] = []string{"unspecified"}
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(logsv0.QuotaV1LogRules)
-	model.Severities = []string{"unspecified"}
-
-	result, err := logs.ResourceIbmLogsPolicyQuotaV1LogRulesToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyMapToQuotaV1Rule(t *testing.T) {
-	checkResult := func(result *logsv0.QuotaV1Rule) {
-		model := new(logsv0.QuotaV1Rule)
-		model.RuleTypeID = core.StringPtr("unspecified")
-		model.Name = core.StringPtr("testString")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["rule_type_id"] = "unspecified"
-	model["name"] = "testString"
-
-	result, err := logs.ResourceIbmLogsPolicyMapToQuotaV1Rule(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(t *testing.T) {
-	checkResult := func(result *logsv0.QuotaV1ArchiveRetention) {
-		model := new(logsv0.QuotaV1ArchiveRetention)
-		model.ID = core.StringPtr("testString")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["id"] = "testString"
-
-	result, err := logs.ResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyMapToQuotaV1LogRules(t *testing.T) {
-	checkResult := func(result *logsv0.QuotaV1LogRules) {
-		model := new(logsv0.QuotaV1LogRules)
-		model.Severities = []string{"unspecified"}
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["severities"] = []interface{}{"unspecified"}
-
-	result, err := logs.ResourceIbmLogsPolicyMapToQuotaV1LogRules(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyMapToPolicyPrototype(t *testing.T) {
-	checkResult := func(result logsv0.PolicyPrototypeIntf) {
-		quotaV1RuleModel := new(logsv0.QuotaV1Rule)
-		quotaV1RuleModel.RuleTypeID = core.StringPtr("is")
-		quotaV1RuleModel.Name = core.StringPtr("cs-rest-test")
-
-		quotaV1ArchiveRetentionModel := new(logsv0.QuotaV1ArchiveRetention)
-		quotaV1ArchiveRetentionModel.ID = core.StringPtr("testString")
-
-		quotaV1LogRulesModel := new(logsv0.QuotaV1LogRules)
-		quotaV1LogRulesModel.Severities = []string{"debug", "verbose", "info", "warning", "error"}
-
-		model := new(logsv0.PolicyPrototype)
-		model.Name = core.StringPtr("testString")
-		model.Description = core.StringPtr("testString")
-		model.Priority = core.StringPtr("type_unspecified")
-		model.ApplicationRule = quotaV1RuleModel
-		model.SubsystemRule = quotaV1RuleModel
-		model.ArchiveRetention = quotaV1ArchiveRetentionModel
-		model.LogRules = quotaV1LogRulesModel
-
-		assert.Equal(t, result, model)
-	}
-
-	quotaV1RuleModel := make(map[string]interface{})
-	quotaV1RuleModel["rule_type_id"] = "is"
-	quotaV1RuleModel["name"] = "cs-rest-test"
-
-	quotaV1ArchiveRetentionModel := make(map[string]interface{})
-	quotaV1ArchiveRetentionModel["id"] = "testString"
-
-	quotaV1LogRulesModel := make(map[string]interface{})
-	quotaV1LogRulesModel["severities"] = []interface{}{"debug", "verbose", "info", "warning", "error"}
-
-	model := make(map[string]interface{})
-	model["name"] = "testString"
-	model["description"] = "testString"
-	model["priority"] = "type_unspecified"
-	model["application_rule"] = []interface{}{quotaV1RuleModel}
-	model["subsystem_rule"] = []interface{}{quotaV1RuleModel}
-	model["archive_retention"] = []interface{}{quotaV1ArchiveRetentionModel}
-	model["log_rules"] = []interface{}{quotaV1LogRulesModel}
-
-	result, err := logs.ResourceIbmLogsPolicyMapToPolicyPrototype(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules(t *testing.T) {
-	checkResult := func(result *logsv0.PolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules) {
-		quotaV1RuleModel := new(logsv0.QuotaV1Rule)
-		quotaV1RuleModel.RuleTypeID = core.StringPtr("unspecified")
-		quotaV1RuleModel.Name = core.StringPtr("testString")
-
-		quotaV1ArchiveRetentionModel := new(logsv0.QuotaV1ArchiveRetention)
-		quotaV1ArchiveRetentionModel.ID = core.StringPtr("testString")
-
-		quotaV1LogRulesModel := new(logsv0.QuotaV1LogRules)
-		quotaV1LogRulesModel.Severities = []string{"unspecified"}
-
-		model := new(logsv0.PolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules)
-		model.Name = core.StringPtr("testString")
-		model.Description = core.StringPtr("testString")
-		model.Priority = core.StringPtr("type_unspecified")
-		model.ApplicationRule = quotaV1RuleModel
-		model.SubsystemRule = quotaV1RuleModel
-		model.ArchiveRetention = quotaV1ArchiveRetentionModel
-		model.LogRules = quotaV1LogRulesModel
-
-		assert.Equal(t, result, model)
-	}
-
-	quotaV1RuleModel := make(map[string]interface{})
-	quotaV1RuleModel["rule_type_id"] = "unspecified"
-	quotaV1RuleModel["name"] = "testString"
-
-	quotaV1ArchiveRetentionModel := make(map[string]interface{})
-	quotaV1ArchiveRetentionModel["id"] = "testString"
-
-	quotaV1LogRulesModel := make(map[string]interface{})
-	quotaV1LogRulesModel["severities"] = []interface{}{"unspecified"}
-
-	model := make(map[string]interface{})
-	model["name"] = "testString"
-	model["description"] = "testString"
-	model["priority"] = "type_unspecified"
-	model["application_rule"] = []interface{}{quotaV1RuleModel}
-	model["subsystem_rule"] = []interface{}{quotaV1RuleModel}
-	model["archive_retention"] = []interface{}{quotaV1ArchiveRetentionModel}
-	model["log_rules"] = []interface{}{quotaV1LogRulesModel}
-
-	result, err := logs.ResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

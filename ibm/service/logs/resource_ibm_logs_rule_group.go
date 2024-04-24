@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func ResourceIbmLogsRuleGroup() *schema.Resource {
@@ -40,12 +40,12 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_logs_rule_group", "description"),
 				Description:  "A description for the rule group, should express what is the rule group purpose.",
 			},
-			"creator": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_rule_group", "creator"),
-				Description:  "The creator of the rule group.",
-			},
+			// "creator": &schema.Schema{
+			// 	Type:         schema.TypeString,
+			// 	Optional:     true,
+			// 	ValidateFunc: validate.InvokeValidator("ibm_logs_rule_group", "creator"),
+			// 	Description:  "The creator of the rule group.",
+			// },
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -459,9 +459,9 @@ func resourceIbmLogsRuleGroupCreate(context context.Context, d *schema.ResourceD
 	if _, ok := d.GetOkExists("enabled"); ok {
 		createRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 	}
-	if _, ok := d.GetOk("creator"); ok {
-		createRuleGroupOptions.SetCreator(d.Get("creator").(string))
-	}
+	// if _, ok := d.GetOk("creator"); ok {
+	// 	createRuleGroupOptions.SetCreator(d.Get("creator").(string))
+	// }
 	if _, ok := d.GetOk("rule_matchers"); ok {
 		var ruleMatchers []logsv0.RulesV1RuleMatcherIntf
 		for _, v := range d.Get("rule_matchers").([]interface{}) {
@@ -536,11 +536,11 @@ func resourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 		}
 	}
-	if !core.IsNil(ruleGroup.Creator) {
-		if err = d.Set("creator", ruleGroup.Creator); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting creator: %s", err))
-		}
-	}
+	// if !core.IsNil(ruleGroup.Creator) {
+	// 	if err = d.Set("creator", ruleGroup.Creator); err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting creator: %s", err))
+	// 	}
+	// }
 	if !core.IsNil(ruleGroup.Enabled) {
 		if err = d.Set("enabled", ruleGroup.Enabled); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
@@ -602,7 +602,7 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 		d.HasChange("rule_subgroups") ||
 		d.HasChange("description") ||
 		d.HasChange("enabled") ||
-		d.HasChange("creator") ||
+		// d.HasChange("creator") ||
 		d.HasChange("rule_matchers") ||
 		d.HasChange("order") {
 
@@ -625,9 +625,9 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 		if _, ok := d.GetOkExists("enabled"); ok {
 			updateRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 		}
-		if _, ok := d.GetOk("creator"); ok {
-			updateRuleGroupOptions.SetCreator(d.Get("creator").(string))
-		}
+		// if _, ok := d.GetOk("creator"); ok {
+		// 	updateRuleGroupOptions.SetCreator(d.Get("creator").(string))
+		// }
 		if _, ok := d.GetOk("rule_matchers"); ok {
 			var ruleMatchers []logsv0.RulesV1RuleMatcherIntf
 			for _, v := range d.Get("rule_matchers").([]interface{}) {

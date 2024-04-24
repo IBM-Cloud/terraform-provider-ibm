@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func ResourceIbmLogsPolicy() *schema.Resource {
@@ -258,7 +259,7 @@ func resourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, 
 
 	getPolicyOptions := &logsv0.GetPolicyOptions{}
 
-	getPolicyOptions.SetID(policyId)
+	getPolicyOptions.SetID(core.UUIDPtr(strfmt.UUID(policyId)))
 
 	policyIntf, response, err := logsClient.GetPolicyWithContext(context, getPolicyOptions)
 	if err != nil {
@@ -378,7 +379,7 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 
 	updatePolicyOptions := &logsv0.UpdatePolicyOptions{}
 
-	updatePolicyOptions.SetID(policyId)
+	updatePolicyOptions.SetID(core.UUIDPtr(strfmt.UUID(policyId)))
 
 	hasChange := false
 
@@ -446,7 +447,7 @@ func resourceIbmLogsPolicyDelete(context context.Context, d *schema.ResourceData
 
 	deletePolicyOptions := &logsv0.DeletePolicyOptions{}
 
-	deletePolicyOptions.SetID(policyId)
+	deletePolicyOptions.SetID(core.UUIDPtr(strfmt.UUID(policyId)))
 
 	_, err = logsClient.DeletePolicyWithContext(context, deletePolicyOptions)
 	if err != nil {
@@ -469,7 +470,7 @@ func ResourceIbmLogsPolicyMapToQuotaV1Rule(modelMap map[string]interface{}) (*lo
 
 func ResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(modelMap map[string]interface{}) (*logsv0.QuotaV1ArchiveRetention, error) {
 	model := &logsv0.QuotaV1ArchiveRetention{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	model.ID = core.UUIDPtr(strfmt.UUID("id"))
 	return model, nil
 }
 

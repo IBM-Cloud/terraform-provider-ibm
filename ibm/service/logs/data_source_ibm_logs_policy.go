@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/observability-c/dragonlog-logs-go-sdk/logsv0"
+	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
 func DataSourceIbmLogsPolicy() *schema.Resource {
@@ -158,7 +160,7 @@ func dataSourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData
 
 	getPolicyOptions := &logsv0.GetPolicyOptions{}
 
-	getPolicyOptions.SetID(d.Get("logs_policy_id").(string))
+	getPolicyOptions.SetID(core.UUIDPtr(strfmt.UUID(d.Get("logs_policy_id").(string))))
 
 	policyIntf, _, err := logsClient.GetPolicyWithContext(context, getPolicyOptions)
 	if err != nil {
