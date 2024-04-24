@@ -105,7 +105,7 @@ func DataSourceIBMKMSKMIPObject() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read:     resourceIBMKmsKMIPClientCertRead,
+		Read:     dataSourceIBMKmsKMIPObjectRead,
 		Importer: &schema.ResourceImporter{},
 		Schema:   baseMap,
 	}
@@ -160,34 +160,39 @@ func populateKMIPObjectSchemaDataFromStruct(d *schema.ResourceData, object kp.KM
 	if err = d.Set("object_state", object.ObjectState); err != nil {
 		return fmt.Errorf("Error setting object_state: %s", err)
 	}
-	if err = d.Set("created_at", object.CreatedAt.String()); err != nil {
-		return fmt.Errorf("Error setting created_at: %s", err)
+	if object.CreatedAt != nil {
+		if err = d.Set("created_at", object.CreatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting created_at: %s", err)
+		}
+		if err = d.Set("created_by", object.CreatedBy); err != nil {
+			return fmt.Errorf("Error setting created_by: %s", err)
+		}
+		if err = d.Set("created_by_cert_id", object.CreatedByCertID); err != nil {
+			return fmt.Errorf("Error setting created_by_cert_id: %s", err)
+		}
 	}
-	if err = d.Set("created_by", object.CreatedBy); err != nil {
-		return fmt.Errorf("Error setting created_by: %s", err)
+	if object.UpdatedAt != nil {
+		if err = d.Set("updated_at", object.UpdatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting updated_at: %s", err)
+		}
+		if err = d.Set("updated_by", object.UpdatedBy); err != nil {
+			return fmt.Errorf("Error setting created_by: %s", err)
+		}
+		if err = d.Set("updated_by_cert_id", object.UpdatedByCertID); err != nil {
+			return fmt.Errorf("Error setting updated_by_cert_id: %s", err)
+		}
 	}
-	if err = d.Set("created_by_cert_id", object.CreatedByCertID); err != nil {
-		return fmt.Errorf("Error setting created_by_cert_id: %s", err)
+	if object.DestroyedAt != nil {
+		if err = d.Set("destroyed_at", object.DestroyedAt.String()); err != nil {
+			return fmt.Errorf("Error setting destroyed_at: %s", err)
+		}
+		if err = d.Set("destroyed_by", object.DestroyedBy); err != nil {
+			return fmt.Errorf("Error setting destroyed_by: %s", err)
+		}
+		if err = d.Set("destroyed_by_cert_id", object.DestroyedByCertID); err != nil {
+			return fmt.Errorf("Error setting destroyed_by_cert_id: %s", err)
+		}
 	}
-	if err = d.Set("updated_at", object.UpdatedAt.String()); err != nil {
-		return fmt.Errorf("Error setting updated_at: %s", err)
-	}
-	if err = d.Set("updated_by", object.UpdatedBy); err != nil {
-		return fmt.Errorf("Error setting created_by: %s", err)
-	}
-	if err = d.Set("updated_by_cert_id", object.UpdatedByCertID); err != nil {
-		return fmt.Errorf("Error setting updated_by_cert_id: %s", err)
-	}
-	if err = d.Set("destroyed_at", object.DestroyedAt.String()); err != nil {
-		return fmt.Errorf("Error setting destroyed_at: %s", err)
-	}
-	if err = d.Set("destroyed_by", object.DestroyedBy); err != nil {
-		return fmt.Errorf("Error setting destroyed_by: %s", err)
-	}
-	if err = d.Set("destroyed_by_cert_id", object.DestroyedByCertID); err != nil {
-		return fmt.Errorf("Error setting destroyed_by_cert_id: %s", err)
-	}
-
-	// d.SetID(object.ID)
+	d.SetId(object.ID)
 	return nil
 }

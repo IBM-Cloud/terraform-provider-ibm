@@ -6,7 +6,6 @@ package kms
 import (
 	"context"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -86,20 +85,19 @@ func DataSourceIBMKMSKmipAdapter() *schema.Resource {
 
 func dataSourceIBMKMSKmipAdapterRead(d *schema.ResourceData, meta interface{}) error {
 	// initialize API
-	api, err := meta.(conns.ClientSession).KeyProtectAPI()
+	instanceID := getInstanceIDFromResourceData(d, "instance_id")
+	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
 	}
 
-	instanceID := getInstanceIDFromResourceData(d, "instance_id")
-	api.Config.InstanceID = instanceID
 	nameOrID, hasID := d.GetOk("adapter_id")
 	if !hasID {
 		nameOrID = d.Get("name")
 	}
-	nameOrIDStr := nameOrID.(string)
+	adapterNameOrID := nameOrID.(string)
 	// call GetKMIPAdapter api
-	adapter, err := api.GetKMIPAdapter(context.Background(), nameOrIDStr)
+	adapter, err := kpAPI.GetKMIPAdapter(context.Background(), adapterNameOrID)
 	if err != nil {
 		return err
 	}

@@ -48,11 +48,6 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 				ForceNew:    true,
 				Description: "The data specific to the KMIP Adapter profile",
 			},
-			"adapter_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The UUID of the KMIP adapter",
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -222,9 +217,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 }
 
 func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.KMIPAdapter) (err error) {
-	if err = d.Set("adapter_id", adapter.ID); err != nil {
-		return fmt.Errorf("Error setting id: %s", err)
-	}
+	d.SetId(adapter.ID)
 	if err = d.Set("name", adapter.Name); err != nil {
 		return fmt.Errorf("Error setting name: %s", err)
 	}
@@ -249,6 +242,5 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 	if err = d.Set("updated_by", adapter.UpdatedBy); err != nil {
 		return fmt.Errorf("Error setting updated_by: %s", err)
 	}
-	d.SetId(adapter.ID)
 	return nil
 }

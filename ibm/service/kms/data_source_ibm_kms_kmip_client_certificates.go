@@ -7,13 +7,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMKmsKMIPClientCertificates() *schema.Resource {
 	return &schema.Resource{
-		Read:     resourceIBMKmsKMIPClientCertRead,
+		Read:     dataSourceIBMKmsKMIPClientCertList,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
@@ -68,8 +69,12 @@ func DataSourceIBMKmsKMIPClientCertificates() *schema.Resource {
 
 func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}) error {
 	// initialize API
+	api, err := meta.(conns.ClientSession).KeyProtectAPI()
+	if err != nil {
+		return err
+	}
 	instanceID := getInstanceIDFromResourceData(d, "instance_id")
-	kpAPI, _, err := populateKPClient(d, meta, instanceID)
+	api.Config.InstanceID = instanceID
 	if err != nil {
 		return err
 	}
@@ -95,7 +100,7 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 	}
 
 	ctx := context.Background()
-	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterNameOrID)
+	adapter, err := api.GetKMIPAdapter(ctx, adapterNameOrID)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while retriving KMIP adapter to list certificates: %s", err)
 	}
@@ -106,9 +111,9 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error setting adapter_name: %s", err)
 	}
 
-	certs, err := kpAPI.GetKMIPClientCertificates(ctx, adapterNameOrID, opts)
+	certs, err := api.GetKMIPClientCertificates(ctx, adapter.ID, opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error while listing KMIP certs for adapter %s: %s", adapter.ID, err)
 	}
 
 	certsList := certs.Certificates
@@ -120,6 +125,7 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 		mySlice = append(mySlice, certMap)
 	}
 	d.Set("certificates", mySlice)
+	d.SetId(adapter.ID)
 	return nil
 }
 
@@ -127,7 +133,6 @@ func dataSourceIBMKMSKmipClientCertToMap(model kp.KMIPClientCertificate) map[str
 	modelMap := make(map[string]interface{})
 	modelMap["cert_id"] = model.ID
 	modelMap["cert_name"] = model.Name
-	modelMap["certificate"] = model.Certificate
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["created_by"] = model.CreatedBy
 	return modelMap

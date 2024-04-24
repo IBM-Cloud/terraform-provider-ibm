@@ -193,18 +193,20 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 }
 
 func populateKMIPClientCertSchemaDataFromStruct(d *schema.ResourceData, cert kp.KMIPClientCertificate) (err error) {
+	d.SetId(cert.ID)
 	if err = d.Set("name", cert.Name); err != nil {
 		return fmt.Errorf("Error setting name: %s", err)
 	}
 	if err = d.Set("certificate", cert.Certificate); err != nil {
 		return fmt.Errorf("Error setting certificate: %s", err)
 	}
-	if err = d.Set("created_at", cert.CreatedAt.String()); err != nil {
-		return fmt.Errorf("Error setting created_at: %s", err)
+	if cert.CreatedAt != nil {
+		if err = d.Set("created_at", cert.CreatedAt.String()); err != nil {
+			return fmt.Errorf("Error setting created_at: %s", err)
+		}
+		if err = d.Set("created_by", cert.CreatedBy); err != nil {
+			return fmt.Errorf("Error setting created_by: %s", err)
+		}
 	}
-	if err = d.Set("created_by", cert.CreatedBy); err != nil {
-		return fmt.Errorf("Error setting created_by: %s", err)
-	}
-	d.SetId(cert.ID)
 	return nil
 }

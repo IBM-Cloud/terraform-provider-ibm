@@ -13,7 +13,7 @@ import (
 
 func DataSourceIBMKMSKMIPObjects() *schema.Resource {
 	return &schema.Resource{
-		Read:     resourceIBMKmsKMIPClientCertRead,
+		Read:     dataSourceIBMKmsKMIPObjectList,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
@@ -130,6 +130,7 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 		mySlice = append(mySlice, objMap)
 	}
 	d.Set("objects", mySlice)
+	d.SetId(adapter.ID)
 	return nil
 }
 
@@ -138,14 +139,21 @@ func dataSourceIBMKMSKmipObjectToMap(model kp.KMIPObject) map[string]interface{}
 	modelMap["object_id"] = model.ID
 	modelMap["object_type"] = model.KMIPObjectType
 	modelMap["object_state"] = model.ObjectState
-	modelMap["created_at"] = model.CreatedAt.String()
-	modelMap["created_by"] = model.CreatedBy
-	modelMap["created_by_cert_id"] = model.CreatedByCertID
-	modelMap["updated_at"] = model.UpdatedAt.String()
-	modelMap["updated_by"] = model.UpdatedBy
-	modelMap["updated_by_cert_id"] = model.UpdatedByCertID
-	modelMap["destroyed_at"] = model.DestroyedAt.String()
-	modelMap["destroyed_by"] = model.DestroyedBy
-	modelMap["destroyed_by_cert_id"] = model.DestroyedByCertID
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+		modelMap["created_by"] = model.CreatedBy
+		modelMap["created_by_cert_id"] = model.CreatedByCertID
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+		modelMap["updated_by"] = model.UpdatedBy
+		modelMap["updated_by_cert_id"] = model.UpdatedByCertID
+	}
+	if model.DestroyedAt != nil {
+		modelMap["destroyed_at"] = model.DestroyedAt.String()
+		modelMap["destroyed_by"] = model.DestroyedBy
+		modelMap["destroyed_by_cert_id"] = model.DestroyedByCertID
+	}
+
 	return modelMap
 }
