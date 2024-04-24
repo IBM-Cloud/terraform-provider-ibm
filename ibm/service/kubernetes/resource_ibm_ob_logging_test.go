@@ -150,8 +150,6 @@ func testAccCheckIBMLoggingBasic(clusterName, loggingName, ingestionKeyName stri
 		wait_till         = "MasterNodeReady"
         hardware        = "shared"
         machine_type    = "%s"
-		public_vlan_id     = "3413095"
-		private_vlan_id    = "3413097"
         timeouts {
           create = "720m"
           update = "720m"
