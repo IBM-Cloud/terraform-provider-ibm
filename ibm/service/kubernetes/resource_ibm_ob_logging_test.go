@@ -150,6 +150,8 @@ func testAccCheckIBMLoggingBasic(clusterName, loggingName, ingestionKeyName stri
 		wait_till         = "MasterNodeReady"
         hardware        = "shared"
         machine_type    = "%s"
+		public_vlan_id     = "3413095"
+		private_vlan_id    = "3413097"
         timeouts {
           create = "720m"
           update = "720m"
@@ -179,7 +181,7 @@ func testAccCheckIBMLoggingBasic(clusterName, loggingName, ingestionKeyName stri
 func testAccCheckIBMLoggingUpdate(clusterName, loggingName, ingestionKeyName, instanceName, keyName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "testacc_ds_resource_group" {
-        name = "Default"
+        is_default = "true"
       }
       
       resource "ibm_container_cluster" "testacc_cluster" {
