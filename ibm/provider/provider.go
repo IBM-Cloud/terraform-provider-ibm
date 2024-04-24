@@ -53,8 +53,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -621,6 +621,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_keys":                                   power.DataSourceIBMPIKeys(),
 			"ibm_pi_network_port":                           power.DataSourceIBMPINetworkPort(),
 			"ibm_pi_network":                                power.DataSourceIBMPINetwork(),
+			"ibm_pi_networks":                               power.DataSourceIBMPINetworks(),
 			"ibm_pi_placement_group":                        power.DataSourceIBMPIPlacementGroup(),
 			"ibm_pi_placement_groups":                       power.DataSourceIBMPIPlacementGroups(),
 			"ibm_pi_public_network":                         power.DataSourceIBMPIPublicNetwork(),
@@ -898,7 +899,7 @@ func Provider() *schema.Provider {
 			"ibm_project":             project.DataSourceIbmProject(),
 			"ibm_project_config":      project.DataSourceIbmProjectConfig(),
 			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
-		
+
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
 		},
