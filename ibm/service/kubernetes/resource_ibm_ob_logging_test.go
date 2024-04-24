@@ -139,7 +139,7 @@ func getLoggingTarget() (v2.LoggingTargetHeader, error) {
 func testAccCheckIBMLoggingBasic(clusterName, loggingName, ingestionKeyName string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "testacc_ds_resource_group" {
-        name = "Default"
+        is_default = "true"
       }
       
       resource "ibm_container_cluster" "testacc_cluster" {
