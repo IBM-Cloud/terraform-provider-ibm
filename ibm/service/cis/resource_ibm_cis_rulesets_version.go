@@ -80,10 +80,10 @@ func ResourceIBMCISRulesetsVersionDelete(d *schema.ResourceData, meta interface{
 			return fmt.Errorf("[ERROR] Error deleting the zone ruleset version %s:%s", err, res)
 		}
 	} else {
-		opt := sess.NewDeleteAccountRulesetVersionOptions(rulesetId, ruleset_version)
-		res, err := sess.DeleteAccountRulesetVersion(opt)
+		opt := sess.NewDeleteInstanceRulesetVersionOptions(rulesetId, ruleset_version)
+		res, err := sess.DeleteInstanceRulesetVersion(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the account ruleset version %s:%s", err, res)
+			return fmt.Errorf("[ERROR] Error deleting the Instance ruleset version %s:%s", err, res)
 		}
 	}
 

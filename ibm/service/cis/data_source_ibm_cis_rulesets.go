@@ -341,7 +341,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 			opt := sess.NewGetZoneRulesetOptions(rulesetId)
 			result, resp, err := sess.GetZoneRuleset(opt)
 			if err != nil {
-				log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
 			rulesetObj := result.Result
@@ -379,7 +379,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 			opt := sess.NewGetZoneRulesetsOptions()
 			result, resp, err := sess.GetZoneRulesets(opt)
 			if err != nil {
-				log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
 
@@ -402,10 +402,10 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 
 		if rulesetId != "" {
-			opt := sess.NewGetAccountRulesetOptions(rulesetId)
-			result, resp, err := sess.GetAccountRuleset(opt)
+			opt := sess.NewGetInstanceRulesetOptions(rulesetId)
+			result, resp, err := sess.GetInstanceRuleset(opt)
 			if err != nil {
-				log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
 
@@ -441,10 +441,10 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set(cisID, crn)
 
 		} else {
-			opt := sess.NewGetAccountRulesetsOptions()
-			result, resp, err := sess.GetAccountRulesets(opt)
+			opt := sess.NewGetInstanceRulesetsOptions()
+			result, resp, err := sess.GetInstanceRulesets(opt)
 			if err != nil {
-				log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
 

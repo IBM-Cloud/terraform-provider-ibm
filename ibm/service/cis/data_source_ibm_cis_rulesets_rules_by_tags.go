@@ -83,8 +83,8 @@ func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error
 	rulesetVersion := d.Get(CISRulesetVersion).(string)
 	rulesetRuleTag := d.Get(CISRulesetsRuleTag).(string)
 
-	opt := sess.NewGetAccountRulesetVersionByTagOptions(rulesetId, rulesetVersion, rulesetRuleTag)
-	result, resp, err := sess.GetAccountRulesetVersionByTag(opt)
+	opt := sess.NewGetInstanceRulesetVersionByTagOptions(rulesetId, rulesetVersion, rulesetRuleTag)
+	result, resp, err := sess.GetInstanceRulesetVersionByTag(opt)
 	if err != nil {
 		log.Printf("[WARN] List all rulesets version rules by tag failed: %v\n", resp)
 		return err

@@ -92,17 +92,17 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 
 	} else {
 
-		opt := sess.NewUpdateAccountRulesetOptions(rulesetId)
+		opt := sess.NewUpdateInstanceRulesetOptions(rulesetId)
 
 		rulesetObject := d.Get(CISRulesetsOutput).(rulesetsv1.RulesetDetails)
 		ruleObject := d.Get(CISRulesetsRules).([]rulesetsv1.RuleCreate)
 		opt.SetDescription(*rulesetObject.Description)
 		opt.SetRules(ruleObject)
 
-		result, _, err := sess.UpdateAccountRuleset(opt)
+		result, _, err := sess.UpdateInstanceRuleset(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the account Ruleset %s", err)
+			return fmt.Errorf("[ERROR] Error while updating the Instance Ruleset %s", err)
 		}
 		d.SetId(*result.Result.ID)
 	}
@@ -173,10 +173,10 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(cisID, crn)
 
 	} else {
-		opt := sess.NewGetAccountRulesetOptions(rulesetId)
-		result, resp, err := sess.GetAccountRuleset(opt)
+		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
+		result, resp, err := sess.GetInstanceRuleset(opt)
 		if err != nil {
-			log.Printf("[WARN] Get account ruleset failed: %v\n", resp)
+			log.Printf("[WARN] Get Instance ruleset failed: %v\n", resp)
 			return err
 		}
 
@@ -247,10 +247,10 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 			return fmt.Errorf("[ERROR] Error deleting the zone ruleset %s:%s", err, res)
 		}
 	} else {
-		opt := sess.NewDeleteAccountRulesetOptions(rulesetId)
-		res, err := sess.DeleteAccountRuleset(opt)
+		opt := sess.NewDeleteInstanceRulesetOptions(rulesetId)
+		res, err := sess.DeleteInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the account ruleset %s:%s", err, res)
+			return fmt.Errorf("[ERROR] Error deleting the Instance ruleset %s:%s", err, res)
 		}
 	}
 

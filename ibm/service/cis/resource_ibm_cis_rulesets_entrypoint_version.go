@@ -128,10 +128,10 @@ func ResourceIBMCISRulesetsEntryPointVersionRead(d *schema.ResourceData, meta in
 		d.Set(cisID, crn)
 
 	} else {
-		opt := sess.NewGetAccountRulesetOptions(rulesetId)
-		result, resp, err := sess.GetAccountRuleset(opt)
+		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
+		result, resp, err := sess.GetInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Get account ruleset failed: %v\n", resp)
+			return fmt.Errorf("[WARN] Get Instance ruleset failed: %v\n", resp)
 		}
 
 		rulesetObj := result.Result
@@ -225,7 +225,7 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 		}
 
 	} else {
-		opt := sess.NewUpdateAccountEntrypointRulesetOptions(ruleset_phase)
+		opt := sess.NewUpdateInstanceEntrypointRulesetOptions(ruleset_phase)
 
 		if d.HasChange(CISRulesetsDescription) {
 			if val, ok := d.GetOk(CISRulesetsDescription); ok {
@@ -248,7 +248,7 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 			}
 		}
 
-		result, resp, err := sess.UpdateAccountEntrypointRuleset(opt)
+		result, resp, err := sess.UpdateInstanceEntrypointRuleset(opt)
 		if err != nil || result == nil {
 			return fmt.Errorf("[ERROR] Error while Update Entrypoint Rulesets %s %s", err, resp)
 		}

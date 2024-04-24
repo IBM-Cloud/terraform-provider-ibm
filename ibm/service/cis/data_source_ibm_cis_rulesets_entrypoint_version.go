@@ -103,7 +103,7 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 		opt := sess.NewGetZoneEntryPointRulesetVersionsOptions(ruleset_phase)
 		result, resp, err := sess.GetZoneEntryPointRulesetVersions(opt)
 		if err != nil {
-			log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+			log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 			return err
 		}
 
@@ -131,7 +131,7 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 				opt := sess.NewGetZoneEntryPointRulesetVersionOptions(ruleset_phase, ruleset_version)
 				result, resp, err := sess.GetZoneEntryPointRulesetVersion(opt)
 				if err != nil {
-					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 					return err
 				}
 				rulesetObj := result.Result
@@ -181,7 +181,7 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 				opt := sess.NewGetZoneEntrypointRulesetOptions(ruleset_phase)
 				result, resp, err := sess.GetZoneEntrypointRuleset(opt)
 				if err != nil {
-					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 					return err
 				}
 
@@ -232,10 +232,10 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 		} else {
 
 			if ruleset_version != "" {
-				opt := sess.NewGetAccountEntryPointRulesetVersionOptions(ruleset_phase, ruleset_version)
-				result, resp, err := sess.GetAccountEntryPointRulesetVersion(opt)
+				opt := sess.NewGetInstanceEntryPointRulesetVersionOptions(ruleset_phase, ruleset_version)
+				result, resp, err := sess.GetInstanceEntryPointRulesetVersion(opt)
 				if err != nil {
-					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 					return err
 				}
 
@@ -283,10 +283,10 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 				d.Set(cisID, crn)
 
 			} else {
-				opt := sess.NewGetAccountEntrypointRulesetOptions(ruleset_phase)
-				result, resp, err := sess.GetAccountEntrypointRuleset(opt)
+				opt := sess.NewGetInstanceEntrypointRulesetOptions(ruleset_phase)
+				result, resp, err := sess.GetInstanceEntrypointRuleset(opt)
 				if err != nil {
-					log.Printf("[WARN] List all account rulesets failed: %v\n", resp)
+					log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 					return err
 				}
 
