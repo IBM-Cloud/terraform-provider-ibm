@@ -2451,9 +2451,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// IBM Network CIS Rulesets
 	cisRulesetsOpt := &cisrulesetsv1.RulesetsV1Options{
-		URL:           cisEndPoint,
-		Crn:           core.StringPtr(""),
-		Authenticator: authenticator,
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
 	}
 	session.cisRulesetsClient, session.cisRulesetsErr = cisrulesetsv1.NewRulesetsV1(cisRulesetsOpt)
 	if session.cisRulesetsErr != nil {

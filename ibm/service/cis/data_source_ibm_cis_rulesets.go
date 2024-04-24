@@ -82,6 +82,7 @@ var CISResponseObject = &schema.Resource{
 		CISRulesetsRules: {
 			Type:        schema.TypeList,
 			Computed:    true,
+			Optional:    true,
 			Description: "Rules of the Rulesets",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -392,6 +393,11 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+				rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
+
+				if rulesetOutput[CISRulesetsPhase] == "http_request_firewall_managed" {
+					rulesetList = append(rulesetList, rulesetOutput)
+				}
 			}
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
@@ -457,6 +463,11 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+				rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
+
+				if rulesetOutput[CISRulesetsKind] == "http_request_firewall_managed" {
+					rulesetList = append(rulesetList, rulesetOutput)
+				}
 			}
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
