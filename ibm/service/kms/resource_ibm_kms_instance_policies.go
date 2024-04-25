@@ -44,11 +44,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				Description:  "public or private",
 			},
 			"dual_auth_delete": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the dual authorization delete policy for instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the dual authorization delete policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -80,11 +79,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				},
 			},
 			"rotation": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the rotation policy for instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the rotation policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -122,11 +120,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				},
 			},
 			"key_create_import_access": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the key create import access policy for the instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the key create import access policy for the instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -188,11 +185,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				},
 			},
 			"metrics": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the metric policy for instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the metric policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -249,10 +245,20 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 		return diag.Errorf("[ERROR] Get Policies failed with error : %s", err)
 	}
 	d.Set("instance_id", instanceID)
-	d.Set("dual_auth_delete", flex.FlattenInstancePolicy("dual_auth_delete", instancePolicies))
-	d.Set("rotation", flex.FlattenInstancePolicy("rotation", instancePolicies))
-	d.Set("metrics", flex.FlattenInstancePolicy("metrics", instancePolicies))
-	d.Set("key_create_import_access", flex.FlattenInstancePolicy("key_create_import_access", instancePolicies))
+
+	setIfNotEmpty := func(policyType string, instancePolicies []kp.InstancePolicy) {
+		// if policy has been set to nil by Create which indicates not to track, then ignore
+		if policyType, ok := d.GetOk(policyType); ok && policyType == nil {
+			return
+		}
+		policyAttr := flex.FlattenInstancePolicy(policyType, instancePolicies)
+		d.Set(policyType, policyAttr)
+	}
+	setIfNotEmpty("dual_auth_delete", instancePolicies)
+	setIfNotEmpty("rotation", instancePolicies)
+	setIfNotEmpty("metrics", instancePolicies)
+	setIfNotEmpty("key_create_import_access", instancePolicies)
+
 	return nil
 
 }
@@ -292,6 +298,8 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 				Enabled: dualAuthDeleteInstancePolicyList[0].(map[string]interface{})["enabled"].(bool),
 			}
 		}
+	} else {
+		d.Set("dual_auth_delete", nil)
 	}
 	if rotationInstancePolicy, ok := d.GetOk("rotation"); ok {
 		rotationInstancePolicyList := rotationInstancePolicy.([]interface{})
@@ -312,6 +320,8 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 			}
 
 		}
+	} else {
+		d.Set("rotation", nil)
 	}
 	if metricsInstancePolicy, ok := d.GetOk("metrics"); ok {
 		metricsInstancePolicyList := metricsInstancePolicy.([]interface{})
@@ -320,7 +330,10 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 				Enabled: metricsInstancePolicyList[0].(map[string]interface{})["enabled"].(bool),
 			}
 		}
+	} else {
+		d.Set("metrics", nil)
 	}
+
 	if kciaip, ok := d.GetOk("key_create_import_access"); ok {
 		kciaipList := kciaip.([]interface{})
 		if len(kciaipList) != 0 {
@@ -333,6 +346,8 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 				EnforceToken:      kciaipList[0].(map[string]interface{})["enforce_token"].(bool),
 			}
 		}
+	} else {
+		d.Set("key_create_import_access", nil)
 	}
 	err := kpAPI.SetInstancePolicies(context, mulPolicy)
 	if err != nil {
