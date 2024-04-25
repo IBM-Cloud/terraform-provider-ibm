@@ -43,7 +43,7 @@ func waitForVdcStatusUpdate(context context.Context, d *schema.ResourceData, met
 			getVdcOptions := &vmwarev1.GetVdcOptions{}
 
 			getVdcOptions.SetID(d.Id())
-		
+
 			vdc, response, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
@@ -60,7 +60,7 @@ func waitForVdcStatusUpdate(context context.Context, d *schema.ResourceData, met
 
 			if *vdc.Status == "ready_to_use" {
 				return vdc, VdcFinalState, nil
-			} else if *vdc.Status == "failed"  {
+			} else if *vdc.Status == "failed" {
 				return vdc, VdcFinalState, fmt.Errorf("%s", err)
 			}
 			return vdc, VdcCreatingState, nil
@@ -85,9 +85,9 @@ func waitForVdcToDelete(context context.Context, d *schema.ResourceData, meta in
 			getVdcOptions := &vmwarev1.GetVdcOptions{}
 
 			getVdcOptions.SetID(d.Id())
-		
+
 			vdc, response, err := vmwareClient.GetVdcWithContext(context, getVdcOptions)
-			
+
 			if err != nil {
 				if response != nil && response.StatusCode == 404 {
 					fmt.Println("The vdc is deleted.")
