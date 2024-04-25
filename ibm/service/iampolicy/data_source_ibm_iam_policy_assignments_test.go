@@ -21,7 +21,7 @@ func TestAccIBMIAMPolicyAssignmentsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMPolicyAssignmentDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "policy_assignments.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "assignments.#"),
 				),
 			},
 		},
@@ -31,5 +31,6 @@ func TestAccIBMIAMPolicyAssignmentsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPolicyAssignmentDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_iam_policy_assignments" "policy_assignment" {
+			version="1.0"
 		}`)
 }

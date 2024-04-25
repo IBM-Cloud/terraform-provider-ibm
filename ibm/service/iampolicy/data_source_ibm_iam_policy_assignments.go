@@ -27,11 +27,6 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 				Required:    true,
 				Description: "specify version of response body format.",
 			},
-			"account_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The account GUID in which the policies belong to.",
-			},
 			"accept_language": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -337,11 +332,16 @@ func dataSourceIBMPolicyAssignmentRead(context context.Context, d *schema.Resour
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to fetch BluemixUserDetails %s", err))
+	}
+	accountID := userDetails.UserAccount
 
 	listPolicyAssignmentsOptions := &iampolicymanagementv1.ListPolicyAssignmentsOptions{}
+	listPolicyAssignmentsOptions.SetAccountID(accountID)
 
 	listPolicyAssignmentsOptions.SetVersion(d.Get("version").(string))
-	listPolicyAssignmentsOptions.SetAccountID(d.Get("account_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		listPolicyAssignmentsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
@@ -378,6 +378,28 @@ func dataSourceIBMPolicyAssignmentRead(context context.Context, d *schema.Resour
 	}
 
 	return nil
+}
+
+func ResourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(model *iampolicymanagementv1.AssignmentTargetDetails) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMPolicyAssignmentResourceTargetDetailsToMap(model *iampolicymanagementv1.AssignmentTemplateDetails) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Version != nil {
+		modelMap["version"] = *model.Version
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	return modelMap, nil
 }
 
 // dataSourceIBMPolicyAssignmentID returns a reasonable ID for the list.
@@ -528,7 +550,7 @@ func DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsRootTemplateToMap(mod
 func DataSourceIBMPolicyAssignmentPolicyAssignmentV1ResourcesToMap(model *iampolicymanagementv1.PolicyAssignmentV1Resources) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Target != nil {
-		targetMap, err := DataSourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(model.Target)
+		targetMap, err := ResourceIBMPolicyAssignmentResourceTargetDetailsToMap(model.Target)
 		if err != nil {
 			return modelMap, err
 		}
