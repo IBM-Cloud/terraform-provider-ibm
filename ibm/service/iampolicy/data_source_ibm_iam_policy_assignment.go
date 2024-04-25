@@ -26,25 +26,10 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 				Required:    true,
 				Description: "The policy template assignment ID.",
 			},
-			"template_id": {
+			"version": {
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "policy template id.",
-			},
-			"template_version": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "policy template version.",
-			},
-			"target_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Assignment target type.",
-			},
-			"target": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "assignment target id.",
+				Required:    true,
+				Description: "The policy template assignment new format",
 			},
 			"id": {
 				Type:        schema.TypeString,
@@ -76,6 +61,39 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 				Computed:    true,
 				Description: "The iam ID of the entity that last modified the policy assignment.",
 			},
+			"subject": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "subject details of access type assignment.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"target": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "assignment target details",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"template": {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "policy template details",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"resources": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -83,9 +101,12 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target": {
-							Type:        schema.TypeString,
+							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "Account ID where resources are assigned.",
+							Description: "assignment target details",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						"policy": {
 							Type:        schema.TypeList,
@@ -197,33 +218,43 @@ func DataSourceIBMIAMPolicyAssignment() *schema.Resource {
 			"options": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of objects with required properties for a policy assignment.",
+				Description: "The set of properties required for a policy assignment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"subject_type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The policy subject type; either 'iam_id' or 'access_group_id'.",
-						},
-						"subject_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The policy subject id.",
-						},
-						"root_requester_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The policy assignment requester id.",
-						},
-						"root_template_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The template id where this policy is being assigned from.",
-						},
-						"root_template_version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The template version where this policy is being assigned from.",
+						"root": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"requester_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"assignment_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Passed in value to correlate with other assignments.",
+									},
+									"template": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The template id where this policy is being assigned from.",
+												},
+												"version": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The template version where this policy is being assigned from.",
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -246,33 +277,34 @@ func dataSourceIBMIAMPolicyAssignmentRead(context context.Context, d *schema.Res
 	getPolicyAssignmentOptions := &iampolicymanagementv1.GetPolicyAssignmentOptions{}
 
 	getPolicyAssignmentOptions.SetAssignmentID(d.Get("assignment_id").(string))
+	getPolicyAssignmentOptions.SetVersion("1.0")
 
-	policyAssignmentRecord, response, err := iamPolicyManagementClient.GetPolicyAssignmentWithContext(context, getPolicyAssignmentOptions)
+	assignmentResponse, response, err := iamPolicyManagementClient.GetPolicyAssignmentWithContext(context, getPolicyAssignmentOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetPolicyAssignmentWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetPolicyAssignmentWithContext failed %s\n%s", err, response))
 	}
 
+	policyAssignmentRecord := assignmentResponse.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
 	d.SetId(*policyAssignmentRecord.ID)
 
-	if err = d.Set("template_id", policyAssignmentRecord.TemplateID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting template_id: %s", err))
-	}
-
-	if err = d.Set("template_version", policyAssignmentRecord.TemplateVersion); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting template_version: %s", err))
-	}
-
-	if err = d.Set("target_type", policyAssignmentRecord.TargetType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target_type: %s", err))
-	}
-
-	if err = d.Set("target", policyAssignmentRecord.Target); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target: %s", err))
+	targetMap, err := ResourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(policyAssignmentRecord.Target)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	if err = d.Set("id", policyAssignmentRecord.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+	}
+	if err = d.Set("target", targetMap); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting target: %s", err))
+	}
+	optionsMap, err := ResourceIBMPolicyAssignmentPolicyAssignmentV1OptionsToMap(policyAssignmentRecord.Options)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("options", []map[string]interface{}{optionsMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting options: %s", err))
 	}
 
 	if err = d.Set("href", policyAssignmentRecord.Href); err != nil {
@@ -302,7 +334,7 @@ func dataSourceIBMIAMPolicyAssignmentRead(context context.Context, d *schema.Res
 	resources := []map[string]interface{}{}
 	if policyAssignmentRecord.Resources != nil {
 		for _, modelItem := range policyAssignmentRecord.Resources {
-			modelMap, err := dataSourceIBMPolicyAssignmentPolicyAssignmentResourcesToMap(&modelItem)
+			modelMap, err := ResourceIBMPolicyAssignmentPolicyAssignmentV1ResourcesToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -312,25 +344,35 @@ func dataSourceIBMIAMPolicyAssignmentRead(context context.Context, d *schema.Res
 	if err = d.Set("resources", resources); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resources %s", err))
 	}
-
-	options := []map[string]interface{}{}
-	if policyAssignmentRecord.Options != nil {
-		for _, modelItem := range policyAssignmentRecord.Options {
-			modelMap, err := dataSourceIBMAssignmentPolicyAssignmentOptionsToMap(&modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			options = append(options, modelMap)
+	subject := []map[string]interface{}{}
+	if policyAssignmentRecord.Subject != nil {
+		modelMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1Subject(policyAssignmentRecord.Subject)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_policy_assignment", "read")
+			return tfErr.GetDiag()
 		}
+		subject = append(subject, modelMap)
 	}
-	if err = d.Set("options", options); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting options %s", err))
+	if err = d.Set("subject", subject); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting subject: %s", err), "(Data) ibm_policy_assignment", "read")
+		return tfErr.GetDiag()
 	}
 
 	return nil
 }
 
-func dataSourceIBMPolicyAssignmentPolicyAssignmentResourcesToMap(model *iampolicymanagementv1.PolicyAssignmentResources) (map[string]interface{}, error) {
+func DataSourceIBMPolicyAssignmentPolicyAssignmentV1Subject(model *iampolicymanagementv1.GetPolicyAssignmentResponseSubject) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMPolicyAssignmentPolicyAssignmentResourcesToMap(model *iampolicymanagementv1.PolicyAssignmentV1Resources) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Target != nil {
 		modelMap["target"] = model.Target
