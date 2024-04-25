@@ -426,7 +426,7 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 		getVPNGatewayConnectionOptions.SetID(vpn_gateway_connection)
 
 		vpnGatewayConnectionIntf, response, err := vpcClient.GetVPNGatewayConnectionWithContext(context, getVPNGatewayConnectionOptions)
-		if err != nil || vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnection) == nil {
+		if err != nil || vpnGatewayConnectionIntf == nil {
 			log.Printf("[DEBUG] GetVPNGatewayConnectionWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("GetVPNGatewayConnectionWithContext failed %s\n%s", err, response))
 		}
