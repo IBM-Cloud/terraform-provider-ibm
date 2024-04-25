@@ -247,8 +247,8 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 	d.Set("instance_id", instanceID)
 
 	setIfNotEmpty := func(policyType string, instancePolicies []kp.InstancePolicy) {
-		// if policy has been set to nil by Create which indicates not to track, then ignore
-		if policyType, ok := d.GetOk(policyType); ok && policyType == nil {
+		// if policy has been set to [] which indicates not to track, then ignore
+		if _, ok := d.GetOk(policyType); !ok {
 			return
 		}
 		policyAttr := flex.FlattenInstancePolicy(policyType, instancePolicies)
@@ -283,7 +283,7 @@ func resourceIBMKmsInstancePolicyUpdate(context context.Context, d *schema.Resou
 
 func resourceIBMKmsInstancePolicyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	//Do not support delete Policies
-	log.Println("Warning:  `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated instance resource is destroyed.")
+	log.Println("[WARN] `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated instance resource is destroyed.")
 	d.SetId("")
 	return nil
 
@@ -298,8 +298,6 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 				Enabled: dualAuthDeleteInstancePolicyList[0].(map[string]interface{})["enabled"].(bool),
 			}
 		}
-	} else {
-		d.Set("dual_auth_delete", nil)
 	}
 	if rotationInstancePolicy, ok := d.GetOk("rotation"); ok {
 		rotationInstancePolicyList := rotationInstancePolicy.([]interface{})
@@ -320,8 +318,6 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 			}
 
 		}
-	} else {
-		d.Set("rotation", nil)
 	}
 	if metricsInstancePolicy, ok := d.GetOk("metrics"); ok {
 		metricsInstancePolicyList := metricsInstancePolicy.([]interface{})
@@ -330,8 +326,6 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 				Enabled: metricsInstancePolicyList[0].(map[string]interface{})["enabled"].(bool),
 			}
 		}
-	} else {
-		d.Set("metrics", nil)
 	}
 
 	if kciaip, ok := d.GetOk("key_create_import_access"); ok {
@@ -346,8 +340,6 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 				EnforceToken:      kciaipList[0].(map[string]interface{})["enforce_token"].(bool),
 			}
 		}
-	} else {
-		d.Set("key_create_import_access", nil)
 	}
 	err := kpAPI.SetInstancePolicies(context, mulPolicy)
 	if err != nil {
