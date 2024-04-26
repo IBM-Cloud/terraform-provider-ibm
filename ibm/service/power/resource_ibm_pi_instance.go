@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -184,7 +184,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
-				Computed:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
@@ -788,12 +787,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			body := &models.PlacementGroupServer{
 				ID: &instanceID,
 			}
-			_, err := pgClient.DeleteMember(placementGroupID, body)
+			pgID, err := pgClient.DeleteMember(placementGroupID, body)
 			if err != nil {
 				// ignore delete member error where the server is already not in the PG
 				if !strings.Contains(err.Error(), "is not part of placement-group") {
 					return diag.FromErr(err)
 				}
+			}
+			_, err = isWaitForPIInstancePlacementGroupDelete(ctx, pgClient, *pgID.ID, instanceID)
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 
@@ -803,7 +806,11 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			body := &models.PlacementGroupServer{
 				ID: &instanceID,
 			}
-			_, err := pgClient.AddMember(placementGroupID, body)
+			pgID, err := pgClient.AddMember(placementGroupID, body)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			_, err = isWaitForPIInstancePlacementGroupAdd(ctx, pgClient, *pgID.ID, instanceID)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -877,7 +884,7 @@ func isWaitForPIInstanceDeleted(ctx context.Context, client *st.IBMPIInstanceCli
 
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", helpers.PIInstanceDeleting},
 		Target:     []string{helpers.PIInstanceNotFound},
 		Refresh:    isPIInstanceDeleteRefreshFunc(client, id),
@@ -889,7 +896,7 @@ func isWaitForPIInstanceDeleted(ctx context.Context, client *st.IBMPIInstanceCli
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isPIInstanceDeleteRefreshFunc(client *st.IBMPIInstanceClient, id string) resource.StateRefreshFunc {
+func isPIInstanceDeleteRefreshFunc(client *st.IBMPIInstanceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		pvm, err := client.Get(id)
 		if err != nil {
@@ -908,7 +915,7 @@ func isWaitForPIInstanceAvailable(ctx context.Context, client *st.IBMPIInstanceC
 		queryTimeOut = warningTimeOut
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"PENDING", helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
 		Target:     []string{helpers.PIInstanceAvailable, helpers.PIInstanceHealthOk, "ERROR", "", "SHUTOFF"},
 		Refresh:    isPIInstanceRefreshFunc(client, id, instanceReadyStatus),
@@ -920,7 +927,7 @@ func isWaitForPIInstanceAvailable(ctx context.Context, client *st.IBMPIInstanceC
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadyStatus string) resource.StateRefreshFunc {
+func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadyStatus string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		pvm, err := client.Get(id)
@@ -944,12 +951,76 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 	}
 }
 
+func isWaitForPIInstancePlacementGroupAdd(ctx context.Context, client *st.IBMPIPlacementGroupClient, pgID string, id string) (interface{}, error) {
+	log.Printf("Waiting for PIInstance Placement Group (%s) to be updated ", id)
+
+	queryTimeOut := activeTimeOut
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{"notdone"},
+		Target:     []string{"done"},
+		Refresh:    isPIInstancePlacementGroupAddRefreshFunc(client, pgID, id),
+		Delay:      30 * time.Second,
+		MinTimeout: queryTimeOut,
+		Timeout:    120 * time.Minute,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstancePlacementGroupAddRefreshFunc(client *st.IBMPIPlacementGroupClient, pgID string, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pg, err := client.Get(pgID)
+		if err != nil {
+			return nil, "", err
+		}
+		for _, x := range pg.Members {
+			if x == id {
+				return pg, "done", nil
+			}
+		}
+		return pg, "notdone", nil
+	}
+}
+
+func isWaitForPIInstancePlacementGroupDelete(ctx context.Context, client *st.IBMPIPlacementGroupClient, pgID string, id string) (interface{}, error) {
+	log.Printf("Waiting for PIInstance Placement Group (%s) to be updated ", id)
+
+	queryTimeOut := activeTimeOut
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{"notdone"},
+		Target:     []string{"done"},
+		Refresh:    isPIInstancePlacementGroupDeleteRefreshFunc(client, pgID, id),
+		Delay:      30 * time.Second,
+		MinTimeout: queryTimeOut,
+		Timeout:    120 * time.Minute,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstancePlacementGroupDeleteRefreshFunc(client *st.IBMPIPlacementGroupClient, pgID string, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		pg, err := client.Get(pgID)
+		if err != nil {
+			return nil, "", err
+		}
+		for _, x := range pg.Members {
+			if x == id {
+				return pg, "notdone", nil
+			}
+		}
+		return pg, "done", nil
+	}
+}
+
 func isWaitForPIInstanceSoftwareLicenses(ctx context.Context, client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) (interface{}, error) {
 	log.Printf("Waiting for PIInstance Software Licenses (%s) to be updated ", id)
 
 	queryTimeOut := activeTimeOut
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"notdone"},
 		Target:     []string{"done"},
 		Refresh:    isPIInstanceSoftwareLicensesRefreshFunc(client, id, softwareLicenses),
@@ -961,7 +1032,7 @@ func isWaitForPIInstanceSoftwareLicenses(ctx context.Context, client *st.IBMPIIn
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isPIInstanceSoftwareLicensesRefreshFunc(client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) resource.StateRefreshFunc {
+func isPIInstanceSoftwareLicensesRefreshFunc(client *st.IBMPIInstanceClient, id string, softwareLicenses *models.SoftwareLicenses) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		pvm, err := client.Get(id)
@@ -1005,7 +1076,7 @@ func isWaitForPIInstanceShutoff(ctx context.Context, client *st.IBMPIInstanceCli
 		queryTimeOut = warningTimeOut
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{StatusPending, helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
 		Target:     []string{helpers.PIInstanceHealthOk, StatusError, "", StatusShutoff},
 		Refresh:    isPIInstanceShutoffRefreshFunc(client, id, instanceReadyStatus),
@@ -1016,7 +1087,8 @@ func isWaitForPIInstanceShutoff(ctx context.Context, client *st.IBMPIInstanceCli
 
 	return stateConf.WaitForStateContext(ctx)
 }
-func isPIInstanceShutoffRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadyStatus string) resource.StateRefreshFunc {
+
+func isPIInstanceShutoffRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadyStatus string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		pvm, err := client.Get(id)
@@ -1051,7 +1123,7 @@ func encodeBase64(userData string) string {
 func isWaitForPIInstanceStopped(ctx context.Context, client *st.IBMPIInstanceClient, id string) (interface{}, error) {
 	log.Printf("Waiting for PIInstance (%s) to be stopped and powered off ", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"STOPPING", "RESIZE", "VERIFY_RESIZE", helpers.PIInstanceHealthWarning},
 		Target:     []string{"OK", "SHUTOFF"},
 		Refresh:    isPIInstanceRefreshFuncOff(client, id),
@@ -1063,7 +1135,7 @@ func isWaitForPIInstanceStopped(ctx context.Context, client *st.IBMPIInstanceCli
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isPIInstanceRefreshFuncOff(client *st.IBMPIInstanceClient, id string) resource.StateRefreshFunc {
+func isPIInstanceRefreshFuncOff(client *st.IBMPIInstanceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		log.Printf("Calling the check Refresh status of the pvm instance %s", id)
@@ -1094,7 +1166,6 @@ func stopLparForResourceChange(ctx context.Context, client *st.IBMPIInstanceClie
 }
 
 // Start the lpar
-
 func startLparAfterResourceChange(ctx context.Context, client *st.IBMPIInstanceClient, id string) error {
 	body := &models.PVMInstanceAction{
 		Action: flex.PtrToString("start"),
@@ -1110,7 +1181,6 @@ func startLparAfterResourceChange(ctx context.Context, client *st.IBMPIInstanceC
 }
 
 // Stop / Modify / Start only when the lpar is off limits
-
 func performChangeAndReboot(ctx context.Context, client *st.IBMPIInstanceClient, id, cloudInstanceID string, mem, procs float64) error {
 	/*
 		These are the steps
@@ -1156,7 +1226,7 @@ func performChangeAndReboot(ctx context.Context, client *st.IBMPIInstanceClient,
 func isWaitforPIInstanceUpdate(ctx context.Context, client *st.IBMPIInstanceClient, id string) (interface{}, error) {
 	log.Printf("Waiting for PIInstance (%s) to be ACTIVE or SHUTOFF AFTER THE RESIZE Due to DLPAR Operation ", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"RESIZE", "VERIFY_RESIZE"},
 		Target:     []string{"ACTIVE", "SHUTOFF", helpers.PIInstanceHealthOk},
 		Refresh:    isPIInstanceShutAfterResourceChange(client, id),
@@ -1168,7 +1238,7 @@ func isWaitforPIInstanceUpdate(ctx context.Context, client *st.IBMPIInstanceClie
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isPIInstanceShutAfterResourceChange(client *st.IBMPIInstanceClient, id string) resource.StateRefreshFunc {
+func isPIInstanceShutAfterResourceChange(client *st.IBMPIInstanceClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		pvm, err := client.Get(id)
