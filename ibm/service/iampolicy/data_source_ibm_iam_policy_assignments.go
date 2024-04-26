@@ -24,7 +24,8 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"version": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Default:     "1.0",
 				Description: "specify version of response body format.",
 			},
 			"accept_language": {
@@ -51,7 +52,7 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"target": {
 							Type:        schema.TypeMap,
-							Required:    true,
+							Computed:    true,
 							Description: "assignment target details",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -258,39 +259,19 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 							},
 						},
 						"subject": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "subject details of access type assignment.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"type": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
+							Description: "assignment access type subject details",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 						"template": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeMap,
 							Computed:    true,
-							Description: "policy template details.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "policy template id.",
-									},
-									"version": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "policy template version.",
-									},
-								},
+							Description: "policy template details",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 						"status": {
@@ -312,11 +293,6 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Passed in value to correlate with other assignments.",
-						},
-						"target_type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Assignment target type.",
 						},
 					},
 				},
@@ -408,11 +384,7 @@ func dataSourceIBMPolicyAssignmentID(d *schema.ResourceData) string {
 }
 
 func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsToMap(model iampolicymanagementv1.PolicyTemplateAssignmentItemsIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*iampolicymanagementv1.PolicyTemplateAssignmentItemsPolicyAssignmentV1); ok {
-		return DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentV1ToMap(model.(*iampolicymanagementv1.PolicyTemplateAssignmentItemsPolicyAssignmentV1))
-	} else if _, ok := model.(*iampolicymanagementv1.PolicyTemplateAssignmentItemsPolicyAssignment); ok {
-		return DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentToMap(model.(*iampolicymanagementv1.PolicyTemplateAssignmentItemsPolicyAssignment))
-	} else if _, ok := model.(*iampolicymanagementv1.PolicyTemplateAssignmentItems); ok {
+	if _, ok := model.(*iampolicymanagementv1.PolicyTemplateAssignmentItems); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*iampolicymanagementv1.PolicyTemplateAssignmentItems)
 		if model.Target != nil {
@@ -420,7 +392,6 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsToMap(model iampo
 			if err != nil {
 				return modelMap, err
 			}
-			// modelMap["target"] = []map[string]interface{}{targetMap}
 			modelMap["target"] = targetMap
 		}
 		if model.Options != nil {
@@ -467,14 +438,14 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsToMap(model iampo
 			if err != nil {
 				return modelMap, err
 			}
-			modelMap["subject"] = []map[string]interface{}{subjectMap}
+			modelMap["subject"] = subjectMap
 		}
 		if model.Template != nil {
 			templateMap, err := DataSourceIBMPolicyAssignmentAssignmentTemplateDetailsToMap(model.Template)
 			if err != nil {
 				return modelMap, err
 			}
-			modelMap["template"] = []map[string]interface{}{templateMap}
+			modelMap["template"] = templateMap
 		}
 		if model.Status != nil {
 			modelMap["status"] = *model.Status
@@ -488,12 +459,9 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsToMap(model iampo
 		if model.AssignmentID != nil {
 			modelMap["assignment_id"] = *model.AssignmentID
 		}
-		if model.TargetType != nil {
-			modelMap["target_type"] = *model.TargetType
-		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized iampolicymanagementv1.PolicyTemplateAssignmentItemsIntf subtype encountered")
+		return nil, fmt.Errorf("unrecognized iampolicymanagementv1.PolicyTemplateAssignmentItemsIntf subtype encountered")
 	}
 }
 
@@ -683,65 +651,6 @@ func DataSourceIBMPolicyAssignmentAssignmentTemplateDetailsToMap(model *iampolic
 	return modelMap, nil
 }
 
-func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentV1ToMap(model *iampolicymanagementv1.PolicyTemplateAssignmentItemsPolicyAssignmentV1) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	targetMap, err := DataSourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(model.Target)
-	if err != nil {
-		return modelMap, err
-	}
-	// modelMap["target"] = []map[string]interface{}{targetMap}
-	modelMap["target"] = targetMap
-	optionsMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsToMap(model.Options)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["options"] = []map[string]interface{}{optionsMap}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.AccountID != nil {
-		modelMap["account_id"] = *model.AccountID
-	}
-	if model.Href != nil {
-		modelMap["href"] = *model.Href
-	}
-	if model.CreatedAt != nil {
-		modelMap["created_at"] = model.CreatedAt.String()
-	}
-	if model.CreatedByID != nil {
-		modelMap["created_by_id"] = *model.CreatedByID
-	}
-	if model.LastModifiedAt != nil {
-		modelMap["last_modified_at"] = model.LastModifiedAt.String()
-	}
-	if model.LastModifiedByID != nil {
-		modelMap["last_modified_by_id"] = *model.LastModifiedByID
-	}
-	resources := []map[string]interface{}{}
-	for _, resourcesItem := range model.Resources {
-		resourcesItemMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1ResourcesToMap(&resourcesItem)
-		if err != nil {
-			return modelMap, err
-		}
-		resources = append(resources, resourcesItemMap)
-	}
-	modelMap["resources"] = resources
-	if model.Subject != nil {
-		subjectMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1SubjectToMap(model.Subject)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["subject"] = []map[string]interface{}{subjectMap}
-	}
-	templateMap, err := DataSourceIBMPolicyAssignmentAssignmentTemplateDetailsToMap(model.Template)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["template"] = []map[string]interface{}{templateMap}
-	modelMap["status"] = *model.Status
-	return modelMap, nil
-}
-
 func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentToMap(model *iampolicymanagementv1.PolicyTemplateAssignmentItemsPolicyAssignment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TemplateID != nil {
@@ -752,9 +661,6 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentT
 	}
 	if model.AssignmentID != nil {
 		modelMap["assignment_id"] = *model.AssignmentID
-	}
-	if model.TargetType != nil {
-		modelMap["target_type"] = *model.TargetType
 	}
 	if model.Target != nil {
 		modelMap["target"] = *model.Target

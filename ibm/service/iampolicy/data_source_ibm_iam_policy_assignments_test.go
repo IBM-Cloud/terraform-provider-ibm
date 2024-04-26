@@ -31,6 +31,5 @@ func TestAccIBMIAMPolicyAssignmentsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPolicyAssignmentDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_iam_policy_assignments" "policy_assignment" {
-			version="1.0"
 		}`)
 }
