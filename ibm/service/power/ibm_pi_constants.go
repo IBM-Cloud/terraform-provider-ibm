@@ -22,6 +22,7 @@ const (
 	Arg_NetworkName                         = "pi_network_name"
 	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
+	Arg_PlacementGroupPolicy                = "pi_placement_group_policy"
 	Arg_PVMInstanceActionType               = "pi_action"
 	Arg_PVMInstanceHealthStatus             = "pi_health_status"
 	Arg_PVMInstanceId                       = "pi_instance_id"
