@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -73,6 +73,12 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
 				Description:  "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
+			},
+			"locked": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "When true, this property cannot be overridden at runtime. Attempting to override it will result in run requests being rejected. The default is false.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -170,6 +176,9 @@ func resourceIBMCdTektonPipelineTriggerPropertyCreate(context context.Context, d
 	if _, ok := d.GetOk("path"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetPath(d.Get("path").(string))
 	}
+	if _, ok := d.GetOk("locked"); ok {
+		createTektonPipelineTriggerPropertiesOptions.SetLocked(d.Get("locked").(bool))
+	}
 
 	triggerProperty, response, err := cdTektonPipelineClient.CreateTektonPipelineTriggerPropertiesWithContext(context, createTektonPipelineTriggerPropertiesOptions)
 	if err != nil {
@@ -236,6 +245,11 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 			return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
 		}
 	}
+	if !core.IsNil(triggerProperty.Locked) {
+		if err = d.Set("locked", triggerProperty.Locked); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting locked: %s", err))
+		}
+	}
 	if !core.IsNil(triggerProperty.Href) {
 		if err = d.Set("href", triggerProperty.Href); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
@@ -282,15 +296,18 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "type"))
 	}
-
+	if d.HasChange("locked") {
+		replaceTektonPipelineTriggerPropertyOptions.SetLocked(d.Get("locked").(bool))
+		hasChange = true
+	}
 	if d.Get("type").(string) == "integration" {
-		if d.HasChange("value") || d.HasChange("path") {
+		if d.HasChange("value") || d.HasChange("path") || d.HasChange("locked") {
 			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
 			replaceTektonPipelineTriggerPropertyOptions.SetPath(d.Get("path").(string))
 			hasChange = true
 		}
 	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("value") {
+		if d.HasChange("enum") || d.HasChange("value") || d.HasChange("locked") {
 			var enum []string
 			for _, v := range d.Get("enum").([]interface{}) {
 				enumItem := v.(string)
@@ -301,7 +318,7 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 			hasChange = true
 		}
 	} else {
-		if d.HasChange("value") {
+		if d.HasChange("value") || d.HasChange("locked") {
 			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
 			hasChange = true
 		}

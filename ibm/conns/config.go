@@ -82,6 +82,7 @@ import (
 	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -299,6 +300,7 @@ type ClientSession interface {
 	ProjectV1() (*project.ProjectV1, error)
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
+	VmwareV1() (*vmwarev1.VmwareV1, error)
 }
 
 type clientSession struct {
@@ -626,6 +628,10 @@ type clientSession struct {
 
 	mqcloudClient    *mqcloudv1.MqcloudV1
 	mqcloudClientErr error
+
+	// VMware as a Service
+	vmwareClient    *vmwarev1.VmwareV1
+	vmwareClientErr error
 }
 
 // Usage Reports
@@ -1208,6 +1214,11 @@ func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 		return session.mqcloudClient, session.mqcloudClientErr
 	}
 	return session.mqcloudClient.Clone(), nil
+}
+
+// VMware as a Service API
+func (session clientSession) VmwareV1() (*vmwarev1.VmwareV1, error) {
+	return session.vmwareClient, session.vmwareClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -3252,6 +3263,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ on Cloud service: %q", err)
+	}
+
+	// VMware as a Service
+	// Construct the service options.
+	vmwareURL := ContructEndpoint(fmt.Sprintf("api.%s.vmware", c.Region), cloudEndpoint+"/v1")
+	vmwareClientOptions := &vmwarev1.VmwareV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
+	}
+
+	// Construct the service client.
+	session.vmwareClient, err = vmwarev1.NewVmwareV1(vmwareClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.vmwareClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.vmwareClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.vmwareClientErr = fmt.Errorf("Error occurred while configuring VMware as a Service API service: %q", err)
 	}
 
 	// Construct the service options.
