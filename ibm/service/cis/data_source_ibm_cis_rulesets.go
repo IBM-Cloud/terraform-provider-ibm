@@ -4,12 +4,15 @@
 package cis
 
 import (
+	"encoding/json"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/networking-go-sdk/rulesetsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -108,28 +111,28 @@ var CISResponseObject = &schema.Resource{
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								CISRulesetsRuleActionParametersResponse: {
-									Type:        schema.TypeSet,
+									Type:        schema.TypeMap,
 									Computed:    true,
 									Description: "Action parameters response of the Rulesets Rule",
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											CISRulesetsRuleActionParametersResponseContent: {
-												Type:        schema.TypeString,
-												Computed:    true,
-												Description: "Action parameters response content of the Rulesets Rule",
-											},
-											CISRulesetsRuleActionParametersResponseContentType: {
-												Type:        schema.TypeString,
-												Computed:    true,
-												Description: "Action parameters response type of the Rulesets Rule",
-											},
-											CISRulesetsRuleActionParametersResponseStatusCode: {
-												Type:        schema.TypeString,
-												Computed:    true,
-												Description: "Action parameters response status code of the Rulesets Rule",
-											},
-										},
-									},
+									// Elem: &schema.Resource{
+									// 	Schema: map[string]*schema.Schema{
+									// 		CISRulesetsRuleActionParametersResponseContent: {
+									// 			Type:        schema.TypeString,
+									// 			Computed:    true,
+									// 			Description: "Action parameters response content of the Rulesets Rule",
+									// 		},
+									// 		CISRulesetsRuleActionParametersResponseContentType: {
+									// 			Type:        schema.TypeString,
+									// 			Computed:    true,
+									// 			Description: "Action parameters response type of the Rulesets Rule",
+									// 		},
+									// 		CISRulesetsRuleActionParametersResponseStatusCode: {
+									// 			Type:        schema.TypeString,
+									// 			Computed:    true,
+									// 			Description: "Action parameters response status code of the Rulesets Rule",
+									// 		},
+									// 	},
+									// },
 								},
 								CISRulesetsRuleId: {
 									Type:        schema.TypeString,
@@ -243,18 +246,19 @@ var CISResponseObject = &schema.Resource{
 						Description: "Reference of the Rulesets Rule",
 					},
 					CISRulesetsRuleLogging: {
-						Type:        schema.TypeSet,
+						Type:        schema.TypeMap,
 						Computed:    true,
 						Description: "Logging of the Rulesets Rule",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								CISRulesetsRuleLoggingEnabled: {
-									Type:        schema.TypeBool,
-									Computed:    true,
-									Description: "Logging Enabled",
-								},
-							},
-						},
+						Elem:        &schema.Schema{Type: schema.TypeBool},
+						// Elem: &schema.Resource{
+						// 	Schema: map[string]*schema.Schema{
+						// 		CISRulesetsRuleLoggingEnabled: {
+						// 			Type:        schema.TypeBool,
+						// 			Computed:    true,
+						// 			Description: "Logging Enabled",
+						// 		},
+						// 	},
+						// },
 					},
 					CISRulesetsRuleLastUpdatedAt: {
 						Type:        schema.TypeString,
@@ -297,6 +301,12 @@ func DataSourceIBMCISRulesets() *schema.Resource {
 			},
 			CISRulesetsOutput: {
 				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Container for response information.",
+				Elem:        CISResponseObject,
+			},
+			"rulesets_obj": {
+				Type:        schema.TypeSet,
 				Computed:    true,
 				Description: "Container for response information.",
 				Elem:        CISResponseObject,
@@ -345,35 +355,10 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
-			rulesetObj := result.Result
-
-			rulesetOutput := map[string]interface{}{}
-			rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-			rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-			rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-			rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-			rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-			rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-			ruleDetailsList := make([]map[string]interface{}, 0)
-			for _, ruleDetailsObj := range rulesetObj.Rules {
-				ruleDetails := map[string]interface{}{}
-				ruleDetails[CISRulesetsRuleId] = &ruleDetailsObj.ID
-				ruleDetails[CISRulesetsRuleVersion] = &ruleDetailsObj.Version
-				ruleDetails[CISRulesetsRuleAction] = &ruleDetailsObj.Action
-				ruleDetails[CISRulesetsRuleExpression] = &ruleDetailsObj.Expression
-				ruleDetails[CISRulesetsRuleRef] = &ruleDetailsObj.Ref
-				ruleDetails[CISRulesetsRuleLastUpdatedAt] = &ruleDetailsObj.LastUpdated
-				ruleDetails[CISRulesetsRuleLogging] = &ruleDetailsObj.Logging
-				ruleDetails[CISRulesetsRules] = &ruleDetailsObj.ActionParameters
-
-				ruleDetailsList = append(ruleDetailsList, ruleDetails)
-			}
-
-			rulesetOutput[CISRulesetsRules] = ruleDetailsList
+			rulesetObj := flattenCISRulesets(*result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetOutput)
+			d.Set("rulesets_obj", rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
@@ -415,35 +400,10 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 
-			rulesetObj := result.Result
-
-			rulesetOutput := map[string]interface{}{}
-			rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-			rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-			rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-			rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-			rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-			rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-			ruleDetailsList := make([]map[string]interface{}, 0)
-			for _, ruleDetailsObj := range rulesetObj.Rules {
-				ruleDetails := map[string]interface{}{}
-				ruleDetails[CISRulesetsRuleId] = &ruleDetailsObj.ID
-				ruleDetails[CISRulesetsRuleVersion] = &ruleDetailsObj.Version
-				ruleDetails[CISRulesetsRuleAction] = &ruleDetailsObj.Action
-				ruleDetails[CISRulesetsRuleExpression] = &ruleDetailsObj.Expression
-				ruleDetails[CISRulesetsRuleRef] = &ruleDetailsObj.Ref
-				ruleDetails[CISRulesetsRuleLastUpdatedAt] = &ruleDetailsObj.LastUpdated
-				ruleDetails[CISRulesetsRuleLogging] = &ruleDetailsObj.Logging
-				ruleDetails[CISRulesetsRules] = &ruleDetailsObj.ActionParameters
-
-				ruleDetailsList = append(ruleDetailsList, ruleDetails)
-			}
-
-			rulesetOutput[CISRulesetsRules] = ruleDetailsList
+			rulesetObj := flattenCISRulesets(*result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetOutput)
+			d.Set(CISRulesetsOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
@@ -481,4 +441,77 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 
 func dataSourceCISRulesetsCheckID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
+
+	finalrulesetObj := make([]interface{}, 0)
+
+	rulesetOutput := map[string]interface{}{}
+	rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
+	rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
+	rulesetOutput[CISRulesetsName] = *rulesetObj.Name
+	rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
+	rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
+	rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+	ruleDetailsList := make([]map[string]interface{}, 0)
+	for _, ruleDetailsObj := range rulesetObj.Rules {
+		ruleDetails := map[string]interface{}{}
+		ruleDetails[CISRulesetsRuleId] = ruleDetailsObj.ID
+		ruleDetails[CISRulesetsRuleVersion] = ruleDetailsObj.Version
+		ruleDetails[CISRulesetsRuleAction] = ruleDetailsObj.Action
+		ruleDetails[CISRulesetsRuleExpression] = ruleDetailsObj.Expression
+		ruleDetails[CISRulesetsRuleRef] = ruleDetailsObj.Ref
+		ruleDetails[CISRulesetsRuleLastUpdatedAt] = ruleDetailsObj.LastUpdated
+		ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
+
+		flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
+		// Check if returned interface value is nil
+		if flattenedActionParameter == nil || reflect.ValueOf(flattenedActionParameter).IsNil() {
+			ruleDetails[CISRulesetsRuleActionParameters] = flattenedActionParameter
+		}
+
+		ruleDetailsList = append(ruleDetailsList, ruleDetails)
+	}
+
+	rulesetOutput[CISRulesetsRules] = ruleDetailsList
+
+	finalrulesetObj = append(finalrulesetObj, rulesetOutput)
+
+	return finalrulesetObj
+}
+
+func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rulesetsv1.ActionParameters) interface{} {
+	resultObj := make([]interface{}, 0)
+	actionParametersOutput := map[string]interface{}{}
+	resultOutput := map[string]interface{}{}
+
+	res, _ := json.Marshal(rulesetsRuleActionParameterObj)
+	json.Unmarshal(res, &actionParametersOutput)
+
+	if val, ok := actionParametersOutput["id"]; ok {
+		resultOutput[CISRulesetsRuleId] = val.(string)
+	}
+	if val, ok := actionParametersOutput["ruleset"]; ok {
+		resultOutput[CISRuleset] = val.(string)
+	}
+	if val, ok := actionParametersOutput["version"]; ok {
+		resultOutput[CISRulesetsVersion] = val.(string)
+	}
+
+	if val, ok := actionParametersOutput["rulesets"]; ok {
+		resultOutput[CISRulesetList] = val
+	}
+	if val, ok := actionParametersOutput["response"]; ok {
+		resultOutput[CISRulesetsRuleActionParametersResponse] = val
+	}
+
+	if val, ok := actionParametersOutput["overrides"]; ok {
+		resultOutput[CISRulesetOverrides] = val
+	}
+
+	resultObj = append(resultObj, resultOutput)
+
+	return resultObj
 }
