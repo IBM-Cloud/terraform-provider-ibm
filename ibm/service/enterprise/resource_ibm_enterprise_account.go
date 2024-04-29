@@ -163,6 +163,21 @@ func ResourceIBMEnterpriseAccount() *schema.Resource {
 				Computed:    true,
 				Description: "The IAM ID of the user or service that updated the account.",
 			},
+			"iam_service_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IAM Service ID of the account will be used to create IAM_API_KEY with owner IAM policies.",
+			},
+			"iam_apikey_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of IAM APIKEY which has owner IAM policies",
+			},
+			"iam_apikey": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IAM API KEY of the account with owner IAM policies.",
+			},
 		},
 	}
 }
@@ -224,6 +239,15 @@ func resourceIbmEnterpriseAccountCreate(context context.Context, d *schema.Resou
 			return diag.FromErr(err)
 		}
 		d.SetId(*createAccountResponse.AccountID)
+		if (createAccountResponse.IamServiceID != nil) && (*createAccountResponse.IamServiceID != "") {
+			d.Set("iam_service_id", *createAccountResponse.IamServiceID)
+		}
+		if (createAccountResponse.IamApikeyID != nil) && (*createAccountResponse.IamApikeyID != "") {
+			d.Set("iam_apikey_id", *createAccountResponse.IamApikeyID)
+		}
+		if (createAccountResponse.IamApikey != nil) && (*createAccountResponse.IamApikey != "") {
+			d.Set("iam_apikey", *createAccountResponse.IamApikey)
+		}
 	} else {
 
 		err := errors.New("[ERROR] Required Parameters are missing." +
