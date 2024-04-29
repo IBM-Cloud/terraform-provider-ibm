@@ -530,13 +530,13 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 | satellite_location_id | satellite location. | `string` | no |
 | storage | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.| `string` | no |
 | region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
-| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `array` | no
+| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `bool` | no
 | write_data_events | All object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
 | management_events | All the bucket management events will  will be sent to Activity Tracker. | `bool` | no
-| activity_tracker_crn | Required the first time activity_tracking is configured. | `string` | no
+| activity_tracker_crn | When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the ATracker Router service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no
 | usage_metrics_enabled | Specify **true or false** to set usage metrics (i.e. bytes_used). | `bool` | no
 | request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get, put, or post request). | `bool` | no
-| metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | no
+| metrics_monitoring_crn | When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified. | `string` | no
 | regional_loc | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**. | `string` | no
 | type | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**. | `string` |yes
 | rule_id | Unique identifier for the rule. | `string` | no
