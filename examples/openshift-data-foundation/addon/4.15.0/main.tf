@@ -50,6 +50,8 @@ resource "null_resource" "updateCRD" {
         osdDevicePaths = var.osdDevicePaths
         taintNodes = var.taintNodes
         addSingleReplicaPool = var.addSingleReplicaPool
+        resourceProfile = var.resourceProfile
+        enableNFS = var.enableNFS
     }
     
 
