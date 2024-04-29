@@ -6,7 +6,7 @@
 ibmcloud_api_key = ""
 cluster = ""
 region = ""
-odfVersion = "4.14.0"
+odfVersion = "4.15.0"
 
 
 # To create the Ocscluster Custom Resource Definition, with the following specs
