@@ -355,7 +355,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
-			rulesetObj := flattenCISRulesets(*result.Result)
+			rulesetObj := flattenCISRulesets(d, *result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
 			d.Set("rulesets_obj", rulesetObj)
@@ -400,7 +400,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 
-			rulesetObj := flattenCISRulesets(*result.Result)
+			rulesetObj := flattenCISRulesets(d, *result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
 			d.Set(CISRulesetsOutput, rulesetObj)
@@ -423,7 +423,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-				rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
+				rulesetOutput[CISRulesetsId] = *rulesetObj.ID
 
 				if rulesetOutput[CISRulesetsKind] == "http_request_firewall_managed" {
 					rulesetList = append(rulesetList, rulesetOutput)
@@ -443,7 +443,7 @@ func dataSourceCISRulesetsCheckID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
+func flattenCISRulesets(d *schema.ResourceData, rulesetObj rulesetsv1.RulesetDetails) interface{} {
 
 	finalrulesetObj := make([]interface{}, 0)
 
@@ -467,8 +467,9 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 		ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
 
 		flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
+
 		// Check if returned interface value is nil
-		if flattenedActionParameter == nil || reflect.ValueOf(flattenedActionParameter).IsNil() {
+		if !(reflect.ValueOf(flattenedActionParameter).IsNil()) {
 			ruleDetails[CISRulesetsRuleActionParameters] = flattenedActionParameter
 		}
 
@@ -485,7 +486,7 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rulesetsv1.ActionParameters) interface{} {
 	resultObj := make([]interface{}, 0)
 	actionParametersOutput := map[string]interface{}{}
-	resultOutput := map[string]interface{}{}
+	resultOutput := map[interface{}]interface{}{}
 
 	res, _ := json.Marshal(rulesetsRuleActionParameterObj)
 	json.Unmarshal(res, &actionParametersOutput)
@@ -500,18 +501,20 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 		resultOutput[CISRulesetsVersion] = val.(string)
 	}
 
-	if val, ok := actionParametersOutput["rulesets"]; ok {
-		resultOutput[CISRulesetList] = val
-	}
-	if val, ok := actionParametersOutput["response"]; ok {
-		resultOutput[CISRulesetsRuleActionParametersResponse] = val
-	}
+	// if val, ok := actionParametersOutput["rulesets"]; ok {
+	// 	resultOutput[CISRulesetList] = val
+	// }
+	// if val, ok := actionParametersOutput["response"]; ok {
+	// 	resultOutput[CISRulesetsRuleActionParametersResponse] = val
+	// }
 
-	if val, ok := actionParametersOutput["overrides"]; ok {
-		resultOutput[CISRulesetOverrides] = val
-	}
+	// if val, ok := actionParametersOutput["overrides"]; ok {
+	// 	resultOutput[CISRulesetOverrides] = val
+	// }
 
 	resultObj = append(resultObj, resultOutput)
+	log.Println(reflect.TypeOf(resultObj[0]))
+	log.Println(reflect.ValueOf(resultObj[0]))
 
 	return resultObj
 }

@@ -37,7 +37,7 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 			},
 			CISRulesetsId: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Id",
 			},
 			CISRulesetsVersion: {
@@ -96,47 +96,10 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
-			rulesetObj := result.Result
-
-			rulesetOutput := map[string]interface{}{}
-			rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-			rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-			rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-			rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-			rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-			rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-			ruleDetailsList := make([]map[string]interface{}, 0)
-			for _, ruleDetailsObj := range rulesetObj.Rules {
-				ruleDetails := map[string]interface{}{}
-				ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-				ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-				ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-				ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-				ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-				ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-				ruleDetailsLoggingObj := map[string]interface{}{}
-				ruleDetailsLogging := *&ruleDetailsObj.Logging
-				ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-				ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-				ruleDetailsActionParametersObj := map[string]interface{}{}
-				ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-				ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-				ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-				ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
-
-				ruleDetailsList = append(ruleDetailsList, ruleDetails)
-			}
-
-			rulesetOutput[CISRulesetsRules] = ruleDetailsList
+			rulesetObj := flattenCISRulesets(d, *result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetOutput)
+			d.Set(CISRulesetsOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
@@ -156,10 +119,14 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+
+				if rulesetOutput[CISRulesetsPhase] == "http_request_firewall_managed" {
+					rulesetList = append(rulesetList, rulesetOutput)
+				}
 			}
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetList)
+			d.Set(CISRulesetsVersionOutput, rulesetList)
 			d.Set(cisID, crn)
 		}
 
@@ -173,47 +140,10 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 				return err
 			}
 
-			rulesetObj := result.Result
-
-			rulesetOutput := map[string]interface{}{}
-			rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-			rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-			rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-			rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-			rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-			rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-			ruleDetailsList := make([]map[string]interface{}, 0)
-			for _, ruleDetailsObj := range rulesetObj.Rules {
-				ruleDetails := map[string]interface{}{}
-				ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-				ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-				ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-				ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-				ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-				ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-				ruleDetailsLoggingObj := map[string]interface{}{}
-				ruleDetailsLogging := *&ruleDetailsObj.Logging
-				ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-				ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-				ruleDetailsActionParametersObj := map[string]interface{}{}
-				ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-				ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-				ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-				ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-				ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
-
-				ruleDetailsList = append(ruleDetailsList, ruleDetails)
-			}
-
-			rulesetOutput[CISRulesetsRules] = ruleDetailsList
+			rulesetObj := flattenCISRulesets(d, *result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetOutput)
+			d.Set(CISRulesetsOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
@@ -233,10 +163,15 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+				rulesetOutput[CISRulesetsId] = *rulesetObj.ID
+
+				if rulesetOutput[CISRulesetsPhase] == "http_request_firewall_managed" {
+					rulesetList = append(rulesetList, rulesetOutput)
+				}
 			}
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetList)
+			d.Set(CISRulesetsVersionOutput, rulesetList)
 			d.Set(cisID, crn)
 		}
 	}

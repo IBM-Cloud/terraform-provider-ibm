@@ -90,47 +90,10 @@ func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	rulesetObj := result.Result
-
-	rulesetOutput := map[string]interface{}{}
-	rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-	rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-	rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-	rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-	rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-	rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-	ruleDetailsList := make([]map[string]interface{}, 0)
-	for _, ruleDetailsObj := range rulesetObj.Rules {
-		ruleDetails := map[string]interface{}{}
-		ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-		ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-		ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-		ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-		ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-		ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-		ruleDetailsLoggingObj := map[string]interface{}{}
-		ruleDetailsLogging := *&ruleDetailsObj.Logging
-		ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-		ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-		ruleDetailsActionParametersObj := map[string]interface{}{}
-		ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-		ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-		ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-		ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-		ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-		ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-		ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
-
-		ruleDetailsList = append(ruleDetailsList, ruleDetails)
-	}
-
-	rulesetOutput[CISRulesetsRules] = ruleDetailsList
+	rulesetObj := flattenCISRulesets(d, *result.Result)
 
 	d.SetId(dataSourceCISRulesetsCheckID(d))
-	d.Set(CISRulesetsOutput, rulesetOutput)
+	d.Set(CISRulesetsOutput, rulesetObj)
 	d.Set(cisID, crn)
 
 	return nil
