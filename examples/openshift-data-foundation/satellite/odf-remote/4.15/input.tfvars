@@ -12,7 +12,7 @@ region = ""
 #ODF Storage Configuration
 
 storageTemplateName = "odf-remote"
-storageTemplateVersion = "4.14"
+storageTemplateVersion = "4.15"
 
 ## User Parameters
 

@@ -35,7 +35,7 @@ variable "region" {
 
 variable "odfVersion" {
     type = string
-    default = "4.13.0"
+    default = "4.15.0"
     description = "Provide the ODF Version you wish to install on your cluster"
 }
 
