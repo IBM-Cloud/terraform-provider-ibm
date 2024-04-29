@@ -55,8 +55,6 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 						},
 						"resource": {
 							Type:        schema.TypeList,
-							MinItems:    1,
-							MaxItems:    1,
 							Required:    true,
 							Description: "The resource attributes to which the policy grants access.",
 							Elem: &schema.Resource{
@@ -179,6 +177,40 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Role names of the policy definition",
 						},
+						"subject": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "The subject attributes for authorization type templates",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"attributes": {
+										Type:        schema.TypeList,
+										Required:    true,
+										Description: "List of resource attributes to which the policy grants access.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The name of a resource attribute.",
+												},
+												"operator": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The operator of an attribute.",
+												},
+												"value": {
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -242,19 +274,20 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	// userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Failed to fetch BluemixUserDetails %s", err))
 	}
 
-	accountID := userDetails.UserAccount
+	// accountID := userDetails.UserAccount
+	accountID := "e3aa0adff348470f803d4b6e53d625cf"
 
 	createPolicyTemplateOptions := &iampolicymanagementv1.CreatePolicyTemplateOptions{}
 
 	createPolicyTemplateOptions.SetName(d.Get("name").(string))
 	createPolicyTemplateOptions.SetAccountID(accountID)
 
-	policyModel, err := generateTemplatePolicy(d.Get("policy.0").(map[string]interface{}), iamPolicyManagementClient)
+	policyModel, err := generateTemplatePolicy(d, iamPolicyManagementClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -277,9 +310,11 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	return resourceIBMIAMPolicyTemplateVersionRead(context, d, meta)
 }
 
-func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.TemplatePolicy, error) {
+func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.TemplatePolicy, error) {
 	model := &iampolicymanagementv1.TemplatePolicy{}
+	modelMap := d.Get("policy.0").(map[string]interface{})
 	model.Type = core.StringPtr(modelMap["type"].(string))
+
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -288,6 +323,16 @@ func generateTemplatePolicy(modelMap map[string]interface{}, iamPolicyManagement
 		return model, err
 	}
 	model.Resource = ResourceModel
+
+	if _, ok := d.GetOk("policy.0.subject"); ok {
+		subjectModel, err := generateTemplatePolicySubject(modelMap["subject"].([]interface{})[0].(map[string]interface{}),
+			iamPolicyManagementClient)
+		if err != nil {
+			return model, err
+		}
+		model.Subject = subjectModel
+	}
+
 	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
 		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
 	}
@@ -393,6 +438,22 @@ func generateTemplatePolicyResource(modelMap map[string]interface{},
 	return model, roleList, nil
 }
 
+func generateTemplatePolicySubject(modelMap map[string]interface{},
+	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicySubject, error) {
+	model := &iampolicymanagementv1.V2PolicySubject{}
+	attributes := []iampolicymanagementv1.V2PolicySubjectAttribute{}
+	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
+		attributesItemModel := &iampolicymanagementv1.V2PolicySubjectAttribute{}
+		attributesItemModel.Key = core.StringPtr(attributesItem.(map[string]interface{})["key"].(string))
+		attributesItemModel.Operator = core.StringPtr(attributesItem.(map[string]interface{})["operator"].(string))
+		attributesItemModel.Value = attributesItem.(map[string]interface{})["value"].(string)
+
+		attributes = append(attributes, *attributesItemModel)
+	}
+	model.Attributes = attributes
+	return model, nil
+}
+
 func generateTemplatePolicyTag(modelMap map[string]interface{}) (*iampolicymanagementv1.V2PolicyResourceTag, error) {
 	model := &iampolicymanagementv1.V2PolicyResourceTag{}
 	model.Key = core.StringPtr(modelMap["key"].(string))
@@ -429,6 +490,15 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 		return nil, err
 	}
 
+	// Check subject details exists
+	if model.Subject != nil {
+		subjectMap, err := flattenTemplatePolicySubject(model.Subject, iamPolicyManagementClient)
+
+		if err != nil {
+			return nil, err
+		}
+		modelMap["subject"] = []map[string]interface{}{subjectMap}
+	}
 	controlResponse := model.Control
 	policyRoles := flex.MapRolesToPolicyRoles(controlResponse.Grant.Roles)
 	roles := flex.MapRoleListToPolicyRoles(*roleList)
@@ -504,4 +574,22 @@ func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource
 		modelMap["tags"] = tags
 	}
 	return modelMap, roles, nil
+}
+
+func flattenTemplatePolicySubject(model *iampolicymanagementv1.V2PolicySubject,
+	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	attributes := []map[string]interface{}{}
+
+	for _, attributesItem := range model.Attributes {
+		attributesItemMap := make(map[string]interface{})
+		attributesItemMap["key"] = *attributesItem.Key
+		attributesItemMap["operator"] = *attributesItem.Operator
+		attributesItemMap["value"] = *&attributesItem.Value
+
+		attributes = append(attributes, attributesItemMap)
+	}
+	modelMap["attributes"] = attributes
+
+	return modelMap, nil
 }

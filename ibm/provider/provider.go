@@ -1065,6 +1065,7 @@ func Provider() *schema.Provider {
 			"ibm_ipsec_vpn":                                classicinfrastructure.ResourceIBMIPSecVPN(),
 			"ibm_iam_policy_template":                      iampolicy.ResourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":              iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
+			"ibm_iam_policy_assignment":                    iampolicy.ResourceIBMIAMPolicyAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),

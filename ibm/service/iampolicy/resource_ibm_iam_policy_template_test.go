@@ -23,6 +23,7 @@ var (
 	serviceName             string = "is"
 	beforeUpdateServiceName string = "conversation"
 	updatedServiceName      string = "kms"
+	sourceServiceName       string = "compliance"
 )
 
 func TestAccIBMIAMPolicyTemplateBasic(t *testing.T) {
@@ -101,6 +102,53 @@ func TestAccIBMIAMPolicyTemplateBasicCommit(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "committed", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMPolicyTemplateS2SBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyS2STemplateConfigBasic(name, sourceServiceName, updatedServiceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", updatedServiceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", sourceServiceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMPolicyTemplateS2SBasicUpdate(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyS2STemplateConfigBasic(name, sourceServiceName, updatedServiceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", updatedServiceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", sourceServiceName),
+				),
+			},
+			{
+				Config: testAccCheckIBMPolicyS2STemplateConfigUpdate(name, sourceServiceName, "appid"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "appid"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", sourceServiceName),
 				),
 			},
 		},
@@ -191,6 +239,62 @@ func testAccCheckIBMPolicyTemplateConfigBasic(name string, serviceName string) s
 			}
 		}
 	`, name, serviceName)
+}
+
+func testAccCheckIBMPolicyS2STemplateConfigBasic(name string, sourceServiceName string, resourceServiceName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "authorization"
+				description = "Test terraform enterprise S2S"
+				subject {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Reader"]
+			}
+		}
+	`, name, sourceServiceName, resourceServiceName)
+}
+
+func testAccCheckIBMPolicyS2STemplateConfigUpdate(name string, sourceServiceName string, resourceServiceName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "authorization"
+				description = "Test terraform enterprise update S2S"
+				subject {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Reader"]
+			}
+		}
+	`, name, sourceServiceName, resourceServiceName)
 }
 
 func testAccCheckIBMPolicyTemplateConfigBasicUpdate(name string, serviceName string) string {
