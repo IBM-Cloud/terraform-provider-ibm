@@ -793,10 +793,11 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 				if !strings.Contains(err.Error(), "is not part of placement-group") {
 					return diag.FromErr(err)
 				}
-			}
-			_, err = isWaitForPIInstancePlacementGroupDelete(ctx, pgClient, *pgID.ID, instanceID)
-			if err != nil {
-				return diag.FromErr(err)
+			} else {
+				_, err = isWaitForPIInstancePlacementGroupDelete(ctx, pgClient, *pgID.ID, instanceID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 
@@ -809,10 +810,11 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			pgID, err := pgClient.AddMember(placementGroupID, body)
 			if err != nil {
 				return diag.FromErr(err)
-			}
-			_, err = isWaitForPIInstancePlacementGroupAdd(ctx, pgClient, *pgID.ID, instanceID)
-			if err != nil {
-				return diag.FromErr(err)
+			} else {
+				_, err = isWaitForPIInstancePlacementGroupAdd(ctx, pgClient, *pgID.ID, instanceID)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}

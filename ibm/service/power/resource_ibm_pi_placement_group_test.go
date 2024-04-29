@@ -598,6 +598,12 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfil
 			depends_on = [ ibm_pi_instance.power_instance_in_pg ]
 		}
 
+		resource "ibm_pi_placement_group" "power_placement_group" {
+			pi_cloud_instance_id      = "%[1]s"
+			pi_placement_group_name   = "%[2]s"
+			pi_placement_group_policy = "%[3]s"
+		}
+
 		resource "ibm_pi_placement_group" "power_placement_group_another" {
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
