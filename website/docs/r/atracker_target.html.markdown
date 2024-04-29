@@ -2,13 +2,13 @@
 layout: "ibm"
 page_title: "IBM : ibm_atracker_target"
 description: |-
-  Manages Activity Tracker Target.
-subcategory: "Activity Tracker"
+  Manages Activity Tracker Event Routing Target.
+subcategory: "Activity Tracker Event Routing"
 ---
 
 # ibm_atracker_target
 
-Provides a resource for Activity Tracker Target. This allows Activity Tracker Target to be created, updated and deleted.
+Provides a resource for Activity Tracker Event Routing Target. This allows Activity Tracker Event Routing Target to be created, updated and deleted.
 
 ## Example usage
 

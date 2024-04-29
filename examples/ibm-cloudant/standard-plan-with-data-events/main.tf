@@ -23,7 +23,7 @@ data "ibm_resource_group" "group" {
   is_default = "true"
 }
 
-// Provision activity tracker using the resource group data source
+// Provision activity tracker event routing using the resource group data source
 resource "ibm_resource_instance" "at_instance" {
   name              = "test_standard_plan_with_data_events_at"
   service           = "logdnaat"

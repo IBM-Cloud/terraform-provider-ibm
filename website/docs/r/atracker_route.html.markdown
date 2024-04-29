@@ -2,8 +2,8 @@
 layout: "ibm"
 page_title: "IBM : ibm_atracker_route"
 description: |-
-  Manages Activity Tracker Route.
-subcategory: "Activity Tracker"
+  Manages Activity Tracker Event Routing Route.
+subcategory: "Activity Tracker Event Routing"
 ---
 
 # ibm_atracker_route

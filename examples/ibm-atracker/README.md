@@ -4,9 +4,9 @@ This example illustrates how to use the AtrackerV2
 
 The following types of resources are supported:
 
-* Activity Tracker Target
-* Activity Tracker Route
-* Activity Tracker Settings
+* Activity Tracker Event Routing Target
+* Activity Tracker Event Routing Route
+* Activity Tracker Event RoutingSettings
 
 ## Usage
 

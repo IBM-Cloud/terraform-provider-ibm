@@ -52,7 +52,7 @@ Capacity changes are reflected immediately, but are applied asynchronously over 
 * `features` (List of String) List of enabled optional features.
 * `features_flags` (List of String) List of feature flags.
 * `guid` (String) The `GUID` of the resource instance.
-* `include_data_events` (Boolean) Include `data` event types in events sent to IBM Cloud Activity Tracker with LogDNA for the IBM Cloudant instance. By default emitted events are only of the  `management` type.
+* `include_data_events` (Boolean) Include `data` event types in events sent to IBM Cloud Activity Tracker Event Routing with LogDNA for the IBM Cloudant instance. By default emitted events are only of the  `management` type.
 * `plan` (String) The plan type of the instance.
 * `resource_controller_url` (String) The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource.
 * `resource_crn` (String) The CRN of the resource.
