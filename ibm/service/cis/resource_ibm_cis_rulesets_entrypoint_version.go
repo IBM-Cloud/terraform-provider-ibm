@@ -26,7 +26,7 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_versions",
+					"ibm_cis_rulesets_entrypoint_version",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -82,7 +82,7 @@ func ResourceIBMCISRulesetsEntryPointVersionRead(d *schema.ResourceData, meta in
 		opt := sess.NewGetZoneRulesetOptions(rulesetId)
 		result, resp, err := sess.GetZoneRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Get zone ruleset failed: %v\n", resp)
+			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
 		rulesetObj := result.Result
 
