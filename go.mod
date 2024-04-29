@@ -23,7 +23,7 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
 	github.com/IBM/networking-go-sdk v0.45.0
-	github.com/IBM/platform-services-go-sdk v0.62.4
+	github.com/IBM/platform-services-go-sdk v0.62.10
 	github.com/IBM/project-go-sdk v0.2.8-1
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.5
@@ -74,7 +74,6 @@ require (
 require (
 	cloud.google.com/go/kms v1.10.1 // indirect
 	cloud.google.com/go/monitoring v1.13.0 // indirect
-	github.com/IBM/vmware-go-sdk v0.1.2 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect

@@ -367,10 +367,10 @@ func ResourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(model *iampolicyman
 	return modelMap, nil
 }
 
-func ResourceIBMPolicyAssignmentResourceTargetDetailsToMap(model *iampolicymanagementv1.AssignmentTemplateDetails) (map[string]interface{}, error) {
+func ResourceIBMPolicyAssignmentResourceTargetDetailsToMap(model *iampolicymanagementv1.AssignmentTargetDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Version != nil {
-		modelMap["version"] = *model.Version
+	if model.Type != nil {
+		modelMap["version"] = *model.Type
 	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
