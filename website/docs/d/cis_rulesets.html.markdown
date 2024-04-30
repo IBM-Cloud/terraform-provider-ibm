@@ -24,7 +24,7 @@ data "ibm_cis_rulesets" "tests" {
 Review the argument references that you can specify for your data source.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
-- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone level else request will be made at instance level.  
+- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone/domain level else request will be made at instance level.  
 
 ## Attributes reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.

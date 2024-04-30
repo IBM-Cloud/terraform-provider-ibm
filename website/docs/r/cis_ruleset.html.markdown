@@ -7,13 +7,13 @@ description: |-
   Provides a IBM CIS ruleset resource.
 ---
 
-# ibm_cis_rulesets_entrypoint_version
-Provides an IBM Cloud Internet Services ruleset resource, to update and delete ruleset entrypoint of an instance or domain. For more information, about IBM Cloud Internet Services ruleset, see [ruleset instance]().
+# ibm_cis_rulesets
+Provides an IBM Cloud Internet Services ruleset resource, to update and delete ruleset of an instance or domain. For more information, about IBM Cloud Internet Services ruleset, see [ruleset instance]().
 
 ## Example usage
 
 ```terraform
-# create/update entrypoint ruleset of a domain or instance
+# update ruleset of a domain or instance
 
 resource "ibm_cis_ruleset" "tests" {
     cis_id    = ibm_cis.instance.id
@@ -65,9 +65,9 @@ resource "ibm_cis_ruleset" "tests" {
 Review the argument references that you can specify for your resource. 
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
-- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone level else request will be made at instance level.
+- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone/domain level else request will be made at instance level.
 - `ruleset_phase` - (Required, String) Phase of the ruleset.
-- `rulesets` - (Required, List) Values that will be created or updated.
+- `rulesets` - (Required, List) Values that will be updated.
 
   Nested scheme of rulesets
   - `Description` (optional, string) Description of the ruleset
@@ -99,7 +99,7 @@ Review the argument references that you can specify for your resource.
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
-    - `position` (Optional, list). Provides the postion when a new rule is added or updated the position of the current rule. If not provided new rule will be added at the last.You can only use one of the before, after, and index fields at a time.
+    - `position` (Optional, list). Provides the postion when a new rule is added or updated the position of the current rule. If not provided new rule will be added at the last. You can only use one of the before, after, and index fields at a time.
       - `index` (Optional, String) Index of the rule to be added. 
       - `before` (Optional, String) Id of the rule before which new rule will be added. 
       - `after` (Optional, String) Id of the rule after which new rule will be added.
@@ -107,6 +107,5 @@ Review the argument references that you can specify for your resource.
         
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+There are no extra attribute refereneces in addition to the argument reference list.
 
-- `id` - (String) The entrypoint ruleset ID.

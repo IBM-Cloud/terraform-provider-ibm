@@ -25,7 +25,7 @@ data "ibm_cis_rulesets_entrypoint_versions" "tests" {
 Review the argument references that you can specify for your data source.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
-- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone level else request will be made at instance level.  
+- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone/domain level else request will be made at instance level.  
 - `ruleset_phase` - (Required, String) The phase of the ruleset.
 
 ## Attributes reference

@@ -1,62 +1,58 @@
 ---
-
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_rulesets_entrypoint_version"
+page_title: "IBM: ibm_cis_rulesets_rule"
 description: |-
-  Provides a IBM CIS rulesets entrypoint version resource.
+  Provides a IBM CIS ruleset resource.
 ---
 
-# ibm_cis_rulesets_entrypoint_version
-Provides an IBM Cloud Internet Services rulesets entrypoint version resource, to create, update, ruleset entrypoint of an instance or domain. For more information, about IBM Cloud Internet Services rulesets entrypoint version, see [ruleset entrypoint instance]().
+# ibm_cis_rulesets_rule
+Provides an IBM Cloud Internet Services rulesets rule resource, to create,update and delete ruleset rule of an instance or domain. For more information, about IBM Cloud Internet Services ruleset rule, see [ruleset instance]().
 
 ## Example usage
 
 ```terraform
-# create/update entrypoint ruleset of a domain or instance
 
-resource "ibm_cis_rulesets_entrypoint_version" "tests" {
+resource "ibm_cis_rulesets_rule" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_phase = "http_request_firewall_managed"
-    rulesets {
-  
-      description = "updating entrypoint ruleset"
-      rules {
-      {
-        action =  "execute"
-        action_parameters  {
-          id : <id of ruleset to be deployed>
-          overrides  {
-            action = "log"
-            enabled = true
-            rules {
-              {
-                id = <id of rule to be overriden>
-                enabled = true
-                action = "log"
-              }
+    ruleset_id = "<id of the ruleset>"
+    rule_id = <id of the rule>  
+    rules {
+    {
+      action =  "execute"
+      action_parameters  {
+        id : <id of ruleset to be deployed>
+        overrides  {
+          action = "log"
+          enabled = true
+          rules {
+            {
+              id = <id of rule to be overriden>
+              enabled = true
+              action = "log"
             }
-            categories {
-              {
-                category = "wordpress"
-                enabled = true
-                action = "log"
-              }
+          }
+          categories {
+            {
+              category = "wordpress"
+              enabled = true
+              action = "log"
             }
           }
         }
-        description = "<new description of rule>"
-        enabled = true
-        expression = "<expression to match>"
-        ref = <reference to another rule>
-        position  {
-          index = 1
-          after = <id of any existing rule>
-          before = <id of any existing rule>
-        }
+      }
+      description = "<new description of rule>"
+      enabled = true
+      expression = "<expression to match>"
+      ref = <reference to another rule>
+      position  {
+        index = 1
+        after = <id of any existing rule>
+        before = <id of any existing rule>
       }
     }
+    
   }
 }
 ```
@@ -66,12 +62,12 @@ Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone/domain level else request will be made at instance level.
-- `ruleset_phase` - (Required, String) Phase of the ruleset.
-- `rulesets` - (Required, List) Values that will be created or updated.
+- `ruleset_id` - (Required, String) Id of the ruleset inside which rules will be created, updated or deleted.
+- `rule_id` - (Optional, String) Id of the rule. If provided the current rule will be updated else a new rule will be created. 
 
-  Nested scheme of rulesets
-  - `Description` (optional, string) Description of the ruleset
-  - `Rules` (optional, list) Rules which are required to be added/modified.
+ 
+- `Rules` (Optional, list) Rules which are required to be added/modified.
+  
   Nested scheme of rules
     - `action` (String). If we are deploying a rule then action is required. `execute` action is used for deploying the ruleset. If we are updating the rule we then action is optional.
     - `description` (Optional, String) Description of the rule.
@@ -87,7 +83,7 @@ Review the argument references that you can specify for your resource.
         Nested scheme of overrides
         - `action` (Optional, String) Action of the rule. Examples: log, block, skip.
         - `enabled` (Optional, Boolean) Enables/Disables the rule
-        - `rules` (Optional, list) list of details of rules to be overridden.
+        - `rules` (Optional, list) list of details of managed rules to be overridden. These rules are already present in the ruleset which we are deploying or are already deployed
 
           Nested scheme of rules
           - `id` (Required, String) id of the rule.
@@ -107,6 +103,5 @@ Review the argument references that you can specify for your resource.
         
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+There are no extra attribute refereneces in addition to the argument reference list.
 
-- `id` - (String) The entrypoint ruleset ID.
