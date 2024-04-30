@@ -109,3 +109,27 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The entrypoint ruleset ID.
+
+
+## Import
+The `ibm_cis_rulesets_entrypoint_version` resource is imported by using the ID. The ID is formed from the ruleset phase, the domain ID of the domain and the CRN (Cloud Resource Name) concatenated  using a `:` character.
+
+The domain ID and CRN is located on the **overview** page of the internet services instance of the domain heading of the console, or by using the `ibm cis` command line commands.
+
+- **Ruleset Phase** is a string of the form: `http_request_firewall_managed`.
+
+- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
+
+- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
+
+**Syntax**
+
+```
+$ terraform import ibm_cis_rulesets_entrypoint_version.config <ruleset_phase>:<domain-id>:<crn>
+```
+
+**Example**
+
+```
+$ terraform import ibm_cis_rulesets_entrypoint_version.config http_request_firewall_managed:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
+```

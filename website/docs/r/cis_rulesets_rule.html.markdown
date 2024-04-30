@@ -102,3 +102,29 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `rule_id` - (String) Id of the rule. 
+
+
+## Import
+The `ibm_cis_rulesets_rule` resource is imported by using the ID. The ID is formed from the rule ID, the ruleset ID, the domain ID of the domain and the CRN (Cloud Resource Name) concatenated  using a `:` character.
+
+The domain ID and CRN is located on the **overview** page of the internet services instance of the domain heading of the console, or by using the `ibm cis` command line commands.
+
+- **Rule ID** is a 32 digit character string of the form: `dcdec3fe0cbe41edac08619503da8de5`.
+
+- **Ruleset ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`.
+
+- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
+
+- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
+
+**Syntax**
+
+```
+$ terraform import ibm_cis_rulesets_rule.config <rule_id>:<ruleset_id>:<domain-id>:<crn>
+```
+
+**Example**
+
+```
+$ terraform import ibm_cis_rulesets_rule.config dcdec3fe0cbe41edac08619503da8de5:48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
+```
