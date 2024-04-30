@@ -200,12 +200,12 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 			},
 
 			isInstanceTemplateKeys: {
-				Type:             schema.TypeSet,
-				Required:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "SSH key Ids for the instance template",
+				Type:        schema.TypeSet,
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				ForceNew:    true,
+				Description: "SSH key Ids for the instance template",
 			},
 
 			isPlacementTargetDedicatedHost: {
