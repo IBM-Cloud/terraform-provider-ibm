@@ -102,18 +102,21 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 		opts.TotalCount = &boolVal
 	}
 	if stateFilter, ok := d.GetOk("object_state_filter"); ok {
-		arrayVal, ok2 := stateFilter.([]int32)
-		// TODO: might have to convert each int into int32 manually
+		arrayVal, ok2 := stateFilter.([]any)
 		if !ok2 {
-			return fmt.Errorf("Error converting object_state_filter into []int32")
+			return fmt.Errorf("Error converting object_state_filter into []any")
 		}
-		opts.ObjectStateFilter = &arrayVal
+		int32Arr := make([]int32, 0, len(arrayVal))
+		for _, myint := range arrayVal {
+			int32Arr = append(int32Arr, int32(myint.(int)))
+		}
+		opts.ObjectStateFilter = &int32Arr
 	}
 
 	ctx := context.Background()
 	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterNameOrID)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while retriving KMIP adapter to list certificates: %s", err)
+		return fmt.Errorf("[ERROR] Error while retriving KMIP adapter to list KMIP objects: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
 		return fmt.Errorf("Error setting adapter_id: %s", err)

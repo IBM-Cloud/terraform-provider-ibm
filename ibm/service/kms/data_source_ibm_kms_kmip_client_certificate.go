@@ -17,7 +17,7 @@ func dataSourceIBMKmsKMIPClientCertificateBaseSchema() map[string]*schema.Schema
 			Computed:    true,
 			Description: "The id of the KMIP Client Certificate to be fetched",
 		},
-		"cert_name": {
+		"name": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The name of the KMIP Client Certificate to be fetched",
@@ -68,10 +68,10 @@ func DataSourceIBMKmsKMIPClientCertificate() *schema.Resource {
 	}
 
 	baseMap["cert_id"].Optional = true
-	baseMap["cert_id"].ExactlyOneOf = []string{"cert_id", "cert_name"}
+	baseMap["cert_id"].ExactlyOneOf = []string{"cert_id", "name"}
 
-	baseMap["cert_name"].Optional = true
-	baseMap["cert_name"].ExactlyOneOf = []string{"cert_id", "cert_name"}
+	baseMap["name"].Optional = true
+	baseMap["name"].ExactlyOneOf = []string{"cert_id", "name"}
 
 	return &schema.Resource{
 		Read:     dataSourceIBMKmsKMIPClientCertRead,
@@ -97,9 +97,9 @@ func dataSourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}
 
 	nameOrID, hasID = d.GetOk("cert_id")
 	if !hasID {
-		nameOrID = d.Get("cert_name")
+		nameOrID = d.Get("name")
 	}
-	// certNameOrID := nameOrID.(string)
+	certNameOrID := nameOrID.(string)
 
 	ctx := context.Background()
 	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterNameOrID)
@@ -113,10 +113,9 @@ func dataSourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error setting adapter_name: %s", err)
 	}
 
-	cert, err := kpAPI.GetKMIPClientCertificate(ctx, "myadapter", "mycertname")
+	cert, err := kpAPI.GetKMIPClientCertificate(ctx, adapterNameOrID, certNameOrID)
 	if err != nil {
-		return fmt.Errorf("%s - %s", cert.ID, cert.Name)
-		// return err
+		return err
 	}
 	populateKMIPClientCertSchemaDataFromStruct(d, *cert)
 	return nil

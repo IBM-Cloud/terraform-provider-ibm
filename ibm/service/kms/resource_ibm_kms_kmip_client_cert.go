@@ -26,22 +26,12 @@ func ResourceIBMKmsKMIPClientCertificate() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
-			// TODO: consider consolidating into nameOrID?
 			"adapter_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The id of the KMIP adapter that contains the cert",
-				ForceNew:     true,
-				ExactlyOneOf: []string{"adapter_id", "adapter_name"},
-			},
-			"adapter_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The name of the KMIP adapter that contains the cert",
-				ForceNew:     true,
-				ExactlyOneOf: []string{"adapter_id", "adapter_name"},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name or UUID of the KMIP adapter that contains the cert",
+				ForceNew:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -72,7 +62,7 @@ func ResourceIBMKmsKMIPClientCertificate() *schema.Resource {
 }
 
 func resourceIBMKmsKMIPClientCertCreate(d *schema.ResourceData, meta interface{}) error {
-	certToCreate, adapterNameOrID, instanceID, err := ExtractAndValidateKMIPClientCertDataFromSchema(d)
+	certToCreate, adapterID, instanceID, err := ExtractAndValidateKMIPClientCertDataFromSchema(d)
 	if err != nil {
 		return err
 	}
@@ -81,19 +71,8 @@ func resourceIBMKmsKMIPClientCertCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	ctx := context.Background()
-	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterNameOrID)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error while retriving KMIP adapter to create certificate: %s", err)
-	}
-	if err = d.Set("adapter_id", adapter.ID); err != nil {
-		return fmt.Errorf("Error setting adapter_id: %s", err)
-	}
-	if err = d.Set("adapter_name", adapter.Name); err != nil {
-		return fmt.Errorf("Error setting adapter_name: %s", err)
-	}
-
 	cert, err := kpAPI.CreateKMIPClientCertificate(ctx,
-		adapterNameOrID,
+		adapterID,
 		certToCreate.Certificate,
 		kp.WithKMIPClientCertName(certToCreate.Name),
 	)
@@ -161,7 +140,7 @@ func resourceIBMKmsKMIPClientCertExists(d *schema.ResourceData, meta interface{}
 	return true, nil
 }
 
-func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cert kp.KMIPClientCertificate, adapterNameOrID string, instanceID string, err error) {
+func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cert kp.KMIPClientCertificate, adapterIDStr string, instanceID string, err error) {
 	err = nil
 	instanceID = getInstanceIDFromResourceData(d, "instance_id")
 
@@ -183,12 +162,8 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 		cert.Certificate = certStr
 	}
 
-	nameOrID, hasID := d.GetOk("adapter_id")
-	if !hasID {
-		nameOrID = d.Get("adapter_name")
-	}
-	adapterNameOrID = nameOrID.(string)
-
+	adapterID := d.Get("adapter_id")
+	adapterIDStr = adapterID.(string)
 	return
 }
 

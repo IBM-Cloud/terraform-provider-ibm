@@ -132,7 +132,7 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 func dataSourceIBMKMSKmipClientCertToMap(model kp.KMIPClientCertificate) map[string]interface{} {
 	modelMap := make(map[string]interface{})
 	modelMap["cert_id"] = model.ID
-	modelMap["cert_name"] = model.Name
+	modelMap["name"] = model.Name
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["created_by"] = model.CreatedBy
 	return modelMap

@@ -35,12 +35,30 @@ func TestAccIBMKMSDataSource_KMIPAdapter(t *testing.T) {
 					),
 					WithDataSourceKMSKMIPAdapter(
 						"adapter_data",
+						"ibm_kms_kmip_adapter.test_adapter.id",
 						"null",
-						wrapQuotes("myadapter"),
 					),
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_kmip_adapter.test_adapter", "name", "myadapter"),
+			},
+			// Create Data Source for KMIP adapter by adapter_name
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
+						wrapQuotes("myadapter"),
+						"null",
+					),
+					WithDataSourceKMSKMIPAdapter(
+						"adapter_data",
+						"null",
+						"ibm_kms_kmip_adapter.test_adapter.name",
+					),
 				),
 			},
 		},

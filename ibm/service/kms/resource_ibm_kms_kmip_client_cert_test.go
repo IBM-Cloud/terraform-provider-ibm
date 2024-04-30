@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"strings"
 	"testing"
 	"time"
 
@@ -47,9 +48,8 @@ func TestAccIBMKMSResource_KMIPClientCert(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"null",
-						wrapQuotes("myadapter"),
-						wrapQuotes(myCert),
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert,
 						wrapQuotes("mycert"),
 					),
 				),
@@ -58,16 +58,15 @@ func TestAccIBMKMSResource_KMIPClientCert(t *testing.T) {
 	})
 }
 
-func WithResourceKMSKMIPClientCert(resourceName, adapterID, adapterName, certificate, certName string) CreateResourceOption {
+func WithResourceKMSKMIPClientCert(resourceName, adapterID, certificate, certName string) CreateResourceOption {
 	return func(resources *string) {
 		*resources += fmt.Sprintf(`
 		resource "ibm_kms_kmip_client_cert" "%s" {
 			instance_id = ibm_resource_instance.kms_instance.guid
 			adapter_id = %s
-			adapter_name = %s
 			certificate = "%s"
 			name = %s
-		}`, resourceName, adapterID, adapterName, certificate, certName)
+		}`, resourceName, adapterID, certificate, certName)
 	}
 }
 
@@ -103,6 +102,7 @@ func generateSelfSignedCertificate() (string, error) {
 		Type:  "CERTIFICATE",
 		Bytes: certBytes,
 	})
-
-	return string(certPEM.Bytes()), nil
+	certString := string(certPEM.Bytes())
+	certString = strings.Replace(certString, "\n", "\\n", -1)
+	return certString, nil
 }

@@ -39,9 +39,30 @@ func TestAccIBMKMSDataSource_KMIPClientCerts(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"null",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert,
+						wrapQuotes("mycert"),
+					),
+				),
+			},
+			// Create List Certs Data Source
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
 						wrapQuotes("myadapter"),
-						wrapQuotes(myCert),
+						"null",
+					),
+					WithResourceKMSKMIPClientCert(
+						"test_cert",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert,
 						wrapQuotes("mycert"),
 					),
 					WithDataSourceKMSKMIPClientCerts(

@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMKMSDataSource_KMIPAdapter(t *testing.T) {
+func TestAccIBMKMSDataSource_KMIPAdapters(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -33,14 +33,28 @@ func TestAccIBMKMSDataSource_KMIPAdapter(t *testing.T) {
 						wrapQuotes("myadapter"),
 						"null",
 					),
-					WithDataSourceKMSKMIPAdapter(
-						"adapter_data",
-						"null",
-						wrapQuotes("myadapter"),
-					),
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_kmip_adapter.test_adapter", "name", "myadapter"),
+			},
+			// Create the list adapters data source
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
+						wrapQuotes("myadapter"),
+						"null",
+					),
+					WithDataSourceKMSKMIPAdapters(
+						"adapters_data",
+						100,
+						0,
+						true,
+					),
 				),
 			},
 		},

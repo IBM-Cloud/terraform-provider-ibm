@@ -88,8 +88,8 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 		mySlice = append(mySlice, adapterMap)
 	}
 	d.Set("adapters", mySlice)
-	d.SetId(instanceID)
 	d.Set("instance_id", instanceID)
+	d.SetId(instanceID)
 	return nil
 }
 

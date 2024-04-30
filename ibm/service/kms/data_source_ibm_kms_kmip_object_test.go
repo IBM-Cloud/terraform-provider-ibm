@@ -5,6 +5,7 @@ package kms_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -35,11 +36,13 @@ func TestAccIBMKMSDataSource_KMIPObject(t *testing.T) {
 					),
 					WithDataSourceKMSKMIPObject(
 						"object_data",
+						"ibm_kms_kmip_adapter.test_adapter.id",
 						"null",
-						wrapQuotes("myadapter"),
-						"object-id",
+						wrapQuotes("8d52da43-06af-4d18-8162-e77a6f60290e"),
 					),
 				),
+				// No way to use API to create a KMIP object, so will just expect a failure
+				ExpectError: regexp.MustCompile("KMIP_OBJECT_NOT_FOUND_ERR"),
 			},
 		},
 	})
@@ -52,8 +55,8 @@ func WithDataSourceKMSKMIPObject(resourceName, adapterID, adapterName, objID str
 		data "ibm_kms_kmip_object" "%s" {
 			instance_id = ibm_resource_instance.kms_instance.guid
 			adapter_id = %s
-			adapter_name = %s
-			object_id = %s
+			adapter_name = %s 
+			object_id = %s 
 		}`, resourceName, adapterID, adapterName, objID)
 	}
 }

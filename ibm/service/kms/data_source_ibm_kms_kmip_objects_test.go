@@ -35,6 +35,31 @@ func TestAccIBMKMSDataSource_KMIPObjects(t *testing.T) {
 					),
 					WithDataSourceKMSKMIPObjects(
 						"object_list",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						"null",
+						100,
+						0,
+						false,
+						"[1,2,3,4]",
+					),
+				),
+			},
+			// Create a KMIP Objects List data source by adapter name
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
+						wrapQuotes("myadapter"),
+						"null",
+					),
+					WithDataSourceKMSKMIPObjects(
+						"object_list2",
 						"null",
 						wrapQuotes("myadapter"),
 						100,
