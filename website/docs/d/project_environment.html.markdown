@@ -33,25 +33,25 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the project_environment.
-* `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 
 * `definition` - (List) The environment definition.
 Nested schema for **definition**:
 	* `authorizations` - (List) The authorization details. You can authorize by using a trusted profile or an API key in Secrets Manager.
 	Nested schema for **authorizations**:
-		* `api_key` - (String) The IBM Cloud API Key.
+		* `api_key` - (String) The IBM Cloud API Key. It can be either raw or pulled from the catalog via a `CRN` or `JSON` blob.
 		  * Constraints: The maximum length is `512` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 		* `method` - (String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (String) The trusted profile ID.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-	* `compliance_profile` - (List) The profile required for compliance.
+	* `compliance_profile` - (List) The profile that is required for compliance.
 	Nested schema for **compliance_profile**:
 		* `attachment_id` - (String) A unique ID for the attachment to a compliance profile.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-		* `id` - (String) The unique ID for that compliance profile.
+		* `id` - (String) The unique ID for the compliance profile.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
-		* `instance_id` - (String) A unique ID for an instance of a compliance profile.
+		* `instance_id` - (String) A unique ID for the instance of a compliance profile.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 		* `instance_location` - (String) The location of the compliance instance.
 		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
@@ -59,18 +59,18 @@ Nested schema for **definition**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 	* `description` - (String) The description of the environment.
 	  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
-	* `inputs` - (Map) The input variables for configuration definition and environment.
-	* `name` - (String) The name of the environment.  It is unique within the account across projects and regions.
+	* `inputs` - (Map) The input variables that are used for configuration definition and environment.
+	* `name` - (String) The name of the environment. It's unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^'"<>{}\\x00-\\x1F]+$/`.
 
 * `href` - (String) A URL.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 
-* `modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ, matching the date and time format as specified by RFC 3339.
+* `modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 
-* `project` - (List) The project referenced by this resource.
+* `project` - (List) The project that is referenced by this resource.
 Nested schema for **project**:
-	* `crn` - (String) An IBM Cloud resource name, which uniquely identifies a resource.
+	* `crn` - (String) An IBM Cloud resource name that uniquely identifies a resource.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `4` characters. The value must match regular expression `/(?!\\s)(?!.*\\s$)^(crn)[^'"<>{}\\s\\x00-\\x1F]*/`.
 	* `definition` - (List) The definition of the project reference.
 	Nested schema for **definition**:
@@ -81,6 +81,6 @@ Nested schema for **project**:
 	* `id` - (String) The unique ID.
 	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 
-* `target_account` - (String) The target account ID derived from the authentication block values.
+* `target_account` - (String) The target account ID derived from the authentication block values. The target account exists only if the environment currently has an authorization block.
   * Constraints: The maximum length is `64` characters. The value must match regular expression `/^[a-zA-Z0-9.-]+$/`.
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline
@@ -266,6 +266,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
+						},
+						"locked": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "When true, this property cannot be overridden at runtime. Attempting to override it will result in run requests being rejected. The default is false.",
 						},
 					},
 				},
@@ -835,6 +840,9 @@ func resourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model *cdtektonpipel
 	modelMap["type"] = model.Type
 	if model.Path != nil {
 		modelMap["path"] = model.Path
+	}
+	if model.Locked != nil {
+		modelMap["locked"] = model.Locked
 	}
 	return modelMap, nil
 }

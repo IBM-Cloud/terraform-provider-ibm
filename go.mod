@@ -3,7 +3,6 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.19
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
 	github.com/IBM-Cloud/power-go-client v1.6.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -13,19 +12,19 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752
 	github.com/IBM/container-registry-go-sdk v1.1.0
-	github.com/IBM/continuous-delivery-go-sdk v1.3.0
+	github.com/IBM/continuous-delivery-go-sdk v1.5.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.4.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.16.3
+	github.com/IBM/go-sdk-core/v5 v5.17.0
 	github.com/IBM/ibm-cos-sdk-go v1.10.1
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.0.4
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.13.0
 	github.com/IBM/networking-go-sdk v0.45.0
-	github.com/IBM/platform-services-go-sdk v0.62.0
-	github.com/IBM/project-go-sdk v0.2.1
+	github.com/IBM/platform-services-go-sdk v0.62.10
+	github.com/IBM/project-go-sdk v0.2.8-1
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.5
 	github.com/IBM/schematics-go-sdk v0.2.3
@@ -53,7 +52,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
-	golang.org/x/crypto v0.19.0
+	golang.org/x/crypto v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.26.3
@@ -62,9 +61,11 @@ require (
 )
 
 require (
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/mqcloud-go-sdk v0.0.4
 	github.com/IBM/sarama v1.41.2
+	github.com/IBM/vmware-go-sdk v0.1.2
 	github.com/stretchr/testify v1.9.0
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
@@ -116,7 +117,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.18.0 // indirect
+	github.com/go-playground/validator/v10 v10.19.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -208,10 +209,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
-	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
@@ -242,5 +243,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM-Cloud/bluemix-go v0.0.0-20240110132033-6ead1f81a985 => github.com/golibali/bluemix-go v0.0.0-20240325103114-9225a5e9854e

@@ -49,6 +49,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value",
 			},
 			"status": {
@@ -147,7 +148,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
 			},
 			PIInstanceNetwork: {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeList,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Required:         true,
 				Description:      "List of one or more networks to attach to the instance",
@@ -183,6 +184,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIPlacementGroupID: {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "Placement group ID",
 			},
@@ -404,7 +406,13 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		instanceReadyStatus = r.(string)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *(*pvmList)[0].PvmInstanceID))
+	// id is a combination of the cloud instance id and all of the pvm instance ids
+	id := cloudInstanceID
+	for _, pvm := range *pvmList {
+		id += "/" + *pvm.PvmInstanceID
+	}
+
+	d.SetId(id)
 
 	for _, s := range *pvmList {
 		if dt, ok := d.GetOk(PIInstanceDeploymentType); ok && dt.(string) == "VMNoStorage" {
@@ -418,7 +426,6 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 		}
-
 	}
 
 	// If Storage Pool Affinity is given as false we need to update the vm instance.
@@ -453,7 +460,6 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	return resourceIBMPIInstanceRead(ctx, d, meta)
-
 }
 
 func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -462,10 +468,13 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID, instanceID, err := splitID(d.Id())
+	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	cloudInstanceID := idArr[0]
+	instanceID := idArr[1]
 
 	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := client.Get(instanceID)
@@ -839,20 +848,25 @@ func resourceIBMPIInstanceDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID, instanceID, err := splitID(d.Id())
+	idArr, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	cloudInstanceID := idArr[0]
 	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
-	err = client.Delete(instanceID)
-	if err != nil {
-		return diag.FromErr(err)
+	for _, instanceID := range idArr[1:] {
+		err = client.Delete(instanceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	_, err = isWaitForPIInstanceDeleted(ctx, client, instanceID)
-	if err != nil {
-		return diag.FromErr(err)
+	for _, instanceID := range idArr[1:] {
+		_, err = isWaitForPIInstanceDeleted(ctx, client, instanceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId("")
@@ -1201,7 +1215,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 	profileID := d.Get(PISAPInstanceProfileID).(string)
 	imageid := d.Get(helpers.PIInstanceImageId).(string)
 
-	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).(*schema.Set).List())
+	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).([]interface{}))
 
 	var replicants int64
 	if r, ok := d.GetOk(helpers.PIInstanceReplicants); ok {
@@ -1335,7 +1349,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		return nil, fmt.Errorf("%s is required for creating pvm instances", helpers.PIInstanceProcType)
 	}
 
-	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).(*schema.Set).List())
+	pvmNetworks := expandPVMNetworks(d.Get(PIInstanceNetwork).([]interface{}))
 
 	var volids []string
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {

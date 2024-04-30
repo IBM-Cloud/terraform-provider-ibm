@@ -19,7 +19,7 @@ import (
 func TestAccIBMKMSResource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	cosInstanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
-	bucketName := fmt.Sprintf("bucket_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("bucket-%d", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 	payload := "LqMWNtSi3Snr4gFNO0PsFFLFRNs57mSXCQE7O2oE+g0="
 	resourceName := "ibm_kms_key"
