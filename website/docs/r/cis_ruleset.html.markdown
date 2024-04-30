@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_cis_rulesets
-Provides an IBM Cloud Internet Services ruleset resource, to update and delete ruleset of an instance or domain. For more information, about IBM Cloud Internet Services ruleset, see [ruleset instance]().
+Provides an IBM Cloud Internet Services ruleset resource, to update and delete ruleset of an Instance or Domain. For more information, about IBM Cloud Internet Services ruleset, see [ruleset instance]().
 
 ## Example usage
 
@@ -18,10 +18,9 @@ Provides an IBM Cloud Internet Services ruleset resource, to update and delete r
 resource "ibm_cis_ruleset" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "<id of the ruleset>"
+    ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
     rulesets {
-  
-      description = "updating entrypoint ruleset"
+      description = "Entry Point Ruleset"
       rules {
       {
         action =  "execute"
@@ -46,9 +45,9 @@ resource "ibm_cis_ruleset" "tests" {
             }
           }
         }
-        description = "<new description of rule>"
+        description = "<description of rule>"
         enabled = true
-        expression = "<expression to match>"
+        expression = "ip.src ne 1.1.1.1"
         ref = <reference to another rule>
         position  {
           index = 1
@@ -66,39 +65,41 @@ Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone/domain level else request will be made at instance level.
-- `ruleset_phase` - (Required, String) Phase of the ruleset.
+- `ruleset_id` - (Required, String) ID of the Ruleset.
 - `rulesets` - (Required, List) Values that will be updated.
 
-  Nested scheme of rulesets
-  - `Description` (optional, string) Description of the ruleset
-  - `Rules` (optional, list) Rules which are required to be added/modified.
-  Nested scheme of rules
-    - `action` (String). If we are deploying a rule then action is required. `execute` action is used for deploying the ruleset. If we are updating the rule we then action is optional.
+  Nested scheme of `rulesets`
+  - `description` (optional, string) Description of the ruleset
+  - `rules` (optional, list) Rules which are required to be added/modified.
+
+  Nested scheme of `rules`
+    - `action` (String). If we are deploying a rule then action is required. `execute` action is used for deploying the ruleset. If we are updating the rule then action is optional. For more understanding - [Deploy ruleset]()
     - `description` (Optional, String) Description of the rule.
     - `enable` (Optional, Boolean) Enables/Disables the rule.
     - `expression` (Optional, String) Expression used by the rule to match the incoming request.
     - `ref` (Optional, String) Id of an existing rule. If not provided it is populated by the id if the new created rule.
     - `action_parmeters` (Optional, list) Parameters which are used to modify the rules.
     
-      Nested scheme of action parameters.
+      Nested scheme of `action parameters`
       - `id` (Required, String) Id of the managed ruleset to be deploted.
       - `overrides` (Optional, list) provides the parameter which are to be overridden.
 
-        Nested scheme of overrides
+        Nested scheme of `overrides`
         - `action` (Optional, String) Action of the rule. Examples: log, block, skip.
         - `enabled` (Optional, Boolean) Enables/Disables the rule
         - `rules` (Optional, list) list of details of rules to be overridden.
 
-          Nested scheme of rules
+          Nested scheme of `rules`
           - `id` (Required, String) id of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
-        - `categories` (Optional, list)
+          - `categories` (Optional, list)
           
-          Nested scheme of categories
+          Nested scheme of `categories`
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
+
     - `position` (Optional, list). Provides the postion when a new rule is added or updated the position of the current rule. If not provided new rule will be added at the last. You can only use one of the before, after, and index fields at a time.
       - `index` (Optional, String) Index of the rule to be added. 
       - `before` (Optional, String) Id of the rule before which new rule will be added. 

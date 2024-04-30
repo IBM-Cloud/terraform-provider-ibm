@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_rulesets_entrypoint_versions
 
-Retrieve information about an IBM Cloud Internet Services entrypoint rulesets versions data sources. For more information, see [IBM Cloud Internet Services].
+Retrieve information about an IBM Cloud Internet Services Instance/Zone Entry Point rulesets versions data sources. For more information, see [IBM Cloud Internet Services].
 
 ## Example usage
 
@@ -18,7 +18,6 @@ data "ibm_cis_rulesets_entrypoint_versions" "tests" {
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     ruleset_phase = data.ibm_cis_ruleset.cis_ruleset.ruleset_phase
     }
-}
 ```
 
 ## Argument reference

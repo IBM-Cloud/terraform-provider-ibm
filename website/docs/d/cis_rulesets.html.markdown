@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_rulesets
 
-Retrieve information about an IBM Cloud Internet Services rulesets data sources. For more information, see [IBM Cloud Internet Services].
+Retrieve information about an IBM Cloud Internet Services Instance/Zone rulesets data sources. For more information, see [IBM Cloud Internet Services].
 
 ## Example usage
 
@@ -17,7 +17,6 @@ data "ibm_cis_rulesets" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     }
-}
 ```
 
 ## Argument reference
