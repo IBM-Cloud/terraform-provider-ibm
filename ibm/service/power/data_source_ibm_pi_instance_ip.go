@@ -35,8 +35,8 @@ func DataSourceIBMPIInstanceIP() *schema.Resource {
 			},
 			Arg_NetworkName: {
 				Description:  "The subnet that the instance belongs to.",
-				Type:         schema.TypeString,
 				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
