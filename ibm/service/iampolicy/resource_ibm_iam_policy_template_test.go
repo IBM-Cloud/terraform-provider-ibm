@@ -108,7 +108,7 @@ func TestAccIBMIAMPolicyTemplateBasicCommit(t *testing.T) {
 	})
 }
 
-func TestAccIBMIAMPolicyTemplateS2SBasic(t *testing.T) {
+func TestAccIBMIAMPolicyTemplateBasicS2S(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -127,7 +127,7 @@ func TestAccIBMIAMPolicyTemplateS2SBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIAMPolicyTemplateS2SBasicUpdate(t *testing.T) {
+func TestAccIBMIAMPolicyTemplateBasicS2SUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,

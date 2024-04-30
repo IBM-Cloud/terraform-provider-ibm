@@ -26,7 +26,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyAssignmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyAssignmentConfigBasic(name),
+				Config: testAccCheckIBMPolicyAssignmentConfigBasic(name, acc.TargetAccountId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "name", name),
@@ -35,7 +35,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPolicyAssignmentConfigUpdate(name),
+				Config: testAccCheckIBMPolicyAssignmentConfigUpdate(name, acc.TargetAccountId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "policy.0.subject.0.attributes.0.value", "compliance"),
@@ -46,7 +46,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPolicyAssignmentConfigBasic(name string) string {
+func testAccCheckIBMPolicyAssignmentConfigBasic(name string, targetId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_policy_template" "policy_s2s_template" {
 			name = "%s"
@@ -75,7 +75,7 @@ func testAccCheckIBMPolicyAssignmentConfigBasic(name string) string {
 			version = "1.0"
 			target  ={
 				type = "Account"
-				id = "0ddc8e9eb0894383b48791ff4ba0b80e"
+				id = "%s"
 			}
 
 			options {
@@ -88,10 +88,10 @@ func testAccCheckIBMPolicyAssignmentConfigBasic(name string) string {
 				id = ibm_iam_policy_template.policy_s2s_template.template_id 
 				version = ibm_iam_policy_template.policy_s2s_template.version
 			}
-		}`, name)
+		}`, name, targetId)
 }
 
-func testAccCheckIBMPolicyAssignmentConfigUpdate(name string) string {
+func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_policy_template" "policy_s2s_template" {
 			name = "%s"
@@ -144,7 +144,7 @@ func testAccCheckIBMPolicyAssignmentConfigUpdate(name string) string {
 			version = "1.0"
 			target  ={
 				type = "Account"
-				id = "0ddc8e9eb0894383b48791ff4ba0b80e"
+				id = "%s"
 			}
 
 			options {
@@ -158,7 +158,7 @@ func testAccCheckIBMPolicyAssignmentConfigUpdate(name string) string {
 				version = ibm_iam_policy_template.policy_s2s_template.version
 			}
 			template_version=ibm_iam_policy_template_version.template_version.version
-		}`, name)
+		}`, name, targetId)
 }
 
 func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.GetPolicyAssignmentResponse) resource.TestCheckFunc {
