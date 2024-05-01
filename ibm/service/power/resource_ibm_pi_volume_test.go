@@ -106,8 +106,8 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 func testAccCheckIBMPIVolumeConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_volume" "power_volume" {
-			pi_cloud_instance_id	= "%s"
-			pi_volume_name       	= "%s"
+			pi_cloud_instance_id	= "%[2]s"
+			pi_volume_name       	= "%[1]s"
 			pi_volume_shareable  	= true
 			pi_volume_size       	= 20
 			pi_volume_type       	= "tier1"
@@ -117,8 +117,8 @@ func testAccCheckIBMPIVolumeConfig(name string) string {
 func testAccCheckIBMPIVolumeSizeConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_volume" "power_volume" {
-			pi_cloud_instance_id	= "%s"
-			pi_volume_name       	= "%s"
+			pi_cloud_instance_id	= "%[2]s"
+			pi_volume_name       	= "%[1]s"
 			pi_volume_shareable  	= true
 			pi_volume_size       	= 30
 			pi_volume_type       	= "tier1"
