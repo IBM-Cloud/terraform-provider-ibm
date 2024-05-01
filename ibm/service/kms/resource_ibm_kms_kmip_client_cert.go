@@ -79,8 +79,7 @@ func resourceIBMKmsKMIPClientCertCreate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating KMIP client certificate: %s", err)
 	}
-	populateKMIPClientCertSchemaDataFromStruct(d, *cert)
-	return nil
+	return populateKMIPClientCertSchemaDataFromStruct(d, *cert)
 }
 
 func resourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}) error {
@@ -116,7 +115,6 @@ func resourceIBMKmsKMIPClientCertDelete(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	err = kpAPI.DeleteKMIPClientCertificate(context.Background(), adapterID, certID)
-	// TODO: subresources
 	return err
 }
 
@@ -135,7 +133,7 @@ func resourceIBMKmsKMIPClientCertExists(d *schema.ResourceData, meta interface{}
 		if kpError.StatusCode == 404 {
 			return false, nil
 		}
-		return false, err
+		return false, wrapError(err, "Error checking KMIP Client Certificate existence")
 	}
 	return true, nil
 }
@@ -148,7 +146,7 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 	if name, ok := d.GetOk("name"); ok {
 		nameStr, ok2 := name.(string)
 		if !ok2 {
-			err = fmt.Errorf("Error converting name to string")
+			err = fmt.Errorf("[ERROR] Error converting name to string")
 			return
 		}
 		cert.Name = nameStr
@@ -156,7 +154,7 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 	if certPayload, ok := d.GetOk("certificate"); ok {
 		certStr, ok2 := certPayload.(string)
 		if !ok2 {
-			err = fmt.Errorf("Error converting certificate to string")
+			err = fmt.Errorf("[ERROR] Error converting certificate to string")
 			return
 		}
 		cert.Certificate = certStr
@@ -170,17 +168,17 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 func populateKMIPClientCertSchemaDataFromStruct(d *schema.ResourceData, cert kp.KMIPClientCertificate) (err error) {
 	d.SetId(cert.ID)
 	if err = d.Set("name", cert.Name); err != nil {
-		return fmt.Errorf("Error setting name: %s", err)
+		return fmt.Errorf("[ERROR] Error setting name: %s", err)
 	}
 	if err = d.Set("certificate", cert.Certificate); err != nil {
-		return fmt.Errorf("Error setting certificate: %s", err)
+		return fmt.Errorf("[ERROR] Error setting certificate: %s", err)
 	}
 	if cert.CreatedAt != nil {
 		if err = d.Set("created_at", cert.CreatedAt.String()); err != nil {
-			return fmt.Errorf("Error setting created_at: %s", err)
+			return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
 		}
 		if err = d.Set("created_by", cert.CreatedBy); err != nil {
-			return fmt.Errorf("Error setting created_by: %s", err)
+			return fmt.Errorf("[ERROR] Error setting created_by: %s", err)
 		}
 	}
 	return nil

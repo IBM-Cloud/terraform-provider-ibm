@@ -107,10 +107,10 @@ func dataSourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("[ERROR] Error while retriving KMIP adapter to get certificate: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
-		return fmt.Errorf("Error setting adapter_id: %s", err)
+		return fmt.Errorf("[ERROR] Error setting adapter_id: %s", err)
 	}
 	if err = d.Set("adapter_name", adapter.Name); err != nil {
-		return fmt.Errorf("Error setting adapter_name: %s", err)
+		return fmt.Errorf("[ERROR] Error setting adapter_name: %s", err)
 	}
 
 	cert, err := kpAPI.GetKMIPClientCertificate(ctx, adapterNameOrID, certNameOrID)

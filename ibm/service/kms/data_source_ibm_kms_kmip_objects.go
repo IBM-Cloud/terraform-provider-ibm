@@ -104,7 +104,7 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 	if stateFilter, ok := d.GetOk("object_state_filter"); ok {
 		arrayVal, ok2 := stateFilter.([]any)
 		if !ok2 {
-			return fmt.Errorf("Error converting object_state_filter into []any")
+			return fmt.Errorf("[ERROR] Error converting object_state_filter into []any")
 		}
 		int32Arr := make([]int32, 0, len(arrayVal))
 		for _, myint := range arrayVal {
@@ -119,10 +119,10 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("[ERROR] Error while retriving KMIP adapter to list KMIP objects: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
-		return fmt.Errorf("Error setting adapter_id: %s", err)
+		return fmt.Errorf("[ERROR] Error setting adapter_id: %s", err)
 	}
 	if err = d.Set("adapter_name", adapter.Name); err != nil {
-		return fmt.Errorf("Error setting adapter_name: %s", err)
+		return fmt.Errorf("[ERROR] Error setting adapter_name: %s", err)
 	}
 	objs, err := kpAPI.GetKMIPObjects(ctx, adapterNameOrID, opts)
 	objsList := objs.Objects

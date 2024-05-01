@@ -23,10 +23,6 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 		Delete:   resourceIBMKmsKMIPAdapterDelete,
 		Exists:   resourceIBMKmsKMIPAdapterExists,
 		Importer: &schema.ResourceImporter{},
-		// Timeouts: &schema.ResourceTimeout{
-		// 	Create: schema.DefaultTimeout(10 * time.Minute),
-		// 	Update: schema.DefaultTimeout(10 * time.Minute),
-		// },
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:             schema.TypeString,
@@ -111,8 +107,7 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating KMIP adapter: %s", err)
 	}
-	populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
-	return nil
+	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
 }
 
 func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) error {
@@ -127,11 +122,7 @@ func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	err = populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
-	if err != nil {
-		return err
-	}
-	return nil
+	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
 }
 
 func resourceIBMKmsKMIPAdapterUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -151,7 +142,7 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Failed to delete KMIP object associated with adapter (%s): %s",
-				adapterID,
+				&adapterID,
 				err,
 			)
 		}
@@ -175,7 +166,7 @@ func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (
 		if kpError.StatusCode == 404 {
 			return false, nil
 		}
-		return false, err
+		return false, wrapError(err, "Error checking adapter existence")
 	}
 	return true, nil
 }
@@ -185,7 +176,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	instanceID = getInstanceIDFromResourceData(d, "instance_id")
 	profile, ok := d.Get("profile").(string)
 	if !ok {
-		err = fmt.Errorf("Error converting profile to string")
+		err = fmt.Errorf("[ERROR] Error converting profile to string")
 		return
 	}
 	adapter = kp.KMIPAdapter{
@@ -194,7 +185,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	if name, ok := d.GetOk("name"); ok {
 		nameStr, ok2 := name.(string)
 		if !ok2 {
-			err = fmt.Errorf("Error converting name to string")
+			err = fmt.Errorf("[ERROR] Error converting name to string")
 			return
 		}
 		adapter.Name = nameStr
@@ -202,7 +193,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	if desc, ok := d.GetOk("description"); ok {
 		descStr, ok2 := desc.(string)
 		if !ok2 {
-			err = fmt.Errorf("Error converting description to string")
+			err = fmt.Errorf("[ERROR] Error converting description to string")
 			return
 		}
 		adapter.Description = descStr
@@ -210,7 +201,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	if data, ok := d.GetOk("profile_data"); ok {
 		dataMap, ok2 := data.(map[string]interface{})
 		if !ok2 {
-			err = fmt.Errorf("Error converting profile data to map[string]interface{}")
+			err = fmt.Errorf("[ERROR] Error converting profile data to map[string]interface{}")
 			return
 		}
 		profileData := map[string]string{}
@@ -218,7 +209,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 			if val, ok := dataMap[key].(string); ok {
 				profileData[key] = val
 			} else {
-				err = fmt.Errorf("Error converting value with key {%s} into string", key)
+				err = fmt.Errorf("[ERROR] Error converting value with key {%s} into string", key)
 				return
 			}
 		}
@@ -230,28 +221,28 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.KMIPAdapter) (err error) {
 	d.SetId(adapter.ID)
 	if err = d.Set("name", adapter.Name); err != nil {
-		return fmt.Errorf("Error setting name: %s", err)
+		return fmt.Errorf("[ERROR] Error setting name: %s", err)
 	}
 	if err = d.Set("description", adapter.Description); err != nil {
-		return fmt.Errorf("Error setting description: %s", err)
+		return fmt.Errorf("[ERROR] Error setting description: %s", err)
 	}
 	if err = d.Set("profile", adapter.Profile); err != nil {
-		return fmt.Errorf("Error setting profile: %s", err)
+		return fmt.Errorf("[ERROR] Error setting profile: %s", err)
 	}
 	if err = d.Set("profile_data", adapter.ProfileData); err != nil {
-		return fmt.Errorf("Error setting profile_data: %s", err)
+		return fmt.Errorf("[ERROR] Error setting profile_data: %s", err)
 	}
 	if err = d.Set("created_at", adapter.CreatedAt.String()); err != nil {
-		return fmt.Errorf("Error setting created_at: %s", err)
+		return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
 	}
 	if err = d.Set("created_by", adapter.CreatedBy); err != nil {
-		return fmt.Errorf("Error setting created_by: %s", err)
+		return fmt.Errorf("[ERROR] Error setting created_by: %s", err)
 	}
 	if err = d.Set("updated_at", adapter.UpdatedAt.String()); err != nil {
-		return fmt.Errorf("Error setting updated_at: %s", err)
+		return fmt.Errorf("[ERROR] Error setting updated_at: %s", err)
 	}
 	if err = d.Set("updated_by", adapter.UpdatedBy); err != nil {
-		return fmt.Errorf("Error setting updated_by: %s", err)
+		return fmt.Errorf("[ERROR] Error setting updated_by: %s", err)
 	}
 	return nil
 }

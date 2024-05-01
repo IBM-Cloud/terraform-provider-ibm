@@ -76,7 +76,7 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 
 	adapters, err := api.GetKMIPAdapters(context.Background(), opts)
 	if err != nil {
-		return fmt.Errorf("Error listing KMIP adapters: %s", err)
+		return fmt.Errorf("[ERROR] Error listing KMIP adapters: %s", err)
 	}
 
 	adaptersList := adapters.Adapters
