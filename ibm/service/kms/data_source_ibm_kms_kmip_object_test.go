@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMKMSDataSource_KMIPObject(t *testing.T) {
+func TestAccIBMKMSKMIPObjectDataSource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{

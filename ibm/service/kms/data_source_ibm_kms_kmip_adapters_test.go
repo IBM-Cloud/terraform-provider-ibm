@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMKMSDataSource_KMIPAdapters(t *testing.T) {
+func TestAccIBMKMSKMIPAdaptersDataSource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{

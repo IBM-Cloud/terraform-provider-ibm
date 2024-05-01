@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMKMSDataSource_KMIPClientCerts(t *testing.T) {
+func TestAccIBMKMSKMIPClientCertsDataSource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
 	myCert, err := generateSelfSignedCertificate()
 	if err != nil {
