@@ -53,6 +53,7 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 	if err != nil {
 		return err
 	}
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_pi_volume" {
 			continue
@@ -74,7 +75,6 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 
 func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -100,30 +100,29 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 			return err
 		}
 		return nil
-
 	}
 }
 
 func testAccCheckIBMPIVolumeConfig(name string) string {
 	return fmt.Sprintf(`
-    resource "ibm_pi_volume" "power_volume"{
-        pi_volume_size       = 20
-        pi_volume_name       = "%s"
-        pi_volume_type       = "tier1"
-        pi_volume_shareable  = true
-        pi_cloud_instance_id = "%s"
-      }`, name, acc.Pi_cloud_instance_id)
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id	= "%s"
+			pi_volume_name       	= "%s"
+			pi_volume_shareable  	= true
+			pi_volume_size       	= 20
+			pi_volume_type       	= "tier1"
+		}`, name, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPIVolumeSizeConfig(name string) string {
 	return fmt.Sprintf(`
-    resource "ibm_pi_volume" "power_volume"{
-        pi_volume_size       = 30
-        pi_volume_name       = "%s"
-        pi_volume_type       = "tier1"
-        pi_volume_shareable  = true
-        pi_cloud_instance_id = "%s"
-      }`, name, acc.Pi_cloud_instance_id)
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id	= "%s"
+			pi_volume_name       	= "%s"
+			pi_volume_shareable  	= true
+			pi_volume_size       	= 30
+			pi_volume_type       	= "tier1"
+		}`, name, acc.Pi_cloud_instance_id)
 }
 
 func TestAccIBMPIVolumePool(t *testing.T) {
@@ -149,13 +148,13 @@ func TestAccIBMPIVolumePool(t *testing.T) {
 
 func testAccCheckIBMPIVolumePoolConfig(name string) string {
 	return fmt.Sprintf(`
-    resource "ibm_pi_volume" "power_volume"{
-        pi_volume_size       = 20
-        pi_volume_name       = "%[1]s"
-        pi_volume_pool       = "%[3]s"
-        pi_volume_shareable  = true
-        pi_cloud_instance_id = "%[2]s"
-      }`, name, acc.Pi_cloud_instance_id, acc.PiStoragePool)
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id	= "%[2]s"
+			pi_volume_name       	= "%[1]s"
+			pi_volume_pool       	= "%[3]s"
+			pi_volume_shareable		= true
+			pi_volume_size       	= 20
+		}`, name, acc.Pi_cloud_instance_id, acc.PiStoragePool)
 }
 
 // TestAccIBMPIVolumeGRS test the volume replication feature which is part of global replication service(GRS)
@@ -204,15 +203,15 @@ func testAccCheckIBMPIVolumeGRSUpdateConfig(name string) string {
 
 func testAccCheckIBMPIVolumeGRSBasicConfig(name, piCloudInstanceId, piStoragePool string, replicationEnabled bool) string {
 	return fmt.Sprintf(`
-    resource "ibm_pi_volume" "power_volume"{
-        pi_volume_size         = 20
-        pi_volume_name         = "%[1]s"
-        pi_volume_pool         = "%[3]s"
-        pi_volume_shareable    = true
-        pi_cloud_instance_id   = "%[2]s"
-        pi_replication_enabled = %[4]v
-        pi_volume_type       = "tier3"
-      }`, name, piCloudInstanceId, piStoragePool, replicationEnabled)
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id   	= "%[2]s"
+			pi_replication_enabled	= %[4]v
+			pi_volume_name         	= "%[1]s"
+			pi_volume_pool         	= "%[3]s"
+			pi_volume_shareable    	= true
+			pi_volume_size         	= 20
+			pi_volume_type         	= "tier3"
+		}`, name, piCloudInstanceId, piStoragePool, replicationEnabled)
 }
 
 // TestAccIBMPIVolumeUpdate test the volume update
@@ -252,12 +251,12 @@ func testAccCheckIBMPIVolumeUpdateStorageConfig(name, piStorageType string) stri
 
 func testAccCheckIBMPIVolumeUpdateBasicConfig(name, piCloudInstanceId, piStoragePool, piStorageType string) string {
 	return fmt.Sprintf(`
-    resource "ibm_pi_volume" "power_volume"{
-        pi_volume_size         = 20
-        pi_volume_name         = "%[1]s"
-        pi_volume_pool         = "%[3]s"
-        pi_volume_shareable    = true
-        pi_cloud_instance_id   = "%[2]s"
-        pi_volume_type = "%[4]v"
-      }`, name, piCloudInstanceId, piStoragePool, piStorageType)
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id	= "%[2]s"
+			pi_volume_name         	= "%[1]s"
+			pi_volume_pool         	= "%[3]s"
+			pi_volume_shareable    	= true
+			pi_volume_size         	= 20
+			pi_volume_type       	= "%[4]v"
+		}`, name, piCloudInstanceId, piStoragePool, piStorageType)
 }
