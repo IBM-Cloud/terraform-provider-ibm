@@ -82,10 +82,10 @@ import (
 	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
@@ -630,8 +630,8 @@ type clientSession struct {
 	mqcloudClientErr error
 
 	// VMware as a Service
-	vmwareClient     *vmwarev1.VmwareV1
-	vmwareClientErr  error
+	vmwareClient    *vmwarev1.VmwareV1
+	vmwareClientErr error
 }
 
 // Usage Reports
@@ -3181,7 +3181,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
 	}
 	if err != nil {
-		cdToolchainClientURL = cdtoolchainv2.DefaultServiceURL
+		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
@@ -3270,7 +3270,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	vmwareURL := ContructEndpoint(fmt.Sprintf("api.%s.vmware", c.Region), cloudEndpoint+"/v1")
 	vmwareClientOptions := &vmwarev1.VmwareV1Options{
 		Authenticator: authenticator,
-		URL:    EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
+		URL:           EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
 	}
 
 	// Construct the service client.
@@ -3280,7 +3280,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.vmwareClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.vmwareClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
 		session.vmwareClientErr = fmt.Errorf("Error occurred while configuring VMware as a Service API service: %q", err)

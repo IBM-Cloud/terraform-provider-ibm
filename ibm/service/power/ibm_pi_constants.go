@@ -97,6 +97,7 @@ const (
 	Attr_DhcpLeaseInstanceIP                         = "instance_ip"
 	Attr_DhcpLeaseInstanceMac                        = "instance_mac"
 	Attr_DhcpLeases                                  = "leases"
+	Attr_DhcpManaged                                 = "dhcp_managed"
 	Attr_DhcpNetworkDeprecated                       = "network" // to deprecate
 	Attr_DhcpNetworkID                               = "network_id"
 	Attr_DhcpNetworkName                             = "network_name"

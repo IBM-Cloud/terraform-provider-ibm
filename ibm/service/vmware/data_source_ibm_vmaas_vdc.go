@@ -366,7 +366,7 @@ func dataSourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, 
 
 	edges := []map[string]interface{}{}
 	if vDC.Edges != nil {
-		for _, modelItem := range vDC.Edges { 
+		for _, modelItem := range vDC.Edges {
 			modelMap, err := dataSourceIbmVmaasVdcEdgeToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -380,7 +380,7 @@ func dataSourceIbmVmaasVdcRead(context context.Context, d *schema.ResourceData, 
 
 	statusReasons := []map[string]interface{}{}
 	if vDC.StatusReasons != nil {
-		for _, modelItem := range vDC.StatusReasons { 
+		for _, modelItem := range vDC.StatusReasons {
 			modelMap, err := dataSourceIbmVmaasVdcStatusReasonToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
