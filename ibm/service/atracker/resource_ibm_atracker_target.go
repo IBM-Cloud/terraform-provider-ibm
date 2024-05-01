@@ -41,7 +41,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				ValidateFunc:     validate.InvokeValidator("ibm_atracker_target", "target_type"),
-				Description:      "The type of the target. It can be cloud_object_storage, logdna or event_streams. Based on this type you must include cos_endpoint, logdna_endpoint or eventstreams_endpoint.",
+				Description:      "The type of the target. It can be cloud_object_storage, logdna, event_streams, or cloud_logs. Based on this type you must include cos_endpoint, logdna_endpoint, eventstreams_endpoint or cloudlogs_endpoint.",
 			},
 			"cos_endpoint": {
 				Type:        schema.TypeList,
@@ -131,6 +131,21 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 							Sensitive:        true,
 							DiffSuppressFunc: flex.ApplyOnce,
 							Description:      "The user password (api key) for the message hub topic in the Event Streams instance.",
+						},
+					},
+				},
+			},
+			"cloudlogs_endpoint": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Property values for an IBM Cloud Logs endpoint in requests.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"target_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The CRN of the IBM Cloud Logs instance.",
 						},
 					},
 				},
@@ -255,7 +270,7 @@ func ResourceIBMAtrackerTargetValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "cloud_object_storage, logdna, event_streams",
+			AllowedValues:              "cloud_object_storage, logdna, event_streams, cloud_logs",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "region",
@@ -302,6 +317,13 @@ func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 		createTargetOptions.SetEventstreamsEndpoint(eventstreamsEndpointModel)
+	}
+	if _, ok := d.GetOk("cloudlogs_endpoint"); ok {
+		cloudLogsEndpointModel, err := resourceIBMAtrackerTargetMapToCloudLogsEndpointPrototype(d.Get("cloudlogs_endpoint.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createTargetOptions.SetCloudlogsEndpoint(cloudLogsEndpointModel)
 	}
 	if _, ok := d.GetOk("region"); ok {
 		createTargetOptions.SetRegion(d.Get("region").(string))
@@ -390,6 +412,16 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 		}
 	}
 
+	if target.CloudlogsEndpoint != nil {
+		cloudLogsEndpointMap, err := resourceIBMAtrackerTargetCloudLogsEndpointPrototypeToMap(target.CloudlogsEndpoint)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("cloudlogs_endpoint", []map[string]interface{}{cloudLogsEndpointMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting cloudlogs_endpoint: %s", err))
+		}
+	}
+
 	if target.CRN != nil {
 		if err = d.Set("crn", target.CRN); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
@@ -443,7 +475,7 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("region") || d.HasChange("logdna_endpoint") || d.HasChange("eventstreams_endpoint") {
+	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("region") || d.HasChange("logdna_endpoint") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") {
 		replaceTargetOptions.SetName(d.Get("name").(string))
 
 		_, hasCosEndpoint := d.GetOk("cos_endpoint.0")
@@ -470,6 +502,14 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 				return diag.FromErr(err)
 			}
 			replaceTargetOptions.SetEventstreamsEndpoint(eventstreamsEndpoint)
+		}
+		_, hasCloudLogsEndpoint := d.GetOk("cloudlogs_endpoint.0")
+		if hasCloudLogsEndpoint {
+			cloudlogsEndpoint, err := resourceIBMAtrackerTargetMapToCloudLogsEndpointPrototype(d.Get("cloudlogs_endpoint.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			replaceTargetOptions.SetCloudlogsEndpoint(cloudlogsEndpoint)
 		}
 
 		hasChange = true
@@ -539,6 +579,12 @@ func resourceIBMAtrackerTargetMapToEventstreamsEndpointPrototype(modelMap map[st
 	return model, nil
 }
 
+func resourceIBMAtrackerTargetMapToCloudLogsEndpointPrototype(modelMap map[string]interface{}) (*atrackerv2.CloudLogsEndpointPrototype, error) {
+	model := &atrackerv2.CloudLogsEndpointPrototype{}
+	model.TargetCRN = core.StringPtr(modelMap["target_crn"].(string))
+	return model, nil
+}
+
 func resourceIBMAtrackerTargetCosEndpointPrototypeToMap(model *atrackerv2.CosEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["endpoint"] = model.Endpoint
@@ -565,6 +611,12 @@ func resourceIBMAtrackerTargetEventstreamsEndpointPrototypeToMap(model *atracker
 	modelMap["topic"] = model.Topic
 	// TODO: remove after deprecation
 	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
+	return modelMap, nil
+}
+
+func resourceIBMAtrackerTargetCloudLogsEndpointPrototypeToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["target_crn"] = model.TargetCRN
 	return modelMap, nil
 }
 

@@ -75,7 +75,7 @@ Review the argument references that you can specify for your resource.
   - **Note**: only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
 - `pi_key_pair_name` - (Optional, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
-- `pi_license_repository_capacity` - (Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
+- `pi_license_repository_capacity` - (Deprecated, Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
   - **Note**: Provisioning VTL instances is temporarily disabled.
 - `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in gigabytes.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.

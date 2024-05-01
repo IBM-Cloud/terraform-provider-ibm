@@ -81,13 +81,14 @@ func getComponentInfo() *core.ProblemComponent {
 }
 
 // FmtErrorf wraps `fmt.Errorf(format string, a ...interface{}) error`
-// and checks for the instance of a "Problem" type. If it finds one,
-// the Problem instance needs to be returned instead of wrapped by
-// `fmt.Errorf`.
+// and attempts to return a TerraformProblem instance instead of a
+// plain error instance, if an error object is found among the arguments
 func FmtErrorf(format string, a ...interface{}) error {
+	intendedError := fmt.Errorf(format, a...)
+
+	var err error
 	for _, arg := range a {
 		// Look for an error instance among the arguments.
-		var err error
 
 		if errArg, ok := arg.(error); ok {
 			err = errArg
@@ -98,12 +99,15 @@ func FmtErrorf(format string, a ...interface{}) error {
 		}
 
 		if err != nil {
-			var problem core.Problem
-			if errors.As(err, &problem) {
-				return problem
+			var tfError *TerraformProblem
+			if !errors.As(err, &tfError) {
+				tfError = TerraformErrorf(err, err.Error(), "", "")
 			}
+
+			tfError.Summary = intendedError.Error()
+			return tfError
 		}
 	}
 
-	return fmt.Errorf(format, a...)
+	return intendedError
 }
