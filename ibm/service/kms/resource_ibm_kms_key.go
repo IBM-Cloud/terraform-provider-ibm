@@ -371,19 +371,19 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 	if err != nil {
 		return err
 	}
-	// if len(registrations.Registrations) > 0 {
 	// making a map[string]interface{} for terraform key.registration Attribute
 	rSlice := make([]map[string]interface{}, 0)
-	for _, r := range registrations.Registrations {
-		registration := map[string]interface{}{
-			"key_id":               r.KeyID,
-			"resource_crn":         r.ResourceCrn,
-			"prevent_key_deletion": r.PreventKeyDeletion,
+	if len(registrations.Registrations) > 0 {
+		for _, r := range registrations.Registrations {
+			registration := map[string]interface{}{
+				"key_id":               r.KeyID,
+				"resource_crn":         r.ResourceCrn,
+				"prevent_key_deletion": r.PreventKeyDeletion,
+			}
+			rSlice = append(rSlice, registration)
 		}
-		rSlice = append(rSlice, registration)
 	}
 	d.Set("registrations", rSlice)
-	// }
 
 	return nil
 }
