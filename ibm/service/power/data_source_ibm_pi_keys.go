@@ -7,13 +7,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 func DataSourceIBMPIKeys() *schema.Resource {
@@ -65,7 +64,7 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
-	client := st.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	sshKeys, err := client.GetAll()
 	if err != nil {
 		log.Printf("[ERROR] get all keys failed %v", err)

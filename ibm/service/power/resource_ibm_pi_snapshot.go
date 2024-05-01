@@ -48,9 +48,10 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			Arg_InstanceName: {
-				Description: "The name of the instance you want to take a snapshot of.",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "The name of the instance you want to take a snapshot of.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_SnapShotName: {
 				Description:  "The unique name of the snapshot.",

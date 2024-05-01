@@ -6,12 +6,26 @@ const (
 	// Arguments
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
+	Arg_DatacenterZone                      = "pi_datacenter_zone"
 	Arg_Description                         = "pi_description"
+	Arg_DhcpCidr                            = "pi_cidr"
+	Arg_DhcpCloudConnectionID               = "pi_cloud_connection_id"
+	Arg_DhcpDnsServer                       = "pi_dns_server"
+	Arg_DhcpID                              = "pi_dhcp_id"
+	Arg_DhcpName                            = "pi_dhcp_name"
+	Arg_DhcpSnatEnabled                     = "pi_dhcp_snat_enabled"
+	Arg_IBMiCSS                             = "pi_ibmi_css"
+	Arg_IBMiPHA                             = "pi_ibmi_pha"
+	Arg_IBMiRDSUsers                        = "pi_ibmi_rds_users"
 	Arg_ImageName                           = "pi_image_name"
 	Arg_InstanceName                        = "pi_instance_name"
 	Arg_KeyName                             = "pi_key_name"
 	Arg_NetworkName                         = "pi_network_name"
+	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
+	Arg_PVMInstanceActionType               = "pi_action"
+	Arg_PVMInstanceHealthStatus             = "pi_health_status"
+	Arg_PVMInstanceId                       = "pi_instance_id"
 	Arg_SAP                                 = "sap"
 	Arg_SAPProfileID                        = "pi_sap_profile_id"
 	Arg_SharedProcessorPoolHostGroup        = "pi_shared_processor_pool_host_group"
@@ -72,10 +86,25 @@ const (
 	Attr_CRN                                         = "crn"
 	Attr_CyclePeriodSeconds                          = "cycle_period_seconds"
 	Attr_CyclingMode                                 = "cycling_mode"
+	Attr_DatacenterCapabilities                      = "pi_datacenter_capabilities"
+	Attr_DatacenterHref                              = "pi_datacenter_href"
+	Attr_DatacenterLocation                          = "pi_datacenter_location"
 	Attr_Datacenters                                 = "datacenters"
+	Attr_DatacenterStatus                            = "pi_datacenter_status"
+	Attr_DatacenterType                              = "pi_datacenter_type"
 	Attr_Default                                     = "default"
 	Attr_DeploymentType                              = "deployment_type"
 	Attr_Description                                 = "description"
+	Attr_DhcpID                                      = "dhcp_id"
+	Attr_DhcpLeaseInstanceIP                         = "instance_ip"
+	Attr_DhcpLeaseInstanceMac                        = "instance_mac"
+	Attr_DhcpLeases                                  = "leases"
+	Attr_DhcpManaged                                 = "dhcp_managed"
+	Attr_DhcpNetworkDeprecated                       = "network" // to deprecate
+	Attr_DhcpNetworkID                               = "network_id"
+	Attr_DhcpNetworkName                             = "network_name"
+	Attr_DhcpServers                                 = "servers"
+	Attr_DhcpStatus                                  = "status"
 	Attr_DisasterRecoveryLocations                   = "disaster_recovery_locations"
 	Attr_DiskFormat                                  = "disk_format"
 	Attr_DiskType                                    = "disk_type"
@@ -97,7 +126,11 @@ const (
 	Attr_Href                                        = "href"
 	Attr_Hypervisor                                  = "hypervisor"
 	Attr_HypervisorType                              = "hypervisor_type"
+	Attr_IBMiCSS                                     = "ibmi_css"
 	Attr_IBMIPAddress                                = "ibm_ip_address"
+	Attr_IBMiPHA                                     = "ibmi_pha"
+	Attr_IBMiRDS                                     = "ibmi_rds"
+	Attr_IBMiRDSUsers                                = "ibmi_rds_users"
 	Attr_ID                                          = "id"
 	Attr_ImageID                                     = "image_id"
 	Attr_ImageInfo                                   = "image_info"
@@ -156,6 +189,8 @@ const (
 	Attr_Onboardings                                 = "onboardings"
 	Attr_OperatingSystem                             = "operating_system"
 	Attr_PercentComplete                             = "percent_complete"
+	Attr_PIInstanceSharedProcessorPool               = "shared_processor_pool"
+	Attr_PIInstanceSharedProcessorPoolID             = "shared_processor_pool_id"
 	Attr_PinPolicy                                   = "pin_policy"
 	Attr_PlacementGroupID                            = "placement_group_id"
 	Attr_PlacementGroups                             = "placement_groups"
@@ -213,6 +248,10 @@ const (
 	Attr_SnapshotID                                  = "snapshot_id"
 	Attr_SourceVolumeName                            = "source_volume_name"
 	Attr_Speed                                       = "speed"
+	Attr_SPPPlacementGroupID                         = "spp_placement_group_id"
+	Attr_SPPPlacementGroupMembers                    = "members"
+	Attr_SPPPlacementGroupName                       = "name"
+	Attr_SPPPlacementGroupPolicy                     = "policy"
 	Attr_SPPPlacementGroups                          = "spp_placement_groups"
 	Attr_SSHKey                                      = "ssh_key"
 	Attr_StartTime                                   = "start_time"
@@ -256,8 +295,16 @@ const (
 	Attr_VolumeSnapshots                             = "volume_snapshots"
 	Attr_VPCCRNs                                     = "vpc_crns"
 	Attr_VPCEnabled                                  = "vpc_enabled"
+	Attr_WorkspaceCapabilities                       = "pi_workspace_capabilities"
+	Attr_WorkspaceDetails                            = "pi_workspace_details"
+	Attr_WorkspaceID                                 = "pi_workspace_id"
+	Attr_WorkspaceLocation                           = "pi_workspace_location"
+	Attr_WorkspaceName                               = "pi_workspace_name"
 	Attr_Workspaces                                  = "workspaces"
+	Attr_WorkspaceStatus                             = "pi_workspace_status"
+	Attr_WorkspaceType                               = "pi_workspace_type"
 	Attr_WWN                                         = "wwn"
+	OS_IBMI                                          = "ibmi"
 
 	// States
 	State_Active              = "active"
@@ -290,37 +337,6 @@ const (
 	PISAPProfileID        = "profile_id"
 	PISAPProfileType      = "type"
 
-	// DHCP
-	Arg_DhcpCidr              = "pi_cidr"
-	Arg_DhcpID                = "pi_dhcp_id"
-	Arg_DhcpCloudConnectionID = "pi_cloud_connection_id"
-	Arg_DhcpDnsServer         = "pi_dns_server"
-	Arg_DhcpName              = "pi_dhcp_name"
-	Arg_DhcpSnatEnabled       = "pi_dhcp_snat_enabled"
-
-	Attr_DhcpServers           = "servers"
-	Attr_DhcpID                = "dhcp_id"
-	Attr_DhcpLeases            = "leases"
-	Attr_DhcpLeaseInstanceIP   = "instance_ip"
-	Attr_DhcpLeaseInstanceMac  = "instance_mac"
-	Attr_DhcpNetworkDeprecated = "network" // to deprecate
-	Attr_DhcpNetworkID         = "network_id"
-	Attr_DhcpNetworkName       = "network_name"
-	Attr_DhcpStatus            = "status"
-
-	// Instance
-	Arg_PVMInstanceId           = "pi_instance_id"
-	Arg_PVMInstanceActionType   = "pi_action"
-	Arg_PVMInstanceHealthStatus = "pi_health_status"
-	Arg_IBMiCSS                 = "pi_ibmi_css"
-	Arg_IBMiPHA                 = "pi_ibmi_pha"
-	Arg_IBMiRDSUsers            = "pi_ibmi_rds_users"
-	Attr_IBMiCSS                = "ibmi_css"
-	Attr_IBMiPHA                = "ibmi_pha"
-	Attr_IBMiRDS                = "ibmi_rds"
-	Attr_IBMiRDSUsers           = "ibmi_rds_users"
-	OS_IBMI                     = "ibmi"
-
 	PVMInstanceHealthOk      = "OK"
 	PVMInstanceHealthWarning = "WARNING"
 
@@ -352,10 +368,6 @@ const (
 
 	PIInstanceUserData  = "pi_user_data"
 	PIInstanceVolumeIds = "pi_volume_ids"
-
-	Attr_PIInstanceSharedProcessorPool   = "shared_processor_pool"
-	Attr_PIInstanceSharedProcessorPoolID = "shared_processor_pool_id"
-	Arg_PIInstanceSharedProcessorPool    = "pi_shared_processor_pool"
 
 	// Placement Group
 	PIPlacementGroupID      = "placement_group_id"
@@ -397,13 +409,6 @@ const (
 	// Cloud Connections
 	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
 
-	// SPP Placement Group
-
-	Attr_SPPPlacementGroupID      = "spp_placement_group_id"
-	Attr_SPPPlacementGroupMembers = "members"
-	Attr_SPPPlacementGroupPolicy  = "policy"
-	Attr_SPPPlacementGroupName    = "name"
-
 	// status
 	// common status states
 	StatusShutoff = "SHUTOFF"
@@ -418,23 +423,6 @@ const (
 	// volume clone task status
 	VolumeCloneCompleted = "completed"
 	VolumeCloneRunning   = "running"
-
-	// Workspaces
-	Attr_WorkspaceCapabilities = "pi_workspace_capabilities"
-	Attr_WorkspaceDetails      = "pi_workspace_details"
-	Attr_WorkspaceID           = "pi_workspace_id"
-	Attr_WorkspaceLocation     = "pi_workspace_location"
-	Attr_WorkspaceName         = "pi_workspace_name"
-	Attr_WorkspaceStatus       = "pi_workspace_status"
-	Attr_WorkspaceType         = "pi_workspace_type"
-
-	// Datacenter
-	Arg_DatacenterZone          = "pi_datacenter_zone"
-	Attr_DatacenterCapabilities = "pi_datacenter_capabilities"
-	Attr_DatacenterLocation     = "pi_datacenter_location"
-	Attr_DatacenterStatus       = "pi_datacenter_status"
-	Attr_DatacenterType         = "pi_datacenter_type"
-	Attr_DatacenterHref         = "pi_datacenter_href"
 
 	// IBM PI Workspace
 	PIWorkspaceName          = "pi_name"
