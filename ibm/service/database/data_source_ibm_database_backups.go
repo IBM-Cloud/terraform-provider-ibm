@@ -165,7 +165,7 @@ func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.Resourc
 	return nil
 }
 
-// dataSourceIBMDatabaseBackupsID returns a reasonable ID for the list.
+// DataSourceIBMDatabaseBackupsID returns a reasonable ID for the list.
 func DataSourceIBMDatabaseBackupsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
