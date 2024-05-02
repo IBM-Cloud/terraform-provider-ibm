@@ -4,11 +4,11 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_rulesets_version"
 description: |-
-  Provides an IBM CIS ruleset resource.
+  Provides an IBM CIS ruleset version resource.
 ---
 
 # ibm_cis_rulesets_version
-Provides an IBM Cloud Internet Services ruleset resource to delete a ruleset of an instance or domain. For more information about IBM Cloud Internet Services ruleset, see [ruleset instance]().
+Provides an IBM Cloud Internet Services ruleset version resource of an instance or domain to be detached. This allow ruleset version to delete. For more information about IBM Cloud Internet Services ruleset version detach, see [ruleset instance]().
 
 ## Example usage
 
@@ -29,7 +29,11 @@ Review the argument references that you can specify for your resource.
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.
 - `ruleset_id` - (Required, String) ID of the ruleset.
-- `ruleset_version` - (Required, String) Version of the ruleset to be deleted.
+- `ruleset_version` - (Required, String) Version of the ruleset to be deleted. You can not delete the latest version of the ruleset.
+
+## Attribute reference
+
+This resource does not provide attribute reference.
 
 ## Import
 The `ibm_cis_rulesets_version` resource is imported by using the ID. The ID is formed from the ruleset version, the ruleset ID, the domain ID of the domain and the Cloud Resource Name (CRN) concatenated using a `:` character.
