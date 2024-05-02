@@ -274,13 +274,12 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Failed to fetch BluemixUserDetails %s", err))
+		return diag.FromErr(fmt.Errorf("failed to fetch BluemixUserDetails %s", err))
 	}
 
-	// accountID := userDetails.UserAccount
-	accountID := "e3aa0adff348470f803d4b6e53d625cf"
+	accountID := userDetails.UserAccount
 
 	createPolicyTemplateOptions := &iampolicymanagementv1.CreatePolicyTemplateOptions{}
 

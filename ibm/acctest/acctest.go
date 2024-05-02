@@ -371,7 +371,7 @@ var (
 	Vmaas_Directorsite_pvdc_id string
 )
 
-// For access management
+// For IAM Access Management
 var (
 	TargetAccountId string
 )

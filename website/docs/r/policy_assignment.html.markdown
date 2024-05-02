@@ -81,7 +81,7 @@ resource "ibm_iam_policy_assignment" "policy_assignment" {
 }
 ```
 **Note**: Above configuration is to create policy template versions and assign to a target
-enterprise account. Update this parameter(***template_version***) and terraformapply again to update the assignment
+enterprise account. Update this parameter(***template_version***) and terraform apply again to update the assignment
 
 ## Argument Reference
 
