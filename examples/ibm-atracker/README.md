@@ -33,6 +33,7 @@ resource "atracker_target" "atracker_target_instance" {
   cos_endpoint = var.atracker_target_cos_endpoint
   logdna_endpoint = var.atracker_target_logdna_endpoint
   eventstreams_endpoint = var.atracker_target_eventstreams_endpoint
+  cloudlogs_endpoint = var.atracker_target_cloudlogs_instance
 }
 ```
 atracker_route resource:
@@ -101,6 +102,8 @@ data "atracker_routes" "atracker_routes_instance" {
 | target_type | The type of the target. | `string` | true |
 | cos_endpoint | Property values for a Cloud Object Storage Endpoint. | `` | true |
 | eventstreams_endpoint | Property values for the Event Streams Endpoint in responses. | `` | false |
+| logdna_endpoint | Property values for a LogDNA Endpoint in responses. | `` | false |
+| cloudlogs_endpoint | Property values for the IBM Cloud Logs Endpoint in responses. | `` | false |
 | name | The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. | `string` | true |
 | rules | The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped. | `list()` | true |
 | default_targets | The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. | `list(string)` | false |

@@ -40,6 +40,24 @@ func TestAccResourceTag_Basic(t *testing.T) {
 		},
 	})
 }
+func TestAccResourceTag_Wait(t *testing.T) {
+	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+
+			{
+				Config: testAccCheckResourceTagWaitCreate(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
+					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.#", "3"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckResourceTagExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -72,6 +90,23 @@ func testAccCheckResourceTagExists(n string) resource.TestCheckFunc {
 	}
 }
 
+func testAccCheckResourceTagWaitCreate(name string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_is_vpc" "vpc" {
+		name		  = "%s"
+	}
+
+	data "ibm_is_vpc" "test_vpc" {
+		name  = ibm_is_vpc.vpc.name
+	}
+
+	resource "ibm_resource_tag" "tag" {
+		resource_id = data.ibm_is_vpc.test_vpc.crn
+		tags        = ["env:dev", "cpu:4", "user:8"]
+	}
+`, name)
+}
 func testAccCheckResourceTagCreate(name, managed_from string) string {
 	return fmt.Sprintf(`
 

@@ -6,73 +6,68 @@ package power
 import (
 	"context"
 	"fmt"
-
 	"log"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-)
-
-const (
-	PITypeName = "pi_storage_type"
 )
 
 func DataSourceIBMPIStorageTypeCapacity() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIStorageTypeCapacityRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
-				Type:         schema.TypeString,
+			// Arguments
+			Arg_CloudInstanceID: {
+				Description:  "The GUID of the service instance associated with an account.",
 				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			PITypeName: {
-				Type:         schema.TypeString,
+			Arg_StorageType: {
+				Description:  "The storage type name.",
 				Required:     true,
+				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
-				Description:  "Storage type name",
 			},
-			// Computed Attributes
+
+			// Attributes
 			Attr_MaximumStorageAllocation: {
-				Type:        schema.TypeMap,
 				Computed:    true,
-				Description: "Maximum storage allocation",
+				Description: "Maximum storage allocation.",
+				Type:        schema.TypeMap,
 			},
 			Attr_StoragePoolsCapacity: {
-				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Storage pools capacity",
+				Description: "List of storage pools capacity.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_MaxAllocationSize: {
-							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Maximum allocation storage size (GB)",
+							Description: "Maximum allocation storage size (GB).",
+							Type:        schema.TypeInt,
 						},
 						Attr_PoolName: {
-							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Pool name",
+							Description: "The pool name",
+							Type:        schema.TypeString,
 						},
 						Attr_StorageType: {
-							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Storage type of the storage pool",
+							Description: "Storage type of the storage pool.",
+							Type:        schema.TypeString,
 						},
 						Attr_TotalCapacity: {
-							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Total pool capacity (GB)",
+							Description: "Total pool capacity (GB).",
+							Type:        schema.TypeInt,
 						},
 					},
 				},
+				Type: schema.TypeList,
 			},
 		},
 	}
@@ -84,10 +79,10 @@ func dataSourceIBMPIStorageTypeCapacityRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	storageType := d.Get(PITypeName).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	storageType := d.Get(Arg_StorageType).(string)
 
-	client := st.NewIBMPIStorageCapacityClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIStorageCapacityClient(ctx, sess, cloudInstanceID)
 	stc, err := client.GetStorageTypeCapacity(storageType)
 	if err != nil {
 		log.Printf("[ERROR] get storage type capacity failed %v", err)

@@ -2559,7 +2559,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error updating database tags %v : %s\n%s", add, err, resp)
 		}
-		response, errored := waitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
+		response, errored := WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
 		if errored != nil {
 			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
 %v`, resourceID, errored, response)
@@ -2569,7 +2569,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 	return nil
 }
 
-func waitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
+func WaitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for tag attachment (%s) to be successful.", resourceID)
 
 	stateConf := &resource.StateChangeConf{
@@ -4326,4 +4326,28 @@ func Listdifference(a, b []string) []string {
 		}
 	}
 	return ab
+}
+
+// Stringify returns the stringified form of value "v".
+// If "v" is a string-based type (string, strfmt.Date, strfmt.DateTime, strfmt.UUID, etc.),
+// then it is returned unchanged (e.g. `this is a string`, `foo`, `2025-06-03`).
+// Otherwise, json.Marshal() is used to serialze "v" and the resulting string is returned
+// (e.g. `32`, `true`, `[true, false, true]`, `{"foo": "bar"}`).
+// Note: the backticks in the comments above are not part of the returned strings.
+func Stringify(v interface{}) string {
+	if !core.IsNil(v) {
+		if s, ok := v.(string); ok {
+			return s
+		} else if s, ok := v.(interface{ String() string }); ok {
+			return s.String()
+		} else {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				log.Printf("[ERROR] Error marshaling 'any type' value as string: %s", err.Error())
+				return ""
+			}
+			return string(bytes)
+		}
+	}
+	return ""
 }
