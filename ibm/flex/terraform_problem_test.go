@@ -196,6 +196,24 @@ func TestFmtErrorfWithProblemInServiceErrorResponse(t *testing.T) {
 	assert.ErrorIs(t, tfErr.GetCausedBy(), sdkProb)
 }
 
+func TestDiscriminatedTerraformErrorf(t *testing.T) {
+	summary := "Update failed."
+	resourceName := "ibm_some_resource"
+	operation := "update"
+	discriminator := "failed-to-read-input"
+
+	terraformProb := DiscriminatedTerraformErrorf(nil, summary, resourceName, operation, discriminator)
+	assert.NotNil(t, terraformProb)
+	assert.Equal(t, summary, terraformProb.Summary)
+	assert.Equal(t, getComponentInfo(), terraformProb.Component)
+	assert.Equal(t, core.ErrorSeverity, terraformProb.Severity)
+
+	// The discriminator field is private, so it can't be checked, so make
+	// sure the hash is unique - that is the purpose of the discriminator.
+	terraformProbNoDisc := TerraformErrorf(nil, summary, resourceName, operation)
+	assert.NotEqual(t, terraformProbNoDisc.GetID(), terraformProb.GetID())
+}
+
 func TestGetComponentInfo(t *testing.T) {
 	component := getComponentInfo()
 	assert.NotNil(t, component)

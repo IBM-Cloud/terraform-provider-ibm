@@ -115,6 +115,13 @@ variable "hpcsSecretName" {
     description = "Please provide the HPCS secret name"
 }
 
+variable "workerPools" {
+
+    type = string
+    default =  null
+    description = "A list of the worker pool names where you want to deploy ODF. Either specify workerpool or workernodes to deploy ODF, if not specified ODF will deploy on all nodes"
+}
+
 variable "workerNodes" {
 
     type = string
