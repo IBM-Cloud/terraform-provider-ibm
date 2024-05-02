@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -53,6 +54,126 @@ func TestAccIBMKMSKMIPClientCertResource_basic(t *testing.T) {
 						wrapQuotes("mycert"),
 					),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMKMSKMIPClientCertResource_DuplicateCertError(t *testing.T) {
+	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
+	myCert, err := generateSelfSignedCertificate()
+	if err != nil {
+		t.Error(err)
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			// Create a CRK and an adapter
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
+						wrapQuotes("myadapter"),
+						"null",
+					),
+					WithResourceKMSKMIPClientCert(
+						"test_cert",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert,
+						wrapQuotes("mycert"),
+					),
+					WithResourceKMSKMIPClientCert(
+						"test_cert_dupe",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert,
+						"null",
+					),
+				),
+				ExpectError: regexp.MustCompile("KMIP_CERT_DUPLICATE_ERR"),
+			},
+		},
+	})
+}
+
+func TestAccIBMKMSKMIPClientCertResource_InvalidCert(t *testing.T) {
+	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			// Create a CRK and an adapter
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
+						wrapQuotes("myadapter"),
+						"null",
+					),
+					WithResourceKMSKMIPClientCert(
+						"test_cert",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						"invalidPEM",
+						wrapQuotes("mycert"),
+					),
+				),
+				ExpectError: regexp.MustCompile("INVALID_FIELD_ERR"),
+			},
+		},
+	})
+}
+
+func TestAccIBMKMSKMIPClientCertResource_DuplicateNameError(t *testing.T) {
+	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
+	myCert, err := generateSelfSignedCertificate()
+	myCert2, err := generateSelfSignedCertificate()
+	if err != nil {
+		t.Error(err)
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			// Create a CRK and an adapter
+			{
+				Config: buildResourceSet(
+					WithResourceKMSInstance(instanceName),
+					WithResourceKMSRootKey("adapter_test_crk", "TestCRK"),
+					WithResourceKMSKMIPAdapter(
+						"test_adapter",
+						"native_1.0",
+						convertMapToTerraformConfigString(map[string]string{
+							wrapQuotes("crk_id"): "ibm_kms_key.adapter_test_crk.key_id",
+						}),
+						wrapQuotes("myadapter"),
+						"null",
+					),
+					WithResourceKMSKMIPClientCert(
+						"test_cert",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert,
+						wrapQuotes("mycert"),
+					),
+					WithResourceKMSKMIPClientCert(
+						"test_cert_dupe",
+						"ibm_kms_kmip_adapter.test_adapter.id",
+						myCert2,
+						wrapQuotes("mycert"),
+					),
+				),
+				ExpectError: regexp.MustCompile("KMIP_CERT_DUPLICATE_NAME_ERR"),
 			},
 		},
 	})

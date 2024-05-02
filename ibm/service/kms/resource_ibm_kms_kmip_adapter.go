@@ -142,7 +142,7 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Failed to delete KMIP object associated with adapter (%s): %s",
-				&adapterID,
+				adapterID,
 				err,
 			)
 		}
