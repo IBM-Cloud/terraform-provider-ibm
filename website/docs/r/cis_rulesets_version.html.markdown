@@ -4,11 +4,11 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_rulesets_version"
 description: |-
-  Provides a IBM CIS ruleset resource.
+  Provides an IBM CIS ruleset resource.
 ---
 
 # ibm_cis_rulesets_version
-Provides an IBM Cloud Internet Services ruleset resource to delete a ruleset of an instance or domain. For more information, about IBM Cloud Internet Services ruleset, see [ruleset instance]().
+Provides an IBM Cloud Internet Services ruleset resource to delete a ruleset of an instance or domain. For more information about IBM Cloud Internet Services ruleset, see [ruleset instance]().
 
 ## Example usage
 
@@ -27,22 +27,22 @@ resource "ibm_cis_rulesets_version" "tests" {
 Review the argument references that you can specify for your resource. 
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
-- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided request will be made at zone/domain level else request will be made at instance level.
-- `ruleset_id` - (Required, String) Id of the ruleset.
-- `ruleset_version` - (Required, String) Version of the Ruleset to be deleted.
+- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.
+- `ruleset_id` - (Required, String) ID of the ruleset.
+- `ruleset_version` - (Required, String) Version of the ruleset to be deleted.
 
 ## Import
-The `ibm_cis_rulesets_version` resource is imported by using the ID. The ID is formed from the ruleset version, the ruleset ID, the domain ID of the domain and the CRN (Cloud Resource Name) concatenated using a `:` character.
+The `ibm_cis_rulesets_version` resource is imported by using the ID. The ID is formed from the ruleset version, the ruleset ID, the domain ID of the domain and the Cloud Resource Name (CRN) concatenated using a `:` character.
 
-The domain ID and CRN is located on the **overview** page of the internet services instance of the domain heading of the console, or by using the `ibm cis` command line commands.
+The domain ID and CRN are located on the **Overview** page of the Internet Services instance of the domain heading of the console, or by using the `ibm cis` CLI commands.
 
 - **Ruleset Version** is a string of the form: `10`.
 
-- **Ruleset ID** is a 32 digit character string of the form: `489d96f0da6ed76251b475971b097205c`.
+- **Ruleset ID** is a 32-digit character string of the form: `489d96f0da6ed76251b475971b097205c`.
 
-- **Domain ID** is a 32 digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
+- **Domain ID** is a 32-digit character string of the form: `9caf68812ae9b3f0377fdf986751a78f`.
 
-- **CRN** is a 120 digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
+- **CRN** is a 120-digit character string of the form: `crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::`.
 
 **Syntax**
 
