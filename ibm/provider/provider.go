@@ -976,7 +976,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_filter":                      cis.ResourceIBMCISFilter(),
 			"ibm_cis_firewall_rule":               cis.ResourceIBMCISFirewallrules(),
 			"ibm_cis_ruleset":                     cis.ResourceIBMCISRuleset(),
-			"ibm_cis_rulesets_version":            cis.ResourceIBMCISRulesetsVersion(),
+			"ibm_cis_rulesets_version_detach":     cis.ResourceIBMCISRulesetsVersionDetach(),
 			"ibm_cis_rulesets_rule":               cis.ResourceIBMCISRulesetsRule(),
 			"ibm_cis_rulesets_entrypoint_version": cis.ResourceIBMCISRulesetsEntryPointVersion(),
 
@@ -1507,7 +1507,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_ruleset":                              cis.ResourceIBMCISRulesetValidator(),
 				"ibm_cis_rulesets_entrypoint_version":          cis.ResourceIBMCISRulesetsEntryPointVersionValidator(),
 				"ibm_cis_rulesets_rule":                        cis.ResourceIBMCISRulesetsRuleValidator(),
-				"ibm_cis_rulesets_version":                     cis.ResourceIBMCISRulesetsVersionValidator(),
+				"ibm_cis_rulesets_version_detach":              cis.ResourceIBMCISRulesetsVersionDetachValidator(),
 				"ibm_container_cluster":                        kubernetes.ResourceIBMContainerClusterValidator(),
 				"ibm_container_worker_pool":                    kubernetes.ResourceIBMContainerWorkerPoolValidator(),
 				"ibm_container_vpc_worker_pool":                kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),

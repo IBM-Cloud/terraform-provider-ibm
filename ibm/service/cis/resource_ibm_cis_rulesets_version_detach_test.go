@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMCisRulesetsVersion_Basic(t *testing.T) {
-	name := "data.ibm_cis_rulesets_version.test"
+	name := "data.ibm_cis_rulesets_version_detach.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
 		Providers: acc.TestAccProviders,
@@ -28,7 +28,7 @@ func TestAccIBMCisRulesetsVersion_Basic(t *testing.T) {
 }
 func testAccCheckCisRulesetsVersion_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_rulesets_version" "%[1]s" {
+	data "ibm_cis_rulesets_version_detach" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 	  }
 `, id, acc.CisDomainStatic)
