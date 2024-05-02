@@ -176,6 +176,7 @@ func ResourceIBMEnterpriseAccount() *schema.Resource {
 			"iam_apikey": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The IAM API KEY of the account with owner IAM policies.",
 			},
 		},
