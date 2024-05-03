@@ -44,7 +44,7 @@ func DataSourceIBMCISRulesetsRulesByTag() *schema.Resource {
 				Required:    true,
 				Description: "Rulesets rule tag",
 			},
-			CISRulesetsOutput: {
+			CISRulesetsListOutput: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
@@ -90,10 +90,10 @@ func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	rulesetObj := flattenCISRulesets(d, *result.Result)
+	rulesetObj := flattenCISRulesets(*result.Result)
 
-	d.SetId(dataSourceCISRulesetsCheckID(d))
-	d.Set(CISRulesetsOutput, rulesetObj)
+	d.SetId(rulesetId)
+	d.Set(CISRulesetsListOutput, rulesetObj)
 	d.Set(cisID, crn)
 
 	return nil

@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -37,7 +39,7 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 			},
 			CISRulesetsId: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Id",
 			},
 			CISRulesetsVersion: {
@@ -46,6 +48,12 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 				Description: "Ruleset version",
 			},
 			CISRulesetsVersionOutput: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Container for response information.",
+				Elem:        CISResponseObject,
+			},
+			CISRulesetsObjectOutput: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Container for response information.",
@@ -79,12 +87,11 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	crn := d.Get(cisID).(string)
+
+	ruleset_version, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
-	zoneId := d.Get(cisDomainID).(string)
 	rulesetId := d.Get(CISRulesetsId).(string)
-	ruleset_version := d.Get(CISRulesetsVersion).(string)
 
 	if zoneId != "" {
 		sess.ZoneIdentifier = core.StringPtr(zoneId)
@@ -96,10 +103,10 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 				log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 				return err
 			}
-			rulesetObj := flattenCISRulesets(d, *result.Result)
+			rulesetObj := flattenCISRulesets(*result.Result)
 
-			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetObj)
+			d.SetId(rulesetId)
+			d.Set(CISRulesetsListOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
@@ -140,10 +147,10 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 				return err
 			}
 
-			rulesetObj := flattenCISRulesets(d, *result.Result)
+			rulesetObj := flattenCISRulesets(*result.Result)
 
-			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsOutput, rulesetObj)
+			d.SetId(rulesetId)
+			d.Set(CISRulesetsListOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {

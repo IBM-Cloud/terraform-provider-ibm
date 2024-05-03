@@ -10,13 +10,13 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/networking-go-sdk/rulesetsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 	return &schema.Resource{
 		Read:     ResourceIBMCISRulesetsEntryPointVersionRead,
+		Create:   ResourceIBMCISRulesetsEntryPointVersionUpdate,
 		Update:   ResourceIBMCISRulesetsEntryPointVersionUpdate,
 		Delete:   ResourceIBMCISRulesetsEntryPointVersionDelete,
 		Importer: &schema.ResourceImporter{},
@@ -25,9 +25,9 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_entrypoint_version",
-					"cis_id"),
+				// ValidateFunc: validate.InvokeDataSourceValidator(
+				// 	"ibm_cis_rulesets_entrypoint_version",
+				// 	"cis_id"),
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
@@ -37,14 +37,14 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 			},
 			CISRulesetPhase: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Ruleset phase",
 			},
 			CISRulesetsEntryPointOutput: {
-				Type:        schema.TypeList,
-				Computed:    true,
+				Type:        schema.TypeSet,
+				Optional:    true,
 				Description: "Container for response information.",
-				Elem:        CISResponseObject,
+				Elem:        CISResourceResponseObject,
 			},
 		},
 	}
@@ -75,107 +75,35 @@ func ResourceIBMCISRulesetsEntryPointVersionRead(d *schema.ResourceData, meta in
 	sess.Crn = core.StringPtr(crn)
 
 	zoneId := d.Get(cisDomainID).(string)
-	rulesetId := d.Id()
+	ruleset_phase := d.Get(CISRulesetPhase).(string)
 
 	if zoneId != "" {
 		sess.ZoneIdentifier = core.StringPtr(zoneId)
-		opt := sess.NewGetZoneRulesetOptions(rulesetId)
-		result, resp, err := sess.GetZoneRuleset(opt)
+		opt := sess.NewGetZoneEntryPointRulesetVersionOptions(zoneId, ruleset_phase)
+		result, resp, err := sess.GetZoneEntryPointRulesetVersion(opt)
 		if err != nil {
 			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
-		rulesetObj := result.Result
-
-		rulesetOutput := map[string]interface{}{}
-		rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-		rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-		rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-		rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-		rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-		rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-		ruleDetailsList := make([]map[string]interface{}, 0)
-		for _, ruleDetailsObj := range rulesetObj.Rules {
-			ruleDetails := map[string]interface{}{}
-			ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-			ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-			ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-			ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-			ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-			ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-			ruleDetailsLoggingObj := map[string]interface{}{}
-			ruleDetailsLogging := *&ruleDetailsObj.Logging
-			ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-			ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-			ruleDetailsActionParametersObj := map[string]interface{}{}
-			ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-			ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-			ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-			ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-			ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-			ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-			ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
-
-			ruleDetailsList = append(ruleDetailsList, ruleDetails)
-		}
-
-		rulesetOutput[CISRulesetsRules] = ruleDetailsList
+		rulesetObj := flattenCISRulesets(*result.Result)
 
 		d.SetId(dataSourceCISRulesetsCheckID(d))
-		d.Set(CISRulesetsOutput, rulesetOutput)
+		d.Set(CISRulesetsListOutput, rulesetObj)
+		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
 
 	} else {
-		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
-		result, resp, err := sess.GetInstanceRuleset(opt)
+		opt := sess.NewGetInstanceEntryPointRulesetVersionOptions(zoneId, ruleset_phase)
+		result, resp, err := sess.GetInstanceEntryPointRulesetVersion(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Get Instance ruleset failed: %v\n", resp)
+			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
-
-		rulesetObj := result.Result
-
-		rulesetOutput := map[string]interface{}{}
-		rulesetOutput[CISRulesetsDescription] = *rulesetObj.Description
-		rulesetOutput[CISRulesetsKind] = *rulesetObj.Kind
-		rulesetOutput[CISRulesetsName] = *rulesetObj.Name
-		rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
-		rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
-		rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
-
-		ruleDetailsList := make([]map[string]interface{}, 0)
-		for _, ruleDetailsObj := range rulesetObj.Rules {
-			ruleDetails := map[string]interface{}{}
-			ruleDetails[CISRulesetsRuleId] = *&ruleDetailsObj.ID
-			ruleDetails[CISRulesetsRuleVersion] = *&ruleDetailsObj.Version
-			ruleDetails[CISRulesetsRuleAction] = *&ruleDetailsObj.Action
-			ruleDetails[CISRulesetsRuleExpression] = *&ruleDetailsObj.Expression
-			ruleDetails[CISRulesetsRuleRef] = *&ruleDetailsObj.Ref
-			ruleDetails[CISRulesetsRuleLastUpdatedAt] = *&ruleDetailsObj.LastUpdated
-
-			ruleDetailsLoggingObj := map[string]interface{}{}
-			ruleDetailsLogging := *&ruleDetailsObj.Logging
-			ruleDetailsLoggingObj[CISRulesetsRuleLoggingEnabled] = *ruleDetailsLogging.Enabled
-			ruleDetails[CISRulesetsRuleLogging] = ruleDetailsLoggingObj
-
-			ruleDetailsActionParametersObj := map[string]interface{}{}
-			ruleDetailsActionParameters := *&ruleDetailsObj.ActionParameters
-			ruleDetailsActionParametersResponseObj := map[string]interface{}{}
-			ruleDetailsActionParametersResponse := *&ruleDetailsActionParameters.Response
-			ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContent] = *ruleDetailsActionParametersResponse.Content
-			ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseContentType] = *ruleDetailsActionParametersResponse.ContentType
-			ruleDetailsActionParametersResponseObj[CISRulesetsRuleActionParametersResponseStatusCode] = *ruleDetailsActionParametersResponse.StatusCode
-			ruleDetails[CISRulesetsRules] = ruleDetailsActionParametersObj
-
-			ruleDetailsList = append(ruleDetailsList, ruleDetails)
-		}
-
-		rulesetOutput[CISRulesetsRules] = ruleDetailsList
+		rulesetObj := flattenCISRulesets(*result.Result)
 
 		d.SetId(dataSourceCISRulesetsCheckID(d))
-		d.Set(CISRulesetsOutput, rulesetOutput)
+		d.Set(CISRulesetsListOutput, rulesetObj)
+		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
+
 	}
 
 	return nil
@@ -198,26 +126,14 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 
 		opt := sess.NewUpdateZoneEntrypointRulesetOptions(ruleset_phase)
 
-		if d.HasChange(CISRulesetsDescription) {
-			if val, ok := d.GetOk(CISRulesetsDescription); ok {
-				opt.SetDescription(val.(string))
-			}
-		}
-		if d.HasChange(CISRulesetsKind) {
-			if val, ok := d.GetOk(CISRulesetsKind); ok {
-				opt.SetKind(val.(string))
-			}
-		}
-		if d.HasChange(CISRulesetsName) {
-			if val, ok := d.GetOk(CISRulesetsName); ok {
-				opt.SetName(val.(string))
-			}
-		}
-		if d.HasChange(CISRulesetsRules) {
-			if val, ok := d.GetOk(CISRulesetsRules); ok {
-				opt.SetRules(val.([]rulesetsv1.RuleCreate))
-			}
-		}
+		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
+		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
+		opt.SetKind(rulesetsObject[CISRulesetsKind].(string))
+		opt.SetName(rulesetsObject[CISRulesetsName].(string))
+		opt.SetPhase(rulesetsObject[CISRulesetsPhase].(string))
+
+		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
+		opt.SetRules(rulesObj)
 
 		result, resp, err := sess.UpdateZoneEntrypointRuleset(opt)
 		if err != nil || result == nil {
@@ -227,26 +143,14 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 	} else {
 		opt := sess.NewUpdateInstanceEntrypointRulesetOptions(ruleset_phase)
 
-		if d.HasChange(CISRulesetsDescription) {
-			if val, ok := d.GetOk(CISRulesetsDescription); ok {
-				opt.SetDescription(val.(string))
-			}
-		}
-		if d.HasChange(CISRulesetsKind) {
-			if val, ok := d.GetOk(CISRulesetsKind); ok {
-				opt.SetKind(val.(string))
-			}
-		}
-		if d.HasChange(CISRulesetsName) {
-			if val, ok := d.GetOk(CISRulesetsName); ok {
-				opt.SetName(val.(string))
-			}
-		}
-		if d.HasChange(CISRulesetsRules) {
-			if val, ok := d.GetOk(CISRulesetsRules); ok {
-				opt.SetRules(val.([]rulesetsv1.RuleCreate))
-			}
-		}
+		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
+		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
+		opt.SetKind(rulesetsObject[CISRulesetsKind].(string))
+		opt.SetName(rulesetsObject[CISRulesetsName].(string))
+		opt.SetPhase(rulesetsObject[CISRulesetsPhase].(string))
+
+		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
+		opt.SetRules(rulesObj)
 
 		result, resp, err := sess.UpdateInstanceEntrypointRuleset(opt)
 		if err != nil || result == nil {

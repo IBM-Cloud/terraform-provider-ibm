@@ -165,10 +165,10 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 					log.Printf("[WARN] List all Instance rulesets failed: %v\n", resp)
 					return err
 				}
-				rulesetObj := flattenCISRulesets(d, *result.Result)
+				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsOutput, rulesetObj)
+				d.Set(CISRulesetsListOutput, rulesetObj)
 				d.Set(cisID, crn)
 
 			} else {
@@ -179,10 +179,10 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 					return err
 				}
 
-				rulesetObj := flattenCISRulesets(d, *result.Result)
+				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsOutput, rulesetObj)
+				d.Set(CISRulesetsListOutput, rulesetObj)
 				d.Set(cisID, crn)
 			}
 
@@ -196,10 +196,10 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 					return err
 				}
 
-				rulesetObj := flattenCISRulesets(d, *result.Result)
+				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsOutput, rulesetObj)
+				d.Set(CISRulesetsListOutput, rulesetObj)
 				d.Set(cisID, crn)
 
 			} else {
@@ -210,10 +210,10 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 					return err
 				}
 
-				rulesetObj := flattenCISRulesets(d, *result.Result)
+				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsOutput, rulesetObj)
+				d.Set(CISRulesetsListOutput, rulesetObj)
 				d.Set(cisID, crn)
 			}
 		}
