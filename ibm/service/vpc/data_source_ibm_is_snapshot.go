@@ -102,6 +102,13 @@ func DataSourceSnapshot() *schema.Resource {
 				Description:  "Snapshot name",
 			},
 
+			"service_tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) prefixed with `is.snapshot:` associated with this snapshot.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+
 			isSnapshotResourceGroup: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -513,7 +520,9 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 					}
 				}
 				d.Set(isSnapshotClones, flex.NewStringSet(schema.HashString, clones))
-
+				if err = d.Set("service_tags", snapshot.ServiceTags); err != nil {
+					return fmt.Errorf("[ERROR] Error setting service_tags: %s", err)
+				}
 				backupPolicyPlanList := []map[string]interface{}{}
 				if snapshot.BackupPolicyPlan != nil {
 					backupPolicyPlan := map[string]interface{}{}
@@ -563,6 +572,9 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 
 		if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
 			d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+		}
+		if err = d.Set("service_tags", snapshot.ServiceTags); err != nil {
+			return fmt.Errorf("Error setting service_tags: %s", err)
 		}
 		// source snapshot
 		sourceSnapshotList := []map[string]interface{}{}

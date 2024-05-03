@@ -18,9 +18,9 @@ resource "ibm_satellite_storage_configuration" "storage_configuration" {
     storage_template_name = var.storageTemplateName
     storage_template_version = var.storageTemplateVersion
     user_config_parameters = {
-        "osd-size" = var.osdSize,
+        "auto-discover-devices" = var.autoDiscoverDevices,
         "num-of-osd" = var.numOfOsd,
-        "osd-storage-class" = var.osdStorageClassName,
+        "osd-device-path" = var.osdDevicePaths,
         "billing-type" = var.billingType,
         "cluster-encryption" = var.clusterEncryption,
         "ibm-cos-endpoint"= var.ibmCosEndpoint,
@@ -35,11 +35,13 @@ resource "ibm_satellite_storage_configuration" "storage_configuration" {
         "perform-cleanup"= var.performCleanup,
         "disable-noobaa-LB"= var.disableNoobaaLB,
         "encryption-intransit"= var.encryptionInTransit,
-        "worker-pools"=var.workerPools,
         "worker-nodes"= var.workerNodes,
         "add-single-replica-pool" = var.addSingleReplicaPool,
         "taint-nodes" = var.taintNodes,
-        "prepare-for-disaster-recovery" = var.prepareForDisasterRecovery
+        "prepare-for-disaster-recovery" = var.prepareForDisasterRecovery,
+        "resource-profile" = var.resourceProfile,
+        "use-ceph-rbd-as-default-storage-class" = var.useCephRBDAsDefaultStorageClass,
+        "enable-nfs" = var.enableNFS
     }
     user_secret_parameters = {
         "iam-api-key"= var.iamAPIKey,

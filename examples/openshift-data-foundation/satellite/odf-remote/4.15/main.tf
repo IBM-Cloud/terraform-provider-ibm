@@ -35,11 +35,13 @@ resource "ibm_satellite_storage_configuration" "storage_configuration" {
         "perform-cleanup"= var.performCleanup,
         "disable-noobaa-LB"= var.disableNoobaaLB,
         "encryption-intransit"= var.encryptionInTransit,
-        "worker-pools"=var.workerPools,
         "worker-nodes"= var.workerNodes,
         "add-single-replica-pool" = var.addSingleReplicaPool,
         "taint-nodes" = var.taintNodes,
-        "prepare-for-disaster-recovery" = var.prepareForDisasterRecovery
+        "prepare-for-disaster-recovery" = var.prepareForDisasterRecovery,
+        "resource-profile" = var.resourceProfile,
+        "use-ceph-rbd-as-default-storage-class" = var.useCephRBDAsDefaultStorageClass,
+        "enable-nfs" = var.enableNFS
     }
     user_secret_parameters = {
         "iam-api-key"= var.iamAPIKey,

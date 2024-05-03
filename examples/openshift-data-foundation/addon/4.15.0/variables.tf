@@ -21,7 +21,7 @@ variable "region" {
 variable "odfVersion" {
 
     type = string
-    default = "4.14.0"
+    default = "4.15.0"
     description = "Provide the ODF Version you wish to install on your cluster"
   
 }
@@ -115,13 +115,6 @@ variable "hpcsSecretName" {
     description = "Please provide the HPCS secret name"
 }
 
-variable "workerPools" {
-
-    type = string
-    default =  null
-    description = "A list of the worker pool names where you want to deploy ODF. Either specify workerpool or workernodes to deploy ODF, if not specified ODF will deploy on all nodes"
-}
-
 variable "workerNodes" {
 
     type = string
@@ -186,5 +179,29 @@ variable "disableNoobaaLB" {
     type = bool
     default = false
     description = "Specify true to disable to NooBaa public load balancer."
+
+}
+
+variable "enableNFS" {
+
+    type = bool
+    default = false
+    description = "Enabling this allows you to create exports using Network File System (NFS) that can then be accessed internally or externally from the OpenShift cluster."
+
+}
+
+variable "useCephRBDAsDefaultStorageClass" {
+
+    type = bool
+    default = false
+    description = "Enable to set the Ceph RADOS block device (RBD) storage class as the default storage class during the deployment of OpenShift Data Foundation"
+
+}
+
+variable "resourceProfile" {
+
+    type = string
+    default = "balanced"
+    description = "Provides an option to choose a resource profile based on the availability of resources during deployment. Choose between lean, balanced and performance."
 
 }

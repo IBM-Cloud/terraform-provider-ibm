@@ -1,4 +1,4 @@
-# [Tech Preview] Deploying and Managing Openshift Data Foundation
+# Deploying and Managing Openshift Data Foundation
 
 This example shows how to deploy and manage the Openshift Data Foundation (ODF) on IBM Cloud VPC based RedHat Openshift cluster. Note these templates are still in development, so please be advised before using in production.
 
