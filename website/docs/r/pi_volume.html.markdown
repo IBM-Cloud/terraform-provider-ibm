@@ -87,7 +87,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_volume` resource can be imported by using `cloud_instance_id` and `volume_id`.
+The `ibm_pi_volume` resource can be imported by using `pi_cloud_instance_id` and `volume_id`.
 
 ### Example
 
