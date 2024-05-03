@@ -314,6 +314,7 @@ const (
 	State_Creating            = "creating"
 	State_Deleted             = "deleted"
 	State_Deleting            = "deleting"
+	State_DELETING            = "DELETING"
 	State_Failed              = "failed"
 	State_Inactive            = "inactive"
 	State_InProgress          = "in progress"

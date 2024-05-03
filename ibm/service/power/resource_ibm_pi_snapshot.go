@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -271,7 +270,7 @@ func isWaitForPIInstanceSnapshotDeleted(ctx context.Context, client *instance.IB
 	log.Printf("Waiting for (%s) to be deleted.", id)
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{State_Retry, helpers.PIInstanceDeleting},
+		Pending:    []string{State_Retry, State_DELETING},
 		Target:     []string{State_NotFound},
 		Refresh:    isPIInstanceSnapshotDeleteRefreshFunc(client, id),
 		Delay:      10 * time.Second,
