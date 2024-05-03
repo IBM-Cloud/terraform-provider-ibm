@@ -7,7 +7,7 @@ description: |-
   Manages IBM bare metal sever.
 ---
 
-# ibm\_is_bare_metal_server
+# ibm_is_bare_metal_server
 
 Create, update, or delete a Bare Metal Server for VPC. For more information, about managing VPC Bare Metal Server, see [About Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-bare-metal-servers).
 
@@ -294,6 +294,8 @@ In addition to all argument reference list, you can access the following attribu
     - `vlan` -  (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface. [ conflicts with `allowed_vlans`]
 
 - `resource_type` - (String) The type of resource.
+- `firmwate_update_type_available` - (String) The firmware update type available for the bare metal server.
+  -> **Supported firmware update types** </br>&#x2022; none </br>&#x2022; optional </br>&#x2022; required
 - `status` - (String) The status of the bare metal server.
 
   -> **Supported Status** &#x2022; failed </br>&#x2022; pending </br>&#x2022; restarting </br>&#x2022; running </br>&#x2022; starting </br>&#x2022; stopped </br>&#x2022; stopping
