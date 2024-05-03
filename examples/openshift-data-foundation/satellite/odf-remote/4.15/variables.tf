@@ -35,7 +35,7 @@ variable "region" {
 
 variable "odfVersion" {
     type = string
-    default = "4.13.0"
+    default = "4.15.0"
     description = "Provide the ODF Version you wish to install on your cluster"
 }
 
@@ -156,12 +156,6 @@ variable "kmsSecretName" {
     description = "Please provide the HPCS secret name"
 }
 
-variable "workerPools" {
-    type = string
-    default =  null
-    description = "Provide the names/ID of the workerpool on which to install ODF. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers."
-}
-
 variable "workerNodes" {
     type = string
     default =  null
@@ -242,4 +236,28 @@ variable "prepareForDisasterRecovery" {
     type = bool
     default = false
     description = "Specify true to set up the storage system for disaster recovery service with the essential configurations in place. This allows seamless implementation of disaster recovery strategies for your workloads."
+}
+
+variable "enableNFS" {
+
+    type = bool
+    default = false
+    description = "Enabling this allows you to create exports using Network File System (NFS) that can then be accessed internally or externally from the OpenShift cluster."
+
+}
+
+variable "useCephRBDAsDefaultStorageClass" {
+
+    type = bool
+    default = false
+    description = "Enable to set the Ceph RADOS block device (RBD) storage class as the default storage class during the deployment of OpenShift Data Foundation"
+
+}
+
+variable "resourceProfile" {
+
+    type = string
+    default = "balanced"
+    description = "Provides an option to choose a resource profile based on the availability of resources during deployment. Choose between lean, balanced and performance."
+
 }

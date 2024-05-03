@@ -75,7 +75,7 @@ cluster = "" # Enter the Cluster ID
 region = "us-south" # Enter the region
 
 # For add-on deployment
-odfVersion = "4.14.0"
+odfVersion = "4.15.0"
 
 # For CRD Creation and Management
 autoDiscoverDevices = "false"
@@ -93,14 +93,16 @@ ocsUpgrade = "false"
 osdDevicePaths = null
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
-workerPools = null
 workerNodes = null
 encryptionInTransit = false
 taintNodes = false
 addSingleReplicaPool = false
 prepareForDisasterRecovery = false
-ignore-noobaa = false
+ignoreNoobaa = false
 disableNoobaaLB = false
+enableNFS = false
+useCephRBDAsDefaultStorageClass = false
+resourceProfile = "balanced"
 ```
 
 ### Scale-Up of ODF
@@ -109,7 +111,6 @@ The following variables in the `schematics.tfvars` file can be edited
 
 * numOfOsd - To scale your storage
 * workerNodes - To increase the number of Worker Nodes with ODF
-* workerPools -  To increase the number of Storage Nodes by adding more nodes using workerpool
 
 ```hcl
 # For CRD Management
@@ -126,7 +127,7 @@ The following variables in the `schematics.tfvars` file should be changed in ord
 
 ```hcl
 # For ODF add-on upgrade
-odfVersion = "4.14.0" -> "4.15.0"
+odfVersion = "4.15.0" -> "4.16.0"
 
 # For Ocscluster upgrade
 ocsUpgrade = "false" -> "true"
@@ -174,13 +175,16 @@ ocsUpgrade = "false" -> "true"
 | ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
 | osdDevicePaths | IDs of the disks to be used for OSD pods if using local disks or standard classic cluster | `string` | no | null
-| workerPools | A list of the worker pools names where you want to deploy ODF. Either specify workerpool or workernodes to deploy ODF, if not specified ODF will deploy on all nodes | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
 | taintNodes | Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster. | `bool` | no | false
 | addSingleReplicaPool | Specify true to create a single replica pool without data replication, increasing the risk of data loss, data corruption, and potential system instability. | `bool` | no | false
 | prepareForDisasterRecovery | Specify true to set up the storage system for disaster recovery service with the essential configurations in place. This allows seamless implementation of disaster recovery strategies for your workloads | `bool` | no | false
 | disableNoobaaLB | Specify true to disable to NooBaa public load balancer. | `bool` | no | false
+| enableNFS | Enabling this allows you to create exports using Network File System (NFS) that can then be accessed internally or externally from the OpenShift cluster. | `bool` | no | false
+| useCephRBDAsDefaultStorageClass | Enable to set the Ceph RADOS block device (RBD) storage class as the default storage class during the deployment of OpenShift Data Foundation | `bool` | no | false
+| resourceProfile | Provides an option to choose a resource profile based on the availability of resources during deployment. Choose between lean, balanced and performance. | `string` | yes | balanced
+
 
 Refer - https://cloud.ibm.com/docs/openshift?topic=openshift-deploy-odf-vpc&interface=ui#odf-vpc-param-ref
 

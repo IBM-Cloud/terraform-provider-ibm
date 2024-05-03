@@ -6,7 +6,7 @@
 ibmcloud_api_key = ""
 cluster = ""
 region = ""
-odfVersion = "4.14.0"
+odfVersion = "4.15.0"
 
 
 # To create the Ocscluster Custom Resource Definition, with the following specs
@@ -25,10 +25,12 @@ ocsUpgrade = "false"
 osdDevicePaths = null
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
-workerPools = null
 workerNodes = null
 encryptionInTransit = false
 taintNodes = false
 addSingleReplicaPool = false
 prepareForDisasterRecovery = false
 disableNoobaaLB = false
+useCephRBDAsDefaultStorageClass = false
+enableNFS = false
+resourceProfile = "balanced"

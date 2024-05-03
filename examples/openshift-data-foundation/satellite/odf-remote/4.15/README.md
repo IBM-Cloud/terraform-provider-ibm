@@ -49,7 +49,7 @@ region = ""
 
 #ODF Storage Configuration
 storageTemplateName = "odf-remote"
-storageTemplateVersion = "4.14"
+storageTemplateVersion = "4.15"
 
 ## User Parameters
 billingType = "advanced"
@@ -66,7 +66,6 @@ numOfOsd = "1"
 ocsUpgrade = "false"
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-5iops-tier"
-workerPools = null
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false
@@ -74,6 +73,9 @@ performCleanup = false
 taintNodes = false
 addSingleReplicaPool = false
 prepareForDisasterRecovery = false
+enableNFS = false
+useCephRBDAsDefaultStorageClass = false
+resourceProfile = "balanced"
 
 ## Secret Parameters
 ibmCosAccessKey = null
@@ -101,13 +103,11 @@ The following variables in the `input.tfvars` file can be edited
 
 * numOfOsd - To scale your storage
 * workerNodes - To increase the number of Worker Nodes with ODF
-* workerPools - To increase the number of Worker Nodes with ODF by including new workerpools
 
 ```hcl
 numOfOsd = "1" -> "2"
 workerNodes = null -> "worker_1_ID,worker_2_ID"
 updateConfigRevision = true
-workerPools = "workerpool_1" -> "workerpool_1,workerpool_2"
 ```
 In this example we set the `updateConfigRevision` parameter to true in order to update our storage assignment with the latest configuration revision i.e the OcsCluster CRD is updated with the latest changes.
 
@@ -122,7 +122,7 @@ The following variables in the `input.tfvars` file should be changed in order to
 
 ```hcl
 # For ODF add-on upgrade
-storageTemplateVersion = "4.14" -> "4.15"
+storageTemplateVersion = "4.15" -> "4.16"
 ocsUpgrade = "false" -> "true"
 ```
 
@@ -170,19 +170,20 @@ Note this operation deletes the existing configuration and it's respective assig
 | kmsTokenUrl | The HPCS Token URL | `string` | no | null
 | ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
-| workerPools | Provide the names/ID of the workerpool on which to install ODF. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
 | taintNodes | Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster. | `bool` | no | false
 | addSingleReplicaPool | Specify true to create a single replica pool without data replication, increasing the risk of data loss, data corruption, and potential system instability. | `bool` | no | false
 | prepareForDisasterRecovery | Specify true to set up the storage system for disaster recovery service with the essential configurations in place. This allows seamless implementation of disaster recovery strategies for your workloads | `bool` | no | false
 | disableNoobaaLB | Specify true to disable to NooBaa public load balancer. | `bool` | no | false
+| enableNFS | Enabling this allows you to create exports using Network File System (NFS) that can then be accessed internally or externally from the OpenShift cluster. | `bool` | no | false
+| useCephRBDAsDefaultStorageClass | Enable to set the Ceph RADOS block device (RBD) storage class as the default storage class during the deployment of OpenShift Data Foundation | `bool` | no | false
+| resourceProfile | Provides an option to choose a resource profile based on the availability of resources during deployment. Choose between lean, balanced and performance. | `string` | yes | balanced
 
 Refer - https://cloud.ibm.com/docs/satellite?topic=satellite-storage-odf-remote&interface=ui#odf-remote-4.14-parameters
 
 ## Note
 
 * Users should only change the values of the variables within quotes, variables should be left untouched with the default values if they are not set.
-* `workerPools` takes a string containing comma separated values of the names of the workerpool you wish to enable ODF on. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers
 * `workerNodes` takes a string containing comma separated values of the names of the worker nodes you wish to enable ODF on.
 * During ODF Storage Template Update, it is recommended to delete all terraform related assignments before handed, as their lifecycle will be affected, during update new storage assignments are made back internally with new UUIDs.

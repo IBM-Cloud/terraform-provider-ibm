@@ -11,11 +11,13 @@ region = ""
 
 #ODF Storage Configuration
 
-storageTemplateName = "odf-remote"
-storageTemplateVersion = "4.14"
+storageTemplateName = "odf-local"
+storageTemplateVersion = "4.15"
 
 ## User Parameters
 
+autoDiscoverDevices = "true"
+osdDevicePaths = ""
 billingType = "advanced"
 clusterEncryption = "false"
 kmsBaseUrl = null
@@ -28,9 +30,6 @@ ibmCosLocation = null
 ignoreNoobaa = false
 numOfOsd = "1"
 ocsUpgrade = "false"
-osdSize = "512Gi"
-osdStorageClassName = "ibmc-vpc-block-metro-5iops-tier"
-workerPools = null
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false
@@ -38,6 +37,9 @@ performCleanup = false
 taintNodes = false
 addSingleReplicaPool = false
 prepareForDisasterRecovery = false
+enableNFS = false
+useCephRBDAsDefaultStorageClass = false
+resourceProfile = "balanced"
 
 ## Secret Parameters
 ibmCosAccessKey = null

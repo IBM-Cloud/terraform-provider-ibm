@@ -52,7 +52,8 @@ resource "kubernetes_manifest" "ocscluster_ocscluster_auto" {
       "osdStorageClassName" = var.osdStorageClassName,
       "workerNodes" = var.workerNodes==null ? null : split(",", var.workerNodes),
       "encryptionInTransit" = var.encryptionInTransit,
-      "disableNoobaaLB" = var.disableNoobaaLB
+      "disableNoobaaLB" = var.disableNoobaaLB,
+      "taintNodes" = var.taintNodes
     }
   }
 
