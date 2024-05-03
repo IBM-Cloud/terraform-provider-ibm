@@ -71,7 +71,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_snapshot` resource can be imported by using `cloud_instance_id` and `snapshot_id`.
+The `ibm_pi_snapshot` resource can be imported by using `pi_cloud_instance_id` and `snapshot_id`.
 
 ### Example
 
