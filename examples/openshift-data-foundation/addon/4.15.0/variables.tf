@@ -21,7 +21,7 @@ variable "region" {
 variable "odfVersion" {
 
     type = string
-    default = "4.10.0"
+    default = "4.15.0"
     description = "Provide the ODF Version you wish to install on your cluster"
   
 }
@@ -151,6 +151,29 @@ variable "encryptionInTransit" {
   
 }
 
+variable "taintNodes" {
+
+    type = bool
+    default = false
+    description = "Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster."
+
+}
+
+variable "addSingleReplicaPool" {
+
+    type = bool
+    default = false
+    description = "Specify true to create a single replica pool without data replication, increasing the risk of data loss, data corruption, and potential system instability."
+}
+
+variable "prepareForDisasterRecovery" {
+
+    type = bool
+    default = false
+    description = "Specify true to set up the storage system for disaster recovery service with the essential configurations in place. This allows seamless implementation of disaster recovery strategies for your workloads."
+
+}
+
 variable "disableNoobaaLB" {
 
     type = bool
@@ -159,10 +182,26 @@ variable "disableNoobaaLB" {
 
 }
 
-variable "taintNodes" {
+variable "enableNFS" {
 
     type = bool
     default = false
-    description = "Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster."
+    description = "Enabling this allows you to create exports using Network File System (NFS) that can then be accessed internally or externally from the OpenShift cluster."
+
+}
+
+variable "useCephRBDAsDefaultStorageClass" {
+
+    type = bool
+    default = false
+    description = "Enable to set the Ceph RADOS block device (RBD) storage class as the default storage class during the deployment of OpenShift Data Foundation"
+
+}
+
+variable "resourceProfile" {
+
+    type = string
+    default = "balanced"
+    description = "Provides an option to choose a resource profile based on the availability of resources during deployment. Choose between lean, balanced and performance."
 
 }

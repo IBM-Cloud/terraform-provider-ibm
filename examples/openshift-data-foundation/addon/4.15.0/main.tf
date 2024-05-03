@@ -47,10 +47,11 @@ resource "null_resource" "updateCRD" {
         numOfOsd = var.numOfOsd
         ocsUpgrade = var.ocsUpgrade
         workerNodes = var.workerNodes
-        workerPools = var.workerPools
         osdDevicePaths = var.osdDevicePaths
         taintNodes = var.taintNodes
         addSingleReplicaPool = var.addSingleReplicaPool
+        resourceProfile = var.resourceProfile
+        enableNFS = var.enableNFS
     }
     
 
