@@ -51,7 +51,7 @@ func ResourceIBMPIPlacementGroup() *schema.Resource {
 				Description:  "The value of the group's affinity policy. Valid values are 'affinity' and 'anti-affinity'.",
 				Required:     true,
 				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{Affinity, AntiAffinity}),
 			},
 
 			// Attributes

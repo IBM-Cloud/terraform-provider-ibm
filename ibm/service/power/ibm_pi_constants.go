@@ -303,6 +303,10 @@ const (
 	Attr_WWN                                         = "wwn"
 	OS_IBMI                                          = "ibmi"
 
+	// Allowed Values
+	Affinity     = "affinity"
+	AntiAffinity = "anti-affinity"
+
 	// TODO: Second Half Cleanup, remove extra variables
 
 	// SAP Profile
