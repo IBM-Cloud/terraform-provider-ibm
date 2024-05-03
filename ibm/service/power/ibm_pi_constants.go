@@ -303,9 +303,30 @@ const (
 	Attr_WWN                                         = "wwn"
 	OS_IBMI                                          = "ibmi"
 
-	// Allowed Values
+	// Affinty Values
 	Affinity     = "affinity"
 	AntiAffinity = "anti-affinity"
+
+	// States
+	State_Active              = "active"
+	State_ACTIVE              = "ACTIVE"
+	State_Added               = "added"
+	State_Adding              = "adding"
+	State_Available           = "available"
+	State_BUILD               = "BUILD"
+	State_Creating            = "creating"
+	State_Deleted             = "deleted"
+	State_Deleting            = "deleting"
+	State_DELETING            = "DELETING"
+	State_Failed              = "failed"
+	State_Inactive            = "inactive"
+	State_InProgress          = "in progress"
+	State_InUse               = "in-use"
+	State_NotFound            = "Not Found"
+	State_PendingReclaimation = "pending_reclamation"
+	State_Provisioning        = "provisioning"
+	State_Removed             = "removed"
+	State_Retry               = "retry"
 
 	// TODO: Second Half Cleanup, remove extra variables
 

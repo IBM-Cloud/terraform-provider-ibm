@@ -959,8 +959,8 @@ func isWaitForPIInstancePlacementGroupAdd(ctx context.Context, client *st.IBMPIP
 	queryTimeOut := activeTimeOut
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"adding"},
-		Target:     []string{"added"},
+		Pending:    []string{State_Adding},
+		Target:     []string{State_Added},
 		Refresh:    isPIInstancePlacementGroupAddRefreshFunc(client, pgID, id),
 		Delay:      30 * time.Second,
 		MinTimeout: queryTimeOut,
@@ -978,10 +978,10 @@ func isPIInstancePlacementGroupAddRefreshFunc(client *st.IBMPIPlacementGroupClie
 		}
 		for _, x := range pg.Members {
 			if x == id {
-				return pg, "added", nil
+				return pg, State_Added, nil
 			}
 		}
-		return pg, "adding", nil
+		return pg, State_Adding, nil
 	}
 }
 
@@ -991,8 +991,8 @@ func isWaitForPIInstancePlacementGroupDelete(ctx context.Context, client *st.IBM
 	queryTimeOut := activeTimeOut
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{"deleting"},
-		Target:     []string{"deleted"},
+		Pending:    []string{State_Deleting},
+		Target:     []string{State_Deleted},
 		Refresh:    isPIInstancePlacementGroupDeleteRefreshFunc(client, pgID, id),
 		Delay:      30 * time.Second,
 		MinTimeout: queryTimeOut,
@@ -1010,10 +1010,10 @@ func isPIInstancePlacementGroupDeleteRefreshFunc(client *st.IBMPIPlacementGroupC
 		}
 		for _, x := range pg.Members {
 			if x == id {
-				return pg, "deleting", nil
+				return pg, State_Deleting, nil
 			}
 		}
-		return pg, "deleted", nil
+		return pg, State_Deleted, nil
 	}
 }
 
