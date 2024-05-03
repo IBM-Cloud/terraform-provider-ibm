@@ -9,13 +9,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
@@ -31,21 +29,21 @@ func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			// Required Attributes
-			helpers.PICloudInstanceId: {
-				Type:        schema.TypeString,
+			// Arguments
+			Arg_CloudInstanceID: {
+				Description: "The GUID of the service instance associated with an account.",
 				Required:    true,
-				Description: "PI cloud instance ID",
+				Type:        schema.TypeString,
 			},
-			helpers.PIInstanceName: {
-				Type:        schema.TypeString,
+			Arg_InstanceName: {
+				Description: "The unique identifier or name of the instance.",
 				Required:    true,
-				Description: "The unique identifier or name of the instance",
+				Type:        schema.TypeString,
 			},
-			PIConsoleLanguageCode: {
-				Type:        schema.TypeString,
+			Arg_LanguageCode: {
+				Description: "Language code.",
 				Required:    true,
-				Description: "Language code",
+				Type:        schema.TypeString,
 			},
 		},
 	}
@@ -57,9 +55,9 @@ func resourceIBMPIInstanceConsoleLanguageCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	instanceName := d.Get(helpers.PIInstanceName).(string)
-	code := d.Get(PIConsoleLanguageCode).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	instanceName := d.Get(Arg_InstanceName).(string)
+	code := d.Get(Arg_LanguageCode).(string)
 
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
@@ -89,10 +87,10 @@ func resourceIBMPIInstanceConsoleLanguageUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange(PIConsoleLanguageCode) {
-		cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-		instanceName := d.Get(helpers.PIInstanceName).(string)
-		code := d.Get(PIConsoleLanguageCode).(string)
+	if d.HasChange(Arg_LanguageCode) {
+		cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+		instanceName := d.Get(Arg_InstanceName).(string)
+		code := d.Get(Arg_LanguageCode).(string)
 
 		client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 

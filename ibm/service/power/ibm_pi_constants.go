@@ -19,6 +19,7 @@ const (
 	Arg_ImageName                           = "pi_image_name"
 	Arg_InstanceName                        = "pi_instance_name"
 	Arg_KeyName                             = "pi_key_name"
+	Arg_LanguageCode                        = "pi_language_code"
 	Arg_NetworkName                         = "pi_network_name"
 	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
