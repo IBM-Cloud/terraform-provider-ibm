@@ -6,6 +6,7 @@ package kms
 import (
 	"context"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -61,6 +62,15 @@ func dataSourceIBMKMSKmipAdapterBaseSchema() map[string]*schema.Schema {
 
 func DataSourceIBMKMSKmipAdapter() *schema.Resource {
 	baseMap := dataSourceIBMKMSKmipAdapterBaseSchema()
+
+	baseMap["endpoint_type"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Computed:     true,
+		ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+		Description:  "public or private",
+	}
+
 	baseMap["instance_id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,

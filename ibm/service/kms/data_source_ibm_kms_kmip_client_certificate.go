@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -42,6 +43,14 @@ func dataSourceIBMKmsKMIPClientCertificateBaseSchema() map[string]*schema.Schema
 
 func DataSourceIBMKmsKMIPClientCertificate() *schema.Resource {
 	baseMap := dataSourceIBMKmsKMIPClientCertificateBaseSchema()
+
+	baseMap["endpoint_type"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Computed:     true,
+		ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+		Description:  "public or private",
+	}
 
 	baseMap["instance_id"] = &schema.Schema{
 		Type:             schema.TypeString,

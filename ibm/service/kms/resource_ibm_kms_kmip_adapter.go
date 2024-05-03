@@ -24,6 +24,13 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 		Exists:   resourceIBMKmsKMIPAdapterExists,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+				Description:  "public or private",
+			},
 			"instance_id": {
 				Type:             schema.TypeString,
 				Required:         true,

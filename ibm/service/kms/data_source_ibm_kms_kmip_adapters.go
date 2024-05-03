@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,6 +16,13 @@ func DataSourceIBMKMSKmipAdapters() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMKMSKmipAdaptersList,
 		Schema: map[string]*schema.Schema{
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+				Description:  "public or private",
+			},
 			"instance_id": {
 				Type:             schema.TypeString,
 				Required:         true,
@@ -51,13 +58,14 @@ func DataSourceIBMKMSKmipAdapters() *schema.Resource {
 
 func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) error {
 	// initialize API
-	api, err := meta.(conns.ClientSession).KeyProtectAPI()
+	instanceID := getInstanceIDFromResourceData(d, "instance_id")
+	api, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
 	}
-
-	instanceID := getInstanceIDFromResourceData(d, "instance_id")
-	api.Config.InstanceID = instanceID
+	if err != nil {
+		return err
+	}
 
 	// call GetKMIPAdapters api
 	opts := &kp.ListKmipAdaptersOptions{}

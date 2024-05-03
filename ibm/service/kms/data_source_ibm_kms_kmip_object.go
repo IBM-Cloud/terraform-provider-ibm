@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -102,6 +103,14 @@ func DataSourceIBMKMSKMIPObject() *schema.Resource {
 		Description:  "The name of the KMIP adapter that contains the cert",
 		ForceNew:     true,
 		ExactlyOneOf: []string{"adapter_id", "adapter_name"},
+	}
+
+	baseMap["endpoint_type"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Computed:     true,
+		ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+		Description:  "public or private",
 	}
 
 	return &schema.Resource{

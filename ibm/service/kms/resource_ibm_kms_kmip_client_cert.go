@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -19,6 +20,13 @@ func ResourceIBMKmsKMIPClientCertificate() *schema.Resource {
 		Exists:   resourceIBMKmsKMIPClientCertExists,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
+			"endpoint_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+				Description:  "public or private",
+			},
 			"instance_id": {
 				Type:             schema.TypeString,
 				Required:         true,
