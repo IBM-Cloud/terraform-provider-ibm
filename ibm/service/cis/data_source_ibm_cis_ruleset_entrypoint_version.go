@@ -19,9 +19,9 @@ const (
 	CISRulesetVersion           = "ruleset_version"
 )
 
-func DataSourceIBMCISRulesetsEntrypointVersions() *schema.Resource {
+func DataSourceIBMCISRulesetEntrypointVersions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISRulesetsEntrypointVersionsRead,
+		Read: dataIBMCISRulesetEntrypointVersionsRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -67,7 +67,7 @@ func DataSourceIBMCISRulesetsEntrypointVersions() *schema.Resource {
 		},
 	}
 }
-func DataSourceIBMCISRulesetsEntrypointVersionsValidator() *validate.ResourceValidator {
+func DataSourceIBMCISRulesetEntrypointVersionsValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -80,12 +80,12 @@ func DataSourceIBMCISRulesetsEntrypointVersionsValidator() *validate.ResourceVal
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 
-	iBMCISRulesetsEntrypointVersionsValidator := validate.ResourceValidator{
+	IBMCISRulesetEntrypointVersionsValidator := validate.ResourceValidator{
 		ResourceName: "ibm_cis_ruleset_entrypoint_versions",
 		Schema:       validateSchema}
-	return &iBMCISRulesetsEntrypointVersionsValidator
+	return &IBMCISRulesetEntrypointVersionsValidator
 }
-func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return err

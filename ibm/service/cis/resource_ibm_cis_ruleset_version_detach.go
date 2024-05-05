@@ -13,13 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIBMCISRulesetsVersionDetach() *schema.Resource {
+func ResourceIBMCISRulesetVersionDetach() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceIBMCISRulesetsVersionDetachCreate,
-		Read:   ResourceIBMCISRulesetsVersionDetachRead,
-		Delete: ResourceIBMCISRulesetsVersionDetachDelete,
-		Update: ResourceIBMCISRulesetsVersionDetachRead,
-		// Exists:   ResourceIBMCISRulesetsVersionDetachExists,
+		Create: ResourceIBMCISRulesetVersionDetachCreate,
+		Read:   ResourceIBMCISRulesetVersionDetachRead,
+		Delete: ResourceIBMCISRulesetVersionDetachDelete,
+		Update: ResourceIBMCISRulesetVersionDetachRead,
+		// Exists:   ResourceIBMCISRulesetVersionDetachExists,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
@@ -48,7 +48,7 @@ func ResourceIBMCISRulesetsVersionDetach() *schema.Resource {
 		},
 	}
 }
-func ResourceIBMCISRulesetsVersionDetachValidator() *validate.ResourceValidator {
+func ResourceIBMCISRulesetVersionDetachValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -64,7 +64,7 @@ func ResourceIBMCISRulesetsVersionDetachValidator() *validate.ResourceValidator 
 	return &ibmCISRulesetValidator
 }
 
-func ResourceIBMCISRulesetsVersionDetachCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetVersionDetachCreate(d *schema.ResourceData, meta interface{}) error {
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
@@ -94,14 +94,14 @@ func ResourceIBMCISRulesetsVersionDetachCreate(d *schema.ResourceData, meta inte
 	}
 
 	d.SetId(time.Now().UTC().String())
-	return ResourceIBMCISRulesetsVersionDetachRead(d, meta)
+	return ResourceIBMCISRulesetVersionDetachRead(d, meta)
 }
 
-func ResourceIBMCISRulesetsVersionDetachRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetVersionDetachRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func ResourceIBMCISRulesetsVersionDetachDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetVersionDetachDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 	return nil
 }

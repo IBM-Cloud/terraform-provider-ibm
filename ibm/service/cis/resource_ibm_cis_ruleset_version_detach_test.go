@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMCisRulesetsVersion_Basic(t *testing.T) {
+func TestAccIBMCISRulesetVersion_Basic(t *testing.T) {
 	name := "data.ibm_cis_ruleset_version_detach.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },

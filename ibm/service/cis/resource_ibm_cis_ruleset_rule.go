@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIBMCISRulesetsRule() *schema.Resource {
+func ResourceIBMCISRulesetRule() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceIBMCISRulesetsRuleCreate,
-		Read:     ResourceIBMCISRulesetsRuleRead,
-		Update:   ResourceIBMCISRulesetsRuleUpdate,
-		Delete:   ResourceIBMCISRulesetsRuleDelete,
+		Create:   ResourceIBMCISRulesetRuleCreate,
+		Read:     ResourceIBMCISRulesetRuleRead,
+		Update:   ResourceIBMCISRulesetRuleUpdate,
+		Delete:   ResourceIBMCISRulesetRuleDelete,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
@@ -30,7 +30,7 @@ func ResourceIBMCISRulesetsRule() *schema.Resource {
 		},
 	}
 }
-func ResourceIBMCISRulesetsRuleValidator() *validate.ResourceValidator {
+func ResourceIBMCISRulesetRuleValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -46,7 +46,7 @@ func ResourceIBMCISRulesetsRuleValidator() *validate.ResourceValidator {
 	return &ibmCISRulesetValidator
 }
 
-func ResourceIBMCISRulesetsRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
@@ -57,12 +57,12 @@ func ResourceIBMCISRulesetsRuleCreate(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func ResourceIBMCISRulesetsRuleRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetRuleRead(d *schema.ResourceData, meta interface{}) error {
 
 	return nil
 }
 
-func ResourceIBMCISRulesetsRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
@@ -137,7 +137,7 @@ func ResourceIBMCISRulesetsRuleUpdate(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func ResourceIBMCISRulesetsRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {

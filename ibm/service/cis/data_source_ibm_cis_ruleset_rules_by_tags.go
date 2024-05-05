@@ -16,9 +16,9 @@ const (
 	CISRulesetsRuleTag = "rulesets_rule_tag"
 )
 
-func DataSourceIBMCISRulesetsRulesByTag() *schema.Resource {
+func DataSourceIBMCISRulesetRulesByTag() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISRulesetsRead,
+		Read: dataIBMCISRulesetRulesRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -52,7 +52,7 @@ func DataSourceIBMCISRulesetsRulesByTag() *schema.Resource {
 		},
 	}
 }
-func DataSourceIBMCISRulesetsRulesByTagValidator() *validate.ResourceValidator {
+func DataSourceIBMCISRulesetRulesByTagValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -65,12 +65,12 @@ func DataSourceIBMCISRulesetsRulesByTagValidator() *validate.ResourceValidator {
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 
-	iBMCISRulesetsRulesValidator := validate.ResourceValidator{
+	IBMCISRulesetRulesValidator := validate.ResourceValidator{
 		ResourceName: "ibm_cis_ruleset_rules_by_tag",
 		Schema:       validateSchema}
-	return &iBMCISRulesetsRulesValidator
+	return &IBMCISRulesetRulesValidator
 }
-func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISRulesetRulesRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return err

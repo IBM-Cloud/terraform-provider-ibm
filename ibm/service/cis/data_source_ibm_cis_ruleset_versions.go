@@ -18,9 +18,9 @@ const (
 	CISRulesetsVersionOutput = "ruleset_versions"
 )
 
-func DataSourceIBMCISRulesetsVersions() *schema.Resource {
+func DataSourceIBMCISRulesetVersions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISRulesetsVersionsRead,
+		Read: dataIBMCISRulesetVersionsRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -62,7 +62,7 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 	}
 }
 
-func DataSourceIBMCISRulesetsVersionsValidator() *validate.ResourceValidator {
+func DataSourceIBMCISRulesetVersionsValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -75,13 +75,13 @@ func DataSourceIBMCISRulesetsVersionsValidator() *validate.ResourceValidator {
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 
-	iBMCISRulesetsValidator := validate.ResourceValidator{
+	IBMCISRulesetValidator := validate.ResourceValidator{
 		ResourceName: "ibm_cis_ruleset_versions",
 		Schema:       validateSchema}
-	return &iBMCISRulesetsValidator
+	return &IBMCISRulesetValidator
 }
 
-func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISRulesetVersionsRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return err

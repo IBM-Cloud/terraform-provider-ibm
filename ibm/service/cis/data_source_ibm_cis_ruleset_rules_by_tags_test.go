@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMCisRulesetsRulesDataSource_Basic(t *testing.T) {
+func TestAccIBMCISRulesetRulesDataSource_Basic(t *testing.T) {
 	name := "data.ibm_cis_ruleset_rules_by_tag.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },

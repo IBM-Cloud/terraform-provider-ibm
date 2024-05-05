@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
+func ResourceIBMCISRulesetEntryPointVersion() *schema.Resource {
 	return &schema.Resource{
-		Read:     ResourceIBMCISRulesetsEntryPointVersionRead,
-		Create:   ResourceIBMCISRulesetsEntryPointVersionUpdate,
-		Update:   ResourceIBMCISRulesetsEntryPointVersionUpdate,
-		Delete:   ResourceIBMCISRulesetsEntryPointVersionDelete,
+		Read:     ResourceIBMCISRulesetEntryPointVersionRead,
+		Create:   ResourceIBMCISRulesetEntryPointVersionUpdate,
+		Update:   ResourceIBMCISRulesetEntryPointVersionUpdate,
+		Delete:   ResourceIBMCISRulesetEntryPointVersionDelete,
 		Importer: &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
@@ -49,7 +49,7 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 		},
 	}
 }
-func ResourceIBMCISRulesetsEntryPointVersionValidator() *validate.ResourceValidator {
+func ResourceIBMCISRulesetEntryPointVersionValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -65,7 +65,7 @@ func ResourceIBMCISRulesetsEntryPointVersionValidator() *validate.ResourceValida
 	return &ibmCISRulesetValidator
 }
 
-func ResourceIBMCISRulesetsEntryPointVersionRead(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
@@ -109,7 +109,7 @@ func ResourceIBMCISRulesetsEntryPointVersionRead(d *schema.ResourceData, meta in
 	return nil
 }
 
-func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
@@ -158,9 +158,9 @@ func ResourceIBMCISRulesetsEntryPointVersionUpdate(d *schema.ResourceData, meta 
 		}
 
 	}
-	return ResourceIBMCISRulesetsEntryPointVersionRead(d, meta)
+	return ResourceIBMCISRulesetEntryPointVersionRead(d, meta)
 }
 
-func ResourceIBMCISRulesetsEntryPointVersionDelete(d *schema.ResourceData, meta interface{}) error {
+func ResourceIBMCISRulesetEntryPointVersionDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
