@@ -1766,7 +1766,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_page_rules":                  cis.DataSourceIBMCISPageRulesValidator(),
 				"ibm_cis_range_apps":                  cis.DataSourceIBMCISRangeAppsValidator(),
 				"ibm_cis_rate_limit":                  cis.DataSourceIBMCISRateLimitValidator(),
-				"ibm_cis_rulesets":                    cis.DataSourceIBMCISRulesetValidator(),
+				"ibm_cis_rulesets":                    cis.DataSourceIBMCISRulesetsValidator(),
 				"ibm_cis_ruleset_versions":            cis.DataSourceIBMCISRulesetVersionsValidator(),
 				"ibm_cis_ruleset_rules_by_tag":        cis.DataSourceIBMCISRulesetRulesByTagValidator(),
 				"ibm_cis_ruleset_entrypoint_versions": cis.DataSourceIBMCISRulesetEntrypointVersionsValidator(),
