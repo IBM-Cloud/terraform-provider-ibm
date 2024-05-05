@@ -32,7 +32,7 @@ resource "ibm_cis_ruleset" "tests" {
             enabled = true
             rules {
               {
-                id = <id of rule to be overriden>
+                id = var.overriden_rule.id
                 enabled = true
                 action = "log"
               }
@@ -46,7 +46,7 @@ resource "ibm_cis_ruleset" "tests" {
             }
           }
         }
-        description = "<description of rule>"
+        description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
         ref = <reference to another rule>

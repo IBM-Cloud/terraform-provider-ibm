@@ -1,44 +1,41 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_ruleset_entrypoint_versions"
+page_title: "IBM: ibm_cis_ruleset_rules_by_tag"
 description: |-
-  Get information on an IBM Cloud Internet Services ruleset version.
+  Get information on an IBM Cloud Internet Services ruleset rules by tag.
 ---
 
-# ibm_cis_ruleset_entrypoint_versions
+# ibm_cis_ruleset_rules_by_tag
 
-Retrieve information about an IBM Cloud Internet Services Instance/Zone Entry Point ruleset's versions data sources. For more information, see [IBM Cloud Internet Services].
+Retrieve information about IBM Cloud Internet Services rulesets rule by tag data sources. For more information, see [IBM Cloud Internet Services].
 
 ## Example usage
 
 ```terraform
-
-data "ibm_cis_ruleset_entrypoint_versions" "test"{
+data "ibm_cis_ruleset_rules_by_tag" "test"{
     cis_id    = ibm_cis.instance.id
-    domain_id= data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_phase = "http_request_firewall_managed"
+    ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
     ruleset_version = "2"
-    list_all = false
+    rulesets_rule_tag = "wordpress"
 }  
+
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source.
 
-- `cis_id` - (Required, String) The ID of the CIS service instance.
-- `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.  
-- `ruleset_phase` - (Required, String) The phase of the ruleset.
-- `list_all` - (Optional, boolean) If you provide `list_all` as true then you will get a list which wil contain the  information of all the ruleset's version. In this case you will not get the information of the rules associated with the rulesets. If you do not provide `list_all` argument or mark it as false then you will get the information of the latest version of the ruleset along with the information of associated rules. 
-- `ruleset_version` - (Optional, String) If `ruleset_version` of the Entry Point ruleset is not provided then will get the information of the latest version of the ruleset along with the information of associated rules. If the `ruleset_version` is provided then you will get the information of that particular version of the Entry Point ruleset along with the rules associated with it. If `list_all` is marked as true then you do not need to provide `ruleset_version`. Even if you provide the value of `ruleset_version` it won't make any effect on the request. 
+- `cis_id` - (Required, String) The ID of the CIS service instance.  
+- `ruleset_id` - (Required, String) The ID of the ruleset. 
+- `ruleset_version` (Required, String) Version of the ruleset.
+- `rulesets_rule_tag` (Required, String) The tag of the rule.
 
+## Attributes reference 
 
-## Attributes reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-Attribute references when `version` is not provided.
 
-- `result` - (list)
+- `result` - (Map)
     - `id` - (string) Ruleset ID.
     - `description` - (string) Description of the ruleset.
     - `kind` - (string) The kind of the ruleset.
@@ -47,11 +44,11 @@ Attribute references when `version` is not provided.
     - `last updated` - (string) Last update date of the ruleset.
     - `version` - (string) Version of the ruleset.
 
-Extra attributes when `version` is provide.
 
-- `rules` - (List) This list contains the information of rules associated with the Entry Point ruleset's version.
+
+  - `rules` - (List) This list contains the information of rules associated with the `ruleset_id` with the given tag.
   
-  Nested scheme of `rules`
+    Nested scheme of `rules`
     - `id` (String). ID of the rule.
     - `version` (String). Version of the rule.
     - `action` (String). Action of the rule.
@@ -93,3 +90,6 @@ Extra attributes when `version` is provide.
         - `content` (String) Content of the response.
         - `content_type` (string) Content type of the response.
         - `status_code` (Int) Status code returned by the API.
+  
+
+    

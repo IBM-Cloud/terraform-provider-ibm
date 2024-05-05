@@ -6,8 +6,6 @@ package cis
 import (
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -87,10 +85,12 @@ func dataIBMCISRulesetVersionsRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	ruleset_version, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
-	sess.Crn = core.StringPtr(crn)
-
+	crn := d.Get(cisID).(string)
+	zoneId := d.Get(cisDomainID).(string)
+	ruleset_version := d.Get(CISRulesetsVersion).(string)
 	rulesetId := d.Get(CISRulesetsId).(string)
+
+	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
 		sess.ZoneIdentifier = core.StringPtr(zoneId)

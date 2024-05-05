@@ -9,6 +9,7 @@ description: |-
 
 # ibm_cis_ruleset_entrypoint_version
 Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to create and update the ruleset entrypoint of an instance or domain. For more information, about IBM Cloud Internet Services ruleset entrypoint version, see [ruleset entrypoint instance]().
+**As there is no option to create a ruleset entry point resource, it is required to use import module to generate the respective resource configurations([Reference](https://test.cloud.ibm.com/docs/cis?topic=cis-terraform-generating-configuration)) and use the import command to populate the state file, as stated at the end of this page.**
 
 ## Example usage
 
@@ -32,7 +33,7 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
             enabled = true
             rules {
               {
-                id = <id of rule to be overriden>
+                id = var.overriden_rule.id
                 enabled = true
                 action = "log"
               }
@@ -46,7 +47,7 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
             }
           }
         }
-        description = "<description of rule>"
+        description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
         ref = <reference to another rule>
@@ -107,8 +108,8 @@ Review the argument references that you can specify for your resource.
         
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute reference after your resource is created.
-
-- `id` - (String) The entrypoint ruleset ID.
+-
+- `ruleset_id` - (String) The entrypoint ruleset ID.
 
 
 ## Import

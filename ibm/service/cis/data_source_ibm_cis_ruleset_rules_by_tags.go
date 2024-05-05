@@ -39,7 +39,7 @@ func DataSourceIBMCISRulesetRulesByTag() *schema.Resource {
 				Description: "Ruleset version",
 			},
 			CISRulesetsRuleTag: {
-				Type:        schema.TypeBool,
+				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Rulesets rule tag",
 			},
