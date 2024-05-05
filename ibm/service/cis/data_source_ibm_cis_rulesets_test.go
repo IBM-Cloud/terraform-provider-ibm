@@ -29,7 +29,7 @@ func TestAccIBMCisRulesetsDataSource_Basic(t *testing.T) {
 }
 func testAccCheckCisRulesetsDataSource_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_rulesets_versions" "%[1]s" {
+	data "ibm_cis_ruleset_versions" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 	  }
 `, id, acc.CisDomainStatic)

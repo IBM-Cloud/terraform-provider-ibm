@@ -115,7 +115,7 @@ var CISResourceResponseObject = &schema.Resource{
 														CISRulesetsId: {
 															Type:        schema.TypeString,
 															Optional:    true,
-															Description: "Id",
+															Description: "Id of the Ruleset",
 														},
 														CISRulesetOverridesEnabled: {
 															Type:        schema.TypeBool,
@@ -324,6 +324,10 @@ func ResourceIBMCISRulesetValidator() *validate.ResourceValidator {
 }
 
 func ResourceIBMCISRulesetCreate(d *schema.ResourceData, meta interface{}) error {
+	// check if it is a new resource, if true then return error that user need to import it first
+	if d.IsNewResource() {
+		return fmt.Errorf("[ERROR] You can not create a new resource. Please import the resource first. Check documentation for import usage.")
+	}
 	return nil
 }
 
@@ -409,12 +413,12 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		opt := sess.NewGetZoneRulesetOptions(rulesetId)
 		result, resp, err := sess.GetZoneRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Resource: Get zone ruleset failed:  %v -- %v -- %v \n", resp, result, err)
+			return fmt.Errorf("[WARN] Resource: Get zone ruleset failed:  %v \n", resp)
 		}
 
 		rulesetObj := flattenCISRulesets(*result.Result)
 
-		d.SetId(rulesetId)
+		d.SetId(dataSourceCISRulesetsCheckID(d))
 		d.Set(CISRulesetsObjectOutput, rulesetObj)
 		d.Set(cisDomainID, zoneId)
 		d.Set(CISRulesetsId, rulesetId)
@@ -424,12 +428,12 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
 		result, resp, err := sess.GetInstanceRuleset(opt)
 		if err != nil {
-			return fmt.Errorf("[WARN] Resource: Get Instance ruleset failed: %v -- %v -- %v \n", resp, result, err)
+			return fmt.Errorf("[WARN] Resource: Get Instance ruleset failed: %v \n", resp)
 		}
 
 		rulesetObj := flattenCISRulesets(*result.Result)
 
-		d.SetId(rulesetId)
+		d.SetId(dataSourceCISRulesetsCheckID(d))
 		d.Set(CISRulesetsListOutput, rulesetObj)
 		d.Set(CISRulesetsId, rulesetId)
 		d.Set(cisID, crn)

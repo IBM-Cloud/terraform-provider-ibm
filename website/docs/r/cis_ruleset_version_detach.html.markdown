@@ -2,12 +2,12 @@
 
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_rulesets_version_detach"
+page_title: "IBM: ibm_cis_ruleset_version_detach"
 description: |-
   Provides an IBM CIS ruleset version resource.
 ---
 
-# ibm_cis_rulesets_version_detach
+# ibm_cis_ruleset_version_detach
 Provides an IBM Cloud Internet Services ruleset version resource of an instance or domain to be detached. This allow ruleset version to delete. For more information about IBM Cloud Internet Services ruleset version detach, see [ruleset instance]().
 
 ## Example usage
@@ -15,7 +15,7 @@ Provides an IBM Cloud Internet Services ruleset version resource of an instance 
 ```terraform
 # delete ruleset of a domain or instance
 
-resource "ibm_cis_rulesets_version_detach" "tests" {
+resource "ibm_cis_ruleset_version_detach" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     ruleset_id = "<id of the ruleset>"
@@ -36,7 +36,7 @@ Review the argument references that you can specify for your resource.
 This resource does not provide attribute reference.
 
 ## Import
-The `ibm_cis_rulesets_version_detach` resource is imported by using the ID. The ID is formed from the ruleset version, the ruleset ID, the domain ID of the domain and the Cloud Resource Name (CRN) concatenated using a `:` character.
+The `ibm_cis_ruleset_version_detach` resource is imported by using the ID. The ID is formed from the ruleset version, the ruleset ID, the domain ID of the domain and the Cloud Resource Name (CRN) concatenated using a `:` character.
 
 The domain ID and CRN are located on the **Overview** page of the Internet Services instance of the domain heading of the console, or by using the `ibm cis` CLI commands.
 
@@ -51,12 +51,12 @@ The domain ID and CRN are located on the **Overview** page of the Internet Servi
 **Syntax**
 
 ```
-$ terraform import ibm_cis_rulesets_version_detach.config <ruleset version>:<ruleset_id>:<domain-id>:<crn>
+$ terraform import ibm_cis_ruleset_version_detach.config <ruleset version>:<ruleset_id>:<domain-id>:<crn>
 ```
 
 **Example**
 
 ```
-$ terraform import ibm_cis_rulesets_version_detach.config 10:48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
+$ terraform import ibm_cis_ruleset_version_detach.config 10:48996f0da6ed76251b475971b097205c:9caf68812ae9b3f0377fdf986751a78f:crn:v1:bluemix:public:internet-svcs:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3::
 ```
 

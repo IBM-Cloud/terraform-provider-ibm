@@ -24,7 +24,7 @@ func ResourceIBMCISRulesetsRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cis_rulesets_rule",
+				ValidateFunc: validate.InvokeValidator("ibm_cis_ruleset_rule",
 					"cis_id"),
 			},
 		},
@@ -41,7 +41,7 @@ func ResourceIBMCISRulesetsRuleValidator() *validate.ResourceValidator {
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 	ibmCISRulesetValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_rule",
+		ResourceName: "ibm_cis_ruleset_rule",
 		Schema:       validateSchema}
 	return &ibmCISRulesetValidator
 }
@@ -58,7 +58,7 @@ func ResourceIBMCISRulesetsRuleCreate(d *schema.ResourceData, meta interface{}) 
 }
 
 func ResourceIBMCISRulesetsRuleRead(d *schema.ResourceData, meta interface{}) error {
-	
+
 	return nil
 }
 
@@ -91,7 +91,7 @@ func ResourceIBMCISRulesetsRuleUpdate(d *schema.ResourceData, meta interface{}) 
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		opt.SetPosition(&position)
-		
+
 		opt.SetRulesetID(ruleId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
@@ -119,7 +119,7 @@ func ResourceIBMCISRulesetsRuleUpdate(d *schema.ResourceData, meta interface{}) 
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		opt.SetPosition(&position)
-		
+
 		opt.SetRulesetID(ruleId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)

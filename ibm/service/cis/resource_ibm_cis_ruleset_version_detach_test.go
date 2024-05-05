@@ -1,6 +1,5 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
-
 package cis_test
 
 import (
@@ -12,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMCisRulesetsRulesDataSource_Basic(t *testing.T) {
-	name := "data.ibm_cis_rulesets_rules_by_tag.test"
+func TestAccIBMCisRulesetsVersion_Basic(t *testing.T) {
+	name := "data.ibm_cis_ruleset_version_detach.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
 		Providers: acc.TestAccProviders,
@@ -27,9 +26,9 @@ func TestAccIBMCisRulesetsRulesDataSource_Basic(t *testing.T) {
 		},
 	})
 }
-func testAccCheckCisRulesetsRulesDataSource_basic(id, CisDomainStatic string) string {
+func testAccCheckCisRulesetsVersion_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_rulesets_rules_by_tag" "%[1]s" {
+	data "ibm_cis_ruleset_version_detach" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 	  }
 `, id, acc.CisDomainStatic)

@@ -26,7 +26,7 @@ func ResourceIBMCISRulesetsVersionDetach() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cis_rulesets_version_detach",
+				ValidateFunc: validate.InvokeValidator("ibm_cis_ruleset_version_detach",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -59,7 +59,7 @@ func ResourceIBMCISRulesetsVersionDetachValidator() *validate.ResourceValidator 
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 	ibmCISRulesetValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_version_detach",
+		ResourceName: "ibm_cis_ruleset_version_detach",
 		Schema:       validateSchema}
 	return &ibmCISRulesetValidator
 }
@@ -105,10 +105,3 @@ func ResourceIBMCISRulesetsVersionDetachDelete(d *schema.ResourceData, meta inte
 	d.SetId("")
 	return nil
 }
-
-// func ResourceIBMCISRulesetsVersionDetachExists(d *schema.ResourceData, meta interface{}) error {
-// 	if d.Id() == "" {
-// 		return false, nil
-// 	}
-// 	return true, nil
-// }

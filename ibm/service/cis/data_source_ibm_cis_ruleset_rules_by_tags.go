@@ -5,7 +5,6 @@ package cis
 
 import (
 	"log"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -26,13 +25,13 @@ func DataSourceIBMCISRulesetsRulesByTag() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_rules_by_tag",
+					"ibm_cis_ruleset_rules_by_tag",
 					"cis_id"),
 			},
 			CISRulesetsId: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Id",
+				Description: "ID of the Ruleset",
 			},
 			CISRulesetVersion: {
 				Type:        schema.TypeString,
@@ -67,7 +66,7 @@ func DataSourceIBMCISRulesetsRulesByTagValidator() *validate.ResourceValidator {
 			Required:                   true})
 
 	iBMCISRulesetsRulesValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_rules_by_tag",
+		ResourceName: "ibm_cis_ruleset_rules_by_tag",
 		Schema:       validateSchema}
 	return &iBMCISRulesetsRulesValidator
 }
@@ -92,12 +91,9 @@ func dataIBMCISRulesetsRulesRead(d *schema.ResourceData, meta interface{}) error
 
 	rulesetObj := flattenCISRulesets(*result.Result)
 
-	d.SetId(rulesetId)
+	d.SetId(dataSourceCISRulesetsCheckID(d))
 	d.Set(CISRulesetsListOutput, rulesetObj)
 	d.Set(cisID, crn)
 
 	return nil
-}
-func dataSourceCISRulesetsRulesCheckID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }

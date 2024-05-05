@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"log"
 	"reflect"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -18,7 +17,7 @@ import (
 
 const (
 	CISRulesetsListOutput                              = "rulesets_list"
-	CISRulesetsObjectOutput                            = "rulesets_obj"
+	CISRulesetsObjectOutput                            = "rulesets"
 	CISRulesetsDescription                             = "description"
 	CISRulesetsKind                                    = "kind"
 	CISRulesetsName                                    = "name"
@@ -35,10 +34,10 @@ const (
 	CISRulesetsRuleActionParametersResponseContentType = "content_type"
 	CISRulesetsRuleActionParametersResponseStatusCode  = "status_code"
 	CISRulesetsRuleExpression                          = "expression"
-	CISRulesetsRuleRef                                 = "rule_ref"
-	CISRulesetsRuleLogging                             = "rule_logging"
+	CISRulesetsRuleRef                                 = "ref"
+	CISRulesetsRuleLogging                             = "logging"
 	CISRulesetsRuleLoggingEnabled                      = "enabled"
-	CISRulesetsRuleLastUpdatedAt                       = "rule_last_updated_at"
+	CISRulesetsRuleLastUpdatedAt                       = "last_updated_at"
 	CISRulesetsId                                      = "ruleset_id"
 	CISRuleset                                         = "ruleset"
 	CISRulesetList                                     = "rulesets"
@@ -158,7 +157,7 @@ var CISResponseObject = &schema.Resource{
 														CISRulesetsId: {
 															Type:        schema.TypeString,
 															Computed:    true,
-															Description: "Id",
+															Description: "Id of the Ruleset",
 														},
 														CISRulesetOverridesEnabled: {
 															Type:        schema.TypeBool,
@@ -372,7 +371,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			rulesetObj := flattenCISRulesets(*result.Result)
 
-			d.SetId(rulesetId)
+			d.SetId(dataSourceCISRulesetsCheckID(d))
 			d.Set(CISRulesetsObjectOutput, rulesetObj)
 			d.Set(cisID, crn)
 
@@ -417,7 +416,7 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 
 			rulesetObj := flattenCISRulesets(*result.Result)
 
-			d.SetId(rulesetId)
+			d.SetId(dataSourceCISRulesetsCheckID(d))
 			d.Set(CISRulesetsListOutput, rulesetObj)
 			d.Set(cisID, crn)
 
@@ -452,10 +451,6 @@ func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
-}
-
-func dataSourceCISRulesetsCheckID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }
 
 func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
@@ -585,4 +580,8 @@ func flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterO
 	}
 
 	return resultOutput
+}
+
+func dataSourceCISRulesetsCheckID(d *schema.ResourceData) string {
+	return d.Get(CISRulesetsId).(string) + ":" + d.Get(cisDomainID).(string) + ":" + d.Get(cisID).(string)
 }

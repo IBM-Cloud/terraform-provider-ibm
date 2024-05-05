@@ -5,7 +5,6 @@ package cis
 
 import (
 	"log"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -29,7 +28,7 @@ func DataSourceIBMCISRulesetsEntrypointVersions() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_versions",
+					"ibm_cis_ruleset_versions",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -41,11 +40,16 @@ func DataSourceIBMCISRulesetsEntrypointVersions() *schema.Resource {
 			CISRulesetsId: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Id",
+				Description: "ID of the Ruleset",
+			},
+			CISRulesetVersion: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Ruleset phase",
 			},
 			CISRulesetPhase: {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Ruleset phase",
 			},
 			CISRulesetsPhaseListAll: {
@@ -59,11 +63,6 @@ func DataSourceIBMCISRulesetsEntrypointVersions() *schema.Resource {
 				Computed:    true,
 				Description: "Container for response information.",
 				Elem:        CISResponseObject,
-			},
-			CISRulesetVersion: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Ruleset phase",
 			},
 		},
 	}
@@ -82,7 +81,7 @@ func DataSourceIBMCISRulesetsEntrypointVersionsValidator() *validate.ResourceVal
 			Required:                   true})
 
 	iBMCISRulesetsEntrypointVersionsValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_entrypoint_versions",
+		ResourceName: "ibm_cis_ruleset_entrypoint_versions",
 		Schema:       validateSchema}
 	return &iBMCISRulesetsEntrypointVersionsValidator
 }
@@ -220,7 +219,4 @@ func dataIBMCISRulesetsEntrypointVersionsRead(d *schema.ResourceData, meta inter
 	}
 
 	return nil
-}
-func dataSourceCISRulesetsEntrypointVersionsCheckID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }

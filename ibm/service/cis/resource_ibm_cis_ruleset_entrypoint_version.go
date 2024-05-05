@@ -26,7 +26,7 @@ func ResourceIBMCISRulesetsEntryPointVersion() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				// ValidateFunc: validate.InvokeDataSourceValidator(
-				// 	"ibm_cis_rulesets_entrypoint_version",
+				// 	"ibm_cis_ruleset_entrypoint_version",
 				// 	"cis_id"),
 			},
 			cisDomainID: {
@@ -60,7 +60,7 @@ func ResourceIBMCISRulesetsEntryPointVersionValidator() *validate.ResourceValida
 			CloudDataRange:             []string{"service:internet-svcs"},
 			Required:                   true})
 	ibmCISRulesetValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_entrypoint_version",
+		ResourceName: "ibm_cis_ruleset_entrypoint_version",
 		Schema:       validateSchema}
 	return &ibmCISRulesetValidator
 }

@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMCisRulesetsEntrypointVersionsDataSource_Basic(t *testing.T) {
-	name := "data.ibm_cis_rulesets_entrypoint_versions.test"
+func TestAccIBMCisRulesetsVersionsDataSource_Basic(t *testing.T) {
+	name := "data.ibm_cis_ruleset_versions.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
 		Providers: acc.TestAccProviders,
@@ -27,9 +27,9 @@ func TestAccIBMCisRulesetsEntrypointVersionsDataSource_Basic(t *testing.T) {
 		},
 	})
 }
-func testAccCheckCisRulesetsEntrypointVersionsDataSource_basic(id, CisDomainStatic string) string {
+func testAccCheckCisRulesetsVersionsDataSource_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_rulesets_entrypoint_versions" "%[1]s" {
+	data "ibm_cis_ruleset_versions" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 	  }
 `, id, acc.CisDomainStatic)

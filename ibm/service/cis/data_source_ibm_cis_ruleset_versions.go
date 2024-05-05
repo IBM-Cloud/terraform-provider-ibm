@@ -5,7 +5,6 @@ package cis
 
 import (
 	"log"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
@@ -16,7 +15,7 @@ import (
 )
 
 const (
-	CISRulesetsVersionOutput = "rulesets_versions"
+	CISRulesetsVersionOutput = "ruleset_versions"
 )
 
 func DataSourceIBMCISRulesetsVersions() *schema.Resource {
@@ -28,7 +27,7 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 				Description: "CIS instance crn",
 				Required:    true,
 				ValidateFunc: validate.InvokeDataSourceValidator(
-					"ibm_cis_rulesets_versions",
+					"ibm_cis_ruleset_versions",
 					"cis_id"),
 			},
 			cisDomainID: {
@@ -40,7 +39,7 @@ func DataSourceIBMCISRulesetsVersions() *schema.Resource {
 			CISRulesetsId: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Id",
+				Description: "ID of the Ruleset",
 			},
 			CISRulesetsVersion: {
 				Type:        schema.TypeString,
@@ -77,7 +76,7 @@ func DataSourceIBMCISRulesetsVersionsValidator() *validate.ResourceValidator {
 			Required:                   true})
 
 	iBMCISRulesetsValidator := validate.ResourceValidator{
-		ResourceName: "ibm_cis_rulesets_versions",
+		ResourceName: "ibm_cis_ruleset_versions",
 		Schema:       validateSchema}
 	return &iBMCISRulesetsValidator
 }
@@ -105,7 +104,7 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 			}
 			rulesetObj := flattenCISRulesets(*result.Result)
 
-			d.SetId(rulesetId)
+			d.SetId(dataSourceCISRulesetsCheckID(d))
 			d.Set(CISRulesetsListOutput, rulesetObj)
 			d.Set(cisID, crn)
 
@@ -149,7 +148,7 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 
 			rulesetObj := flattenCISRulesets(*result.Result)
 
-			d.SetId(rulesetId)
+			d.SetId(dataSourceCISRulesetsCheckID(d))
 			d.Set(CISRulesetsListOutput, rulesetObj)
 			d.Set(cisID, crn)
 
@@ -184,7 +183,4 @@ func dataIBMCISRulesetsVersionsRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	return nil
-}
-func dataSourceCISRulesetsVersionsCheckID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }
