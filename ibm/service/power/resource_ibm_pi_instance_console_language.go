@@ -14,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
@@ -31,19 +32,22 @@ func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_CloudInstanceID: {
-				Description: "The GUID of the service instance associated with an account.",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "The GUID of the service instance associated with an account.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_InstanceName: {
-				Description: "The unique identifier or name of the instance.",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "The unique identifier or name of the instance.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_LanguageCode: {
-				Description: "Language code.",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:  "Language code.",
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 		},
 	}
