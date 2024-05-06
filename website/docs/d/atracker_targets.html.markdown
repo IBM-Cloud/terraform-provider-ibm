@@ -35,7 +35,7 @@ Nested scheme for **targets**:
 	* `name` - (String) The name of the target resource.
 	* `crn` - (String) The crn of the target resource.
 	* `target_type` - (String) The type of the target.
-	  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`.
+	  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`, `cloud_logs`.
 	* `encrypt_key` - (String) The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.
 	* `region` - (String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
 	* `cos_endpoint` - (List) Property values for a Cloud Object Storage Endpoint.
@@ -55,16 +55,20 @@ Nested scheme for **targets**:
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 		* `target_crn` - (String) The CRN of the LogDNA instance.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-  * `eventstreams_endpoint` - (List) Property values for Event streams Endpoint.
-  Nested scheme for **eventstreams_endpoint**:
-    * `api_key` - (String) The IAM API key that has access to the Event streams instance.
-      * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
-    * `topic` - (String) The topic name defined under the Event streams instance.
-      * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
-    * `brokers` - (List) The list of brokers defined under the Event streams instance and used in the event streams endpoint.
-      * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
-    * `target_crn` - (String) The CRN of the Event streams instance.
-      * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+	* `eventstreams_endpoint` - (List) Property values for Event streams Endpoint.
+	Nested scheme for **eventstreams_endpoint**:
+		* `api_key` - (String) The IAM API key that has access to the Event streams instance.
+			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+		* `topic` - (String) The topic name defined under the Event streams instance.
+			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+		* `brokers` - (List) The list of brokers defined under the Event streams instance and used in the event streams endpoint.
+			* Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+		* `target_crn` - (String) The CRN of the Event streams instance.
+			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+	* `cloudlogs_endpoint` - (List) Property values for an IBM Cloud Logs endpoint.
+	Nested scheme for **cloudlogs_endpoint**:
+		* `target_crn` - (String) The CRN of the IBM Cloud Logs instance.
+			* Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
   * `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
 	Nested scheme for **write_status**:
   	* `last_failure` - (String) The timestamp of the failure.

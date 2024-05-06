@@ -26,10 +26,10 @@ func DataSourceIBMPIKey() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_KeyName: {
-				Required:     true,
 				Description:  "User defined name for the SSH key.",
-				ValidateFunc: validation.NoZeroValues,
+				Required:     true,
 				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Attributes

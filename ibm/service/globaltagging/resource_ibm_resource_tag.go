@@ -6,8 +6,10 @@ package globaltagging
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -41,6 +43,10 @@ func ResourceIBMResourceTag() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+		},
 
 		Schema: map[string]*schema.Schema{
 			resourceID: {
@@ -143,8 +149,10 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 	resources = append(resources, r)
 
 	var add []string
+	var news *schema.Set
 	if v, ok := d.GetOk(tags); ok {
 		tags := v.(*schema.Set)
+		news = v.(*schema.Set)
 		for _, t := range tags.List() {
 			add = append(add, fmt.Sprint(t))
 		}
@@ -182,6 +190,11 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		_, resp, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error attaching resource tags : %v\n%s", resp, err)
+		}
+		response, errored := flex.WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, d.Timeout(schema.TimeoutCreate))
+		if errored != nil {
+			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
+%v`, resourceID, errored, response)
 		}
 	}
 
