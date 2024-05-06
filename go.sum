@@ -116,8 +116,8 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.3.0 h1:OqFxnDxro0JiRwHBKytCcseY2
 github.com/IBM/appconfiguration-go-admin-sdk v0.3.0/go.mod h1:xPxAYhr/uywUIDEo/JqWbkUdTryPdzRdYBfUpA5IjoE=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
-github.com/IBM/cloud-databases-go-sdk v0.6.0 h1:QK3eif7+kusgeuMB54Zw5nco/kDwsDg2sD/84/foDxo=
-github.com/IBM/cloud-databases-go-sdk v0.6.0/go.mod h1:nCIVfeZnhBYIiwByT959dFP4VWUeNLxomDYy63tTC6M=
+github.com/IBM/cloud-databases-go-sdk v0.7.0 h1:prvLebKD1kcIk81D6yRhOr/TWp1VQJGLhGAasQr7RtA=
+github.com/IBM/cloud-databases-go-sdk v0.7.0/go.mod h1:JYucI1PdwqbAd8XGdDAchxzxRP7bxOh1zUnseovHKsc=
 github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1WylNuQ=
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
 github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752 h1:S5NT0aKKUqd9hnIrPN/qUijKx9cZjJi3kfFpog0ByDA=
@@ -141,8 +141,8 @@ github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc
 github.com/IBM/go-sdk-core/v5 v5.9.2/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
-github.com/IBM/go-sdk-core/v5 v5.16.5 h1:5ZltNcryRI8kVcuvNJGR2EXKqb7HtM4atA0Nm5QwAFE=
-github.com/IBM/go-sdk-core/v5 v5.16.5/go.mod h1:GatGZpxlo1KaxiRN6E10/rNgWtUtx1hN/GoHSCaSPKA=
+github.com/IBM/go-sdk-core/v5 v5.17.0 h1:J/8by7r70JmCYqXL/NHFcgpneFAqv16oKMtif+syA14=
+github.com/IBM/go-sdk-core/v5 v5.17.0/go.mod h1:GatGZpxlo1KaxiRN6E10/rNgWtUtx1hN/GoHSCaSPKA=
 github.com/IBM/ibm-cos-sdk-go v1.10.1 h1:vQCsu61OHRVF2lL6ah+m3AmUlhnYGkI1qogukCEFULs=
 github.com/IBM/ibm-cos-sdk-go v1.10.1/go.mod h1:zhcgfL2YG5DVaI5R2F6oYO2DYnvwW14vpcpFq+ybhXU=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.0.4 h1:fvy/cMKn/3BngdxaL5dXaSlUuzTANY42VuVQuW0NEYE=

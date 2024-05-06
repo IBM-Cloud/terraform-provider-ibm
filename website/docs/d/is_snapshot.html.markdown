@@ -128,6 +128,7 @@ In addition to all argument reference list, you can access the following attribu
 - `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this sets to the capacity of the source_volume.
 - `operating_system` - (String) The globally unique name for the operating system included in this image.
 - `resource_type` - (String) The resource type.
+- `service_tags` - (List) The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) prefixed with `is.snapshot:` associated with this snapshot.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `snapshot_consistency_group` - (List) The snapshot consistency group which created this snapshot.
 
