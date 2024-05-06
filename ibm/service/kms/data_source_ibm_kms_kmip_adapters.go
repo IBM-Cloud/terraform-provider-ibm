@@ -44,6 +44,11 @@ func DataSourceIBMKMSKmipAdapters() *schema.Resource {
 				Optional:    true,
 				Description: "Flag to return the count of how many adapters there are in total",
 			},
+			"total_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "If show_total_count is true, this will contain the total number of adapters after pagination.",
+			},
 			"adapters": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -77,9 +82,10 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 		offsetVal := uint32(offset.(int))
 		opts.Offset = &offsetVal
 	}
+	showTotalCountEnabled := false
 	if showTotalCount, ok := d.GetOk("show_total_count"); ok {
-		boolVal := showTotalCount.(bool)
-		opts.TotalCount = &boolVal
+		showTotalCountEnabled = showTotalCount.(bool)
+		opts.TotalCount = &showTotalCountEnabled
 	}
 
 	adapters, err := api.GetKMIPAdapters(context.Background(), opts)
@@ -98,6 +104,9 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 	d.Set("adapters", mySlice)
 	d.Set("instance_id", instanceID)
 	d.SetId(instanceID)
+	if showTotalCountEnabled {
+		d.Set("total_count", adapters.Metadata.TotalCount)
+	}
 	return nil
 }
 

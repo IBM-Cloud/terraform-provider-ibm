@@ -62,6 +62,11 @@ func DataSourceIBMKmsKMIPClientCertificates() *schema.Resource {
 				Optional:    true,
 				Description: "Flag to return the count of how many adapters there are in total",
 			},
+			"total_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "If show_total_count is true, this will contain the total number of certificates.",
+			},
 			"certificates": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -97,9 +102,10 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 		offsetVal := uint32(offset.(int))
 		opts.Offset = &offsetVal
 	}
+	showTotalCountEnabled := false
 	if showTotalCount, ok := d.GetOk("show_total_count"); ok {
-		boolVal := showTotalCount.(bool)
-		opts.TotalCount = &boolVal
+		showTotalCountEnabled = showTotalCount.(bool)
+		opts.TotalCount = &showTotalCountEnabled
 	}
 
 	ctx := context.Background()
@@ -129,6 +135,9 @@ func dataSourceIBMKmsKMIPClientCertList(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("certificates", mySlice)
 	d.SetId(adapter.ID)
+	if showTotalCountEnabled {
+		d.Set("total_count", certs.Metadata.TotalCount)
+	}
 	return nil
 }
 

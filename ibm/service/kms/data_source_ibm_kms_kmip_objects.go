@@ -50,25 +50,30 @@ func DataSourceIBMKMSKMIPObjects() *schema.Resource {
 			"limit": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "Limit of how many adapters to be fetched",
+				Description: "Limit of how many objects to be fetched",
 			},
 			"offset": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "Offset of adapters to be fetched",
+				Description: "Offset of objects to be fetched",
 			},
 			"show_total_count": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Flag to return the count of how many adapters there are in total",
+				Description: "Flag to return the count of how many objects there are in total after the filter",
 			},
 			"object_state_filter": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "",
+				Description: "A list of integers representing Object States to filter for",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
+			},
+			"total_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "If show_total_count is true, this will contain the total number of KMIP objects after pagination.",
 			},
 			"objects": {
 				Type:        schema.TypeList,
@@ -105,9 +110,11 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 		offsetVal := uint32(offset.(int))
 		opts.Offset = &offsetVal
 	}
+
+	showTotalCountEnabled := false
 	if showTotalCount, ok := d.GetOk("show_total_count"); ok {
-		boolVal := showTotalCount.(bool)
-		opts.TotalCount = &boolVal
+		showTotalCountEnabled = showTotalCount.(bool)
+		opts.TotalCount = &showTotalCountEnabled
 	}
 	if stateFilter, ok := d.GetOk("object_state_filter"); ok {
 		arrayVal, ok2 := stateFilter.([]any)
@@ -142,6 +149,11 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set("objects", mySlice)
 	d.SetId(adapter.ID)
+
+	if showTotalCountEnabled {
+		d.Set("total_count", objs.Metadata.TotalCount)
+	}
+
 	return nil
 }
 

@@ -26,6 +26,7 @@ func dataSourceIBMKmsKMIPClientCertificateBaseSchema() map[string]*schema.Schema
 		"certificate": {
 			Type:        schema.TypeString,
 			Computed:    true,
+			Sensitive:   true,
 			Description: "The PEM-encoded contents of the certificate",
 		},
 		"created_by": &schema.Schema{
