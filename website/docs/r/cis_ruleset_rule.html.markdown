@@ -106,4 +106,4 @@ In addition to the argument reference list, you can access the following attribu
 
 ## Import
 
-Import is not possible.
+Import is not possible, as there is no way to read the resource module.

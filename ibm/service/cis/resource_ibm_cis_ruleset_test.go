@@ -3,34 +3,5 @@
 
 package cis_test
 
-import (
-	"fmt"
-	"testing"
-
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-)
-
-func TestAccIBMCisRuleset_Basic(t *testing.T) {
-	name := "data.ibm_cis_ruleset.test"
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCisAlertsDataSource_basic("test", acc.CisDomainStatic),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(name, "id"),
-				),
-			},
-		},
-	})
-}
-func testAccCheckCisRuleset_basic(id, CisDomainStatic string) string {
-	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	resource "ibm_cis_ruleset" "%[1]s" {
-		cis_id = data.ibm_cis.cis.id
-	  }
-`, id, acc.CisDomainStatic)
-}
+// This module can not be tested as a standalone module, as there is no option to create a ruleset.
+// Refer to Terraform Documentation for IBM Cloud. 

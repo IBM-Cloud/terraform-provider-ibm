@@ -6,7 +6,6 @@ package cis
 import (
 	"encoding/json"
 	"log"
-	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -143,11 +142,11 @@ var CISResponseObject = &schema.Resource{
 												Computed:    true,
 												Description: "Enable Disable Rule",
 											},
-											CISRulesetOverridesSensitivityLevel: {
-												Type:        schema.TypeString,
-												Computed:    true,
-												Description: "Sensitivity Level",
-											},
+											// CISRulesetOverridesSensitivityLevel: {
+											// 	Type:        schema.TypeString,
+											// 	Computed:    true,
+											// 	Description: "Sensitivity Level",
+											// },
 											CISRulesetOverridesRules: {
 												Type:        schema.TypeList,
 												Computed:    true,
@@ -169,11 +168,11 @@ var CISResponseObject = &schema.Resource{
 															Computed:    true,
 															Description: "Action to perform",
 														},
-														CISRulesetOverridesSensitivityLevel: {
-															Type:        schema.TypeString,
-															Computed:    true,
-															Description: "Sensitivity Level",
-														},
+														// CISRulesetOverridesSensitivityLevel: {
+														// 	Type:        schema.TypeString,
+														// 	Computed:    true,
+														// 	Description: "Sensitivity Level",
+														// },
 													},
 												},
 											},
@@ -482,8 +481,8 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 		ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
 
 		flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
-		// Check if returned interface value is nil
-		if !(reflect.ValueOf(flattenedActionParameter).IsNil()) {
+
+		if len(flattenedActionParameter) != 0 {
 			ruleDetails[CISRulesetsRuleActionParameters] = []map[string]interface{}{flattenedActionParameter}
 		}
 
@@ -546,9 +545,6 @@ func flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterO
 	if val, ok := actionParameterOverridesOutput["enabled"]; ok {
 		resultOutput[CISRulesetOverridesEnabled] = val.(bool)
 	}
-	if val, ok := actionParameterOverridesOutput["sensitivity_level"]; ok {
-		resultOutput[CISRulesetOverridesSensitivityLevel] = val.(string)
-	}
 
 	if _, ok := actionParameterOverridesOutput["categories"]; ok {
 		categoriesList := make([]map[string]interface{}, 0)
@@ -571,7 +567,6 @@ func flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterO
 			overrideRulesObj[CISRulesetsId] = obj.ID
 			overrideRulesObj[CISRulesetOverridesEnabled] = obj.Enabled
 			overrideRulesObj[CISRulesetOverridesAction] = obj.Action
-			overrideRulesObj[CISRulesetOverridesSensitivityLevel] = obj.SensitivityLevel
 
 			overrideRulesList = append(overrideRulesList, overrideRulesObj)
 		}

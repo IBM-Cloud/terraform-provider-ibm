@@ -37,4 +37,4 @@ This resource does not provide attribute reference.
 
 ## Import
 
-Import is not possible.
+Import is not possible, as there is no way to read the resource module.
