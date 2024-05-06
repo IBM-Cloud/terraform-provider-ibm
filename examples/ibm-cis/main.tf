@@ -660,8 +660,8 @@ data "ibm_cis_ruleset_versions" "tests" {
 data "ibm_cis_ruleset_entrypoint_versions" "test"{
     cis_id    = ibm_cis.instance.id
     domain_id= data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_phase = "http_request_firewall_managed"
-    ruleset_version = "2"
+    phase = "http_request_firewall_managed"
+    version = "2"
     list_all = false
 } 
 
@@ -669,7 +669,7 @@ data "ibm_cis_ruleset_entrypoint_versions" "test"{
 data "ibm_cis_ruleset_rules_by_tag" "test"{
     cis_id    = ibm_cis.instance.id
     ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
-    ruleset_version = "2"
+    version = "2"
     rulesets_rule_tag = "wordpress"
 }  
 
@@ -684,7 +684,7 @@ resource "ibm_cis_ruleset" "tests" {
       {
         action =  "execute"
         action_parameters  {
-          id : <id of ruleset to be deployed>
+          id : var.to_be_deployed_ruleset.id
           overrides  {
             action = "log"
             enabled = true
@@ -707,11 +707,11 @@ resource "ibm_cis_ruleset" "tests" {
         description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
-        ref = <reference to another rule>
+        ref = var.reference_rule.id
         position  {
           index = 1
-          after = <id of any existing rule>
-          before = <id of any existing rule>
+          after = var.after_rule.id
+          before = var.before_rule.id
         }
       }
     }
@@ -722,7 +722,7 @@ resource "ibm_cis_ruleset" "tests" {
 resource "ibm_cis_ruleset_entrypoint_version" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_phase = "http_request_firewall_managed"
+    phase = "http_request_firewall_managed"
     rulesets {
   
       description = "Entry Point ruleset"
@@ -730,7 +730,7 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
       {
         action =  "execute"
         action_parameters  {
-          id : <id of ruleset to be deployed>
+          id : var.to_be_deployed_ruleset.id
           overrides  {
             action = "log"
             enabled = true
@@ -753,11 +753,11 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
         description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
-        ref = <reference to another rule>
+        ref = var.reference_rule.id
         position  {
           index = 1
-          after = <id of any existing rule>
-          before = <id of any existing rule>
+          after = var.after_rule.id
+          before = var.before_rule.id
         }
       }
     }
@@ -773,7 +773,7 @@ resource "ibm_cis_ruleset_rule" "tests" {
     {
       action =  "execute"
       action_parameters  {
-        id : <id of ruleset to be deployed>
+        id : var.to_be_deployed_ruleset.id
         overrides  {
           action = "log"
           enabled = true
@@ -796,7 +796,7 @@ resource "ibm_cis_ruleset_rule" "tests" {
       description = var.rule.description
       enabled = true
       expression = "ip.src ne 1.1.1.1"
-      ref = <reference to another rule>
+      ref = var.reference_rule.id
       position  {
         index = 1
         after = <id of any existing rule>

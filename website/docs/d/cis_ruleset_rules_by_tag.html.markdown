@@ -16,7 +16,7 @@ Retrieve information about IBM Cloud Internet Services rulesets rule by tag data
 data "ibm_cis_ruleset_rules_by_tag" "test"{
     cis_id    = ibm_cis.instance.id
     ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
-    ruleset_version = "2"
+    version = "2"
     rulesets_rule_tag = "wordpress"
 }  
 
@@ -27,7 +27,7 @@ Review the argument references that you can specify for your data source.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.  
 - `ruleset_id` - (Required, String) The ID of the ruleset. 
-- `ruleset_version` (Required, String) Version of the ruleset.
+- `version` (Required, String) Version of the ruleset.
 - `rulesets_rule_tag` (Required, String) The tag of the rule.
 
 ## Attributes reference 

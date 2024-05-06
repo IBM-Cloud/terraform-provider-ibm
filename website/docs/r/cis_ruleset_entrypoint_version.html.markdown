@@ -19,7 +19,7 @@ Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to 
 resource "ibm_cis_ruleset_entrypoint_version" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_phase = "http_request_firewall_managed"
+    phase = "http_request_firewall_managed"
     rulesets {
   
       description = "Entry Point ruleset"
@@ -27,7 +27,7 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
       {
         action =  "execute"
         action_parameters  {
-          id : <id of ruleset to be deployed>
+          id : var.to_be_deployed_ruleset.id
           overrides  {
             action = "log"
             enabled = true
@@ -50,11 +50,11 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
         description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
-        ref = <reference to another rule>
+        ref = var.reference_rule.id
         position  {
           index = 1
-          after = <id of any existing rule>
-          before = <id of any existing rule>
+          after = var.after_rule.id
+          before = var.before_rule.id
         }
       }
     }
@@ -67,7 +67,7 @@ Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.
-- `ruleset_phase` - (Required, String) Phase of the ruleset. Currently, only `http_request_firewall_managed` phase is supported.
+- `phase` - (Required, String) Phase of the ruleset. Currently, only `http_request_firewall_managed` phase is supported.
 - `rulesets` - (Required, List) Values that will be created or updated.
 
   Nested scheme of `rulesets`
@@ -126,7 +126,7 @@ The domain ID and CRN are located on the **Overview** page of the Internet Servi
 **Syntax**
 
 ```
-$ terraform import ibm_cis_ruleset_entrypoint_version.config <ruleset_phase>:<domain-id>:<crn>
+$ terraform import ibm_cis_ruleset_entrypoint_version.config <phase>:<domain-id>:<crn>
 ```
 
 **Example**

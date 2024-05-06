@@ -17,8 +17,8 @@ Retrieve information about an IBM Cloud Internet Services Instance/Zone Entry Po
 data "ibm_cis_ruleset_entrypoint_versions" "test"{
     cis_id    = ibm_cis.instance.id
     domain_id= data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_phase = "http_request_firewall_managed"
-    ruleset_version = "2"
+    phase = "http_request_firewall_managed"
+    version = "2"
     list_all = false
 }  
 ```
@@ -28,9 +28,9 @@ Review the argument references that you can specify for your data source.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If domain_id is provided the request will be made at the zone/domain level otherwise the request will be made at the instance level.  
-- `ruleset_phase` - (Required, String) The phase of the ruleset.
+- `phase` - (Required, String) The phase of the ruleset.
 - `list_all` - (Optional, boolean) If you provide `list_all` as true then you will get a list which wil contain the  information of all the ruleset's version. In this case you will not get the information of the rules associated with the rulesets. If you do not provide `list_all` argument or mark it as false then you will get the information of the latest version of the ruleset along with the information of associated rules. 
-- `ruleset_version` - (Optional, String) If `ruleset_version` of the Entry Point ruleset is not provided then will get the information of the latest version of the ruleset along with the information of associated rules. If the `ruleset_version` is provided then you will get the information of that particular version of the Entry Point ruleset along with the rules associated with it. If `list_all` is marked as true then you do not need to provide `ruleset_version`. Even if you provide the value of `ruleset_version` it won't make any effect on the request. 
+- `version` - (Optional, String) If `version` of the Entry Point ruleset is not provided then will get the information of the latest version of the ruleset along with the information of associated rules. If the `version` is provided then you will get the information of that particular version of the Entry Point ruleset along with the rules associated with it. If `list_all` is marked as true then you do not need to provide `version`. Even if you provide the value of `version` it won't make any effect on the request. 
 
 
 ## Attributes reference

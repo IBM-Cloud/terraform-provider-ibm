@@ -26,7 +26,7 @@ resource "ibm_cis_ruleset" "tests" {
       {
         action =  "execute"
         action_parameters  {
-          id : <id of ruleset to be deployed>
+          id : var.to_be_deployed_ruleset.id
           overrides  {
             action = "log"
             enabled = true
@@ -49,11 +49,11 @@ resource "ibm_cis_ruleset" "tests" {
         description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
-        ref = <reference to another rule>
+        ref = var.reference_rule.id
         position  {
           index = 1
-          after = <id of any existing rule>
-          before = <id of any existing rule>
+          after = var.after_rule.id
+          before = var.before_rule.id
         }
       }
     }

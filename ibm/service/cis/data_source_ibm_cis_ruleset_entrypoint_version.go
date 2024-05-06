@@ -14,9 +14,9 @@ import (
 
 const (
 	CISRulesetsEntryPointOutput = "rulesets"
-	CISRulesetPhase             = "ruleset_phase"
+	CISRulesetPhase             = "phase"
 	CISRulesetsPhaseListAll     = "list_all"
-	CISRulesetVersion           = "ruleset_version"
+	CISRulesetVersion           = "version"
 )
 
 func DataSourceIBMCISRulesetEntrypointVersions() *schema.Resource {
