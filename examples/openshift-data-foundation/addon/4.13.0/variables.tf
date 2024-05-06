@@ -158,3 +158,11 @@ variable "disableNoobaaLB" {
     description = "Specify true to disable to NooBaa public load balancer."
 
 }
+
+variable "taintNodes" {
+
+    type = bool
+    default = false
+    description = "Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster."
+
+}

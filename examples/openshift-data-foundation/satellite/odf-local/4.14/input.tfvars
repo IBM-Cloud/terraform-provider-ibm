@@ -30,6 +30,7 @@ ibmCosLocation = null
 ignoreNoobaa = false
 numOfOsd = "1"
 ocsUpgrade = "false"
+workerPools = null
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false

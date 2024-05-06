@@ -716,7 +716,7 @@ Review the argument reference that you can specify for your resource.
 
     - `host_flavor` (Set, Optional)
       - Nested scheme for `host_flavor`:
-        - `id` - (Optional, String) **Beta feature:** The hosting infrastructure identifier. Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants.
+        - `id` - (Optional, String) The hosting infrastructure identifier. Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants.
           - `b3c.4x16.encrypted`
           - `b3c.8x32.encrypted`
           - `m3c.8x64.encrypted`

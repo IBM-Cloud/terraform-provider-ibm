@@ -48,4 +48,7 @@ In addition to all argument reference list, you can access the following attribu
   - `updated_at` - (Timestamp) The time stamp at which an account was last updated.
   - `updated_by` - (String) The IAM ID of the user or service that updated an account.
   - `url` - (String) The URL of an account.
+  - `iam_apikey` - (String) The IAM API KEY of the account with owner IAM policies, will be used to create resources in enterprise child account.
+  - `iam_apikey_id` - (String) The ID of IAM_API_KEY which has owner IAM policies.
+  - `iam_service_id` - (String) The IAM Service ID of the account will be used to create IAM_API_KEY with owner IAM policies.
 - `id` - (String) The unique identifier of an accounts.
