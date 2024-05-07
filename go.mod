@@ -12,13 +12,13 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752
 	github.com/IBM/container-registry-go-sdk v1.1.0
-	github.com/IBM/continuous-delivery-go-sdk v1.3.0
+	github.com/IBM/continuous-delivery-go-sdk v1.5.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.6.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
 	github.com/IBM/go-sdk-core/v5 v5.17.0
-	github.com/IBM/ibm-cos-sdk-go v1.10.0
-	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
+	github.com/IBM/ibm-cos-sdk-go v1.10.1
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.0.4
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
@@ -200,7 +200,6 @@ require (
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
@@ -212,7 +211,6 @@ require (
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
@@ -239,7 +237,6 @@ replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
-
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2

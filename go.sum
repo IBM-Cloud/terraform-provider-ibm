@@ -124,10 +124,10 @@ github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752 h1:S5NT0aKK
 github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752/go.mod h1:noWxHQUgW9msjOrDpV17gnwWbTbUlSmWMGq7/Vi/n9I=
 github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
 github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
-github.com/IBM/event-notifications-go-admin-sdk v0.6.0 h1:nzoHQF2IXmTVFavIZXbYiKf1SiY4HfPtK5Vtr9UmVm4=
-github.com/IBM/event-notifications-go-admin-sdk v0.6.0/go.mod h1:xRsMCxmPLXvmmWEXF8rshZlZgMrllPSiT9MBi4+Q6cs=
 github.com/IBM/continuous-delivery-go-sdk v1.5.0 h1:FHSRruNt9WK7SavpIVuV6N+xll90UgZsuQjZvQ+slB4=
 github.com/IBM/continuous-delivery-go-sdk v1.5.0/go.mod h1:nZdKUnubXNLo+zo28R4Rd+TGDqiJ/xoE8WO/A3kLw1E=
+github.com/IBM/event-notifications-go-admin-sdk v0.6.0 h1:nzoHQF2IXmTVFavIZXbYiKf1SiY4HfPtK5Vtr9UmVm4=
+github.com/IBM/event-notifications-go-admin-sdk v0.6.0/go.mod h1:xRsMCxmPLXvmmWEXF8rshZlZgMrllPSiT9MBi4+Q6cs=
 github.com/IBM/eventstreams-go-sdk v1.4.0 h1:yS/Ns29sBOe8W2tynQmz9HTKqQZ0ckse4Py5Oy/F2rM=
 github.com/IBM/eventstreams-go-sdk v1.4.0/go.mod h1:2tuAxaYLctfqfr5jvyqSrxxEQGMwYPm3yJGWSj85YVQ=
 github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY=
@@ -1527,10 +1527,8 @@ github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+hCSs=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
-github.com/xdg-go/scram v1.1.2/go.mod h1:RT/sEzTbU5y00aCK8UOx6R7YryM0iF1N2MOmC3kKLN4=
 github.com/xdg-go/stringprep v1.0.2/go.mod h1:8F9zXuvzgwmyT5DUm4GUfZGDdT3W+LCvS6+da4O5kxM=
 github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgklLGvcBnW8=
-github.com/xdg-go/stringprep v1.0.4/go.mod h1:mPGuuIYwz7CmR2bT9j4GbQqutWS1zV24gijq1dTyGkM=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
