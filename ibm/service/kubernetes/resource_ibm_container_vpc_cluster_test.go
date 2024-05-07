@@ -189,7 +189,30 @@ func TestAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T)
 		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name),
+				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name, "1.29", "false"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "disable_outbound_traffic_protection", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVPCClusterUpdateDisableOutboundTrafficProtection(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name, "1.30", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
@@ -199,7 +222,7 @@ func TestAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T)
 				),
 			},
 			{
-				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name),
+				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name, "false"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
@@ -335,7 +358,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }`, name)
 }
 
-func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name string) string {
+func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name, kubeVersion, disable_outbound_traffic_protection string) string {
 	return fmt.Sprintf(`
 data "ibm_resource_group" "resource_group" {
 	is_default = "true"
@@ -368,7 +391,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	vpc_id            = ibm_is_vpc.vpc.id
 	flavor            = "cx2.2x4"
 	worker_count      = 1
-	kube_version      = "1.30"
+	kube_version      = "%[2]s"
 	wait_till         = "OneWorkerNodeReady"
 	resource_group_id = data.ibm_resource_group.resource_group.id
 	zones {
@@ -385,12 +408,12 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	"test1" = "test-default-pool1"
 	"test2" = "test-default-pool2"
 	}
-	disable_outbound_traffic_protection = true
+	disable_outbound_traffic_protection = "%[3]s"
 
-}`, name)
+}`, name, kubeVersion, disable_outbound_traffic_protection)
 }
 
-func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name string) string {
+func testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name, disable_outbound_traffic_protection string) string {
 	return fmt.Sprintf(`
 data "ibm_resource_group" "resource_group" {
 	is_default = "true"
@@ -438,9 +461,9 @@ resource "ibm_container_vpc_cluster" "cluster" {
 	"test1" = "test-default-pool1"
 	"test2" = "test-default-pool2"
 	}
-	disable_outbound_traffic_protection = false
+	disable_outbound_traffic_protection = "%[2]s"
 
-}`, name)
+}`, name, disable_outbound_traffic_protection)
 }
 
 // preveously you have to create securitygroups and use them instead
