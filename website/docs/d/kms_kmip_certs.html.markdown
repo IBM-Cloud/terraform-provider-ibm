@@ -47,7 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 - `certificates` - (List of Objects) The IBM-ID of the identity that created the resource
 
     Nested scheme for `certificates`:
-    - `cert_id` - (String) The UUID of the KMIP adapter.
-    - `name` - (String) The name of the KMIP adapter.
+    - `cert_id` - (String) The UUID of the KMIP client certificate.
+    - `name` - (String) The name of the KMIP client certificate.
     - `created_at` - (String) The date the resource was created, in RFC 3339 format
     - `created_by` - (String) The IBM-ID of the identity that created the resource

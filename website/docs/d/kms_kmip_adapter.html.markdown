@@ -37,8 +37,8 @@ Review the argument references that you can specify for your resource.
 
 - `endpoint_type` - (Optional, String) The type of the public endpoint, or private endpoint to be used for creating keys.
 - `instance_id` - (Required, String) The key protect instance GUID.
-- `adapter_id` - (Optional, String) The UUID of the KMIP adapter to be fetched. Mutually Exclusive argument with `name`. One has to be given.
-- `name` - (Optional, String) The name of the KMIP adapter to be fetched. Mutually Exclusive argument with `adapter_id`. One has to be given.
+- `adapter_id` - (Optional, String) The UUID of the KMIP adapter to be fetched. Mutually exclusive argument with `name`. One has to be given.
+- `name` - (Optional, String) The name of the KMIP adapter to be fetched. Mutually exclusive argument with `adapter_id`. One has to be given.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
