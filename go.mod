@@ -240,7 +240,6 @@ replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
 
-replace github.com/IBM/event-notifications-go-admin-sdk v0.5.0 => /Users/divyasingh/Desktop/Terraform-Code/event-notifications-go-admin-sdk
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
