@@ -16,12 +16,12 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func ResourceIBMEnEmailTemplate() *schema.Resource {
+func ResourceIBMEnSlackTemplate() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnEmailTemplateCreate,
-		ReadContext:   resourceIBMEnEmailTemplateRead,
-		UpdateContext: resourceIBMEnEmailTemplateUpdate,
-		DeleteContext: resourceIBMEnEmailTemplateDelete,
+		CreateContext: resourceIBMEnSlackTemplateCreate,
+		ReadContext:   resourceIBMEnSlackTemplateRead,
+		UpdateContext: resourceIBMEnSlackTemplateUpdate,
+		DeleteContext: resourceIBMEnSlackTemplateDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -56,12 +56,7 @@ func ResourceIBMEnEmailTemplate() *schema.Resource {
 						"body": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The email address to reply to.",
-						},
-						"subject": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The  name of the email address user to reply to.",
+							Description: "The Slack Template body.",
 						},
 					},
 				},
@@ -91,7 +86,7 @@ func ResourceIBMEnEmailTemplate() *schema.Resource {
 	}
 }
 
-func resourceIBMEnEmailTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -121,7 +116,7 @@ func resourceIBMEnEmailTemplateCreate(context context.Context, d *schema.Resourc
 	return resourceIBMEnEmailTemplateRead(context, d, meta)
 }
 
-func resourceIBMEnEmailTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -182,7 +177,7 @@ func resourceIBMEnEmailTemplateRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceIBMEnEmailTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -219,7 +214,7 @@ func resourceIBMEnEmailTemplateUpdate(context context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceIBMEnEmailTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSlackTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -249,14 +244,11 @@ func resourceIBMEnEmailTemplateDelete(context context.Context, d *schema.Resourc
 	return nil
 }
 
-func EmailTemplateParamsMap(configParams map[string]interface{}) en.TemplateConfigOneOf {
+func SlackTemplateParamsMap(configParams map[string]interface{}) en.TemplateConfigOneOf {
 	params := new(en.TemplateConfigOneOf)
 	if configParams["body"] != nil {
 		params.Body = core.StringPtr(configParams["body"].(string))
 	}
 
-	if configParams["subject"] != nil {
-		params.Subject = core.StringPtr(configParams["subject"].(string))
-	}
 	return *params
 }

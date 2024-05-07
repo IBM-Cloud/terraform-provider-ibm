@@ -95,24 +95,6 @@ func DataSourceIBMEnCustomEmailSubscription() *schema.Resource {
 							Computed:    true,
 							Description: "The templete id for invitation",
 						},
-						// "invited": {
-						// 	Type:        schema.TypeList,
-						// 	Optional:    true,
-						// 	Computed:    true,
-						// 	Description: "The email id to be invited",
-						// },
-						// "subscribed": {
-						// 	Type:        schema.TypeList,
-						// 	Optional:    true,
-						// 	Computed:    true,
-						// 	Description: "The Email address which should be subscribed from smtp_ibm.",
-						// },
-						// "unsubscribed": {
-						// 	Type:        schema.TypeList,
-						// 	Optional:    true,
-						// 	Computed:    true,
-						// 	Description: "The Email address which should be unsubscribed from smtp_ibm.",
-						// },
 						"invited": {
 							Type:        schema.TypeList,
 							Computed:    true,
