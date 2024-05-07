@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package globaltagging
@@ -6,8 +6,10 @@ package globaltagging
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -23,8 +25,9 @@ const (
 	tags         = "tags"
 	resourceType = "resource_type"
 	tagType      = "tag_type"
-	acccountID   = "acccount_id"
+	accountID    = "account_id"
 	service      = "service"
+	replace      = "replace"
 )
 
 func ResourceIBMResourceTag() *schema.Resource {
@@ -40,6 +43,10 @@ func ResourceIBMResourceTag() *schema.Resource {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+		},
 
 		Schema: map[string]*schema.Schema{
 			resourceID: {
@@ -68,10 +75,17 @@ func ResourceIBMResourceTag() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", tagType),
 				Description:  "Type of the tag. Only allowed values are: user, or service or access (default value : user)",
 			},
-			acccountID: {
+			accountID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the account that owns the resources to be tagged (required if tag-type is set to service)",
+			},
+			replace: {
+				Type:             schema.TypeBool,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Optional:         true,
+				Default:          false,
+				Description:      "If true, it indicates that the attaching operation is a replacement operation",
 			},
 		},
 	}
@@ -135,8 +149,10 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 	resources = append(resources, r)
 
 	var add []string
+	var news *schema.Set
 	if v, ok := d.GetOk(tags); ok {
 		tags := v.(*schema.Set)
+		news = v.(*schema.Set)
 		for _, t := range tags.List() {
 			add = append(add, fmt.Sprint(t))
 		}
@@ -154,6 +170,12 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	if v, ok := d.GetOk(replace); ok && v != nil {
+		replace := v.(bool)
+		AttachTagOptions.Replace = &replace
+
+	}
+
 	// Fetch tags from schematics only if they are user tags
 	if strings.TrimSpace(tagType) == "" || tagType == "user" {
 		schematicTags := os.Getenv("IC_ENV_TAGS")
@@ -168,6 +190,11 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		_, resp, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error attaching resource tags : %v\n%s", resp, err)
+		}
+		response, errored := flex.WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, d.Timeout(schema.TimeoutCreate))
+		if errored != nil {
+			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
+%v`, resourceID, errored, response)
 		}
 	}
 
@@ -207,7 +234,7 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 		tType = v.(string)
 
 		if tType == service {
-			d.Set(acccountID, acctID)
+			d.Set(accountID, acctID)
 		}
 	}
 

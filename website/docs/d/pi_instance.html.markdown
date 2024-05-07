@@ -49,7 +49,7 @@ In addition to all argument reference list, you can access the following attribu
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
 - `ibmi_rds_users` - (Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `id` - (String) The unique identifier of the instance.
-- `license_repository_capacity` - (Integer) The VTL license repository capacity TB value. Only available with VTL instances.
+- `license_repository_capacity` - (Deprecated, Integer) The VTL license repository capacity TB value. Only available with VTL instances.
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores that can be assigned without rebooting the instance.
@@ -71,6 +71,7 @@ In addition to all argument reference list, you can access the following attribu
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
+- `server_name` - (String) The name of the instance.
 - `shared_processor_pool`- (String) The name of the shared processor pool for the instance.
 - `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
 - `status` - (String) The status of the instance.

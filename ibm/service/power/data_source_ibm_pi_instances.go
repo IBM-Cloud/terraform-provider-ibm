@@ -40,6 +40,7 @@ func DataSourceIBMPIInstances() *schema.Resource {
 						},
 						Attr_LicenseRepositoryCapacity: {
 							Computed:    true,
+							Deprecated:  "This field is deprecated.",
 							Description: "The VTL license repository capacity TB value.",
 							Type:        schema.TypeInt,
 						},
@@ -141,6 +142,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The unique identifier of the instance.",
 							Type:        schema.TypeString,
 						},
+						Attr_ServerName: {
+							Computed:    true,
+							Description: "The name of the instance.",
+							Type:        schema.TypeString,
+						},
 						Attr_SharedProcessorPool: {
 							Computed:    true,
 							Description: "The name of the shared processor pool for the instance.",
@@ -225,6 +231,7 @@ func flattenPvmInstances(list []*models.PVMInstanceReference) []map[string]inter
 			Attr_Processors:                *i.Processors,
 			Attr_ProcType:                  *i.ProcType,
 			Attr_PVMInstanceID:             *i.PvmInstanceID,
+			Attr_ServerName:                i.ServerName,
 			Attr_SharedProcessorPool:       i.SharedProcessorPool,
 			Attr_SharedProcessorPoolID:     i.SharedProcessorPoolID,
 			Attr_Status:                    *i.Status,

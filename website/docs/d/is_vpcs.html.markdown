@@ -57,7 +57,6 @@ You can access the following attribute references after your data source is crea
     - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
     - `default_routing_table_name` - (String) The name of the default routing table.
 
-    -> **NOTE:** `dns` attribute is a select location availability, invitation only feature. In other regions value might not be present.
     - `dns` - (List) The DNS configuration for this VPC.
       
       Nested scheme for `dns`:

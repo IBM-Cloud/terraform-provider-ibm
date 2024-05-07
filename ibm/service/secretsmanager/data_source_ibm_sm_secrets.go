@@ -36,6 +36,18 @@ func DataSourceIbmSmSecrets() *schema.Resource {
 				Optional:    true,
 				Description: "Filter secrets by groups. You can apply multiple filters by using a comma-separated list of secret group IDs. If you need to filter secrets that are in the default secret group, use the `default` keyword.",
 			},
+			"secret_types": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Filter secrets by secret types.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"match_all_labels": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Filter secrets by a label or a combination of labels.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"total_count": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -534,6 +546,24 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 			groupsList := strings.Split(groupsStr, ",")
 			listSecretsOptions.SetGroups(groupsList)
 		}
+	}
+
+	if _, ok := d.GetOk("secret_types"); ok {
+		secretTypes := d.Get("secret_types").([]interface{})
+		parsedTypes := make([]string, len(secretTypes))
+		for i, v := range secretTypes {
+			parsedTypes[i] = fmt.Sprint(v)
+		}
+		listSecretsOptions.SetSecretTypes(parsedTypes)
+	}
+
+	if _, ok := d.GetOk("match_all_labels"); ok {
+		labels := d.Get("match_all_labels").([]interface{})
+		parsedLabels := make([]string, len(labels))
+		for i, v := range labels {
+			parsedLabels[i] = fmt.Sprint(v)
+		}
+		listSecretsOptions.SetMatchAllLabels(parsedLabels)
 	}
 
 	var pager *secretsmanagerv2.SecretsPager

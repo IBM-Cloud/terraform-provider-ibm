@@ -11,7 +11,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
+	rcsdk "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
@@ -707,16 +707,10 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("s3_endpoint_public", apiEndpoint)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
 	d.Set("s3_endpoint_direct", directApiEndpoint)
-
-	getBucketConfigOptions := &resourceconfigurationv1.GetBucketConfigOptions{
-		Bucket: &bucketName,
-	}
-
 	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
 	}
-
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
@@ -728,10 +722,11 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, satlc_id)
 
 		sess.SetServiceURL(satconfig)
-
 	}
 
-	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
+	getOptions := new(rcsdk.GetBucketConfigOptions)
+	getOptions.SetBucket(bucketName)
+	bucketPtr, response, err := sess.GetBucketConfig(getOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}

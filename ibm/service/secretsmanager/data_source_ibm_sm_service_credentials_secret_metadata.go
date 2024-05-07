@@ -107,6 +107,11 @@ func DataSourceIbmSmServiceCredentialsSecretMetadata() *schema.Resource {
 				Computed:    true,
 				Description: "The time-to-live (TTL) or lease duration to assign to generated credentials.",
 			},
+			"expiration_date": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date a secret is expired. The date format follows RFC 3339.",
+			},
 			"rotation": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -383,6 +388,12 @@ func dataSourceIbmSmServiceCredentialsSecretMetadataRead(context context.Context
 	if len(sourceServiceMap) > 0 {
 		if err = d.Set("source_service", []map[string]interface{}{sourceServiceMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting source_service: %s", err))
+		}
+	}
+
+	if ServiceCredentialsSecretMetadata.ExpirationDate != nil {
+		if err = d.Set("expiration_date", DateTimeToRFC3339(ServiceCredentialsSecretMetadata.ExpirationDate)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 		}
 	}
 

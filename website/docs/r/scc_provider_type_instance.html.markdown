@@ -48,14 +48,20 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_scc_provider_type_instance` resource by using `id`.
 The `id` property can be formed from `instance_id`, `provider_type_id`, and `provider_type_instance_id` in the following format:
 
-```
-<provider_type_id>/<provider_type_instance_id>
+```bash
+<instance_id>/<provider_type_id>/<provider_type_instance_id>
 ```
 * `instance_id`: A string. The instance ID.
 * `provider_type_id`: A string. The provider type ID.
 * `provider_type_instance_id`: A string. The provider type instance ID.
 
 # Syntax
-```
+
+```bash
 $ terraform import ibm_scc_provider_type_instance.scc_provider_type_instance <instance_id>/<provider_type_id>/<provider_type_instance_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_scc_provider_type_instance.scc_provider_type_instance 00000000-1111-2222-3333-444444444444/00000000-1111-2222-3333-444444444444/f3517159-889e-4781-819a-89d89b747c85
 ```

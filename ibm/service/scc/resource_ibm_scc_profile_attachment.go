@@ -162,43 +162,11 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				},
 			},
 			"attachment_parameters": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The profile parameters for the attachment.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"assessment_type": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The type of the implementation.",
-						},
-						"assessment_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The implementation ID of the parameter.",
-						},
-						"parameter_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The parameter name.",
-						},
-						"parameter_value": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The value of the parameter.",
-						},
-						"parameter_display_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The parameter display name.",
-						},
-						"parameter_type": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The parameter type.",
-						},
-					},
-				},
+				Elem:        schemaAttachmentParameters(),
+				Set:         hashAttachmentParameters,
 			},
 			"last_scan": {
 				Type:        schema.TypeList,
@@ -266,6 +234,56 @@ func ResourceIbmSccProfileAttachmentValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
+// hashAttachmentParameters will determine how to hash the AttachmentParameters schema.Resource
+// It uses the 'assessment_id' in order to determine the difference.
+func hashAttachmentParameters(v interface{}) int {
+	if v == nil {
+		return 0
+	}
+	m := v.(map[string]interface{})
+	id := (m["assessment_id"]).(string)
+	return schema.HashString(id)
+}
+
+// schemaAttachmentParameters returns a *schema.Resource for AttachmentParameters
+func schemaAttachmentParameters() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"assessment_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The implementation ID of the parameter.",
+			},
+			"assessment_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "automated",
+				Description: "The type of the implementation.",
+			},
+			"parameter_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The parameter name.",
+			},
+			"parameter_display_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The parameter display name.",
+			},
+			"parameter_type": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The parameter type.",
+			},
+			"parameter_value": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The value of the parameter.",
+			},
+		},
+	}
+}
+
 func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityandcompliancecenterapiClient, err := meta.(conns.ClientSession).SecurityAndComplianceCenterV3()
 	if err != nil {
@@ -276,6 +294,7 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 	createAttachmentOptions := &securityandcompliancecenterapiv3.CreateAttachmentOptions{}
 	instance_id := d.Get("instance_id").(string)
 	bodyModelMap["instance_id"] = instance_id
+
 	if _, ok := d.GetOk("profile_id"); ok {
 		bodyModelMap["profile_id"] = d.Get("profile_id")
 	}
@@ -285,11 +304,10 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 	if _, ok := d.GetOk("scope"); ok {
 		bodyModelMap["scope"] = d.Get("scope")
 	}
-	// manual chang
+
+	// manual change
 	if _, ok := d.GetOk("attachment_parameters"); ok {
 		bodyModelMap["attachment_parameters"] = d.Get("attachment_parameters")
-	} else {
-		bodyModelMap["attachment_parameters"] = []interface{}{}
 	}
 	if _, ok := d.GetOk("notifications"); ok {
 		bodyModelMap["notifications"] = d.Get("notifications")
@@ -419,13 +437,13 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		}
 	}
 	if !core.IsNil(attachmentItem.AttachmentParameters) {
-		attachmentParameters := []map[string]interface{}{}
+		attachmentParameters := &schema.Set{F: hashAttachmentParameters}
 		for _, attachmentParametersItem := range attachmentItem.AttachmentParameters {
 			attachmentParametersItemMap, err := resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(&attachmentParametersItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			attachmentParameters = append(attachmentParameters, attachmentParametersItemMap)
+			attachmentParameters.Add(attachmentParametersItemMap)
 		}
 		if err = d.Set("attachment_parameters", attachmentParameters); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting attachment_parameters: %s", err))
@@ -503,12 +521,17 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 		hasChange = true
 	}
 
-	if d.HasChange("attachment_item") {
-		attachmentItem, err := resourceIbmSccProfileAttachmentMapToAttachmentItem(d.Get("attachment_item.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+	if d.HasChange("attachment_parameters") {
+		attachmentItems := d.Get("attachment_parameters")
+		attachmentParameters := []securityandcompliancecenterapiv3.AttachmentParameterPrototype{}
+		for _, attachmentParametersItem := range attachmentItems.(*schema.Set).List() {
+			attachmentParametersItemModel, err := resourceIbmSccProfileAttachmentMapToAttachmentParameterPrototype(attachmentParametersItem.(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			attachmentParameters = append(attachmentParameters, *attachmentParametersItemModel)
 		}
-		replaceProfileAttachmentOptions.SetAttachmentID(*attachmentItem.ID)
+		replaceProfileAttachmentOptions.SetAttachmentParameters(attachmentParameters)
 		hasChange = true
 	}
 
@@ -614,13 +637,15 @@ func resourceIbmSccProfileAttachmentMapToAttachmentsPrototype(modelMap map[strin
 		model.Notifications = NotificationsModel
 	}
 	attachmentParameters := []securityandcompliancecenterapiv3.AttachmentParameterPrototype{}
-	for _, attachmentParametersItem := range modelMap["attachment_parameters"].([]interface{}) {
-		if attachmentParametersItem != nil {
-			attachmentParametersItemModel, err := resourceIbmSccProfileAttachmentMapToAttachmentParameterPrototype(attachmentParametersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
+	if modelMap["attachment_parameters"] != nil {
+		for _, attachmentParametersItem := range modelMap["attachment_parameters"].(*schema.Set).List() {
+			if attachmentParametersItem != nil {
+				attachmentParametersItemModel, err := resourceIbmSccProfileAttachmentMapToAttachmentParameterPrototype(attachmentParametersItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				attachmentParameters = append(attachmentParameters, *attachmentParametersItemModel)
 			}
-			attachmentParameters = append(attachmentParameters, *attachmentParametersItemModel)
 		}
 	}
 	model.AttachmentParameters = attachmentParameters
@@ -814,6 +839,7 @@ func resourceIbmSccProfileAttachmentMapToLastScan(modelMap map[string]interface{
 
 func resourceIbmSccProfileAttachmentMapToAttachmentPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.CreateAttachmentOptions, error) {
 	model := &securityandcompliancecenterapiv3.CreateAttachmentOptions{}
+	model.SetInstanceID(modelMap["instance_id"].(string))
 	if modelMap["profile_id"] != nil && modelMap["profile_id"].(string) != "" {
 		model.ProfileID = core.StringPtr(modelMap["profile_id"].(string))
 	}
@@ -824,7 +850,6 @@ func resourceIbmSccProfileAttachmentMapToAttachmentPrototype(modelMap map[string
 	}
 	attachments = append(attachments, *attachmentsItemModel)
 	model.Attachments = attachments
-	model.SetInstanceID(modelMap["instance_id"].(string))
 	return model, nil
 }
 
@@ -879,22 +904,22 @@ func resourceIbmSccProfileAttachmentFailedControlsToMap(model *securityandcompli
 func resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(model *securityandcompliancecenterapiv3.AttachmentParameterPrototype) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AssessmentType != nil {
-		modelMap["assessment_type"] = model.AssessmentType
+		modelMap["assessment_type"] = flex.StringValue(model.AssessmentType)
 	}
 	if model.AssessmentID != nil {
-		modelMap["assessment_id"] = model.AssessmentID
+		modelMap["assessment_id"] = flex.StringValue(model.AssessmentID)
 	}
 	if model.ParameterName != nil {
-		modelMap["parameter_name"] = model.ParameterName
+		modelMap["parameter_name"] = flex.StringValue(model.ParameterName)
 	}
 	if model.ParameterValue != nil {
-		modelMap["parameter_value"] = model.ParameterValue
+		modelMap["parameter_value"] = flex.StringValue(model.ParameterValue)
 	}
 	if model.ParameterDisplayName != nil {
-		modelMap["parameter_display_name"] = model.ParameterDisplayName
+		modelMap["parameter_display_name"] = flex.StringValue(model.ParameterDisplayName)
 	}
 	if model.ParameterType != nil {
-		modelMap["parameter_type"] = model.ParameterType
+		modelMap["parameter_type"] = flex.StringValue(model.ParameterType)
 	}
 	return modelMap, nil
 }

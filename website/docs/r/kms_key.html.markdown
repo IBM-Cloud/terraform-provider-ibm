@@ -131,6 +131,13 @@ In addition to all argument reference list, you can access the following attribu
 - `key_id` - (String) The ID of the key.
 - `key_ring_id` - (String) The ID of the key ring that your Key Protect key belongs to.
 - `type` - (String) The type of the key KMS or HPCS.
+- `registrations` - (List) The registrations associated with the key.
+
+  Nested scheme for `registrations`:
+  - `key_id` - (String) The id of the key associated with the association.
+  - `resource_crn` - (String) The CRN of the resource that has a registration to the key.
+  - `prevent_key_deletion` - (Boolean) Determines if the resource prevents the key deletion.
+
 - `policy` - (String) The policies associated with the key.
 
   Nested scheme for `policy`:
@@ -154,6 +161,7 @@ In addition to all argument reference list, you can access the following attribu
      - `id` - (String) The v4 UUID used to uniquely identify the policy resource, as specified by RFC 4122.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
      - `updated_by` - (String) The unique ID for the resource that updated the policy.
+
 
 ## Import
 The `ibm_kms_key` can be imported by using the `id` and `crn`.

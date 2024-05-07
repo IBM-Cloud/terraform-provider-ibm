@@ -4,11 +4,16 @@
 package provider
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
@@ -40,6 +45,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -52,14 +58,16 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/usagereports"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Provider returns a *schema.Provider.
 func Provider() *schema.Provider {
-	return &schema.Provider{
+	provider := schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"bluemix_api_key": {
 				Type:        schema.TypeString,
@@ -601,22 +609,25 @@ func Provider() *schema.Provider {
 			"ibm_pi_cloud_connections":                      power.DataSourceIBMPICloudConnections(),
 			"ibm_pi_cloud_instance":                         power.DataSourceIBMPICloudInstance(),
 			"ibm_pi_console_languages":                      power.DataSourceIBMPIInstanceConsoleLanguages(),
+			"ibm_pi_datacenter":                             power.DataSourceIBMPIDatacenter(),
+			"ibm_pi_datacenters":                            power.DataSourceIBMPIDatacenters(),
 			"ibm_pi_dhcp":                                   power.DataSourceIBMPIDhcp(),
 			"ibm_pi_dhcps":                                  power.DataSourceIBMPIDhcps(),
 			"ibm_pi_disaster_recovery_location":             power.DataSourceIBMPIDisasterRecoveryLocation(),
 			"ibm_pi_disaster_recovery_locations":            power.DataSourceIBMPIDisasterRecoveryLocations(),
 			"ibm_pi_image":                                  power.DataSourceIBMPIImage(),
 			"ibm_pi_images":                                 power.DataSourceIBMPIImages(),
-			"ibm_pi_instance":                               power.DataSourceIBMPIInstance(),
-			"ibm_pi_instances":                              power.DataSourceIBMPIInstances(),
 			"ibm_pi_instance_ip":                            power.DataSourceIBMPIInstanceIP(),
 			"ibm_pi_instance_snapshot":                      power.DataSourceIBMPIInstanceSnapshot(),
 			"ibm_pi_instance_snapshots":                     power.DataSourceIBMPIInstanceSnapshots(),
 			"ibm_pi_instance_volumes":                       power.DataSourceIBMPIInstanceVolumes(),
+			"ibm_pi_instance":                               power.DataSourceIBMPIInstance(),
+			"ibm_pi_instances":                              power.DataSourceIBMPIInstances(),
 			"ibm_pi_key":                                    power.DataSourceIBMPIKey(),
 			"ibm_pi_keys":                                   power.DataSourceIBMPIKeys(),
-			"ibm_pi_network":                                power.DataSourceIBMPINetwork(),
 			"ibm_pi_network_port":                           power.DataSourceIBMPINetworkPort(),
+			"ibm_pi_network":                                power.DataSourceIBMPINetwork(),
+			"ibm_pi_networks":                               power.DataSourceIBMPINetworks(),
 			"ibm_pi_placement_group":                        power.DataSourceIBMPIPlacementGroup(),
 			"ibm_pi_placement_groups":                       power.DataSourceIBMPIPlacementGroups(),
 			"ibm_pi_public_network":                         power.DataSourceIBMPIPublicNetwork(),
@@ -633,22 +644,20 @@ func Provider() *schema.Provider {
 			"ibm_pi_storage_types_capacity":                 power.DataSourceIBMPIStorageTypesCapacity(),
 			"ibm_pi_system_pools":                           power.DataSourceIBMPISystemPools(),
 			"ibm_pi_tenant":                                 power.DataSourceIBMPITenant(),
-			"ibm_pi_volume":                                 power.DataSourceIBMPIVolume(),
 			"ibm_pi_volume_clone":                           power.DataSourceIBMPIVolumeClone(),
-			"ibm_pi_volume_group":                           power.DataSourceIBMPIVolumeGroup(),
-			"ibm_pi_volume_groups":                          power.DataSourceIBMPIVolumeGroups(),
-			"ibm_pi_volume_group_details":                   power.DataSourceIBMPIVolumeGroupDetails(),
-			"ibm_pi_volume_groups_details":                  power.DataSourceIBMPIVolumeGroupsDetails(),
-			"ibm_pi_volume_group_storage_details":           power.DataSourceIBMPIVolumeGroupStorageDetails(),
-			"ibm_pi_volume_group_remote_copy_relationships": power.DataSourceIBMPIVolumeGroupRemoteCopyRelationships(),
 			"ibm_pi_volume_flash_copy_mappings":             power.DataSourceIBMPIVolumeFlashCopyMappings(),
-			"ibm_pi_volume_remote_copy_relationship":        power.DataSourceIBMPIVolumeRemoteCopyRelationship(),
-			"ibm_pi_volume_onboardings":                     power.DataSourceIBMPIVolumeOnboardings(),
+			"ibm_pi_volume_group_details":                   power.DataSourceIBMPIVolumeGroupDetails(),
+			"ibm_pi_volume_group_remote_copy_relationships": power.DataSourceIBMPIVolumeGroupRemoteCopyRelationships(),
+			"ibm_pi_volume_group_storage_details":           power.DataSourceIBMPIVolumeGroupStorageDetails(),
+			"ibm_pi_volume_group":                           power.DataSourceIBMPIVolumeGroup(),
+			"ibm_pi_volume_groups_details":                  power.DataSourceIBMPIVolumeGroupsDetails(),
+			"ibm_pi_volume_groups":                          power.DataSourceIBMPIVolumeGroups(),
 			"ibm_pi_volume_onboarding":                      power.DataSourceIBMPIVolumeOnboarding(),
+			"ibm_pi_volume_onboardings":                     power.DataSourceIBMPIVolumeOnboardings(),
+			"ibm_pi_volume_remote_copy_relationship":        power.DataSourceIBMPIVolumeRemoteCopyRelationship(),
+			"ibm_pi_volume":                                 power.DataSourceIBMPIVolume(),
 			"ibm_pi_workspace":                              power.DatasourceIBMPIWorkspace(),
 			"ibm_pi_workspaces":                             power.DatasourceIBMPIWorkspaces(),
-			"ibm_pi_datacenter":                             power.DataSourceIBMPIDatacenter(),
-			"ibm_pi_datacenters":                            power.DataSourceIBMPIDatacenters(),
 
 			// Added for private dns zones
 
@@ -776,9 +785,12 @@ func Provider() *schema.Provider {
 			// Security and Compliance Center
 			"ibm_scc_instance_settings":        scc.DataSourceIbmSccInstanceSettings(),
 			"ibm_scc_control_library":          scc.DataSourceIbmSccControlLibrary(),
+			"ibm_scc_control_libraries":        scc.DataSourceIbmSccControlLibraries(),
 			"ibm_scc_profile":                  scc.DataSourceIbmSccProfile(),
+			"ibm_scc_profiles":                 scc.DataSourceIbmSccProfiles(),
 			"ibm_scc_profile_attachment":       scc.DataSourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type":            scc.DataSourceIbmSccProviderType(),
+			"ibm_scc_provider_types":           scc.DataSourceIbmSccProviderTypes(),
 			"ibm_scc_provider_type_collection": scc.DataSourceIbmSccProviderTypeCollection(),
 			"ibm_scc_provider_type_instance":   scc.DataSourceIbmSccProviderTypeInstance(),
 			"ibm_scc_latest_reports":           scc.DataSourceIbmSccLatestReports(),
@@ -791,6 +803,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_report_tags":              scc.DataSourceIbmSccReportTags(),
 			"ibm_scc_report_violation_drift":   scc.DataSourceIbmSccReportViolationDrift(),
 			"ibm_scc_rule":                     scc.DataSourceIbmSccRule(),
+
+			// Security Services
+			"ibm_pag_instance": pag.DataSourceIBMPag(),
 
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
@@ -895,6 +910,9 @@ func Provider() *schema.Provider {
 			"ibm_project":             project.DataSourceIbmProject(),
 			"ibm_project_config":      project.DataSourceIbmProjectConfig(),
 			"ibm_project_environment": project.DataSourceIbmProjectEnvironment(),
+
+			// Added for VMware as a Service
+			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1188,31 +1206,31 @@ func Provider() *schema.Provider {
 			"ibm_hardware_firewall_shared":                  classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Added for Power Colo
+			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
+			"ibm_pi_cloud_connection_network_attach": power.ResourceIBMPICloudConnectionNetworkAttach(),
+			"ibm_pi_cloud_connection":                power.ResourceIBMPICloudConnection(),
+			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
+			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
+			"ibm_pi_ike_policy":                      power.ResourceIBMPIIKEPolicy(),
+			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
+			"ibm_pi_image":                           power.ResourceIBMPIImage(),
+			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
+			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
+			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
-			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
-			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
-			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
+			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
+			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
+			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
+			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
+			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
+			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
+			"ibm_pi_volume_attach":                   power.ResourceIBMPIVolumeAttach(),
 			"ibm_pi_volume_clone":                    power.ResourceIBMPIVolumeClone(),
 			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
-			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
-			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
-			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
-			"ibm_pi_volume_attach":                   power.ResourceIBMPIVolumeAttach(),
-			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
-			"ibm_pi_image":                           power.ResourceIBMPIImage(),
-			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
-			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
-			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
-			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
-			"ibm_pi_cloud_connection":                power.ResourceIBMPICloudConnection(),
-			"ibm_pi_cloud_connection_network_attach": power.ResourceIBMPICloudConnectionNetworkAttach(),
-			"ibm_pi_ike_policy":                      power.ResourceIBMPIIKEPolicy(),
-			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
+			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
+			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
+			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
 			"ibm_pi_vpn_connection":                  power.ResourceIBMPIVPNConnection(),
-			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
-			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
-			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
-			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
 			"ibm_pi_workspace":                       power.ResourceIBMPIWorkspace(),
 
 			// Private DNS related resources
@@ -1307,7 +1325,8 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			// Added for Resource Tag
-			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
+			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
 
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
@@ -1339,6 +1358,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_profile":                scc.ResourceIbmSccProfile(),
 			"ibm_scc_profile_attachment":     scc.ResourceIbmSccProfileAttachment(),
 			"ibm_scc_provider_type_instance": scc.ResourceIbmSccProviderTypeInstance(),
+
+			// Security Services
+			"ibm_pag_instance": pag.ResourceIBMPag(),
 
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
@@ -1436,10 +1458,157 @@ func Provider() *schema.Provider {
 			"ibm_project":             project.ResourceIbmProject(),
 			"ibm_project_config":      project.ResourceIbmProjectConfig(),
 			"ibm_project_environment": project.ResourceIbmProjectEnvironment(),
+
+			// Added for VMware as a Service
+			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
 		},
 
 		ConfigureFunc: providerConfigure,
 	}
+
+	wrappedProvider := wrapProvider(provider)
+	return &wrappedProvider
+}
+
+func wrapProvider(provider schema.Provider) schema.Provider {
+	wrappedResourcesMap := map[string]*schema.Resource{}
+	wrappedDataSourcesMap := map[string]*schema.Resource{}
+
+	for key, value := range provider.ResourcesMap {
+		wrappedResourcesMap[key] = wrapResource(key, value)
+	}
+
+	for key, value := range provider.DataSourcesMap {
+		wrappedDataSourcesMap[key] = wrapDataSource(key, value)
+	}
+
+	return schema.Provider{
+		Schema:         provider.Schema,
+		DataSourcesMap: wrappedDataSourcesMap,
+		ResourcesMap:   wrappedResourcesMap,
+		ConfigureFunc:  provider.ConfigureFunc,
+	}
+}
+
+func wrapResource(name string, resource *schema.Resource) *schema.Resource {
+	return &schema.Resource{
+		Schema:               resource.Schema,
+		SchemaVersion:        resource.SchemaVersion,
+		MigrateState:         resource.MigrateState,
+		StateUpgraders:       resource.StateUpgraders,
+		Exists:               resource.Exists,
+		CreateContext:        wrapFunction(name, "create", resource.CreateContext, resource.Create, false),
+		ReadContext:          wrapFunction(name, "read", resource.ReadContext, resource.Read, false),
+		UpdateContext:        wrapFunction(name, "update", resource.UpdateContext, resource.Update, false),
+		DeleteContext:        wrapFunction(name, "delete", resource.DeleteContext, resource.Delete, false),
+		CreateWithoutTimeout: wrapFunction(name, "create", resource.CreateWithoutTimeout, nil, false),
+		ReadWithoutTimeout:   wrapFunction(name, "read", resource.ReadWithoutTimeout, nil, false),
+		UpdateWithoutTimeout: wrapFunction(name, "update", resource.UpdateWithoutTimeout, nil, false),
+		DeleteWithoutTimeout: wrapFunction(name, "delete", resource.DeleteWithoutTimeout, nil, false),
+		CustomizeDiff:        wrapCustomizeDiff(name, resource.CustomizeDiff),
+		Importer:             resource.Importer,
+		DeprecationMessage:   resource.DeprecationMessage,
+		Timeouts:             resource.Timeouts,
+		Description:          resource.Description,
+		UseJSONNumber:        resource.UseJSONNumber,
+	}
+}
+
+func wrapDataSource(name string, resource *schema.Resource) *schema.Resource {
+	return &schema.Resource{
+		Schema:             resource.Schema,
+		SchemaVersion:      resource.SchemaVersion,
+		MigrateState:       resource.MigrateState,
+		StateUpgraders:     resource.StateUpgraders,
+		Exists:             resource.Exists,
+		ReadContext:        wrapFunction(name, "read", resource.ReadContext, resource.Read, true),
+		ReadWithoutTimeout: wrapFunction(name, "read", resource.ReadWithoutTimeout, nil, true),
+		Importer:           resource.Importer,
+		DeprecationMessage: resource.DeprecationMessage,
+		Timeouts:           resource.Timeouts,
+		Description:        resource.Description,
+		UseJSONNumber:      resource.UseJSONNumber,
+	}
+}
+
+func wrapFunction(
+	resourceName, operationName string,
+	function func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics,
+	fallback func(*schema.ResourceData, interface{}) error,
+	isDataSource bool,
+) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
+	if function != nil {
+		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+			return function(context, schema, meta)
+		}
+	} else if fallback != nil {
+		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+			return wrapError(fallback(schema, meta), resourceName, operationName, isDataSource)
+		}
+	}
+
+	return nil
+}
+
+func wrapError(err error, resourceName, operationName string, isDataSource bool) diag.Diagnostics {
+	if err == nil {
+		return nil
+	}
+
+	var diags diag.Diagnostics
+
+	// Distinguish data sources from resources. Data sources technically are resources but
+	// they may have the same names and we need to tell them apart.
+	if isDataSource {
+		resourceName = fmt.Sprintf("(Data) %s", resourceName)
+	}
+
+	var tfError *flex.TerraformProblem
+	if errors.As(err, &tfError) {
+		tfError.Resource = resourceName
+		tfError.Operation = operationName
+	} else {
+		tfError = flex.TerraformErrorf(err, "", resourceName, operationName)
+	}
+
+	log.Printf("[DEBUG] %s", tfError.GetDebugMessage())
+	return append(
+		diags,
+		diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  tfError.Error(),
+			Detail:   tfError.GetConsoleMessage(),
+		},
+	)
+}
+
+func wrapCustomizeDiff(resourceName string, function schema.CustomizeDiffFunc) schema.CustomizeDiffFunc {
+	if function == nil {
+		return nil
+	}
+
+	return func(c context.Context, rd *schema.ResourceDiff, i interface{}) error {
+		return wrapDiffErrors(function(c, rd, i), resourceName)
+	}
+}
+
+func wrapDiffErrors(err error, resourceName string) error {
+	if err != nil {
+		// CustomizeDiff fields often use the customizediff.All() method, which concatenates the errors
+		// returned from multiple functions using errors.Join(). Individual errors are still embedded in the
+		// error and will be extracted when the error is unwrapped by the Go core.
+		tfError := flex.TerraformErrorf(err, err.Error(), resourceName, "CustomizeDiff")
+
+		// By the time this error gets printed by the Terraform code, we've lost control of it and the
+		// message that gets printed comes from the Error() method (and we only see the Summary).
+		// Although it would be ideal to return the full TerraformError object, it is sufficient
+		// to package the console message into a new error so that the user gets the information.
+		log.Printf("[DEBUG] %s", tfError.GetDebugMessage())
+		return errors.New(tfError.GetConsoleMessage())
+	}
+
+	// Return the nil error.
+	return err
 }
 
 var (
@@ -1602,6 +1771,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_key":                        resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
+				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
@@ -1713,6 +1883,9 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_en_smtp_configuration": eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
 				"ibm_en_smtp_user":          eventnotification.ResourceIBMEnSMTPUserValidator(),
+
+				// Added for VMware as a Service
+				"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdcValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
