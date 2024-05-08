@@ -651,7 +651,7 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 				if res != nil && res.StatusCode == 404 {
 					return nil, nil, nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
 				}
-				return nil, nil, nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
+				return nil, nil, nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s", parsed.remoteSecGrpID, err)
 			}
 		}
 		sgTemplate.Remote = remoteTemplate
