@@ -40,7 +40,7 @@ func ResourceIBMEnCodeEngineDestination() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The type of Destination Webhook.",
 			},
 			"description": {

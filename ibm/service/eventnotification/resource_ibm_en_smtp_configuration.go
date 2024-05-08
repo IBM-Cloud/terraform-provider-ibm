@@ -6,7 +6,6 @@ package eventnotification
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,10 +24,6 @@ func ResourceIBMEnSMTPConfiguration() *schema.Resource {
 		UpdateContext: resourceIBMEnSMTPConfigurationUpdate,
 		DeleteContext: resourceIBMEnSMTPConfigurationDelete,
 		Importer:      &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-		},
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{

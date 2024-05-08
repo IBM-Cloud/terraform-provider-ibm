@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_smtp_user"
 description: |-
   Manages en_smtp_user.
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_smtp_user
@@ -15,16 +15,10 @@ Create, update, and delete en_smtp_users with this resource.
 ```hcl
 resource "ibm_en_smtp_user" "en_smtp_user_instance" {
   instance_id = "instance_id"
+  description   = "test-user"
+  smtp_config_id = ibm_en_smtp_configuration.tf_smtp_config.en_smtp_configuration_id
 }
 ```
-
-## Timeouts
-
-en_smtp_user provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for creating a en_smtp_user.
-* `update` - (Default 10 minutes) Used for updating a en_smtp_user.
-* `delete` - (Default SMTPConfigurations(/v1/instances/{instance_id}/smtp/config/{id}/users/{user_id}) minutes) Used for deleting a en_smtp_user.
 
 ## Argument Reference
 

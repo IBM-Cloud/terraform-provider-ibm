@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_smtp_configuration"
 description: |-
   Get information about en_smtp_configuration
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_smtp_configuration

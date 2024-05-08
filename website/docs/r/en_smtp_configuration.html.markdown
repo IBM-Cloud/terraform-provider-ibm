@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_smtp_configuration"
 description: |-
   Manages en_smtp_configuration.
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_smtp_configuration
@@ -18,17 +18,11 @@ resource "ibm_en_smtp_configuration" "en_smtp_configuration_instance" {
   instance_id = "instance_id"
   name = "name"
   description = "SMTP Configuration"
-  verification_type = "spf"
+  verification_type = ""
 }
 ```
 
-## Timeouts
-
-en_smtp_configuration provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
-
-* `create` - (Default 10 minutes) Used for creating a en_smtp_configuration.
-* `update` - (Default 10 minutes) Used for updating a en_smtp_configuration.
-* `delete` - (Default SMTPConfigurations(/v1/instances/{instance_id}/smtp/config/{id}) minutes) Used for deleting a en_smtp_configuration.
+**NOTE** `verification_type` is SMTP Configuration update parameter which can be used to verify the status of verfication depending on the type of verification.
 
 ## Argument Reference
 

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_smtp_user"
 description: |-
   Get information about en_smtp_user
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_smtp_user
@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about an en_smtp_user. 
 
 ```hcl
 data "ibm_en_smtp_user" "en_smtp_user" {
-	en_smtp_user_id = "en_smtp_user_id"
+	en_smtp_config_id = "en_smtp_user_id"
 	instance_id = ibm_en_smtp_user.en_smtp_user_instance.instance_id
 	user_id = ibm_en_smtp_user.en_smtp_user_instance.user_id
 }
@@ -24,7 +24,7 @@ data "ibm_en_smtp_user" "en_smtp_user" {
 
 You can specify the following arguments for this data source.
 
-* `en_smtp_user_id` - (Required, Forces new resource, String) Unique identifier for SMTP.
+* `en_smtp_config_id` - (Required, Forces new resource, String) Unique identifier for SMTP.
   * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/`.
 * `instance_id` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.
   * Constraints: The maximum length is `256` characters. The minimum length is `10` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]/`.

@@ -64,7 +64,7 @@ func resourceIBMEnSMTPSettingCreate(context context.Context, d *schema.ResourceD
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetID(d.Get("smtp_config_id").(string))
 
-	subnets := AllowedIPSMap(d.Get("settings.0").(map[string]interface{}))
+	subnets := AllowedIPSMap(d.Get("settings").(map[string]interface{}))
 	options.SetSubnets(subnets)
 
 	_, response, err := enClient.UpdateSMTPAllowedIpsWithContext(context, options)
