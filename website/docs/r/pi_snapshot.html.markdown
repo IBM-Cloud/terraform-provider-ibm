@@ -55,7 +55,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_description` - (Optional, String) Description of the PVM instance snapshot.
 - `pi_instance_name` - (Required, String) The name of the instance you want to take a snapshot of.
-- `pi_snapshot_name` - (Required, String) The unique name of the snapshot.
+- `pi_snap_shot_name` - (Required, String) The unique name of the snapshot.
 - `pi_volume_ids` - (Optional, String) A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.
 
 ## Attribute reference
@@ -63,7 +63,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `creation_date` - (String) Creation date of the snapshot.
-- `id` - (String) The unique identifier of the snapshot. The ID is composed of <cloud_instance_id>/<snapshot_id>.
+- `id` - (String) The unique identifier of the snapshot. The ID is composed of <pi_cloud_instance_id>/<snapshot_id>.
 - `last_update_date` - (String) The last updated date of the snapshot.
 - `snapshot_id` - (String) ID of the PVM instance snapshot.
 - `status` - (String) Status of the PVM instance snapshot.
