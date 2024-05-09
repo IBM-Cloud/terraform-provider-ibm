@@ -86,6 +86,13 @@ func ResourceIBMSnapshot() *schema.Resource {
 				Description:  "Snapshot name",
 			},
 
+			"service_tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) prefixed with `is.snapshot:` associated with this snapshot.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+
 			isSnapshotSourceSnapshotCRN: {
 				Type:         schema.TypeString,
 				ForceNew:     true,
@@ -667,6 +674,9 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isSnapshotEncryption, *snapshot.Encryption)
 	if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
 		d.Set(isSnapshotEncryptionKey, *snapshot.EncryptionKey.CRN)
+	}
+	if err = d.Set("service_tags", snapshot.ServiceTags); err != nil {
+		return fmt.Errorf("[ERROR]Error setting service_tags: %s", err)
 	}
 	d.Set(isSnapshotLCState, *snapshot.LifecycleState)
 	d.Set(isSnapshotResourceType, *snapshot.ResourceType)
