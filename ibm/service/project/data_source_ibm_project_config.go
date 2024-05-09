@@ -344,7 +344,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 			"member_of": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "The stack config parent of which this configuration is a member of.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -547,7 +546,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 			"approved_version": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "A summary of a project configuration version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -591,7 +589,6 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 			"deployed_version": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "A summary of a project configuration version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

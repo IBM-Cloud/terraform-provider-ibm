@@ -720,17 +720,6 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototype(modelMap map[string
 	if modelMap["settings"] != nil {
 		model.Settings = modelMap["settings"].(map[string]interface{})
 	}
-	if modelMap["members"] != nil {
-		members := []projectv1.StackConfigMember{}
-		for _, membersItem := range modelMap["members"].([]interface{}) {
-			membersItemModel, err := ResourceIbmProjectMapToStackConfigMember(membersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			members = append(members, *membersItemModel)
-		}
-		model.Members = members
-	}
 	if modelMap["resource_crns"] != nil {
 		resourceCrns := []string{}
 		for _, resourceCrnsItem := range modelMap["resource_crns"].([]interface{}) {
@@ -793,52 +782,6 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeDAConfigDefinitionPr
 	}
 	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
 		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
-	}
-	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
-		model.Description = core.StringPtr(modelMap["description"].(string))
-	}
-	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["environment_id"] != nil && modelMap["environment_id"].(string) != "" {
-		model.EnvironmentID = core.StringPtr(modelMap["environment_id"].(string))
-	}
-	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
-		AuthorizationsModel, err := ResourceIbmProjectMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Authorizations = AuthorizationsModel
-	}
-	if modelMap["inputs"] != nil {
-		model.Inputs = modelMap["inputs"].(map[string]interface{})
-	}
-	if modelMap["settings"] != nil {
-		model.Settings = modelMap["settings"].(map[string]interface{})
-	}
-	return model, nil
-}
-
-func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeStackConfigDefinitionProperties(modelMap map[string]interface{}) (*projectv1.ProjectConfigDefinitionPrototypeStackConfigDefinitionProperties, error) {
-	model := &projectv1.ProjectConfigDefinitionPrototypeStackConfigDefinitionProperties{}
-	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
-		ComplianceProfileModel, err := ResourceIbmProjectMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ComplianceProfile = ComplianceProfileModel
-	}
-	if modelMap["locator_id"] != nil && modelMap["locator_id"].(string) != "" {
-		model.LocatorID = core.StringPtr(modelMap["locator_id"].(string))
-	}
-	if modelMap["members"] != nil {
-		members := []projectv1.StackConfigMember{}
-		for _, membersItem := range modelMap["members"].([]interface{}) {
-			membersItemModel, err := ResourceIbmProjectMapToStackConfigMember(membersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			members = append(members, *membersItemModel)
-		}
-		model.Members = members
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
