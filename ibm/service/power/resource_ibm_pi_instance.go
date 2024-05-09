@@ -964,7 +964,7 @@ func isWaitForPIInstancePlacementGroupAdd(ctx context.Context, client *st.IBMPIP
 		Refresh:    isPIInstancePlacementGroupAddRefreshFunc(client, pgID, id),
 		Delay:      30 * time.Second,
 		MinTimeout: queryTimeOut,
-		Timeout:    120 * time.Minute,
+		Timeout:    10 * time.Minute,
 	}
 
 	return stateConf.WaitForStateContext(ctx)
@@ -996,7 +996,7 @@ func isWaitForPIInstancePlacementGroupDelete(ctx context.Context, client *st.IBM
 		Refresh:    isPIInstancePlacementGroupDeleteRefreshFunc(client, pgID, id),
 		Delay:      30 * time.Second,
 		MinTimeout: queryTimeOut,
-		Timeout:    120 * time.Minute,
+		Timeout:    10 * time.Minute,
 	}
 
 	return stateConf.WaitForStateContext(ctx)
