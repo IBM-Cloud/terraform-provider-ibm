@@ -176,7 +176,7 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Description: "The replication type of the volume 'metro' or 'global'.",
 				Type:        schema.TypeString,
 			},
-			Attr_VolumeIDs: {
+			Attr_VolumeID: {
 				Computed:    true,
 				Description: "The unique identifier of the volume.",
 				Type:        schema.TypeString,
@@ -302,7 +302,7 @@ func resourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	if vol.VolumeID != nil {
-		d.Set(Attr_VolumeIDs, vol.VolumeID)
+		d.Set(Attr_VolumeID, vol.VolumeID)
 	}
 	d.Set(Arg_VolumeName, vol.Name)
 	d.Set(Arg_VolumePool, vol.VolumePool)
