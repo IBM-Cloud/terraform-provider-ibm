@@ -43,6 +43,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
@@ -908,6 +909,22 @@ func Provider() *schema.Provider {
 
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
+			// Logs Service
+			"ibm_logs_alert":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
+			"ibm_logs_alerts":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
+			"ibm_logs_rule_group":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
+			"ibm_logs_rule_groups":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
+			"ibm_logs_policy":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
+			"ibm_logs_policies":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
+			"ibm_logs_dashboard":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
+			"ibm_logs_e2m":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
+			"ibm_logs_e2ms":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
+			"ibm_logs_outgoing_webhook":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_outgoing_webhooks": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
+			"ibm_logs_view_folder":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
+			"ibm_logs_view_folders":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
+			"ibm_logs_view":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
+			"ibm_logs_views":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1452,6 +1469,15 @@ func Provider() *schema.Provider {
 
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
+			// Logs Service
+			"ibm_logs_alert":            logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
+			"ibm_logs_rule_group":       logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
+			"ibm_logs_policy":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
+			"ibm_logs_dashboard":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
+			"ibm_logs_e2m":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
+			"ibm_logs_outgoing_webhook": logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_view_folder":      logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
+			"ibm_logs_view":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1871,7 +1897,15 @@ func Validator() validate.ValidatorDict {
 				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
 
 				// Added for VMware as a Service
-				"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_logs_alert":            logs.ResourceIbmLogsAlertValidator(),
+				"ibm_logs_rule_group":       logs.ResourceIbmLogsRuleGroupValidator(),
+				"ibm_logs_outgoing_webhook": logs.ResourceIbmLogsOutgoingWebhookValidator(),
+				"ibm_logs_policy":           logs.ResourceIbmLogsPolicyValidator(),
+				"ibm_logs_dashboard":        logs.ResourceIbmLogsDashboardValidator(),
+				"ibm_logs_e2m":              logs.ResourceIbmLogsE2mValidator(),
+				"ibm_logs_view":             logs.ResourceIbmLogsViewValidator(),
+				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
