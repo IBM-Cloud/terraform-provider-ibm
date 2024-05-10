@@ -3,11 +3,11 @@ subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kms-kmip-adapter"
 description: |-
-  Manages key rings for IBM hs-crypto and KMS.
+  Manages a kmip adapter for IBM hs-crypto and KMS.
 ---
 
 # ibm_kms_kmip_adapter
-Retrieves a KMIP adapter from a Key Protect service instance based on a given name or ID. The region parameter in the `provider.tf` file must be set. If region parameter is not specified, `us-south` is used by default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails.
+Retrieves a KMIP adapter from a Key Protect service instance based on a given name or ID. The region parameter in the `provider.tf` file must be set. If region parameter is not specified, `us-south` is used by default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by Terraform and the Terraform action fails.
 For more information, about KMIP as a whole, see [Using the key management interoperability protocol (KMIP)](https://cloud.ibm.com/docs/key-protect?topic=key-protect-kmip&interface=ui).
 
 

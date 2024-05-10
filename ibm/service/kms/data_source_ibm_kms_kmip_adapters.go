@@ -47,7 +47,7 @@ func DataSourceIBMKMSKmipAdapters() *schema.Resource {
 			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "If show_total_count is true, this will contain the total number of adapters after pagination.",
+				Description: "If show_total_count is true, this will contain the total number of adapters after pagination",
 			},
 			"adapters": {
 				Type:        schema.TypeList,

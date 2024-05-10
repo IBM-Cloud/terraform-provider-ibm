@@ -1,9 +1,9 @@
 ---
 subcategory: "Key Management Service"
 layout: "ibm"
-page_title: "IBM : kms-kmip-adapter"
+page_title: "IBM : kms-kmip-certs"
 description: |-
-  Manages key rings for IBM hs-crypto and KMS.
+  Manages kmip certs for IBM hs-crypto and KMS.
 ---
 
 # ibm_kms_kmip_adapter
