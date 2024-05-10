@@ -376,6 +376,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Description: "IBM i Rational Dev Studio Number of User Licenses",
 			},
+			Attr_Fault: {
+				Computed:    true,
+				Description: "Fault information.",
+				Type:        schema.TypeMap,
+			},
 		},
 	}
 }
@@ -553,6 +558,9 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		} else {
 			d.Set(Arg_IBMiRDSUsers, 0)
 		}
+	}
+	if powervmdata.Fault != nil {
+		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
 	}
 	return nil
 }
