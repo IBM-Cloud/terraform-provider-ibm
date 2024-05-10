@@ -5,7 +5,6 @@ package project
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -118,13 +117,13 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Description: "A short explanation of the output value.",
 						},
 						"value": &schema.Schema{
-							Type:        schema.TypeMap,
-							Deprecated:  "This property will be deprecated, the new property will be of type String.",
+							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "This property can be any value - a string, number, boolean, array, or object.",
 						},
 						"value_json": &schema.Schema{
 							Type:        schema.TypeString,
+							Deprecated:  "This property will be deprecated, it will be replaced by the existing property 'value'.",
 							Computed:    true,
 							Description: "This property can be any value - a string, number, boolean, array, or object.",
 						},
@@ -337,10 +336,82 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 				Computed:    true,
 				Description: "The flag that indicates whether a configuration update is available.",
 			},
+			"template_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The stack definition identifier.",
+			},
+			"member_of": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The stack config parent of which this configuration is a member of.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique ID.",
+						},
+						"definition": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The definition summary of the stack configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The configuration name. It's unique within the account across projects and regions.",
+									},
+									"members": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The member deployabe architectures that are included in your stack.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name matching the alias in the stack definition.",
+												},
+												"config_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique ID.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"version": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The version of the stack configuration.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A URL.",
+						},
+					},
+				},
+			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A URL.",
+			},
+			"deployment_model": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The configuration type.",
+			},
+			"state_code": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
 			},
 			"definition": &schema.Schema{
 				Type:     schema.TypeList,
@@ -448,6 +519,25 @@ func DataSourceIbmProjectConfig() *schema.Resource {
 							Description: "The CRNs of the resources that are associated with this configuration.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
+							},
+						},
+						"members": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The member deployabe architectures that are included in your stack.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name matching the alias in the stack definition.",
+									},
+									"config_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique ID.",
+									},
+								},
 							},
 						},
 					},
@@ -578,7 +668,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	needsAttentionState := []map[string]interface{}{}
 	if projectConfig.NeedsAttentionState != nil {
 		for _, modelItem := range projectConfig.NeedsAttentionState {
-			modelMap, err := dataSourceIbmProjectConfigProjectConfigNeedsAttentionStateToMap(&modelItem)
+			modelMap, err := DataSourceIbmProjectConfigProjectConfigNeedsAttentionStateToMap(&modelItem)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 				return tfErr.GetDiag()
@@ -609,7 +699,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	outputs := []map[string]interface{}{}
 	if projectConfig.Outputs != nil {
 		for _, modelItem := range projectConfig.Outputs {
-			modelMap, err := dataSourceIbmProjectConfigOutputValueToMap(&modelItem)
+			modelMap, err := DataSourceIbmProjectConfigOutputValueToMap(&modelItem)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 				return tfErr.GetDiag()
@@ -624,7 +714,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	project := []map[string]interface{}{}
 	if projectConfig.Project != nil {
-		modelMap, err := dataSourceIbmProjectConfigProjectReferenceToMap(projectConfig.Project)
+		modelMap, err := DataSourceIbmProjectConfigProjectReferenceToMap(projectConfig.Project)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 			return tfErr.GetDiag()
@@ -638,7 +728,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	schematics := []map[string]interface{}{}
 	if projectConfig.Schematics != nil {
-		modelMap, err := dataSourceIbmProjectConfigSchematicsMetadataToMap(projectConfig.Schematics)
+		modelMap, err := DataSourceIbmProjectConfigSchematicsMetadataToMap(projectConfig.Schematics)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 			return tfErr.GetDiag()
@@ -660,14 +750,43 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("template_id", projectConfig.TemplateID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting template_id: %s", err), "(Data) ibm_project_config", "read")
+		return tfErr.GetDiag()
+	}
+
+	memberOf := []map[string]interface{}{}
+	if projectConfig.MemberOf != nil {
+		modelMap, err := DataSourceIbmProjectConfigMemberOfDefinitionToMap(projectConfig.MemberOf)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
+			return tfErr.GetDiag()
+		}
+		memberOf = append(memberOf, modelMap)
+	}
+	if err = d.Set("member_of", memberOf); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting member_of: %s", err), "(Data) ibm_project_config", "read")
+		return tfErr.GetDiag()
+	}
+
 	if err = d.Set("href", projectConfig.Href); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_project_config", "read")
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("deployment_model", projectConfig.DeploymentModel); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deployment_model: %s", err), "(Data) ibm_project_config", "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("state_code", projectConfig.StateCode); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state_code: %s", err), "(Data) ibm_project_config", "read")
+		return tfErr.GetDiag()
+	}
+
 	definition := []map[string]interface{}{}
 	if projectConfig.Definition != nil {
-		modelMap, err := dataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(projectConfig.Definition)
+		modelMap, err := DataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(projectConfig.Definition)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 			return tfErr.GetDiag()
@@ -681,7 +800,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	approvedVersion := []map[string]interface{}{}
 	if projectConfig.ApprovedVersion != nil {
-		modelMap, err := dataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.ApprovedVersion)
+		modelMap, err := DataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.ApprovedVersion)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 			return tfErr.GetDiag()
@@ -695,7 +814,7 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 
 	deployedVersion := []map[string]interface{}{}
 	if projectConfig.DeployedVersion != nil {
-		modelMap, err := dataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.DeployedVersion)
+		modelMap, err := DataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.DeployedVersion)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_config", "read")
 			return tfErr.GetDiag()
@@ -710,107 +829,100 @@ func dataSourceIbmProjectConfigRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigNeedsAttentionStateToMap(model *projectv1.ProjectConfigNeedsAttentionState) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectConfigNeedsAttentionStateToMap(model *projectv1.ProjectConfigNeedsAttentionState) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["event_id"] = model.EventID
-	modelMap["event"] = model.Event
+	modelMap["event_id"] = *model.EventID
+	modelMap["event"] = *model.Event
 	if model.Severity != nil {
-		modelMap["severity"] = model.Severity
+		modelMap["severity"] = *model.Severity
 	}
 	if model.ActionURL != nil {
-		modelMap["action_url"] = model.ActionURL
+		modelMap["action_url"] = *model.ActionURL
 	}
 	if model.Target != nil {
-		modelMap["target"] = model.Target
+		modelMap["target"] = *model.Target
 	}
 	if model.TriggeredBy != nil {
-		modelMap["triggered_by"] = model.TriggeredBy
+		modelMap["triggered_by"] = *model.TriggeredBy
 	}
-	modelMap["timestamp"] = model.Timestamp
+	modelMap["timestamp"] = *model.Timestamp
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
+	modelMap["name"] = *model.Name
 	if model.Description != nil {
-		modelMap["description"] = model.Description
+		modelMap["description"] = *model.Description
 	}
 	if model.Value != nil {
-		modelMap["value_json"] = stringify(model.Value)
-		jsonStr, err := json.Marshal(model.Value)
-		if err != nil {
-			b := []byte(jsonStr)
-			var f interface{}
-			json.Unmarshal(b, &f)
-			valueMap := f.(map[string]interface{})
-			modelMap["value"] = valueMap
-		}
+		modelMap["value"] = flex.Stringify(model.Value)
+		modelMap["value_json"] = modelMap["value"]
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
-	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectConfigProjectDefinitionReferenceToMap(model.Definition)
+	modelMap["id"] = *model.ID
+	modelMap["href"] = *model.Href
+	definitionMap, err := DataSourceIbmProjectConfigProjectDefinitionReferenceToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	modelMap["crn"] = model.Crn
+	modelMap["crn"] = *model.Crn
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigSchematicsMetadataToMap(model *projectv1.SchematicsMetadata) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigSchematicsMetadataToMap(model *projectv1.SchematicsMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.WorkspaceCrn != nil {
-		modelMap["workspace_crn"] = model.WorkspaceCrn
+		modelMap["workspace_crn"] = *model.WorkspaceCrn
 	}
 	if model.ValidatePreScript != nil {
-		validatePreScriptMap, err := dataSourceIbmProjectConfigScriptToMap(model.ValidatePreScript)
+		validatePreScriptMap, err := DataSourceIbmProjectConfigScriptToMap(model.ValidatePreScript)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["validate_pre_script"] = []map[string]interface{}{validatePreScriptMap}
 	}
 	if model.ValidatePostScript != nil {
-		validatePostScriptMap, err := dataSourceIbmProjectConfigScriptToMap(model.ValidatePostScript)
+		validatePostScriptMap, err := DataSourceIbmProjectConfigScriptToMap(model.ValidatePostScript)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["validate_post_script"] = []map[string]interface{}{validatePostScriptMap}
 	}
 	if model.DeployPreScript != nil {
-		deployPreScriptMap, err := dataSourceIbmProjectConfigScriptToMap(model.DeployPreScript)
+		deployPreScriptMap, err := DataSourceIbmProjectConfigScriptToMap(model.DeployPreScript)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["deploy_pre_script"] = []map[string]interface{}{deployPreScriptMap}
 	}
 	if model.DeployPostScript != nil {
-		deployPostScriptMap, err := dataSourceIbmProjectConfigScriptToMap(model.DeployPostScript)
+		deployPostScriptMap, err := DataSourceIbmProjectConfigScriptToMap(model.DeployPostScript)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["deploy_post_script"] = []map[string]interface{}{deployPostScriptMap}
 	}
 	if model.UndeployPreScript != nil {
-		undeployPreScriptMap, err := dataSourceIbmProjectConfigScriptToMap(model.UndeployPreScript)
+		undeployPreScriptMap, err := DataSourceIbmProjectConfigScriptToMap(model.UndeployPreScript)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["undeploy_pre_script"] = []map[string]interface{}{undeployPreScriptMap}
 	}
 	if model.UndeployPostScript != nil {
-		undeployPostScriptMap, err := dataSourceIbmProjectConfigScriptToMap(model.UndeployPostScript)
+		undeployPostScriptMap, err := DataSourceIbmProjectConfigScriptToMap(model.UndeployPostScript)
 		if err != nil {
 			return modelMap, err
 		}
@@ -819,49 +931,86 @@ func dataSourceIbmProjectConfigSchematicsMetadataToMap(model *projectv1.Schemati
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigScriptToMap(model *projectv1.Script) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigScriptToMap(model *projectv1.Script) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
-		modelMap["type"] = model.Type
+		modelMap["type"] = *model.Type
 	}
 	if model.Path != nil {
-		modelMap["path"] = model.Path
+		modelMap["path"] = *model.Path
 	}
 	if model.ShortDescription != nil {
-		modelMap["short_description"] = model.ShortDescription
+		modelMap["short_description"] = *model.ShortDescription
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(model projectv1.ProjectConfigDefinitionResponseIntf) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigMemberOfDefinitionToMap(model *projectv1.MemberOfDefinition) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	definitionMap, err := DataSourceIbmProjectConfigStackConfigDefinitionSummaryToMap(model.Definition)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	modelMap["version"] = flex.IntValue(model.Version)
+	modelMap["href"] = *model.Href
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectConfigStackConfigDefinitionSummaryToMap(model *projectv1.StackConfigDefinitionSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = *model.Name
+	members := []map[string]interface{}{}
+	for _, membersItem := range model.Members {
+		membersItemMap, err := DataSourceIbmProjectConfigStackConfigMemberToMap(&membersItem)
+		if err != nil {
+			return modelMap, err
+		}
+		members = append(members, membersItemMap)
+	}
+	modelMap["members"] = members
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectConfigStackConfigMemberToMap(model *projectv1.StackConfigMember) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = *model.Name
+	modelMap["config_id"] = *model.ConfigID
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(model projectv1.ProjectConfigDefinitionResponseIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*projectv1.ProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponse); ok {
-		return dataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponseToMap(model.(*projectv1.ProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponse))
+		return DataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponseToMap(model.(*projectv1.ProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponse))
 	} else if _, ok := model.(*projectv1.ProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponse); ok {
-		return dataSourceIbmProjectConfigProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponseToMap(model.(*projectv1.ProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponse))
+		return DataSourceIbmProjectConfigProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponseToMap(model.(*projectv1.ProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponse))
+	} else if _, ok := model.(*projectv1.ProjectConfigDefinitionResponseStackConfigDefinitionProperties); ok {
+		return DataSourceIbmProjectConfigProjectConfigDefinitionResponseStackConfigDefinitionPropertiesToMap(model.(*projectv1.ProjectConfigDefinitionResponseStackConfigDefinitionProperties))
 	} else if _, ok := model.(*projectv1.ProjectConfigDefinitionResponse); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*projectv1.ProjectConfigDefinitionResponse)
 		if model.ComplianceProfile != nil {
-			complianceProfileMap, err := dataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
+			complianceProfileMap, err := DataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
 			if err != nil {
 				return modelMap, err
 			}
 			modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
 		}
 		if model.LocatorID != nil {
-			modelMap["locator_id"] = model.LocatorID
+			modelMap["locator_id"] = *model.LocatorID
 		}
 		if model.Description != nil {
-			modelMap["description"] = model.Description
+			modelMap["description"] = *model.Description
 		}
 		if model.Name != nil {
-			modelMap["name"] = model.Name
+			modelMap["name"] = *model.Name
 		}
 		if model.EnvironmentID != nil {
-			modelMap["environment_id"] = model.EnvironmentID
+			modelMap["environment_id"] = *model.EnvironmentID
 		}
 		if model.Authorizations != nil {
-			authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+			authorizationsMap, err := DataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
 			if err != nil {
 				return modelMap, err
 			}
@@ -870,19 +1019,30 @@ func dataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(model projec
 		if model.Inputs != nil {
 			inputs := make(map[string]interface{})
 			for k, v := range model.Inputs {
-				inputs[k] = fmt.Sprintf("%v", v)
+				inputs[k] = flex.Stringify(v)
 			}
 			modelMap["inputs"] = inputs
 		}
 		if model.Settings != nil {
 			settings := make(map[string]interface{})
 			for k, v := range model.Settings {
-				settings[k] = fmt.Sprintf("%v", v)
+				settings[k] = flex.Stringify(v)
 			}
 			modelMap["settings"] = settings
 		}
 		if model.ResourceCrns != nil {
 			modelMap["resource_crns"] = model.ResourceCrns
+		}
+		if model.Members != nil {
+			members := []map[string]interface{}{}
+			for _, membersItem := range model.Members {
+				membersItemMap, err := DataSourceIbmProjectConfigStackConfigMemberToMap(&membersItem)
+				if err != nil {
+					return modelMap, err
+				}
+				members = append(members, membersItemMap)
+			}
+			modelMap["members"] = members
 		}
 		return modelMap, nil
 	} else {
@@ -890,59 +1050,59 @@ func dataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(model projec
 	}
 }
 
-func dataSourceIbmProjectConfigProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
 	}
 	if model.InstanceID != nil {
-		modelMap["instance_id"] = model.InstanceID
+		modelMap["instance_id"] = *model.InstanceID
 	}
 	if model.InstanceLocation != nil {
-		modelMap["instance_location"] = model.InstanceLocation
+		modelMap["instance_location"] = *model.InstanceLocation
 	}
 	if model.AttachmentID != nil {
-		modelMap["attachment_id"] = model.AttachmentID
+		modelMap["attachment_id"] = *model.AttachmentID
 	}
 	if model.ProfileName != nil {
-		modelMap["profile_name"] = model.ProfileName
+		modelMap["profile_name"] = *model.ProfileName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TrustedProfileID != nil {
-		modelMap["trusted_profile_id"] = model.TrustedProfileID
+		modelMap["trusted_profile_id"] = *model.TrustedProfileID
 	}
 	if model.Method != nil {
-		modelMap["method"] = model.Method
+		modelMap["method"] = *model.Method
 	}
 	if model.ApiKey != nil {
-		modelMap["api_key"] = model.ApiKey
+		modelMap["api_key"] = *model.ApiKey
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponseToMap(model *projectv1.ProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponse) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponseToMap(model *projectv1.ProjectConfigDefinitionResponseDAConfigDefinitionPropertiesResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ComplianceProfile != nil {
-		complianceProfileMap, err := dataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
+		complianceProfileMap, err := DataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
 	}
 	if model.LocatorID != nil {
-		modelMap["locator_id"] = model.LocatorID
+		modelMap["locator_id"] = *model.LocatorID
 	}
-	modelMap["description"] = model.Description
-	modelMap["name"] = model.Name
+	modelMap["description"] = *model.Description
+	modelMap["name"] = *model.Name
 	if model.EnvironmentID != nil {
-		modelMap["environment_id"] = model.EnvironmentID
+		modelMap["environment_id"] = *model.EnvironmentID
 	}
 	if model.Authorizations != nil {
-		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		authorizationsMap, err := DataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
 			return modelMap, err
 		}
@@ -951,32 +1111,32 @@ func dataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefinition
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			inputs[k] = fmt.Sprintf("%v", v)
+			inputs[k] = flex.Stringify(v)
 		}
 		modelMap["inputs"] = inputs
 	}
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
 		for k, v := range model.Settings {
-			settings[k] = fmt.Sprintf("%v", v)
+			settings[k] = flex.Stringify(v)
 		}
 		modelMap["settings"] = settings
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponseToMap(model *projectv1.ProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponse) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponseToMap(model *projectv1.ProjectConfigDefinitionResponseResourceConfigDefinitionPropertiesResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ResourceCrns != nil {
 		modelMap["resource_crns"] = model.ResourceCrns
 	}
-	modelMap["description"] = model.Description
-	modelMap["name"] = model.Name
+	modelMap["description"] = *model.Description
+	modelMap["name"] = *model.Name
 	if model.EnvironmentID != nil {
-		modelMap["environment_id"] = model.EnvironmentID
+		modelMap["environment_id"] = *model.EnvironmentID
 	}
 	if model.Authorizations != nil {
-		authorizationsMap, err := dataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		authorizationsMap, err := DataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
 			return modelMap, err
 		}
@@ -985,40 +1145,94 @@ func dataSourceIbmProjectConfigProjectConfigDefinitionResponseResourceConfigDefi
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			inputs[k] = fmt.Sprintf("%v", v)
+			inputs[k] = flex.Stringify(v)
 		}
 		modelMap["inputs"] = inputs
 	}
 	if model.Settings != nil {
 		settings := make(map[string]interface{})
 		for k, v := range model.Settings {
-			settings[k] = fmt.Sprintf("%v", v)
+			settings[k] = flex.Stringify(v)
 		}
 		modelMap["settings"] = settings
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectConfigDefinitionResponseStackConfigDefinitionPropertiesToMap(model *projectv1.ProjectConfigDefinitionResponseStackConfigDefinitionProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	definitionMap, err := dataSourceIbmProjectConfigProjectConfigVersionDefinitionSummaryToMap(model.Definition)
+	if model.ComplianceProfile != nil {
+		complianceProfileMap, err := DataSourceIbmProjectConfigProjectComplianceProfileToMap(model.ComplianceProfile)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["compliance_profile"] = []map[string]interface{}{complianceProfileMap}
+	}
+	if model.LocatorID != nil {
+		modelMap["locator_id"] = *model.LocatorID
+	}
+	if model.Members != nil {
+		members := []map[string]interface{}{}
+		for _, membersItem := range model.Members {
+			membersItemMap, err := DataSourceIbmProjectConfigStackConfigMemberToMap(&membersItem)
+			if err != nil {
+				return modelMap, err
+			}
+			members = append(members, membersItemMap)
+		}
+		modelMap["members"] = members
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	modelMap["name"] = *model.Name
+	if model.EnvironmentID != nil {
+		modelMap["environment_id"] = *model.EnvironmentID
+	}
+	if model.Authorizations != nil {
+		authorizationsMap, err := DataSourceIbmProjectConfigProjectConfigAuthToMap(model.Authorizations)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["authorizations"] = []map[string]interface{}{authorizationsMap}
+	}
+	if model.Inputs != nil {
+		inputs := make(map[string]interface{})
+		for k, v := range model.Inputs {
+			inputs[k] = flex.Stringify(v)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Settings != nil {
+		settings := make(map[string]interface{})
+		for k, v := range model.Settings {
+			settings[k] = flex.Stringify(v)
+		}
+		modelMap["settings"] = settings
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	definitionMap, err := DataSourceIbmProjectConfigProjectConfigVersionDefinitionSummaryToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	modelMap["state"] = model.State
+	modelMap["state"] = *model.State
 	modelMap["version"] = flex.IntValue(model.Version)
-	modelMap["href"] = model.Href
+	modelMap["href"] = *model.Href
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectConfigProjectConfigVersionDefinitionSummaryToMap(model *projectv1.ProjectConfigVersionDefinitionSummary) (map[string]interface{}, error) {
+func DataSourceIbmProjectConfigProjectConfigVersionDefinitionSummaryToMap(model *projectv1.ProjectConfigVersionDefinitionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnvironmentID != nil {
-		modelMap["environment_id"] = model.EnvironmentID
+		modelMap["environment_id"] = *model.EnvironmentID
 	}
 	if model.LocatorID != nil {
-		modelMap["locator_id"] = model.LocatorID
+		modelMap["locator_id"] = *model.LocatorID
 	}
 	return modelMap, nil
 }

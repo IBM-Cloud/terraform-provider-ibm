@@ -4,6 +4,11 @@ import "time"
 
 const (
 	// Arguments
+	Arg_AffinityInstance                    = "pi_affinity_instance"
+	Arg_AffinityPolicy                      = "pi_affinity_policy"
+	Arg_AffinityVolume                      = "pi_affinity_volume"
+	Arg_AntiAffinityInstances               = "pi_anti_affinity_instances"
+	Arg_AntiAffinityVolumes                 = "pi_anti_affinity_volumes"
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
 	Arg_DatacenterZone                      = "pi_datacenter_zone"
@@ -19,12 +24,14 @@ const (
 	Arg_ImageName                           = "pi_image_name"
 	Arg_InstanceName                        = "pi_instance_name"
 	Arg_KeyName                             = "pi_key_name"
+	Arg_LanguageCode                        = "pi_language_code"
 	Arg_NetworkName                         = "pi_network_name"
 	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
 	Arg_PVMInstanceActionType               = "pi_action"
 	Arg_PVMInstanceHealthStatus             = "pi_health_status"
 	Arg_PVMInstanceId                       = "pi_instance_id"
+	Arg_ReplicationEnabled                  = "pi_replication_enabled"
 	Arg_SAP                                 = "sap"
 	Arg_SAPProfileID                        = "pi_sap_profile_id"
 	Arg_SharedProcessorPoolHostGroup        = "pi_shared_processor_pool_host_group"
@@ -43,6 +50,10 @@ const (
 	Arg_VolumeID                            = "pi_volume_id"
 	Arg_VolumeName                          = "pi_volume_name"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
+	Arg_VolumePool                          = "pi_volume_pool"
+	Arg_VolumeShareable                     = "pi_volume_shareable"
+	Arg_VolumeSize                          = "pi_volume_size"
+	Arg_VolumeType                          = "pi_volume_type"
 	Arg_VTL                                 = "vtl"
 
 	// Attributes
@@ -90,6 +101,7 @@ const (
 	Attr_DatacenterStatus                            = "pi_datacenter_status"
 	Attr_DatacenterType                              = "pi_datacenter_type"
 	Attr_Default                                     = "default"
+	Attr_DeleteOnTermination                         = "delete_on_termination"
 	Attr_DeploymentType                              = "deployment_type"
 	Attr_Description                                 = "description"
 	Attr_DhcpID                                      = "dhcp_id"
@@ -289,6 +301,7 @@ const (
 	Attr_VolumePool                                  = "volume_pool"
 	Attr_Volumes                                     = "volumes"
 	Attr_VolumeSnapshots                             = "volume_snapshots"
+	Attr_VolumeStatus                                = "volume_status"
 	Attr_VPCCRNs                                     = "vpc_crns"
 	Attr_VPCEnabled                                  = "vpc_enabled"
 	Attr_WorkspaceCapabilities                       = "pi_workspace_capabilities"
@@ -301,6 +314,21 @@ const (
 	Attr_WorkspaceType                               = "pi_workspace_type"
 	Attr_WWN                                         = "wwn"
 	OS_IBMI                                          = "ibmi"
+
+	// States
+	State_Active              = "active"
+	State_Available           = "available"
+	State_Creating            = "creating"
+	State_Deleted             = "deleted"
+	State_Deleting            = "deleting"
+	State_Failed              = "failed"
+	State_Inactive            = "inactive"
+	State_InProgress          = "in progress"
+	State_InUse               = "in-use"
+	State_PendingReclaimation = "pending_reclamation"
+	State_Provisioning        = "provisioning"
+	State_Removed             = "removed"
+	State_Retry               = "retry"
 
 	// TODO: Second Half Cleanup, remove extra variables
 
