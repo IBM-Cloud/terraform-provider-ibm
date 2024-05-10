@@ -5,9 +5,7 @@ package eventnotification
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -153,9 +151,6 @@ func resourceIBMEnCodeEngineDestinationCreate(context context.Context, d *schema
 	}
 	if _, ok := d.GetOk("config"); ok {
 		config := CodeEnginedestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
-		log.Printf("Printing log %#v", config)
-		v, _ := json.Marshal(options)
-		log.Print(string(v))
 		options.SetConfig(&config)
 	}
 
