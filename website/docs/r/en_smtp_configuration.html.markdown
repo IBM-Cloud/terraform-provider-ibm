@@ -36,7 +36,7 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `256` characters. The minimum length is `10` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]/`.
 * `name` - (Required, String) SMTP name.
   * Constraints: The maximum length is `250` characters. The minimum length is `1` character. The value must match regular expression `/[a-zA-Z 0-9-_\/.?:'";,+=!#@$%^&*() ]*/`.
-* `verification_type` - The verification_type qualified values are spf/dkim/en_authorization. This is only the update parameter.
+* `verification_type` - (Optional, String) The verification_type qualified values are spf/dkim/en_authorization. This is only the update parameter.
 
 ## Attribute Reference
 

@@ -78,7 +78,7 @@ func ResourceIBMEnCodeEngineDestination() *schema.Resource {
 									},
 									"type": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Optional:    true,
 										Description: "The code engine destination type.",
 									},
 									"project_crn": {
