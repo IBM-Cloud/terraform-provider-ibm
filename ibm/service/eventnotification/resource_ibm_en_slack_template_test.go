@@ -18,8 +18,8 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnCodeEngineAllArgs(t *testing.T) {
-	var config en.Destination
+func TestAccIBMEnSlackTemplateAllArgs(t *testing.T) {
+	var params en.Template
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -29,29 +29,27 @@ func TestAccIBMEnCodeEngineAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnCodeEngineDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnEmailTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnSlackTemplateConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnCodeEngineDestinationExists("ibm_en_destination_ce.en_destination_resource_1", config),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "type", "ibmce"),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "collect_failed_events", "false"),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "description", description),
+					testAccCheckIBMEnSlackTemplateExists("ibm_en_slack_template.en_template_resource_1", params),
+					resource.TestCheckResourceAttr("ibm_en_slack_template.en_template_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_slack_template.en_template_resource_1", "type", "slack.notification"),
+					resource.TestCheckResourceAttr("ibm_en_slack_template.en_template_resource_1", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnSlackTemplateConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "type", "ibmce"),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "collect_failed_events", "false"),
-					resource.TestCheckResourceAttr("ibm_en_destination_ce.en_destination_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_slack_template.en_template_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_slack_template.en_template_resource_1", "type", "slack.notification"),
+					resource.TestCheckResourceAttr("ibm_en_slack_template.en_template_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination_ce.en_destination_resource_1",
+				ResourceName:      "ibm_en_slack_template.en_template_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -59,32 +57,28 @@ func TestAccIBMEnCodeEngineAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnCodeEngineDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnSlackTemplateConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "en_destination_resource" {
+	resource "ibm_resource_instance" "en_template_resource" {
 		name     = "%s"
 		location = "us-south"
 		plan     = "standard"
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination_ce" "en_destination_resource_1" {
-		instance_guid = ibm_resource_instance.en_destination_resource.guid
+	resource "ibm_en_slack_template" "en_template_resource_1" {
+		instance_guid = ibm_resource_instance.en_template_resource.guid
 		name        = "%s"
-		type        = "ibmce"
+		type        = "slack.notification"
 		description = "%s"
-		config {
-			params {
-				type = "application"
-				verb = "POST"
-				url  = "https://test.codetestcodeengine.com"
-			}
+		params {
+			body  = "ewogICJib2R5IjogIjxodG1sPmhlbGxvIERpdnlhPC9odG1sPiIsCiAgInN1YmplY3QiOiAiSGkgdGhpcyBpcyBpbnZpdGF0aW9uIGZvciBpbnZpdGF0aW9uIG1lc3NhZ2UiCn0="
 		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnCodeEngineDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnSlackTemplateExists(n string, obj en.Template) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -97,7 +91,7 @@ func testAccCheckIBMEnCodeEngineDestinationExists(n string, obj en.Destination) 
 			return err
 		}
 
-		options := &en.GetDestinationOptions{}
+		options := &en.GetTemplateOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -107,7 +101,7 @@ func testAccCheckIBMEnCodeEngineDestinationExists(n string, obj en.Destination) 
 		options.SetInstanceID(parts[0])
 		options.SetID(parts[1])
 
-		result, _, err := enClient.GetDestination(options)
+		result, _, err := enClient.GetTemplate(options)
 		if err != nil {
 			return err
 		}
@@ -117,17 +111,17 @@ func testAccCheckIBMEnCodeEngineDestinationExists(n string, obj en.Destination) 
 	}
 }
 
-func testAccCheckIBMEnCodeEngineDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnSlackTemplateDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_destination_resource_1" {
+		if rs.Type != "en_template_resource_1" {
 			continue
 		}
 
-		options := &en.GetDestinationOptions{}
+		options := &en.GetTemplateOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -138,12 +132,12 @@ func testAccCheckIBMEnCodeEngineDestinationDestroy(s *terraform.State) error {
 		options.SetID(parts[1])
 
 		// Try to find the key
-		_, response, err := enClient.GetDestination(options)
+		_, response, err := enClient.GetTemplate(options)
 
 		if err == nil {
 			return fmt.Errorf("en_destination still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for en_destination (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for en_template_resource_1 (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

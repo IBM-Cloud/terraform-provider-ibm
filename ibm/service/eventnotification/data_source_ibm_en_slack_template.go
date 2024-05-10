@@ -9,15 +9,14 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnCustomSMSDestination() *schema.Resource {
+func DataSourceIBMEnSlackTemplate() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnCustomSMSDestinationRead,
+		ReadContext: dataSourceIBMEnSlackTemplateRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -25,30 +24,25 @@ func DataSourceIBMEnCustomSMSDestination() *schema.Resource {
 				Required:    true,
 				Description: "Unique identifier for IBM Cloud Event Notifications instance.",
 			},
-			"destination_id": {
+			"template_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Unique identifier for Destination.",
+				Description: "Unique identifier for Template.",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination name.",
+				Description: "Template name.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination description.",
+				Description: "Templaten description.",
 			},
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type slack.",
-			},
-			"collect_failed_events": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
+				Description: "Template type smtp_custom.notification/smtp_custom.invitation.",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
@@ -72,20 +66,20 @@ func DataSourceIBMEnCustomSMSDestination() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	options := &en.GetDestinationOptions{}
+	options := &en.GetTemplateOptions{}
 
 	options.SetInstanceID(d.Get("instance_guid").(string))
-	options.SetID(d.Get("destination_id").(string))
+	options.SetID(d.Get("template_id").(string))
 
-	result, response, err := enClient.GetDestinationWithContext(context, options)
+	result, response, err := enClient.GetTemplateWithContext(context, options)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("GetDestination failed %s\n%s", err, response))
+		return diag.FromErr(fmt.Errorf("GetTemplate failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *options.ID))
@@ -104,17 +98,6 @@ func dataSourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
-	if err = d.Set("collect_failed_events", result.CollectFailedEvents); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
-	}
-
-	if result.Config != nil {
-		err = d.Set("config", enCustomSMSDestinationFlattenConfig(*result.Config))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
-		}
-	}
-
 	if result.SubscriptionNames != nil {
 		err = d.Set("subscription_names", result.SubscriptionNames)
 		if err != nil {
@@ -131,37 +114,4 @@ func dataSourceIBMEnCustomSMSDestinationRead(context context.Context, d *schema.
 	}
 
 	return nil
-}
-
-func enCustomSMSDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := enCustomSMSDestinationConfigToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func enCustomSMSDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
-	configMap = map[string]interface{}{}
-
-	if configItem.Params != nil {
-		paramsList := []map[string]interface{}{}
-		paramsMap := enCustomSMSDestinationConfigParamsToMap(configItem.Params)
-		paramsList = append(paramsList, paramsMap)
-		configMap["params"] = paramsList
-	}
-
-	return configMap
-}
-
-func enCustomSMSDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfIntf) (paramsMap map[string]interface{}) {
-	paramsMap = map[string]interface{}{}
-
-	params := paramsItem.(*en.DestinationConfigOneOf)
-
-	if params.URL != nil {
-		paramsMap["domain"] = params.Domain
-	}
-
-	return paramsMap
 }

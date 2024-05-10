@@ -858,6 +858,11 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_custom_sms":    eventnotification.DataSourceIBMEnCustomSMSDestination(),
 			"ibm_en_subscription_custom_sms":   eventnotification.DataSourceIBMEnCustomSMSSubscription(),
 			"ibm_en_integration_cos":           eventnotification.DataSourceIBMEnCOSIntegration(),
+			"ibm_en_smtp_configuration":        eventnotification.DataSourceIBMEnSMTPConfiguration(),
+			"ibm_en_smtp_configurations":       eventnotification.DataSourceIBMEnSMTPCOnfigurations(),
+			"ibm_en_smtp_user":                 eventnotification.DataSourceIBMEnSMTPUser(),
+			"ibm_en_smtp_users":                eventnotification.DataSourceIBMEnSMTPUsers(),
+			"ibm_en_slack_template":            eventnotification.DataSourceIBMEnSlackTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1419,6 +1424,10 @@ func Provider() *schema.Provider {
 			"ibm_en_integration_cos":           eventnotification.ResourceIBMEnCOSIntegration(),
 			"ibm_en_destination_custom_sms":    eventnotification.ResourceIBMEnCustomSMSDestination(),
 			"ibm_en_subscription_custom_sms":   eventnotification.ResourceIBMEnCustomSMSSubscription(),
+			"ibm_en_smtp_configuration":        eventnotification.ResourceIBMEnSMTPConfiguration(),
+			"ibm_en_smtp_user":                 eventnotification.ResourceIBMEnSMTPUser(),
+			"ibm_en_slack_template":            eventnotification.ResourceIBMEnSlackTemplate(),
+			"ibm_en_smtp_setting":              eventnotification.ResourceIBMEnSMTPSetting(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1895,6 +1904,11 @@ func Validator() validate.ValidatorDict {
 				"ibm_project":             project.ResourceIbmProjectValidator(),
 				"ibm_project_config":      project.ResourceIbmProjectConfigValidator(),
 				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
+
+				// Added for Event Notifications
+
+				"ibm_en_smtp_configuration": eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
+				"ibm_en_smtp_user":          eventnotification.ResourceIBMEnSMTPUserValidator(),
 
 				// Added for VMware as a Service
 				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),
