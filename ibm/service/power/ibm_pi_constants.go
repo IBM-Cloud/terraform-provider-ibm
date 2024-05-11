@@ -297,6 +297,7 @@ const (
 	Attr_VLanID                                      = "vlan_id"
 	Attr_VolumeGroupName                             = "volume_group_name"
 	Attr_VolumeGroups                                = "volume_groups"
+	Attr_VolumeID                                    = "volume_id"
 	Attr_VolumeIDs                                   = "volume_ids"
 	Attr_VolumePool                                  = "volume_pool"
 	Attr_Volumes                                     = "volumes"
