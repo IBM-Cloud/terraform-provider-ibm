@@ -280,9 +280,7 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 
 func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]interface{} {
 	faultMap := make(map[string]interface{})
-	if fault.Code != 0 {
-		faultMap[Attr_Code] = strconv.FormatFloat(fault.Code, 'f', -1, 64)
-	}
+	faultMap[Attr_Code] = strconv.FormatFloat(fault.Code, 'f', -1, 64)
 	if !fault.Created.IsZero() {
 		faultMap[Attr_Created] = fault.Created.String()
 	}
