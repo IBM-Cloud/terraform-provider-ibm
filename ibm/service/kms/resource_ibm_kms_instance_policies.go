@@ -155,31 +155,31 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to create root keys in the instance.",
-							Default:     true,
+							Computed:    true,
 						},
 						"create_standard_key": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to create standard keys in the instance.",
-							Default:     true,
+							Computed:    true,
 						},
 						"import_root_key": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to import root keys into the instance.",
-							Default:     true,
+							Computed:    true,
 						},
 						"import_standard_key": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to import standard keys into the instance.",
-							Default:     true,
+							Computed:    true,
 						},
 						"enforce_token": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, the service prevents you or any authorized users from importing key material into the specified service instance without using an import token.",
-							Default:     false,
+							Computed:    true,
 						},
 					},
 				},
@@ -331,13 +331,30 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 	if kciaip, ok := d.GetOk("key_create_import_access"); ok {
 		kciaipList := kciaip.([]interface{})
 		if len(kciaipList) != 0 {
-			mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
-				Enabled:           kciaipList[0].(map[string]interface{})["enabled"].(bool),
-				CreateRootKey:     kciaipList[0].(map[string]interface{})["create_root_key"].(bool),
-				CreateStandardKey: kciaipList[0].(map[string]interface{})["create_standard_key"].(bool),
-				ImportRootKey:     kciaipList[0].(map[string]interface{})["import_root_key"].(bool),
-				ImportStandardKey: kciaipList[0].(map[string]interface{})["import_standard_key"].(bool),
-				EnforceToken:      kciaipList[0].(map[string]interface{})["enforce_token"].(bool),
+			enabled := kciaipList[0].(map[string]interface{})["enabled"].(bool)
+			create_root_key := kciaipList[0].(map[string]interface{})["create_root_key"].(bool)
+			create_standard_key := kciaipList[0].(map[string]interface{})["create_standard_key"].(bool)
+			import_root_key := kciaipList[0].(map[string]interface{})["import_root_key"].(bool)
+			import_standard_key := kciaipList[0].(map[string]interface{})["import_standard_key"].(bool)
+			enforce_token := kciaipList[0].(map[string]interface{})["enforce_token"].(bool)
+
+			// because we use computed, we must make sure not to attempt any updates on attributes when enabled is false or face input validation errors
+			if enabled {
+				mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
+					Enabled: enabled,
+					Attributes: &kp.KeyCreateImportAccessInstancePolicyAttributes{
+						CreateRootKey:     &create_root_key,
+						CreateStandardKey: &create_standard_key,
+						ImportRootKey:     &import_root_key,
+						ImportStandardKey: &import_standard_key,
+						EnforceToken:      &enforce_token,
+					},
+				}
+			} else {
+				mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
+					Enabled:    enabled,
+					Attributes: nil,
+				}
 			}
 		}
 	}

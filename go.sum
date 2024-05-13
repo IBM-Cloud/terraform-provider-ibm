@@ -154,6 +154,8 @@ github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYt
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
 github.com/IBM/keyprotect-go-client v0.12.2 h1:Cjxcqin9Pl0xz3MnxdiVd4v/eIa79xL3hQpSbwOr/DQ=
 github.com/IBM/keyprotect-go-client v0.12.2/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
+github.com/IBM/keyprotect-go-client v0.14.0 h1:GqgK3BdczA/w7+B1RxEPLya0w9S/ZXi5YWKAxdW8vHQ=
+github.com/IBM/keyprotect-go-client v0.14.0/go.mod h1:cAt714Vnwnd03mmkBHHSJlDNRVthdRmJB6RePd4/B8Q=
 github.com/IBM/logs-go-sdk v0.1.1 h1:aiVnKHJzYcsHvQY58vLB7QbUV/kXcWTpCPqRKC2QS0A=
 github.com/IBM/logs-go-sdk v0.1.1/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
 github.com/IBM/mqcloud-go-sdk v0.0.4 h1:gqMpoU5a0qJ0GETG4PQrkgeEEoaQLvbxRJnEe6ytvC4=
