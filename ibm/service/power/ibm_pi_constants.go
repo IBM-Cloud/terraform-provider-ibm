@@ -12,6 +12,7 @@ const (
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
 	Arg_DatacenterZone                      = "pi_datacenter_zone"
+	Arg_Description                         = "pi_description"
 	Arg_DhcpCidr                            = "pi_cidr"
 	Arg_DhcpCloudConnectionID               = "pi_cloud_connection_id"
 	Arg_DhcpDnsServer                       = "pi_dns_server"
@@ -41,6 +42,7 @@ const (
 	Arg_SharedProcessorPoolPlacementGroupID = "pi_shared_processor_pool_placement_group_id"
 	Arg_SharedProcessorPoolReservedCores    = "pi_shared_processor_pool_reserved_cores"
 	Arg_SnapshotID                          = "pi_snapshot_id"
+	Arg_SnapShotName                        = "pi_snap_shot_name"
 	Arg_SPPPlacementGroupID                 = "pi_spp_placement_group_id"
 	Arg_SPPPlacementGroupName               = "pi_spp_placement_group_name"
 	Arg_SPPPlacementGroupPolicy             = "pi_spp_placement_group_policy"
@@ -49,6 +51,7 @@ const (
 	Arg_StorageType                         = "pi_storage_type"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeID                            = "pi_volume_id"
+	Arg_VolumeIDs                           = "pi_volume_ids"
 	Arg_VolumeName                          = "pi_volume_name"
 	Arg_VolumeOnboardingID                  = "pi_volume_onboarding_id"
 	Arg_VolumePool                          = "pi_volume_pool"
@@ -255,6 +258,7 @@ const (
 	Attr_SharedProcessorPoolStatus                   = "status"
 	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
 	Attr_Size                                        = "size"
+	Attr_SnapshotID                                  = "snapshot_id"
 	Attr_SourceVolumeName                            = "source_volume_name"
 	Attr_Speed                                       = "speed"
 	Attr_SPPPlacementGroupID                         = "spp_placement_group_id"
@@ -298,6 +302,7 @@ const (
 	Attr_VLanID                                      = "vlan_id"
 	Attr_VolumeGroupName                             = "volume_group_name"
 	Attr_VolumeGroups                                = "volume_groups"
+	Attr_VolumeID                                    = "volume_id"
 	Attr_VolumeIDs                                   = "volume_ids"
 	Attr_VolumePool                                  = "volume_pool"
 	Attr_Volumes                                     = "volumes"
@@ -340,6 +345,9 @@ const (
 	State_Provisioning        = "provisioning"
 	State_Removed             = "removed"
 	State_Retry               = "retry"
+
+	// Health
+	Health_OK = "OK"
 
 	// TODO: Second Half Cleanup, remove extra variables
 

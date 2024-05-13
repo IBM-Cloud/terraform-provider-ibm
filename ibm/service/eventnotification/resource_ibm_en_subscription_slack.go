@@ -64,6 +64,11 @@ func ResourceIBMEnSlackSubscription() *schema.Resource {
 							Optional:    true,
 							Description: "attachment color code",
 						},
+						"template_id_notification": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The templete id for notification",
+						},
 					},
 				},
 			},
@@ -281,6 +286,11 @@ func slackattributesMapToAttributes(attributeMap map[string]interface{}) (en.Sub
 	if attributeMap["attachment_color"] != nil {
 		attributesCreate.AttachmentColor = core.StringPtr(attributeMap["attachment_color"].(string))
 		attributesUpdate.AttachmentColor = core.StringPtr(attributeMap["attachment_color"].(string))
+	}
+
+	if attributeMap["template_id_notification"] != nil {
+		attributesCreate.TemplateIDNotification = core.StringPtr(attributeMap["template_id_notification"].(string))
+		attributesUpdate.TemplateIDNotification = core.StringPtr(attributeMap["template_id_notification"].(string))
 	}
 
 	return attributesCreate, attributesUpdate
