@@ -465,6 +465,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `activity_tracking`:
   - `activity_tracker_crn`-  (Optional, String) The CRN of your IBM Cloud Activity Tracker service instance. (Legacy)If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+  
     **Note:**
     (Recommended)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration. 
   - `read_data_events`-  (Optional, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
@@ -514,6 +515,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `metrics_monitoring`:
   - `metrics_monitoring_crn` - (Optional, string) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified(Legacy).
+
   **Note:**
   (Recommended)When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.
 
