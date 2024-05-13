@@ -65,22 +65,8 @@ resource "ibm_cos_bucket" "standard-ams03" {
   metrics_monitoring {
     usage_metrics_enabled  = true
     request_metrics_enabled = true
-    metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
-}
-
-// Activity tracker with activity_tracker_crn - Legacy
-resource "ibm_cos_bucket" "activity_tracker_crn_cos" {
-  bucket_name           = var.bucket_name
-  resource_instance_id  = ibm_resource_instance.cos_instance.id
-  single_site_location  = var.single_site_loc
-  storage_class         = var.standard_storage_class
-  activity_tracking {
-    read_data_events     = true
-    write_data_events    = true
-    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
-  }
 }
 
 resource "ibm_cos_bucket" "archive_expire_rule_cos" {
@@ -542,13 +528,13 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 | satellite_location_id | satellite location. | `string` | no |
 | storage | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.| `string` | no |
 | region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
-| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `bool` | no
-| write_data_events | All object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
-| management_events | All the bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated | `bool` | no
-| activity_tracker_crn | (Recommended) When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration.(Legacy) If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no
-| usage_metrics_enabled | Specify **true or false** to set usage metrics (i.e. bytes_used). | `bool` | no
-| request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get, put, or post request). | `bool` | no
-| metrics_monitoring_crn | (Recommended) When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.(Legacy) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified. | `string` | no
+| read_data_events | If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker. | `bool` | no
+| write_data_events | If set to **true**, all object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
+| management_events | This field only applies if `activity_tracker_crn` is not populated. If set to **true**, all bucket management events will be sent to Activity Tracker. | `bool` | no
+| activity_tracker_crn |When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no
+| usage_metrics_enabled |If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.| `bool` | no
+| request_metrics_enabled | If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service. | `bool` | no
+| metrics_monitoring_crn | When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified. | `string` | no
 | regional_loc | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**. | `string` | no
 | type | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**. | `string` |yes
 | rule_id | Unique identifier for the rule. | `string` | no
@@ -567,28 +553,28 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 | object_lock | enables Object Lock on a bucket. | `bool` | no
 | bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
 | bucket\_location | The location of the source COS bucket. | `string` | yes |
-| destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `String` | yes
-| deletemarker_replication_status | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it. | `String` | no
-| status | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it. | `String` | yes
-| rule_id | The rule id. | `String` | no
-| priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `String` | no
-| prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `String` | no
-| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `String` | yes
-| bucket_location | Location of the COS bucket. | `String` | yes
-| endpoint_type | Endpoint types of the COS bucket. | `String` | no
-| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `String` | yes
-| mode | Retention mode for the Object Lock configuration. | `String` | yes
+| destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `string` | yes
+| deletemarker_replication_status | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it. | `string` | no
+| status | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it. | `string` | yes
+| rule_id | The rule id. | `string` | no
+| priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `string` | no
+| prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `string` | no
+| bucket_crn | The CRN of the COS bucket on which Object Lock is enabled or should be enabled. | `string` | yes
+| bucket_location | Location of the COS bucket. | `string` | yes
+| endpoint_type | Endpoint types of the COS bucket. | `string` | no
+| object_lock_enabled | Enable Object Lock on an existing COS bucket. | `string` | yes
+| mode | Retention mode for the Object Lock configuration. | `string` | yes
 | years | Retention period in terms of years after which the object can be deleted. | `int` | no
 | days | Retention period in terms of days after which the object can be deleted. | `int` | no
-| key | Object key name to use when a 4XX class error occurs given as error document. | `String` | no
-| suffix | The home or default page of the website when static web hosting configuration is added. | `String` | Yes
-| hostname | Name of the host where requests are redirected. | `String` | Yes
-| protocol | Protocol to use when redirecting requests. The default is the protocol that is used in the original request. | `String` | No
-| http_error_code_returned_equals | HTTP error code when the redirect is applied. | `String` | No
-| key_prefix_equals | Object key name prefix when the redirect is applied. | `String` | No
-| host_name | Host name to use in the redirect request. | `String` | Yes
-| protocol | Protocol to use when redirecting requests. | `String` | No
-| http_redirect_code | HTTP redirect code to use on the response. | `String` | No
-| replace_key_with | Specific object key to use in the redirect request. | `String` | No
-| replace_key_prefix_with | Object key prefix to use in the redirect request. | `String` | No
+| key | Object key name to use when a 4XX class error occurs given as error document. | `string` | no
+| suffix | The home or default page of the website when static web hosting configuration is added. | `string` | Yes
+| hostname | Name of the host where requests are redirected. | `string` | Yes
+| protocol | Protocol to use when redirecting requests. The default is the protocol that is used in the original request. | `string` | No
+| http_error_code_returned_equals | HTTP error code when the redirect is applied. | `string` | No
+| key_prefix_equals | Object key name prefix when the redirect is applied. | `string` | No
+| host_name | Host name to use in the redirect request. | `string` | Yes
+| protocol | Protocol to use when redirecting requests. | `string` | No
+| http_redirect_code | HTTP redirect code to use on the response. | `string` | No
+| replace_key_with | Specific object key to use in the redirect request. | `string` | No
+| replace_key_prefix_with | Object key prefix to use in the redirect request. | `string` | No
 {: caption="inputs"}

@@ -126,22 +126,22 @@ func DataSourceIBMCosBucket() *schema.Resource {
 						"read_data_events": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, all object read events will be sent to Activity Tracker.",
+							Description: "If set to true, all object read events (i.e. downloads) will be sent to Activity Tracker.",
 						},
 						"write_data_events": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, all object write events will be sent to Activity Tracker.",
+							Description: "If set to true, all object write events (i.e. uploads) will be sent to Activity Tracker.",
 						},
 						"management_events": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, all bucket management events will be sent to Activity Tracker",
+							Description: "This field only applies if `activity_tracker_crn` is not populated. If set to true, all bucket management events will be sent to Activity Tracker.",
 						},
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The instance of Activity Tracker that will receive object event data",
+							Description: "When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.",
 						},
 					},
 				},
@@ -154,17 +154,17 @@ func DataSourceIBMCosBucket() *schema.Resource {
 						"usage_metrics_enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Usage metrics will be sent to the monitoring service.",
+							Description: "If set to `true`, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.",
 						},
 						"request_metrics_enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Request metrics will be sent to the monitoring service.",
+							Description: "If set to true, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service",
 						},
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Instance of IBM Cloud Monitoring that will receive the bucket metrics.",
+							Description: "When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.",
 						},
 					},
 				},
