@@ -49,6 +49,8 @@ resource "null_resource" "updateCRD" {
         workerNodes = var.workerNodes
         workerPools = var.workerPools
         osdDevicePaths = var.osdDevicePaths
+        taintNodes = var.taintNodes
+        addSingleReplicaPool = var.addSingleReplicaPool
     }
     
 

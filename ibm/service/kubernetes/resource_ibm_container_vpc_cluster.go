@@ -945,28 +945,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
 	}
 
-	workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, "default", targetEnv)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() != 404 && !strings.Contains(apiErr.Description(), "The specified worker pool could not be found") {
-				return fmt.Errorf("[ERROR] Error retrieving worker pool of the cluster %s: %s", workerPool.ID, err)
-			}
-		}
-	}
-
-	var zones = make([]map[string]interface{}, 0)
-	for _, zone := range workerPool.Zones {
-		for _, subnet := range zone.Subnets {
-			if subnet.Primary {
-				zoneInfo := map[string]interface{}{
-					"name":      zone.ID,
-					"subnet_id": subnet.ID,
-				}
-				zones = append(zones, zoneInfo)
-			}
-		}
-	}
-
 	albs, err := albsAPI.ListClusterAlbs(clusterID, targetEnv)
 	if err != nil && !strings.Contains(err.Error(), "This operation is not supported for your cluster's version.") {
 		return fmt.Errorf("[ERROR] Error retrieving alb's of the cluster %s: %s", clusterID, err)
@@ -975,22 +953,15 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set("name", cls.Name)
 	d.Set("crn", cls.CRN)
 	d.Set("master_status", cls.Lifecycle.MasterStatus)
-	d.Set("zones", zones)
 	if strings.HasSuffix(cls.MasterKubeVersion, "_openshift") {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0]+"_openshift")
 	} else {
 		d.Set("kube_version", strings.Split(cls.MasterKubeVersion, "_")[0])
 	}
-	d.Set("worker_count", workerPool.WorkerCount)
-	d.Set("worker_labels", flex.IgnoreSystemLabels(workerPool.Labels))
 	if cls.Vpcs != nil {
 		d.Set("vpc_id", cls.Vpcs[0])
 	}
-	if workerPool.Taints != nil {
-		d.Set("taints", flattenWorkerPoolTaints(workerPool))
-	}
 	d.Set("master_url", cls.MasterURL)
-	d.Set("flavor", workerPool.Flavor)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
 	d.Set("state", cls.State)
@@ -1007,11 +978,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
-	d.Set("host_pool_id", workerPool.HostPoolID)
-	d.Set("operating_system", workerPool.OperatingSystem)
-	if workerPool.SecondaryStorageOption != nil {
-		d.Set("secondary_storage", workerPool.SecondaryStorageOption.Name)
-	}
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -1028,14 +994,6 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set(flex.ResourceCRN, cls.CRN)
 	d.Set(flex.ResourceStatus, cls.State)
 	d.Set(flex.ResourceGroupName, cls.ResourceGroupName)
-
-	if workerPool.WorkerVolumeEncryption != nil {
-		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
-		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
-		if workerPool.WorkerVolumeEncryption.KMSAccountID != "" {
-			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
-		}
-	}
 
 	return nil
 }
@@ -1082,7 +1040,7 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 		listlbOptions := &vpcv1.ListLoadBalancersOptions{}
 		lbs, response, err1 := sess1.ListLoadBalancers(listlbOptions)
 		if err1 != nil {
-			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err, response)
+			log.Printf("Error Retrieving vpc load balancers: %s\n%s", err1, response)
 		}
 		if lbs != nil && lbs.LoadBalancers != nil && len(lbs.LoadBalancers) > 0 {
 			for _, lb := range lbs.LoadBalancers {
