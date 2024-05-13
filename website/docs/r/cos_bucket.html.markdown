@@ -76,7 +76,6 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
     read_data_events     = true
     write_data_events    = true
     management_events    = true
-    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
@@ -95,7 +94,6 @@ resource "ibm_cos_bucket" "smart-us-south-firewall" {
     read_data_events     = true
     write_data_events    = true
     management_events    = true
-    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
@@ -114,7 +112,6 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
     read_data_events     = true
     write_data_events    = true
     management_events    = true
-    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
   }
   metrics_monitoring {
     usage_metrics_enabled  = true
@@ -122,6 +119,19 @@ resource "ibm_cos_bucket" "cold-ap-firewall" {
     metrics_monitoring_crn = ibm_resource_instance.metrics_monitor.id
   }
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
+}
+
+### Activity tracker with activity_tracker_crn - Legacy
+resource "ibm_cos_bucket" "activity_tracker_crn_cos" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  single_site_location  = var.single_site_loc
+  storage_class         = var.standard_storage_class
+  activity_tracking {
+    read_data_events     = true
+    write_data_events    = true
+    activity_tracker_crn = ibm_resource_instance.activity_tracker.id
+  }
 }
 
 ### Configure archive and expire rules on COS Bucket
