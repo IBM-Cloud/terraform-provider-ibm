@@ -209,7 +209,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "When the activity_tracker_crn is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the ATracker Router service configuration. If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled",
+							Description: "When the activity_tracker_crn is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration. If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled",
 						},
 					},
 				},

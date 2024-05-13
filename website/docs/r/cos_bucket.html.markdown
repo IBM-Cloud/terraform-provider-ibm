@@ -451,21 +451,16 @@ Review the argument references that you can specify for your resource.
   - `prefix` - (Optional, String)  A rule with a prefix will only apply to the objects that match. You can use multiple rules for different actions for different prefixes within the same bucket.
   - `rule_id` - (Optional, String) Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket.
 - `allowed_ip` - (Optional, Array of string)  A list of IPv4 or IPv6 addresses in CIDR notation that you want to allow access to your IBM Cloud Object Storage bucket.
-- `activity_tracking`- (List of objects) Object to enable auditing with IBM Cloud Activity Tracker - Optional - Configure your IBM Cloud Activity Tracker service instance and the type of events that you want to send to your service to audit activity against your bucket. For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
+- `activity_tracking`- (Object) Object to enable auditing with IBM Cloud Activity Tracker - Optional - Configure your IBM Cloud Activity Tracker service instance and the type of events that you want to send to your service to audit activity against your bucket. For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
 
   Nested scheme for `activity_tracking`:
-  - `activity_tracker_crn`-  (Optional, String) The CRN of your IBM Cloud Activity Tracker service instance. If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
-  
-
-  **Note:**
-  When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the ATracker Router service configuration. 
+  - `activity_tracker_crn`-  (Optional, String) The CRN of your IBM Cloud Activity Tracker service instance. (Legacy)If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+    **Note:**
+    (Recommended)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration. 
   - `read_data_events`-  (Optional, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
   - `write_data_events`-  (Optional, Bool) If set to **true**, all write events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
   - `management_events`-  (Optional, Bool) This field only applies if `activity_tracker_crn` is not populated. If set to `true`, all bucket management events will be sent to Activity Tracker.
   
-  
-  **Note:**
-  `management_events` field only applies if `activity_tracker_crn` is not populated.
 - `archive_rule` - (Required, List) Nested archive_rule block has following structure.
   
   Nested scheme for `archive_rule`:
@@ -508,17 +503,17 @@ Review the argument references that you can specify for your resource.
 - `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
 
   Nested scheme for `metrics_monitoring`:
-  - `metrics_monitoring_crn` - (Optional, string) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.
-
-
+  - `metrics_monitoring_crn` - (Optional, string) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified(Legacy).
   **Note:**
- When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.. 
-  - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service `@1mins` granulatiy.
-  - `usage_metrics_enabled` : (Optional, Bool) If set to **true**, all usage metrics that is `bytes_used` is sent to the monitoring service.e.
+  (Recommended)When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.
+
+  - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics (eg: `ibm_cos_bucket_all_request`) are sent to the monitoring service at a 1 min granularity.
+  - `usage_metrics_enabled` : (Optional, Bool) If set to **true**, all usage metrics (eg: `bytes_used`) are sent to the monitoring service.Usage metrics are sent to the monitoring services every 24 hours
 
     **Note:** 
     - Request metrics are supported in all regions and console has the support. For more details check the [cloud documention](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration).
     - One of the location option must be present. 
+
 - `noncurrent_version_expiration` - (Required, List) lifecycle has a versioning related expiration action: non-current version expiration. This can remove old versions of objects after they've been non-current for a specified number of days which is specified with a NoncurrentDays parameter on the rule. see [lifecycle actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning). Nested noncurrent_version_expiration block has following structure.
 
   Nested scheme for `noncurrent_version_expiration`:

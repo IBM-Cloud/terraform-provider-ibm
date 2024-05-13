@@ -138,11 +138,11 @@ In addition to all argument reference list, you can access the following attribu
 - `activity_tracking` (List) Nested block with the following structure.
 
   Nested scheme for `activity_tracking`:
-  - `activity_tracker_crn` - (String) If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+  - `activity_tracker_crn` - (String) (Legacy)If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
 
 
   **Note:**
-  When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the ATracker Router service configuration.
+  (Recommended)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration.
   - `read_data_events` - (Bool)  Enables sending log data to Activity Tracker to provide visibility into an object read and write events.
   - `write_data_events`- (Bool) If set to **true**, all object write events (that is `uploads`) is sent to Activity Tracker.
   - `management_events`- (Bool) If set to **true**, all the bucket management events are sent to Activity Tracker.
