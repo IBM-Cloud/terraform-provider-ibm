@@ -138,10 +138,8 @@ In addition to all argument reference list, you can access the following attribu
 - `activity_tracking` (List) Nested block with the following structure.
 
   Nested scheme for `activity_tracking`:
-  - `activity_tracker_crn` - (String) (Legacy)If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+  - `activity_tracker_crn` - (String) `Recommended` When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration.`Legacy` If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
 
-**Note:**
-  (Recommended)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration.
   - `read_data_events` - (Bool)  Enables sending log data to Activity Tracker to provide visibility into an object read and write events.
   - `write_data_events`- (Bool) If set to **true**, all object write events (that is `uploads`) is sent to Activity Tracker.
   - `management_events`- (Bool) If set to **true**, all the bucket management events are sent to Activity Tracker.
@@ -183,10 +181,8 @@ In addition to all argument reference list, you can access the following attribu
 - `metrics_monitoring`- (List) Nested block with the following structure.
    
   Nested scheme for `metrics_monitoring`:
-  - `metrics_monitoring_crn` - (String) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.
-
-  **Note:**
- When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.
+  - `metrics_monitoring_crn` - (String)  `Recommended` When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.`Legacy` If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified.
+  
   -	`request_metrics_enabled` - (Bool) If set to `true`, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service at 1 minute (`@1mins`) granularity.
   - `usage_metrics_enabled`- (Bool) If set to **true**, all usage metrics (that is `bytes_used`) is sent to the monitoring service.
 - `noncurrent_version_expiration` (List) Nested block with the following structure.

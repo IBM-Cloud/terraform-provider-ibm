@@ -464,10 +464,8 @@ Review the argument references that you can specify for your resource.
 - `activity_tracking`- (Object) Object to enable auditing with IBM Cloud Activity Tracker - Optional - Configure your IBM Cloud Activity Tracker service instance and the type of events that you want to send to your service to audit activity against your bucket. For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
 
   Nested scheme for `activity_tracking`:
-  - `activity_tracker_crn`-  (Optional, String) The CRN of your IBM Cloud Activity Tracker service instance. (Legacy)If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
-  
-    **Note:**
-    (Recommended)When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration. 
+  - `activity_tracker_crn`-  (Optional, String) The CRN of your IBM Cloud Activity Tracker service instance.`Recommended` When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Router service configuration.`Legacy` If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.
+
   - `read_data_events`-  (Optional, Bool)  If set to **true**, all read events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
   - `write_data_events`-  (Optional, Bool) If set to **true**, all write events against a bucket are sent to your IBM Cloud Activity Tracker service instance.
   - `management_events`-  (Optional, Bool) This field only applies if `activity_tracker_crn` is not populated. If set to `true`, all bucket management events will be sent to Activity Tracker.
@@ -514,10 +512,7 @@ Review the argument references that you can specify for your resource.
 - `metrics_monitoring`- (Object) to enable metrics tracking with IBM Cloud Monitoring - Optional- Set up your IBM Cloud Monitoring service instance to receive metrics for your IBM Cloud Object Storage bucket.
 
   Nested scheme for `metrics_monitoring`:
-  - `metrics_monitoring_crn` - (Optional, string) If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified(Legacy).
-
-  **Note:**
-  (Recommended)When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.
+  - `metrics_monitoring_crn` - (Optional, string)   `Recommended` When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.`Legacy` If `metrics_monitoring_crn` is populated, then enabled events are sent to the Metrics Monitoring instance specified(Legacy).
 
   - `request_metrics_enabled` : (Optional, Bool) If set to **true**, all request metrics (eg: `ibm_cos_bucket_all_request`) are sent to the monitoring service at a 1 min granularity.
   - `usage_metrics_enabled` : (Optional, Bool) If set to **true**, all usage metrics (eg: `bytes_used`) are sent to the monitoring service.Usage metrics are sent to the monitoring services every 24 hours
