@@ -20,6 +20,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Id of the Rulesets Rule",
+			Computed:    true,
 		},
 		CISRulesetsRuleVersion: {
 			Type:        schema.TypeString,
@@ -41,6 +42,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 						Type:        schema.TypeString,
 						Optional:    true,
 						Description: "Id of the Rulesets Rule",
+						Computed:    true,
 					},
 					CISRulesetOverrides: {
 						Type:        schema.TypeSet,
@@ -256,6 +258,7 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Associated Ruleset ID",
 				Optional:    true,
+				Computed:    true,
 			},
 			CISRulesetsRules: {
 				Type:        schema.TypeList,
