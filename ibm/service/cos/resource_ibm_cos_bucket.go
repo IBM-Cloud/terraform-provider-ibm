@@ -186,7 +186,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events",
+				Description: "Enables sending log data to IBM Cloud Activity Tracker to provide visibility into bucket management, object read and write events.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"read_data_events": {
@@ -218,7 +218,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Enables sending metrics to IBM Cloud Monitoring.",
+				Description: " Enables sending metrics to IBM Cloud Monitoring.All metrics are opt-in",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"usage_metrics_enabled": {
