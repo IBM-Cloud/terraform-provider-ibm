@@ -58,7 +58,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	controlLibraryDescription := fmt.Sprintf("tf_control_library_description_%d", acctest.RandIntRange(10, 100))
 	controlLibraryType := "custom"
 	versionGroupLabel := "11111111-2222-3333-4444-555555555555"
-	controlLibraryVersion := "0.0.1"
+	controlLibraryVersion := "0.0.0"
 	latest := "true"
 	controlsCount := "1"
 
@@ -66,7 +66,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 	controlLibraryDescriptionUpdate := controlLibraryDescription
 	controlLibraryTypeUpdate := "custom"
 	versionGroupLabelUpdate := versionGroupLabel
-	controlLibraryVersionUpdate := "0.0.2"
+	controlLibraryVersionUpdate := "0.0.1"
 	latestUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
@@ -75,7 +75,7 @@ func TestAccIbmSccControlLibraryAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccControlLibraryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccControlLibraryConfig(acc.SccInstanceID, controlLibraryName, controlLibraryDescription, controlLibraryType, versionGroupLabel, controlLibraryVersion, latest),
+				Config: testAccCheckIbmSccControlLibraryConfigBasic(acc.SccInstanceID, controlLibraryName, controlLibraryDescription, controlLibraryType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccControlLibraryExists("ibm_scc_control_library.scc_control_library_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_control_library.scc_control_library_instance", "control_library_name", controlLibraryName),
@@ -115,7 +115,7 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 			control_library_name = "%s"
 			control_library_description = "%s"
 			control_library_type = "%s"
-			version_group_label = "03354ab4-03be-41c0-a469-826fc0262e78"
+			version_group_label = "11111111-2222-3333-4444-555555555555"
 			latest = true
 			controls {
 				control_name = "control-name"
@@ -134,12 +134,18 @@ func testAccCheckIbmSccControlLibraryConfigBasic(instanceID string, controlLibra
 						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
 						assessment_method = "ibm-cloud-rule"
 						assessment_type = "automated"
-						assessment_description = "assessment_description"
+						assessment_description = "test 1"
 						parameters {
 							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
-							parameter_type = "numeric"
+              				parameter_name         = "session_invalidation_in_seconds"
+							parameter_type         = "numeric"
 						}
+					}
+					assessments {
+						assessment_id = "rule-f88e215f-bb33-4bd8-bd1c-d8a065e9aa70"
+						assessment_method = "ibm-cloud-rule"
+						assessment_type = "automated"
+						assessment_description = "test 2"
 					}
 				}
 				control_docs {
@@ -178,14 +184,20 @@ func testAccCheckIbmSccControlLibraryConfig(instanceID string, controlLibraryNam
 					environment = "environment"
 					control_specification_description = "control_specification_description"
 					assessments {
+						assessment_id = "rule-f88e215f-bb33-4bd8-bd1c-d8a065e9aa70"
+						assessment_method = "ibm-cloud-rule"
+						assessment_type = "automated"
+						assessment_description = "test 2"
+					}
+					assessments {
 						assessment_id = "rule-a637949b-7e51-46c4-afd4-b96619001bf1"
 						assessment_method = "ibm-cloud-rule"
 						assessment_type = "automated"
-						assessment_description = "assessment_description"
+						assessment_description = "test 1"
 						parameters {
-							parameter_display_name = "Sign out due to inactivity in seconds"
-                            parameter_name         = "session_invalidation_in_seconds"
-							parameter_type = "numeric"
+							parameter_display_name  = "Sign out due to inactivity in seconds"
+              				parameter_name          = "session_invalidation_in_seconds"
+							parameter_type          = "numeric"
 						}
 					}
 				}

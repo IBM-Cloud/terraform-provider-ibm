@@ -135,6 +135,13 @@ func DataSourceSnapshots() *schema.Resource {
 							Computed: true,
 						},
 
+						"service_tags": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) prefixed with `is.snapshot:` associated with this snapshot.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+
 						isSnapshotCopies: {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -588,6 +595,9 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 		}
 		if snapshot.EncryptionKey != nil {
 			l[isSnapshotEncryptionKey] = snapshot.EncryptionKey.CRN
+		}
+		if snapshot.ServiceTags != nil && len(snapshot.ServiceTags) > 0 {
+			l["service_tags"] = snapshot.ServiceTags
 		}
 		if snapshot.EncryptionKey != nil && snapshot.EncryptionKey.CRN != nil {
 			l[isSnapshotEncryptionKey] = *snapshot.EncryptionKey.CRN

@@ -24,7 +24,21 @@ resource "ibm_resource_tag" "tag" {
 	tags        = var.tag_names
 }
 
+resource "ibm_resource_tag" "tag_with_timeout" {
+	resource_id = ibm_satellite_location.location.crn
+	tags        = var.tag_names
+	timeout		{
+		create = "45s"
+	}
+}
+
 ```
+
+## Timeouts
+The `ibm_resource_tag` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create**: The default timeout for tag creation is 30 seconds. 
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource.

@@ -1121,7 +1121,7 @@ func lbListenerPolicyGet(d *schema.ResourceData, meta interface{}, lbID, listene
 					}
 				}
 			} else if *(policy.Action) == "https_redirect" {
-				if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect" {
+				if reflect.TypeOf(policy.Target).String() == "*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect" {
 					target, ok := policy.Target.(*vpcv1.LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyHTTPSRedirect)
 					if ok {
 						d.Set(isLBListenerPolicyHTTPSRedirectListener, target.Listener.ID)

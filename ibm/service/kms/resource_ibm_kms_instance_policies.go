@@ -36,12 +36,18 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				Description:      "Key protect or hpcs instance GUID or CRN",
 				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
-			"dual_auth_delete": {
-				Type:         schema.TypeList,
+			"endpoint_type": {
+				Type:         schema.TypeString,
 				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the dual authorization delete policy for instance",
+				Computed:     true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
+				Description:  "public or private",
+			},
+			"dual_auth_delete": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the dual authorization delete policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -73,11 +79,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				},
 			},
 			"rotation": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the rotation policy for instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the rotation policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -115,11 +120,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				},
 			},
 			"key_create_import_access": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the key create import access policy for the instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the key create import access policy for the instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -181,11 +185,10 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 				},
 			},
 			"metrics": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
-				MaxItems:     1,
-				Description:  "Data associated with the metric policy for instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Data associated with the metric policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -242,10 +245,20 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 		return diag.Errorf("[ERROR] Get Policies failed with error : %s", err)
 	}
 	d.Set("instance_id", instanceID)
-	d.Set("dual_auth_delete", flex.FlattenInstancePolicy("dual_auth_delete", instancePolicies))
-	d.Set("rotation", flex.FlattenInstancePolicy("rotation", instancePolicies))
-	d.Set("metrics", flex.FlattenInstancePolicy("metrics", instancePolicies))
-	d.Set("key_create_import_access", flex.FlattenInstancePolicy("key_create_import_access", instancePolicies))
+
+	setIfNotEmpty := func(policyType string, instancePolicies []kp.InstancePolicy) {
+		// if policy has been set to [] which indicates not to track, then ignore
+		if _, ok := d.GetOk(policyType); !ok {
+			return
+		}
+		policyAttr := flex.FlattenInstancePolicy(policyType, instancePolicies)
+		d.Set(policyType, policyAttr)
+	}
+	setIfNotEmpty("dual_auth_delete", instancePolicies)
+	setIfNotEmpty("rotation", instancePolicies)
+	setIfNotEmpty("metrics", instancePolicies)
+	setIfNotEmpty("key_create_import_access", instancePolicies)
+
 	return nil
 
 }
@@ -270,7 +283,7 @@ func resourceIBMKmsInstancePolicyUpdate(context context.Context, d *schema.Resou
 
 func resourceIBMKmsInstancePolicyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	//Do not support delete Policies
-	log.Println("Warning:  `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated instance resource is destroyed.")
+	log.Println("[WARN] `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated instance resource is destroyed.")
 	d.SetId("")
 	return nil
 
@@ -314,6 +327,7 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 			}
 		}
 	}
+
 	if kciaip, ok := d.GetOk("key_create_import_access"); ok {
 		kciaipList := kciaip.([]interface{})
 		if len(kciaipList) != 0 {

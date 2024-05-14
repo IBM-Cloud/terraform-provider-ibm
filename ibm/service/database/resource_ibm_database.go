@@ -251,8 +251,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "public",
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == "" {
+						return true
+					}
+					return false
+				},
 			},
 			"backup_id": {
 				Description: "The CRN of backup source database",
@@ -539,6 +544,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									"id": {
 										Type:     schema.TypeString,
 										Required: true,
+										ValidateFunc: validation.StringInSlice([]string{
+											"multitenant",
+											"b3c.4x16.encrypted",
+											"b3c.8x32.encrypted",
+											"m3c.8x64.encrypted",
+											"b3c.16x64.encrypted",
+											"b3c.32x128.encrypted",
+											"m3c.30x240.encrypted"}, false),
 									},
 								},
 							},
@@ -595,6 +608,16 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Can memory scale down as well as up.",
+									},
+									"cpu_enforcement_ratio_ceiling_mb": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "The amount of memory required before the cpu/memory ratio is no longer enforced. (multitenant only).",
+									},
+									"cpu_enforcement_ratio_mb": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "The maximum memory allowed per CPU until the ratio ceiling is reached. (multitenant only).",
 									},
 								},
 							},
@@ -947,7 +970,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			AllowedValues:              "public, private, public-and-private",
-			Required:                   true})
+			Required:                   false})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "group_id",
@@ -987,21 +1010,23 @@ type Group struct {
 }
 
 type GroupResource struct {
-	Units        string
-	Allocation   int
-	Minimum      int
-	Maximum      int
-	StepSize     int
-	IsAdjustable bool
-	IsOptional   bool
-	CanScaleDown bool
+	Units                        string
+	Allocation                   int
+	Minimum                      int
+	Maximum                      int
+	StepSize                     int
+	IsAdjustable                 bool
+	IsOptional                   bool
+	CanScaleDown                 bool
+	CPUEnforcementRatioCeilingMb int
+	CPUEnforcementRatioMb        int
 }
 
 type HostFlavorGroupResource struct {
 	ID string
 }
 
-func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
+func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return groups, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
@@ -1033,9 +1058,15 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 	}
 
 	getDefaultScalingGroupsOptions := cloudDatabasesClient.NewGetDefaultScalingGroupsOptions(service)
+	if _hostFlavor != "" {
+		getDefaultScalingGroupsOptions.SetHostFlavor(_hostFlavor)
+	}
 
-	getDefaultScalingGroupsResponse, _, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
+	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
 	if err != nil {
+		if response.StatusCode == 422 {
+			return groups, fmt.Errorf("%s is not available on multitenant", service)
+		}
 		return groups, err
 	}
 
@@ -1043,7 +1074,7 @@ func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (g
 }
 
 func getInitialNodeCount(service string, plan string, meta interface{}) (int, error) {
-	groups, err := getDefaultScalingGroups(service, plan, meta)
+	groups, err := getDefaultScalingGroups(service, plan, "", meta)
 
 	if err != nil {
 		return 0, err
@@ -2702,14 +2733,16 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 		}
 
 		group.Memory = &GroupResource{
-			Units:        *g.Memory.Units,
-			Allocation:   int(*g.Memory.AllocationMb),
-			Minimum:      int(*g.Memory.MinimumMb),
-			Maximum:      int(*g.Memory.MaximumMb),
-			StepSize:     int(*g.Memory.StepSizeMb),
-			IsAdjustable: *g.Memory.IsAdjustable,
-			IsOptional:   *g.Memory.IsOptional,
-			CanScaleDown: *g.Memory.CanScaleDown,
+			Units:                        *g.Memory.Units,
+			Allocation:                   int(*g.Memory.AllocationMb),
+			Minimum:                      int(*g.Memory.MinimumMb),
+			Maximum:                      int(*g.Memory.MaximumMb),
+			StepSize:                     int(*g.Memory.StepSizeMb),
+			IsAdjustable:                 *g.Memory.IsAdjustable,
+			IsOptional:                   *g.Memory.IsOptional,
+			CanScaleDown:                 *g.Memory.CanScaleDown,
+			CPUEnforcementRatioCeilingMb: getCPUEnforcementRatioCeilingMb(g.Memory),
+			CPUEnforcementRatioMb:        getCPUEnforcementRatioMb(g.Memory),
 		}
 
 		group.Disk = &GroupResource{
@@ -2743,6 +2776,22 @@ func normalizeGroups(_groups []clouddatabasesv5.Group) (groups []Group) {
 	}
 
 	return groups
+}
+
+func getCPUEnforcementRatioCeilingMb(groupMemory *clouddatabasesv5.GroupMemory) int {
+	if groupMemory.CPUEnforcementRatioCeilingMb != nil {
+		return int(*groupMemory.CPUEnforcementRatioCeilingMb)
+	}
+
+	return 0
+}
+
+func getCPUEnforcementRatioMb(groupMemory *clouddatabasesv5.GroupMemory) int {
+	if groupMemory.CPUEnforcementRatioMb != nil {
+		return int(*groupMemory.CPUEnforcementRatioMb)
+	}
+
+	return 0
 }
 
 func expandGroups(_groups []interface{}) []*Group {
@@ -2837,6 +2886,21 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 	return nil
 }
 
+func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) error {
+	// TODO: Replace this with  cpuEnforcementRatioCeiling when it is fixed
+	cpuEnforcementRatioCeilingTemp := 16384
+
+	if group.CPU == nil || group.CPU.Allocation == 0 {
+		return nil
+	}
+
+	if group.CPU.Allocation >= cpuEnforcementRatioCeilingTemp/cpuEnforcementRatioMb {
+		return nil
+	} else {
+		return fmt.Errorf("The current cpu alloaction of %d is not valid for your current configuration.", group.CPU.Allocation)
+	}
+}
+
 func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	service := diff.Get("service").(string)
@@ -2846,11 +2910,23 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		var currentGroups []Group
 		var groupList []clouddatabasesv5.Group
 		var groupIds []string
+		groups := expandGroups(group.(*schema.Set).List())
+		var memberGroup *Group
+		for _, g := range groups {
+			if g.ID == "member" {
+				memberGroup = g
+				break
+			}
+		}
 
 		if instanceID != "" {
 			groupList, err = getGroups(instanceID, meta)
 		} else {
-			groupList, err = getDefaultScalingGroups(service, plan, meta)
+			if memberGroup.HostFlavor != nil {
+				groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
+			} else {
+				groupList, err = getDefaultScalingGroups(service, plan, "", meta)
+			}
 		}
 
 		if err != nil {
@@ -2860,6 +2936,16 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		currentGroups = normalizeGroups(groupList)
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
+
+		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := 0, 0
+
+		if memberGroup.HostFlavor != nil && memberGroup.HostFlavor.ID == "multitenant" {
+			err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb = getCpuEnforcementRatios(service, plan, memberGroup.HostFlavor.ID, meta, group)
+
+			if err != nil {
+				return err
+			}
+		}
 
 		// validate group_ids are unique
 		groupIds = make([]string, 0, len(tfGroups))
@@ -2892,15 +2978,15 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 			// set current nodeCount
 			nodeCount := groupDefaults.Members.Allocation
 
-			if group.Members != nil {
-				err = validateGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
+			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
+				err = validateGroupHostFlavor(groupId, "host_flavor", group)
 				if err != nil {
 					return err
 				}
 			}
 
-			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
-				err = validateGroupHostFlavor(groupId, "host_flavor", group)
+			if group.Members != nil {
+				err = validateGroupScaling(groupId, "members", group.Members.Allocation, groupDefaults.Members, 1)
 				if err != nil {
 					return err
 				}
@@ -2910,6 +2996,13 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				err = validateGroupScaling(groupId, "memory", group.Memory.Allocation, groupDefaults.Memory, nodeCount)
 				if err != nil {
 					return err
+				}
+
+				if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID == "multitenant" && cpuEnforcementRatioCeiling != 0 && cpuEnforcementRatioMb != 0 {
+					err = validateMultitenantMemoryCpu(groupDefaults, group, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -2930,6 +3023,41 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	}
 
 	return nil
+}
+
+func getCpuEnforcementRatios(service string, plan string, hostFlavor string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
+	var currentGroups []Group
+	defaultList, err := getDefaultScalingGroups(service, plan, hostFlavor, meta)
+
+	if err != nil {
+		return err, 0, 0
+	}
+
+	currentGroups = normalizeGroups(defaultList)
+	tfGroups := expandGroups(group.(*schema.Set).List())
+
+	// Get default or current group scaling values
+	for _, group := range tfGroups {
+		if group == nil {
+			continue
+		}
+
+		groupId := group.ID
+		var groupDefaults *Group
+		for _, g := range currentGroups {
+			if g.ID == groupId {
+				groupDefaults = &g
+				break
+			}
+		}
+
+		if groupDefaults.Memory != nil {
+			return nil, groupDefaults.Memory.CPUEnforcementRatioCeilingMb, groupDefaults.Memory.CPUEnforcementRatioMb
+		}
+
+	}
+
+	return nil, 0, 0
 }
 
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
@@ -2972,7 +3100,7 @@ func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interf
 
 			// TODO: Use Capability API
 			// RBAC roles supported for Redis 6.0 and above
-			if service == "databases-for-redis" && !(version > 0 && version < 6) {
+			if (service == "databases-for-redis") && !(version > 0 && version < 6) {
 				err = change.New.ValidateRBACRole()
 			} else if service == "databases-for-mongodb" && change.New.Type == "ops_manager" {
 				err = change.New.ValidateOpsManagerRole()

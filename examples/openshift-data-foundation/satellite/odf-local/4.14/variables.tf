@@ -156,10 +156,16 @@ variable "kmsSecretName" {
     description = "Please provide the HPCS secret name"
 }
 
+variable "workerPools" {
+    type = string
+    default =  null
+    description = "Provide the names/ID of the workerpool on which to install ODF. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers."
+}
+
 variable "workerNodes" {
     type = string
     default =  null
-    description = "Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes."
+    description = "Provide the names of the worker nodes on which to install ODF."
 }
 
 variable "kmsInstanceId" {
