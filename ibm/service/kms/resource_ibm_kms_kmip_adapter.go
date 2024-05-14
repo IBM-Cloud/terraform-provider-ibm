@@ -133,10 +133,6 @@ func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) err
 	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter, instanceID)
 }
 
-func resourceIBMKmsKMIPAdapterUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceIBMKmsKMIPAdapterRead(d, meta)
-}
-
 func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) error {
 	instanceID := d.Get("instance_id").(string)
 	_, adapterID := splitAdapterID(d.Id())

@@ -28,7 +28,7 @@ data "ibm_kms_kmip_adapter" "myadapter" {
 data "ibm_kms_kmip_client_cert" "mycert_byname" {
   instance_id = ibm_resource_instance.kp_instance.guid
   adapter_name = "myadapter"
-  cert_name = "mycert"
+  name = "mycert"
 }
 
 data "ibm_kms_kmip_client_cert" "mycert_byid" {
