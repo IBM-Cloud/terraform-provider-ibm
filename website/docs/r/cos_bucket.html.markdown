@@ -501,6 +501,7 @@ Review the argument references that you can specify for your resource.
  `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 
 - `metrics_monitoring`- (Object) Enables sending metrics to IBM Cloud Monitoring.  All metrics are opt-in.
+  
   (Recommended) When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the Monitoring instance at the container's location unless otherwise specified in the Metrics Router service configuration.
 
   (Legacy) When the `metrics_monitoring_crn` is populated, then enabled metrics are sent to the Monitoring instance defined in the `metrics_monitoring_crn` field.
