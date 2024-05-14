@@ -29,6 +29,7 @@ const (
 	Arg_NetworkName                         = "pi_network_name"
 	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
+	Arg_PlacementGroupPolicy                = "pi_placement_group_policy"
 	Arg_PVMInstanceActionType               = "pi_action"
 	Arg_PVMInstanceHealthStatus             = "pi_health_status"
 	Arg_PVMInstanceId                       = "pi_instance_id"
@@ -320,9 +321,15 @@ const (
 	Attr_WWN                                         = "wwn"
 	OS_IBMI                                          = "ibmi"
 
+	// Affinty Values
+	Affinity     = "affinity"
+	AntiAffinity = "anti-affinity"
+
 	// States
 	State_Active              = "active"
 	State_ACTIVE              = "ACTIVE"
+	State_Added               = "added"
+	State_Adding              = "adding"
 	State_Available           = "available"
 	State_BUILD               = "BUILD"
 	State_Creating            = "creating"
