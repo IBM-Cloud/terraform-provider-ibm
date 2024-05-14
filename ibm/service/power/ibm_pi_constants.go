@@ -29,6 +29,7 @@ const (
 	Arg_NetworkName                         = "pi_network_name"
 	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
+	Arg_PlacementGroupPolicy                = "pi_placement_group_policy"
 	Arg_PVMInstanceActionType               = "pi_action"
 	Arg_PVMInstanceHealthStatus             = "pi_health_status"
 	Arg_PVMInstanceId                       = "pi_instance_id"
@@ -94,6 +95,7 @@ const (
 	Attr_CPUs                                        = "cpus"
 	Attr_CreateTime                                  = "create_time"
 	Attr_CreationDate                                = "creation_date"
+	Attr_Created                                     = "created"
 	Attr_CRN                                         = "crn"
 	Attr_CyclePeriodSeconds                          = "cycle_period_seconds"
 	Attr_CyclingMode                                 = "cycling_mode"
@@ -107,6 +109,7 @@ const (
 	Attr_DeleteOnTermination                         = "delete_on_termination"
 	Attr_DeploymentType                              = "deployment_type"
 	Attr_Description                                 = "description"
+	Attr_Details                                     = "details"
 	Attr_DhcpID                                      = "dhcp_id"
 	Attr_DhcpLeaseInstanceIP                         = "instance_ip"
 	Attr_DhcpLeaseInstanceMac                        = "instance_mac"
@@ -125,6 +128,7 @@ const (
 	Attr_Endianness                                  = "endianness"
 	Attr_ExternalIP                                  = "external_ip"
 	Attr_FailureMessage                              = "failure_message"
+	Attr_Fault                                       = "fault"
 	Attr_FlashCopyMappings                           = "flash_copy_mappings"
 	Attr_FlashCopyName                               = "flash_copy_name"
 	Attr_FreezeTime                                  = "freeze_time"
@@ -320,9 +324,15 @@ const (
 	Attr_WWN                                         = "wwn"
 	OS_IBMI                                          = "ibmi"
 
+	// Affinty Values
+	Affinity     = "affinity"
+	AntiAffinity = "anti-affinity"
+
 	// States
 	State_Active              = "active"
 	State_ACTIVE              = "ACTIVE"
+	State_Added               = "added"
+	State_Adding              = "adding"
 	State_Available           = "available"
 	State_BUILD               = "BUILD"
 	State_Creating            = "creating"

@@ -37,6 +37,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The custom deployment type.",
 				Type:        schema.TypeString,
 			},
+			Attr_Fault: {
+				Computed:    true,
+				Description: "Fault information.",
+				Type:        schema.TypeMap,
+			},
 			Attr_HealthStatus: {
 				Computed:    true,
 				Description: "The health of the instance.",
@@ -268,6 +273,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		} else {
 			d.Set(Attr_IBMiRDSUsers, 0)
 		}
+	}
+	if powervmdata.Fault != nil {
+		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
 	}
 
 	return nil
