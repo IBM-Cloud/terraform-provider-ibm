@@ -155,31 +155,31 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to create root keys in the instance.",
-							Computed:    true,
+							Default:     true,
 						},
 						"create_standard_key": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to create standard keys in the instance.",
-							Computed:    true,
+							Default:     true,
 						},
 						"import_root_key": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to import root keys into the instance.",
-							Computed:    true,
+							Default:     true,
 						},
 						"import_standard_key": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, Key Protect allows you or any authorized users to import standard keys into the instance.",
-							Computed:    true,
+							Default:     true,
 						},
 						"enforce_token": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "If set to true, the service prevents you or any authorized users from importing key material into the specified service instance without using an import token.",
-							Computed:    true,
+							Default:     false,
 						},
 					},
 				},
@@ -338,7 +338,7 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 			import_standard_key := kciaipList[0].(map[string]interface{})["import_standard_key"].(bool)
 			enforce_token := kciaipList[0].(map[string]interface{})["enforce_token"].(bool)
 
-			// because we use computed, we must make sure not to attempt any updates on attributes when enabled is false or face input validation errors
+			// we must make sure not to attempt any updates on attributes when enabled is false or face input validation errors
 			if enabled {
 				mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
 					Enabled: enabled,
