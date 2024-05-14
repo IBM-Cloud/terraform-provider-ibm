@@ -448,6 +448,7 @@ Review the argument references that you can specify for your resource.
 
 - `activity_tracking`- (Object) Enables sending log data to IBM Cloud Activity Tracker to provide visibility into bucket management, object read and write events.
 (Recommended) When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance at the container's location unless otherwise specified in the ATracker Routing service configuration.
+
 (Legacy) When the `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified. 
 For more information please follow ,[IBM Cloud Activity Tracker](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at).For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
 
@@ -499,6 +500,8 @@ For more information please follow ,[IBM Cloud Activity Tracker](https://cloud.i
 
 - `metrics_monitoring`- (Object) Enables sending metrics to IBM Cloud Monitoring.  All metrics are opt-in.
 (Recommended) When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the Monitoring instance at the container's location unless otherwise specified in the Metrics Router service configuration.
+
+
 (Legacy) When the `metrics_monitoring_crn` is populated, then enabled metrics are sent to the Monitoring instance defined in the `metrics_monitoring_crn` field.
 For more details check the [IBM Cloud Monitoring](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-mm-cos-integration).
 
