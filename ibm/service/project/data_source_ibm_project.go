@@ -440,7 +440,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	cumulativeNeedsAttentionView := []map[string]interface{}{}
 	if project.CumulativeNeedsAttentionView != nil {
 		for _, modelItem := range project.CumulativeNeedsAttentionView {
-			modelMap, err := dataSourceIbmProjectCumulativeNeedsAttentionToMap(&modelItem)
+			modelMap, err := DataSourceIbmProjectCumulativeNeedsAttentionToMap(&modelItem)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project", "read")
 				return tfErr.GetDiag()
@@ -491,7 +491,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	configs := []map[string]interface{}{}
 	if project.Configs != nil {
 		for _, modelItem := range project.Configs {
-			modelMap, err := dataSourceIbmProjectProjectConfigSummaryToMap(&modelItem)
+			modelMap, err := DataSourceIbmProjectProjectConfigSummaryToMap(&modelItem)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project", "read")
 				return tfErr.GetDiag()
@@ -507,7 +507,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	environments := []map[string]interface{}{}
 	if project.Environments != nil {
 		for _, modelItem := range project.Environments {
-			modelMap, err := dataSourceIbmProjectProjectEnvironmentSummaryToMap(&modelItem)
+			modelMap, err := DataSourceIbmProjectProjectEnvironmentSummaryToMap(&modelItem)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project", "read")
 				return tfErr.GetDiag()
@@ -522,7 +522,7 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 
 	definition := []map[string]interface{}{}
 	if project.Definition != nil {
-		modelMap, err := dataSourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
+		modelMap, err := DataSourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project", "read")
 			return tfErr.GetDiag()
@@ -537,16 +537,16 @@ func dataSourceIbmProjectRead(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func dataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.CumulativeNeedsAttention) (map[string]interface{}, error) {
+func DataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.CumulativeNeedsAttention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Event != nil {
-		modelMap["event"] = model.Event
+		modelMap["event"] = *model.Event
 	}
 	if model.EventID != nil {
-		modelMap["event_id"] = model.EventID
+		modelMap["event_id"] = *model.EventID
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	if model.ConfigVersion != nil {
 		modelMap["config_version"] = flex.IntValue(model.ConfigVersion)
@@ -554,108 +554,108 @@ func dataSourceIbmProjectCumulativeNeedsAttentionToMap(model *projectv1.Cumulati
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigSummary) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ApprovedVersion != nil {
-		approvedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
+		approvedVersionMap, err := DataSourceIbmProjectProjectConfigVersionSummaryToMap(model.ApprovedVersion)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["approved_version"] = []map[string]interface{}{approvedVersionMap}
 	}
 	if model.DeployedVersion != nil {
-		deployedVersionMap, err := dataSourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
+		deployedVersionMap, err := DataSourceIbmProjectProjectConfigVersionSummaryToMap(model.DeployedVersion)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["deployed_version"] = []map[string]interface{}{deployedVersionMap}
 	}
-	modelMap["id"] = model.ID
+	modelMap["id"] = *model.ID
 	modelMap["version"] = flex.IntValue(model.Version)
-	modelMap["state"] = model.State
+	modelMap["state"] = *model.State
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["modified_at"] = model.ModifiedAt.String()
-	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectProjectConfigSummaryDefinitionToMap(model.Definition)
+	modelMap["href"] = *model.Href
+	definitionMap, err := DataSourceIbmProjectProjectConfigSummaryDefinitionToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	projectMap, err := dataSourceIbmProjectProjectReferenceToMap(model.Project)
+	projectMap, err := DataSourceIbmProjectProjectReferenceToMap(model.Project)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["project"] = []map[string]interface{}{projectMap}
 	if model.DeploymentModel != nil {
-		modelMap["deployment_model"] = model.DeploymentModel
+		modelMap["deployment_model"] = *model.DeploymentModel
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.ProjectConfigVersionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	definitionMap, err := dataSourceIbmProjectProjectConfigVersionDefinitionSummaryToMap(model.Definition)
+	definitionMap, err := DataSourceIbmProjectProjectConfigVersionDefinitionSummaryToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	modelMap["state"] = model.State
+	modelMap["state"] = *model.State
 	modelMap["version"] = flex.IntValue(model.Version)
-	modelMap["href"] = model.Href
+	modelMap["href"] = *model.Href
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigVersionDefinitionSummaryToMap(model *projectv1.ProjectConfigVersionDefinitionSummary) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectConfigVersionDefinitionSummaryToMap(model *projectv1.ProjectConfigVersionDefinitionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnvironmentID != nil {
-		modelMap["environment_id"] = model.EnvironmentID
+		modelMap["environment_id"] = *model.EnvironmentID
 	}
 	if model.LocatorID != nil {
-		modelMap["locator_id"] = model.LocatorID
+		modelMap["locator_id"] = *model.LocatorID
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectConfigSummaryDefinitionToMap(model *projectv1.ProjectConfigSummaryDefinition) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectConfigSummaryDefinitionToMap(model *projectv1.ProjectConfigSummaryDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["description"] = model.Description
-	modelMap["name"] = model.Name
+	modelMap["description"] = *model.Description
+	modelMap["name"] = *model.Name
 	if model.LocatorID != nil {
-		modelMap["locator_id"] = model.LocatorID
+		modelMap["locator_id"] = *model.LocatorID
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
-	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectProjectDefinitionReferenceToMap(model.Definition)
+	modelMap["id"] = *model.ID
+	modelMap["href"] = *model.Href
+	definitionMap, err := DataSourceIbmProjectProjectDefinitionReferenceToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	modelMap["crn"] = model.Crn
+	modelMap["crn"] = *model.Crn
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.ProjectEnvironmentSummary) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.ProjectEnvironmentSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
-	projectMap, err := dataSourceIbmProjectProjectReferenceToMap(model.Project)
+	modelMap["id"] = *model.ID
+	projectMap, err := DataSourceIbmProjectProjectReferenceToMap(model.Project)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["project"] = []map[string]interface{}{projectMap}
 	modelMap["created_at"] = model.CreatedAt.String()
-	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model.Definition)
+	modelMap["href"] = *model.Href
+	definitionMap, err := DataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
@@ -663,20 +663,20 @@ func dataSourceIbmProjectProjectEnvironmentSummaryToMap(model *projectv1.Project
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *projectv1.ProjectEnvironmentSummaryDefinition) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectEnvironmentSummaryDefinitionToMap(model *projectv1.ProjectEnvironmentSummaryDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["description"] = model.Description
-	modelMap["name"] = model.Name
+	modelMap["description"] = *model.Description
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
+func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.ProjectDefinitionProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	modelMap["destroy_on_delete"] = model.DestroyOnDelete
-	modelMap["description"] = model.Description
+	modelMap["name"] = *model.Name
+	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
+	modelMap["description"] = *model.Description
 	if model.MonitoringEnabled != nil {
-		modelMap["monitoring_enabled"] = model.MonitoringEnabled
+		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
 	return modelMap, nil
 }

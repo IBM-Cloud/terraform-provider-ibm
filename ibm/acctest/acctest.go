@@ -137,6 +137,14 @@ var (
 	MqCloudQueueManagerVersionUpdate string
 )
 
+// Logs
+var (
+	LogsInstanceId                      string
+	LogsInstanceRegion                  string
+	LogsEventNotificationInstanceId     string
+	LogsEventNotificationInstanceRegion string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                     string
@@ -1693,6 +1701,22 @@ func init() {
 	if MqCloudQueueManagerVersionUpdate == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
+	LogsInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID")
+	if LogsInstanceId == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_INSTANCE_ID for testing cloud logs related operations")
+	}
+	LogsInstanceRegion = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION")
+	if LogsInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION for testing cloud logs related operations")
+	}
+	LogsEventNotificationInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID")
+	if LogsEventNotificationInstanceId == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID for testing cloud logs related operations")
+	}
+	LogsEventNotificationInstanceRegion = os.Getenv("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION")
+	if LogsEventNotificationInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION for testing cloud logs related operations")
+	}
 
 	PagCosInstanceName = os.Getenv("IBM_PAG_COS_INSTANCE_NAME")
 	if PagCosInstanceName == "" {
@@ -1833,6 +1857,30 @@ func TestAccPreCheckCis(t *testing.T) {
 	if CisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
+}
+func TestAccPreCheckCloudLogs(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if LogsInstanceId == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID must be set for acceptance tests")
+	}
+	if LogsInstanceRegion == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION must be set for acceptance tests")
+	}
+	if LogsEventNotificationInstanceId == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID must be set for acceptance tests")
+	}
+	if LogsEventNotificationInstanceRegion == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION must be set for acceptance tests")
+	}
+
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider: %s", diags[0].Summary)
+		}
+	})
 }
 
 func TestAccPreCheckCloudShell(t *testing.T) {
