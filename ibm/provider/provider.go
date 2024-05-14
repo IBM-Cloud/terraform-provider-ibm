@@ -43,6 +43,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
@@ -861,6 +862,11 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_custom_sms":    eventnotification.DataSourceIBMEnCustomSMSDestination(),
 			"ibm_en_subscription_custom_sms":   eventnotification.DataSourceIBMEnCustomSMSSubscription(),
 			"ibm_en_integration_cos":           eventnotification.DataSourceIBMEnCOSIntegration(),
+			"ibm_en_smtp_configuration":        eventnotification.DataSourceIBMEnSMTPConfiguration(),
+			"ibm_en_smtp_configurations":       eventnotification.DataSourceIBMEnSMTPCOnfigurations(),
+			"ibm_en_smtp_user":                 eventnotification.DataSourceIBMEnSMTPUser(),
+			"ibm_en_smtp_users":                eventnotification.DataSourceIBMEnSMTPUsers(),
+			"ibm_en_slack_template":            eventnotification.DataSourceIBMEnSlackTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -912,6 +918,22 @@ func Provider() *schema.Provider {
 
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
+			// Logs Service
+			"ibm_logs_alert":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
+			"ibm_logs_alerts":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
+			"ibm_logs_rule_group":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
+			"ibm_logs_rule_groups":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
+			"ibm_logs_policy":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
+			"ibm_logs_policies":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
+			"ibm_logs_dashboard":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
+			"ibm_logs_e2m":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
+			"ibm_logs_e2ms":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
+			"ibm_logs_outgoing_webhook":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_outgoing_webhooks": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
+			"ibm_logs_view_folder":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
+			"ibm_logs_view_folders":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
+			"ibm_logs_view":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
+			"ibm_logs_views":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1412,6 +1434,10 @@ func Provider() *schema.Provider {
 			"ibm_en_integration_cos":           eventnotification.ResourceIBMEnCOSIntegration(),
 			"ibm_en_destination_custom_sms":    eventnotification.ResourceIBMEnCustomSMSDestination(),
 			"ibm_en_subscription_custom_sms":   eventnotification.ResourceIBMEnCustomSMSSubscription(),
+			"ibm_en_smtp_configuration":        eventnotification.ResourceIBMEnSMTPConfiguration(),
+			"ibm_en_smtp_user":                 eventnotification.ResourceIBMEnSMTPUser(),
+			"ibm_en_slack_template":            eventnotification.ResourceIBMEnSlackTemplate(),
+			"ibm_en_smtp_setting":              eventnotification.ResourceIBMEnSMTPSetting(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1462,6 +1488,15 @@ func Provider() *schema.Provider {
 
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
+			// Logs Service
+			"ibm_logs_alert":            logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
+			"ibm_logs_rule_group":       logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
+			"ibm_logs_policy":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
+			"ibm_logs_dashboard":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
+			"ibm_logs_e2m":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
+			"ibm_logs_outgoing_webhook": logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_view_folder":      logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
+			"ibm_logs_view":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1884,8 +1919,21 @@ func Validator() validate.ValidatorDict {
 				"ibm_project_config":      project.ResourceIbmProjectConfigValidator(),
 				"ibm_project_environment": project.ResourceIbmProjectEnvironmentValidator(),
 
+				// Added for Event Notifications
+
+				"ibm_en_smtp_configuration": eventnotification.ResourceIBMEnSMTPConfigurationValidator(),
+				"ibm_en_smtp_user":          eventnotification.ResourceIBMEnSMTPUserValidator(),
+
 				// Added for VMware as a Service
-				"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_vmaas_vdc":             vmware.ResourceIbmVmaasVdcValidator(),
+				"ibm_logs_alert":            logs.ResourceIbmLogsAlertValidator(),
+				"ibm_logs_rule_group":       logs.ResourceIbmLogsRuleGroupValidator(),
+				"ibm_logs_outgoing_webhook": logs.ResourceIbmLogsOutgoingWebhookValidator(),
+				"ibm_logs_policy":           logs.ResourceIbmLogsPolicyValidator(),
+				"ibm_logs_dashboard":        logs.ResourceIbmLogsDashboardValidator(),
+				"ibm_logs_e2m":              logs.ResourceIbmLogsE2mValidator(),
+				"ibm_logs_view":             logs.ResourceIbmLogsViewValidator(),
+				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),

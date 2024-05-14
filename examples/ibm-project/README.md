@@ -58,7 +58,11 @@ resource "ibm_project_config" "project_config_instance" {
 | project | The project that is referenced by this resource. |
 | state | The state of the configuration. |
 | update_available | The flag that indicates whether a configuration update is available. |
+| template_id | The stack definition identifier. |
+| member_of | The stack config parent of which this configuration is a member of. |
 | href | A URL. |
+| deployment_model | The configuration type. |
+| state_code | Computed state code clarifying the prerequisites for validation for the configuration. |
 | approved_version | A summary of a project configuration version. |
 | deployed_version | A summary of a project configuration version. |
 | project_config_id | The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration. |
@@ -158,7 +162,11 @@ data "ibm_project_config" "project_config_instance" {
 | schematics | A Schematics workspace that is associated to a project configuration, with scripts. |
 | state | The state of the configuration. |
 | update_available | The flag that indicates whether a configuration update is available. |
+| template_id | The stack definition identifier. |
+| member_of | The stack config parent of which this configuration is a member of. |
 | href | A URL. |
+| deployment_model | The configuration type. |
+| state_code | Computed state code clarifying the prerequisites for validation for the configuration. |
 | definition |  |
 | approved_version | A summary of a project configuration version. |
 | deployed_version | A summary of a project configuration version. |
