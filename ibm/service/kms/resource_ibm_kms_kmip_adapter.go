@@ -6,6 +6,7 @@ package kms
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
@@ -114,12 +115,12 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating KMIP adapter: %s", err)
 	}
-	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
+	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter, instanceID)
 }
 
 func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) error {
 	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Id()
+	_, adapterID := splitAdapterID(d.Id())
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
@@ -129,7 +130,7 @@ func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
+	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter, instanceID)
 }
 
 func resourceIBMKmsKMIPAdapterUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -138,7 +139,7 @@ func resourceIBMKmsKMIPAdapterUpdate(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) error {
 	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Id()
+	_, adapterID := splitAdapterID(d.Id())
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
@@ -161,7 +162,7 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Id()
+	_, adapterID := splitAdapterID(d.Id())
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return false, err
@@ -225,8 +226,8 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	return
 }
 
-func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.KMIPAdapter) (err error) {
-	d.SetId(adapter.ID)
+func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.KMIPAdapter, instanceID string) (err error) {
+	d.SetId(instanceID + "/" + adapter.ID)
 	if err = d.Set("name", adapter.Name); err != nil {
 		return fmt.Errorf("[ERROR] Error setting name: %s", err)
 	}
@@ -252,4 +253,9 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 		return fmt.Errorf("[ERROR] Error setting updated_by: %s", err)
 	}
 	return nil
+}
+
+func splitAdapterID(terraformId string) (instanceID, adapterID string) {
+	split := strings.Split(terraformId, "/")
+	return split[0], split[1]
 }

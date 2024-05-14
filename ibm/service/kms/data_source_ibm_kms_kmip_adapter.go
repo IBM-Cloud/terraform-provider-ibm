@@ -113,5 +113,5 @@ func dataSourceIBMKMSKmipAdapterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	// set computed values
-	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter)
+	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter, instanceID)
 }
