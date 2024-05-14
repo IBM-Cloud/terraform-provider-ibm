@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_pi_instance
-Create or update a [Power Systems Virtual Server instance](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-power-virtual-server).
+Create, delete or update a [Power Systems Virtual Server instance](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-power-virtual-server).
 
 ## Example usage
 The following example creates a Power Systems Virtual Server instance. 
@@ -110,6 +110,14 @@ Review the argument references that you can specify for your resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `fault` - (Map) Fault information, if any.
+  
+   Nested scheme for `fault`:
+      - `code` - (String) The fault status of the server.
+      - `created` - (String) The date and time the fault occurred.
+      - `details` - (String) The fault details of the server.
+      - `message` -  (String) The fault message of the server.
 
 - `health_status` - (String) The health status of the VM.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
