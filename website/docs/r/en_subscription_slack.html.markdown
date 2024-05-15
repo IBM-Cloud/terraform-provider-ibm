@@ -39,6 +39,9 @@ Review the argument reference that you can specify for your resource.
 
 - `topic_id` - (Required, String) Topic ID.
 
+- `template_id_notification` - (Optional, String) The templete id for notification.
+
+
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 

@@ -17,7 +17,7 @@ import (
 
 func DataSourceIBMEnCOSIntegration() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnIntegrationRead,
+		ReadContext: dataSourceIBMEnCOSIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {

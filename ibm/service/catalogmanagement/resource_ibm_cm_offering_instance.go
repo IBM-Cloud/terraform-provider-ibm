@@ -116,6 +116,16 @@ func ResourceIBMCmOfferingInstance() *schema.Resource {
 				Optional:    true,
 				Description: "channel to target for the operator subscription. Required for operator bundles",
 			},
+			"plan_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "id of the plan",
+			},
+			"parent_crn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "CRN of parent instance",
+			},
 			"wait_until_successful": {
 				Type:             schema.TypeBool,
 				Optional:         true,
@@ -181,6 +191,12 @@ func resourceIBMCmOfferingInstanceCreate(d *schema.ResourceData, meta interface{
 	}
 	if _, ok := d.GetOk("channel"); ok {
 		createOfferingInstanceOptions.SetChannel(d.Get("channel").(string))
+	}
+	if _, ok := d.GetOk("plan_id"); ok {
+		createOfferingInstanceOptions.SetPlanID(d.Get("plan_id").(string))
+	}
+	if _, ok := d.GetOk("parent_crn"); ok {
+		createOfferingInstanceOptions.SetParentCRN(d.Get("parent_crn").(string))
 	}
 
 	offeringInstance, response, err := catalogManagementClient.CreateOfferingInstance(createOfferingInstanceOptions)
@@ -295,6 +311,12 @@ func resourceIBMCmOfferingInstanceRead(d *schema.ResourceData, meta interface{})
 	if err = d.Set("channel", offeringInstance.Channel); err != nil {
 		return fmt.Errorf("[ERROR] Error setting channel: %s", err)
 	}
+	if err = d.Set("plan_id", offeringInstance.PlanID); err != nil {
+		return fmt.Errorf("[ERROR] Error setting plan_id: %s", err)
+	}
+	if err = d.Set("parent_crn", offeringInstance.ParentCRN); err != nil {
+		return fmt.Errorf("[ERROR] Error setting parent_crn: %s", err)
+	}
 
 	return nil
 }
@@ -367,6 +389,12 @@ func resourceIBMCmOfferingInstanceUpdate(d *schema.ResourceData, meta interface{
 	}
 	if _, ok := d.GetOk("channel"); ok {
 		putOfferingInstanceOptions.SetChannel(d.Get("channel").(string))
+	}
+	if _, ok := d.GetOk("plan_id"); ok {
+		putOfferingInstanceOptions.SetPlanID(d.Get("plan_id").(string))
+	}
+	if _, ok := d.GetOk("parent_crn"); ok {
+		putOfferingInstanceOptions.SetParentCRN(d.Get("parent_crn").(string))
 	}
 
 	_, response, err = catalogManagementClient.PutOfferingInstance(putOfferingInstanceOptions)
