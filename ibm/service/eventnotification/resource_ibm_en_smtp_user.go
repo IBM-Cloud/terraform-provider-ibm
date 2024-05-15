@@ -173,7 +173,6 @@ func resourceIBMEnSMTPUserRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("username", smtpUser.Username); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting username: %s", err))
 	}
-
 	if err = d.Set("created_at", flex.DateTimeToString(smtpUser.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}

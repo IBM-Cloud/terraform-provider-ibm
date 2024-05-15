@@ -12,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -19,6 +20,7 @@ import (
 func TestAccIBMCmOfferingInstance(t *testing.T) {
 	clusterId := os.Getenv("CATMGMT_CLUSTERID")
 	clusterRegion := os.Getenv("CATMGMT_CLUSTERREGION")
+	planId := fmt.Sprintf("plan_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -26,7 +28,7 @@ func TestAccIBMCmOfferingInstance(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCmOfferingInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCmOfferingInstanceConfig(clusterId, clusterRegion),
+				Config: testAccCheckIBMCmOfferingInstanceConfig(clusterId, clusterRegion, planId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_cm_offering_instance.cm_offering_instance", "label"),
 					testAccCheckIBMCmOfferingInstanceExists("ibm_cm_offering_instance.cm_offering_instance"),
@@ -41,7 +43,7 @@ func TestAccIBMCmOfferingInstance(t *testing.T) {
 		},
 	})
 }
-func testAccCheckIBMCmOfferingInstanceConfig(clusterId string, clusterRegion string) string {
+func testAccCheckIBMCmOfferingInstanceConfig(clusterId string, clusterRegion string, planId string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
@@ -72,8 +74,9 @@ func testAccCheckIBMCmOfferingInstanceConfig(clusterId string, clusterRegion str
 			cluster_namespaces = ["tf-cm-test"]
 			cluster_all_namespaces = false
 			install_plan = "Automatic"
+			plan_id = "%s"
 		}
-		`, clusterId, clusterRegion)
+		`, clusterId, clusterRegion, planId)
 }
 
 func testAccCheckIBMCmOfferingInstanceDestroy(s *terraform.State) error {
