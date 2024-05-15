@@ -409,12 +409,45 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 
 		vpn_gateway_conn_found := false
 		for _, connectionItem := range availableVPNGatewayConnections.Connections {
-			connection := connectionItem.(*vpcv1.VPNGatewayConnection)
-			if *connection.Name == vpn_gateway_connection_name {
-				vpnGatewayConnection = connectionItem
-				vpn_gateway_conn_found = true
-				break
+			switch reflect.TypeOf(connectionItem).String() {
+			case "*vpcv1.VPNGatewayConnection":
+				{
+					connection := connectionItem.(*vpcv1.VPNGatewayConnection)
+					if *connection.Name == vpn_gateway_connection_name {
+						vpnGatewayConnection = connectionItem
+						vpn_gateway_conn_found = true
+						break
+					}
+				}
+			case "*vpcv1.VPNGatewayConnectionRouteMode":
+				{
+					connection := connectionItem.(*vpcv1.VPNGatewayConnectionRouteMode)
+					if *connection.Name == vpn_gateway_connection_name {
+						vpnGatewayConnection = connectionItem
+						vpn_gateway_conn_found = true
+						break
+					}
+				}
+			case "*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode":
+				{
+					connection := connectionItem.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+					if *connection.Name == vpn_gateway_connection_name {
+						vpnGatewayConnection = connectionItem
+						vpn_gateway_conn_found = true
+						break
+					}
+				}
+			case "*vpcv1.VPNGatewayConnectionPolicyMode":
+				{
+					connection := connectionItem.(*vpcv1.VPNGatewayConnectionPolicyMode)
+					if *connection.Name == vpn_gateway_connection_name {
+						vpnGatewayConnection = connectionItem
+						vpn_gateway_conn_found = true
+						break
+					}
+				}
 			}
+
 		}
 		if !vpn_gateway_conn_found {
 			return diag.FromErr(fmt.Errorf("VPN gateway connection %s not found", vpn_gateway_connection_name))
