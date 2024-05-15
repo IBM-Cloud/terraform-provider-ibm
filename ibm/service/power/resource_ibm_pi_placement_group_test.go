@@ -10,14 +10,14 @@ import (
 	"strings"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
 func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_pi_placement_group.power_placement_group", "pi_placement_group_policy", policy),
 					resource.TestCheckNoResourceAttr(
-						"ibm_pi_placement_group.power_placement_group", "members"),
+						"ibm_pi_placement_group.power_placement_group", "members.#"),
 				),
 			},
 			{
@@ -76,6 +76,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 					testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.power_instance", "ibm_pi_instance.power_instance_in_pg"),
 					testAccCheckIBMPIPlacementGroupMemberExists("ibm_pi_placement_group.power_placement_group", "ibm_pi_instance.sap_power_instance"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccCheckIBMPIDeletePlacementGroup(name, policy, "tinytest-1x4"),
@@ -88,7 +89,6 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 }
 
 func testAccCheckIBMPIPlacementGroupDestroy(s *terraform.State) error {
-
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -99,18 +99,17 @@ func testAccCheckIBMPIPlacementGroupDestroy(s *terraform.State) error {
 		}
 		parts, _ := flex.IdParts(rs.Primary.ID)
 		cloudinstanceid := parts[0]
-		placementGroupC := st.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
+		placementGroupC := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 		_, err = placementGroupC.Get(parts[1])
 		if err == nil {
 			return fmt.Errorf("PI placement group still exists: %s", rs.Primary.ID)
 		}
 	}
-
 	return nil
 }
+
 func testAccCheckIBMPIPlacementGroupExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -130,7 +129,7 @@ func testAccCheckIBMPIPlacementGroupExists(n string) resource.TestCheckFunc {
 			return err
 		}
 		cloudinstanceid := parts[0]
-		client := st.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
+		client := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 
 		placementGroup, err := client.Get(parts[1])
 		if err != nil {
@@ -141,9 +140,8 @@ func testAccCheckIBMPIPlacementGroupExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMPIPlacementGroupMemberExists(n string, instance string) resource.TestCheckFunc {
+func testAccCheckIBMPIPlacementGroupMemberExists(n string, inst string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -164,16 +162,16 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, instance string) reso
 			return err
 		}
 		cloudinstanceid := parts[0]
-		client := st.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
+		client := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 
 		pg, err := client.Get(parts[1])
 		if err != nil {
 			return err
 		}
 
-		instancers, ok := s.RootModule().Resources[instance]
+		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", instance)
+			return fmt.Errorf("Not found: %s", inst)
 		}
 		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -193,7 +191,7 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, instance string) reso
 	}
 }
 
-func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, instance string) resource.TestCheckFunc {
+func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, inst string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
 		rs, ok := s.RootModule().Resources[n]
@@ -216,16 +214,16 @@ func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, instance string
 			return err
 		}
 		cloudinstanceid := parts[0]
-		client := st.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
+		client := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 
 		pg, err := client.Get(parts[1])
 		if err != nil {
 			return err
 		}
 
-		instancers, ok := s.RootModule().Resources[instance]
+		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", instance)
+			return fmt.Errorf("Not found: %s", inst)
 		}
 		instanccParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -245,11 +243,10 @@ func containsMember(s []string, str string) bool {
 			return true
 		}
 	}
-
 	return false
 }
 
-func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, instance string, newInstance string) resource.TestCheckFunc {
+func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, inst string, newInstance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
 		rs, ok := s.RootModule().Resources[n]
@@ -272,16 +269,16 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 			return err
 		}
 		cloudinstanceid := parts[0]
-		client := st.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
+		client := instance.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 
 		pg, err := client.Get(parts[1])
 		if err != nil {
 			return err
 		}
 
-		instancers, ok := s.RootModule().Resources[instance]
+		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", instance)
+			return fmt.Errorf("Not found: %s", inst)
 		}
 		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -307,16 +304,16 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 	}
 }
 
-func testAccCheckIBMPIPlacementGroupDelete(n string, instance string, newInstance string) resource.TestCheckFunc {
+func testAccCheckIBMPIPlacementGroupDelete(n string, inst string, newInstance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
 
-		instancers, ok := s.RootModule().Resources[instance]
+		instancers, ok := s.RootModule().Resources[inst]
 		if !ok {
-			return fmt.Errorf("Not found: %s", instance)
+			return fmt.Errorf("Not found: %s", inst)
 		}
 		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
@@ -332,7 +329,7 @@ func testAccCheckIBMPIPlacementGroupDelete(n string, instance string, newInstanc
 			return err
 		}
 		cloudinstanceid := instanceParts[0]
-		inst_client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudinstanceid)
+		inst_client := instance.NewIBMPIInstanceClient(context.Background(), sess, cloudinstanceid)
 
 		instance, err := inst_client.Get(instanceParts[1])
 		if err != nil {
@@ -365,7 +362,7 @@ func testAccCheckIBMPIPlacementGroupConfig(name string, policy string) string {
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s"
@@ -379,8 +376,7 @@ func testAccCheckIBMPIPlacementGroupConfig(name string, policy string) string {
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s"
 			pi_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
 }
 
 func testAccCheckIBMPIPlacementGroupAddMemberConfig(name string, policy string) string {
@@ -395,7 +391,7 @@ func testAccCheckIBMPIPlacementGroupAddMemberConfig(name string, policy string) 
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s"
@@ -411,8 +407,7 @@ func testAccCheckIBMPIPlacementGroupAddMemberConfig(name string, policy string) 
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s"
 			pi_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
 }
 
 func testAccCheckIBMPIPlacementGroupUpdateMemberConfig(name string, policy string) string {
@@ -427,7 +422,7 @@ func testAccCheckIBMPIPlacementGroupUpdateMemberConfig(name string, policy strin
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s"
@@ -449,8 +444,7 @@ func testAccCheckIBMPIPlacementGroupUpdateMemberConfig(name string, policy strin
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
 }
 
 func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy string) string {
@@ -465,7 +459,7 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s"
@@ -487,8 +481,7 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
 }
 
 func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string, sapProfile string) string {
@@ -503,7 +496,7 @@ func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string,
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s"
@@ -519,7 +512,7 @@ func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string,
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s-2"
@@ -540,7 +533,7 @@ func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string,
 				network_id = "%[7]s"
 			}
 			pi_placement_group_id = ibm_pi_placement_group.power_placement_group.placement_group_id
-			depends_on = [    ibm_pi_instance.power_instance_in_pg  ]
+			depends_on = [ ibm_pi_instance.power_instance_in_pg ]
 		}
 
 		resource "ibm_pi_placement_group" "power_placement_group" {
@@ -553,8 +546,7 @@ func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string,
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, sapProfile, acc.Pi_sap_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, sapProfile, acc.Pi_sap_image, acc.Pi_network_name)
 }
 
 func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfile string) string {
@@ -569,7 +561,7 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfil
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s"
@@ -584,7 +576,7 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfil
 			pi_processors         = "0.25"
 			pi_proc_type          = "shared"
 			pi_memory             = "2"
-			pi_key_pair_name      = ibm_pi_key.key.key_id
+			pi_key_pair_name      = ibm_pi_key.key.name
 			pi_image_id           = "%[4]s"
 			pi_sys_type           = "e980"
 			pi_instance_name      = "%[2]s-2"
@@ -603,13 +595,18 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string, sapProfil
 			pi_network {
 				network_id = "%[7]s"
 			}
-			depends_on = [    ibm_pi_instance.power_instance_in_pg  ]
+			depends_on = [ ibm_pi_instance.power_instance_in_pg ]
+		}
+
+		resource "ibm_pi_placement_group" "power_placement_group" {
+			pi_cloud_instance_id      = "%[1]s"
+			pi_placement_group_name   = "%[2]s"
+			pi_placement_group_policy = "%[3]s"
 		}
 
 		resource "ibm_pi_placement_group" "power_placement_group_another" {
 			pi_cloud_instance_id      = "%[1]s"
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, sapProfile, acc.Pi_sap_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, sapProfile, acc.Pi_sap_image, acc.Pi_network_name)
 }

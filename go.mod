@@ -1,6 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.19
+go 1.22.2
 
 require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
@@ -22,8 +22,8 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.12.2
+	github.com/IBM/networking-go-sdk v0.46.1
 	github.com/IBM/logs-go-sdk v0.1.1
-	github.com/IBM/networking-go-sdk v0.45.0
 	github.com/IBM/platform-services-go-sdk v0.62.11
 	github.com/IBM/project-go-sdk v0.3.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
@@ -212,7 +212,7 @@ require (
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
