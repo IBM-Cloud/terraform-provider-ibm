@@ -27,7 +27,7 @@ func TestAccIBMEnSMTPUserDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "en_smtp_user_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "en_smtp_config_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "user_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "smtp_config_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_smtp_user.en_smtp_user_instance", "description"),

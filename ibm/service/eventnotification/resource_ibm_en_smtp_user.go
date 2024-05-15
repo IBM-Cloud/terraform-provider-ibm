@@ -59,6 +59,11 @@ func ResourceIBMEnSMTPUser() *schema.Resource {
 				Computed:    true,
 				Description: "Updated time.",
 			},
+			"password": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "SMTP user password.",
+			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -119,6 +124,10 @@ func resourceIBMEnSMTPUserCreate(context context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	if err = d.Set("password", smtpUserResponse.Password); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting password: %s", err))
+	}
+
 	d.SetId(fmt.Sprintf("%s/%s/%s", *createSMTPUserOptions.InstanceID, *createSMTPUserOptions.ID, *smtpUserResponse.ID))
 
 	return resourceIBMEnSMTPUserRead(context, d, meta)
@@ -164,6 +173,7 @@ func resourceIBMEnSMTPUserRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("username", smtpUser.Username); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting username: %s", err))
 	}
+
 	if err = d.Set("created_at", flex.DateTimeToString(smtpUser.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}

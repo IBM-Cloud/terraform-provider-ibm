@@ -68,15 +68,15 @@ func ResourceIBMEnSMTPConfiguration() *schema.Resource {
 							Description: "The DKIM attributes.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"public_key": &schema.Schema{
+									"txt_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "dkim public key.",
+										Description: "DMIM text name.",
 									},
-									"selector": &schema.Schema{
+									"txt_value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "dkim selector.",
+										Description: "DMIM text value.",
 									},
 									"verification": &schema.Schema{
 										Type:        schema.TypeString,
@@ -349,7 +349,7 @@ func resourceIBMEnSMTPConfigurationDelete(context context.Context, d *schema.Res
 func resourceIBMEnSMTPConfigurationSMTPConfigToMap(model *en.SMTPConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Dkim != nil {
-		dkimMap, err := resourceIBMEnSMTPConfigurationDkimAttributesToMap(model.Dkim)
+		dkimMap, err := resourceIBMEnSMTPConfigurationSmtpdkimAttributesToMap(model.Dkim)
 		if err != nil {
 			return modelMap, err
 		}
@@ -372,13 +372,13 @@ func resourceIBMEnSMTPConfigurationSMTPConfigToMap(model *en.SMTPConfig) (map[st
 	return modelMap, nil
 }
 
-func resourceIBMEnSMTPConfigurationDkimAttributesToMap(model *en.DkimAttributes) (map[string]interface{}, error) {
+func resourceIBMEnSMTPConfigurationSmtpdkimAttributesToMap(model *en.SmtpdkimAttributes) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.PublicKey != nil {
-		modelMap["public_key"] = model.PublicKey
+	if model.TxtName != nil {
+		modelMap["txt_name"] = model.TxtName
 	}
-	if model.Selector != nil {
-		modelMap["selector"] = model.Selector
+	if model.TxtValue != nil {
+		modelMap["txt_value"] = model.TxtValue
 	}
 	if model.Verification != nil {
 		modelMap["verification"] = model.Verification
