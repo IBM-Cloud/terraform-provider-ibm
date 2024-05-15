@@ -135,10 +135,9 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 										},
 									},
 									"cidrs": {
-										Type:        schema.TypeSet,
+										Type:        schema.TypeList,
 										Computed:    true,
 										Elem:        &schema.Schema{Type: schema.TypeString},
-										Set:         schema.HashString,
 										Description: "VPN gateway connection local CIDRs",
 									},
 								},
@@ -168,6 +167,14 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 											},
 										},
 									},
+									"cidrs": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The peer CIDRs for this resource.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -185,6 +192,16 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 									},
 								},
 							},
+						},
+						"psk": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The preshared key.",
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The href of the vpn gateway connection.",
 						},
 						isVPNGatewayConnectionResourcetype: {
 							Type:        schema.TypeString,
@@ -308,16 +325,18 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 			gatewayconnection["created_at"] = flex.DateTimeToString(vpnGatewayConnection.CreatedAt)
 
 			if vpnGatewayConnection.DeadPeerDetection != nil {
-				gatewayconnection["dead_peer_detection"] = dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection)
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = vpnGatewayConnection.DeadPeerDetection.Action
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = vpnGatewayConnection.DeadPeerDetection.Interval
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = vpnGatewayConnection.DeadPeerDetection.Timeout
 			}
 			gatewayconnection["href"] = vpnGatewayConnection.Href
 
 			if vpnGatewayConnection.IkePolicy != nil {
-				gatewayconnection["ike_policy"] = dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy)
+				gatewayconnection["ike_policy"] = vpnGatewayConnection.IkePolicy.ID
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				gatewayconnection["ipsec_policy"] = dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy)
+				gatewayconnection["ipsec_policy"] = vpnGatewayConnection.IpsecPolicy.ID
 			}
 			gatewayconnection["mode"] = vpnGatewayConnection.Mode
 			gatewayconnection["name"] = vpnGatewayConnection.Name
@@ -367,15 +386,77 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 			gatewayconnection["created_at"] = flex.DateTimeToString(vpnGatewayConnection.CreatedAt)
 
 			if vpnGatewayConnection.DeadPeerDetection != nil {
-				gatewayconnection["dead_peer_detection"] = dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection)
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = vpnGatewayConnection.DeadPeerDetection.Action
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = vpnGatewayConnection.DeadPeerDetection.Interval
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = vpnGatewayConnection.DeadPeerDetection.Timeout
 			}
 			gatewayconnection["href"] = vpnGatewayConnection.Href
 			if vpnGatewayConnection.IkePolicy != nil {
-				gatewayconnection["ike_policy"] = dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy)
+				gatewayconnection["ike_policy"] = vpnGatewayConnection.IkePolicy.ID
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				gatewayconnection["ipsec_policy"] = dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy)
+				gatewayconnection["ipsec_policy"] = vpnGatewayConnection.IpsecPolicy.ID
+			}
+			gatewayconnection["mode"] = vpnGatewayConnection.Mode
+			gatewayconnection["name"] = vpnGatewayConnection.Name
+
+			// breaking changes
+			gatewayconnection["establish_mode"] = vpnGatewayConnection.EstablishMode
+			local := []map[string]interface{}{}
+			if vpnGatewayConnection.Local != nil {
+				modelMap, err := dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionStaticRouteModeLocalToMap(vpnGatewayConnection.Local)
+				if err != nil {
+					return gatewayconnection, err
+				}
+				local = append(local, modelMap)
+			}
+			gatewayconnection["local"] = local
+
+			peer := []map[string]interface{}{}
+			if vpnGatewayConnection.Peer != nil {
+				modelMap, err := dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionStaticRouteModePeerToMap(vpnGatewayConnection.Peer)
+				if err != nil {
+					return gatewayconnection, err
+				}
+				peer = append(peer, modelMap)
+			}
+			gatewayconnection["peer"] = peer
+			// Deprecated
+			if vpnGatewayConnection.Peer != nil {
+				peer := vpnGatewayConnection.Peer.(*vpcv1.VPNGatewayConnectionStaticRouteModePeer)
+				gatewayconnection["peer_address"] = peer.Address
+			}
+			gatewayconnection["psk"] = vpnGatewayConnection.Psk
+			gatewayconnection["resource_type"] = vpnGatewayConnection.ResourceType
+			gatewayconnection["status"] = vpnGatewayConnection.Status
+			gatewayconnection["status_reasons"] = resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)
+			gatewayconnection["routing_protocol"] = vpnGatewayConnection.RoutingProtocol
+
+			if vpnGatewayConnection.Tunnels != nil {
+				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels)
+			}
+		}
+	case "*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode":
+		{
+			vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
+			gatewayconnection["id"] = vpnGatewayConnection.ID
+			gatewayconnection["admin_state_up"] = vpnGatewayConnection.AdminStateUp
+			gatewayconnection["authentication_mode"] = vpnGatewayConnection.AuthenticationMode
+			gatewayconnection["created_at"] = flex.DateTimeToString(vpnGatewayConnection.CreatedAt)
+
+			if vpnGatewayConnection.DeadPeerDetection != nil {
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = vpnGatewayConnection.DeadPeerDetection.Action
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = vpnGatewayConnection.DeadPeerDetection.Interval
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = vpnGatewayConnection.DeadPeerDetection.Timeout
+			}
+			gatewayconnection["href"] = vpnGatewayConnection.Href
+			if vpnGatewayConnection.IkePolicy != nil {
+				gatewayconnection["ike_policy"] = vpnGatewayConnection.IkePolicy.ID
+			}
+
+			if vpnGatewayConnection.IpsecPolicy != nil {
+				gatewayconnection["ipsec_policy"] = vpnGatewayConnection.IpsecPolicy.ID
 			}
 			gatewayconnection["mode"] = vpnGatewayConnection.Mode
 			gatewayconnection["name"] = vpnGatewayConnection.Name
@@ -425,15 +506,17 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 			gatewayconnection["created_at"] = flex.DateTimeToString(vpnGatewayConnection.CreatedAt)
 
 			if vpnGatewayConnection.DeadPeerDetection != nil {
-				gatewayconnection["dead_peer_detection"] = dataSourceVPNGatewayConnectionFlattenDeadPeerDetection(*vpnGatewayConnection.DeadPeerDetection)
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = vpnGatewayConnection.DeadPeerDetection.Action
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = vpnGatewayConnection.DeadPeerDetection.Interval
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = vpnGatewayConnection.DeadPeerDetection.Timeout
 			}
 			gatewayconnection["href"] = vpnGatewayConnection.Href
 			if vpnGatewayConnection.IkePolicy != nil {
-				gatewayconnection["ike_policy"] = dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy)
+				gatewayconnection["ike_policy"] = vpnGatewayConnection.IkePolicy.ID
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				gatewayconnection["ipsec_policy"] = dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy)
+				gatewayconnection["ipsec_policy"] = vpnGatewayConnection.IpsecPolicy.ID
 			}
 			gatewayconnection["mode"] = vpnGatewayConnection.Mode
 			gatewayconnection["name"] = vpnGatewayConnection.Name
