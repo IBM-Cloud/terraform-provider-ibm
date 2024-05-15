@@ -483,11 +483,11 @@ func dataSourceIBMIsVPNGatewayConnectionRead(context context.Context, d *schema.
 		vpnGatewayConnection = vpnGatewayConnectionIntf
 	}
 
-	setvpnGatewayConnectionIntfResourceData(d, vpn_gateway_id, vpnGatewayConnection)
+	setvpnGatewayConnectionIntfDatasourceData(d, vpn_gateway_id, vpnGatewayConnection)
 	return nil
 }
 
-func setvpnGatewayConnectionIntfResourceData(d *schema.ResourceData, vpn_gateway_id string, vpnGatewayConnectionIntf vpcv1.VPNGatewayConnectionIntf) error {
+func setvpnGatewayConnectionIntfDatasourceData(d *schema.ResourceData, vpn_gateway_id string, vpnGatewayConnectionIntf vpcv1.VPNGatewayConnectionIntf) error {
 	var err error
 	switch reflect.TypeOf(vpnGatewayConnectionIntf).String() {
 	case "*vpcv1.VPNGatewayConnection":
