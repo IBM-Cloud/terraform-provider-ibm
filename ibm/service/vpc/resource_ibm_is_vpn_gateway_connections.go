@@ -98,11 +98,13 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ike_identities": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							Description: "The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -114,6 +116,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "The IKE identity FQDN value.",
 									},
 								},
@@ -134,6 +137,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ike_identity": &schema.Schema{
@@ -166,11 +170,13 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 						"address": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The IP address of the peer VPN gateway for this connection.",
 						},
 						"fqdn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The FQDN of the peer VPN gateway for this connection.",
 						},
 						"cidrs": {
@@ -198,23 +204,25 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 			},
 			// deprecated
 			isVPNGatewayConnectionLocalCIDRS: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "VPN gateway connection local CIDRs",
-				Deprecated:  "local_cidrs is deprecated, use local instead",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"local"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Set:           schema.HashString,
+				Description:   "VPN gateway connection local CIDRs",
+				Deprecated:    "local_cidrs is deprecated, use local instead",
 			},
 			// deprecated
 			isVPNGatewayConnectionPeerCIDRS: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "VPN gateway connection peer CIDRs",
-				Deprecated:  "peer_cidrs is deprecated, use peer instead",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"peer"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Set:           schema.HashString,
+				Description:   "VPN gateway connection peer CIDRs",
+				Deprecated:    "peer_cidrs is deprecated, use peer instead",
 			},
 
 			isVPNGatewayConnectionDeadPeerDetectionAction: {
@@ -1420,6 +1428,8 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 				}
 				peer = append(peer, modelMap)
 			}
+			tunnels := []map[string]interface{}{}
+			d.Set("tunnels", tunnels)
 			if err = d.Set("peer", peer); err != nil {
 				return fmt.Errorf("[ERROR] Error setting peer %s", err)
 			}
