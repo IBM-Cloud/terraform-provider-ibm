@@ -1085,17 +1085,11 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 			}
 
 			if vpnGatewayConnection.IkePolicy != nil {
-				err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ike_policy %s", err)
-				}
+				d.Set("ike_policy", vpnGatewayConnection.IkePolicy.ID)
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ipsec_policy %s", err)
-				}
+				d.Set("ipsec_policy", vpnGatewayConnection.IpsecPolicy.ID)
 			}
 			if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
 				return fmt.Errorf("[ERROR] Error setting mode: %s", err)
@@ -1185,17 +1179,11 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 			}
 
 			if vpnGatewayConnection.IkePolicy != nil {
-				err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ike_policy %s", err)
-				}
+				d.Set("ike_policy", vpnGatewayConnection.IkePolicy.ID)
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ipsec_policy %s", err)
-				}
+				d.Set("ipsec_policy", vpnGatewayConnection.IpsecPolicy.ID)
 			}
 			if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
 				return fmt.Errorf("[ERROR] Error setting mode: %s", err)
@@ -1285,17 +1273,11 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 			}
 
 			if vpnGatewayConnection.IkePolicy != nil {
-				err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ike_policy %s", err)
-				}
+				d.Set("ike_policy", vpnGatewayConnection.IkePolicy.ID)
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ipsec_policy %s", err)
-				}
+				d.Set("ipsec_policy", vpnGatewayConnection.IpsecPolicy.ID)
 			}
 			if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
 				return fmt.Errorf("[ERROR] Error setting mode: %s", err)
@@ -1385,17 +1367,13 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 			}
 
 			if vpnGatewayConnection.IkePolicy != nil {
-				err = d.Set("ike_policy", dataSourceVPNGatewayConnectionFlattenIkePolicy(*vpnGatewayConnection.IkePolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ike_policy %s", err)
-				}
+				d.Set("ike_policy", vpnGatewayConnection.IkePolicy.ID)
+
 			}
 
 			if vpnGatewayConnection.IpsecPolicy != nil {
-				err = d.Set("ipsec_policy", dataSourceVPNGatewayConnectionFlattenIpsecPolicy(*vpnGatewayConnection.IpsecPolicy))
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error setting ipsec_policy %s", err)
-				}
+				d.Set("ipsec_policy", vpnGatewayConnection.IpsecPolicy.ID)
+
 			}
 			if err = d.Set("mode", vpnGatewayConnection.Mode); err != nil {
 				return fmt.Errorf("[ERROR] Error setting mode: %s", err)
