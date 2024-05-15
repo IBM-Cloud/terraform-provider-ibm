@@ -530,7 +530,7 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 | region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
 | read_data_events | If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker. | `bool` | no
 | write_data_events | If set to **true**, all object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
-| management_events | This field only applies if `activity_tracker_crn` is not populated. If set to **true**, all bucket management events will be sent to Activity Tracker. | `bool` | no
+| management_events |If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated. | `bool` | no
 | activity_tracker_crn |When the `activity_tracker_crn` is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled. | `string` | no
 | usage_metrics_enabled |If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.| `bool` | no
 | request_metrics_enabled | If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service. | `bool` | no

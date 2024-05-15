@@ -204,7 +204,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 						"management_events": {
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "This field only applies if `activity_tracker_crn` is not populated. If set to `true`, all bucket management events will be sent to Activity Tracker.",
+							Description: "If set to `true`, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated.",
 						},
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,

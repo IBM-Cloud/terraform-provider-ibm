@@ -459,7 +459,7 @@ Review the argument references that you can specify for your resource.
 
   - `read_data_events`-  (Optional, bool)  If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker.
   - `write_data_events`-  (Optional, bool) If set to **true**, all object write events (i.e. uploads) will be sent to Activity Tracker.
-  - `management_events`-  (Optional, bool) This field only applies if `activity_tracker_crn` is not populated. If set to **true**, all bucket management events will be sent to Activity Tracker.
+  - `management_events`-  (Optional, bool) If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated.
   
 - `archive_rule` - (Required, List) Nested archive_rule block has following structure.
   

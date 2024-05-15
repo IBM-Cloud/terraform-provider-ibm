@@ -142,7 +142,7 @@ In addition to all argument reference list, you can access the following attribu
 
   - `read_data_events` - (bool)  If set to **true**, all object read events (i.e. downloads) will be sent to Activity Tracker.
   - `write_data_events`- (bool) If set to **true**, all object write events (that is `uploads`) is sent to Activity Tracker.
-  - `management_events`- (bool) This field only applies if `activity_tracker_crn` is not populated. If set to **true**, all bucket management events will be sent to Activity Tracker.
+  - `management_events`- (bool) If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated. 
 
 - `archive_rule` (List) Nested block with the following structure.
 
