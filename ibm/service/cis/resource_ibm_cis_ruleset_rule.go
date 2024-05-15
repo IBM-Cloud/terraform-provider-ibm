@@ -254,12 +254,6 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 				Description: "Associated Ruleset ID",
 				Required:    true,
 			},
-			CISRulesetsRuleId: {
-				Type:        schema.TypeString,
-				Description: "Associated Ruleset ID",
-				Optional:    true,
-				Computed:    true,
-			},
 			CISRulesetsRules: {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -302,7 +296,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 
 		rulesObject := d.Get(CISRulesetsRules).([]interface{})[0].(map[string]interface{})
 
-		opt.SetRulesetID(rulesObject[CISRulesetsRuleId].(string))
+		opt.SetRulesetID(rulesetId)
 		opt.SetExpression(rulesObject[CISRulesetsRuleExpression].(string))
 		opt.SetAction(rulesObject[CISRulesetsRuleAction].(string))
 		opt.SetDescription(rulesObject[CISRulesetsRuleActionDescription].(string))
@@ -328,14 +322,13 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		}
 
 		d.SetId(*result.Result.ID)
-		d.Set(CISRulesetsRuleId, *result.Result.ID)
 
 	} else {
 		opt := sess.NewCreateInstanceRulesetRuleOptions(rulesetId)
 
 		rulesObject := d.Get(CISRulesetsRules).([]interface{})[0].(map[string]interface{})
 
-		opt.SetRulesetID(rulesObject[CISRulesetsRuleId].(string))
+		opt.SetRulesetID(rulesetId)
 		opt.SetExpression(rulesObject[CISRulesetsRuleExpression].(string))
 		opt.SetAction(rulesObject[CISRulesetsRuleAction].(string))
 		opt.SetDescription(rulesObject[CISRulesetsRuleActionDescription].(string))
@@ -361,7 +354,6 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		}
 
 		d.SetId(*result.Result.ID)
-		d.Set(CISRulesetsRuleId, *result.Result.ID)
 	}
 	return nil
 }
@@ -380,7 +372,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 	crn := d.Get(cisID).(string)
 	zoneId := d.Get(cisDomainID).(string)
 	rulesetId := d.Get(CISRulesetsId).(string)
-	ruleId := d.Get(CISRulesetsRuleId).(string)
+	ruleId := d.Id()
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
@@ -451,7 +443,7 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 
 	zoneId := d.Get(cisDomainID).(string)
 	rulesetId := d.Get(CISRulesetsId).(string)
-	ruleId := d.Get(CISRulesetsRuleId).(string)
+	ruleId := d.Id()
 
 	if zoneId != "" {
 		opt := sess.NewDeleteZoneRulesetRuleOptions(rulesetId, ruleId)
