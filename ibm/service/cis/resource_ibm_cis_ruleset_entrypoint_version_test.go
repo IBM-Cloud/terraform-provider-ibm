@@ -4,4 +4,4 @@
 package cis_test
 
 // This module can not be tested as a standalone module, as there is no option to create an entry point ruleset.
-// Refer to Terraform Documentation for IBM Cloud. 
+// Refer to Terraform Documentation for IBM Cloud.
