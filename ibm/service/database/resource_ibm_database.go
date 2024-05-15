@@ -1762,6 +1762,8 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
 
+	appendSwitchoverWarning()
+
 	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
 		ID:      instance.ID,
 		GroupID: core.StringPtr("member"),
@@ -1817,7 +1819,8 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting the database configuration schema: %s", err))
 		}
 	}
-	return nil
+
+	return appendSwitchoverWarning()
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2899,6 +2902,17 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	} else {
 		return fmt.Errorf("The current cpu alloaction of %d is not valid for your current configuration.", group.CPU.Allocation)
 	}
+}
+
+func appendSwitchoverWarning() diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "oops all berries - switchover notification",
+	})
+
+	return diags
 }
 
 func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
