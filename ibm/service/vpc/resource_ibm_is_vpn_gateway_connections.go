@@ -206,7 +206,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionLocalCIDRS: {
 				Type:          schema.TypeSet,
 				Optional:      true,
-				ForceNew:      true,
+				Computed:      true,
 				ConflictsWith: []string{"local"},
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Set:           schema.HashString,
@@ -217,7 +217,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionPeerCIDRS: {
 				Type:          schema.TypeSet,
 				Optional:      true,
-				ForceNew:      true,
+				Computed:      true,
 				ConflictsWith: []string{"peer"},
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Set:           schema.HashString,
