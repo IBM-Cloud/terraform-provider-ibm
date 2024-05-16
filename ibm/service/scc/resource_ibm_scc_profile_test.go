@@ -59,7 +59,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 	profileType := "custom"
 	profileNameUpdate := profileName
 	profileDescriptionUpdate := profileDescription
-	profileVersion := "0.0.0"
+	profileVersion := "0.0.1"
 	profileTypeUpdate := profileType
 
 	resource.Test(t, resource.TestCase{
@@ -68,7 +68,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSccProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(acc.SccInstanceID, profileName, profileDescription, profileType),
+				Config: testAccCheckIbmSccProfileConfig(acc.SccInstanceID, profileName, profileDescription, profileType, profileVersion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSccProfileExists("ibm_scc_profile.scc_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileName),
@@ -78,7 +78,7 @@ func TestAccIbmSccProfileAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmSccProfileConfig(acc.SccInstanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate),
+				Config: testAccCheckIbmSccProfileConfig(acc.SccInstanceID, profileNameUpdate, profileDescriptionUpdate, profileTypeUpdate, profileVersion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_name", profileNameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_profile.scc_profile_instance", "profile_description", profileDescriptionUpdate),
@@ -152,7 +152,7 @@ func testAccCheckIbmSccProfileConfigBasic(instanceID string, profileName string,
 	`, instanceID, profileName, profileDescription, profileType)
 }
 
-func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, profileDescription string, profileType string) string {
+func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, profileDescription string, profileType string, profileVersion string) string {
 	return fmt.Sprintf(`
 		resource "ibm_scc_control_library" "scc_control_library_instance" {
 			instance_id = "%s"
@@ -200,7 +200,7 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			profile_name = "%s"
 			profile_description = "%s"
 			profile_type = "%s"
-			profile_version = "0.0.0"
+			profile_version = "%s"
 			controls {
 				control_library_id = resource.ibm_scc_control_library.scc_control_library_instance.control_library_id
 				control_id = resource.ibm_scc_control_library.scc_control_library_instance.controls[0].control_id
@@ -215,7 +215,7 @@ func testAccCheckIbmSccProfileConfig(instanceID string, profileName string, prof
 			}
 		}
 
-	`, instanceID, profileName, profileDescription, profileType)
+	`, instanceID, profileName, profileDescription, profileType, profileVersion)
 }
 
 func testAccCheckIbmSccProfileExists(n string, obj securityandcompliancecenterapiv3.Profile) resource.TestCheckFunc {

@@ -203,7 +203,7 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 
 	project := []map[string]interface{}{}
 	if environment.Project != nil {
-		modelMap, err := dataSourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
+		modelMap, err := DataSourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read")
 			return tfErr.GetDiag()
@@ -237,7 +237,7 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 
 	definition := []map[string]interface{}{}
 	if environment.Definition != nil {
-		modelMap, err := dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
+		modelMap, err := DataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read")
 			return tfErr.GetDiag()
@@ -252,31 +252,31 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 	return nil
 }
 
-func dataSourceIbmProjectEnvironmentProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+func DataSourceIbmProjectEnvironmentProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
-	modelMap["href"] = model.Href
-	definitionMap, err := dataSourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model.Definition)
+	modelMap["id"] = *model.ID
+	modelMap["href"] = *model.Href
+	definitionMap, err := DataSourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	modelMap["crn"] = model.Crn
+	modelMap["crn"] = *model.Crn
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+func DataSourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(model *projectv1.EnvironmentDefinitionRequiredPropertiesResponse) (map[string]interface{}, error) {
+func DataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(model *projectv1.EnvironmentDefinitionRequiredPropertiesResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["description"] = model.Description
-	modelMap["name"] = model.Name
+	modelMap["description"] = *model.Description
+	modelMap["name"] = *model.Name
 	if model.Authorizations != nil {
-		authorizationsMap, err := dataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
+		authorizationsMap, err := DataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
 			return modelMap, err
 		}
@@ -285,12 +285,12 @@ func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesRespo
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			inputs[k] = fmt.Sprintf("%v", v)
+			inputs[k] = flex.Stringify(v)
 		}
 		modelMap["inputs"] = inputs
 	}
 	if model.ComplianceProfile != nil {
-		complianceProfileMap, err := dataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model.ComplianceProfile)
+		complianceProfileMap, err := DataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model.ComplianceProfile)
 		if err != nil {
 			return modelMap, err
 		}
@@ -299,36 +299,36 @@ func dataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesRespo
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
+func DataSourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TrustedProfileID != nil {
-		modelMap["trusted_profile_id"] = model.TrustedProfileID
+		modelMap["trusted_profile_id"] = *model.TrustedProfileID
 	}
 	if model.Method != nil {
-		modelMap["method"] = model.Method
+		modelMap["method"] = *model.Method
 	}
 	if model.ApiKey != nil {
-		modelMap["api_key"] = model.ApiKey
+		modelMap["api_key"] = *model.ApiKey
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
+func DataSourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
 	}
 	if model.InstanceID != nil {
-		modelMap["instance_id"] = model.InstanceID
+		modelMap["instance_id"] = *model.InstanceID
 	}
 	if model.InstanceLocation != nil {
-		modelMap["instance_location"] = model.InstanceLocation
+		modelMap["instance_location"] = *model.InstanceLocation
 	}
 	if model.AttachmentID != nil {
-		modelMap["attachment_id"] = model.AttachmentID
+		modelMap["attachment_id"] = *model.AttachmentID
 	}
 	if model.ProfileName != nil {
-		modelMap["profile_name"] = model.ProfileName
+		modelMap["profile_name"] = *model.ProfileName
 	}
 	return modelMap, nil
 }

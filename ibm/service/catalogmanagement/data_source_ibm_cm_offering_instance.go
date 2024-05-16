@@ -108,6 +108,16 @@ func DataSourceIBMCmOfferingInstance() *schema.Resource {
 				Computed:    true,
 				Description: "channel to target for the operator subscription. Required for operator bundles",
 			},
+			"plan_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "id of the plan",
+			},
+			"parent_crn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of parent instance",
+			},
 		},
 	}
 }
@@ -177,6 +187,12 @@ func dataSourceIBMCmOfferingInstanceRead(context context.Context, d *schema.Reso
 	}
 	if err = d.Set("channel", offeringInstance.Channel); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting channel: %s", err))
+	}
+	if err = d.Set("plan_id", offeringInstance.PlanID); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting plan_id: %s", err))
+	}
+	if err = d.Set("parent_crn", offeringInstance.ParentCRN); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting parent_crn: %s", err))
 	}
 
 	return nil
