@@ -9,11 +9,12 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
 func DataSourceIBMSatelliteLocation() *schema.Resource {
@@ -30,6 +31,11 @@ func DataSourceIBMSatelliteLocation() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The IBM Cloud metro from which the Satellite location is managed",
+			},
+			"address": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The address parameter is an optional parameter where the physical address of -the user?- can be assigned.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -186,6 +192,7 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 
 	d.SetId(*instance.ID)
 	d.Set("location", location)
+	d.Set("address", *instance.Address)
 	d.Set("description", *instance.Description)
 	if instance.CoreosEnabled != nil {
 		d.Set("coreos_enabled", *instance.CoreosEnabled)

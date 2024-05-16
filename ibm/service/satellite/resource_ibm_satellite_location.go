@@ -11,13 +11,14 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 const (
@@ -92,6 +93,11 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 					return o == n
 				},
 				Description: "The IBM Cloud metro from which the Satellite location is managed",
+			},
+			"address": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The address parameter is an optional parameter where the physical address of -the user?- can be assigned.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -227,6 +233,8 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 	}
 }
 
+// TO-DO: If validation for Address and Capabilities have to be added here? How has it been done in modules other
+// than Satellite - for e.g. AccessGroup?
 func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -270,6 +278,11 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 	if v, ok := d.GetOk("logging_account_id"); ok {
 		logAccID := v.(string)
 		createSatLocOptions.LoggingAccountID = &logAccID
+	}
+
+	if v, ok := d.GetOk("address"); ok {
+		addr := v.(string)
+		createSatLocOptions.Address = &addr
 	}
 
 	if v, ok := d.GetOk("description"); ok {
