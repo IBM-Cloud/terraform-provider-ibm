@@ -41,9 +41,9 @@ resource "ibm_kms_kmip_adapter" "myadapter" {
     instance_id = "${ibm_kms_key.test.instance_id}" 
     profile = "native_1.0"
     profile_data = {
-      "crk_id" = ibm_kms_key.test.key_id,
+      "crk_id" = ibm_kms_key.test.key_id
     }
-    # description = "adding a description"
+    description = "adding a description"
     name = var.kmip_adapter_name
 }
 
