@@ -251,6 +251,23 @@ resource "ibm_cos_bucket" "objectversioning" {
   }
 }
 
+### Give public access to a bucket
+
+data "ibm_iam_access_group" "public_access_group" {
+  access_group_name = "Public Access"  # public access group name
+}
+
+resource "ibm_iam_access_group_policy" "public-access-policy" {
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id
+  roles           = ["Content Reader"]  # ["Content Reader", "Object Reader"]
+  resources {
+    resource             = ibm_cos_bucket.cos_bucket.bucket_name
+    resource_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7) #eg "crn:v1:bluemix:public:cloud-object-storage:global:a/123::"
+    resource_type        = "bucket"
+    service              = "cloud-object-storage"
+  }
+}
+
 ```
 
 # cos satellite bucket
