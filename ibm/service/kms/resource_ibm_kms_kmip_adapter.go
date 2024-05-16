@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -51,6 +53,11 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The data specific to the KMIP Adapter profile",
+			},
+			"adapter_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the KMIP adapter",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -107,6 +114,11 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
+	if strings.Contains((kpAPI.URL).String(), "private") || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
+	}
 	adapter, err := kpAPI.CreateKMIPAdapter(context.Background(),
 		resourceIBMKmsKMIPAdapterProfileToProfileFunc(adapterToCreate.Profile, adapterToCreate.ProfileData),
 		kp.WithKMIPAdapterName(adapterToCreate.Name),
@@ -120,10 +132,18 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) error {
 	instanceID := d.Get("instance_id").(string)
-	_, adapterID := splitAdapterID(d.Id())
+	instanceID, adapterID, err := splitAdapterID(d.Id())
+	if err != nil {
+		return err
+	}
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
+	}
+	if strings.Contains((kpAPI.URL).String(), "private") || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
 	}
 	ctx := context.Background()
 	adapter, err := kpAPI.GetKMIPAdapter(ctx, adapterID)
@@ -135,7 +155,10 @@ func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) error {
 	instanceID := d.Get("instance_id").(string)
-	_, adapterID := splitAdapterID(d.Id())
+	_, adapterID, err := splitAdapterID(d.Id())
+	if err != nil {
+		return err
+	}
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
@@ -158,7 +181,10 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	instanceID := d.Get("instance_id").(string)
-	_, adapterID := splitAdapterID(d.Id())
+	instanceID, adapterID, err := splitAdapterID(d.Id())
+	if err != nil {
+		return false, err
+	}
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return false, err
@@ -223,9 +249,16 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 }
 
 func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.KMIPAdapter, instanceID string) (err error) {
-	d.SetId(instanceID + "/" + adapter.ID)
+	d.SetId(fmt.Sprintf("%s/%s", instanceID, adapter.ID))
+
 	if err = d.Set("name", adapter.Name); err != nil {
 		return fmt.Errorf("[ERROR] Error setting name: %s", err)
+	}
+	if err = d.Set("adapter_id", adapter.ID); err != nil {
+		return fmt.Errorf("[ERROR] Error setting adapter_id: %s", err)
+	}
+	if err = d.Set("instance_id", instanceID); err != nil {
+		return fmt.Errorf("[ERROR] Error setting instance_id: %s", err)
 	}
 	if err = d.Set("description", adapter.Description); err != nil {
 		return fmt.Errorf("[ERROR] Error setting description: %s", err)
@@ -251,7 +284,18 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 	return nil
 }
 
-func splitAdapterID(terraformId string) (instanceID, adapterID string) {
-	split := strings.Split(terraformId, "/")
-	return split[0], split[1]
+func splitAdapterID(terraformId string) (instanceID, adapterID string, err error) {
+	split, err := flex.SepIdParts(terraformId, "/")
+	if err != nil {
+		return "", "", err
+	}
+	if len(split) != 2 {
+		return "", "", fmt.Errorf("[ERROR] The given id %s does not contain all expected sections, should be of format instance_id/adapter_id", terraformId)
+	}
+	for index, id := range split {
+		if uuid.Validate(id) != nil {
+			return "", "", fmt.Errorf("[ERROR] The given id %s at index %d of instance_id/adapter_id is not a valid UUID", id, index)
+		}
+	}
+	return split[0], split[1], nil
 }

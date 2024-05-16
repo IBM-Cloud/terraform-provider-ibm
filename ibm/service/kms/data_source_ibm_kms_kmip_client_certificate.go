@@ -127,6 +127,6 @@ func dataSourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-	populateKMIPClientCertSchemaDataFromStruct(d, *cert)
+	populateKMIPClientCertSchemaDataFromStruct(d, *cert, adapter.ID, instanceID)
 	return nil
 }

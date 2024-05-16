@@ -22,12 +22,12 @@ resource "ibm_resource_instance" "kms_instance" {
   location = "us-south"
 }
 resource "ibm_kms_key" "key" {
-  instance_id = ibm_resource_instance.kp_instance.guid
+  instance_id = ibm_resource_instance.kms_instance.guid
   key_name       = "key"
   standard_key   = false
 }
 resource "ibm_kms_kmip_adapter" "myadapter" {
-    instance_id = ibm_resource_instance.kp_instance.guid
+    instance_id = ibm_resource_instance.kms_instance.guid
     profile = "native_1.0"
     profile_data = {
       "crk_id" = ibm_kms_key.key.key_id
@@ -52,7 +52,30 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `adapter_id` - (String) The UUID of the adapter
 - `created_by` - (String) The IBM-ID of the identity that created the resource
 - `created_at` - (String) The date the resource was created, in RFC 3339 format
 - `updated_by` - (String) The IBM-ID of the identity that updated the resource
 - `updated_at` - (String) The date the resource was updated, in RFC 3339 format
+
+## Import
+
+You can import the `ibm_kms_kmip_adapter` resource by using `id`.
+The `id` property can be formed from `instance_id`, `adapter_id` in the following format:
+Each id is expected to be a UUID and import by name for adapter is not supported.
+
+```bash
+<instance_id>/<adapter_id>
+```
+* `instance_id`: A string. The instance ID.
+* `adapter_id`: A string. The adapter ID.
+
+# Syntax
+```bash
+$ terraform import ibm_kms_kmip_adapter.tf_import_adapter <instance_id>/<adapter_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_kms_kmip_adapter.tf_import_adapter bb15f9c8-44d8-4ca6-a8b6-0bb091c811a0/45e03e0e-ff20-42b1-a759-52770d8e3dc1
+```

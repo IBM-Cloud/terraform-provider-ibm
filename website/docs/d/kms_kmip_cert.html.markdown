@@ -21,20 +21,33 @@ resource "ibm_resource_instance" "kms_instance" {
   plan     = "tiered-pricing"
   location = "us-south"
 }
-data "ibm_kms_kmip_adapter" "myadapter" {
-    instance_id = ibm_resource_instance.kp_instance.guid
-    name = "myadapter"
+
+resource "ibm_kms_kmip_adapter" "myadapter" {
+  instance_id = ibm_resource_instance.kms_instance.guid
+  profile = "native_1.0"
+  profile_data = {
+    "crk_id" = ibm_kms_key.key.key_id
+  }
+  description = "adding a description"
 }
+
+resource "ibm_kms_kmip_client_cert" "mycert" {
+  instance_id = ibm_resource_instance.kp_instance.guid
+  adapter_id = ibm_kms_kmip_adapter.myadapter.adapter_id
+  certificate = file("${path.module}/certificate.pem")
+  name = var.kmip_cert_name
+}
+
 data "ibm_kms_kmip_client_cert" "mycert_byname" {
   instance_id = ibm_resource_instance.kp_instance.guid
-  adapter_name = "myadapter"
-  name = "mycert"
+  adapter_name = ibm_kms_kmip_adapter.myadapter.name
+  name = ibm_kms_kmip_client_cert.mycert.name
 }
 
 data "ibm_kms_kmip_client_cert" "mycert_byid" {
   instance_id = ibm_resource_instance.kp_instance.guid
-  adapter_id = data.ibm_kms_kmip_adapter.myadapter.id
-  cert_id = data.ibm_kms_kmip_client_cert.mycert_byname.id
+  adapter_id = ibm_kms_kmip_adapter.myadapter.adapter_id
+  cert_id = ibm_kms_kmip_client_cert.mycert.cert_id
 }
 ```
 

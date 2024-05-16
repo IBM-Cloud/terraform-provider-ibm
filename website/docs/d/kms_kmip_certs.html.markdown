@@ -22,12 +22,12 @@ resource "ibm_resource_instance" "kms_instance" {
   location = "us-south"
 }
 data "ibm_kms_kmip_adapter" "myadapter" {
-    instance_id = ibm_resource_instance.kp_instance.guid
-    name = "myadapter"
+  instance_id = ibm_resource_instance.kp_instance.guid
+  name = "myadapter"
 }
 data "ibm_kms_kmip_client_certs" "certs_list" {
   instance_id = ibm_resource_instance.kp_instance.guid
-  adapter_id = data.ibm_kms_kmip_adapter.myadapter.id
+  adapter_id = data.ibm_kms_kmip_adapter.myadapter.adapter_id
 }
 ```
 

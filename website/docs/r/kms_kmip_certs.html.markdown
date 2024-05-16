@@ -21,12 +21,12 @@ resource "ibm_resource_instance" "kms_instance" {
   location = "us-south"
 }
 resource "ibm_kms_key" "key" {
-  instance_id = ibm_resource_instance.kp_instance.guid
+  instance_id = ibm_resource_instance.kms_instance.guid
   key_name       = "key"
   standard_key   = false
 }
 resource "ibm_kms_kmip_adapter" "myadapter" {
-    instance_id = ibm_resource_instance.kp_instance.guid
+    instance_id = ibm_resource_instance.kms_instance.guid
     profile = "native_1.0"
     profile_data = {
       "crk_id" = ibm_kms_key.key.key_id,
@@ -35,12 +35,24 @@ resource "ibm_kms_kmip_adapter" "myadapter" {
     name = var.kmip_adapter_name
 }
 resource "ibm_kms_kmip_client_cert" "mycert" {
-  instance_id = "${ibm_kms_key.test.instance_id}" 
-  adapter_id = "${ibm_kms_kmip_adapter.myadapter.id}"
+  instance_id = ibm_resource_instance.kms_instance.guid
+  adapter_id = ibm_kms_kmip_adapter.myadapter.adapter_id
   certificate = file("${path.module}/certificate.pem")
   name = var.kmip_cert_name
 }
 
+```
+
+It can also be specified by specifying the full cert with new line characters
+
+```terraform
+resource "ibm_kms_kmip_client_cert" "mycert" {
+  instance_id = ibm_resource_instance.kms_instance.guid
+  adapter_id = ibm_kms_kmip_adapter.myadapter.adapter_id
+  certificate = "-----BEGIN CERTIFICATE-----\nMIIFRjCCAy4CCQDpL8VYz6YYZDANBgkqhkiG9w0BAQsFADBlMQswCQYDVQQGEwJY\nWDELMA...\ny6Eke904wgyC2Q==\n-----END CERTIFICATE-----"
+  
+  name = var.kmip_cert_name
+}
 ```
 
 
@@ -56,5 +68,29 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `cert_id` - (String) The UUID of the cert
 - `created_by` - (String) The IBM-ID of the identity that created the resource
 - `created_at` - (String) The date the resource was created, in RFC 3339 format
+
+## Import
+
+You can import the `ibm_kms_kmip_client_cert` resource by using `id`.
+The `id` property can be formed from `instance_id`, `adapter_id`, and `cert_id` in the following format:
+Each id is expected to be a UUID and import by name for adapter and cert is not supported.
+
+```bash
+<instance_id>/<adapter_id>/<cert_id>
+```
+* `instance_id`: A string. The instance ID.
+* `adapter_id`: A string. The adapter ID.
+* `cert_id`: A string. The cert ID.
+
+# Syntax
+```bash
+$ terraform import ibm_kms_kmip_client_cert.tf_import_cert <instance_id>/<adapter_id>/<cert_id>
+```
+
+# Example
+```bash
+$ terraform import ibm_kms_kmip_client_cert.tf_import_cert bb15f9c8-44d8-4ca6-a8b6-0bb091c811a0/45e03e0e-ff20-42b1-a759-52770d8e3dc1/986194f1-4872-46e6-84ed-6a2114e210d5
+```

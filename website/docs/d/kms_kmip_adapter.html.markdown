@@ -21,14 +21,26 @@ resource "ibm_resource_instance" "kms_instance" {
   plan     = "tiered-pricing"
   location = "us-south"
 }
+
+resource "ibm_kms_kmip_adapter" "myadapter" {
+  instance_id = ibm_resource_instance.kms_instance.guid
+  profile = "native_1.0"
+  profile_data = {
+    "crk_id" = ibm_kms_key.key.key_id
+  }
+  description = "adding a description"
+}
+
 data "ibm_kms_kmip_adapter" "myadapter_byname" {
-    instance_id = ibm_resource_instance.kp_instance.guid
-    name = "myadapter"
+    instance_id = ibm_resource_instance.kms_instance.guid
+    name = ibm_kms_kmip_adapter.myadapter.name
 }
+
 data "ibm_kms_kmip_adapter" "myadapter_byid" {
-    instance_id = ibm_resource_instance.kp_instance.guid
-    adapter_id = data.ibm_kms_kmip_adapter.adapter_byname.adapter_id
+    instance_id = ibm_resource_instance.kms_instance.guid
+    adapter_id = ibm_kms_kmip_adapter.myadapter.adapter_id
 }
+
 ```
 
 
