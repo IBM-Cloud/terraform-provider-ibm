@@ -26,6 +26,8 @@ You can specify the following arguments for this data source.
 
 * `date_from` - (Optional, Integer) Timestamp in milliseconds for which billing report snapshot is requested.
 * `date_to` - (Optional, Integer) Timestamp in milliseconds for which billing report snapshot is requested.
+* `limit` - (Optional, Integer) Number of usage records returned. The default value is 30. Maximum value is 200.
+  * Constraints: The default value is `30`. The maximum value is `200`. The minimum value is `1`.
 * `month` - (Required, String) The month for which billing report snapshot is requested.  Format is yyyy-mm.
 
 ## Attribute Reference
@@ -34,6 +36,7 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the billing_snapshot_list.
 * `count` - (Integer) Number of total snapshots.
+
 * `snapshots` - (List) 
 Nested schema for **snapshots**:
 	* `account_id` - (String) Account ID for which billing report snapshot is configured.

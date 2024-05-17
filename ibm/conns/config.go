@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package conns
@@ -3561,7 +3561,11 @@ func RefreshToken(sess *bxsession.Session) error {
 func EnvFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
-			return v
+			if strings.Contains(v, "https://") {
+				return v
+			} else {
+				return fmt.Sprintf("https://%s/v1", v)
+			}
 		}
 	}
 	return defaultValue

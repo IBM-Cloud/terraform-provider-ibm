@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package usagereports_test
@@ -18,10 +18,10 @@ func TestAccIBMBillingSnapshotListDataSourceBasic(t *testing.T) {
 	date_from := acc.Snapshot_date_from
 	date_to := acc.Snapshot_date_to
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckUsage(t) },
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMBillingSnapshotListDataSourceConfigBasic(month, date_from, date_to),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_billing_snapshot_list.billing_snapshot_list_instance", "id"),
