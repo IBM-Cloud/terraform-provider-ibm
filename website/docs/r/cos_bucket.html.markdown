@@ -262,7 +262,7 @@ resource "ibm_iam_access_group_policy" "public-access-policy" {
   roles           = ["Content Reader"]  # ["Content Reader", "Object Reader"]
   resources {
     resource             = ibm_cos_bucket.cos_bucket.bucket_name
-    resource_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7) #eg "crn:v1:bluemix:public:cloud-object-storage:global:a/123::"
+    resource_instance_id = element(split(":", ibm_resource_instance.cos_instance.id), 7) # eg : 3daxxxxx-xxxx-xxxx-xxxx-xxxxxxxb23
     resource_type        = "bucket"
     service              = "cloud-object-storage"
   }
