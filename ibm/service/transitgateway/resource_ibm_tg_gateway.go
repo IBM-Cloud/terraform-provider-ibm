@@ -348,10 +348,8 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 	if d.HasChange(tgGlobal) {
-		if tgwglobal, ok := d.GetOk(tgGlobal); ok {
-			global := tgwglobal.(bool)
-			updateTransitGatewayOptions.Global = &global
-		}
+		global := d.Get(tgGlobal).(bool)
+		updateTransitGatewayOptions.Global = &global
 	}
 	if d.HasChange(tgGatewayTags) {
 		oldList, newList := d.GetChange(tgGatewayTags)
