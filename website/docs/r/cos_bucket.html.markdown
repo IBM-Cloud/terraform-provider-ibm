@@ -267,8 +267,9 @@ resource "ibm_iam_access_group_policy" "public-access-policy" {
     service              = "cloud-object-storage"
   }
 }
-
+ 
 ```
+For more information on access group policies, please refer to [this link](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/iam_access_group_policy)
 
 # cos satellite bucket
 
