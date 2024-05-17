@@ -36,7 +36,7 @@ func TestAccIBMKMSKMIPObjectDataSource_basic(t *testing.T) {
 					),
 					WithDataSourceKMSKMIPObject(
 						"object_data",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						"null",
 						wrapQuotes("8d52da43-06af-4d18-8162-e77a6f60290e"),
 					),

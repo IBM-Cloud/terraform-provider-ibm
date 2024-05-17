@@ -39,7 +39,7 @@ func TestAccIBMKMSKMIPClientCertsDataSource_basic(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert,
 						wrapQuotes("mycert"),
 					),
@@ -61,7 +61,7 @@ func TestAccIBMKMSKMIPClientCertsDataSource_basic(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert,
 						wrapQuotes("mycert"),
 					),

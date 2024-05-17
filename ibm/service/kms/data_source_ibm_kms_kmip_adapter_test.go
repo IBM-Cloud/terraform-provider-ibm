@@ -35,7 +35,7 @@ func TestAccIBMKMSKMIPAdapterDataSource_basic(t *testing.T) {
 					),
 					WithDataSourceKMSKMIPAdapter(
 						"adapter_data",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						"null",
 					),
 				),

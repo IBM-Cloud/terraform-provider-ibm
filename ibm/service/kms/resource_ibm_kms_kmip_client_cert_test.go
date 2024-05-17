@@ -49,7 +49,7 @@ func TestAccIBMKMSKMIPClientCertResource_basic(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert,
 						wrapQuotes("mycert"),
 					),
@@ -85,13 +85,13 @@ func TestAccIBMKMSKMIPClientCertResource_DuplicateCertError(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert,
 						wrapQuotes("mycert"),
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert_dupe",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert,
 						"null",
 					),
@@ -124,7 +124,7 @@ func TestAccIBMKMSKMIPClientCertResource_InvalidCert(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						"invalidPEM",
 						wrapQuotes("mycert"),
 					),
@@ -162,13 +162,13 @@ func TestAccIBMKMSKMIPClientCertResource_DuplicateNameError(t *testing.T) {
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert,
 						wrapQuotes("mycert"),
 					),
 					WithResourceKMSKMIPClientCert(
 						"test_cert_dupe",
-						"ibm_kms_kmip_adapter.test_adapter.id",
+						"ibm_kms_kmip_adapter.test_adapter.adapter_id",
 						myCert2,
 						wrapQuotes("mycert"),
 					),
