@@ -1,3 +1,10 @@
+# 1.65.1 (May 17, 2024)
+
+BugFixes
+* fix(bm-profiles): resolved nil pointer on resource type ([5354](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5354))
+* update kms instance policies ([5346](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5346))
+* Fix to handle crash for cloudshell ([5363](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5363))
+
 # 1.65.0 (May 06, 2024)
 Features
 * Support for VMware as a Service API
