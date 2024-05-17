@@ -87,25 +87,25 @@ func ResourceIBMkey() *schema.Resource {
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "The name of the resource",
 			},
 
 			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The crn of the resource",
 			},
 
 			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the resource",
+				Description: "The status of the resource",
 			},
 
 			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group name in which resource is provisioned",
+				Description: "The resource group name in which resource is provisioned",
 			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
