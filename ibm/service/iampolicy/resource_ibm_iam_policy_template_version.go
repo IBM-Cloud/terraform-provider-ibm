@@ -111,7 +111,7 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 							},
 						},
 						"subject": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Optional:    true,
 							Computed:    true,
 							Description: "The subject attributes for authorization type templates",

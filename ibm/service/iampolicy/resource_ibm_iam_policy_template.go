@@ -178,7 +178,7 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 							Description: "Role names of the policy definition",
 						},
 						"subject": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Optional:    true,
 							Computed:    true,
 							Description: "The subject attributes for authorization type templates",
@@ -324,7 +324,7 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 	model.Resource = ResourceModel
 
 	if _, ok := d.GetOk("policy.0.subject"); ok {
-		subjectModel, err := generateTemplatePolicySubject(modelMap["subject"].([]interface{})[0].(map[string]interface{}),
+		subjectModel, err := generateTemplatePolicySubject(((modelMap["subject"]).(*schema.Set).List()),
 			iamPolicyManagementClient)
 		if err != nil {
 			return model, err
@@ -437,17 +437,20 @@ func generateTemplatePolicyResource(modelMap map[string]interface{},
 	return model, roleList, nil
 }
 
-func generateTemplatePolicySubject(modelMap map[string]interface{},
+func generateTemplatePolicySubject(modelMap []interface{},
 	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicySubject, error) {
 	model := &iampolicymanagementv1.V2PolicySubject{}
 	attributes := []iampolicymanagementv1.V2PolicySubjectAttribute{}
-	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
-		attributesItemModel := &iampolicymanagementv1.V2PolicySubjectAttribute{}
-		attributesItemModel.Key = core.StringPtr(attributesItem.(map[string]interface{})["key"].(string))
-		attributesItemModel.Operator = core.StringPtr(attributesItem.(map[string]interface{})["operator"].(string))
-		attributesItemModel.Value = attributesItem.(map[string]interface{})["value"].(string)
+	for _, attributesItem := range modelMap {
+		attribute := (attributesItem.(map[string]interface{}))["attributes"]
+		for _, item := range (attribute).([]interface{}) {
+			attributesItemModel := &iampolicymanagementv1.V2PolicySubjectAttribute{}
+			attributesItemModel.Key = core.StringPtr((item.((map[string]interface{}))["key"].(string)))
+			attributesItemModel.Operator = core.StringPtr(item.(map[string]interface{})["operator"].(string))
+			attributesItemModel.Value = core.StringPtr(item.(map[string]interface{})["value"].(string))
 
-		attributes = append(attributes, *attributesItemModel)
+			attributes = append(attributes, *attributesItemModel)
+		}
 	}
 	model.Attributes = attributes
 	return model, nil
