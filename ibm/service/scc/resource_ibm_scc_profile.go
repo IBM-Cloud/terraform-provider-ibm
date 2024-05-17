@@ -266,8 +266,8 @@ func ResourceIbmSccProfile() *schema.Resource {
 			},
 			"profile_version": {
 				Type:        schema.TypeString,
-				Computed:    true,
 				Optional:    true,
+				Default:     "0.0.0",
 				Description: "The version status of the profile.",
 			},
 			"version_group_label": {
@@ -366,6 +366,8 @@ func resourceIbmSccProfileCreate(context context.Context, d *schema.ResourceData
 	bodyModelMap["profile_name"] = d.Get("profile_name")
 	bodyModelMap["profile_description"] = d.Get("profile_description")
 	bodyModelMap["profile_type"] = "custom"
+	// manual change for profile_version
+	bodyModelMap["profile_version"] = d.Get("profile_version")
 	if _, ok := d.GetOk("controls"); ok {
 		bodyModelMap["controls"] = d.Get("controls")
 	} else {
@@ -652,6 +654,7 @@ func resourceIbmSccProfileMapToProfilePrototype(modelMap map[string]interface{})
 	model.ProfileName = core.StringPtr(modelMap["profile_name"].(string))
 	model.ProfileDescription = core.StringPtr(modelMap["profile_description"].(string))
 	model.ProfileType = core.StringPtr(modelMap["profile_type"].(string))
+	model.ProfileVersion = core.StringPtr(modelMap["profile_version"].(string))
 	controls := []securityandcompliancecenterapiv3.ProfileControlsPrototype{}
 	for _, controlsItem := range modelMap["controls"].([]interface{}) {
 		controlsItemModel, err := resourceIbmSccProfileMapToProfileControlsPrototype(controlsItem.(map[string]interface{}))

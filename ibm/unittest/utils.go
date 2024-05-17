@@ -4,6 +4,8 @@
 package unittest
 
 import (
+	"encoding/base64"
+
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 )
@@ -17,8 +19,11 @@ func CreateMockUUID(mockData string) *strfmt.UUID {
 	return &uuid
 }
 
-func CreateMockByteArray(mockData string) *[]byte {
-	ba := []byte(mockData)
+func CreateMockByteArray(encodedString string) *[]byte {
+	ba, err := base64.StdEncoding.DecodeString(encodedString)
+	if err != nil {
+		panic(err)
+	}
 	return &ba
 }
 

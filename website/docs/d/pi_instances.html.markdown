@@ -7,22 +7,26 @@ description: |-
 ---
 
 # ibm_pi_instances
+
 Retrieve information about all Power Systems Virtual Server instances for the given cloud instance. For more information, about Power Virtual Server instances, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
+
 ```terraform
 data "ibm_pi_instances" "ds_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
   
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -31,20 +35,30 @@ Example usage:
   ```
 
 ## Argument reference
-Review the argument references that you can specify for your data source. 
+
+Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `pvm_instances` - (List) List of power virtual server instances for the respective cloud instance.
 
   Nested scheme for `pvm_instances`:
+  - `fault` - (Map) Fault information, if any.
+
+      Nested scheme for `fault`:
+        - `code` - (String) The fault status of the server.
+        - `created` - (String) The date and time the fault occurred.
+        - `details` - (String) The fault details of the server.
+        - `message` -  (String) The fault message of the server.
+
   - `health_status` - (String) The health of the instance.
   - `license_repository_capacity` - (Deprecated, Integer) The VTL license repository capacity TB value. Only available with VTL instances.
   - `memory` - (Float) The amount of memory that is allocated to the instance.
-  - `minproc`- (Float) The minimum number of processors that must be allocated to the instance. 
+  - `minproc`- (Float) The minimum number of processors that must be allocated to the instance.
   - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
   - `max_virtual_cores` - (Integer) The maximum number of virtual cores that can be assigned without rebooting the instance.
   - `minmem`- (Float) The minimum amount of memory that must be allocated to the instance.
@@ -53,12 +67,12 @@ In addition to all argument reference list, you can access the following attribu
   - `networks` - (List) List of networks associated with this instance.
 
       Nested scheme for `networks`:
-      - `external_ip` - (String) The external IP address of the instance.
-      - `ip` - (String) The IP address of the instance.
-      - `macaddress` - (String) The MAC address of the instance.
-      - `network_id` - (String) The network ID of the instance.
-      - `network_name` - (String) The network name of the instance.
-      - `type` - (String) The type of the network.
+        - `external_ip` - (String) The external IP address of the instance.
+        - `ip` - (String) The IP address of the instance.
+        - `macaddress` - (String) The MAC address of the instance.
+        - `network_id` - (String) The network ID of the instance.
+        - `network_name` - (String) The network name of the instance.
+        - `type` - (String) The type of the network.
 
   - `pin_policy` - (String) The pinning policy of the instance.
   - `placement_group_id`- (String) The ID of the placement group that the instance is a member.

@@ -53,6 +53,7 @@ import (
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
+	cisrulesetsv1 "github.com/IBM/networking-go-sdk/rulesetsv1"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
@@ -119,6 +120,7 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
+	"github.com/IBM/logs-go-sdk/logsv0"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -250,6 +252,7 @@ type ClientSession interface {
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
+	CisRulesetsSession() (*cisrulesetsv1.RulesetsV1, error)
 	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
@@ -301,6 +304,7 @@ type ClientSession interface {
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 	VmwareV1() (*vmwarev1.VmwareV1, error)
+	LogsV0() (*logsv0.LogsV0, error)
 }
 
 type clientSession struct {
@@ -430,6 +434,10 @@ type clientSession struct {
 	// CIS Alerts
 	cisAlertsClient *cisalertsv1.AlertsV1
 	cisAlertsErr    error
+
+	// CIS Rulesets
+	cisRulesetsClient *cisrulesetsv1.RulesetsV1
+	cisRulesetsErr    error
 
 	// CIS Authenticated Origin Pull
 	cisOriginAuthClient  *cisoriginpull.AuthenticatedOriginPullApiV1
@@ -632,6 +640,10 @@ type clientSession struct {
 	// VMware as a Service
 	vmwareClient    *vmwarev1.VmwareV1
 	vmwareClientErr error
+
+	// Cloud Logs
+	logsClient    *logsv0.LogsV0
+	logsClientErr error
 }
 
 // Usage Reports
@@ -990,6 +1002,14 @@ func (sess clientSession) CisAlertsSession() (*cisalertsv1.AlertsV1, error) {
 	return sess.cisAlertsClient.Clone(), nil
 }
 
+// CIS Rulesets
+func (sess clientSession) CisRulesetsSession() (*cisrulesetsv1.RulesetsV1, error) {
+	if sess.cisRulesetsErr != nil {
+		return sess.cisRulesetsClient, sess.cisRulesetsErr
+	}
+	return sess.cisRulesetsClient.Clone(), nil
+}
+
 // CIS Routing
 func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, error) {
 	if sess.cisRoutingErr != nil {
@@ -1221,6 +1241,11 @@ func (session clientSession) VmwareV1() (*vmwarev1.VmwareV1, error) {
 	return session.vmwareClient, session.vmwareClientErr
 }
 
+// Cloud Logs
+func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
+	return session.logsClient, session.logsClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1315,6 +1340,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
 		session.mqcloudClientErr = errEmptyBluemixCredentials
+		session.logsClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1548,6 +1574,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.projectClientErr = fmt.Errorf("Error occurred while configuring Projects API Specification service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client.
+	logsEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.logs", c.Region), cloudEndpoint)
+
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_API_ENDPOINT", c.Region, logsEndpoint)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s.logs", c.Region), cloudEndpoint)
+	}
+
+	logsClientOptions := &logsv0.LogsV0Options{
+		Authenticator: authenticator,
+		URL:           logsEndpoint,
+	}
+
+	// Construct the service client.
+	session.logsClient, err = logsv0.NewLogsV0(logsClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.logsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.logsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.logsClientErr = fmt.Errorf("Error occurred while configuring Cloud Logs API service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the service client.
@@ -2442,6 +2496,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisAlertsClient != nil && session.cisAlertsClient.Service != nil {
 		session.cisAlertsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisAlertsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Network CIS Rulesets
+	cisRulesetsOpt := &cisrulesetsv1.RulesetsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisRulesetsClient, session.cisRulesetsErr = cisrulesetsv1.NewRulesetsV1(cisRulesetsOpt)
+	if session.cisRulesetsErr != nil {
+		session.cisRulesetsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Rulesets : %s",
+			session.cisRulesetsErr)
+	}
+	if session.cisRulesetsClient != nil && session.cisRulesetsClient.Service != nil {
+		session.cisRulesetsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRulesetsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
