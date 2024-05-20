@@ -164,8 +164,8 @@ github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1/go.mod h1:M2J
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta h1:P1fdIfKsD9xvJQ5MHIEztPS9yfNf9x+VDTamaYcmqcs=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
-github.com/IBM/keyprotect-go-client v0.12.2 h1:Cjxcqin9Pl0xz3MnxdiVd4v/eIa79xL3hQpSbwOr/DQ=
-github.com/IBM/keyprotect-go-client v0.12.2/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
+github.com/IBM/keyprotect-go-client v0.14.0 h1:GqgK3BdczA/w7+B1RxEPLya0w9S/ZXi5YWKAxdW8vHQ=
+github.com/IBM/keyprotect-go-client v0.14.0/go.mod h1:cAt714Vnwnd03mmkBHHSJlDNRVthdRmJB6RePd4/B8Q=
 github.com/IBM/logs-go-sdk v0.1.1 h1:aiVnKHJzYcsHvQY58vLB7QbUV/kXcWTpCPqRKC2QS0A=
 github.com/IBM/logs-go-sdk v0.1.1/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
 github.com/IBM/mqcloud-go-sdk v0.0.4 h1:gqMpoU5a0qJ0GETG4PQrkgeEEoaQLvbxRJnEe6ytvC4=
@@ -180,8 +180,8 @@ github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:N
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5/go.mod h1:b07XHUVh0XYnQE9s2mqgjYST1h9buaQNqN4EcKhOsX0=
 github.com/IBM/sarama v1.41.2 h1:ZDBZfGPHAD4uuAtSv4U22fRZBgst0eEwGFzLj0fb85c=
 github.com/IBM/sarama v1.41.2/go.mod h1:xdpu7sd6OE1uxNdjYTSKUfY8FaKkJES9/+EyjSgiGQk=
-github.com/IBM/scc-go-sdk/v5 v5.1.5 h1:c17/7CfUjjgHXQe1fIY3GVsahqij1vDu9/dKPak8Tes=
-github.com/IBM/scc-go-sdk/v5 v5.1.5/go.mod h1:YtAVlzq10bwR82QX4ZavhDIwa1s85RuVO9N/KmXVcuk=
+github.com/IBM/scc-go-sdk/v5 v5.1.6 h1:vpcrADzaY6K967pcOVvp+rjAmoOyyxFgR9woQ20Q/l8=
+github.com/IBM/scc-go-sdk/v5 v5.1.6/go.mod h1:YtAVlzq10bwR82QX4ZavhDIwa1s85RuVO9N/KmXVcuk=
 github.com/IBM/schematics-go-sdk v0.2.3 h1:lgTt0Sbudii3cuSk1YSQgrtiZAXDbBABAoVj3eQuBrU=
 github.com/IBM/schematics-go-sdk v0.2.3/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.4 h1:xa9e+POVqaXxXHXkSMCOVAbKdUNEu86jQmo5hcpd+L4=

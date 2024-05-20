@@ -71,15 +71,15 @@ Nested schema for **scope**:
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 		* `value` - (Required, String) The value of the property.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
-* `notifications` - (List) The request payload of the attachment notifications.
+* `notifications` - (Required, List) The configuration for setting up notifications if a scan fails. Requires event_notifications from the instance settings to be setup.
 Nested schema for **notifications**:
 	* `controls` - (List) The failed controls.
 	Nested schema for **controls**:
 		* `failed_control_ids` - (List) The failed control IDs.
 		  * Constraints: The list items must match regular expression `/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$|^$/`. The maximum length is `512` items. The minimum length is `0` items.
 		* `threshold_limit` - (Integer) The threshold limit.
-	* `enabled` - (Boolean) enabled notifications.
-* `attachment_parameters` - (List) The request payload of the attachment parameters.
+	* `enabled` - (Boolean) The flag to enable notifications. Set to true to enabled notifications, false to disable
+* `attachment_parameters` - (List) The attachment parameters required from the profile that the attachment is targeting. All parameters listed from the profile needs to be set.
 Nested schema for **attachment_parameters**:
     * `parameter_name` - (Required, String) The name of the parameter to target.
     * `parameter_display_name` - (Required, String) The display name of the parameter shown in the UI.

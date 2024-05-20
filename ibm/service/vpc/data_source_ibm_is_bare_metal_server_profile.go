@@ -522,7 +522,7 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 		memList = append(memList, m)
 		d.Set(isBareMetalServerProfileMemory, memList)
 	}
-	d.Set(isBareMetalServerProfileRT, *bmsProfile.ResourceType)
+	d.Set(isBareMetalServerProfileRT, bmsProfile.ResourceType)
 	if bmsProfile.SupportedTrustedPlatformModuleModes != nil {
 		list := make([]map[string]interface{}, 0)
 		var stpmmlist []string

@@ -61,7 +61,7 @@ func ResourceIBMEnSMTPUser() *schema.Resource {
 			},
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
-                                Sensitive:   true,
+				Sensitive:   true,
 				Computed:    true,
 				Description: "SMTP user password.",
 			},
