@@ -3066,6 +3066,13 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		snapshotId, ok := bootvol[isInstanceVolumeSnapshot]
 		snapshotIdStr := snapshotId.(string)
 		if snapshotIdStr != "" && ok {
+			isCRN, sourceSnapshotId, err := ValidateCRN(snapshotIdStr)
+			if err != nil {
+				return utils.FailGotError(err, cmd.UI)
+			}
+			if isCRN {
+				snapshotIdStr = sourceSnapshotId
+			}
 			volTemplate.SourceSnapshot = &vpcv1.SnapshotIdentity{
 				ID: &snapshotIdStr,
 			}
@@ -6364,4 +6371,17 @@ func containsNacId(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func ValidateCRN(crn string) (bool, id, error) {
+	validInput := strings.Contains(crn, "crn:")
+	if validInput {
+		validateValue := strings.Split(crn, ":")
+		if validateValue[0] == "crn" {
+			return true, validateValue[len(validateValue)-1], nil
+		} else {
+			return false, 0, fmt.Errorf("Invalid CRN. Please pass correct CRN.")
+		}
+	}
+	return false, 0, nil
 }

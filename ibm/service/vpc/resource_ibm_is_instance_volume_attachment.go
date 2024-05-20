@@ -314,6 +314,13 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 		volSnapshotStr := ""
 		if volSnapshot, ok := d.GetOk(isInstanceVolumeSnapshot); ok {
 			volSnapshotStr = volSnapshot.(string)
+			isCRN, sourceSnapshotId, err := ValidateCRN(volSnapshotStr)
+			if err != nil {
+				return utils.FailGotError(err, cmd.UI)
+			}
+			if isCRN {
+				volSnapshotStr = sourceSnapshotId
+			}
 			volProtoVol.SourceSnapshot = &vpcv1.SnapshotIdentity{
 				ID: &volSnapshotStr,
 			}
@@ -807,4 +814,17 @@ func parseVolAttTerraformID(s string) (string, string, error) {
 		return "", "", fmt.Errorf("invalid terraform Id %s (one or more empty segments)", s)
 	}
 	return segments[0], segments[1], nil
+}
+
+func ValidateCRN(crn string) (bool, id, error) {
+	validInput := strings.Contains(crn, "crn:")
+	if validInput {
+		validateValue := strings.Split(crn, ":")
+		if validateValue[0] == "crn" {
+			return true, validateValue[len(validateValue)-1], nil
+		} else {
+			return false, 0, fmt.Errorf("Invalid CRN. Please pass correct CRN.")
+		}
+	}
+	return false, 0, nil
 }
