@@ -421,7 +421,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 		sourceSnapshot := sourceSnapsht.(string)
 		isCRN, sourceSnapshotId, err := ValidateCRN(sourceSnapshot)
 		if err != nil {
-			return utils.FailGotError(err, cmd.UI)
+			return fmt.Errorf("[ERROR] Error invalid CRN: %q", err)
 		}
 		if isCRN {
 			sourceSnapshot = sourceSnapshotId
