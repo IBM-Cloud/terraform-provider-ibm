@@ -127,12 +127,11 @@ func ResourceIBMISVolume() *schema.Resource {
 				Description:  "Volume capacity value",
 			},
 			isVolumeSourceSnapshot: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_volume", isVolumeSourceSnapshot),
-				Description:  "The unique identifier for this snapshot",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The unique identifier for this snapshot",
 			},
 			isVolumeResourceGroup: {
 				Type:        schema.TypeString,
@@ -366,15 +365,6 @@ func ResourceIBMISVolumeValidator() *validate.ResourceValidator {
 			MaxValue:                   "16000"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 isVolumeSourceSnapshot,
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[-0-9a-z_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             64})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
 			Identifier:                 isVolumeIops,
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
@@ -413,7 +403,6 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if err != nil {
 		return err
 	}
-	log.Println("I AM INSIDE func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone string)")
 	options := &vpcv1.CreateVolumeOptions{
 		VolumePrototype: &vpcv1.VolumePrototype{
 			Name: &volName,
@@ -430,6 +419,13 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	var volCapacity int64
 	if sourceSnapsht, ok := d.GetOk(isVolumeSourceSnapshot); ok {
 		sourceSnapshot := sourceSnapsht.(string)
+		isCRN, sourceSnapshotId, err := ValidateCRN(sourceSnapshot)
+		if err != nil {
+			return utils.FailGotError(err, cmd.UI)
+		}
+		if isCRN {
+			sourceSnapshot = sourceSnapshotId
+		}
 		snapshotIdentity := &vpcv1.SnapshotIdentity{
 			ID: &sourceSnapshot,
 		}
@@ -1039,4 +1035,17 @@ func deleteAllSnapshots(sess *vpcv1.VpcV1, id string) error {
 		return fmt.Errorf("[ERROR] Error deleting snapshots from volume %s\n%s", err, response)
 	}
 	return nil
+}
+
+func ValidateCRN(crn string) (bool, id, error) {
+	validInput := strings.Contains(crn, "crn:")
+	if validInput {
+		validateValue := strings.Split(crn, ":")
+		if validateValue[0] == "crn" {
+			return true, validateValue[len(validateValue)-1], nil
+		} else {
+			return false, 0, fmt.Errorf("Invalid CRN. Please pass correct CRN.")
+		}
+	}
+	return false, 0, nil
 }

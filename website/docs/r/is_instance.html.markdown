@@ -520,7 +520,7 @@ Review the argument references that you can specify for your resource.
 
     ~> **NOTE:**
     Supports only expansion on update (must be attached to a running instance and must not be less than the current volume size)
-  - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
+  - `snapshot` - (Optional, Forces new resource, String) The snapshot id or crn of the volume to be used for creating boot volume attachment
     
     ~> **Note:**
     `snapshot` conflicts with `image` id, `instance_template` , `catalog_offering` and `boot_volume.volume_id`
