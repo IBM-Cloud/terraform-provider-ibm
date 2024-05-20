@@ -316,7 +316,7 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			volSnapshotStr = volSnapshot.(string)
 			isCRN, sourceSnapshotId, err := ValidateCRN(volSnapshotStr)
 			if err != nil {
-				return utils.FailGotError(err, cmd.UI)
+				return fmt.Errorf("[ERROR] Error invalid CRN: %q", err)
 			}
 			if isCRN {
 				volSnapshotStr = sourceSnapshotId

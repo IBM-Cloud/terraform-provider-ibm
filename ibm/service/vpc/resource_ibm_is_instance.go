@@ -3068,7 +3068,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		if snapshotIdStr != "" && ok {
 			isCRN, sourceSnapshotId, err := ValidateCRN(snapshotIdStr)
 			if err != nil {
-				return utils.FailGotError(err, cmd.UI)
+				return fmt.Errorf("[ERROR] Error invalid CRN: %q", err)
 			}
 			if isCRN {
 				snapshotIdStr = sourceSnapshotId
