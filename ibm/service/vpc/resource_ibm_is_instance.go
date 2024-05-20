@@ -6372,16 +6372,3 @@ func containsNacId(s []string, e string) bool {
 	}
 	return false
 }
-
-func ValidateCRN(crn string) (bool, id, error) {
-	validInput := strings.Contains(crn, "crn:")
-	if validInput {
-		validateValue := strings.Split(crn, ":")
-		if validateValue[0] == "crn" {
-			return true, validateValue[len(validateValue)-1], nil
-		} else {
-			return false, 0, fmt.Errorf("Invalid CRN. Please pass correct CRN.")
-		}
-	}
-	return false, 0, nil
-}
