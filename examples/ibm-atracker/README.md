@@ -6,7 +6,7 @@ The following types of resources are supported:
 
 * Activity Tracker Event Routing Target
 * Activity Tracker Event Routing Route
-* Activity Tracker Event RoutingSettings
+* Activity Tracker Event Routing Settings
 
 ## Usage
 

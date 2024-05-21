@@ -13,7 +13,7 @@ Provides a resource for Activity Tracker Event Routing Target. This allows Activ
 ## Example usage
 
 ```terraform
-resource "ibm_atracker_target" "atracker_target" {
+resource "ibm_atracker_target" "atracker_cos_target" {
   cos_endpoint {
      endpoint = "endpoint"
      target_crn = "target_crn"
