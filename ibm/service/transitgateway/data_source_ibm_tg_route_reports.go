@@ -11,22 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	tgRouteReports                            = "route_reports"
-	tgRouteReportConnections                  = "connections"
-	tgRouteReportOverlappingRoutes            = "overlapping_routes"
-	tgRouteReportOverlappingRoutesDetail      = "routes"
-	tgRouteReportConnectionBgps               = "bgps"
-	tgRouteReportConnectionBgpAsPath          = "as_path"
-	tgRouteReportConnectionBgpIsUsed          = "is_used"
-	tgRouteReportConnectionBgpLocalPreference = "local_preference"
-	tgRouteReportConnectionBgpPrefix          = "prefix"
-	tgRouteReportConnectionRoutes             = "routes"
-	tgRouteReportConnectionRoutePrefix        = "prefix"
-	tgRouteReportConnectionType               = "type"
-	tgRouteReportOverlappingPrefix            = "prefix"
-)
-
 func DataSourceIBMTransitGatewayRouteReports() *schema.Resource {
 
 	return &schema.Resource{

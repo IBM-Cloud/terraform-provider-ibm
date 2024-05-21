@@ -15,13 +15,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
-const (
-	tgRouteReportId = "route_report_id"
-
-	isTransitGatewayRouteReportPending = "pending"
-	isTransitGatewayRouteReportDone    = "complete"
-)
-
 func ResourceIBMTransitGatewayRouteReport() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMTransitGatewayRouteReportCreate,

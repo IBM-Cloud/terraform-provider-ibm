@@ -5,12 +5,9 @@ package transitgateway
 
 import (
 	"fmt"
+
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-const (
-	tgPrefixFilterId = "filter_id"
 )
 
 func DataSourceIBMTransitGatewayConnectionPrefixFilter() *schema.Resource {
@@ -88,7 +85,7 @@ func dataSourceIBMTransitGatewayConnectionPrefixFilterRead(d *schema.ResourceDat
 	getTransitGatewayConnectionPrefixFilterOptionsModel.SetFilterID(filterId)
 	prefixFilter, response, err := client.GetTransitGatewayConnectionPrefixFilter(getTransitGatewayConnectionPrefixFilterOptionsModel)
 	if err != nil {
-		return fmt.Errorf("Error retrieving transit gateway connection prefix filter (%s): %s\n%s", filterId, err, response)
+		return fmt.Errorf("error retrieving transit gateway connection prefix filter (%s): %s\n%s", filterId, err, response)
 	}
 
 	d.SetId(*prefixFilter.ID)

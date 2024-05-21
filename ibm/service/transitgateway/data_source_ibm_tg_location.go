@@ -11,11 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	tgLocalConnectionLocations = "local_connection_locations"
-	tgLocationsDisplayName     = "display_name"
-)
-
 func DataSourceIBMTransitGatewaysLocation() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMTransitGatewaysLocationRead,

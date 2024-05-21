@@ -10,32 +10,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
 
-const (
-	tgGateways      = "transit_gateways"
-	tgResourceGroup = "resource_group"
-	tgID            = "id"
-	tgCrn           = "crn"
-	tgName          = "name"
-	tgLocation      = "location"
-	tgCreatedAt     = "created_at"
-	tgGlobal        = "global"
-	tgStatus        = "status"
-	tgUpdatedAt     = "updated_at"
-	tgGatewayTags   = "tags"
-
-	isTransitGatewayProvisioning     = "provisioning"
-	isTransitGatewayProvisioningDone = "done"
-	isTransitGatewayDeleting         = "deleting"
-	isTransitGatewayDeleted          = "done"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 func ResourceIBMTransitGateway() *schema.Resource {

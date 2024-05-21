@@ -5,10 +5,12 @@ package transitgateway_test
 
 import (
 	"fmt"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"testing"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctesticom/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMTransitGatewayConnectionPrefixFiltersDataSource_basic(t *testing.T) {
