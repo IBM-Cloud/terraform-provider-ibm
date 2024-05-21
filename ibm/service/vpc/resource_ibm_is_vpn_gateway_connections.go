@@ -1247,6 +1247,8 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error setting tunnels %s", err)
 				}
+			} else {
+				d.Set("tunnels", []map[string]interface{}{})
 			}
 		}
 	case "*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode":
@@ -1341,6 +1343,8 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error setting tunnels %s", err)
 				}
+			} else {
+				d.Set("tunnels", []map[string]interface{}{})
 			}
 		}
 	case "*vpcv1.VPNGatewayConnectionPolicyMode":
