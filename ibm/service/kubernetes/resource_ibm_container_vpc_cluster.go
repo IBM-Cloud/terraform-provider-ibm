@@ -35,6 +35,10 @@ const (
 	ingressReady       = "IngressReady"
 )
 
+const (
+	DisableOutboundTrafficProtectionFlag = "disable_outbound_traffic_protection"
+)
+
 func ResourceIBMContainerVpcCluster() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMContainerVpcClusterCreate,
@@ -340,12 +344,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 
-			"disable_outbound_traffic_protection": {
-				Type:             schema.TypeBool,
-				Optional:         true,
-				Default:          false,
-				Description:      "Allow outbound connections to public destinations",
-				DiffSuppressFunc: flex.ApplyOnce,
+			DisableOutboundTrafficProtectionFlag: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Allow outbound connections to public destinations",
 			},
 
 			//Get Cluster info Request
@@ -598,7 +601,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		workerpool.Labels = labels
 	}
 
-	disableOutboundTrafficProtection := d.Get("disable_outbound_traffic_protection").(bool)
+	disableOutboundTrafficProtection := d.Get(DisableOutboundTrafficProtectionFlag).(bool)
 
 	params := v2.ClusterCreateRequest{
 		DisablePublicServiceEndpoint:     disablePublicServiceEndpoint,
@@ -752,6 +755,23 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			return err
 		}
 
+	}
+
+	if d.HasChange(DisableOutboundTrafficProtectionFlag) {
+		outbound_traffic_protection := !d.Get(DisableOutboundTrafficProtectionFlag).(bool)
+		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+
+		Env, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+
+		if err := ClusterClient.VPCs().SetOutboundTrafficProtection(clusterID, outbound_traffic_protection, Env); err != nil {
+			return err
+		}
 	}
 
 	if (d.HasChange("kube_version") || d.HasChange("update_all_workers") || d.HasChange("patch_version") || d.HasChange("retry_patch_version")) && !d.IsNewResource() {

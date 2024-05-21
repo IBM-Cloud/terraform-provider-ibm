@@ -47,5 +47,5 @@ func testAccCheckIBMKmsKeyRingDataSourceConfig(instanceName, keyRing string) str
 	data "ibm_kms_key_rings" "test2" {
 		instance_id = "${ibm_kms_key_rings.test.instance_id}"
 	}
-`, instanceName, keyRing)
+`, addPrefixToResourceName(instanceName), keyRing)
 }
