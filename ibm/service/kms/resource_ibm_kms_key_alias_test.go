@@ -171,7 +171,7 @@ func testAccCheckIBMKmsResourceAliasConfig(instanceName, KeyName, aliasName stri
 		instance_id = ibm_kms_key_alias.testAlias.instance_id
 		alias = "${ibm_kms_key_alias.testAlias.alias}"
 	}
-`, instanceName, KeyName, aliasName)
+`, addPrefixToResourceName(instanceName), KeyName, aliasName)
 }
 
 func testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, KeyName, aliasName string) string {
@@ -205,7 +205,7 @@ func testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, KeyName, alias
 		key_id = "${ibm_kms_key.test2.key_id}"
 	}
 
-`, instanceName, KeyName, aliasName)
+`, addPrefixToResourceName(instanceName), KeyName, aliasName)
 }
 
 func testAccCheckIBMKmsResourceAliasTwo(instanceName, KeyName, aliasName, aliasName2 string) string {
@@ -233,7 +233,7 @@ func testAccCheckIBMKmsResourceAliasTwo(instanceName, KeyName, aliasName, aliasN
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
 
-`, instanceName, KeyName, aliasName, aliasName2)
+`, addPrefixToResourceName(instanceName), KeyName, aliasName, aliasName2)
 }
 
 func testAccCheckIBMKmsResourceAliasWithExistingAlias(instanceName, KeyName, aliasName, aliasName2 string) string {
@@ -261,7 +261,7 @@ func testAccCheckIBMKmsResourceAliasWithExistingAlias(instanceName, KeyName, ali
 		existing_alias = "${ibm_kms_key_alias.testAlias.alias}"
 	}
 
-`, instanceName, KeyName, aliasName, aliasName2)
+`, addPrefixToResourceName(instanceName), KeyName, aliasName, aliasName2)
 }
 
 func testAccCheckIBMKmsResourceAliasOne(instanceName, KeyName, aliasName string) string {
@@ -284,7 +284,7 @@ func testAccCheckIBMKmsResourceAliasOne(instanceName, KeyName, aliasName string)
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
 
-`, instanceName, KeyName, aliasName)
+`, addPrefixToResourceName(instanceName), KeyName, aliasName)
 }
 
 func testAccCheckIBMKmsResourceAliasLimitConfig(instanceName, KeyName, aliasName, aliasName2, aliasName3, aliasName4, aliasName5, aliasName6 string) string {
@@ -331,5 +331,5 @@ func testAccCheckIBMKmsResourceAliasLimitConfig(instanceName, KeyName, aliasName
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
-`, instanceName, KeyName, aliasName, aliasName2, aliasName3, aliasName4, aliasName5, aliasName6)
+`, addPrefixToResourceName(instanceName), KeyName, aliasName, aliasName2, aliasName3, aliasName4, aliasName5, aliasName6)
 }

@@ -551,7 +551,7 @@ func dataSourceIBMIsBareMetalServerProfilesRead(context context.Context, d *sche
 			memList = append(memList, m)
 			l[isBareMetalServerProfileMemory] = memList
 		}
-		l[isBareMetalServerProfileRT] = *profile.ResourceType
+		l[isBareMetalServerProfileRT] = profile.ResourceType
 		if profile.SupportedTrustedPlatformModuleModes != nil {
 			list := make([]map[string]interface{}, 0)
 			var stpmmlist []string
