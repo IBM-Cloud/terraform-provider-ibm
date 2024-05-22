@@ -1036,16 +1036,6 @@ func dataSourceVPNGatewayConnectionTunnelsToMap(tunnelsItem vpcv1.VPNGatewayConn
 	return tunnelsMap
 }
 
-func dataSourceVPNGatewayConnectionTunnelsPublicIPToMap(publicIPItem vpcv1.IP) (publicIPMap map[string]interface{}) {
-	publicIPMap = map[string]interface{}{}
-
-	if publicIPItem.Address != nil {
-		publicIPMap["address"] = publicIPItem.Address
-	}
-
-	return publicIPMap
-}
-
 // helper methods
 
 func dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionStatusReasonToMap(model *vpcv1.VPNGatewayConnectionStatusReason) (map[string]interface{}, error) {

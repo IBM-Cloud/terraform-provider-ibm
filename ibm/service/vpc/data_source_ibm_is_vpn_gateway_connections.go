@@ -110,6 +110,11 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 							Computed:    true,
 							Description: "The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.",
 						},
+						"routing_protocol": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Routing protocols for this VPN gateway connection.",
+						},
 						"local": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
@@ -374,7 +379,7 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 			gatewayconnection["routing_protocol"] = vpnGatewayConnection.RoutingProtocol
 
 			if vpnGatewayConnection.Tunnels != nil {
-				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels)
+				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionsFlattenTunnels(vpnGatewayConnection.Tunnels)
 			}
 		}
 	case "*vpcv1.VPNGatewayConnectionRouteMode":
@@ -434,7 +439,7 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 			gatewayconnection["routing_protocol"] = vpnGatewayConnection.RoutingProtocol
 
 			if vpnGatewayConnection.Tunnels != nil {
-				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels)
+				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionsFlattenTunnels(vpnGatewayConnection.Tunnels)
 			}
 		}
 	case "*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode":
@@ -494,7 +499,7 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 			gatewayconnection["routing_protocol"] = vpnGatewayConnection.RoutingProtocol
 
 			if vpnGatewayConnection.Tunnels != nil {
-				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionFlattenTunnels(vpnGatewayConnection.Tunnels)
+				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionsFlattenTunnels(vpnGatewayConnection.Tunnels)
 			}
 		}
 	case "*vpcv1.VPNGatewayConnectionPolicyMode":
@@ -684,4 +689,24 @@ func dataSourceIBMIsVPNGatewayConnectionsVPNGatewayConnectionStaticRouteModePeer
 	modelMap["type"] = model.Type
 	modelMap["fqdn"] = model.Fqdn
 	return modelMap, nil
+}
+func dataSourceVPNGatewayConnectionsFlattenTunnels(result []vpcv1.VPNGatewayConnectionStaticRouteModeTunnel) (tunnels []map[string]interface{}) {
+	for _, tunnelsItem := range result {
+		tunnels = append(tunnels, dataSourceVPNGatewayConnectionsTunnelsToMap(tunnelsItem))
+	}
+
+	return tunnels
+}
+
+func dataSourceVPNGatewayConnectionsTunnelsToMap(tunnelsItem vpcv1.VPNGatewayConnectionStaticRouteModeTunnel) (tunnelsMap map[string]interface{}) {
+	tunnelsMap = map[string]interface{}{}
+
+	if tunnelsItem.PublicIP != nil {
+		tunnelsMap["address"] = tunnelsItem.PublicIP.Address
+	}
+	if tunnelsItem.Status != nil {
+		tunnelsMap["status"] = tunnelsItem.Status
+	}
+
+	return tunnelsMap
 }
