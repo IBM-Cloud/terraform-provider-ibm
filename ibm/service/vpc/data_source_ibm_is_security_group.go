@@ -27,6 +27,7 @@ const (
 	isSgRulePortMin   = "port_min"
 	isSgRuleProtocol  = "protocol"
 	isSgVPC           = "vpc"
+	isSgVPCName       = "vpc_name"
 	isSgTags          = "tags"
 	isSgCRN           = "crn"
 )
@@ -46,9 +47,21 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 
 			isSecurityGroupVPC: {
 				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Security group's vpc id",
+			},
+			isSgVPCName: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Security group's vpc name",
+			},
+			isSecurityGroupResourceGroup: {
+				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Security group's resource group id",
-				ForceNew:    true,
 			},
 
 			isSgRules: {
@@ -182,14 +195,26 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 func dataSourceIBMISSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}) error {
 
 	sgName := d.Get(isSgName).(string)
-	err := securityGroupGet(d, meta, sgName)
+	vpcId := ""
+	vpcName := ""
+	rgId := ""
+	if vpcIdOk, ok := d.GetOk(isSgVPC); ok {
+		vpcId = vpcIdOk.(string)
+	}
+	if rgIdOk, ok := d.GetOk(isSecurityGroupResourceGroup); ok {
+		rgId = rgIdOk.(string)
+	}
+	if vpcNameOk, ok := d.GetOk(isSgVPCName); ok {
+		vpcName = vpcNameOk.(string)
+	}
+	err := securityGroupGet(d, meta, sgName, vpcId, vpcName, rgId)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) error {
+func securityGroupGet(d *schema.ResourceData, meta interface{}, name, vpcId, vpcName, rgId string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -199,8 +224,17 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 	start := ""
 	allrecs := []vpcv1.SecurityGroup{}
 
+	listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
+	if vpcId != "" {
+		listSgOptions.VPCID = &vpcId
+	}
+	if vpcName != "" {
+		listSgOptions.VPCName = &vpcName
+	}
+	if rgId != "" {
+		listSgOptions.ResourceGroupID = &rgId
+	}
 	for {
-		listSgOptions := &vpcv1.ListSecurityGroupsOptions{}
 		if start != "" {
 			listSgOptions.Start = &start
 		}
@@ -225,6 +259,8 @@ func securityGroupGet(d *schema.ResourceData, meta interface{}, name string) err
 
 			d.Set(isSgName, *group.Name)
 			d.Set(isSgVPC, *group.VPC.ID)
+			d.Set(isSgVPCName, group.VPC.Name)
+			d.Set(isSecurityGroupResourceGroup, group.ResourceGroup.ID)
 			d.Set(isSgCRN, *group.CRN)
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, *group.CRN, "", isUserTagType)
 			if err != nil {
