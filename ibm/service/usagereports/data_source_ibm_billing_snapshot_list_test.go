@@ -18,7 +18,7 @@ func TestAccIBMBillingSnapshotListDataSourceBasic(t *testing.T) {
 	date_from := acc.Snapshot_date_from
 	date_to := acc.Snapshot_date_to
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckUsage(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{

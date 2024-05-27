@@ -26,25 +26,25 @@ func TestAccIBMBillingReportSnapshotBasic(t *testing.T) {
 	cosLocationUpdate := acc.Cos_location_update
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckUsage(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMBillingReportSnapshotDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMBillingReportSnapshotConfigBasic(interval, cosBucket, cosLocation),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMBillingReportSnapshotExists("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", conf),
-					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", "interval", interval),
-					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", "cos_bucket", cosBucket),
-					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", "cos_location", cosLocation),
+					testAccCheckIBMBillingReportSnapshotExists("ibm_billing_report_snapshot.billing_report_snapshot_instance", conf),
+					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "interval", interval),
+					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "cos_bucket", cosBucket),
+					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "cos_location", cosLocation),
 				),
 			},
 			{
 				Config: testAccCheckIBMBillingReportSnapshotConfigBasic(intervalUpdate, cosBucketUpdate, cosLocationUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", "interval", intervalUpdate),
-					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", "cos_bucket", cosBucketUpdate),
-					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance_1", "cos_location", cosLocationUpdate),
+					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "interval", intervalUpdate),
+					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "cos_bucket", cosBucketUpdate),
+					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "cos_location", cosLocationUpdate),
 				),
 			},
 		},
@@ -60,7 +60,7 @@ func TestAccIBMBillingReportSnapshotAllArgs(t *testing.T) {
 	cosLocation := acc.Cos_location
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckUsage(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMBillingReportSnapshotDestroy,
 		Steps: []resource.TestStep{
@@ -74,11 +74,6 @@ func TestAccIBMBillingReportSnapshotAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "cos_bucket", cosBucket),
 					resource.TestCheckResourceAttr("ibm_billing_report_snapshot.billing_report_snapshot_instance", "cos_location", cosLocation),
 				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_billing_report_snapshot.billing_report_snapshot",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})

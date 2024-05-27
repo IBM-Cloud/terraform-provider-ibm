@@ -3561,11 +3561,7 @@ func RefreshToken(sess *bxsession.Session) error {
 func EnvFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
-			if strings.Contains(v, "https://") {
-				return v
-			} else {
-				return fmt.Sprintf("https://%s/v1", v)
-			}
+			return v
 		}
 	}
 	return defaultValue
