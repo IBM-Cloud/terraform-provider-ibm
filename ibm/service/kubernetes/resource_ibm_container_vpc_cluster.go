@@ -105,6 +105,12 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 							Optional:    true,
 							Description: "Account ID of KMS instance holder - if not provided, defaults to the account in use",
 						},
+						"wait_for_apply": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Forces terraform to wait till the changes take effect, not marking the cluster complete till",
+						},
 					},
 				},
 			},
@@ -720,6 +726,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		kmsConfig := v2.KmsEnableReq{}
 		kmsConfig.Cluster = clusterID
 		targetEnv := v2.ClusterHeader{}
+		var waitForApply bool
 		if kms, ok := d.GetOk("kms_config"); ok {
 			kmsConfiglist := kms.([]interface{})
 
@@ -745,16 +752,22 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 					accountid_string := accountid.(string)
 					kmsConfig.AccountID = accountid_string
 				}
+
+				if wait, ok := kmsMap["wait_for_apply"].(bool); ok {
+					waitForApply = wait
+				}
+			}
+
+			err := csClient.Kms().EnableKms(kmsConfig, targetEnv)
+			if err != nil {
+				log.Printf(
+					"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
+				return err
+			}
+			if waitForApply {
+				waitForVpcClusterMasterKMSApply(d, meta)
 			}
 		}
-
-		err := csClient.Kms().EnableKms(kmsConfig, targetEnv)
-		if err != nil {
-			log.Printf(
-				"An error occured during EnableKms (cluster: %s) error: %s", d.Id(), err)
-			return err
-		}
-
 	}
 
 	if d.HasChange(DisableOutboundTrafficProtectionFlag) {
@@ -1254,6 +1267,48 @@ func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) 
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
 		ContinuousTargetOccurence: 5,
+	}
+	return createStateConf.WaitForState()
+}
+
+func waitForVpcClusterMasterKMSApply(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	log.Printf("[DEBUG] Wait for KMS to apply to master")
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{ready},
+		Refresh: func() (interface{}, string, error) {
+			log.Printf("[DEBUG] Waiting for KMS to apply to master")
+			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
+
+			if err != nil || clusterInfoErr != nil {
+				return clusterInfo, deployInProgress, clusterInfoErr
+			}
+			if clusterInfo.Features.KeyProtectEnabled == false {
+				log.Printf("[DEBUG] KeyProtectEnabled still false")
+				return clusterInfo, deployInProgress, nil
+			}
+
+			if clusterInfo.Lifecycle.MasterStatus == ready &&
+				clusterInfo.Lifecycle.MasterState == masterDeployed {
+				log.Printf("[DEBUG] KMS applied to master")
+				return clusterInfo, ready, nil
+			}
+			return clusterInfo, deployInProgress, nil
+
+		},
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 1,
 	}
 	return createStateConf.WaitForState()
 }
