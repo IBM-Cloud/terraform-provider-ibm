@@ -259,6 +259,11 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 	setIfNotEmpty("metrics", instancePolicies)
 	setIfNotEmpty("key_create_import_access", instancePolicies)
 
+	if strings.Contains((kpAPI.URL).String(), "private") || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
+	}
 	return nil
 
 }
