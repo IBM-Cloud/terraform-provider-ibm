@@ -2904,7 +2904,7 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	if group.CPU.Allocation >= cpuEnforcementRatioCeilingTemp/cpuEnforcementRatioMb {
 		return nil
 	} else {
-		return fmt.Errorf("The current cpu alloaction of %d is not valid for your current configuration.", group.CPU.Allocation)
+		return fmt.Errorf("The current cpu allocation of %d is not valid for your current configuration.", group.CPU.Allocation)
 	}
 }
 
@@ -2913,7 +2913,7 @@ func appendSwitchoverWarning() diag.Diagnostics {
 
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models&interface=ui",
+		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models",
 	}
 
 	diags = append(diags, warning)
