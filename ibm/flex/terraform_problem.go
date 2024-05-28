@@ -66,11 +66,22 @@ func (e *TerraformProblem) GetDiag() diag.Diagnostics {
 	return diag.Errorf("%s", e.GetConsoleMessage())
 }
 
-// TerraformErrorf creates and returns a new instance
-// of `TerraformProblem` with "error" level severity.
+// TerraformErrorf creates and returns a new instance of `TerraformProblem`
+// with "error" level severity and a blank discriminator - the "caused by"
+// error is used to ensure uniqueness. This is a convenience function to
+// use when creating a new TerraformProblem instance from an error that
+// came from the SDK.
 func TerraformErrorf(err error, summary, resource, operation string) *TerraformProblem {
+	return DiscriminatedTerraformErrorf(err, summary, resource, operation, "")
+}
+
+// DiscriminatedTerraformErrorf creates and returns a new instance
+// of `TerraformProblem` with "error" level severity that contains
+// a discriminator used to make the instance unique relative to
+// other problem scenarios in the same resource/operation.
+func DiscriminatedTerraformErrorf(err error, summary, resource, operation, discriminator string) *TerraformProblem {
 	return &TerraformProblem{
-		IBMProblem: core.IBMErrorf(err, getComponentInfo(), summary, ""),
+		IBMProblem: core.IBMErrorf(err, getComponentInfo(), summary, discriminator),
 		Resource:   resource,
 		Operation:  operation,
 	}

@@ -185,6 +185,7 @@ Review the argument references that you can specify for your resource.
   - `instance_id` - (Optional, String) The GUID of the Key Protect instance.
   - `private_endpoint` - (Optional, Bool) Set **true** to configure the KMS private service endpoint. Default value is **false**.
   - `account_id` - (Optional, String) Account ID of KMS instance holder - if not provided, defaults to the account in use.
+  - `wait_for_apply` - (Optional, Bool) Set **true** to make terraform wait until KMS is applied to master and it is ready and deployed. Default value is **false**.
 - `host_pool_id` - (Optional, String) If provided, the cluster will be associated with a dedicated host pool identified by this ID.
 - `kube_version` - (Optional, String)  Specify the Kubernetes version, including the major.minor version. If you do not include this flag, the default version is used. To see available versions, run `ibmcloud ks versions`.
 - `operating_system` - (Optional, String) The operating system of the workers in the default worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
@@ -218,7 +219,7 @@ Review the argument references that you can specify for your resource.
 - `kms_instance_id` - (Optional, String) Instance ID for boot volume encryption.
 - `kms_account_id` - (Optional, String) Account ID for boot volume encryption, if other account is providing the kms.
 - `security_groups` - (Optional, List) Enables users to define specific security groups for their workers.
-- `disable_outbound_traffic_protection` - (Optional, Bool) Include this option to allow public outbound access from the cluster workers. By default, public outbound access is blocked in OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later.
+- `disable_outbound_traffic_protection` - (Optional, Bool) Include this option to allow public outbound access from the cluster workers. By default, public outbound access is blocked in OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later. This option is usable only from OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later.
 
 **Note**
 

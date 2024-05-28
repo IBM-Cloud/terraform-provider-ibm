@@ -209,7 +209,7 @@ func WithResourceKMSInstance(instanceName string) CreateResourceOption {
 			service           = "kms"
 			plan              = "tiered-pricing"
 			location          =  "us-south"
-		}`, instanceName)
+		}`, addPrefixToResourceName(instanceName))
 	}
 }
 
