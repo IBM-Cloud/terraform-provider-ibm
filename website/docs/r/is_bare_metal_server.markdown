@@ -98,6 +98,27 @@ resource "ibm_is_bare_metal_server" "bms" {
 
 ```
 
+### Create bare metal server with bandwidth
+```terraform
+resource "ibm_is_bare_metal_server" "bms" {
+  bandwidth = 200
+  profile = "mx2d-metal-32x192"
+  name    = "example-bms"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.example.id]
+  primary_network_attachment {
+    name = "test-vni-100-102"
+    virtual_network_interface { 
+      id = ibm_is_virtual_network_interface.testacc_vni.id
+    }
+    allowed_vlans = [100, 102]
+  }
+  vpc   = ibm_is_vpc.example.id
+}
+
+```
+
 ## Timeouts
 
 ibm_is_bare-metal_server provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
@@ -117,6 +138,7 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces. The specified value must match one of the bandwidth values in the bare metal server's profile.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
 - `image` - (Required, String) ID of the image.
