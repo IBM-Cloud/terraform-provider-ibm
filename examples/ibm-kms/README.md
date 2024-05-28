@@ -98,6 +98,7 @@ resource "ibm_cos_bucket" "flex-us-south" {
 ## Notes
 
 1. Before doing terraform destroy if force_delete flag is introduced after provisioning keys, a terraform apply must be done before terraform destroy for force_delete flag to take effect.
+2. KMIP adapters with active KMIP objects cannot be deleted by Terraform.
 
 ## Examples
 

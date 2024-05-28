@@ -53,6 +53,8 @@ const (
 	defaultWorkerPool = "default"
 	computeWorkerPool = "compute"
 	gatewayWorkerpool = "gateway"
+
+	masterDeployed = "deployed"
 )
 
 const PUBLIC_SUBNET_TYPE = "public"
