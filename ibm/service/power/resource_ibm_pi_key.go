@@ -57,7 +57,7 @@ func ResourceIBMPIKey() *schema.Resource {
 				Description: "Date of SSH Key creation.",
 				Type:        schema.TypeString,
 			},
-			Attr_KeyName: {
+			Attr_Name: {
 				Computed:    true,
 				Description: "User defined name for the SSH key.",
 				Type:        schema.TypeString,
@@ -121,7 +121,7 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// set attributes
-	d.Set(Attr_KeyName, sshkeydata.Name)
+	d.Set(Attr_Name, sshkeydata.Name)
 	d.Set(Attr_Key, sshkeydata.SSHKey)
 	d.Set(Attr_CreationDate, sshkeydata.CreationDate.String())
 

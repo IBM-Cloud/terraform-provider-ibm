@@ -169,7 +169,6 @@ const (
 	Attr_Key                                         = "key"
 	Attr_KeyCreationDate                             = "creation_date"
 	Attr_KeyID                                       = "key_id"
-	Attr_KeyName                                     = "name"
 	Attr_Keys                                        = "keys"
 	Attr_Language                                    = "language"
 	Attr_LastUpdateDate                              = "last_update_date"
