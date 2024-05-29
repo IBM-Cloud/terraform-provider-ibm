@@ -1818,9 +1818,8 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		}
 	}
 
-	fmt.Println(groupList.Groups[0].HostFlavor)
-	// TODO Lorna only seems to show up for existing instances
-	if groupList.Groups[0].HostFlavor == nil {
+	// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
+	if groupList.Groups[0].HostFlavor == nil && (groupList.Groups[0].CPU != nil && *groupList.Groups[0].CPU.AllocationCount == 0) {
 		return appendSwitchoverWarning()
 	} else {
 		return nil
@@ -2908,6 +2907,7 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	}
 }
 
+// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
 func appendSwitchoverWarning() diag.Diagnostics {
 	var diags diag.Diagnostics
 
