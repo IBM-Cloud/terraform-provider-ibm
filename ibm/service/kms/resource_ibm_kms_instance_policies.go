@@ -6,14 +6,14 @@ package kms
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
+	"time"
 )
 
 func ResourceIBMKmsInstancePolicy() *schema.Resource {
@@ -264,6 +264,7 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 	} else {
 		d.Set("endpoint_type", "public")
 	}
+
 	return nil
 
 }
