@@ -1821,9 +1821,10 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
 	if groupList.Groups[0].HostFlavor == nil && (groupList.Groups[0].CPU != nil && *groupList.Groups[0].CPU.AllocationCount == 0) {
 		return appendSwitchoverWarning()
-	} else {
-		return nil
 	}
+
+	return nil
+
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
