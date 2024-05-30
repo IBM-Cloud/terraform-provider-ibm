@@ -43,7 +43,7 @@ Nested schema for **definition**:
 		* `method` - (Optional, String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (Optional, String) The trusted profile ID.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		  * Constraints: The maximum length is `512` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `compliance_profile` - (Optional, List) The profile that is required for compliance.
 	Nested schema for **compliance_profile**:
 		* `attachment_id` - (Optional, String) A unique ID for the attachment to a compliance profile.
@@ -147,6 +147,8 @@ Nested schema for **approved_version**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `state` - (String) The state of the configuration.
 	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+	* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+	  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 	* `version` - (Integer) The version number of the configuration.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 * `deployed_version` - (List) A summary of a project configuration version.
@@ -161,6 +163,8 @@ Nested schema for **deployed_version**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `state` - (String) The state of the configuration.
 	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+	* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+	  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 	* `version` - (Integer) The version number of the configuration.
 * `deployment_model` - (String) The configuration type.
   * Constraints: Allowable values are: `project_deployed`, `user_deployed`, `stack`.
@@ -223,7 +227,7 @@ Nested schema for **project**:
 * `state` - (String) The state of the configuration.
   * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
 * `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
-  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`.
+  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 * `template_id` - (String) The stack definition identifier.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
