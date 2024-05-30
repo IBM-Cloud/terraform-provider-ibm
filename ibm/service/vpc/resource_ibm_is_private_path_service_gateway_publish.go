@@ -25,9 +25,9 @@ func ResourceIBMIsPrivatePathServiceGatewayPublish() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"private_path_service_gateway": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:    true,
 				Description: "The private path service gateway identifier.",
 			},
 		},
