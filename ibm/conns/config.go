@@ -88,7 +88,6 @@ import (
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
-	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
@@ -123,6 +122,7 @@ import (
 	"github.com/IBM/logs-go-sdk/logsv0"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv0"
 )
 
 // RetryAPIDelay - retry api delay
@@ -231,6 +231,7 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
+	BackupRecoveryV0() (*backuprecoveryv0.BackupRecoveryV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -546,8 +547,13 @@ type clientSession struct {
 	enterpriseManagementClientErr error
 
 	// Resource Controller Option
-	resourceControllerErr   error
-	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
+	resourceControllerErr error
+	resourceControllerAPI *resourcecontroller.ResourceControllerV2
+
+	// BAAS service
+	backupRecoveryClient    *backuprecoveryv0.BackupRecoveryV0
+	backupRecoveryClientErr error
+
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -1109,6 +1115,10 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
+func (session clientSession) BackupRecoveryV0() (*backuprecoveryv0.BackupRecoveryV0, error) {
+	return session.backupRecoveryClient, session.backupRecoveryClientErr
+}
+
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1286,6 +1296,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErrv2 = errEmptyBluemixCredentials
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
+		session.backupRecoveryClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
@@ -1366,20 +1377,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
-		err := RefreshToken(sess.BluemixSession)
-		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				time.Sleep(c.RetryDelay)
-				log.Printf("Retrying refresh token %d", count)
-				err = RefreshToken(sess.BluemixSession)
-			}
-			if err != nil {
-				return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
-			}
-		}
+		// err := RefreshToken(sess.BluemixSession)
+		// if err != nil {
+		// 	for count := c.RetryCount; count >= 0; count-- {
+		// 		if err == nil || !isRetryable(err) {
+		// 			break
+		// 		}
+		// 		time.Sleep(c.RetryDelay)
+		// 		log.Printf("Retrying refresh token %d", count)
+		// 		err = RefreshToken(sess.BluemixSession)
+		// 	}
+		// 	if err != nil {
+		// 		return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
+		// 	}
+		// }
 
 	}
 	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
@@ -1547,6 +1558,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct the service options.
+	backupRecoveryClientOptions := &backuprecoveryv0.BackupRecoveryV0Options{
+		Authenticator: authenticator,
+		URL:           "https://141.125.161.131/v2",
+	}
+	// Construct the service client.
+	session.backupRecoveryClient, err = backuprecoveryv0.NewBackupRecoveryV0(backupRecoveryClientOptions)
+	tr := &gohttp.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	session.backupRecoveryClient.Service.Client.Transport = tr
+	if err == nil {
+		// Enable retries for API calls
+		session.backupRecoveryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.backupRecoveryClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
 	}
 
 	projectEndpoint := project.DefaultServiceURL
@@ -3428,7 +3459,7 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
+	if c.IAMTrustedProfileID == "" && (c.IAMToken == "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
 	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
@@ -3439,8 +3470,8 @@ func newSession(c *Config) (*Session, error) {
 		log.Println("Configuring IBM Cloud Session with token")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
-			IAMAccessToken:  c.IAMToken,
-			IAMRefreshToken: c.IAMRefreshToken,
+			IAMAccessToken: c.IAMToken,
+			// IAMRefreshToken: c.IAMRefreshToken,
 			// Comment out debug mode for v0.12
 			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
@@ -3500,46 +3531,46 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 }
 
 func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
-	config := sess.Config
+	// config := sess.Config
 	user := UserConfig{}
-	var bluemixToken string
+	// var bluemixToken string
 
-	if strings.HasPrefix(config.IAMAccessToken, "Bearer") {
-		bluemixToken = config.IAMAccessToken[7:len(config.IAMAccessToken)]
-	} else {
-		bluemixToken = config.IAMAccessToken
-	}
+	// if strings.HasPrefix(config.IAMAccessToken, "Bearer") {
+	// 	bluemixToken = config.IAMAccessToken[7:len(config.IAMAccessToken)]
+	// } else {
+	// 	bluemixToken = config.IAMAccessToken
+	// }
 
-	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
-		return "", nil
-	})
-	// TODO validate with key
-	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
-		if retries > 0 {
-			if config.BluemixAPIKey != "" {
-				time.Sleep(retryDelay)
-				log.Printf("Retrying authentication for user details %d", retries)
-				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, retries-1, retryDelay)
-			}
-		}
-		return &user, err
-	}
-	claims := token.Claims.(jwt.MapClaims)
-	if email, ok := claims["email"]; ok {
-		user.UserEmail = email.(string)
-	}
-	user.UserID = claims["id"].(string)
-	user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)
-	iss := claims["iss"].(string)
-	if strings.Contains(iss, "https://iam.cloud.ibm.com") {
-		user.CloudName = "bluemix"
-	} else {
-		user.CloudName = "staging"
-	}
-	user.cloudType = "public"
+	// token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
+	// 	return "", nil
+	// })
+	// // TODO validate with key
+	// if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
+	// 	if retries > 0 {
+	// 		if config.BluemixAPIKey != "" {
+	// 			time.Sleep(retryDelay)
+	// 			log.Printf("Retrying authentication for user details %d", retries)
+	// 			_ = authenticateAPIKey(sess)
+	// 			return fetchUserDetails(sess, retries-1, retryDelay)
+	// 		}
+	// 	}
+	// 	return &user, err
+	// }
+	// claims := token.Claims.(jwt.MapClaims)
+	// if email, ok := claims["email"]; ok {
+	// 	user.UserEmail = email.(string)
+	// }
+	// user.UserID = claims["id"].(string)
+	// user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)
+	// iss := claims["iss"].(string)
+	// if strings.Contains(iss, "https://iam.cloud.ibm.com") {
+	// 	user.CloudName = "bluemix"
+	// } else {
+	// 	user.CloudName = "staging"
+	// }
+	// user.cloudType = "public"
 
-	user.generation = 2
+	// user.generation = 2
 	return &user, nil
 }
 
