@@ -1410,11 +1410,12 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 				}
 				peer = append(peer, modelMap)
 			}
-			tunnels := []map[string]interface{}{}
-			d.Set("tunnels", tunnels)
 			if err = d.Set("peer", peer); err != nil {
 				return fmt.Errorf("[ERROR] Error setting peer %s", err)
 			}
+			tunnels := []map[string]interface{}{}
+			d.Set("tunnels", tunnels)
+
 			// Deprecated
 			if vpnGatewayConnection.Peer != nil {
 				peer := vpnGatewayConnection.Peer.(*vpcv1.VPNGatewayConnectionPolicyModePeer)
@@ -1453,5 +1454,6 @@ func setvpnGatewayConnectionIntfResource(d *schema.ResourceData, vpn_gateway_id 
 
 		}
 	}
+
 	return nil
 }

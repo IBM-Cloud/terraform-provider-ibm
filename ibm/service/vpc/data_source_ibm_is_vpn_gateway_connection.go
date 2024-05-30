@@ -1170,6 +1170,9 @@ func dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionPolicyModePeerToMap(
 		if model.Fqdn != nil {
 			modelMap["fqdn"] = model.Fqdn
 		}
+		if model.CIDRs != nil {
+			modelMap["cidrs"] = model.CIDRs
+		}
 		return modelMap, nil
 	} else {
 		return nil, fmt.Errorf("Unrecognized vpcv1.VPNGatewayConnectionPolicyModePeerIntf subtype encountered")
@@ -1196,6 +1199,9 @@ func dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionPolicyModePeerVPNGat
 	modelMap["ike_identity"] = []map[string]interface{}{ikeIdentityMap}
 	modelMap["type"] = model.Type
 	modelMap["address"] = model.Address
+	if model.CIDRs != nil {
+		modelMap["cidrs"] = model.CIDRs
+	}
 	return modelMap, nil
 }
 func dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdnToMap(model *vpcv1.VPNGatewayConnectionStaticRouteModePeerVPNGatewayConnectionPeerByFqdn) (map[string]interface{}, error) {
@@ -1218,6 +1224,9 @@ func dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionPolicyModePeerVPNGat
 	modelMap["ike_identity"] = []map[string]interface{}{ikeIdentityMap}
 	modelMap["type"] = model.Type
 	modelMap["fqdn"] = model.Fqdn
+	if model.CIDRs != nil {
+		modelMap["cidrs"] = model.CIDRs
+	}
 	return modelMap, nil
 }
 
