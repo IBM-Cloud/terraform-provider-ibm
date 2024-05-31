@@ -31,7 +31,7 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "8"),
 					resource.TestCheckResourceAttrSet("ibm_resource_key.resourceKey", "credentials_json"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Reader"),
 				),
@@ -114,9 +114,38 @@ func TestAccIBMResourceKey_WithCustomRole(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "8"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", displayName),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMResourceKeyWithRoleNone(t *testing.T) {
+	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMResourceKeyRoleNone(resourceName, resourceKey),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
+					resource.TestCheckResourceAttrSet("ibm_resource_key.resourceKey", "credentials_json"),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "NONE"),
+				),
+			},
+			{
+				ResourceName:      "ibm_resource_key.resourceKey",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"resource_instance_id", "resource_alias_id", "role"},
 			},
 		},
 	})
@@ -270,6 +299,23 @@ func testAccCheckIBMResourceKeyParameters(resourceName, resourceKey string) stri
 			resource_instance_id = ibm_resource_instance.resource.id
 			parameters        = {"HMAC" = true}
 			role = "Manager"
+		}
+	`, resourceName, resourceKey)
+}
+
+func testAccCheckIBMResourceKeyRoleNone(resourceName, resourceKey string) string {
+	return fmt.Sprintf(`
+		
+		resource "ibm_resource_instance" "resource" {
+			name              = "%s"
+			service           = "cloud-object-storage"
+			plan              = "standard"
+			location          = "global"
+		}
+		resource "ibm_resource_key" "resourceKey" {
+			name = "%s"
+			resource_instance_id = ibm_resource_instance.resource.id
+			role = "NONE"
 		}
 	`, resourceName, resourceKey)
 }
