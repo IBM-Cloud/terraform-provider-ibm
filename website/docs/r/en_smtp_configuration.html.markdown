@@ -22,7 +22,9 @@ resource "ibm_en_smtp_configuration" "en_smtp_configuration_instance" {
 }
 ```
 
-**NOTE** `verification_type` is SMTP Configuration update parameter which can be used to verify the status of verfication depending on the type of verification.
+**NOTE:**
+- To perform the verification for spf, dkim and en_authorization please follow the instructions here: https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-smtp-configurations#en-smtp-configurations-verify
+- `verification_type` is SMTP Configuration update parameter which can be used to verify the status of verfication depending on the type of verification.
 
 ## Argument Reference
 
@@ -47,10 +49,10 @@ After your resource is created, you can read values from the listed arguments an
 Nested schema for **config**:
 	* `dkim` - (List) The DKIM attributes.
 	Nested schema for **dkim**:
-		* `public_key` - (String) dkim public key.
-		  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
-		* `selector` - (String) dkim selector.
+		* `txt_name` - (String) DMIM text name.
 		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+		* `txt_value` - (String) DMIM text value.
+		  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
 		* `verification` - (String) dkim verification.
 		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
 	* `en_authorization` - (List) The en_authorization attributes.
@@ -83,5 +85,5 @@ The `id` property can be formed from `instance_id`, and `en_smtp_configuration_i
 
 # Syntax
 <pre>
-$ terraform import ibm_en_smtp_configuration.en_smtp_configuration &lt;instance_id&gt;/&lt;en_smtp_configuration_id&gt;
+$ terraform import ibm_en_smtp_configuration.en_smtp_configuration <instance_id>/<en_smtp_configuration_id>
 </pre>

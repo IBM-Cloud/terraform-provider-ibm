@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.90.1-64fd3296-20240515-180710
+ */
+
 package project_test
 
 import (

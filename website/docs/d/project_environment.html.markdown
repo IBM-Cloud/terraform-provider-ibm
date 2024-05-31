@@ -43,7 +43,7 @@ Nested schema for **definition**:
 		* `method` - (String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (String) The trusted profile ID.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		  * Constraints: The maximum length is `512` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `compliance_profile` - (List) The profile that is required for compliance.
 	Nested schema for **compliance_profile**:
 		* `attachment_id` - (String) A unique ID for the attachment to a compliance profile.

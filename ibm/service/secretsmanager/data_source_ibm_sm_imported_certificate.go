@@ -120,14 +120,6 @@ func DataSourceIbmSmImportedCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "The identifier for the cryptographic algorithm that was used by the issuing certificate authority to sign a certificate.",
 			},
-			"alt_names": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"common_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,

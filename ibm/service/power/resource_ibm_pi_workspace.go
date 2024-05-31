@@ -6,12 +6,14 @@ import (
 	"log"
 	"time"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIBMPIWorkspace() *schema.Resource {
@@ -27,30 +29,38 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			PIWorkspaceName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "A descriptive name used to identify the workspace.",
+			// Arguments
+			Arg_Datacenter: {
+				Description:  "Target location or environment to create the resource instance.",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
-			PIWorkspaceDatacenter: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Target location or environment to create the resource instance.",
+			Arg_Name: {
+				Description:  "A descriptive name used to identify the workspace.",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
-			PIWorkspaceResourceGroup: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ID of the resource group where you want to create the workspace. You can retrieve the value from data source ibm_resource_group.",
+			Arg_Plan: {
+				Default:      Public,
+				Description:  "Plan associated with the offering; Valid values are public or private.",
+				ForceNew:     true,
+				Optional:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{Private, Public}),
 			},
-			PIWorkspacePlan: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Plan associated with the offering; Valid values are public or private.",
+			Arg_ResourceGroupID: {
+				Description:  "The ID of the resource group where you want to create the workspace. You can retrieve the value from data source ibm_resource_group.",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
+
+			// Attributes
 			Attr_WorkspaceDetails: {
 				Computed:    true,
 				Description: "Workspace information.",
@@ -66,13 +76,13 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	name := d.Get(PIWorkspaceName).(string)
-	datacenter := d.Get(PIWorkspaceDatacenter).(string)
-	resourceGroup := d.Get(PIWorkspaceResourceGroup).(string)
-	plan := d.Get(PIWorkspacePlan).(string)
+	name := d.Get(Arg_Name).(string)
+	datacenter := d.Get(Arg_Datacenter).(string)
+	resourceGroup := d.Get(Arg_ResourceGroupID).(string)
+	plan := d.Get(Arg_Plan).(string)
 
 	// No need for cloudInstanceID because we are creating a workspace
-	client := st.NewIBMPIWorkspacesClient(ctx, sess, "")
+	client := instance.NewIBMPIWorkspacesClient(ctx, sess, "")
 	controller, _, err := client.Create(name, datacenter, resourceGroup, plan)
 	if err != nil {
 		log.Printf("[DEBUG] create workspace failed %v", err)
@@ -88,10 +98,10 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
 
-func waitForResourceInstanceCreate(ctx context.Context, client *st.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"in progress", "inactive", "provisioning"},
-		Target:     []string{"active"},
+func waitForResourceInstanceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_InProgress, State_Inactive, State_Provisioning},
+		Target:     []string{State_Active},
 		Refresh:    isIBMPIWorkspaceCreateRefreshFunc(client, id),
 		Delay:      10 * time.Second,
 		MinTimeout: 1 * time.Minute,
@@ -100,13 +110,13 @@ func waitForResourceInstanceCreate(ctx context.Context, client *st.IBMPIWorkspac
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIWorkspaceCreateRefreshFunc(client *st.IBMPIWorkspacesClient, id string) resource.StateRefreshFunc {
+func isIBMPIWorkspaceCreateRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		controller, _, err := client.GetRC(id)
 		if err != nil {
 			return nil, "", err
 		}
-		if *controller.State == "failed" {
+		if *controller.State == State_Failed {
 			return controller, *controller.State, fmt.Errorf("[ERROR] The resource instance %s failed to create", id)
 		}
 		return controller, *controller.State, nil
@@ -121,12 +131,12 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	cloudInstanceID := d.Id()
-	client := st.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 	controller, _, err := client.GetRC(cloudInstanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set(PIWorkspaceName, controller.Name)
+	d.Set(Arg_Name, controller.Name)
 	wsDetails := map[string]interface{}{
 		Attr_CreationDate: controller.CreatedAt,
 		Attr_CRN:          controller.TargetCRN,
@@ -144,7 +154,7 @@ func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	cloudInstanceID := d.Id()
-	client := st.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 	response, err := client.Delete(cloudInstanceID)
 	if err != nil && response != nil && response.StatusCode == 410 {
 		return nil
@@ -158,10 +168,10 @@ func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func waitForResourceInstanceDelete(ctx context.Context, client *st.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"in progress", "inactive", "active"},
-		Target:     []string{"removed", "pending_reclamation"},
+func waitForResourceInstanceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_InProgress, State_Inactive, State_Active},
+		Target:     []string{State_Removed, State_PendingReclamation},
 		Refresh:    isIBMPIResourceDeleteRefreshFunc(client, id),
 		Delay:      10 * time.Second,
 		MinTimeout: 1 * time.Second,
@@ -170,19 +180,19 @@ func waitForResourceInstanceDelete(ctx context.Context, client *st.IBMPIWorkspac
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIResourceDeleteRefreshFunc(client *st.IBMPIWorkspacesClient, id string) resource.StateRefreshFunc {
+func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		controller, response, err := client.GetRC(id)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return controller, "active", nil
+				return controller, State_Active, nil
 			}
 			return nil, "", err
 		}
 		if controller == nil {
-			return controller, "removed", nil
+			return controller, State_Removed, nil
 		} else {
-			if *controller.State == "failed" {
+			if *controller.State == State_Failed {
 				return controller, *controller.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete", id)
 			}
 			return controller, *controller.State, nil
