@@ -12,6 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
@@ -62,8 +65,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Provider returns a *schema.Provider.
@@ -1297,6 +1298,7 @@ func Provider() *schema.Provider {
 			"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionAction(),
 			"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilter(),
 			"ibm_tg_route_report":             transitgateway.ResourceIBMTransitGatewayRouteReport(),
+			"ibm_tg_connection_rgre_tunnel":   transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnel(),
 
 			// Catalog related resources
 			"ibm_cm_offering_instance": catalogmanagement.ResourceIBMCmOfferingInstance(),
@@ -1718,6 +1720,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cos_bucket":                               cos.ResourceIBMCOSBucketValidator(),
 				"ibm_cr_namespace":                             registry.ResourceIBMCrNamespaceValidator(),
 				"ibm_tg_gateway":                               transitgateway.ResourceIBMTGValidator(),
+				"ibm_tg_connection_rgre_tunnel":                transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
 				"ibm_app_config_feature":                       appconfiguration.ResourceIBMAppConfigFeatureValidator(),
 				"ibm_tg_connection":                            transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
 				"ibm_tg_connection_action":                     transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),

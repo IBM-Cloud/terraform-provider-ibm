@@ -5,12 +5,9 @@ package transitgateway
 
 import (
 	"fmt"
+
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-const (
-	tgRouteReport = "route_report"
 )
 
 func DataSourceIBMTransitGatewayRouteReport() *schema.Resource {

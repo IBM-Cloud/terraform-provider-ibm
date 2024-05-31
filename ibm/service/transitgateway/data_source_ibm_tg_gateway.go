@@ -14,13 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
-const (
-	tgConnName        = "name"
-	tgConnections     = "connections"
-	ID                = "id"
-	tgBaseNetworkType = "base_network_type"
-)
-
 func DataSourceIBMTransitGateway() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMTransitGatewayRead,
@@ -138,6 +131,80 @@ func DataSourceIBMTransitGateway() *schema.Resource {
 						tgUpdatedAt: {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+						tgrGREtunnels: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									tgconTunnelName: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user-defined name for this tunnel connection.",
+									},
+									tgLocalGatewayIp: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The local gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+									tgLocalTunnelIp: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+									tgRemoteGatewayIp: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The remote gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+									tgRemoteTunnelIp: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The remote tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+									tgZone: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Location of GRE tunnel. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+									tgCreatedAt: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The date and time that this connection was created",
+									},
+									tgUpdatedAt: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The date and time that this connection was last updated",
+									},
+									tgGreTunnelStatus: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "What is the current configuration state of this connection. Possible values: [attached,failed,pending,deleting,detaching,detached]",
+									},
+									tgGreTunnelId: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The Transit Gateway Connection identifier",
+									},
+									tgMtu: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Only visible for cross account connections, this field represents the status of the request to connect the given network between accounts.Possible values: [pending,approved,rejected,expired,detached]",
+									},
+									tgLocalBgpAsn: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The local network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+									tgRemoteBgpAsn: {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The remote network BGP ASN. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -285,8 +352,72 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 				tgConn[tgConnectionStatus] = *instance.Status
 			}
 
-			connections = append(connections, tgConn)
+			if instance.Tunnels != nil {
+				// read the tunnels
+				rGREtunnels := make([]map[string]interface{}, 0)
+				for _, rGREtunnel := range instance.Tunnels {
 
+					fmt.Println("sushaaa", rGREtunnel)
+					tunnel := map[string]interface{}{}
+					if rGREtunnel.ID != nil {
+						fmt.Println("sushaaa1", *rGREtunnel.ID)
+						tunnel[tgGreTunnelId] = *rGREtunnel.ID
+					}
+					if rGREtunnel.LocalGatewayIp != nil {
+						fmt.Println("sushaaa1", *rGREtunnel.LocalGatewayIp)
+						tunnel[tgLocalGatewayIp] = *rGREtunnel.LocalGatewayIp
+					}
+					if rGREtunnel.LocalTunnelIp != nil {
+						fmt.Println("sushaaa2", *rGREtunnel.LocalGatewayIp)
+						tunnel[tgLocalTunnelIp] = *rGREtunnel.LocalTunnelIp
+					}
+					if rGREtunnel.RemoteGatewayIp != nil {
+						fmt.Println("sushaaa3", *rGREtunnel.RemoteGatewayIp)
+						tunnel[tgRemoteGatewayIp] = *rGREtunnel.RemoteGatewayIp
+					}
+					if rGREtunnel.RemoteTunnelIp != nil {
+						fmt.Println("sushaaa4", *rGREtunnel.RemoteTunnelIp)
+						tunnel[tgRemoteTunnelIp] = *rGREtunnel.RemoteTunnelIp
+					}
+					if rGREtunnel.Mtu != nil {
+						fmt.Println("sushaaa4", *rGREtunnel.Mtu)
+						tunnel[tgMtu] = *rGREtunnel.Mtu
+					}
+					if rGREtunnel.RemoteBgpAsn != nil {
+						fmt.Println("sushaaa4RemoteBgpAsn", *rGREtunnel.RemoteBgpAsn)
+						tunnel[tgRemoteBgpAsn] = *rGREtunnel.RemoteBgpAsn
+					}
+					if rGREtunnel.Name != nil {
+						fmt.Println("sushaaa5", *rGREtunnel.Name)
+						tunnel[tgconTunnelName] = *rGREtunnel.Name
+					}
+					if rGREtunnel.Zone.Name != nil {
+						fmt.Println("sushaaa6", *rGREtunnel.Zone.Name)
+						tunnel[tgZone] = *rGREtunnel.Zone.Name
+					}
+					if rGREtunnel.LocalBgpAsn != nil {
+						fmt.Println("sushaaa7", *rGREtunnel.LocalBgpAsn)
+						tunnel[tgLocalBgpAsn] = *rGREtunnel.LocalBgpAsn
+					}
+					if rGREtunnel.Status != nil {
+						fmt.Println("sushaaa8", *rGREtunnel.Status)
+						tunnel[tgGreTunnelStatus] = *rGREtunnel.Status
+					}
+					if rGREtunnel.CreatedAt != nil {
+						fmt.Println("sushaaa10", *rGREtunnel.CreatedAt)
+						tunnel[tgCreatedAt] = rGREtunnel.CreatedAt.String()
+					}
+					if rGREtunnel.UpdatedAt != nil {
+						fmt.Println("sushaaa11", *rGREtunnel.UpdatedAt)
+						tunnel[tgUpdatedAt] = rGREtunnel.UpdatedAt.String()
+					}
+					rGREtunnels = append(rGREtunnels, tunnel)
+				}
+				if len(rGREtunnels) > 0 {
+					tgConn[tgrGREtunnels] = rGREtunnels
+				}
+			}
+			connections = append(connections, tgConn)
 		}
 		startSub = flex.GetNext(listTGConnections.Next)
 		if startSub == "" {

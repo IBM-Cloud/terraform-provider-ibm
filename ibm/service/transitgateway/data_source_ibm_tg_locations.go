@@ -11,13 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	tgLocations           = "locations"
-	tgLocationsName       = "name"
-	tgLocationsBillingLoc = "billing_location"
-	tgLocationsType       = "type"
-)
-
 func DataSourceIBMTransitGatewaysLocations() *schema.Resource {
 
 	return &schema.Resource{
