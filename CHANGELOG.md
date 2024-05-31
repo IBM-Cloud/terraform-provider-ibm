@@ -1,5 +1,105 @@
 
-# 1.66.0 (May 18, 2024)
+
+# 1.66.0 (May 31, 2024)
+
+Features
+* Support Cloud Logs
+    - **Datasources**
+        - ibm_logs_alert
+        - ibm_logs_alerts
+        - ibm_logs_rule_group
+        - ibm_logs_rule_groups
+        - ibm_logs_policy
+        - ibm_logs_policies
+        - ibm_logs_dashboard
+        - ibm_logs_e2m
+        - ibm_logs_e2ms
+        - ibm_logs_outgoing_webhook
+        - ibm_logs_outgoing_webhooks
+        - ibm_logs_view_folder
+        - ibm_logs_view_folders
+        - ibm_logs_view
+        - ibm_logs_views      
+    - **Resources**
+        - ibm_logs_alert
+        - ibm_logs_rule_group
+        - ibm_logs_policy
+        - ibm_logs_dashboard
+        - ibm_logs_e2m
+        - ibm_logs_outgoing_webhook
+        - ibm_logs_view_folder
+        - ibm_logs_view
+* Support Event Notification
+    - **Datasources**
+        - ibm_en_smtp_configuration
+        - ibm_en_smtp_configurations
+        - ibm_en_smtp_user
+        - ibm_en_smtp_users
+        - ibm_en_slack_template
+    - **Resources**
+        - ibm_en_smtp_configuration
+        - ibm_en_smtp_user
+        - ibm_en_slack_template
+        - ibm_en_smtp_setting
+* Support CIS
+     - **Datasources**
+        - ibm_cis_rulesets
+        - ibm_cis_ruleset_versions
+        - ibm_cis_ruleset_rules_by_tag
+        - ibm_cis_ruleset_entrypoint_versions
+     - **Resources**
+        - ibm_cis_ruleset
+        - ibm_cis_ruleset_version_detach
+        - ibm_cis_ruleset_rule
+        - ibm_cis_ruleset_entrypoint_version
+* Support KMS
+     - **Datasources**
+        - ibm_kms_kmip_adapter
+        - ibm_kms_kmip_adapters
+        - ibm_kms_kmip_client_cert
+        - ibm_kms_kmip_client_certs
+        - ibm_kms_kmip_object
+        - ibm_kms_kmip_objects
+     - **Resources**
+        - ibm_kms_kmip_adapter
+        - ibm_kms_kmip_client_cert
+* Support IAM
+    - **Resources**
+        - ibm_iam_policy_assignment
+
+
+Enhancements
+* Add empty validation for console languages ([5336](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5336))
+* Lower timeout for placement-group add/delete to 10 minutes ([5335](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5335))
+* align Projects terraform provider to latest API spec ([5293](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5293))
+* feat(Catalog Management): support plan_id on offering instances ([5337](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5337))
+* remove workerpool related fields from vpc cluster Read ([5287](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5287))
+* Add Fault Attribute to Pi_Instance ([5344](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5344))
+* Support outbound-traffic-protection ([5268](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5268))
+* scc fix: ability to add profile_version during create ([5332](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5332))
+* update documentation with instructions to provide public access to bucket ([1268](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1268))
+* Docfix: name change Activity Tracker to Activity Tracker Event Routing ([5312](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5312))
+* wait for kms apply for cluster provisioning ([5383](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5383))
+* ContinuousTargetOccurence updates ([5393](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5393))
+* Restrict to old multitenant ([5395](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5395))
+* Update Usage Reports terraform code to support new error handling ([5365](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5365))
+* regenerate code for projects ([5375](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5375))
+* ICD: Add switchover warning for Old Multitenant ([5395](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5395))
+* Add support for role 'NONE' ([5400](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5400))
+
+BugFixes
+* Fix snapshot markdown ([5331](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5331))
+* Resource ibm_scc_rule creation issue ([5327](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5327))
+* Enterprise: Added IAM attributes for reference in enterprise markdown ([5334](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5334))
+* fix(security-group-rule): Wrong error message when remote value wrong ([5348](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5348))
+* updating docs for SCC profile attachment notifications ([5357](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5357))
+* updated the docs for vpc security group rule ([5360](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5360))
+* description property of cis_filter and cis_firewall_rule bugged ([5378](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5378))
+* SM imported cert bug fix ([5392](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5392))
+* fix(tg): fixed global change issue ([5366](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5366))
+* fix instance policies to set endpoint type when api url specifies so ([5394](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5394))
+
+# 1.66.0-beta0 (May 18, 2024)
 
 Features
 * Support Cloud Logs
