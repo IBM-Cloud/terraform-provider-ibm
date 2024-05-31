@@ -516,14 +516,18 @@ Review the argument references that you can specify for your resource.
   - `auto_delete_volume` - (Optional, String) If set to **true**, when deleting the instance the volume will also be deleted
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
-  - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.
+  - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.)
 
     ~> **NOTE:**
     Supports only expansion on update (must be attached to a running instance and must not be less than the current volume size)
-  - `snapshot` - (Optional, Forces new resource, String) The snapshot id or crn of the volume to be used for creating boot volume attachment
+  - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the snapshot to be used for creating boot volume attachment
     
     ~> **Note:**
-    `snapshot` conflicts with `image` id, `instance_template` , `catalog_offering` and `boot_volume.volume_id`
+    `snapshot` conflicts with `image` id, `instance_template` , `catalog_offering`, `boot_volume.volume_id` and `snapshot_crn`
+  - `snapshot_crn` - (Optional, Forces new resource, String) The crn of the snapshot to be used for creating boot volume attachment
+    
+    ~> **Note:**
+    `snapshot` conflicts with `image` id, `instance_template` , `catalog_offering`, `boot_volume.volume_id` and `snapshot`
   - `volume_id` - (Optional, Forces new resource, String) The ID of the volume to be used for creating boot volume attachment
     ~> **Note:** 
 

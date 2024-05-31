@@ -193,7 +193,12 @@ Review the argument references that you can specify for your resource.
         **&#x2022;** Tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other.</br>
         **&#x2022;** Can be updated only if volume is attached to an running virtual server instance.</br>
         **&#x2022;** Stopped instances will be started on update of volume.</br>
-- `snapshot` - (Optional, String) The unique identifier or CRN for this snapshot from which to clone the new volume. 
+- `snapshot` - (Optional, String) The unique identifier for this snapshot from which to clone the new volume. 
+
+  ~> **NOTE**
+        **&#x2022;** one of `capacity` or `snapshot` must be present for volume creation.</br>
+        **&#x2022;** If `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_capacity` is taken as the volume capacity.</br>
+- `snapshot_crn` - (Optional, String) The CRN for this snapshot from which to clone the new volume. 
 
   ~> **NOTE**
         **&#x2022;** one of `capacity` or `snapshot` must be present for volume creation.</br>
