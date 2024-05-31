@@ -53,6 +53,7 @@ const (
 	Arg_SSHKey                              = "pi_ssh_key"
 	Arg_StoragePool                         = "pi_storage_pool"
 	Arg_StorageType                         = "pi_storage_type"
+	Arg_VolumeGroupAction                   = "pi_volume_group_action"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
 	Arg_VolumeID                            = "pi_volume_id"
 	Arg_VolumeIDs                           = "pi_volume_ids"
@@ -65,6 +66,7 @@ const (
 	Arg_VTL                                 = "vtl"
 
 	// Attributes
+	Attr_Access                                      = "access"
 	Attr_AccessConfig                                = "access_config"
 	Attr_Action                                      = "action"
 	Attr_Addresses                                   = "addresses"
@@ -239,6 +241,7 @@ const (
 	Attr_ReplicationStatus                           = "replication_status"
 	Attr_ReplicationType                             = "replication_type"
 	Attr_ReservedCores                               = "reserved_cores"
+	Attr_Reset                                       = "reset"
 	Attr_ResultsOnboardedVolumes                     = "results_onboarded_volumes"
 	Attr_ResultsVolumeOnboardingFailures             = "results_volume_onboarding_failures"
 	Attr_ServerName                                  = "server_name"
@@ -266,6 +269,7 @@ const (
 	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
 	Attr_Size                                        = "size"
 	Attr_SnapshotID                                  = "snapshot_id"
+	Attr_Source                                      = "source"
 	Attr_SourceVolumeName                            = "source_volume_name"
 	Attr_Speed                                       = "speed"
 	Attr_SPPPlacementGroupID                         = "spp_placement_group_id"
@@ -274,11 +278,13 @@ const (
 	Attr_SPPPlacementGroupPolicy                     = "policy"
 	Attr_SPPPlacementGroups                          = "spp_placement_groups"
 	Attr_SSHKey                                      = "ssh_key"
+	Attr_Start                                       = "start"
 	Attr_StartTime                                   = "start_time"
 	Attr_State                                       = "state"
 	Attr_Status                                      = "status"
 	Attr_StatusDescriptionErrors                     = "status_description_errors"
 	Attr_StatusDetail                                = "status_detail"
+	Attr_Stop                                        = "stop"
 	Attr_StoragePool                                 = "storage_pool"
 	Attr_StoragePoolAffinity                         = "storage_pool_affinity"
 	Attr_StoragePoolsCapacity                        = "storage_pools_capacity"
@@ -309,6 +315,7 @@ const (
 	Attr_VLanID                                      = "vlan_id"
 	Attr_VolumeGroupName                             = "volume_group_name"
 	Attr_VolumeGroups                                = "volume_groups"
+	Attr_VolumeGroupStatus                           = "volume_group_status"
 	Attr_VolumeID                                    = "volume_id"
 	Attr_VolumeIDs                                   = "volume_ids"
 	Attr_VolumePool                                  = "volume_pool"
@@ -328,9 +335,11 @@ const (
 	Attr_WWN                                         = "wwn"
 	OS_IBMI                                          = "ibmi"
 
-	// Affinty Values
+	// Allowed Values
 	Affinity     = "affinity"
 	AntiAffinity = "anti-affinity"
+	Aux          = "aux"
+	Master       = "master"
 	Private      = "private"
 	Public       = "public"
 
@@ -420,8 +429,6 @@ const (
 	// IBM PI Volume Group
 	PIVolumeGroupName                 = "pi_volume_group_name"
 	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
-	PIVolumeGroupID                   = "pi_volume_group_id"
-	PIVolumeGroupAction               = "pi_volume_group_action"
 	PIVolumeOnboardingID              = "pi_volume_onboarding_id"
 
 	// Disaster Recovery Location
