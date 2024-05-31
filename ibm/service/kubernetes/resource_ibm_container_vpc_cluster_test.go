@@ -812,6 +812,7 @@ func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
 			instance_id = "%[1]s"
 			crk_id = "%[2]s"
 			account_id = "%[3]s"
+			wait_for_apply = "true"
 		}
 	`, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
 	}
@@ -826,7 +827,7 @@ func testAccCheckIBMContainerVpcClusterBaseEnvvar(name string) string {
 			subnet_id = "%[4]s"
 			name      = "us-south-1"
 		}
-		wait_till = "normal"
+		wait_till = "IngressReady"
 		%[5]s
 	}
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, kmsConfig)
