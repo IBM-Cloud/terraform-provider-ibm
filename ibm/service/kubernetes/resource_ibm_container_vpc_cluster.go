@@ -1196,7 +1196,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 	return createStateConf.WaitForState()
 }
@@ -1232,7 +1232,7 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 	return createStateConf.WaitForState()
 }
@@ -1266,7 +1266,7 @@ func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) 
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 	return createStateConf.WaitForState()
 }
@@ -1342,7 +1342,7 @@ func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{})
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 	return createStateConf.WaitForState()
 }
@@ -1397,7 +1397,7 @@ func WaitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, ta
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 
 	return stateConf.WaitForState()
@@ -1435,7 +1435,7 @@ func WaitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 
 	return stateConf.WaitForState()
