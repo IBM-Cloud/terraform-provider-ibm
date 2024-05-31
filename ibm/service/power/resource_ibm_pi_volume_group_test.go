@@ -10,7 +10,7 @@ import (
 	"log"
 	"testing"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -67,7 +67,7 @@ func testAccCheckIBMPIVolumeGroupDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		vgC := st.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
+		vgC := instance.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
 		vg, err := vgC.Get(vgID)
 		if err == nil {
 			log.Println("volume-group*****", vg.Status)
@@ -98,7 +98,7 @@ func testAccCheckIBMPIVolumeGroupExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		client := st.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(vgID)
 		if err != nil {
