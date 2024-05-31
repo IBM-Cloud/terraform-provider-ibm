@@ -274,7 +274,7 @@ func testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, vo
 	resource "ibm_is_snapshot" "testacc_snapshot" {
 		name 			= "%s"
 		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
-}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname)
+	}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname)
 
 }
 func testAccCheckIBMISSnapshotEncryptedConfig(vpcname, subnetname, sshname, publicKey, volname, name, sname string) string {

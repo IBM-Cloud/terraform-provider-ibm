@@ -40,6 +40,7 @@ const (
 	isVolumeProvisioningDone      = "done"
 	isVolumeResourceGroup         = "resource_group"
 	isVolumeSourceSnapshot        = "source_snapshot"
+	isVolumeSourceSnapshotCrn     = "source_snapshot_crn"
 	isVolumeDeleteAllSnapshots    = "delete_all_snapshots"
 	isVolumeBandwidth             = "bandwidth"
 	isVolumeAccessTags            = "access_tags"
@@ -127,11 +128,21 @@ func ResourceIBMISVolume() *schema.Resource {
 				Description:  "Volume capacity value",
 			},
 			isVolumeSourceSnapshot: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The unique identifier for this snapshot",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ConflictsWith: []string{isVolumeSourceSnapshotCrn},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_volume", isVolumeSourceSnapshot),
+				Description:   "The unique identifier for this snapshot",
+			},
+			isVolumeSourceSnapshotCrn: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Computed:      true,
+				ConflictsWith: []string{isVolumeSourceSnapshot},
+				Description:   "The crn for this snapshot",
 			},
 			isVolumeResourceGroup: {
 				Type:        schema.TypeString,
@@ -338,7 +349,15 @@ func ResourceIBMISVolumeValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isVolumeSourceSnapshot,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[-0-9a-z_]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             64})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "tags",
@@ -419,13 +438,6 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	var volCapacity int64
 	if sourceSnapsht, ok := d.GetOk(isVolumeSourceSnapshot); ok {
 		sourceSnapshot := sourceSnapsht.(string)
-		isCRN, sourceSnapshotId, err := ValidateCRN(sourceSnapshot)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error invalid CRN: %q", err)
-		}
-		if isCRN {
-			sourceSnapshot = sourceSnapshotId
-		}
 		snapshotIdentity := &vpcv1.SnapshotIdentity{
 			ID: &sourceSnapshot,
 		}
@@ -449,8 +461,33 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 			}
 			volTemplate.Capacity = &volCapacity
 		}
-	} else {
+	} else if sourceSnapshtCrn, ok := d.GetOk(isVolumeSourceSnapshot); ok {
+		sourceSnapshot := sourceSnapshtCrn.(string)
 
+		snapshotIdentity := &vpcv1.SnapshotIdentity{
+			CRN: &sourceSnapshot,
+		}
+		volTemplate.SourceSnapshot = snapshotIdentity
+		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
+			ID: &sourceSnapshot,
+		}
+		snapshot, response, err := sess.GetSnapshot(getSnapshotOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error fetching snapshot %s\n%s", err, response)
+		}
+		if (response != nil && response.StatusCode == 404) || snapshot == nil {
+			return fmt.Errorf("[ERROR] No snapshot found with id %s", sourceSnapshot)
+		}
+		minimumCapacity := *snapshot.MinimumCapacity
+		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
+			if int64(capacity.(int)) > minimumCapacity {
+				volCapacity = int64(capacity.(int))
+			} else {
+				volCapacity = minimumCapacity
+			}
+			volTemplate.Capacity = &volCapacity
+		}
+	} else {
 		if capacity, ok := d.GetOk(isVolumeCapacity); ok {
 			if int64(capacity.(int)) > 0 {
 				volCapacity = int64(capacity.(int))
@@ -562,6 +599,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isVolumeCrn, *vol.CRN)
 	if vol.SourceSnapshot != nil {
 		d.Set(isVolumeSourceSnapshot, *vol.SourceSnapshot.ID)
+		d.Set(isVolumeSourceSnapshotCrn, *vol.SourceSnapshot.CRN)
 	}
 	d.Set(isVolumeStatus, *vol.Status)
 	if vol.HealthState != nil {
