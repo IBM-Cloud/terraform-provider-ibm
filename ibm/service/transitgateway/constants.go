@@ -88,6 +88,7 @@ const (
 	tgLe                                      = "le"
 	tgPrefix                                  = "prefix"
 	tgPrefixFilterId                          = "filter_id"
+	tgDefaultPrefixFilter                     = "default_prefix_filter"
 )
 
 func NewInt64Pointer(v int64) *int64 {

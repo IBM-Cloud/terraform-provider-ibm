@@ -240,6 +240,13 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 					},
 				},
 			},
+			tgDefaultPrefixFilter: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tg_connection_prefix_filter", tgAction),
+				Description:  "Whether to permit or deny the prefix filter",
+			},
 		},
 	}
 }
@@ -327,6 +334,10 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		zoneName := d.Get(tgZone).(string)
 		zoneIdentity.Name = &zoneName
 		createTransitGatewayConnectionOptions.SetZone(zoneIdentity)
+	}
+	if _, ok := d.GetOk(tgDefaultPrefixFilter); ok {
+		default_prefix_filter := d.Get(tgDefaultPrefixFilter).(string)
+		createTransitGatewayConnectionOptions.SetPrefixFiltersDefault(default_prefix_filter)
 	}
 
 	// set the tunnels
@@ -495,6 +506,9 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.RequestStatus != nil {
 		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
+	if instance.PrefixFiltersDefault != nil {
+		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
+	}
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
@@ -608,6 +622,12 @@ func resourceIBMTransitGatewayConnectionUpdate(d *schema.ResourceData, meta inte
 		if d.Get(tgName) != nil {
 			name := d.Get(tgName).(string)
 			updateTransitGatewayConnectionOptions.Name = &name
+		}
+	}
+	if d.HasChange(tgDefaultPrefixFilter) {
+		if d.Get(tgDefaultPrefixFilter) != nil {
+			prefixFilter := d.Get(tgDefaultPrefixFilter).(string)
+			updateTransitGatewayConnectionOptions.PrefixFiltersDefault = &prefixFilter
 		}
 	}
 
