@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package satellite
@@ -32,10 +32,17 @@ func DataSourceIBMSatelliteLocation() *schema.Resource {
 				Computed:    true,
 				Description: "The IBM Cloud metro from which the Satellite location is managed",
 			},
-			"address": {
+			"physical_address": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The address parameter is an optional parameter where the physical address of -the user?- can be assigned.",
+				Description: "An optional physical address of the new Satellite location which is deployed on premise",
+			},
+			"capabilities": {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The satellite capabilities attached to the location",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -172,6 +179,8 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 
 	var instance *kubernetesserviceapiv1.MultishiftGetController
 	var response *core.DetailedResponse
+	// TO-DO: resource.Retry, resource.RetryError, resource.RetryableError and resource.NonRetryableError
+	// seem to be deprecated. This shall be replaced.
 	err = resource.Retry(1*time.Minute, func() *resource.RetryError {
 		instance, response, err = satClient.GetSatelliteLocation(getSatLocOptions)
 		if err != nil || instance == nil {
@@ -192,8 +201,13 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 
 	d.SetId(*instance.ID)
 	d.Set("location", location)
-	d.Set("address", *instance.Address)
 	d.Set("description", *instance.Description)
+	if instance.PhysicalAddress != nil {
+		d.Set("physical_address", *instance.PhysicalAddress)
+	}
+	if instance.Capabilities != nil {
+		d.Set("capabilities", *instance.Capabilities)
+	}
 	if instance.CoreosEnabled != nil {
 		d.Set("coreos_enabled", *instance.CoreosEnabled)
 	}
