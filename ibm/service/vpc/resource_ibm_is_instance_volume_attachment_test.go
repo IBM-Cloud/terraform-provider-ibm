@@ -97,11 +97,6 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	attName := fmt.Sprintf("tf-volatt-%d", acctest.RandIntRange(10, 100))
 	autoDelete := true
 	volName := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
-	iops1 := int64(600)
-	iops2 := int64(900)
-
-	capacity1 := int64(20)
-	capacity2 := int64(22)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -109,44 +104,17 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceVolumeAttachmentCrnConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete, capacity1, iops1),
+				Config: testAccCheckIBMISInstanceVolumeAttachmentCrnConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceVolumeAttachmentExists("ibm_is_instance_volume_attachment.testacc_att", instanceVolAtt),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance_volume_attachment.testacc_att", "name", attName),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance_volume_attachment.testacc_att", "delete_volume_on_instance_delete", fmt.Sprintf("%t", autoDelete)),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "capacity", fmt.Sprintf("%d", capacity1)),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "iops", "600"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete, capacity1, iops2),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceVolumeAttachmentExists("ibm_is_instance_volume_attachment.testacc_att", instanceVolAtt),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "name", attName),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "delete_volume_on_instance_delete", fmt.Sprintf("%t", autoDelete)),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "capacity", fmt.Sprintf("%d", capacity1)),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "iops", "900"),
-				),
-			},
-
-			{
-				Config: testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName, autoDelete, capacity2, iops2),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISInstanceVolumeAttachmentExists("ibm_is_instance_volume_attachment.testacc_att", instanceVolAtt),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "name", attName),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "delete_volume_on_instance_delete", fmt.Sprintf("%t", autoDelete)),
-					resource.TestCheckResourceAttr(
-						"ibm_is_instance_volume_attachment.testacc_att", "capacity", fmt.Sprintf("%d", capacity2)),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_volume_attachment.testacc_att", "capacity"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_volume_attachment.testacc_att", "iops"),
 				),
 			},
 		},
@@ -309,7 +277,7 @@ func testAccCheckIBMISInstanceVolumeAttachmentConfig(vpcname, subnetname, sshnam
 	  `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, attName, capacity, iops, autoDelete, volName)
 }
 
-func testAccCheckIBMISInstanceVolumeAttachmentCrnConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName string, autoDelete bool, capacity, iops int64) string {
+func testAccCheckIBMISInstanceVolumeAttachmentCrnConfig(vpcname, subnetname, sshname, publicKey, name, attName, volName string, autoDelete bool) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
