@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package satellite
@@ -94,10 +94,17 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 				},
 				Description: "The IBM Cloud metro from which the Satellite location is managed",
 			},
-			"address": {
+			"physical_address": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The address parameter is an optional parameter where the physical address of -the user?- can be assigned.",
+				Description: "An optional physical address of the new Satellite location which is deployed on premise",
+			},
+			"capabilities": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "The satellite capabilities attached to the location",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -235,6 +242,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 
 // TO-DO: If validation for Address and Capabilities have to be added here? How has it been done in modules other
 // than Satellite - for e.g. AccessGroup?
+// TODO Add validation for PhysicalAddress and Capabilities(on-prem)
 func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -245,7 +253,25 @@ func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
-			MaxValueLength:             128})
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "physical_address",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             0,
+			MaxValueLength:             400,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "capabilities",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "on-prem,",
+		},
+	)
 
 	ibmSatelliteLocationValidator := validate.ResourceValidator{ResourceName: "ibm_satellite_location", Schema: validateSchema}
 	return &ibmSatelliteLocationValidator
@@ -280,9 +306,14 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 		createSatLocOptions.LoggingAccountID = &logAccID
 	}
 
-	if v, ok := d.GetOk("address"); ok {
+	if v, ok := d.GetOk("physical_address"); ok {
 		addr := v.(string)
-		createSatLocOptions.Address = &addr
+		createSatLocOptions.PhysicalAddress = &addr
+	}
+
+	if v, ok := d.GetOk("capabilities"); ok {
+		z := v.(*schema.Set)
+		createSatLocOptions.Capabilities = flex.FlattenStringList(z)
 	}
 
 	if v, ok := d.GetOk("description"); ok {
@@ -362,6 +393,14 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 	d.Set(satLocation, *instance.Name)
 	if instance.Description != nil {
 		d.Set("description", *instance.Description)
+	}
+
+	if instance.PhysicalAddress != nil {
+		d.Set("physical_address", *instance.PhysicalAddress)
+	}
+
+	if instance.Capabilities != nil {
+		d.Set("capabilities", *instance.Capabilities)
 	}
 
 	if instance.CoreosEnabled != nil {
