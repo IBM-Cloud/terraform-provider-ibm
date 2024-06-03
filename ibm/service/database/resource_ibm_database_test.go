@@ -212,3 +212,20 @@ func TestAppendSwitchoverWarning(t *testing.T) {
 		t.Errorf("expected summary %v, got %v", warningNote, diags[0].Summary)
 	}
 }
+
+func TestPublicServiceEndpointsWarning(t *testing.T) {
+	diags := publicServiceEndpointsWarning()
+	warningNote := "Note: You are currently using a public endpoint."
+
+	if len(diags) != 1 {
+		t.Fatalf("expected 1 diagnostic, got %d", len(diags))
+	}
+
+	if diags[0].Severity != diag.Warning {
+		t.Errorf("expected severity %v, got %v", diag.Warning, diags[0].Severity)
+	}
+
+	if diags[0].Summary != warningNote {
+		t.Errorf("expected summary %v, got %v", warningNote, diags[0].Summary)
+	}
+}
