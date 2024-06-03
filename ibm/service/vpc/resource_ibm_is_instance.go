@@ -3812,6 +3812,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	zone := d.Get(isInstanceZone).(string)
 	image := d.Get(isInstanceImage).(string)
 	snapshot := d.Get("boot_volume.0.snapshot").(string)
+	snapshotcrn := d.Get("boot_volume.0.snapshot_crn").(string)
 	volume := d.Get("boot_volume.0.volume_id").(string)
 	template := d.Get(isInstanceSourceTemplate).(string)
 	if catalogOfferingOk, ok := d.GetOk(isInstanceCatalogOffering); ok {
@@ -3828,7 +3829,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if err != nil {
 			return err
 		}
-	} else if snapshot != "" {
+	} else if snapshot != "" || snapshotcrn != "" {
 		err := instanceCreateBySnapshot(d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
