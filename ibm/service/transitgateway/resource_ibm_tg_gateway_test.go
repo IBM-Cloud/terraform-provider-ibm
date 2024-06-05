@@ -47,6 +47,49 @@ func TestAccIBMTransitGateway_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMTransitGateway_globalUpdate(t *testing.T) {
+	var instance string
+	gatewayname := fmt.Sprintf("tg-gateway-name-%d", acctest.RandIntRange(10, 100))
+	newgatewayname := fmt.Sprintf("newgateway-name-%d", acctest.RandIntRange(10, 100))
+	location := "us-south"
+	globalTrue := true
+	globalFalse := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMTransitGatewayDestroy, // Delete test case
+		Steps: []resource.TestStep{
+			{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayGlobalUpdateConfig(gatewayname, location, globalTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", gatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "location", location),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", fmt.Sprintf("%t", globalTrue)),
+				),
+			},
+			{
+				//Update test case
+				Config: testAccCheckIBMTransitGatewayGlobalUpdateConfig(newgatewayname, location, globalFalse),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", newgatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", fmt.Sprintf("%t", globalFalse)),
+				),
+			},
+			{
+				//Update test case
+				Config: testAccCheckIBMTransitGatewayGlobalUpdateConfig(newgatewayname, location, globalTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayExists("ibm_tg_gateway.test_tg_gateway", instance),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "name", newgatewayname),
+					resource.TestCheckResourceAttr("ibm_tg_gateway.test_tg_gateway", "global", fmt.Sprintf("%t", globalTrue)),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMTransitGatewayConfig(gatewayname, location string) string {
 	return fmt.Sprintf(`
@@ -57,6 +100,16 @@ func testAccCheckIBMTransitGatewayConfig(gatewayname, location string) string {
 		global=true
 		}
 	  `, gatewayname, location)
+}
+func testAccCheckIBMTransitGatewayGlobalUpdateConfig(gatewayname, location string, global bool) string {
+	return fmt.Sprintf(`
+	  
+	resource "ibm_tg_gateway" "test_tg_gateway"{
+		name="%s"
+		location="%s"
+		global=%t
+		}
+	  `, gatewayname, location, global)
 }
 
 func testAccCheckIBMTransitGatewayExists(n string, instance string) resource.TestCheckFunc {
