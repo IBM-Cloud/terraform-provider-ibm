@@ -251,7 +251,25 @@ resource "ibm_cos_bucket" "objectversioning" {
   }
 }
 
+### Give public access to a bucket
+
+data "ibm_iam_access_group" "public_access_group" {
+  access_group_name = "Public Access"  # public access group name
+}
+
+resource "ibm_iam_access_group_policy" "public-access-policy" {
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id
+  roles           = ["Content Reader"]  # ["Content Reader", "Object Reader"]
+  resources {
+    resource             = ibm_cos_bucket.cos_bucket.bucket_name
+    resource_instance_id = ibm_resource_instance.cos_instance.guid
+    resource_type        = "bucket"
+    service              = "cloud-object-storage"
+  }
+}
+ 
 ```
+For more information on access group policies, please refer to [this link](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/iam_access_group_policy)
 
 # cos satellite bucket
 
