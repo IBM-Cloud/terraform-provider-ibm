@@ -20,13 +20,11 @@ resource "ibm_tg_gateway" "new_tg_gw" {
   global         = true
   resource_group = "30951d2dff914dafb26455a88c0c0092"
 }
-
 data "ibm_tg_gateway" "ds_tggateway" {
   name = ibm_tg_gateway.new_tg_gw.name
 }
 ```
 ---
-
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
