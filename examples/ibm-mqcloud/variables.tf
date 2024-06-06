@@ -25,9 +25,9 @@ variable "mqcloud_queue_manager_location" {
   default     = "reserved-eu-de-cluster-f884"
 }
 variable "mqcloud_queue_manager_size" {
-  description = "The queue manager sizes of deployment available. Deployment of lite queue managers for aws_us_east_1 and aws_eu_west_1 locations is not available."
+  description = "The queue manager sizes of deployment available."
   type        = string
-  default     = "lite"
+  default     = "xsmall"
 }
 variable "mqcloud_queue_manager_version" {
   description = "The MQ version of the queue manager."
@@ -56,12 +56,12 @@ variable "mqcloud_user_service_instance_guid" {
 variable "mqcloud_user_name" {
   description = "The shortname of the user that will be used as the IBM MQ administrator in interactions with a queue manager for this service instance."
   type        = string
-  default     = "t0scie98o57a"
+  default     = "testuser"
 }
 variable "mqcloud_user_email" {
   description = "The email of the user."
   type        = string
-  default     = "user@example.com"
+  default     = "testuser@ibm.com"
 }
 
 // Resource arguments for mqcloud_keystore_certificate
@@ -78,7 +78,7 @@ variable "mqcloud_keystore_certificate_queue_manager_id" {
 variable "mqcloud_keystore_certificate_label" {
   description = "The label to use for the certificate to be uploaded."
   type        = string
-  default     = "label"
+  default     = "certlabel"
 }
 variable "mqcloud_keystore_certificate_certificate_file" {
   description = "The filename and path of the certificate to be uploaded."
@@ -100,12 +100,19 @@ variable "mqcloud_truststore_certificate_queue_manager_id" {
 variable "mqcloud_truststore_certificate_label" {
   description = "The label to use for the certificate to be uploaded."
   type        = string
-  default     = "label"
+  default     = "certlabel"
 }
 variable "mqcloud_truststore_certificate_certificate_file" {
   description = "The filename and path of the certificate to be uploaded."
   type        = string
   default     = "SGVsbG8gd29ybGQ="
+}
+
+// Data source arguments for mqcloud_queue_manager_options
+variable "mqcloud_queue_manager_options_service_instance_guid" {
+  description = "The GUID that uniquely identifies the MQ on Cloud service instance."
+  type        = string
+  default     = "Service Instance ID"
 }
 
 // Data source arguments for mqcloud_queue_manager

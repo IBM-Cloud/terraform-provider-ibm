@@ -44,6 +44,15 @@ resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_in
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
+// Create mqcloud_queue_manager_options data source
+data "ibm_mqcloud_queue_manager_options" "mqcloud_queue_manager_options_instance" {
+  service_instance_guid = var.mqcloud_queue_manager_options_service_instance_guid
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
 // Create mqcloud_queue_manager data source
 data "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
   service_instance_guid = var.data_mqcloud_queue_manager_service_instance_guid

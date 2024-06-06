@@ -780,6 +780,7 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// MQ on Cloud
+			"ibm_mqcloud_queue_manager_options":  mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
 			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
 			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
 			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),

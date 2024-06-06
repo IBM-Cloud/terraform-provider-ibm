@@ -10,6 +10,8 @@ subcategory: "MQ on Cloud"
 
 Provides a read-only data source to retrieve information about a mqcloud_truststore_certificate. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl
@@ -37,7 +39,6 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the mqcloud_truststore_certificate.
 * `total_count` - (Integer) The total count of trust store certificates.
-
 * `trust_store` - (List) The list of trust store certificates.
   * Constraints: The maximum length is `50` items. The minimum length is `0` items.
 Nested schema for **trust_store**:

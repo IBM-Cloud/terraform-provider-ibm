@@ -10,12 +10,14 @@ subcategory: "MQ on Cloud"
 
 Create, update, and delete mqcloud_keystore_certificates with this resource.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl
 resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instance" {
   certificate_file = filebase64("certificate_file.data")
-  label = "label"
+  label = "certlabel"
   queue_manager_id = var.queue_manager_id
   service_instance_guid = var.service_instance_guid
 }
@@ -43,6 +45,15 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9a-fA-F]*$/`.
 * `certificate_type` - (String) The type of certificate.
   * Constraints: Allowable values are: `key_store`.
+* `config` - (List) The configuration details for this certificate.
+Nested schema for **config**:
+	* `ams` - (List) A list of channels that are configured with this certificate.
+	Nested schema for **ams**:
+		* `channels` - (List) A list of channels that are configured with this certificate.
+		  * Constraints: The maximum length is `999999999` items. The minimum length is `0` items.
+		Nested schema for **channels**:
+			* `name` - (String) The name of the channel.
+			  * Constraints: The maximum length is `20` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_.\/%]*$/`.
 * `dns_names` - (List) The list of DNS names.
   * Constraints: The maximum length is `200` items. The minimum length is `0` items.
 * `dns_names_total_count` - (Integer) The total count of dns names.
