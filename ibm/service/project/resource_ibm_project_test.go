@@ -17,7 +17,7 @@ import (
 
 func TestAccIbmProjectBasic(t *testing.T) {
 	var conf projectv1.Project
-	location := fmt.Sprintf("us-south")
+	location := "us-south"
 	resourceGroup := fmt.Sprintf("Default")
 
 	resource.Test(t, resource.TestCase{

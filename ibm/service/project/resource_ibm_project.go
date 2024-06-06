@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.90.1-64fd3296-20240515-180710
+ * IBM OpenAPI Terraform Generator Version: 3.91.0-d9755c53-20240605-153412
  */
 
 package project
@@ -435,12 +435,10 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^$|^(us-south|us-east|eu-gb|eu-de)$`,
-			MinValueLength:             0,
-			MaxValueLength:             12,
+			AllowedValues:              "ca-tor, eu-de, eu-gb, us-east, us-south",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "resource_group",
