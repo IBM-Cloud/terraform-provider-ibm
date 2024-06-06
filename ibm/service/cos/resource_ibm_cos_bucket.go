@@ -1095,12 +1095,13 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		serviceID = bucketsatcrn
 	}
 
-	var apiEndpoint, apiEndpointPrivate, directApiEndpoint string
+	var apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint string
 
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpoint = apiEndpointPublic
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
@@ -1184,7 +1185,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
 	d.Set("bucket_name", bucketName)
-	d.Set("s3_endpoint_public", apiEndpoint)
+	d.Set("s3_endpoint_public", apiEndpointPublic)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
 	d.Set("s3_endpoint_direct", directApiEndpoint)
 	if endpointType != "" {
