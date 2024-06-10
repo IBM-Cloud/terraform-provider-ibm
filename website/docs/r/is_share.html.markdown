@@ -97,11 +97,33 @@ resource "ibm_is_share" "example-4" {
   replication_cron_spec = "0 */5 * * *"
 }
 ```
+
+## Example share (Create with origin share)
+```terraform
+resource "ibm_is_share" "example-4" {
+  access_control_mode = "security_group"
+  name    = "my-share"
+  size    = 200
+  profile = "dp2"
+  zone    = "au-syd-2"
+}
+resource "ibm_is_share" "example-5" {
+  allowed_transit_encryption_modes = []
+  zone                  = "au-syd-2"
+  origin_share {
+    crn = ibm_is_share.example-4.crn
+  }     
+  name                  = "my-replica1"
+  profile               = "dp2"
+  replication_cron_spec = "0 */5 * * *"
+}
+```
 ## Argument Reference
 
 The following arguments are supported:
 
 - `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **security_group**
+- `allowed_transit_encryption_modes` - (Optional, List of string) The transit encryption modes allowed for this share.
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 - `initial_owner` - (Optional, List) The initial owner for the file share.
@@ -145,6 +167,10 @@ The following arguments are supported:
   ~> **Note**
     `virtual_network_interface` and `vpc` are mutually exclusive and one of them must be provided.
 - `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `origin_share` - (Optional, List) The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.
+  Nested schema for **origin_share**:
+	- `crn` - (Optional, String) The CRN for this file share.
+	- `id` - (Optional, String) The unique identifier for this file share.
 - `profile` - (Required, string) The globally unique name for this share profile.
 
   ~> **NOTE** 
@@ -243,6 +269,26 @@ Nested `latest_sync` blocks have the following structure:
     - `resource_type` - (String) Resource type of this virtual network interface.
     - `security_groups`- (List of string) The security groups to use for this virtual network interface.
     - `subnet` - (string) The associated subnet.
+- `origin_share` - (Optional, List) The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.
+Nested schema for **origin_share**:
+	- `crn` - (Computed, String) The CRN for this file share.
+	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	Nested schema for **deleted**:
+		- `more_info` - (Computed, String) Link to documentation about deleted resources.
+	- `href` - (Computed, String) The URL for this file share.
+	- `id` - (Computed, String) The unique identifier for this file share.
+	- `name` - (Computed, String) The name for this share. The name is unique across all shares in the region.
+	- `remote` - (Optional, List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
+	Nested schema for **remote**:
+		- `account` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisaccount, and identifies the owning account.
+		Nested schema for **account**:
+			- `id` - (Computed, String) The unique identifier for this account.
+			- `resource_type` - (Computed, String) The resource type.
+		- `region` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisregion, and identifies the native region.
+		Nested schema for **region**:
+			- `href` - (Computed, String) The URL for this region.
+			- `name` - (Computed, String) The globally unique name for this region.
+	- `resource_type` - (Computed, String) The resource type.
 - `resource_type` - (String) The type of resource referenced.
 - `replica_share` - (List) Configuration for a replica file share to create and associate with this file share.
   - `crn` - (String) CRN of replica share
