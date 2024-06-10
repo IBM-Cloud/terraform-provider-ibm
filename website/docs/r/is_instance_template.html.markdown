@@ -218,6 +218,7 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `catalog_offering`:
     - `offering_crn` - (Optional, Force new resource, String) The CRN for this catalog offering. Identifies a catalog offering by this unique property. Conflicts with `catalog_offering.0.version_crn`
     - `version_crn` - (Optional, Force new resource, String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property. Conflicts with `catalog_offering.0.offering_crn`
+    - `plan_crn` - (Optional, String) The CRN for this catalog offering version's billing plan. If unspecified, no billing plan will be used (free). Must be specified for catalog offering versions that require a billing plan to be used.
    
 - `dedicated_host` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
@@ -372,6 +373,12 @@ In addition to all arguments listed, you can access the following attribute refe
 
 - `crn` - (String) The CRN for this instance template.
 - `id` - (String) The ID of an instance template.
+- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
+
+  Nested scheme for `catalog_offering`:
+    - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
+    - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+	- `plan_crn` - (String) The CRN for this catalog offering version's billing plan
 - `placement_target` - (List) The placement restrictions to use for the virtual server instance.
   Nested scheme for `placement_target`:
     - `crn` - (String) The unique identifier for this placement target.

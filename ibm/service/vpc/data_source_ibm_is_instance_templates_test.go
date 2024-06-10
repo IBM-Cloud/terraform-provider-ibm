@@ -91,6 +91,8 @@ func TestAccIBMISInstanceTemplates_dataCatalog(t *testing.T) {
 						"data.ibm_is_instance_templates.instance_templates_data", "templates.0.catalog_offering.#"),
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_instance_templates.instance_templates_data", "templates.0.catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_instance_templates.instance_templates_data", "templates.0.catalog_offering.0.plan_crn"),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_instance_templates.instance_templates_data", "templates.0.image", ""),
 				),
