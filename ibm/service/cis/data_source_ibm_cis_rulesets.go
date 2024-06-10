@@ -46,7 +46,7 @@ const (
 	CISRulesetOverridesSensitivityLevel                = "sensitivity_level"
 	CISRulesetOverridesCategories                      = "categories"
 	CISRulesetOverridesCategoriesCategory              = "category"
-	CISRulesetOverridesRules                           = "rules"
+	CISRulesetOverridesRules                           = "override_rules"
 	CISRulesetsRuleActionCategories                    = "categories"
 	CISRulesetsRuleActionEnabled                       = "enabled"
 	CISRulesetsRuleActionDescription                   = "description"
@@ -54,6 +54,7 @@ const (
 	CISRulesetsRulePositionAfter                       = "after"
 	CISRulesetsRulePositionBefore                      = "before"
 	CISRulesetsRulePositionIndex                       = "index"
+	CISRulesetRuleId                                   = "rule_id"
 )
 
 var CISResponseObject = &schema.Resource{
