@@ -48,6 +48,7 @@ func testAccCheckIbmProjectEnvironmentDataSourceConfigBasic() string {
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = true
             }
         }
 

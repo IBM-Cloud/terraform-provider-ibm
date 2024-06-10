@@ -408,6 +408,11 @@ func DataSourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.",
 						},
+						"auto_deploy": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "A boolean flag to enable auto deploy.",
+						},
 						"monitoring_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -676,6 +681,7 @@ func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Proje
 	modelMap["name"] = *model.Name
 	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
 	modelMap["description"] = *model.Description
+	modelMap["auto_deploy"] = *model.AutoDeploy
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}

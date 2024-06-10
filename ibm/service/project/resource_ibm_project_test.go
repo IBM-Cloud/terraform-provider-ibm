@@ -52,6 +52,7 @@ func testAccCheckIbmProjectConfigBasic(location string, resourceGroup string) st
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = true
             }
 		}
 	`, location, resourceGroup)
