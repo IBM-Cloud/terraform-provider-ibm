@@ -2926,7 +2926,7 @@ func publicServiceEndpointsWarning() diag.Diagnostics {
 
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Note: You are currently using a public endpoint.",
+		Summary:  "Enabling public endpoints can expose your data to potential security risks. Using only private endpoints improves security by restricting access to your database to the IBM Cloud private network. For more information, please refer to our security best practices, https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-manage-security-compliance. Are you sure you want to continue to enable public endpoints?",
 	}
 
 	diags = append(diags, warning)
