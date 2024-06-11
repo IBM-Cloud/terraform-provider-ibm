@@ -215,7 +215,7 @@ func TestAppendSwitchoverWarning(t *testing.T) {
 
 func TestPublicServiceEndpointsWarning(t *testing.T) {
 	diags := publicServiceEndpointsWarning()
-	warningNote := "Enabling public endpoints can expose your data to potential security risks. Using only private endpoints improves security by restricting access to your database to the IBM Cloud private network. For more information, please refer to our security best practices, https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-manage-security-compliance. Are you sure you want to continue to enable public endpoints?"
+	warningNote := "IBM recommends using private endpoints only to improve security by restricting access to your database to the IBM Cloud private network. For more information, please refer to our security best practices, https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-manage-security-compliance."
 
 	if len(diags) != 1 {
 		t.Fatalf("expected 1 diagnostic, got %d", len(diags))
