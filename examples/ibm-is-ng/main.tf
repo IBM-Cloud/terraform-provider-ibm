@@ -199,14 +199,30 @@ resource "ibm_is_vpn_gateway" "VPNGateway1" {
   subnet = ibm_is_subnet.subnet1.id
 }
 
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
-  name          = "vpnconn1"
+// Deprecated: peer_address, local_cidrs, peer_cidrs
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1_deprecated" {
+  name          = "vpnconn1-deprecated"
   vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
   peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
   preshared_key = "VPNDemoPassword"
   local_cidrs   = [ibm_is_subnet.subnet1.ipv4_cidr_block]
   peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
   ipsec_policy  = ibm_is_ipsec_policy.example.id
+}
+
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
+  name          = "vpnconn1"
+  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
+  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
+  preshared_key = "VPNDemoPassword"
+  peer {
+    address    = ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address : ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address2
+    peer_cidrs = [ibm_is_subnet.subnet2.ipv4_cidr_block]
+  }
+  local {
+    cidrs = [ibm_is_subnet.subnet1.ipv4_cidr_block]
+  }
+  ipsec_policy = ibm_is_ipsec_policy.example.id
 }
 
 resource "ibm_is_ssh_key" "sshkey" {
@@ -1592,7 +1608,7 @@ resource "ibm_is_reservation" "example" {
     term = "one_year"
   }
   profile {
-    name = "ba2-2x8"
+    name          = "ba2-2x8"
     resource_type = "instance_profile"
   }
   zone = "us-east-3"
