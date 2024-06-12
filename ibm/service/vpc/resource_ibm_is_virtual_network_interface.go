@@ -897,7 +897,7 @@ func resourceIBMIsVirtualNetworkInterfaceDelete(context context.Context, d *sche
 
 	deleteVirtualNetworkInterfacesOptions.SetID(d.Id())
 
-	response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
+	_, response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response))

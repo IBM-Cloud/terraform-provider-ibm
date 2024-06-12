@@ -837,11 +837,11 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			if replicaShareMap["name"] != nil {
 				replicaShare.Name = core.StringPtr(replicaShareMap["name"].(string))
 			}
-			if replicaShareMap["profile"] != nil {
-				replicaShare.Profile = &vpcv1.ShareProfileIdentity{
-					Name: core.StringPtr(replicaShareMap["profile"].(string)),
-				}
-			}
+			// if replicaShareMap["profile"] != nil {
+			// 	replicaShare.Profile = &vpcv1.ShareProfileIdentity{
+			// 		Name: core.StringPtr(replicaShareMap["profile"].(string)),
+			// 	}
+			// }
 			if replicaShareMap["replication_cron_spec"] != nil {
 				replicaShare.ReplicationCronSpec = core.StringPtr(replicaShareMap["replication_cron_spec"].(string))
 			}

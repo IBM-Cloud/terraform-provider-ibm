@@ -1228,7 +1228,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	}
 
 	if bandwidthIntf, ok := d.GetOk(isBareMetalServerBandwidth); ok {
-		bandwidth = int64(bandwidthIntf.(int))
+		bandwidth := int64(bandwidthIntf.(int))
 		options.Bandwidth = &bandwidth
 	}
 	// enable secure boot
