@@ -293,12 +293,12 @@ func ResourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceKeys: {
-				Type:             schema.TypeSet,
-				Optional:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "SSH key Ids for the instance",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				ForceNew:    true,
+				Description: "SSH key Ids for the instance",
 			},
 
 			isInstanceTags: {
