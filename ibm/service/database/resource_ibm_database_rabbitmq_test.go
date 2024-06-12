@@ -137,6 +137,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -180,6 +181,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -227,6 +229,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -256,6 +259,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string,
 		service           = "messages-for-rabbitmq"
 		plan              = "standard"
 		location          = "%[3]s"
+		service_endpoints = "public"
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }

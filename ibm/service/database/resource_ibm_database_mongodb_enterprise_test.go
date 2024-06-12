@@ -250,6 +250,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			host_flavor {
@@ -333,6 +334,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
 		tags                         = ["one:two"]
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"
@@ -382,6 +384,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal(databaseResourceGro
 		service                      = "databases-for-mongodb"
 		plan                         = "enterprise"
 		location                     = "%[3]s"
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"
@@ -418,6 +421,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseMinimal_PITR(databaseResour
 		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
 		point_in_time_recovery_time           = ""
     	offline_restore                       = true
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"

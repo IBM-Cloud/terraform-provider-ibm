@@ -104,6 +104,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup s
 				allocation_mb = 20480
 			}
 		}
+		service_endpoints            = "public"
 		users {
 		  name     = "user123"
 		  password = "password12345678"
@@ -144,6 +145,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingFullyspecified(databaseResour
 				allocation_mb = 40960
 			}
 		}
+		service_endpoints            = "public"
 		users {
 		  name     = "user123"
 		  password = "password12345678"

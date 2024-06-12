@@ -317,6 +317,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup str
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		users {
 		  name     = "user123"
 		  password = "password12345678"
@@ -359,6 +360,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResource
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		users {
 		  name     = "user123"
 		  password = "password12345678"
@@ -410,6 +412,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup s
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"
@@ -444,6 +447,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupMigration(databaseResource
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 		  group_id = "member"
@@ -482,6 +486,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"
@@ -533,6 +538,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseReso
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			members {
@@ -591,6 +597,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGro
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			members {
@@ -633,6 +640,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGr
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			members {
@@ -675,6 +683,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupBasic(databaseResourceGrou
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"
@@ -727,6 +736,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupFullyspecified(databaseRes
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 		  group_id = "member"
@@ -787,6 +797,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupReduced(databaseResourceGr
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 		  group_id = "member"
@@ -830,6 +841,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchGroupScaleOut(databaseResourceG
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 		  group_id = "member"
@@ -871,6 +883,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup st
 		service           = "databases-for-elasticsearch"
 		plan              = "standard"
 		location          = "%[3]s"
+		service_endpoints = "public"
 
 		timeouts {
 			create = "120m"

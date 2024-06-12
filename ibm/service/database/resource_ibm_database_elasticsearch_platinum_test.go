@@ -320,6 +320,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 
@@ -362,6 +363,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 
@@ -410,6 +412,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 
@@ -441,6 +444,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -476,6 +480,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -521,6 +526,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -573,6 +579,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -609,6 +616,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -645,6 +653,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 			group_id = "member"
@@ -691,6 +700,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -745,6 +755,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -782,6 +793,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -817,6 +829,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResource
 		service           = "databases-for-elasticsearch"
 		plan              = "platinum"
 		location          = "%[3]s"
+		service_endpoints            = "public-and-private"
 
 		timeouts {
 			create = "120m"
