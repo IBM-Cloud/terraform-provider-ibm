@@ -131,6 +131,14 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
   queue_manager_id = var.mqcloud_keystore_certificate_queue_manager_id
   label = var.mqcloud_keystore_certificate_label
   certificate_file = var.mqcloud_keystore_certificate_certificate_file
+
+  config {
+    ams {
+      channels {
+        name = var.mqcloud_keystore_certificate_config_ams_channel_name
+      }
+    }
+  }
 }
 ```
 

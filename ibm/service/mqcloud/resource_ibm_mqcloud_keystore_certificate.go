@@ -124,13 +124,13 @@ func ResourceIbmMqcloudKeystoreCertificate() *schema.Resource {
 			},
 			"config": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The configuration details for this certificate.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ams": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "A list of channels that are configured with this certificate.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -235,6 +235,38 @@ func resourceIbmMqcloudKeystoreCertificateCreate(context context.Context, d *sch
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", *createKeyStorePemCertificateOptions.ServiceInstanceGuid, *createKeyStorePemCertificateOptions.QueueManagerID, *keyStoreCertificateDetails.ID))
 
+	// Update channel after creating the certificate
+	setCertificateAmsChannelsOptions := &mqcloudv1.SetCertificateAmsChannelsOptions{}
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_keystore_certificate", "create", "sep-id-parts").GetDiag()
+	}
+	setCertificateAmsChannelsOptions.SetServiceInstanceGuid(parts[0])
+	setCertificateAmsChannelsOptions.SetQueueManagerID(parts[1])
+	setCertificateAmsChannelsOptions.SetCertificateID(parts[2])
+
+	var channels []mqcloudv1.ChannelDetails
+	channels = []mqcloudv1.ChannelDetails{}
+	for _, v := range d.Get("config.0.ams.0.channels").([]interface{}) {
+		value := v.(map[string]interface{})
+		channelsItem, err := ResourceIbmMqcloudKeystoreCertificateMapToChannelDetails(value)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_keystore_certificate", "create", "parse-channels").GetDiag()
+		}
+		channels = append(channels, *channelsItem)
+	}
+
+	setCertificateAmsChannelsOptions.SetChannels(channels)
+	setCertificateAmsChannelsOptions.SetUpdateStrategy("replace")
+
+	_, _, err = mqcloudClient.SetCertificateAmsChannelsWithContext(context, setCertificateAmsChannelsOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetCertificateAmsChannelsWithContext failed: %s", err.Error()), "ibm_mqcloud_keystore_certificate", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
 	return resourceIbmMqcloudKeystoreCertificateRead(context, d, meta)
 }
 
@@ -332,9 +364,12 @@ func resourceIbmMqcloudKeystoreCertificateRead(context context.Context, d *schem
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_keystore_certificate", "read", "config-to-map").GetDiag()
 	}
-	if err = d.Set("config", []map[string]interface{}{configMap}); err != nil {
-		err = fmt.Errorf("Error setting config: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_keystore_certificate", "read", "set-config").GetDiag()
+	// Check if configMap is not empty and contains non-empty lists before setting it
+	if len(configMap) > 0 && len(configMap["ams"].([]map[string]interface{})) > 0 && len(configMap["ams"].([]map[string]interface{})[0]["channels"].([]map[string]interface{})) > 0 {
+		if err = d.Set("config", []map[string]interface{}{configMap}); err != nil {
+			err = fmt.Errorf("Error setting config: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_keystore_certificate", "read", "set-config").GetDiag()
+		}
 	}
 	if err = d.Set("certificate_id", keyStoreCertificateDetails.ID); err != nil {
 		err = fmt.Errorf("Error setting certificate_id: %s", err)
@@ -394,10 +429,7 @@ func resourceIbmMqcloudKeystoreCertificateUpdate(context context.Context, d *sch
 			channels = append(channels, *channelsItem)
 		}
 		setCertificateAmsChannelsOptions.SetChannels(channels)
-		hasChange = true
-	}
-	if d.HasChange("update_strategy") {
-		setCertificateAmsChannelsOptions.SetUpdateStrategy(d.Get("update_strategy").(string))
+		setCertificateAmsChannelsOptions.SetUpdateStrategy("replace")
 		hasChange = true
 	}
 
@@ -429,6 +461,7 @@ func resourceIbmMqcloudKeystoreCertificateDelete(context context.Context, d *sch
 	}
 
 	deleteKeyStoreCertificateOptions := &mqcloudv1.DeleteKeyStoreCertificateOptions{}
+	setCertificateAmsChannelsOptions := &mqcloudv1.SetCertificateAmsChannelsOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -438,6 +471,20 @@ func resourceIbmMqcloudKeystoreCertificateDelete(context context.Context, d *sch
 	deleteKeyStoreCertificateOptions.SetServiceInstanceGuid(parts[0])
 	deleteKeyStoreCertificateOptions.SetQueueManagerID(parts[1])
 	deleteKeyStoreCertificateOptions.SetCertificateID(parts[2])
+
+	setCertificateAmsChannelsOptions.SetServiceInstanceGuid(parts[0])
+	setCertificateAmsChannelsOptions.SetQueueManagerID(parts[1])
+	setCertificateAmsChannelsOptions.SetCertificateID(parts[2])
+	channels := []mqcloudv1.ChannelDetails{}
+	setCertificateAmsChannelsOptions.SetChannels(channels)
+	setCertificateAmsChannelsOptions.SetUpdateStrategy("replace")
+
+	_, _, err = mqcloudClient.SetCertificateAmsChannelsWithContext(context, setCertificateAmsChannelsOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteKeyStoreCertificateWithContext failed: %s", err.Error()), "ibm_mqcloud_keystore_certificate", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 
 	_, err = mqcloudClient.DeleteKeyStoreCertificateWithContext(context, deleteKeyStoreCertificateOptions)
 	if err != nil {

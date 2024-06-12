@@ -59,12 +59,6 @@ func testAccCheckIbmMqcloudKeystoreCertificateConfigBasic(serviceInstanceGuid st
 			queue_manager_id = "%s"
 			label = "%s"
 			certificate_file = filebase64("%s")
-
-			config {
-				ams {
-				  
-				}
-			  }
 		}
 	`, serviceInstanceGuid, queueManagerID, label, certificateFile)
 }

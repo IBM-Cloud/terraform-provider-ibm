@@ -52,11 +52,6 @@ func testAccCheckIbmMqcloudKeystoreCertificateDataSourceConfigBasic(keyStoreCert
 			queue_manager_id = "%s"
 			label = "%s"
 			certificate_file = filebase64("%s")
-
-			config {
-				ams {
-				}
-			  }
 		}
 
 		data "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instance" {

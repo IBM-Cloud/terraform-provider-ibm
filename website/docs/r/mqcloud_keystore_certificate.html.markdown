@@ -20,6 +20,14 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
   label = "certlabel"
   queue_manager_id = var.queue_manager_id
   service_instance_guid = var.service_instance_guid
+
+  config {
+    ams {
+      channels {
+        name = "CLOUD.APP.SVRCONN"
+      }
+    }
+  }
 }
 ```
 
