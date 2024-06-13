@@ -1400,6 +1400,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		create = &s3.CreateBucketInput{
 			Bucket:                     aws.String(bucketName),
 			ObjectLockEnabledForBucket: aws.Bool(true),
+			CreateBucketConfiguration: &s3.CreateBucketConfiguration{
+				LocationConstraint: aws.String(lConstraint),
+			},
 		}
 	} else {
 		create = &s3.CreateBucketInput{
