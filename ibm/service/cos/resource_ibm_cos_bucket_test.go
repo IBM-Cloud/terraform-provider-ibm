@@ -3047,39 +3047,40 @@ func testAccCheckIBMCosBucket_metricsMonitoring_Upload_Object_RequestMetrics_Tru
 
 // 	return fmt.Sprintf(`
 
-// 	data "ibm_resource_group" "cos_group" {
-// 		is_default=true
-// 	  }
-// 	  resource "ibm_resource_instance" "instance2" {
-// 		name              = "%s"
-// 		resource_group_id = data.ibm_resource_group.cos_group.id
-// 		service           = "cloud-object-storage"
-// 		plan              = "standard"
-// 		location          = "global"
-// 	  }
-// 	  resource "ibm_resource_instance" "metrics_monitor2" {
-// 		name              = "%s"
-// 		resource_group_id = data.ibm_resource_group.cos_group.id
-// 		service           = "sysdig-monitor"
-// 		plan              = "graduated-tier"
-// 		location          = "us-south"
-// 		parameters        = {
-// 			default_receiver = true
-// 		}
-// 	}
-// 	  resource "ibm_cos_bucket" "bucket2" {
-// 		bucket_name          = "%s"
-// 		resource_instance_id = ibm_resource_instance.instance2.id
-// 		region_location = "%s"
-// 		storage_class        = "%s"
-// 		metrics_monitoring {
-// 		  usage_metrics_enabled = true
-// 		  request_metrics_enabled = true
-// 		  metrics_monitoring_crn = ibm_resource_instance.metrics_monitor2.id
-// 		}
-// 	  }
-// 	`, cosServiceName, metricsMonitoringName, bucketName, region, storageClass)
-// }
+//		data "ibm_resource_group" "cos_group" {
+//			is_default=true
+//		  }
+//		  resource "ibm_resource_instance" "instance2" {
+//			name              = "%s"
+//			resource_group_id = data.ibm_resource_group.cos_group.id
+//			service           = "cloud-object-storage"
+//			plan              = "standard"
+//			location          = "global"
+//		  }
+//		  resource "ibm_resource_instance" "metrics_monitor2" {
+//			name              = "%s"
+//			resource_group_id = data.ibm_resource_group.cos_group.id
+//			service           = "sysdig-monitor"
+//			plan              = "graduated-tier"
+//			location          = "us-south"
+//			parameters        = {
+//				default_receiver = true
+//			}
+//		}
+//		  resource "ibm_cos_bucket" "bucket2" {
+//			bucket_name          = "%s"
+//			resource_instance_id = ibm_resource_instance.instance2.id
+//			region_location = "%s"
+//			storage_class        = "%s"
+//			metrics_monitoring {
+//			  usage_metrics_enabled = true
+//			  request_metrics_enabled = true
+//			  metrics_monitoring_crn = ibm_resource_instance.metrics_monitor2.id
+//			}
+//		  }
+//		`, cosServiceName, metricsMonitoringName, bucketName, region, storageClass)
+//	}
+//
 // f1881 end
 func testAccCheckIBMCosBucket_archive(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, ruleId string, enable bool, archiveDays int, ruleType string) string {
 
