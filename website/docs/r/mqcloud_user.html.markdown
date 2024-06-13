@@ -10,12 +10,14 @@ subcategory: "MQ on Cloud"
 
 Create, update, and delete mqcloud_users with this resource.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl
 resource "ibm_mqcloud_user" "mqcloud_user_instance" {
-  email = "user@example.com"
-  name = "t0scie98o57a"
+  email = "testuser@ibm.com"
+  name = "testuser"
   service_instance_guid = var.service_instance_guid
 }
 ```
