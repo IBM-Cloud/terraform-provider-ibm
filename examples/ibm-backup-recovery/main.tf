@@ -97,5 +97,10 @@ resource "ibm_common_source_registration_request" "common_source_registration_re
   }
 }
 
+// fetch protection policy
+
+data "ibm_protection_policy" "fetch_policy" {
+  protection_policy_id = "2589487010861433:1714635583654:708"
+}
 
 */

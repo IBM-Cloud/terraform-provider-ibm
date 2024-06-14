@@ -29,9 +29,8 @@ func ResourceIbmCommonSourceRegistrationRequest() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"environment": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_common_source_registration_request", "environment"),
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "Specifies the environment type of the Protection Source.",
 			},
 			"name": &schema.Schema{
@@ -322,45 +321,44 @@ func resourceIbmCommonSourceRegistrationRequestRead(context context.Context, d *
 		return diag.FromErr(err)
 	}
 
-	getSourceRegistrationsOptions := &backuprecoveryv0.GetSourceRegistrationsOptions{}
+	getProtectionSourceRegistrationOptions := &backuprecoveryv0.GetProtectionSourceRegistrationOptions{}
 
-	// getSourceRegistrationsOptions.SetID(d.Id()) // chnaged
+	// getProtectionSourceRegistrationOptions.SetID(d.Id())
 
-	// chnaged to ---
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getSourceRegistrationsOptions.SetIds([]int64{int64(id)})
-	// chnaged to ---
+	getProtectionSourceRegistrationOptions.SetID(int64(id))
 
-	sourceRegistrations, response, err := backupRecoveryClient.GetSourceRegistrationsWithContext(context, getSourceRegistrationsOptions)
+	commonSourceRegistrationReponseParams, response, err := backupRecoveryClient.GetProtectionSourceRegistrationWithContext(context, getProtectionSourceRegistrationOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetSourceRegistrationsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetSourceRegistrationsWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetProtectionSourceRegistrationWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetProtectionSourceRegistrationWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("environment", sourceRegistrations.Registrations[0].Environment); err != nil {
+	if err = d.Set("environment", commonSourceRegistrationReponseParams.Environment); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting environment: %s", err))
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].Name) {
-		if err = d.Set("name", sourceRegistrations.Registrations[0].Name); err != nil {
+	if !core.IsNil(commonSourceRegistrationReponseParams.Name) {
+		if err = d.Set("name", commonSourceRegistrationReponseParams.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 		}
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].ConnectionID) {
-		if err = d.Set("connection_id", flex.IntValue(sourceRegistrations.Registrations[0].ConnectionID)); err != nil {
+
+	if !core.IsNil(commonSourceRegistrationReponseParams.ConnectionID) {
+		if err = d.Set("connection_id", flex.IntValue(commonSourceRegistrationReponseParams.ConnectionID)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting connection_id: %s", err))
 		}
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].Connections) {
+	if !core.IsNil(commonSourceRegistrationReponseParams.Connections) {
 		connections := []map[string]interface{}{}
-		for _, connectionsItem := range sourceRegistrations.Registrations[0].Connections {
+		for _, connectionsItem := range commonSourceRegistrationReponseParams.Connections {
 			connectionsItemMap, err := resourceIbmCommonSourceRegistrationRequestConnectionConfigToMap(&connectionsItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -371,14 +369,14 @@ func resourceIbmCommonSourceRegistrationRequestRead(context context.Context, d *
 			return diag.FromErr(fmt.Errorf("Error setting connections: %s", err))
 		}
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].ConnectorGroupID) {
-		if err = d.Set("connector_group_id", flex.IntValue(sourceRegistrations.Registrations[0].ConnectorGroupID)); err != nil {
+	if !core.IsNil(commonSourceRegistrationReponseParams.ConnectorGroupID) {
+		if err = d.Set("connector_group_id", flex.IntValue(commonSourceRegistrationReponseParams.ConnectorGroupID)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting connector_group_id: %s", err))
 		}
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].AdvancedConfigs) {
+	if !core.IsNil(commonSourceRegistrationReponseParams.AdvancedConfigs) {
 		advancedConfigs := []map[string]interface{}{}
-		for _, advancedConfigsItem := range sourceRegistrations.Registrations[0].AdvancedConfigs {
+		for _, advancedConfigsItem := range commonSourceRegistrationReponseParams.AdvancedConfigs {
 			advancedConfigsItemMap, err := resourceIbmCommonSourceRegistrationRequestKeyValuePairToMap(&advancedConfigsItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -389,8 +387,8 @@ func resourceIbmCommonSourceRegistrationRequestRead(context context.Context, d *
 			return diag.FromErr(fmt.Errorf("Error setting advanced_configs: %s", err))
 		}
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].PhysicalParams) {
-		physicalParamsMap, err := resourceIbmCommonSourceRegistrationRequestPhysicalParamsToMap(sourceRegistrations.Registrations[0].PhysicalParams)
+	if !core.IsNil(commonSourceRegistrationReponseParams.PhysicalParams) {
+		physicalParamsMap, err := resourceIbmCommonSourceRegistrationRequestPhysicalParamsToMap(commonSourceRegistrationReponseParams.PhysicalParams)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -398,8 +396,8 @@ func resourceIbmCommonSourceRegistrationRequestRead(context context.Context, d *
 			return diag.FromErr(fmt.Errorf("Error setting physical_params: %s", err))
 		}
 	}
-	if !core.IsNil(sourceRegistrations.Registrations[0].OracleParams) {
-		oracleParamsMap, err := resourceIbmCommonSourceRegistrationRequestOracleParamsToMap(sourceRegistrations.Registrations[0].OracleParams)
+	if !core.IsNil(commonSourceRegistrationReponseParams.OracleParams) {
+		oracleParamsMap, err := resourceIbmCommonSourceRegistrationRequestOracleParamsToMap(commonSourceRegistrationReponseParams.OracleParams)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -419,16 +417,7 @@ func resourceIbmCommonSourceRegistrationRequestUpdate(context context.Context, d
 
 	updateProtectionSourceRegistrationOptions := &backuprecoveryv0.UpdateProtectionSourceRegistrationOptions{}
 
-	// updateProtectionSourceRegistrationOptions.SetID(d.Id()) //chnaged
-	//chnaged to
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	updateProtectionSourceRegistrationOptions.SetID(int64(id))
-	//chnaged to
 	updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
-
 	if _, ok := d.GetOk("name"); ok {
 		updateProtectionSourceRegistrationOptions.SetName(d.Get("name").(string))
 	}
@@ -500,10 +489,13 @@ func resourceIbmCommonSourceRegistrationRequestDelete(context context.Context, d
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv0.DeleteProtectionSourceRegistrationOptions{}
 
+	// deleteProtectionSourceRegistrationOptions.SetID(d.Id())
+
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	deleteProtectionSourceRegistrationOptions.SetID(int64(id))
 
 	response, err := backupRecoveryClient.DeleteProtectionSourceRegistrationWithContext(context, deleteProtectionSourceRegistrationOptions)

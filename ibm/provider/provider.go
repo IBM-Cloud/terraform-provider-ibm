@@ -228,6 +228,7 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_protection_policy":   backuprecovery.DataSourceIbmProtectionPolicy(),
 			"ibm_protection_sources":  backuprecovery.DataSourceIbmProtectionSources(),
 			"ibm_source_registration": backuprecovery.DataSourceIbmSourceRegistration(),
 			"ibm_api_gateway":         apigateway.DataSourceIBMApiGateway(),
@@ -940,6 +941,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"ibm_protection_policy":                  backuprecovery.ResourceIbmProtectionPolicy(),
 			"ibm_common_source_registration_request": backuprecovery.ResourceIbmCommonSourceRegistrationRequest(),
 			"ibm_api_gateway_endpoint":               apigateway.ResourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription":  apigateway.ResourceIBMApiGatewayEndpointSubscription(),

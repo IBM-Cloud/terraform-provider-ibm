@@ -704,20 +704,13 @@ func dataSourceIbmSourceRegistrationRead(context context.Context, d *schema.Reso
 	registrations := []map[string]interface{}{}
 	if sourceRegistrations.Registrations != nil {
 		for _, modelItem := range sourceRegistrations.Registrations {
-			log.Println("modelItem....................")
-			log.Println(modelItem)
-			log.Println("modelItem....................")
 			modelMap, err := dataSourceIbmSourceRegistrationCommonSourceRegistrationReponseParamsToMap(&modelItem)
 			if err != nil {
-				log.Println("........err", err)
 				return diag.FromErr(err)
 			}
 			registrations = append(registrations, modelMap)
 		}
 	}
-	log.Println("registrations....................")
-	log.Println(registrations)
-	log.Println("registrations....................")
 	if err = d.Set("registrations", registrations); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting registrations %s", err))
 	}

@@ -581,14 +581,14 @@ func dataSourceIbmProtectionSourcesSourceToMap(model *backuprecoveryv0.Source) (
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
 	if model.OracleParams != nil {
-		oracleParamsMap, err := dataSourceIbmProtectionSourcesSourceOracleParamsToMap(model.OracleParams)
+		oracleParamsMap, err := dataSourceIbmProtectionSourcesSourceOracleParamsToMap((*backuprecoveryv0.ObjectOracleParams)(model.OracleParams))
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["oracle_params"] = []map[string]interface{}{oracleParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := dataSourceIbmProtectionSourcesSourcePhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := dataSourceIbmProtectionSourcesSourcePhysicalParamsToMap((*backuprecoveryv0.ObjectPhysicalParams)(model.PhysicalParams))
 		if err != nil {
 			return modelMap, err
 		}
@@ -763,7 +763,7 @@ func dataSourceIbmProtectionSourcesTenantNetworkToMap(model *backuprecoveryv0.Te
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesSourceOracleParamsToMap(model *backuprecoveryv0.SourceOracleParams) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesSourceOracleParamsToMap(model *backuprecoveryv0.ObjectOracleParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DatabaseEntityInfo != nil {
 		databaseEntityInfoMap, err := dataSourceIbmProtectionSourcesDatabaseEntityInfoToMap(model.DatabaseEntityInfo)
@@ -841,7 +841,7 @@ func dataSourceIbmProtectionSourcesHostInformationToMap(model *backuprecoveryv0.
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesSourcePhysicalParamsToMap(model *backuprecoveryv0.SourcePhysicalParams) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesSourcePhysicalParamsToMap(model *backuprecoveryv0.ObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = model.EnableSystemBackup
