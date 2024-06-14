@@ -40,12 +40,6 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_logs_rule_group", "description"),
 				Description:  "A description for the rule group, should express what is the rule group purpose.",
 			},
-			// "creator": &schema.Schema{
-			// 	Type:         schema.TypeString,
-			// 	Optional:     true,
-			// 	ValidateFunc: validate.InvokeValidator("ibm_logs_rule_group", "creator"),
-			// 	Description:  "The creator of the rule group.",
-			// },
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -113,9 +107,8 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The id of the rule subgroup.",
+							Required:    true,
+							Description: "The ID of the rule subgroup.",
 						},
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
@@ -125,8 +118,7 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
+										Required:    true,
 										Description: "Unique identifier of the rule.",
 									},
 									"name": &schema.Schema{
@@ -177,7 +169,6 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 															"destination_field": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "category_or_unspecified",
 																Description: "In which metadata field to store the extracted value.",
 															},
 														},
@@ -400,7 +391,7 @@ func ResourceIbmLogsRuleGroupValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             255,
 		},
@@ -409,16 +400,7 @@ func ResourceIbmLogsRuleGroupValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
-			MinValueLength:             1,
-			MaxValueLength:             4096,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "creator",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\-\s]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -456,12 +438,9 @@ func resourceIbmLogsRuleGroupCreate(context context.Context, d *schema.ResourceD
 	if _, ok := d.GetOk("description"); ok {
 		createRuleGroupOptions.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOkExists("enabled"); ok {
+	if _, ok := d.GetOk("enabled"); ok {
 		createRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 	}
-	// if _, ok := d.GetOk("creator"); ok {
-	// 	createRuleGroupOptions.SetCreator(d.Get("creator").(string))
-	// }
 	if _, ok := d.GetOk("rule_matchers"); ok {
 		var ruleMatchers []logsv0.RulesV1RuleMatcherIntf
 		for _, v := range d.Get("rule_matchers").([]interface{}) {
@@ -498,6 +477,7 @@ func resourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceDat
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+
 	logsClient, region, instanceId, ruleGroupId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -536,11 +516,6 @@ func resourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 		}
 	}
-	// if !core.IsNil(ruleGroup.Creator) {
-	// 	if err = d.Set("creator", ruleGroup.Creator); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting creator: %s", err))
-	// 	}
-	// }
 	if !core.IsNil(ruleGroup.Enabled) {
 		if err = d.Set("enabled", ruleGroup.Enabled); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
@@ -602,12 +577,9 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 		d.HasChange("rule_subgroups") ||
 		d.HasChange("description") ||
 		d.HasChange("enabled") ||
-		// d.HasChange("creator") ||
 		d.HasChange("rule_matchers") ||
 		d.HasChange("order") {
-
 		updateRuleGroupOptions.SetName(d.Get("name").(string))
-
 		var ruleSubgroups []logsv0.RulesV1CreateRuleGroupRequestCreateRuleSubgroup
 		for _, v := range d.Get("rule_subgroups").([]interface{}) {
 			value := v.(map[string]interface{})
@@ -618,16 +590,12 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 			ruleSubgroups = append(ruleSubgroups, *ruleSubgroupsItem)
 		}
 		updateRuleGroupOptions.SetRuleSubgroups(ruleSubgroups)
-
 		if _, ok := d.GetOk("description"); ok {
 			updateRuleGroupOptions.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOkExists("enabled"); ok {
+		if _, ok := d.GetOk("enabled"); ok {
 			updateRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 		}
-		// if _, ok := d.GetOk("creator"); ok {
-		// 	updateRuleGroupOptions.SetCreator(d.Get("creator").(string))
-		// }
 		if _, ok := d.GetOk("rule_matchers"); ok {
 			var ruleMatchers []logsv0.RulesV1RuleMatcherIntf
 			for _, v := range d.Get("rule_matchers").([]interface{}) {
@@ -670,7 +638,6 @@ func resourceIbmLogsRuleGroupDelete(context context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	deleteRuleGroupOptions := &logsv0.DeleteRuleGroupOptions{}
 
 	deleteRuleGroupOptions.SetGroupID(core.UUIDPtr(strfmt.UUID(ruleGroupId)))
@@ -710,6 +677,9 @@ func ResourceIbmLogsRuleGroupMapToRulesV1CreateRuleGroupRequestCreateRuleSubgrou
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
 	model.SourceField = core.StringPtr(modelMap["source_field"].(string))
 	ParametersModel, err := ResourceIbmLogsRuleGroupMapToRulesV1RuleParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
@@ -718,9 +688,6 @@ func ResourceIbmLogsRuleGroupMapToRulesV1CreateRuleGroupRequestCreateRuleSubgrou
 	model.Parameters = ParametersModel
 	model.Enabled = core.BoolPtr(modelMap["enabled"].(bool))
 	model.Order = core.Int64Ptr(int64(modelMap["order"].(int)))
-	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
-		model.Description = core.StringPtr(modelMap["description"].(string))
-	}
 	return model, nil
 }
 

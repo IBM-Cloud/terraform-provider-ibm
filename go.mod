@@ -24,6 +24,7 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.14.0
+	github.com/IBM/logs-go-sdk v0.2.1
 	github.com/IBM/networking-go-sdk v0.46.1
 	github.com/IBM/platform-services-go-sdk v0.62.11
 	github.com/IBM/project-go-sdk v0.3.2
@@ -65,7 +66,7 @@ require (
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4
 	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/logs-go-sdk v0.1.1
+	// github.com/IBM/logs-go-sdk v0.1.1
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/vmware-go-sdk v0.1.2

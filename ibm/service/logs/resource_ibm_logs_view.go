@@ -37,9 +37,8 @@ func ResourceIbmLogsView() *schema.Resource {
 			},
 			"search_query": &schema.Schema{
 				Type:        schema.TypeList,
-				MinItems:    1,
 				MaxItems:    1,
-				Required:    true,
+				Optional:    true,
 				Description: "View search query.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -135,7 +134,7 @@ func ResourceIbmLogsView() *schema.Resource {
 			"folder_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "View folder id.",
+				Description: "View folder ID.",
 			},
 			"view_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -154,7 +153,7 @@ func ResourceIbmLogsViewValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -179,16 +178,20 @@ func resourceIbmLogsViewCreate(context context.Context, d *schema.ResourceData, 
 	createViewOptions := &logsv0.CreateViewOptions{}
 
 	createViewOptions.SetName(d.Get("name").(string))
-	searchQueryModel, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	createViewOptions.SetSearchQuery(searchQueryModel)
+
 	timeSelectionModel, err := ResourceIbmLogsViewMapToApisViewsV1TimeSelection(d.Get("time_selection.0").(map[string]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	createViewOptions.SetTimeSelection(timeSelectionModel)
+
+	if _, ok := d.GetOk("search_query"); ok {
+		searchQueryModel, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createViewOptions.SetSearchQuery(searchQueryModel)
+	}
 	if _, ok := d.GetOk("filters"); ok {
 		filtersModel, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
 		if err != nil {
@@ -224,7 +227,6 @@ func resourceIbmLogsViewRead(context context.Context, d *schema.ResourceData, me
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	getViewOptions := &logsv0.GetViewOptions{}
 
 	viewIdInt, _ := strconv.ParseInt(viewId, 10, 64)
@@ -253,12 +255,14 @@ func resourceIbmLogsViewRead(context context.Context, d *schema.ResourceData, me
 	if err = d.Set("name", view.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	searchQueryMap, err := ResourceIbmLogsViewApisViewsV1SearchQueryToMap(view.SearchQuery)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("search_query", []map[string]interface{}{searchQueryMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting search_query: %s", err))
+	if !core.IsNil(view.SearchQuery) {
+		searchQueryMap, err := ResourceIbmLogsViewApisViewsV1SearchQueryToMap(view.SearchQuery)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("search_query", []map[string]interface{}{searchQueryMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting search_query: %s", err))
+		}
 	}
 	timeSelectionMap, err := ResourceIbmLogsViewApisViewsV1TimeSelectionToMap(view.TimeSelection)
 	if err != nil {
@@ -297,7 +301,6 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	replaceViewOptions := &logsv0.ReplaceViewOptions{}
 
 	viewIdInt, _ := strconv.ParseInt(viewId, 10, 64)
@@ -312,22 +315,26 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 		d.HasChange("folder_id") {
 
 		replaceViewOptions.SetName(d.Get("name").(string))
-		searchQuery, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
+
+		timeSelectionModel, err := ResourceIbmLogsViewMapToApisViewsV1TimeSelection(d.Get("time_selection.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		replaceViewOptions.SetSearchQuery(searchQuery)
-		timeSelection, err := ResourceIbmLogsViewMapToApisViewsV1TimeSelection(d.Get("time_selection.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		replaceViewOptions.SetTimeSelection(timeSelection)
-		if _, ok := d.GetOk("filters"); ok {
-			filters, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
+		replaceViewOptions.SetTimeSelection(timeSelectionModel)
+
+		if _, ok := d.GetOk("search_query"); ok {
+			searchQueryModel, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			replaceViewOptions.SetFilters(filters)
+			replaceViewOptions.SetSearchQuery(searchQueryModel)
+		}
+		if _, ok := d.GetOk("filters"); ok {
+			filtersModel, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			replaceViewOptions.SetFilters(filtersModel)
 		}
 		if _, ok := d.GetOk("folder_id"); ok {
 			replaceViewOptions.SetFolderID(core.UUIDPtr(strfmt.UUID(d.Get("folder_id").(string))))
@@ -378,12 +385,6 @@ func resourceIbmLogsViewDelete(context context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceIbmLogsViewMapToApisViewsV1SearchQuery(modelMap map[string]interface{}) (*logsv0.ApisViewsV1SearchQuery, error) {
-	model := &logsv0.ApisViewsV1SearchQuery{}
-	model.Query = core.StringPtr(modelMap["query"].(string))
-	return model, nil
-}
-
 func ResourceIbmLogsViewMapToApisViewsV1TimeSelection(modelMap map[string]interface{}) (logsv0.ApisViewsV1TimeSelectionIntf, error) {
 	model := &logsv0.ApisViewsV1TimeSelection{}
 	if modelMap["quick_selection"] != nil && len(modelMap["quick_selection"].([]interface{})) > 0 {
@@ -412,11 +413,11 @@ func ResourceIbmLogsViewMapToApisViewsV1QuickTimeSelection(modelMap map[string]i
 
 func ResourceIbmLogsViewMapToApisViewsV1CustomTimeSelection(modelMap map[string]interface{}) (*logsv0.ApisViewsV1CustomTimeSelection, error) {
 	model := &logsv0.ApisViewsV1CustomTimeSelection{}
-	dateTime, err := core.ParseDateTime(modelMap["from_time"].(string))
+	fromDateTime, err := core.ParseDateTime(modelMap["from_time"].(string))
 	if err != nil {
 		return model, err
 	}
-	model.FromTime = &dateTime
+	model.FromTime = &fromDateTime
 	toDateTime, err := core.ParseDateTime(modelMap["to_time"].(string))
 	if err != nil {
 		return model, err
@@ -446,6 +447,12 @@ func ResourceIbmLogsViewMapToApisViewsV1TimeSelectionSelectionTypeCustomSelectio
 		}
 		model.CustomSelection = CustomSelectionModel
 	}
+	return model, nil
+}
+
+func ResourceIbmLogsViewMapToApisViewsV1SearchQuery(modelMap map[string]interface{}) (*logsv0.ApisViewsV1SearchQuery, error) {
+	model := &logsv0.ApisViewsV1SearchQuery{}
+	model.Query = core.StringPtr(modelMap["query"].(string))
 	return model, nil
 }
 
@@ -574,7 +581,7 @@ func ResourceIbmLogsViewApisViewsV1FilterToMap(model *logsv0.ApisViewsV1Filter) 
 	modelMap["name"] = *model.Name
 	selectedValues := make(map[string]interface{})
 	for k, v := range model.SelectedValues {
-		selectedValues[k] = flex.PtrToBool(v)
+		selectedValues[k] = flex.Stringify(v)
 	}
 	modelMap["selected_values"] = selectedValues
 	return modelMap, nil
