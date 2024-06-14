@@ -136,7 +136,7 @@ func waitForClusterIntegration(d *schema.ResourceData, meta interface{}, cluster
 			if err != nil {
 				return nil, "", fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
 			}
-			if clusterFields.Lifecycle.MasterStatus == ready || clusterFields.MasterStatus == ready {
+			if (clusterFields.Lifecycle.MasterStatus == ready && clusterFields.Lifecycle.MasterHealth == normal) || (clusterFields.MasterStatus == ready && clusterFields.MasterHealth == normal) {
 				return clusterFields, ready, nil
 			}
 			return clusterFields, deployInProgress, nil

@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.90.1-64fd3296-20240515-180710
+ */
+
 package project
 
 import (
@@ -210,6 +214,7 @@ func ResourceIbmProjectEnvironmentValidator() *validate.ResourceValidator {
 func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
+		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -218,9 +223,9 @@ func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.Reso
 	createProjectEnvironmentOptions := &projectv1.CreateProjectEnvironmentOptions{}
 
 	createProjectEnvironmentOptions.SetProjectID(d.Get("project_id").(string))
-	definitionModel, err := resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(d.Get("definition.0").(map[string]interface{}))
+	definitionModel, err := ResourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(d.Get("definition.0").(map[string]interface{}))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "create", "parse-definition").GetDiag()
 	}
 	createProjectEnvironmentOptions.SetDefinition(definitionModel)
 
@@ -248,8 +253,7 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "sep-id-parts").GetDiag()
 	}
 
 	getProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -266,36 +270,43 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
-	definitionMap, err := resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
+	definitionMap, err := ResourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "definition-to-map").GetDiag()
 	}
 	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
+		err = fmt.Errorf("Error setting definition: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-definition").GetDiag()
 	}
-	projectMap, err := resourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
+	projectMap, err := ResourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "project-to-map").GetDiag()
 	}
 	if err = d.Set("project", []map[string]interface{}{projectMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project: %s", err))
+		err = fmt.Errorf("Error setting project: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-project").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(environment.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-created_at").GetDiag()
 	}
 	if !core.IsNil(environment.TargetAccount) {
 		if err = d.Set("target_account", environment.TargetAccount); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting target_account: %s", err))
+			err = fmt.Errorf("Error setting target_account: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-target_account").GetDiag()
 		}
 	}
 	if err = d.Set("modified_at", flex.DateTimeToString(environment.ModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
+		err = fmt.Errorf("Error setting modified_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-modified_at").GetDiag()
 	}
 	if err = d.Set("href", environment.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("project_environment_id", environment.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_environment_id: %s", err))
+		err = fmt.Errorf("Error setting project_environment_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-project_environment_id").GetDiag()
 	}
 
 	return nil
@@ -313,8 +324,7 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "update")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "update", "sep-id-parts").GetDiag()
 	}
 
 	updateProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -325,13 +335,12 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 	if d.HasChange("project_id") {
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "project_id")
-		tfErr := flex.TerraformErrorf(err, errMsg, "ibm_project_environment", "update")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_project_environment", "update", "project_id-forces-new").GetDiag()
 	}
 	if d.HasChange("definition") {
-		definition, err := resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(d.Get("definition.0").(map[string]interface{}))
+		definition, err := ResourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "update", "parse-definition").GetDiag()
 		}
 		updateProjectEnvironmentOptions.SetDefinition(definition)
 		hasChange = true
@@ -361,8 +370,7 @@ func resourceIbmProjectEnvironmentDelete(context context.Context, d *schema.Reso
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "delete")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "delete", "sep-id-parts").GetDiag()
 	}
 
 	deleteProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -380,14 +388,14 @@ func resourceIbmProjectEnvironmentDelete(context context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionRequiredProperties, error) {
+func ResourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionRequiredProperties, error) {
 	model := &projectv1.EnvironmentDefinitionRequiredProperties{}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
-		AuthorizationsModel, err := resourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
+		AuthorizationsModel, err := ResourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -397,7 +405,7 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(m
 		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
-		ComplianceProfileModel, err := resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
+		ComplianceProfileModel, err := ResourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -406,7 +414,7 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(m
 	return model, nil
 }
 
-func resourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
+func ResourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
 	model := &projectv1.ProjectConfigAuth{}
 	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
 		model.TrustedProfileID = core.StringPtr(modelMap["trusted_profile_id"].(string))
@@ -420,7 +428,7 @@ func resourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap map[string]int
 	return model, nil
 }
 
-func resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfile, error) {
+func ResourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[string]interface{}) (*projectv1.ProjectComplianceProfile, error) {
 	model := &projectv1.ProjectComplianceProfile{}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
@@ -440,7 +448,7 @@ func resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap map[str
 	return model, nil
 }
 
-func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionPropertiesPatch, error) {
+func ResourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(modelMap map[string]interface{}) (*projectv1.EnvironmentDefinitionPropertiesPatch, error) {
 	model := &projectv1.EnvironmentDefinitionPropertiesPatch{}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
@@ -449,7 +457,7 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(mode
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	if modelMap["authorizations"] != nil && len(modelMap["authorizations"].([]interface{})) > 0 {
-		AuthorizationsModel, err := resourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
+		AuthorizationsModel, err := ResourceIbmProjectEnvironmentMapToProjectConfigAuth(modelMap["authorizations"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -459,7 +467,7 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(mode
 		model.Inputs = modelMap["inputs"].(map[string]interface{})
 	}
 	if modelMap["compliance_profile"] != nil && len(modelMap["compliance_profile"].([]interface{})) > 0 {
-		ComplianceProfileModel, err := resourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
+		ComplianceProfileModel, err := ResourceIbmProjectEnvironmentMapToProjectComplianceProfile(modelMap["compliance_profile"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -468,12 +476,12 @@ func resourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(mode
 	return model, nil
 }
 
-func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(model *projectv1.EnvironmentDefinitionRequiredPropertiesResponse) (map[string]interface{}, error) {
+func ResourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(model *projectv1.EnvironmentDefinitionRequiredPropertiesResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["description"] = model.Description
-	modelMap["name"] = model.Name
+	modelMap["description"] = *model.Description
+	modelMap["name"] = *model.Name
 	if model.Authorizations != nil {
-		authorizationsMap, err := resourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
+		authorizationsMap, err := ResourceIbmProjectEnvironmentProjectConfigAuthToMap(model.Authorizations)
 		if err != nil {
 			return modelMap, err
 		}
@@ -484,12 +492,12 @@ func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesRespons
 	if model.Inputs != nil {
 		inputs := make(map[string]interface{})
 		for k, v := range model.Inputs {
-			inputs[k] = fmt.Sprintf("%v", v)
+			inputs[k] = flex.Stringify(v)
 		}
 		modelMap["inputs"] = inputs
 	}
 	if model.ComplianceProfile != nil {
-		complianceProfileMap, err := resourceIbmProjectEnvironmentProjectComplianceProfileToMap(model.ComplianceProfile)
+		complianceProfileMap, err := ResourceIbmProjectEnvironmentProjectComplianceProfileToMap(model.ComplianceProfile)
 		if err != nil {
 			return modelMap, err
 		}
@@ -500,55 +508,55 @@ func resourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesRespons
 	return modelMap, nil
 }
 
-func resourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
+func ResourceIbmProjectEnvironmentProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TrustedProfileID != nil {
-		modelMap["trusted_profile_id"] = model.TrustedProfileID
+		modelMap["trusted_profile_id"] = *model.TrustedProfileID
 	}
 	if model.Method != nil {
-		modelMap["method"] = model.Method
+		modelMap["method"] = *model.Method
 	}
 	if model.ApiKey != nil {
-		modelMap["api_key"] = model.ApiKey
+		modelMap["api_key"] = *model.ApiKey
 	}
 	return modelMap, nil
 }
 
-func resourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
+func ResourceIbmProjectEnvironmentProjectComplianceProfileToMap(model *projectv1.ProjectComplianceProfile) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
 	}
 	if model.InstanceID != nil {
-		modelMap["instance_id"] = model.InstanceID
+		modelMap["instance_id"] = *model.InstanceID
 	}
 	if model.InstanceLocation != nil {
-		modelMap["instance_location"] = model.InstanceLocation
+		modelMap["instance_location"] = *model.InstanceLocation
 	}
 	if model.AttachmentID != nil {
-		modelMap["attachment_id"] = model.AttachmentID
+		modelMap["attachment_id"] = *model.AttachmentID
 	}
 	if model.ProfileName != nil {
-		modelMap["profile_name"] = model.ProfileName
+		modelMap["profile_name"] = *model.ProfileName
 	}
 	return modelMap, nil
 }
 
-func resourceIbmProjectEnvironmentProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
+func ResourceIbmProjectEnvironmentProjectReferenceToMap(model *projectv1.ProjectReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
-	modelMap["href"] = model.Href
-	definitionMap, err := resourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model.Definition)
+	modelMap["id"] = *model.ID
+	modelMap["href"] = *model.Href
+	definitionMap, err := ResourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model.Definition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
-	modelMap["crn"] = model.Crn
+	modelMap["crn"] = *model.Crn
 	return modelMap, nil
 }
 
-func resourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
+func ResourceIbmProjectEnvironmentProjectDefinitionReferenceToMap(model *projectv1.ProjectDefinitionReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }

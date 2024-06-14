@@ -249,8 +249,8 @@ func resourceIBMEnEmailTemplateDelete(context context.Context, d *schema.Resourc
 	return nil
 }
 
-func EmailTemplateParamsMap(configParams map[string]interface{}) en.TemplateConfig {
-	params := new(en.TemplateConfig)
+func EmailTemplateParamsMap(configParams map[string]interface{}) en.TemplateConfigOneOf {
+	params := new(en.TemplateConfigOneOf)
 	if configParams["body"] != nil {
 		params.Body = core.StringPtr(configParams["body"].(string))
 	}

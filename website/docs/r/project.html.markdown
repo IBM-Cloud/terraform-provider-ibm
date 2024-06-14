@@ -63,6 +63,8 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 		* `state` - (String) The state of the configuration.
 		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+		* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+		  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 		* `version` - (Integer) The version number of the configuration.
 	* `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 	* `definition` - (List) The description of a project configuration.
@@ -85,9 +87,11 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 		* `state` - (String) The state of the configuration.
 		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+		* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+		  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 		* `version` - (Integer) The version number of the configuration.
 	* `deployment_model` - (String) The configuration type.
-	  * Constraints: Allowable values are: `project_deployed`, `user_deployed`.
+	  * Constraints: Allowable values are: `project_deployed`, `user_deployed`, `stack`.
 	* `href` - (String) A URL.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `id` - (String) The ID of the configuration. If this parameter is empty, an ID is automatically created for the configuration.

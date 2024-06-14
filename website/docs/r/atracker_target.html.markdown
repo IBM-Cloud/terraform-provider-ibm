@@ -2,18 +2,18 @@
 layout: "ibm"
 page_title: "IBM : ibm_atracker_target"
 description: |-
-  Manages Activity Tracker Target.
-subcategory: "Activity Tracker"
+  Manages Activity Tracker Event Routing Target.
+subcategory: "Activity Tracker Event Routing"
 ---
 
 # ibm_atracker_target
 
-Provides a resource for Activity Tracker Target. This allows Activity Tracker Target to be created, updated and deleted.
+Provides a resource for Activity Tracker Event Routing Target. This allows Activity Tracker Event Routing Target to be created, updated and deleted.
 
 ## Example usage
 
 ```terraform
-resource "ibm_atracker_target" "atracker_target" {
+resource "ibm_atracker_target" "atracker_cos_target" {
   cos_endpoint {
      endpoint = "endpoint"
      target_crn = "target_crn"
@@ -26,7 +26,6 @@ resource "ibm_atracker_target" "atracker_target" {
 }
 
 resource "ibm_atracker_target" "atracker_logdna_target" {
-  target_type = "logdna"
   logdna_endpoint {
     target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     ingestion_key = "xxxxxxxxxxxxxx"
@@ -37,7 +36,6 @@ resource "ibm_atracker_target" "atracker_logdna_target" {
 }
 
 resource "ibm_atracker_target" "atracker_eventstreams_target" {
-  target_type = "event_streams"
   eventstreams_endpoint {
     target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     brokers = ["xxxxx.cloud.ibm.com:9093","yyyyy.cloud.ibm.com:9093"]
@@ -46,6 +44,15 @@ resource "ibm_atracker_target" "atracker_eventstreams_target" {
   }
   name = "my-eventstreams-target"
   target_type = "event_streams"
+  region = "us-south"
+}
+
+resource "ibm_atracker_target" "atracker_cloudlogs_target" {
+  cloudlogs_endpoint {
+    target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+  }
+  name = "my-cloudlogs-target"
+  target_type = "cloud_logs"
   region = "us-south"
 }
 
@@ -81,6 +88,9 @@ Nested scheme for **eventstreams_endpoint**:
   * `brokers` - (List) The list of brokers defined under the Event streams instance and used in the event streams endpoint.
     * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
   * `target_crn` - (String) The CRN of the Event streams instance.
+    * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+* `cloudlogs_endpoint` - (Optional, List) Property Values for IBM Cloud Logs Endpoint.
+  * `target_crn` - (String) The CRN of the IBM Cloud Logs instance.
     * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 * `name` - (Required, String) The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`.
   * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.

@@ -139,6 +139,14 @@ var (
 	MqCloudQueueManagerVersionUpdate string
 )
 
+// Logs
+var (
+	LogsInstanceId                      string
+	LogsInstanceRegion                  string
+	LogsEventNotificationInstanceId     string
+	LogsEventNotificationInstanceRegion string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                     string
@@ -365,6 +373,17 @@ var (
 	PagVpcSubnetNameInstance_2 string
 	PagVpcSgInstance_1         string
 	PagVpcSgInstance_2         string
+)
+
+// For VMware as a Service
+var (
+	Vmaas_Directorsite_id      string
+	Vmaas_Directorsite_pvdc_id string
+)
+
+// For IAM Access Management
+var (
+	TargetAccountId string
 )
 
 func init() {
@@ -1699,6 +1718,22 @@ func init() {
 	if MqCloudQueueManagerVersionUpdate == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
+	LogsInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID")
+	if LogsInstanceId == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_INSTANCE_ID for testing cloud logs related operations")
+	}
+	LogsInstanceRegion = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION")
+	if LogsInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION for testing cloud logs related operations")
+	}
+	LogsEventNotificationInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID")
+	if LogsEventNotificationInstanceId == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID for testing cloud logs related operations")
+	}
+	LogsEventNotificationInstanceRegion = os.Getenv("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION")
+	if LogsEventNotificationInstanceRegion == "" {
+		fmt.Println("[INFO] Set the environment variable IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION for testing cloud logs related operations")
+	}
 
 	PagCosInstanceName = os.Getenv("IBM_PAG_COS_INSTANCE_NAME")
 	if PagCosInstanceName == "" {
@@ -1741,6 +1776,22 @@ func init() {
 	PagVpcSgInstance_2 = os.Getenv("IBM_PAG_VPC_SG_SUBNET_INS_2")
 	if PagVpcSubnetNameInstance_2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_PAG_VPC_SUBNET_INS_2 for testing IBM PAG resource, the tests will fail if this is not set")
+	}
+
+	// For vmware as a service
+	Vmaas_Directorsite_id = os.Getenv("IBM_VMAAS_DS_ID")
+	if Vmaas_Directorsite_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	Vmaas_Directorsite_pvdc_id = os.Getenv("IBM_VMAAS_DS_PVDC_ID")
+	if Vmaas_Directorsite_pvdc_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_VMAAS_DS_PVDC_ID for testing ibm_vmaas_vdc resource else tests will fail if this is not set correctly")
+	}
+
+	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
+	if TargetAccountId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
 	}
 }
 
@@ -1828,6 +1879,30 @@ func TestAccPreCheckCis(t *testing.T) {
 	if CisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
+}
+func TestAccPreCheckCloudLogs(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if LogsInstanceId == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID must be set for acceptance tests")
+	}
+	if LogsInstanceRegion == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_INSTANCE_REGION must be set for acceptance tests")
+	}
+	if LogsEventNotificationInstanceId == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_ID must be set for acceptance tests")
+	}
+	if LogsEventNotificationInstanceRegion == "" {
+		t.Fatal("IBMCLOUD_LOGS_SERVICE_EVENT_NOTIFICATIONS_INSTANCE_REGION must be set for acceptance tests")
+	}
+
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider: %s", diags[0].Summary)
+		}
+	})
 }
 
 func TestAccPreCheckCloudShell(t *testing.T) {
@@ -1994,6 +2069,30 @@ func TestAccPreCheckMqcloud(t *testing.T) {
 	}
 	if MqCloudQueueManagerVersionUpdate == "" {
 		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckCbr(t *testing.T) {
+	TestAccPreCheck(t)
+	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
+	if IAMAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+	cbrEndpoint := os.Getenv("IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT")
+	if cbrEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT for testing cbr related resources. Some tests for that resource will fail if this is not set correctly")
+	}
+}
+
+func TestAccPreCheckVMwareService(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	if Vmaas_Directorsite_id == "" {
+		t.Fatal("IBM_VMAAS_DS_ID must be set for acceptance tests")
+	}
+	if Vmaas_Directorsite_pvdc_id == "" {
+		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
 	}
 }
 

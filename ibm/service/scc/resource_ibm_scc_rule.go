@@ -799,7 +799,7 @@ func resourceIbmSccRuleMapToRequiredConfig(modelMap map[string]interface{}) (sec
 		model.Operator = core.StringPtr(modelMap["operator"].(string))
 	}
 	// Manual Intervention
-	if modelMap["value"] != nil {
+	if modelMap["value"] != nil && len(modelMap["value"].(string)) > 0 {
 		// model.Value = modelMap["value"].(string)
 		sLit := strings.Trim(modelMap["value"].(string), "[]")
 		sList := strings.Split(sLit, ",")
@@ -869,7 +869,7 @@ func resourceIbmSccRuleMapToRequiredConfigBase(modelMap map[string]interface{}) 
 	}
 	model.Property = core.StringPtr(modelMap["property"].(string))
 	model.Operator = core.StringPtr(modelMap["operator"].(string))
-	if modelMap["value"] != nil {
+	if modelMap["value"] != nil && len(modelMap["value"].(string)) > 0 {
 		sLit := strings.Trim(modelMap["value"].(string), "[]")
 		sList := strings.Split(sLit, ",")
 		if len(sList) == 1 {

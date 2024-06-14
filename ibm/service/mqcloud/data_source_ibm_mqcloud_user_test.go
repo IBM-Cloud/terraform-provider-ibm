@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.90.0-5aad763d-20240506-203857
+ */
 
 package mqcloud_test
 
@@ -11,6 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIbmMqcloudUserDataSourceBasic(t *testing.T) {
@@ -50,4 +58,26 @@ func testAccCheckIbmMqcloudUserDataSourceConfigBasic(userDetailsServiceInstanceG
 			name = ibm_mqcloud_user.mqcloud_user_instance.name
 		}
 	`, userDetailsServiceInstanceGuid, userDetailsName, userDetailsEmail)
+}
+
+func TestDataSourceIbmMqcloudUserUserDetailsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+		model["name"] = "testString"
+		model["email"] = "user@host.org"
+		model["href"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(mqcloudv1.UserDetails)
+	model.ID = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+	model.Email = core.StringPtr("user@host.org")
+	model.Href = core.StringPtr("testString")
+
+	result, err := mqcloud.DataSourceIbmMqcloudUserUserDetailsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }
