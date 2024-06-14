@@ -139,6 +139,13 @@ func DataSourceIBMTransitGateway() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						tgDefaultPrefixFilter: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_tg_connection_prefix_filter", tgAction),
+							Description:  "Whether to permit or deny the prefix filter",
+						},
 					},
 				},
 			},
@@ -283,6 +290,9 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 			}
 			if instance.Status != nil {
 				tgConn[tgConnectionStatus] = *instance.Status
+			}
+			if instance.PrefixFiltersDefault != nil {
+				tgConn[tgDefaultPrefixFilter] = *instance.PrefixFiltersDefault
 			}
 
 			connections = append(connections, tgConn)
