@@ -381,7 +381,6 @@ func DataSourceIbmIsShares() *schema.Resource {
 						},
 						"origin_share": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Computed:    true,
 							Description: "The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.",
 							Elem: &schema.Resource{

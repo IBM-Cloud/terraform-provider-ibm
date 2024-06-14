@@ -37,7 +37,7 @@ func DataSourceIbmIsShare() *schema.Resource {
 			},
 			"allowed_transit_encryption_modes": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Allowed transit encryption modes",
 			},
@@ -367,7 +367,6 @@ func DataSourceIbmIsShare() *schema.Resource {
 			},
 			"origin_share": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.",
 				Elem: &schema.Resource{
