@@ -828,14 +828,14 @@ func TestAccIBMCosBucket_ActivityTracker_Read_True_Write_True_ManagementEvents_T
 	readDataEvents := true
 	writeDataEvents := true
 	managementEvents := true
-	activityTrackerInstanceCRN := acc.ActivityTrackerInstanceCRN
+	crnValue := "Invalid"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, activityTrackerInstanceCRN, readDataEvents, writeDataEvents, managementEvents),
+				Config:      testAccCheckIBMCosBucket_activityTracker_With_Crn(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, crnValue, readDataEvents, writeDataEvents, managementEvents),
 				ExpectError: regexp.MustCompile("Error Update COS Bucket: Malformed activity tracker CRN"),
 			},
 		},

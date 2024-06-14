@@ -992,14 +992,21 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 				}
 
 				//crn - Optional field
-				if activityMap["activity_tracker_crn"] != nil {
-					crnSet := activityMap["activity_tracker_crn"]
-					crnstring := crnSet.(string)
-					if crnstring != "" {
-						crn := activityMap["activity_tracker_crn"].(string)
-						activityTracker.ActivityTrackerCrn = &crn
-					}
 
+				oldATCrnValue, newATCrnValue := d.GetChange("activity_tracking.0.activity_tracker_crn")
+				if newATCrnValue != "" {
+					if activityMap["activity_tracker_crn"] != nil {
+						crnSet := activityMap["activity_tracker_crn"]
+						crnstring := crnSet.(string)
+						if crnstring != "" {
+							crn := activityMap["activity_tracker_crn"].(string)
+							activityTracker.ActivityTrackerCrn = &crn
+						}
+
+					}
+				} else if oldATCrnValue != "" && newATCrnValue == "" {
+					println("this is upgrading to new config")
+					activityTracker.ActivityTrackerCrn = aws.String("")
 				}
 			}
 		}
@@ -1026,13 +1033,19 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 					metricsMonitoring.RequestMetricsEnabled = &metrics
 				}
 				//crn - optional field
-				if metricsMap["metrics_monitoring_crn"] != nil {
-					crnSet := metricsMap["metrics_monitoring_crn"]
-					crnstring := crnSet.(string)
-					if crnstring != "" {
-						crn := crnSet.(string)
-						metricsMonitoring.MetricsMonitoringCrn = &crn
+				oldMMCrnValue, newMMCrnValue := d.GetChange("metrics_monitoring.0.metrics_monitoring_crn")
+				if newMMCrnValue != "" {
+					if metricsMap["metrics_monitoring_crn"] != nil {
+						crnSet := metricsMap["metrics_monitoring_crn"]
+						crnstring := crnSet.(string)
+						if crnstring != "" {
+							crn := crnSet.(string)
+							metricsMonitoring.MetricsMonitoringCrn = &crn
+						}
 					}
+				} else if oldMMCrnValue != "" && newMMCrnValue == "" {
+					println("Setting the metricsMonitoring crn as null")
+					metricsMonitoring.MetricsMonitoringCrn = aws.String("")
 				}
 			}
 		}
