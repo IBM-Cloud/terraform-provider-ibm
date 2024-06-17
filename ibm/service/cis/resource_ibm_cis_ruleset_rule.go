@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/networking-go-sdk/rulesetsv1"
@@ -71,7 +72,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 									Description: "Rules",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											CISRulesetsId: {
+											CISRulesetRuleId: {
 												Type:        schema.TypeString,
 												Optional:    true,
 												Description: "Id of the Ruleset",
@@ -254,7 +255,7 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 				Description: "Associated Ruleset ID",
 				Required:    true,
 			},
-			CISRulesetsRules: {
+			CISRulesetsRule: {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Rules of the Rulesets",
@@ -294,7 +295,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		sess.ZoneIdentifier = core.StringPtr(zoneId)
 		opt := sess.NewCreateZoneRulesetRuleOptions(rulesetId)
 
-		rulesObject := d.Get(CISRulesetsRules).([]interface{})[0].(map[string]interface{})
+		rulesObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetExpression(rulesObject[CISRulesetsRuleExpression].(string))
@@ -320,13 +321,15 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", resp)
 		}
+		len_rules := len(result.Result.Rules)
+		opt.SetID(*result.Result.Rules[len_rules-1].ID)
 
-		d.SetId(*result.Result.ID)
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, *result.Result.Rules[len_rules-1].ID))
 
 	} else {
 		opt := sess.NewCreateInstanceRulesetRuleOptions(rulesetId)
 
-		rulesObject := d.Get(CISRulesetsRules).([]interface{})[0].(map[string]interface{})
+		rulesObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetExpression(rulesObject[CISRulesetsRuleExpression].(string))
@@ -369,10 +372,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	crn := d.Get(cisID).(string)
-	zoneId := d.Get(cisDomainID).(string)
-	rulesetId := d.Get(CISRulesetsId).(string)
-	ruleId := d.Id()
+	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
@@ -380,33 +380,33 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 
 		opt := sess.NewUpdateZoneRulesetRuleOptions(rulesetId, ruleId)
 
-		rulesetsRuleObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
+		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 		opt.SetActionParameters(&actionParameters)
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
-		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
+		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
 		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		opt.SetPosition(&position)
 
-		opt.SetRulesetID(ruleId)
+		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
 
-		result, _, err := sess.UpdateZoneRulesetRule(opt)
+		_, _, err := sess.UpdateZoneRulesetRule(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
-		d.SetId(*result.Result.ID)
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
 
 	} else {
 		opt := sess.NewUpdateInstanceRulesetRuleOptions(rulesetId, ruleId)
 
-		rulesetsRuleObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
+		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
 		actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
@@ -417,17 +417,17 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
 		opt.SetPosition(&position)
 
-		opt.SetRulesetID(ruleId)
+		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
 
-		result, _, err := sess.UpdateInstanceRulesetRule(opt)
+		_, _, err := sess.UpdateInstanceRulesetRule(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
-		d.SetId(*result.Result.ID)
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
 	}
 	return nil
 }
@@ -438,14 +438,12 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
-	crn := d.Get(cisID).(string)
+
+	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
-	zoneId := d.Get(cisDomainID).(string)
-	rulesetId := d.Get(CISRulesetsId).(string)
-	ruleId := d.Id()
-
 	if zoneId != "" {
+		sess.ZoneIdentifier = core.StringPtr(zoneId)
 		opt := sess.NewDeleteZoneRulesetRuleOptions(rulesetId, ruleId)
 		_, res, err := sess.DeleteZoneRulesetRule(opt)
 		if err != nil {
@@ -461,4 +459,8 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 
 	d.SetId("")
 	return nil
+}
+
+func dataSourceCISRulesetsRuleCheckID(d *schema.ResourceData, ruleId string) string {
+	return ruleId + ":" + d.Get(CISRulesetsId).(string) + ":" + d.Get(cisDomainID).(string) + ":" + d.Get(cisID).(string)
 }
