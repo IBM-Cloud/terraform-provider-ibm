@@ -780,6 +780,7 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// MQ on Cloud
+			"ibm_mqcloud_queue_manager_options":  mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
 			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
 			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
 			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
@@ -940,6 +941,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_view_folders":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
 			"ibm_logs_view":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
 			"ibm_logs_views":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
+			"ibm_logs_dashboard_folders": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1506,6 +1508,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_outgoing_webhook": logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
 			"ibm_logs_view_folder":      logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
 			"ibm_logs_view":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
+			"ibm_logs_dashboard_folder": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1943,6 +1946,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_e2m":              logs.ResourceIbmLogsE2mValidator(),
 				"ibm_logs_view":             logs.ResourceIbmLogsViewValidator(),
 				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
+				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),

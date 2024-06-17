@@ -25,44 +25,43 @@ func DataSourceIbmLogsOutgoingWebhooks() *schema.Resource {
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "ibm_event_notifications",
-				Description: "Outbound webhook type.",
+				Description: "The type of the deployed Outbound Integrations to list.",
 			},
 			"outgoing_webhooks": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of deployed outbound webhooks.",
+				Description: "The list of deployed Outbound Integrations.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the outbound webhook.",
+							Description: "The ID of the Outbound Integration.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of the outbound webhook.",
+							Description: "The name of the Outbound Integration.",
 						},
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the outbound webhook.",
+							Description: "The URL of the Outbound Integration. Null for IBM Event Notifications integration.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The creation time of the outbound webhook.",
+							Description: "The creation time of the Outbound Integration.",
 						},
 						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The update time of the outbound webhook.",
+							Description: "The update time of the Outbound Integration.",
 						},
 						"external_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The external ID of the outbound webhook.",
+							Description: "The external ID of the Outbound Integration, for connecting with other parts of the system.",
 						},
 					},
 				},
@@ -78,7 +77,6 @@ func dataSourceIbmLogsOutgoingWebhooksRead(context context.Context, d *schema.Re
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))

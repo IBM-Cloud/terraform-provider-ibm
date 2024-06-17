@@ -8,6 +8,7 @@ The following resources are supported:
 * ibm_logs_outgoing_webhook
 * ibm_logs_policy
 * ibm_logs_dashboard
+* ibm_logs_dashboard_folder
 * ibm_logs_e2m
 * ibm_logs_view
 * ibm_logs_view_folder
@@ -22,6 +23,7 @@ The following data sources are supported:
 * ibm_logs_policy
 * ibm_logs_policies
 * ibm_logs_dashboard
+* ibm_logs_dashboard_folders
 * ibm_logs_e2m
 * ibm_logs_e2ms
 * ibm_logs_view
@@ -59,7 +61,6 @@ resource "ibm_logs_alert" "logs_alert_instance" {
   notification_payload_filters = var.logs_alert_notification_payload_filters
   meta_labels = var.logs_alert_meta_labels
   meta_labels_strings = var.logs_alert_meta_labels_strings
-  tracing_alert = var.logs_alert_tracing_alert
   incident_settings = var.logs_alert_incident_settings
 }
 ```
@@ -81,7 +82,6 @@ resource "ibm_logs_alert" "logs_alert_instance" {
 | notification_payload_filters | JSON keys to include in the alert notification, if left empty get the full log text in the alert notification. | `list(string)` | false |
 | meta_labels | The Meta labels to add to the alert. | `list()` | false |
 | meta_labels_strings | The Meta labels to add to the alert as string with ':' separator. | `list(string)` | false |
-| tracing_alert | The definition for tracing alert. | `` | false |
 | incident_settings | Incident settings, will create the incident based on this configuration. | `` | false |
 
 #### Outputs
@@ -131,18 +131,18 @@ resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| type | Outbound webhook type. | `string` | true |
-| name | The name of the outbound webhook. | `string` | true |
-| url | The URL of the outbound webhook. | `string` | true |
-| ibm_event_notifications | The configuration of an IBM Event Notifications outbound webhook. | `` | false |
+| type | The type of the deployed Outbound Integrations to list. | `string` | true |
+| name | The name of the Outbound Integration. | `string` | true |
+| url | The URL of the Outbound Integration. Null for IBM Event Notifications integration. | `string` | false |
+| ibm_event_notifications | The configuration of the IBM Event Notifications Outbound Integration. | `` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| created_at | The creation time of the outbound webhook. |
-| updated_at | The update time of the outbound webhook. |
-| external_id | The external ID of the outbound webhook. |
+| created_at | The creation time of the Outbound Integration. |
+| updated_at | The update time of the Outbound Integration. |
+| external_id | The external ID of the Outbound Integration, for connecting with other parts of the system. |
 
 ### Resource: ibm_logs_policy
 
@@ -163,24 +163,24 @@ resource "ibm_logs_policy" "logs_policy_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| name | name of policy. | `string` | true |
-| description | description of policy. | `string` | false |
-| priority | the data pipeline sources that match the policy rules will go through. | `string` | true |
-| application_rule | rule for matching with application. | `` | false |
-| subsystem_rule | rule for matching with application. | `` | false |
-| archive_retention | archive retention definition. | `` | false |
-| log_rules | log rules. | `` | false |
+| name | Name of policy. | `string` | true |
+| description | Description of policy. | `string` | false |
+| priority | The data pipeline sources that match the policy rules will go through. | `string` | true |
+| application_rule | Rule for matching with application. | `` | false |
+| subsystem_rule | Rule for matching with application. | `` | false |
+| archive_retention | Archive retention definition. | `` | false |
+| log_rules | Log rules. | `` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| company_id | company id. |
-| deleted | soft deletion flag. |
-| enabled | enabled flag. |
-| order | order of policy in relation to other policies. |
-| created_at | created at timestamp. |
-| updated_at | updated at timestamp. |
+| company_id | Company ID. |
+| deleted | Soft deletion flag. |
+| enabled | Enabled flag. |
+| order | Order of policy in relation to other policies. |
+| created_at | Created at date at utc+0. |
+| updated_at | Updated at date at utc+0. |
 
 ### Resource: ibm_logs_dashboard
 
@@ -219,9 +219,26 @@ resource "ibm_logs_dashboard" "logs_dashboard_instance" {
 | relative_time_frame | Relative time frame specifying a duration from the current time. | `string` | false |
 | folder_id | Unique identifier of the folder containing the dashboard. | `` | false |
 | folder_path | Path of the folder containing the dashboard. | `` | false |
-| false |  | `bool` | false |
-| two_minutes |  | `bool` | false |
-| five_minutes |  | `bool` | false |
+| false | Auto refresh interval is set to off. | `` | false |
+| two_minutes | Auto refresh interval is set to two minutes. | `` | false |
+| five_minutes | Auto refresh interval is set to five minutes. | `` | false |
+
+### Resource: ibm_logs_dashboard_folder
+
+```hcl
+resource "ibm_logs_dashboard_folder" "logs_dashboard_folder_instance" {
+  name = var.logs_dashboard_folder_name
+  parent_id = var.logs_dashboard_folder_parent_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The dashboard folder name, required. | `string` | true |
+| parent_id | The dashboard folder parent ID, optional. If not set, the folder is a root folder, if set, the folder is a subfolder of the parent folder and needs to be a uuid. | `` | false |
 
 ### Resource: ibm_logs_e2m
 
@@ -232,7 +249,6 @@ resource "ibm_logs_e2m" "logs_e2m_instance" {
   metric_labels = var.logs_e2m_metric_labels
   metric_fields = var.logs_e2m_metric_fields
   type = var.logs_e2m_type
-  spans_query = var.logs_e2m_spans_query
   logs_query = var.logs_e2m_logs_query
 }
 ```
@@ -242,13 +258,12 @@ resource "ibm_logs_e2m" "logs_e2m_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| name | E2M name. | `string` | true |
-| description | E2m description. | `string` | false |
+| name | Name of the E2M. | `string` | true |
+| description | Description of the E2M. | `string` | false |
 | metric_labels | E2M metric labels. | `list()` | false |
 | metric_fields | E2M metric fields. | `list()` | false |
-| type | e2m type. | `string` | false |
-| spans_query | spans query. | `` | false |
-| logs_query | logs query. | `` | false |
+| type | E2M type. | `string` | false |
+| logs_query | E2M logs query. | `` | false |
 
 #### Outputs
 
@@ -256,8 +271,8 @@ resource "ibm_logs_e2m" "logs_e2m_instance" {
 |------|-------------|
 | create_time | E2M create time. |
 | update_time | E2M update time. |
-| permutations | represents E2M permutations limit. |
-| is_internal | a flag that represents if the e2m is for internal usage. |
+| permutations | Represents the limit of the permutations and if the limit was exceeded. |
+| is_internal | A flag that represents if the e2m is for internal usage. |
 
 ### Resource: ibm_logs_view
 
@@ -277,10 +292,10 @@ resource "ibm_logs_view" "logs_view_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | View name. | `string` | true |
-| search_query | View search query. | `` | true |
+| search_query | View search query. | `` | false |
 | time_selection | View time selection. | `` | true |
 | filters | View selected filters. | `` | false |
-| folder_id | View folder id. | `` | false |
+| folder_id | View folder ID. | `` | false |
 
 ### Resource: ibm_logs_view_folder
 
@@ -311,7 +326,7 @@ data "ibm_logs_alert" "logs_alert_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| logs_alert_id | Alert id. | `` | true |
+| logs_alert_id | Alert ID. | `` | true |
 
 #### Outputs
 
@@ -329,7 +344,6 @@ data "ibm_logs_alert" "logs_alert_instance" {
 | notification_payload_filters | JSON keys to include in the alert notification, if left empty get the full log text in the alert notification. |
 | meta_labels | The Meta labels to add to the alert. |
 | meta_labels_strings | The Meta labels to add to the alert as string with ':' separator. |
-| tracing_alert | The definition for tracing alert. |
 | unique_identifier | Alert unique identifier. |
 | incident_settings | Incident settings, will create the incident based on this configuration. |
 
@@ -358,7 +372,7 @@ data "ibm_logs_rule_group" "logs_rule_group_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| group_id | The group id. | `` | true |
+| group_id | The group ID. | `` | true |
 
 #### Outputs
 
@@ -396,13 +410,13 @@ data "ibm_logs_outgoing_webhooks" "logs_outgoing_webhooks_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| type | Outbound webhook type. | `string` | false |
+| type | The type of the deployed Outbound Integrations to list. | `string` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| outgoing_webhooks | List of deployed outbound webhooks. |
+| outgoing_webhooks | The list of deployed Outbound Integrations. |
 
 ### Data source: ibm_logs_outgoing_webhook
 
@@ -416,19 +430,19 @@ data "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| logs_outgoing_webhook_id | Outbound webhook ID. | `string` | true |
+| logs_outgoing_webhook_id | The ID of the Outbound Integration to delete. | `` | true |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| type | Outbound webhook type. |
-| name | The name of the outbound webhook. |
-| url | The URL of the outbound webhook. |
-| created_at | The creation time of the outbound webhook. |
-| updated_at | The update time of the outbound webhook. |
-| external_id | The external ID of the outbound webhook. |
-| ibm_event_notifications | The configuration of an IBM Event Notifications outbound webhook. |
+| type | The type of the deployed Outbound Integrations to list. |
+| name | The name of the Outbound Integration. |
+| url | The URL of the Outbound Integration. Null for IBM Event Notifications integration. |
+| created_at | The creation time of the Outbound Integration. |
+| updated_at | The update time of the Outbound Integration. |
+| external_id | The external ID of the Outbound Integration, for connecting with other parts of the system. |
+| ibm_event_notifications | The configuration of the IBM Event Notifications Outbound Integration. |
 
 ### Data source: ibm_logs_policy
 
@@ -442,25 +456,25 @@ data "ibm_logs_policy" "logs_policy_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| logs_policy_id | id of policy. | `string` | true |
+| logs_policy_id | ID of policy. | `` | true |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| company_id | company id. |
-| name | name of policy. |
-| description | description of policy. |
-| priority | the data pipeline sources that match the policy rules will go through. |
-| deleted | soft deletion flag. |
-| enabled | enabled flag. |
-| order | order of policy in relation to other policies. |
-| application_rule | rule for matching with application. |
-| subsystem_rule | rule for matching with application. |
-| created_at | created at timestamp. |
-| updated_at | updated at timestamp. |
-| archive_retention | archive retention definition. |
-| log_rules | log rules. |
+| company_id | Company ID. |
+| name | Name of policy. |
+| description | Description of policy. |
+| priority | The data pipeline sources that match the policy rules will go through. |
+| deleted | Soft deletion flag. |
+| enabled | Enabled flag. |
+| order | Order of policy in relation to other policies. |
+| application_rule | Rule for matching with application. |
+| subsystem_rule | Rule for matching with application. |
+| created_at | Created at date at utc+0. |
+| updated_at | Updated at date at utc+0. |
+| archive_retention | Archive retention definition. |
+| log_rules | Log rules. |
 
 ### Data source: ibm_logs_policies
 
@@ -475,14 +489,14 @@ data "ibm_logs_policies" "logs_policies_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| enabled_only | optionally filter only enabled policies. | `bool` | false |
+| enabled_only | Optionally filter only enabled policies. | `bool` | false |
 | source_type | Source type to filter policies by. | `string` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| policies | company policies. |
+| policies | Company policies. |
 
 ### Data source: ibm_logs_dashboard
 
@@ -513,9 +527,22 @@ data "ibm_logs_dashboard" "logs_dashboard_instance" {
 | relative_time_frame | Relative time frame specifying a duration from the current time. |
 | folder_id | Unique identifier of the folder containing the dashboard. |
 | folder_path | Path of the folder containing the dashboard. |
-| false |  |
-| two_minutes |  |
-| five_minutes |  |
+| false | Auto refresh interval is set to off. |
+| two_minutes | Auto refresh interval is set to two minutes. |
+| five_minutes | Auto refresh interval is set to five minutes. |
+
+### Data source: ibm_logs_dashboard_folders
+
+```hcl
+data "ibm_logs_dashboard_folders" "logs_dashboard_folders_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| folders | The list of folders. |
 
 ### Data source: ibm_logs_e2m
 
@@ -529,23 +556,22 @@ data "ibm_logs_e2m" "logs_e2m_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| logs_e2m_id | id of e2m to be deleted. | `string` | true |
+| logs_e2m_id | ID of e2m to be deleted. | `string` | true |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| name | E2M name. |
-| description | E2m description. |
+| name | Name of the E2M. |
+| description | Description of the E2M. |
 | create_time | E2M create time. |
 | update_time | E2M update time. |
-| permutations | represents E2M permutations limit. |
+| permutations | Represents the limit of the permutations and if the limit was exceeded. |
 | metric_labels | E2M metric labels. |
 | metric_fields | E2M metric fields. |
-| type | e2m type. |
-| is_internal | a flag that represents if the e2m is for internal usage. |
-| spans_query | spans query. |
-| logs_query | logs query. |
+| type | E2M type. |
+| is_internal | A flag that represents if the e2m is for internal usage. |
+| logs_query | E2M logs query. |
 
 ### Data source: ibm_logs_e2ms
 
@@ -572,7 +598,7 @@ data "ibm_logs_view" "logs_view_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| logs_view_id | View id. | `number` | true |
+| logs_view_id | View ID. | `number` | true |
 
 #### Outputs
 
@@ -582,7 +608,7 @@ data "ibm_logs_view" "logs_view_instance" {
 | search_query | View search query. |
 | time_selection | View time selection. |
 | filters | View selected filters. |
-| folder_id | View folder id. |
+| folder_id | View folder ID. |
 
 ### Data source: ibm_logs_views
 
@@ -609,7 +635,7 @@ data "ibm_logs_view_folder" "logs_view_folder_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| logs_view_folder_id | Folder id. | `` | true |
+| logs_view_folder_id | Folder ID. | `` | true |
 
 #### Outputs
 
