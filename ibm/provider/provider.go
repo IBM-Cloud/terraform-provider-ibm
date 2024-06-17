@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -568,6 +568,12 @@ func Provider() *schema.Provider {
 			"ibm_kms_key_policies":                   kms.DataSourceIBMKMSkeyPolicies(),
 			"ibm_kms_keys":                           kms.DataSourceIBMKMSkeys(),
 			"ibm_kms_key":                            kms.DataSourceIBMKMSkey(),
+			"ibm_kms_kmip_adapter":                   kms.DataSourceIBMKMSKmipAdapter(),
+			"ibm_kms_kmip_adapters":                  kms.DataSourceIBMKMSKmipAdapters(),
+			"ibm_kms_kmip_client_cert":               kms.DataSourceIBMKmsKMIPClientCertificate(),
+			"ibm_kms_kmip_client_certs":              kms.DataSourceIBMKmsKMIPClientCertificates(),
+			"ibm_kms_kmip_object":                    kms.DataSourceIBMKMSKMIPObject(),
+			"ibm_kms_kmip_objects":                   kms.DataSourceIBMKMSKMIPObjects(),
 			"ibm_pn_application_chrome":              pushnotification.DataSourceIBMPNApplicationChrome(),
 			"ibm_app_config_environment":             appconfiguration.DataSourceIBMAppConfigEnvironment(),
 			"ibm_app_config_environments":            appconfiguration.DataSourceIBMAppConfigEnvironments(),
@@ -774,6 +780,7 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// MQ on Cloud
+			"ibm_mqcloud_queue_manager_options":  mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
 			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
 			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
 			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
@@ -1103,6 +1110,7 @@ func Provider() *schema.Provider {
 			"ibm_ipsec_vpn":                                classicinfrastructure.ResourceIBMIPSecVPN(),
 			"ibm_iam_policy_template":                      iampolicy.ResourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":              iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
+			"ibm_iam_policy_assignment":                    iampolicy.ResourceIBMIAMPolicyAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1215,6 +1223,8 @@ func Provider() *schema.Provider {
 			"ibm_kms_key_policies":                          kms.ResourceIBMKmskeyPolicies(),
 			"ibm_kp_key":                                    kms.ResourceIBMkey(),
 			"ibm_kms_instance_policies":                     kms.ResourceIBMKmsInstancePolicy(),
+			"ibm_kms_kmip_adapter":                          kms.ResourceIBMKmsKMIPAdapter(),
+			"ibm_kms_kmip_client_cert":                      kms.ResourceIBMKmsKMIPClientCertificate(),
 			"ibm_resource_group":                            resourcemanager.ResourceIBMResourceGroup(),
 			"ibm_resource_instance":                         resourcecontroller.ResourceIBMResourceInstance(),
 			"ibm_resource_key":                              resourcecontroller.ResourceIBMResourceKey(),

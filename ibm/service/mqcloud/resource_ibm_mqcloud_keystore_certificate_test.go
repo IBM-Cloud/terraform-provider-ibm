@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -14,7 +14,10 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIbmMqcloudKeystoreCertificateBasic(t *testing.T) {
@@ -125,4 +128,70 @@ func testAccCheckIbmMqcloudKeystoreCertificateDestroy(s *terraform.State) error 
 	}
 
 	return nil
+}
+
+func TestResourceIbmMqcloudKeystoreCertificateCertificateConfigurationToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		channelDetailsModel := make(map[string]interface{})
+		channelDetailsModel["name"] = "CLOUD.APP.SVRCONN"
+
+		channelsDetailsModel := make(map[string]interface{})
+		channelsDetailsModel["channels"] = []map[string]interface{}{channelDetailsModel}
+
+		model := make(map[string]interface{})
+		model["ams"] = []map[string]interface{}{channelsDetailsModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	channelDetailsModel := new(mqcloudv1.ChannelDetails)
+	channelDetailsModel.Name = core.StringPtr("CLOUD.APP.SVRCONN")
+
+	channelsDetailsModel := new(mqcloudv1.ChannelsDetails)
+	channelsDetailsModel.Channels = []mqcloudv1.ChannelDetails{*channelDetailsModel}
+
+	model := new(mqcloudv1.CertificateConfiguration)
+	model.Ams = channelsDetailsModel
+
+	result, err := mqcloud.ResourceIbmMqcloudKeystoreCertificateCertificateConfigurationToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmMqcloudKeystoreCertificateChannelsDetailsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		channelDetailsModel := make(map[string]interface{})
+		channelDetailsModel["name"] = "CLOUD.APP.SVRCONN"
+
+		model := make(map[string]interface{})
+		model["channels"] = []map[string]interface{}{channelDetailsModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	channelDetailsModel := new(mqcloudv1.ChannelDetails)
+	channelDetailsModel.Name = core.StringPtr("CLOUD.APP.SVRCONN")
+
+	model := new(mqcloudv1.ChannelsDetails)
+	model.Channels = []mqcloudv1.ChannelDetails{*channelDetailsModel}
+
+	result, err := mqcloud.ResourceIbmMqcloudKeystoreCertificateChannelsDetailsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmMqcloudKeystoreCertificateChannelDetailsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["name"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(mqcloudv1.ChannelDetails)
+	model.Name = core.StringPtr("testString")
+
+	result, err := mqcloud.ResourceIbmMqcloudKeystoreCertificateChannelDetailsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.90.0-5aad763d-20240506-203857
+ */
 
 package mqcloud_test
 
@@ -11,6 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
@@ -18,7 +27,7 @@ func TestAccIbmMqcloudQueueManagerDataSourceBasic(t *testing.T) {
 	queueManagerDetailsServiceInstanceGuid := acc.MqcloudInstanceID
 	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_basic%d", acctest.RandIntRange(10, 100))
 	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
-	queueManagerDetailsSize := "small"
+	queueManagerDetailsSize := "xsmall"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckMqcloud(t) },
@@ -45,8 +54,8 @@ func TestAccIbmMqcloudQueueManagerDataSourceAllArgs(t *testing.T) {
 	queueManagerDetailsName := fmt.Sprintf("tf_queue_manager_ds_allargs%d", acctest.RandIntRange(10, 100))
 	queueManagerDetailsDisplayName := queueManagerDetailsName
 	queueManagerDetailsLocation := acc.MqCloudQueueManagerLocation
-	queueManagerDetailsSize := "small"
-	queueManagerDetailsVersion := acc.MqCloudQueueManagerVersion
+	queueManagerDetailsSize := "xsmall"
+	queueManagerDetailsVersion := acc.MqCloudQueueManagerVersionUpdate
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckMqcloud(t) },
@@ -112,4 +121,48 @@ func testAccCheckIbmMqcloudQueueManagerDataSourceConfig(queueManagerDetailsServi
 			name = ibm_mqcloud_queue_manager.mqcloud_queue_manager_instance.name
 		}
 	`, queueManagerDetailsServiceInstanceGuid, queueManagerDetailsName, queueManagerDetailsDisplayName, queueManagerDetailsLocation, queueManagerDetailsSize, queueManagerDetailsVersion)
+}
+
+func TestDataSourceIbmMqcloudQueueManagerQueueManagerDetailsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+		model["name"] = "testString"
+		model["display_name"] = "testString"
+		model["location"] = "reserved-eu-de-cluster-f884"
+		model["size"] = "xsmall"
+		model["status_uri"] = "testString"
+		model["version"] = "9.3.2_2"
+		model["web_console_url"] = "testString"
+		model["rest_api_endpoint_url"] = "testString"
+		model["administrator_api_endpoint_url"] = "testString"
+		model["connection_info_uri"] = "testString"
+		model["date_created"] = "2020-01-13T15:39:35.000Z"
+		model["upgrade_available"] = true
+		model["available_upgrade_versions_uri"] = "testString"
+		model["href"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(mqcloudv1.QueueManagerDetails)
+	model.ID = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+	model.DisplayName = core.StringPtr("testString")
+	model.Location = core.StringPtr("reserved-eu-de-cluster-f884")
+	model.Size = core.StringPtr("xsmall")
+	model.StatusURI = core.StringPtr("testString")
+	model.Version = core.StringPtr("9.3.2_2")
+	model.WebConsoleURL = core.StringPtr("testString")
+	model.RestApiEndpointURL = core.StringPtr("testString")
+	model.AdministratorApiEndpointURL = core.StringPtr("testString")
+	model.ConnectionInfoURI = core.StringPtr("testString")
+	model.DateCreated = CreateMockDateTime("2020-01-13T15:39:35.000Z")
+	model.UpgradeAvailable = core.BoolPtr(true)
+	model.AvailableUpgradeVersionsURI = core.StringPtr("testString")
+	model.Href = core.StringPtr("testString")
+
+	result, err := mqcloud.DataSourceIbmMqcloudQueueManagerQueueManagerDetailsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

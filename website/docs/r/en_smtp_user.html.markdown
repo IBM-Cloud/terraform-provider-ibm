@@ -44,6 +44,8 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `100` characters. The minimum length is `32` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/`.
 * `username` - (String) SMTP user name.
   * Constraints: The maximum length is `250` characters. The minimum length is `3` characters. The value must match regular expression `/.*/`.
+* `password` - (String) SMTP user password.
+  * Constraints: The maximum length is `250` characters. The minimum length is `3` characters. The value must match regular expression `/.*/`.  
 
 
 ## Import
@@ -59,5 +61,5 @@ The `id` property can be formed from `instance_id`, and `user_id` in the followi
 
 # Syntax
 <pre>
-$ terraform import ibm_en_smtp_user.en_smtp_user &lt;instance_id&gt;/&lt;user_id&gt;
+$ terraform import ibm_en_smtp_user.en_smtp_user <instance_id>/<user_id>
 </pre>

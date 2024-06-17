@@ -122,12 +122,6 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.",
 			},
-			"alt_names": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
 			"key_algorithm": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -385,11 +379,6 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	}
 	if err = d.Set("signing_algorithm", secret.SigningAlgorithm); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
-	}
-	if secret.AltNames != nil {
-		if err = d.Set("alt_names", secret.AltNames); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
-		}
 	}
 	if err = d.Set("common_name", secret.CommonName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))

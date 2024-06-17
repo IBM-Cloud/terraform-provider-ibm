@@ -56,3 +56,8 @@ variable "billing_snapshot_list_date_to" {
   type        = number
   default     = 1675987200000
 }
+variable "billing_snapshot_list_limit" {
+  description = "Number of usage records returned. The default value is 30. Maximum value is 200."
+  type        = number
+  default     = 0
+}

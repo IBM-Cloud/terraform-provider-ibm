@@ -149,7 +149,7 @@ func testAccCheckIBMKmsKeyDataSourceKeyConfig(instanceName, keyName string) stri
 		limit = 2
 		key_name = "${ibm_kms_key.test.key_name}"
 	}
-`, instanceName, keyName)
+`, addPrefixToResourceName(instanceName), keyName)
 }
 
 func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string {
@@ -170,7 +170,7 @@ func testAccCheckIBMKmsKeyDataSourceConfig(instanceName, keyName string) string 
 		instance_id = "${ibm_kms_key.test.instance_id}"
 		key_name = "${ibm_kms_key.test.key_name}"
 	}
-`, instanceName, keyName)
+`, addPrefixToResourceName(instanceName), keyName)
 }
 
 func testAccCheckIBMKmsKeyDataSourceConfigAndDescription(instanceName, keyName string, description string) string {
@@ -192,7 +192,7 @@ func testAccCheckIBMKmsKeyDataSourceConfigAndDescription(instanceName, keyName s
 		instance_id = "${ibm_kms_key.test.instance_id}"
 		key_name = "${ibm_kms_key.test.key_name}"
 	}
-`, instanceName, keyName, description)
+`, addPrefixToResourceName(instanceName), keyName, description)
 }
 
 func testAccCheckIBMKmsKeyDataSourceHpcsConfig(hpcsInstanceID string, KeyName string) string {
@@ -239,5 +239,5 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfig(instanceName, keyName string, i
 		instance_id = "${ibm_kms_key_policies.testPolicy.instance_id}"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
-`, instanceName, keyName, interval_month, enabled)
+`, addPrefixToResourceName(instanceName), keyName, interval_month, enabled)
 }
