@@ -192,6 +192,7 @@ func ResourceIbmLogsDashboard() *schema.Resource {
 																								"columns": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Optional:    true,
+																									Computed:    true,
 																									Description: "The columns to show in the legend.",
 																									Elem:        &schema.Schema{Type: schema.TypeString},
 																								},
@@ -1039,6 +1040,7 @@ func ResourceIbmLogsDashboard() *schema.Resource {
 																								"unit": &schema.Schema{
 																									Type:        schema.TypeString,
 																									Optional:    true,
+																									Computed:    true,
 																									Description: "Unit of the data.",
 																								},
 																								"scale_type": &schema.Schema{
@@ -1085,6 +1087,7 @@ func ResourceIbmLogsDashboard() *schema.Resource {
 																								"data_mode_type": &schema.Schema{
 																									Type:        schema.TypeString,
 																									Optional:    true,
+																									Computed:    true,
 																									Description: "Data mode type.",
 																								},
 																							},
@@ -1093,6 +1096,7 @@ func ResourceIbmLogsDashboard() *schema.Resource {
 																					"stacked_line": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Optional:    true,
+																						Computed:    true,
 																						Description: "Stacked lines.",
 																					},
 																				},
@@ -5715,11 +5719,13 @@ func ResourceIbmLogsDashboard() *schema.Resource {
 															"created_at": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Creation timestamp.",
 															},
 															"updated_at": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Last update timestamp.",
 															},
 														},
@@ -7275,13 +7281,17 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsLineChartLogsQuery(m
 		model.Filters = filters
 	}
 	if modelMap["group_bys"] != nil {
-		groupBys := []logsv0.ApisDashboardsV1CommonObservationField{}
-		for _, groupBysItem := range modelMap["group_bys"].([]interface{}) {
-			groupBysItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupBysItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			groupBys = append(groupBys, *groupBysItemModel)
+		// groupBys := []logsv0.ApisDashboardsV1CommonObservationField{}
+		// for _, groupBysItem := range modelMap["group_bys"].([]interface{}) {
+		// 	groupBysItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupBysItem.(map[string]interface{}))
+		// 	if err != nil {
+		// 		return model, err
+		// 	}
+		// 	groupBys = append(groupBys, *groupBysItemModel)
+		// }
+		groupBys, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["group_bys"].([]interface{}))
+		if err != nil {
+			return model, err
 		}
 		model.GroupBys = groupBys
 	}
@@ -7299,49 +7309,49 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsCommonLuceneQuery(mo
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMap map[string]interface{}) (logsv0.ApisDashboardsV1CommonLogsAggregationIntf, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregation{}
 	if modelMap["count"] != nil && len(modelMap["count"].([]interface{})) > 0 {
-		CountModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountEmpty(modelMap["count"].([]interface{})[0].(map[string]interface{}))
+		CountModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountEmpty(modelMap["count"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Count = CountModel
 	}
 	if modelMap["count_distinct"] != nil && len(modelMap["count_distinct"].([]interface{})) > 0 {
-		CountDistinctModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountDistinct(modelMap["count_distinct"].([]interface{})[0].(map[string]interface{}))
+		CountDistinctModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountDistinct(modelMap["count_distinct"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.CountDistinct = CountDistinctModel
 	}
 	if modelMap["sum"] != nil && len(modelMap["sum"].([]interface{})) > 0 {
-		SumModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationSum(modelMap["sum"].([]interface{})[0].(map[string]interface{}))
+		SumModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationSum(modelMap["sum"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Sum = SumModel
 	}
 	if modelMap["average"] != nil && len(modelMap["average"].([]interface{})) > 0 {
-		AverageModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationAverage(modelMap["average"].([]interface{})[0].(map[string]interface{}))
+		AverageModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationAverage(modelMap["average"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Average = AverageModel
 	}
 	if modelMap["min"] != nil && len(modelMap["min"].([]interface{})) > 0 {
-		MinModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMin(modelMap["min"].([]interface{})[0].(map[string]interface{}))
+		MinModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMin(modelMap["min"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Min = MinModel
 	}
 	if modelMap["max"] != nil && len(modelMap["max"].([]interface{})) > 0 {
-		MaxModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMax(modelMap["max"].([]interface{})[0].(map[string]interface{}))
+		MaxModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMax(modelMap["max"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Max = MaxModel
 	}
 	if modelMap["percentile"] != nil && len(modelMap["percentile"].([]interface{})) > 0 {
-		PercentileModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationPercentile(modelMap["percentile"].([]interface{})[0].(map[string]interface{}))
+		PercentileModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationPercentile(modelMap["percentile"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7350,91 +7360,123 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMap
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountEmpty(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationCountEmpty, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountEmpty(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationCountEmpty, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationCountEmpty{}
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountDistinct(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationCountDistinct, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountDistinct(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationCountDistinct, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationCountDistinct{}
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.ObservationField = ObservationFieldModel
-	return model, nil
-}
-
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonObservationField, error) {
-	model := &logsv0.ApisDashboardsV1CommonObservationField{}
-	if modelMap["keypath"] != nil {
-		keypath := []string{}
-		for _, keypathItem := range modelMap["keypath"].([]interface{}) {
-			keypath = append(keypath, keypathItem.(string))
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap[0].(map[string]interface{})["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
 		}
-		model.Keypath = keypath
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	if modelMap["scope"] != nil && modelMap["scope"].(string) != "" {
-		model.Scope = core.StringPtr(modelMap["scope"].(string))
-	}
+
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationSum(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationSum, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap []interface{}) ([]logsv0.ApisDashboardsV1CommonObservationField, error) {
+	models := []logsv0.ApisDashboardsV1CommonObservationField{}
+
+	if modelMap != nil && len(modelMap) > 0 {
+		for _, element := range modelMap {
+			if element != nil {
+				model := &logsv0.ApisDashboardsV1CommonObservationField{}
+				modelMapElement := element.(map[string]interface{})
+				if modelMapElement["keypath"] != nil {
+					keypath := []string{}
+					for _, keypathItem := range modelMapElement["keypath"].([]interface{}) {
+						keypath = append(keypath, keypathItem.(string))
+					}
+					model.Keypath = keypath
+				}
+				if modelMapElement["scope"] != nil && modelMapElement["scope"].(string) != "" {
+					model.Scope = core.StringPtr(modelMapElement["scope"].(string))
+				}
+				models = append(models, *model)
+			}
+
+		}
+
+	}
+
+	return models, nil
+}
+
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationSum(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationSum, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationSum{}
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	model.ObservationField = ObservationFieldModel
+
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationAverage(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationAverage, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationAverage(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationAverage, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationAverage{}
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	model.ObservationField = ObservationFieldModel
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMin(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationMin, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMin(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationMin, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationMin{}
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	model.ObservationField = ObservationFieldModel
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMax(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationMax, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMax(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationMax, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationMax{}
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	model.ObservationField = ObservationFieldModel
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationPercentile(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationPercentile, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationPercentile(modelMap []interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationPercentile, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationPercentile{}
-	model.Percent = core.Float64Ptr(modelMap["percent"].(float64))
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		model.Percent = core.Float64Ptr(modelMapObsevationField["percent"].(float64))
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	model.ObservationField = ObservationFieldModel
 	return model, nil
 }
 
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueCount(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValueCount, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValueCount{}
 	if modelMap["count"] != nil && len(modelMap["count"].([]interface{})) > 0 {
-		CountModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountEmpty(modelMap["count"].([]interface{})[0].(map[string]interface{}))
+		CountModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountEmpty(modelMap["count"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7446,7 +7488,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueCoun
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueCountDistinct(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValueCountDistinct, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValueCountDistinct{}
 	if modelMap["count_distinct"] != nil && len(modelMap["count_distinct"].([]interface{})) > 0 {
-		CountDistinctModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountDistinct(modelMap["count_distinct"].([]interface{})[0].(map[string]interface{}))
+		CountDistinctModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationCountDistinct(modelMap["count_distinct"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7458,7 +7500,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueCoun
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueSum(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValueSum, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValueSum{}
 	if modelMap["sum"] != nil && len(modelMap["sum"].([]interface{})) > 0 {
-		SumModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationSum(modelMap["sum"].([]interface{})[0].(map[string]interface{}))
+		SumModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationSum(modelMap["sum"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7470,7 +7512,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueSum(
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueAverage(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValueAverage, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValueAverage{}
 	if modelMap["average"] != nil && len(modelMap["average"].([]interface{})) > 0 {
-		AverageModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationAverage(modelMap["average"].([]interface{})[0].(map[string]interface{}))
+		AverageModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationAverage(modelMap["average"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7482,7 +7524,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueAver
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueMin(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValueMin, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValueMin{}
 	if modelMap["min"] != nil && len(modelMap["min"].([]interface{})) > 0 {
-		MinModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMin(modelMap["min"].([]interface{})[0].(map[string]interface{}))
+		MinModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMin(modelMap["min"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7494,7 +7536,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueMin(
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueMax(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValueMax, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValueMax{}
 	if modelMap["max"] != nil && len(modelMap["max"].([]interface{})) > 0 {
-		MaxModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMax(modelMap["max"].([]interface{})[0].(map[string]interface{}))
+		MaxModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationMax(modelMap["max"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7506,7 +7548,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValueMax(
 func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationValuePercentile(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1CommonLogsAggregationValuePercentile, error) {
 	model := &logsv0.ApisDashboardsV1CommonLogsAggregationValuePercentile{}
 	if modelMap["percentile"] != nil && len(modelMap["percentile"].([]interface{})) > 0 {
-		PercentileModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationPercentile(modelMap["percentile"].([]interface{})[0].(map[string]interface{}))
+		PercentileModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregationPercentile(modelMap["percentile"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7524,12 +7566,12 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterLogsFilter(modelMap m
 		}
 		model.Operator = OperatorModel
 	}
-	if modelMap["observation_field"] != nil && len(modelMap["observation_field"].([]interface{})) > 0 {
-		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["observation_field"] != nil && len(modelMap["observation_field"].([]interface{})) > 0 && modelMap["observation_field"].([]interface{})[0] != nil {
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.ObservationField = ObservationFieldModel
+		model.ObservationField = &ObservationFieldModel[0]
 	}
 	return model, nil
 }
@@ -7568,14 +7610,14 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEquals(modelMap map[s
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelection(modelMap map[string]interface{}) (logsv0.ApisDashboardsV1AstFilterEqualsSelectionIntf, error) {
 	model := &logsv0.ApisDashboardsV1AstFilterEqualsSelection{}
 	if modelMap["all"] != nil && len(modelMap["all"].([]interface{})) > 0 {
-		AllModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty(modelMap["all"].([]interface{})[0].(map[string]interface{}))
+		AllModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty(modelMap["all"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.All = AllModel
 	}
 	if modelMap["list"] != nil && len(modelMap["list"].([]interface{})) > 0 {
-		ListModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap["list"].([]interface{})[0].(map[string]interface{}))
+		ListModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap["list"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7584,27 +7626,30 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelection(model
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty, error) {
 	model := &logsv0.ApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty{}
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstFilterEqualsSelectionListSelection, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstFilterEqualsSelectionListSelection, error) {
 	model := &logsv0.ApisDashboardsV1AstFilterEqualsSelectionListSelection{}
-	if modelMap["values"] != nil {
-		values := []string{}
-		for _, valuesItem := range modelMap["values"].([]interface{}) {
-			values = append(values, valuesItem.(string))
+	if modelMap[0] != nil {
+		if modelMap[0].(map[string]interface{})["values"] != nil {
+			values := []string{}
+			for _, valuesItem := range modelMap[0].(map[string]interface{})["values"].([]interface{}) {
+				values = append(values, valuesItem.(string))
+			}
+			model.Values = values
 		}
-		model.Values = values
 	}
+
 	return model, nil
 }
 
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionValueAll(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstFilterEqualsSelectionValueAll, error) {
 	model := &logsv0.ApisDashboardsV1AstFilterEqualsSelectionValueAll{}
 	if modelMap["all"] != nil && len(modelMap["all"].([]interface{})) > 0 {
-		AllModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty(modelMap["all"].([]interface{})[0].(map[string]interface{}))
+		AllModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty(modelMap["all"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7616,7 +7661,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionValueA
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionValueList(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstFilterEqualsSelectionValueList, error) {
 	model := &logsv0.ApisDashboardsV1AstFilterEqualsSelectionValueList{}
 	if modelMap["list"] != nil && len(modelMap["list"].([]interface{})) > 0 {
-		ListModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap["list"].([]interface{})[0].(map[string]interface{}))
+		ListModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterEqualsSelectionListSelection(modelMap["list"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -7953,13 +7998,17 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsDataTableLogsQueryGr
 		model.Aggregations = aggregations
 	}
 	if modelMap["group_bys"] != nil {
-		groupBys := []logsv0.ApisDashboardsV1CommonObservationField{}
-		for _, groupBysItem := range modelMap["group_bys"].([]interface{}) {
-			groupBysItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupBysItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			groupBys = append(groupBys, *groupBysItemModel)
+		// groupBys := []logsv0.ApisDashboardsV1CommonObservationField{}
+		// for _, groupBysItem := range modelMap["group_bys"].([]interface{}) {
+		// 	groupBysItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupBysItem.(map[string]interface{}))
+		// 	if err != nil {
+		// 		return model, err
+		// 	}
+		// 	groupBys = append(groupBys, *groupBysItemModel)
+		// }
+		groupBys, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["group_bys"].([]interface{}))
+		if err != nil {
+			return model, err
 		}
 		model.GroupBys = groupBys
 	}
@@ -8334,22 +8383,26 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsPieChartLogsQuery(mo
 		model.Filters = filters
 	}
 	if modelMap["group_names_fields"] != nil {
-		groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
-		for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
-			groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
-		}
-		model.GroupNamesFields = groupNamesFields
-	}
-	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 {
-		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{})[0].(map[string]interface{}))
+		// groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
+		// for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
+		// 	groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
+		// 	if err != nil {
+		// 		return model, err
+		// 	}
+		// 	groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
+		// }
+		groupNamesFields, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["group_names_fields"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.StackedGroupNameField = StackedGroupNameFieldModel
+		model.GroupNamesFields = groupNamesFields
+	}
+	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 && modelMap["stacked_group_name_field"].([]interface{})[0] != nil {
+		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.StackedGroupNameField = &StackedGroupNameFieldModel[0]
 	}
 	return model, nil
 }
@@ -8569,22 +8622,26 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(mo
 		model.Filters = filters
 	}
 	if modelMap["group_names_fields"] != nil {
-		groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
-		for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
-			groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
-		}
-		model.GroupNamesFields = groupNamesFields
-	}
-	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 {
-		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{})[0].(map[string]interface{}))
+		// groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
+		// for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
+		// 	groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
+		// 	if err != nil {
+		// 		return model, err
+		// 	}
+		// 	groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
+		// }
+		groupNamesFields, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["group_names_fields"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.StackedGroupNameField = StackedGroupNameFieldModel
+		model.GroupNamesFields = groupNamesFields
+	}
+	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 && modelMap["stacked_group_name_field"].([]interface{})[0] != nil {
+		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.StackedGroupNameField = &StackedGroupNameFieldModel[0]
 	}
 	return model, nil
 }
@@ -8945,22 +9002,26 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsHorizontalBarChartLo
 		model.Filters = filters
 	}
 	if modelMap["group_names_fields"] != nil {
-		groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
-		for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
-			groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
-		}
-		model.GroupNamesFields = groupNamesFields
-	}
-	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 {
-		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{})[0].(map[string]interface{}))
+		// groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
+		// for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
+		// 	groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
+		// 	if err != nil {
+		// 		return model, err
+		// 	}
+		// 	groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
+		// }
+		groupNamesFields, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["group_names_fields"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
-		model.StackedGroupNameField = StackedGroupNameFieldModel
+		model.GroupNamesFields = groupNamesFields
+	}
+	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 && modelMap["stacked_group_name_field"].([]interface{})[0] != nil {
+		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.StackedGroupNameField = &StackedGroupNameFieldModel[0]
 	}
 	return model, nil
 }
@@ -9267,7 +9328,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelect(modelMap map[st
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectSource(modelMap map[string]interface{}) (logsv0.ApisDashboardsV1AstMultiSelectSourceIntf, error) {
 	model := &logsv0.ApisDashboardsV1AstMultiSelectSource{}
 	if modelMap["logs_path"] != nil && len(modelMap["logs_path"].([]interface{})) > 0 {
-		LogsPathModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectLogsPathSource(modelMap["logs_path"].([]interface{})[0].(map[string]interface{}))
+		LogsPathModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectLogsPathSource(modelMap["logs_path"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9290,13 +9351,16 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectSource(modelMap 
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectLogsPathSource(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstMultiSelectLogsPathSource, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectLogsPathSource(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstMultiSelectLogsPathSource, error) {
 	model := &logsv0.ApisDashboardsV1AstMultiSelectLogsPathSource{}
-	ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["observation_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		ObservationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["observation_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObservationField = &ObservationFieldModel[0]
 	}
-	model.ObservationField = ObservationFieldModel
 	return model, nil
 }
 
@@ -9320,7 +9384,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectConstantListSour
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectSourceValueLogsPath(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstMultiSelectSourceValueLogsPath, error) {
 	model := &logsv0.ApisDashboardsV1AstMultiSelectSourceValueLogsPath{}
 	if modelMap["logs_path"] != nil && len(modelMap["logs_path"].([]interface{})) > 0 {
-		LogsPathModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectLogsPathSource(modelMap["logs_path"].([]interface{})[0].(map[string]interface{}))
+		LogsPathModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstMultiSelectLogsPathSource(modelMap["logs_path"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9548,13 +9612,17 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSource(modelM
 		model.MessageTemplate = core.StringPtr(modelMap["message_template"].(string))
 	}
 	if modelMap["label_fields"] != nil {
-		labelFields := []logsv0.ApisDashboardsV1CommonObservationField{}
-		for _, labelFieldsItem := range modelMap["label_fields"].([]interface{}) {
-			labelFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(labelFieldsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			labelFields = append(labelFields, *labelFieldsItemModel)
+		// labelFields := []logsv0.ApisDashboardsV1CommonObservationField{}
+		// for _, labelFieldsItem := range modelMap["label_fields"].([]interface{}) {
+		// 	labelFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(labelFieldsItem.(map[string]interface{}))
+		// 	if err != nil {
+		// 		return model, err
+		// 	}
+		// 	labelFields = append(labelFields, *labelFieldsItemModel)
+		// }
+		labelFields, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["label_fields"].([]interface{}))
+		if err != nil {
+			return model, err
 		}
 		model.LabelFields = labelFields
 	}
@@ -9572,21 +9640,21 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLuceneQuery(modelMap map
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategy(modelMap map[string]interface{}) (logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyIntf, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategy{}
 	if modelMap["instant"] != nil && len(modelMap["instant"].([]interface{})) > 0 {
-		InstantModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyInstant(modelMap["instant"].([]interface{})[0].(map[string]interface{}))
+		InstantModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyInstant(modelMap["instant"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Instant = InstantModel
 	}
 	if modelMap["range"] != nil && len(modelMap["range"].([]interface{})) > 0 {
-		RangeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyRange(modelMap["range"].([]interface{})[0].(map[string]interface{}))
+		RangeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyRange(modelMap["range"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Range = RangeModel
 	}
 	if modelMap["duration"] != nil && len(modelMap["duration"].([]interface{})) > 0 {
-		DurationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyDuration(modelMap["duration"].([]interface{})[0].(map[string]interface{}))
+		DurationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyDuration(modelMap["duration"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9595,50 +9663,60 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrateg
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyInstant(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyInstant, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyInstant(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyInstant, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyInstant{}
-	TimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["timestamp_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		TimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["timestamp_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.TimestampField = &TimestampFieldModel[0]
 	}
-	model.TimestampField = TimestampFieldModel
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyRange(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyRange, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyRange(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyRange, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyRange{}
-	StartTimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["start_timestamp_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		StartTimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["start_timestamp_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.StartTimestampField = &StartTimestampFieldModel[0]
+
+		EndTimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["end_timestamp_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.EndTimestampField = &EndTimestampFieldModel[0]
 	}
-	model.StartTimestampField = StartTimestampFieldModel
-	EndTimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["end_timestamp_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.EndTimestampField = EndTimestampFieldModel
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyDuration(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyDuration, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyDuration(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyDuration, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyDuration{}
-	StartTimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["start_timestamp_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapObsevationField := modelMap[0].(map[string]interface{})
+		StartTimestampFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["start_timestamp_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.StartTimestampField = &StartTimestampFieldModel[0]
+		DurationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapObsevationField["duration_field"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.DurationField = &DurationFieldModel[0]
 	}
-	model.StartTimestampField = StartTimestampFieldModel
-	DurationFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["duration_field"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.DurationField = DurationFieldModel
 	return model, nil
 }
 
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyValueInstant(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyValueInstant, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyValueInstant{}
 	if modelMap["instant"] != nil && len(modelMap["instant"].([]interface{})) > 0 {
-		InstantModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyInstant(modelMap["instant"].([]interface{})[0].(map[string]interface{}))
+		InstantModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyInstant(modelMap["instant"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9650,7 +9728,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrateg
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyValueRange(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyValueRange, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyValueRange{}
 	if modelMap["range"] != nil && len(modelMap["range"].([]interface{})) > 0 {
-		RangeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyRange(modelMap["range"].([]interface{})[0].(map[string]interface{}))
+		RangeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyRange(modelMap["range"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9662,7 +9740,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrateg
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyValueDuration(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyValueDuration, error) {
 	model := &logsv0.ApisDashboardsV1AstAnnotationLogsSourceStrategyValueDuration{}
 	if modelMap["duration"] != nil && len(modelMap["duration"].([]interface{})) > 0 {
-		DurationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyDuration(modelMap["duration"].([]interface{})[0].(map[string]interface{}))
+		DurationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstAnnotationLogsSourceStrategyDuration(modelMap["duration"].([]interface{}))
 		if err != nil {
 			return model, err
 		}

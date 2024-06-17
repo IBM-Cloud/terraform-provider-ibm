@@ -581,7 +581,7 @@ func ResourceIbmLogsViewApisViewsV1FilterToMap(model *logsv0.ApisViewsV1Filter) 
 	modelMap["name"] = *model.Name
 	selectedValues := make(map[string]interface{})
 	for k, v := range model.SelectedValues {
-		selectedValues[k] = flex.Stringify(v)
+		selectedValues[k] = flex.PtrToBool(v)
 	}
 	modelMap["selected_values"] = selectedValues
 	return modelMap, nil

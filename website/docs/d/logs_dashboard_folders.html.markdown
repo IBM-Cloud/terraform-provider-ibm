@@ -17,7 +17,7 @@ Provides a read-only data source to retrieve information about logs_dashboard_fo
 ```hcl
 data "ibm_logs_dashboard_folders" "logs_dashboard_folders" {
 	instance_id = ibm_logs_e2m.logs_e2m_instance.instance_id
-  region      = ibm_logs_e2m.logs_e2m_instance.region
+    region      = ibm_logs_e2m.logs_e2m_instance.region
 }
 ```
 

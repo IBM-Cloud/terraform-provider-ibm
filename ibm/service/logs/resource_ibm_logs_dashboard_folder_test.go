@@ -43,7 +43,7 @@ func TestAccIbmLogsDashboardFolderBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_dashboard_folder.logs_dashboard_folder",
+				ResourceName:      "ibm_logs_dashboard_folder.logs_dashboard_folder_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

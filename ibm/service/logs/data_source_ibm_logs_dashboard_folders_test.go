@@ -40,10 +40,12 @@ func testAccCheckIbmLogsDashboardFoldersDataSourceConfigBasic(dashboardFolderNam
 		resource "ibm_logs_dashboard_folder" "logs_dashboard_folder_instance" {
 			instance_id = "%s"
 			region      = "%s"
-			name = "%s"
+			name        = "%s"
 		}
 
 		data "ibm_logs_dashboard_folders" "logs_dashboard_folders_instance" {
+			instance_id = ibm_logs_dashboard_folder.logs_dashboard_folder_instance.instance_id
+			region      = ibm_logs_dashboard_folder.logs_dashboard_folder_instance.region
 			depends_on = [
 				ibm_logs_dashboard_folder.logs_dashboard_folder_instance
 			]

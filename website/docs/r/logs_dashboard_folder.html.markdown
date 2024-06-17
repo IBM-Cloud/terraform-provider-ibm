@@ -18,8 +18,8 @@ Create, update, and delete logs_dashboard_folders with this resource.
 resource "ibm_logs_dashboard_folder" "logs_dashboard_folder_instance" {
   instance_id = ibm_resource_instance.logs_instance.guid
   region      = ibm_resource_instance.logs_instance.location
-  name = "My Folder"
-  parent_id = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+  name        = "My Folder"
+  parent_id   = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
 }
 ```
 

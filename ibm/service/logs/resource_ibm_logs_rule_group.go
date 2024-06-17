@@ -107,7 +107,8 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The ID of the rule subgroup.",
 						},
 						"rules": &schema.Schema{
@@ -118,7 +119,8 @@ func ResourceIbmLogsRuleGroup() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Optional:    true,
+										Computed:    true,
 										Description: "Unique identifier of the rule.",
 									},
 									"name": &schema.Schema{
@@ -438,7 +440,7 @@ func resourceIbmLogsRuleGroupCreate(context context.Context, d *schema.ResourceD
 	if _, ok := d.GetOk("description"); ok {
 		createRuleGroupOptions.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("enabled"); ok {
+	if _, ok := d.GetOkExists("enabled"); ok {
 		createRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 	}
 	if _, ok := d.GetOk("rule_matchers"); ok {
@@ -593,7 +595,7 @@ func resourceIbmLogsRuleGroupUpdate(context context.Context, d *schema.ResourceD
 		if _, ok := d.GetOk("description"); ok {
 			updateRuleGroupOptions.SetDescription(d.Get("description").(string))
 		}
-		if _, ok := d.GetOk("enabled"); ok {
+		if _, ok := d.GetOkExists("enabled"); ok {
 			updateRuleGroupOptions.SetEnabled(d.Get("enabled").(bool))
 		}
 		if _, ok := d.GetOk("rule_matchers"); ok {

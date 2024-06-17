@@ -131,8 +131,10 @@ func resourceIbmLogsDashboardFolderRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if dashboardFolderCollection != nil && len(dashboardFolderCollection.Folders) > 0 {
+
 		for _, folder := range dashboardFolderCollection.Folders {
-			if folder.ID == core.UUIDPtr(strfmt.UUID(dashboardFolderId)) {
+
+			if fmt.Sprintf("%s", folder.ID) == dashboardFolderId {
 				if err = d.Set("name", folder.Name); err != nil {
 					return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 				}

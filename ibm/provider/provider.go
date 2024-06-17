@@ -941,7 +941,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_view_folders":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
 			"ibm_logs_view":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
 			"ibm_logs_views":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
-			"ibm_logs_dashboard_folder":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
+			"ibm_logs_dashboard_folders": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
