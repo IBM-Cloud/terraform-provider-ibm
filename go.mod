@@ -18,9 +18,9 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.6.1
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.17.2
-	github.com/IBM/ibm-cos-sdk-go v1.10.1
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.0.4
+	github.com/IBM/go-sdk-core/v5 v5.17.3
+	github.com/IBM/ibm-cos-sdk-go v1.10.3
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.14.0
