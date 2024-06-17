@@ -18,12 +18,13 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.6.1
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.17.2
-	github.com/IBM/ibm-cos-sdk-go v1.10.1
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.0.4
+	github.com/IBM/go-sdk-core/v5 v5.17.3
+	github.com/IBM/ibm-cos-sdk-go v1.10.3
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.14.0
+	github.com/IBM/logs-go-sdk v0.2.1
 	github.com/IBM/networking-go-sdk v0.46.1
 	github.com/IBM/platform-services-go-sdk v0.62.11
 	github.com/IBM/project-go-sdk v0.3.4
@@ -65,7 +66,6 @@ require (
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4
 	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/logs-go-sdk v0.1.1
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/vmware-go-sdk v0.1.2
