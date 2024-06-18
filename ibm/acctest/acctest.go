@@ -36,6 +36,8 @@ var (
 	CloudShellAccountID             string
 	CosCRN                          string
 	BucketCRN                       string
+	ActivityTrackerInstanceCRN      string
+	MetricsMonitoringCRN            string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -528,6 +530,16 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
+	if ActivityTrackerInstanceCRN == "" {
+		ActivityTrackerInstanceCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_ACTIVITY_TRACKER_CRN with a VALID ACTIVITY TRACKER INSTANCE CRN in valid region for testing ibm_cos_bucket* resources")
+	}
+	MetricsMonitoringCRN = os.Getenv("IBM_COS_METRICS_MONITORING_CRN")
+	if MetricsMonitoringCRN == "" {
+		MetricsMonitoringCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_METRICS_MONITORING_CRN with a VALID METRICS MONITORING CRN for testing ibm_cos_bucket* resources")
 	}
 	BucketName = os.Getenv("IBM_COS_BUCKET_NAME")
 	if BucketName == "" {

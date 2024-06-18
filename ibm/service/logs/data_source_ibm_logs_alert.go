@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -26,7 +26,7 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 			"logs_alert_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Alert id.",
+				Description: "Alert ID.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -710,35 +710,35 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 												"groups": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "list of groups of alerts.",
+													Description: "List of groups of alerts.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"alerts": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
-																Description: "list of alerts.",
+																Description: "List of alerts.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"op": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "operator for the alerts.",
+																			Description: "Operator for the alerts.",
 																		},
 																		"values": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Computed:    true,
-																			Description: "list of alerts.",
+																			Description: "List of alerts.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"id": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
-																						Description: "alert id.",
+																						Description: "The alert ID.",
 																					},
 																					"not": &schema.Schema{
 																						Type:        schema.TypeBool,
 																						Computed:    true,
-																						Description: "alert not.",
+																						Description: "The alert not.",
 																					},
 																				},
 																			},
@@ -749,7 +749,7 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 															"next_op": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "operator for the alerts.",
+																Description: "Operator for the alerts.",
 															},
 														},
 													},
@@ -757,13 +757,13 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 												"timeframe": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "timeframe for the flow.",
+													Description: "Timeframe for the flow.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"ms": &schema.Schema{
 																Type:        schema.TypeInt,
 																Computed:    true,
-																Description: "timeframe in milliseconds.",
+																Description: "Timeframe in milliseconds.",
 															},
 														},
 													},
@@ -1259,7 +1259,7 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 									"integration_id": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "Integration id.",
+										Description: "Integration ID.",
 									},
 									"recipients": &schema.Schema{
 										Type:        schema.TypeList,
@@ -1304,14 +1304,6 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 							Description: "The metadata filters.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"categories": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The categories to filter.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
 									"applications": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -1324,38 +1316,6 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The subsystems to filter.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"computers": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The computers to filter.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"classes": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The classes to filter.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"methods": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The methods to filter.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"ip_addresses": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The IP addresses to filter.",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
@@ -1550,92 +1510,6 @@ func DataSourceIbmLogsAlert() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"tracing_alert": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The definition for tracing alert.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"condition_latency": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The latency condition in milliseconds.",
-						},
-						"field_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The tracing field filters.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"field": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The field name.",
-									},
-									"filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The field filters.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"values": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The filter values.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"operator": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The filter operator.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-						"tag_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The tracing tag filters.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"field": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The field name.",
-									},
-									"filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The field filters.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"values": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The filter values.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"operator": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The filter operator.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 			"unique_identifier": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -1676,7 +1550,6 @@ func dataSourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData,
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -1802,20 +1675,6 @@ func dataSourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	tracingAlert := []map[string]interface{}{}
-	if alert.TracingAlert != nil {
-		modelMap, err := DataSourceIbmLogsAlertAlertsV1TracingAlertToMap(alert.TracingAlert)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_alert", "read")
-			return tfErr.GetDiag()
-		}
-		tracingAlert = append(tracingAlert, modelMap)
-	}
-	if err = d.Set("tracing_alert", tracingAlert); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting tracing_alert: %s", err), "(Data) ibm_logs_alert", "read")
-		return tfErr.GetDiag()
-	}
-
 	if err = d.Set("unique_identifier", alert.UniqueIdentifier); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting unique_identifier: %s", err), "(Data) ibm_logs_alert", "read")
 		return tfErr.GetDiag()
@@ -1873,7 +1732,7 @@ func DataSourceIbmLogsAlertAlertsV2AlertConditionToMap(model logsv0.AlertsV2Aler
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.AlertsV2AlertCondition)
 		if model.Immediate != nil {
-			immediateMap, err := DataSourceIbmLogsAlertAlertsV2ImmediateConditionToMap(model.Immediate)
+			immediateMap, err := DataSourceIbmLogsAlertAlertsV2ImmediateConditionEmptyToMap(model.Immediate)
 			if err != nil {
 				return modelMap, err
 			}
@@ -1934,7 +1793,7 @@ func DataSourceIbmLogsAlertAlertsV2AlertConditionToMap(model logsv0.AlertsV2Aler
 	}
 }
 
-func DataSourceIbmLogsAlertAlertsV2ImmediateConditionToMap(model *logsv0.AlertsV2ImmediateCondition) (map[string]interface{}, error) {
+func DataSourceIbmLogsAlertAlertsV2ImmediateConditionEmptyToMap(model *logsv0.AlertsV2ImmediateConditionEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -1997,8 +1856,12 @@ func DataSourceIbmLogsAlertAlertsV1MetricAlertConditionParametersToMap(model *lo
 	if model.ArithmeticOperatorModifier != nil {
 		modelMap["arithmetic_operator_modifier"] = flex.IntValue(model.ArithmeticOperatorModifier)
 	}
-	modelMap["sample_threshold_percentage"] = flex.IntValue(model.SampleThresholdPercentage)
-	modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	if model.SampleThresholdPercentage != nil {
+		modelMap["sample_threshold_percentage"] = flex.IntValue(model.SampleThresholdPercentage)
+	}
+	if model.NonNullPercentage != nil {
+		modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	}
 	if model.SwapNullValues != nil {
 		modelMap["swap_null_values"] = *model.SwapNullValues
 	}
@@ -2012,7 +1875,9 @@ func DataSourceIbmLogsAlertAlertsV1MetricAlertPromqlConditionParametersToMap(mod
 		modelMap["arithmetic_operator_modifier"] = flex.IntValue(model.ArithmeticOperatorModifier)
 	}
 	modelMap["sample_threshold_percentage"] = flex.IntValue(model.SampleThresholdPercentage)
-	modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	if model.NonNullPercentage != nil {
+		modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	}
 	if model.SwapNullValues != nil {
 		modelMap["swap_null_values"] = *model.SwapNullValues
 	}
@@ -2188,7 +2053,7 @@ func DataSourceIbmLogsAlertAlertsV2LessThanUsualConditionToMap(model *logsv0.Ale
 func DataSourceIbmLogsAlertAlertsV2AlertConditionConditionImmediateToMap(model *logsv0.AlertsV2AlertConditionConditionImmediate) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Immediate != nil {
-		immediateMap, err := DataSourceIbmLogsAlertAlertsV2ImmediateConditionToMap(model.Immediate)
+		immediateMap, err := DataSourceIbmLogsAlertAlertsV2ImmediateConditionEmptyToMap(model.Immediate)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2407,35 +2272,18 @@ func DataSourceIbmLogsAlertAlertsV1AlertFiltersToMap(model *logsv0.AlertsV1Alert
 
 func DataSourceIbmLogsAlertAlertsV1AlertFiltersMetadataFiltersToMap(model *logsv0.AlertsV1AlertFiltersMetadataFilters) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Categories != nil {
-		modelMap["categories"] = model.Categories
-	}
 	if model.Applications != nil {
 		modelMap["applications"] = model.Applications
 	}
 	if model.Subsystems != nil {
 		modelMap["subsystems"] = model.Subsystems
 	}
-	if model.Computers != nil {
-		modelMap["computers"] = model.Computers
-	}
-	if model.Classes != nil {
-		modelMap["classes"] = model.Classes
-	}
-	if model.Methods != nil {
-		modelMap["methods"] = model.Methods
-	}
-	if model.IpAddresses != nil {
-		modelMap["ip_addresses"] = model.IpAddresses
-	}
 	return modelMap, nil
 }
 
 func DataSourceIbmLogsAlertAlertsV1AlertFiltersRatioAlertToMap(model *logsv0.AlertsV1AlertFiltersRatioAlert) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Alias != nil {
-		modelMap["alias"] = *model.Alias
-	}
+	modelMap["alias"] = *model.Alias
 	if model.Text != nil {
 		modelMap["text"] = *model.Text
 	}
@@ -2515,62 +2363,6 @@ func DataSourceIbmLogsAlertAlertsV1MetaLabelToMap(model *logsv0.AlertsV1MetaLabe
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsAlertAlertsV1TracingAlertToMap(model *logsv0.AlertsV1TracingAlert) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["condition_latency"] = flex.IntValue(model.ConditionLatency)
-	if model.FieldFilters != nil {
-		fieldFilters := []map[string]interface{}{}
-		for _, fieldFiltersItem := range model.FieldFilters {
-			fieldFiltersItemMap, err := DataSourceIbmLogsAlertAlertsV1FilterDataToMap(&fieldFiltersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			fieldFilters = append(fieldFilters, fieldFiltersItemMap)
-		}
-		modelMap["field_filters"] = fieldFilters
-	}
-	if model.TagFilters != nil {
-		tagFilters := []map[string]interface{}{}
-		for _, tagFiltersItem := range model.TagFilters {
-			tagFiltersItemMap, err := DataSourceIbmLogsAlertAlertsV1FilterDataToMap(&tagFiltersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			tagFilters = append(tagFilters, tagFiltersItemMap)
-		}
-		modelMap["tag_filters"] = tagFilters
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsAlertAlertsV1FilterDataToMap(model *logsv0.AlertsV1FilterData) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["field"] = *model.Field
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := DataSourceIbmLogsAlertAlertsV1FiltersToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsAlertAlertsV1FiltersToMap(model *logsv0.AlertsV1Filters) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Values != nil {
-		modelMap["values"] = model.Values
-	}
-	if model.Operator != nil {
-		modelMap["operator"] = *model.Operator
 	}
 	return modelMap, nil
 }

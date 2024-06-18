@@ -1975,24 +1975,6 @@ func DataSourceIBMCmOffering() *schema.Resource {
 				Description: "A list of account IDs to add to this offering's access list.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"permit_request_ibm_public_publish": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Deprecated:  "This argument is deprecated",
-				Description: "Is it permitted to request publishing to IBM or Public.",
-			},
-			"ibm_publish_approved": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Deprecated:  "This argument is deprecated",
-				Description: "Indicates if this offering has been approved for use by all IBMers.",
-			},
-			"public_publish_approved": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Deprecated:  "This argument is deprecated",
-				Description: "Indicates if this offering has been approved for use by all IBM Cloud users.",
-			},
 			"public_original_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -2633,18 +2615,6 @@ func dataSourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData
 
 	if err = d.Set("share_enabled", offering.ShareEnabled); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting share_enabled: %s", err))
-	}
-
-	if err = d.Set("permit_request_ibm_public_publish", offering.PermitRequestIBMPublicPublish); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting permit_request_ibm_public_publish: %s", err))
-	}
-
-	if err = d.Set("ibm_publish_approved", offering.IBMPublishApproved); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ibm_publish_approved: %s", err))
-	}
-
-	if err = d.Set("public_publish_approved", offering.PublicPublishApproved); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting public_publish_approved: %s", err))
 	}
 
 	if err = d.Set("public_original_crn", offering.PublicOriginalCRN); err != nil {
