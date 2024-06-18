@@ -44,7 +44,7 @@ You can access the following attribute references after your data source is crea
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
 		- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags).
-
+	- `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.
 	- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
 
 		Nested scheme for `catalog_offering`:
@@ -56,6 +56,7 @@ You can access the following attribute references after your data source is crea
 	- `crn` - (String) The CRN of the instance template.
 	- `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 
 	- `default_trusted_profile_target` - (String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
+	- `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.
 	- `href` - (String) The URL of the instance template.
 	- `id` - (String) The ID of the instance template.
 	- `image` - (String) The ID of the image to create the template.

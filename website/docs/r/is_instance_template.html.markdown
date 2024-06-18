@@ -219,6 +219,10 @@ Review the argument references that you can specify for your resource.
     - `offering_crn` - (Optional, Force new resource, String) The CRN for this catalog offering. Identifies a catalog offering by this unique property. Conflicts with `catalog_offering.0.version_crn`
     - `version_crn` - (Optional, Force new resource, String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property. Conflicts with `catalog_offering.0.offering_crn`
     - `plan_crn` - (Optional, String) The CRN for this catalog offering version's billing plan. If unspecified, no billing plan will be used (free). Must be specified for catalog offering versions that require a billing plan to be used.
+
+- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. ** Constraints: Allowable values are: `disabled`, `sgx`**  {Select Availability}
+
+  ~>**Note:** The confidential_compute_mode is `Select Availability` feature.
    
 - `dedicated_host` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
@@ -232,6 +236,9 @@ Review the argument references that you can specify for your resource.
 
 - `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
 - `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
+- `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used. {Select Availability}
+
+  ~>**Note:** The enable_secure_boot is `Select Availability` feature.
 - `image` - (Required, String) The ID of the image to create the template. Conflicts when using `catalog_offering`
 
   ~> **Note:**

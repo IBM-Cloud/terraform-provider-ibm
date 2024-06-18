@@ -110,6 +110,20 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				Description:  "Instance Template name",
 			},
 
+			"confidential_compute_mode": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", "confidential_compute_mode"),
+				Description:  "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+			},
+			"enable_secure_boot": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+			},
+
 			isInstanceTemplateMetadataServiceEnabled: {
 				Type:          schema.TypeBool,
 				Optional:      true,
@@ -1138,6 +1152,16 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "confidential_compute_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "disabled, sgx, tdx",
+			Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
 			Identifier:                 isInstanceTemplateVolAttachmentName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -1159,6 +1183,7 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              host_failure})
+
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "tags",
@@ -1252,6 +1277,12 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
 	}
 	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
 	planOffering = nil
@@ -1736,7 +1767,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	if name != "" {
 		instanceproto.Name = &name
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	metadataServiceEnabled := d.Get(isInstanceTemplateMetadataServiceEnabled).(bool)
 	if metadataServiceEnabled {
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
@@ -2207,6 +2243,16 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	d.Set(isInstanceTemplateCRN, *instance.CRN)
 	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
 		d.Set(isInstanceTemplateAvailablePolicyHostFailure, instance.AvailabilityPolicy.HostFailure)
+	}
+	if !core.IsNil(instance.ConfidentialComputeMode) {
+		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+			return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+		}
+	}
+	if !core.IsNil(instance.EnableSecureBoot) {
+		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+			return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+		}
 	}
 
 	// vni if any

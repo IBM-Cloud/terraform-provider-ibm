@@ -402,3 +402,44 @@ data "ibm_is_instance" "ds_instance" {
   name        = ibm_is_instance.testacc_instance.name
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstanceDataSource_concom(t *testing.T) {
+
+	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfins-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
+	resName := "data.ibm_is_instance.ds_instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceDataSourceConfig(vpcname, subnetname, sshname, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", instanceName),
+					resource.TestCheckResourceAttr(
+						resName, "tags.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						resName, "primary_network_interface.0.port_speed"),
+					resource.TestCheckResourceAttrSet(
+						resName, "availability_policy_host_failure"),
+					resource.TestCheckResourceAttrSet(
+						resName, "lifecycle_state"),
+					resource.TestCheckResourceAttr(
+						resName, "lifecycle_reasons.#", "0"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "vcpu.0.manufacturer"),
+					resource.TestCheckResourceAttrSet(
+						resName, "confidential_compute_mode"),
+					resource.TestCheckResourceAttrSet(
+						resName, "enable_secure_boot"),
+				),
+			},
+		},
+	})
+}

@@ -62,7 +62,16 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Required:    true,
 				Description: "Instance name",
 			},
-
+			"confidential_compute_mode": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+			},
+			"enable_secure_boot": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+			},
 			isInstanceMetadataServiceEnabled: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -1298,6 +1307,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		primaryNicList = append(primaryNicList, currentPrimNic)
 		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
+	if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+		return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+	}
 	primaryNetworkAttachment := []map[string]interface{}{}
 	if instance.PrimaryNetworkAttachment != nil {
 		modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment)
@@ -1310,6 +1322,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		return fmt.Errorf("Error setting primary_network_attachment %s", err)
 	}
 
+	if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+		return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+	}
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
 		for _, intfc := range instance.NetworkInterfaces {

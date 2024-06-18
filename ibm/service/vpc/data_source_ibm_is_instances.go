@@ -111,6 +111,16 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "The crn for this Instance",
 						},
+						"confidential_compute_mode": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+						},
+						"enable_secure_boot": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+						},
 						"memory": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -1250,6 +1260,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if instance.NumaCount != nil {
 			l["numa_count"] = *instance.NumaCount
 		}
+		l["confidential_compute_mode"] = instance.ConfidentialComputeMode
+
+		l["enable_secure_boot"] = instance.EnableSecureBoot
 		if instance.MetadataService != nil {
 			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
 			metadataService := []map[string]interface{}{}
