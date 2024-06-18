@@ -390,6 +390,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 														},
 													},
 												},
+												"protocol_state_filtering_mode": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The protocol state filtering mode used for this virtual network interface.",
+												},
 												"resource_group": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
@@ -577,6 +582,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 															},
 														},
 													},
+												},
+												"protocol_state_filtering_mode": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The protocol state filtering mode used for this virtual network interface.",
 												},
 												"resource_group": &schema.Schema{
 													Type:        schema.TypeList,

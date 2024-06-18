@@ -132,14 +132,15 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	pnaNameUpdated := fmt.Sprintf("tf-pna-upd-%d", acctest.RandIntRange(10, 100))
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	userData1 := "a"
-
+	protocolStateFilteringMode := "auto"
+	protocolStateFilteringUpdated := "enabled"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData1),
+				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData1, protocolStateFilteringMode),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -162,10 +163,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "network_attachments.0.name", snaName),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.name", inlinevniname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.protocol_state_filtering_mode", protocolStateFilteringMode),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniupdatedname, pnaNameUpdated, snaNameUpdated, userData1),
+				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniupdatedname, pnaNameUpdated, snaNameUpdated, userData1, protocolStateFilteringUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -188,6 +191,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "network_attachments.0.name", snaNameUpdated),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.name", inlinevniupdatedname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.protocol_state_filtering_mode", protocolStateFilteringUpdated),
 				),
 			},
 		},
@@ -1370,7 +1375,7 @@ resource "ibm_is_instance" "testacc_instance" {
 	keys = [ibm_is_ssh_key.testacc_sshkey.id]
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, vniname, name, acc.IsImage, acc.InstanceProfileName, userData, acc.ISZoneName)
 }
-func testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData string) string {
+func testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData, protocolStateFilteringMode string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
 	name = "%s"
@@ -1402,6 +1407,7 @@ resource "ibm_is_instance" "testacc_instance" {
         name = "%s"
         virtual_network_interface { 
             id = ibm_is_virtual_network_interface.testacc_vni.id
+			protocol_state_filtering_mode = "%s"
         }
     }
 	network_attachments {
@@ -1413,13 +1419,14 @@ resource "ibm_is_instance" "testacc_instance" {
 				address 		= cidrhost(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, 23)
 			}
 			subnet = ibm_is_subnet.testacc_subnet.id
+			protocol_state_filtering_mode = "%s"
         }
 	}
 	user_data = "%s"
 	vpc  = ibm_is_vpc.testacc_vpc.id
 	zone = "%s"
 	keys = [ibm_is_ssh_key.testacc_sshkey.id]
-}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, vniname, name, acc.IsImage, acc.InstanceProfileName, pnaName, snaName, inlinevniname, userData, acc.ISZoneName)
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, vniname, name, acc.IsImage, acc.InstanceProfileName, pnaName, protocolStateFilteringMode, snaName, inlinevniname, protocolStateFilteringMode, userData, acc.ISZoneName)
 }
 
 func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, publicKey, name, userData, resourceName, keyName string) string {
