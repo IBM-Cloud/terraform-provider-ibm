@@ -63,7 +63,6 @@ func ResourceIBMCISRulesetEntryPointVersionValidator() *validate.ResourceValidat
 }
 
 func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta interface{}) error {
-	fmt.Print("calling read function")
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
@@ -108,7 +107,6 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 }
 
 func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta interface{}) error {
-	fmt.Print("calling update function")
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
