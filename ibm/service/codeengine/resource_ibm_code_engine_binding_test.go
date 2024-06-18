@@ -69,7 +69,9 @@ func testAccCheckIbmCodeEngineBindingConfigBasic(projectID string, appName strin
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
