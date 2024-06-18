@@ -1563,7 +1563,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service options.
 	backupRecoveryClientOptions := &backuprecoveryv0.BackupRecoveryV0Options{
 		Authenticator: authenticator,
-		URL:           "https://141.125.161.131/v2",
+		URL:           "https://141.125.105.149/v2",
 	}
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv0.NewBackupRecoveryV0(backupRecoveryClientOptions)
