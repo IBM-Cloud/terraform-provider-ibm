@@ -235,6 +235,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "boot_volume.0.encryption"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
 				),
 			},
 		},
@@ -1008,6 +1010,44 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+func TestAccIBMISInstanceSnapshotRestore_crn(t *testing.T) {
+	var instance, instanceRestore string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	snapshot := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
+	vsiRestore := fmt.Sprintf("tf-instancerestore-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceSnapshotRestoreCrnConfig(vpcname, subnetname, sshname, publicKey, name, snapshot, vsiRestore),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance_restore", instanceRestore),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "name", snapshot),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_restore", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_restore", "name", vsiRestore),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_restore", "boot_volume.0.name", "boot-restore"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISInstanceSnapshotRestore_forcenew(t *testing.T) {
 	var instance, instanceRestore string
@@ -1424,7 +1464,8 @@ func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, 
 	  resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
 		catalog_offering {
-			version_crn = data.ibm_is_images.testacc_images.images.1.catalog_offering.0.version.0.crn
+			version_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
 		}
 		boot_volume {
 			encryption = ibm_kms_key.testacc_key.crn
@@ -1781,6 +1822,64 @@ func testAccCheckIBMISInstanceSnapshotRestoreConfig(vpcname, subnetname, sshname
 		boot_volume {
 			name     = "boot-restore"
 			snapshot = ibm_is_snapshot.testacc_snapshot.id
+		}
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }
+	  `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, snapshot, insRestore, acc.InstanceProfileName, acc.ISZoneName)
+}
+func testAccCheckIBMISInstanceSnapshotRestoreCrnConfig(vpcname, subnetname, sshname, publicKey, name, snapshot, insRestore string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		total_ipv4_address_count 	= 16
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }
+	  resource "ibm_is_snapshot" "testacc_snapshot" {
+		name 			= "%s"
+		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+	  }
+
+	  resource "ibm_is_instance" "testacc_instance_restore" {
+		name    = "%s"
+		profile = "%s"
+		boot_volume {
+			name     		= "boot-restore"
+			snapshot_crn 	= ibm_is_snapshot.testacc_snapshot.crn
 		}
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
@@ -2381,6 +2480,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
 					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
+					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_images.testacc_images", "images.0.name"),
 				),
 			},
@@ -2426,6 +2527,7 @@ func testAccCheckIBMISInstanceCatalogImageConfig(vpcname, subnetname, sshname, p
 		}
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.0.catalog_offering.0.version.0.crn
+			plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.InstanceProfileName, userData, acc.ISZoneName)
 }

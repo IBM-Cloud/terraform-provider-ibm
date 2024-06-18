@@ -123,6 +123,10 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `catalog_offering`:
     - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
     - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+		  Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
    
 - `crn` - (String) The CRN of the instance.
 - `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:

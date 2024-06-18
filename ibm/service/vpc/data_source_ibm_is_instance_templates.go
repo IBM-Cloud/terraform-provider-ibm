@@ -251,6 +251,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 										Computed:    true,
 										Description: "Identifies a version of a catalog offering by a unique CRN property",
 									},
+									isInstanceTemplateCatalogOfferingPlanCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this catalog offering version's billing plan",
+									},
 								},
 							},
 						},
@@ -898,6 +903,12 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			if insTempCatalogOffering.Version != nil {
 				version := insTempCatalogOffering.Version.(*vpcv1.CatalogOfferingVersionIdentity)
 				currentOffering[isInstanceTemplateCatalogOfferingVersionCrn] = *version.CRN
+			}
+			if insTempCatalogOffering.Plan != nil {
+				plan := insTempCatalogOffering.Plan.(*vpcv1.CatalogOfferingVersionPlanIdentity)
+				if plan.CRN != nil && *plan.CRN != "" {
+					currentOffering[isInstanceTemplateCatalogOfferingPlanCrn] = *plan.CRN
+				}
 			}
 			catOfferingList = append(catOfferingList, currentOffering)
 			template[isInstanceTemplateCatalogOffering] = catOfferingList

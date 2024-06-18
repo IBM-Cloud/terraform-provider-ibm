@@ -68,6 +68,7 @@ const (
 	isInstanceTemplateCatalogOffering            = "catalog_offering"
 	isInstanceTemplateCatalogOfferingOfferingCrn = "offering_crn"
 	isInstanceTemplateCatalogOfferingVersionCrn  = "version_crn"
+	isInstanceTemplateCatalogOfferingPlanCrn     = "plan_crn"
 )
 
 func ResourceIBMISInstanceTemplate() *schema.Resource {
@@ -325,6 +326,27 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.offering_crn"},
 							Description:   "Identifies a version of a catalog offering by a unique CRN property",
+						},
+						isInstanceTemplateCatalogOfferingPlanCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The CRN for this catalog offering version's billing plan",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -1161,7 +1183,8 @@ func resourceIBMisInstanceTemplateCreate(d *schema.ResourceData, meta interface{
 		catalogOffering := catalogOfferingOk.([]interface{})[0].(map[string]interface{})
 		offeringCrn, _ := catalogOffering[isInstanceTemplateCatalogOfferingOfferingCrn].(string)
 		versionCrn, _ := catalogOffering[isInstanceTemplateCatalogOfferingVersionCrn].(string)
-		err := instanceTemplateCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, offeringCrn, versionCrn)
+		planCrn, _ := catalogOffering[isInstanceTemplateCatalogOfferingPlanCrn].(string)
+		err := instanceTemplateCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, offeringCrn, versionCrn, planCrn)
 		if err != nil {
 			return err
 		}
@@ -1213,7 +1236,7 @@ func resourceIBMisInstanceTemplateExists(d *schema.ResourceData, meta interface{
 	return ok, err
 }
 
-func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, offeringCrn, versionCrn string) error {
+func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, offeringCrn, versionCrn, planCrn string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -1230,11 +1253,21 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			ID: &vpcID,
 		},
 	}
+	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
+	planOffering = nil
+	if planCrn != "" {
+		planOffering = &vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN{
+			CRN: &planCrn,
+		}
+	}
 	if offeringCrn != "" {
 		catalogOffering := &vpcv1.InstanceCatalogOfferingPrototypeCatalogOfferingByOffering{
 			Offering: &vpcv1.CatalogOfferingIdentityCatalogOfferingByCRN{
 				CRN: &offeringCrn,
 			},
+		}
+		if planOffering != nil {
+			catalogOffering.Plan = planOffering
 		}
 		instanceproto.CatalogOffering = catalogOffering
 	}
@@ -1243,6 +1276,9 @@ func instanceTemplateCreateByCatalogOffering(d *schema.ResourceData, meta interf
 			Version: &vpcv1.CatalogOfferingVersionIdentityCatalogOfferingVersionByCRN{
 				CRN: &versionCrn,
 			},
+		}
+		if planOffering != nil {
+			catalogOffering.Plan = planOffering
 		}
 		instanceproto.CatalogOffering = catalogOffering
 	}
@@ -2212,6 +2248,12 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		if insTempCatalogOffering.Version != nil {
 			version := insTempCatalogOffering.Version.(*vpcv1.CatalogOfferingVersionIdentity)
 			currentOffering[isInstanceTemplateCatalogOfferingVersionCrn] = *version.CRN
+		}
+		if insTempCatalogOffering.Plan != nil {
+			plan := insTempCatalogOffering.Plan.(*vpcv1.CatalogOfferingVersionPlanIdentity)
+			if plan.CRN != nil && *plan.CRN != "" {
+				currentOffering[isInstanceTemplateCatalogOfferingPlanCrn] = *plan.CRN
+			}
 		}
 		catOfferingList = append(catOfferingList, currentOffering)
 		d.Set(isInstanceTemplateCatalogOffering, catOfferingList)

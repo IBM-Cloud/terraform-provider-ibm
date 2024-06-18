@@ -136,6 +136,8 @@ func TestAccIBMISInstanceTemplate_catalog_basic(t *testing.T) {
 						"ibm_is_instance_template.instancetemplate1", "catalog_offering.#"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_template.instancetemplate1", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "catalog_offering.0.plan_crn"),
 					resource.TestCheckNoResourceAttr(
 						"ibm_is_instance_template.instancetemplate1", "image"),
 				),
@@ -518,6 +520,7 @@ func testAccCheckIBMISInstanceTemplateCatalogConfig(vpcName, subnetName, sshKeyN
 	   name    = "%s"
 	   catalog_offering {
 		version_crn = data.ibm_is_images.is_images.images.0.catalog_offering.0.version.0.crn
+		plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
 	   }
 	   profile = "bx2-2x8"
 	

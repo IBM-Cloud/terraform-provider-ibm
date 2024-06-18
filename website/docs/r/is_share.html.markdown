@@ -115,7 +115,7 @@ The following arguments are supported:
   - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
 
     Nested scheme for `virtual_network_interface`:
-    - `name` - (Required, String) Name for this virtual network interface.
+    - `name` - (Required, String) Name for this virtual network interface. The name must not be used by another virtual network interface in the VPC.
     - `id` - (Optional) The ID for virtual network interface. Mutually exclusive with other `virtual_network_interface` arguments.
     
     ~> **Note**
@@ -164,7 +164,7 @@ The following arguments are supported:
     - `name` - (Optional, String)
     - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
       Nested scheme for `virtual_network_interface`:
-      - `name` - (Required, String) Name for this virtual network interface.
+      - `name` - (Required, String) Name for this virtual network interface. The name must not be used by another virtual network interface in the VPC.
       - `id` - (Optional) The ID for virtual network interface. Mutually exclusive with other `virtual_network_interface` arguments.
       
       ~> **Note**
