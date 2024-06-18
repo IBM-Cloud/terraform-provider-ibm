@@ -1,3 +1,36 @@
+# 1.67.0-beta0 (Jun 18, 2024)
+Features
+* Support MQCloud
+    - **Datasources**
+        - ibm_mqcloud_queue_manager_options
+
+* Support VPC
+    - **Datasources**
+        - ibm_is_vpn_gateway_connection_local_cidrs
+        - ibm_is_vpn_gateway_connection_peer_cidrs
+
+Enhancements
+* Adding default prefixfiletr for TGW connection dependency ([5406](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5406))
+* Add ams channels config support to keystore resource ([5411](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5411))
+* fix(CatalogManagement): remove deprecated arguments not supported in latest sdk ([5405](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5405))
+* support for terraform v1.6 in schematics workspace ([5405](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5405))
+* support Management Data Events in COS ([5277](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5277))
+* Support for vpn advanced configurations ([5407](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5407))
+* support for snapshot crn ([5399](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5399))
+* enhancement(sg): added filters on sg data source ([5390](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5390))
+* Billing and Metring for images- BM3PI ([5419](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5419)) 
+* Support for protocol state filtering mode in VNI protocol ([5428](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5428)) 
+* Support for confidential compute profiles in instance and instance template ([5430](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5430)) 
+* Project service: support for ca-tor region, support for auto_deploy feature ([5430](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5430))
+
+BugFixes
+* store_value argument ignored when creating a service api key ([4615](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4615))
+* Adding PAG changes ([5421](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5421)
+* Fix logs resources and support dashboard_folder resource ([5426](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5426))
+* Fix policy references bug in AG templates ([5427](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5427))
+* ibm_cos_bucket doesn't have the right value for s3_endpoint_public when endpoint_type is set to private ([5404](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5404))
+* doc update for vni in instance and shares ([5429](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5429))
+* Update tagging logic in volume attachments in is_instance ([5029](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5029))
 
 
 # 1.66.0 (May 31, 2024)
