@@ -34,7 +34,14 @@ You can specify the following arguments for this resource.
 	- `id` - (Required, String) The unique identifier for this virtual network interface.
 	~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
 	- `name` - (Required, String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+	- `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
 	- `resource_type` - (Computed, String) The resource type.
+	
 
 ## Attribute Reference
 
