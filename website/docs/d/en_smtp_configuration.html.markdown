@@ -37,10 +37,10 @@ After your data source is created, you can read values from the following attrib
 Nested schema for **config**:
 	* `dkim` - (List) The DKIM attributes.
 	Nested schema for **dkim**:
-		* `public_key` - (String) dkim public key.
-		  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
-		* `selector` - (String) dkim selector.
+		* `txt_name` - (String) DMIM text name.
 		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
+		* `txt_value` - (String) DMIM text value.
+		  * Constraints: The maximum length is `500` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
 		* `verification` - (String) dkim verification.
 		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/.*/`.
 	* `en_authorization` - (List) The en_authorization attributes.

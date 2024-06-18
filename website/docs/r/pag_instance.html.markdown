@@ -41,14 +41,9 @@ data "ibm_is_subnet" "pag_instance_2" {
   name = var.ibm_vpc_subnet_name_instance_2
 }
 
-data "ibm_is_security_group" "pag_instance_1" {
+data "ibm_is_security_group" "pag_instance" {
   name     = each.value
-  for_each = var.ibm_vpc_security_groups_instance_1
-}
-
-data "ibm_is_security_group" "pag_instance_2" {
-  name     = each.value
-  for_each = var.ibm_vpc_security_groups_instance_2
+  for_each = var.ibm_vpc_security_groups_instance
 }
 
 resource "ibm_pag_instance" "pag" {
@@ -65,7 +60,7 @@ resource "ibm_pag_instance" "pag" {
       "proxies" : [
         {
           "name" : "proxy1",
-          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance_1 : sg.id],
+          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance : sg.id],
           "subnet" : {
             "crn" : data.ibm_is_subnet.pag_instance_1.crn,
             "cidr" : data.ibm_is_subnet.pag_instance_1.ipv4_cidr_block
@@ -73,13 +68,18 @@ resource "ibm_pag_instance" "pag" {
         },
         {
           "name" : "proxy2",
-          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance_2 : sg.id],
+          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance : sg.id],
           "subnet" : {
             "crn" : data.ibm_is_subnet.pag_instance_2.crn,
             "cidr" : data.ibm_is_subnet.pag_instance_2.ipv4_cidr_block
           }
         }
-      ]
+      ],
+      "settings" : {
+      "inactivity_timeout" : var.pag_inactivity_timeout,
+      "system_use_notification" : var.system_use_notification
+    },
+    "vpc_id" : data.ibm_is_vpc.pag.id
     }
   )
   timeouts {
@@ -145,12 +145,33 @@ The `ibm_resource_instance` resource provides the following [Timeouts](https://w
 Review the argument references that you can specify for your resource. 
 
 - `location` - (Required, String) Target location or environment to create the PAG instance.
-- `parameters_json` (Required ,String) Parameters to create PAG instance. The value must be a JSON string.
+- `parameters_json` - (Required, String) Parameters to create PAG instance. The value must be a JSON string.
+
+  Nested scheme for `parameters_json`:
+  - `cosinstance` - (Required, String) COS instance CRN to use for PAG.
+  - `cosbucket` - (Required, String) COS bucket name to use for PAG.
+  - `cosendpoint` - (Required, String) COS endpoint to use for PAG.
+  - `proxies` - (Required, List of objects)
+  
+    Nested scheme for `proxies`:
+    - `securitygroups` - (Required, Set of strings) Security group(s) ID to use for PAG.
+    - `subnet` - (Required, List of Objects) A nested block which requires subnet crn and cidr.
+    
+      Nested scheme for `subnet`:
+      - `crn` - (Required, String) Subnet crn to use for PAG.
+      - `cidr` - (Required, String) Subnet cidr to use for PAG.
+    - `settings` - (Required, List of Strings) A nested setting block which requires inactivity timeout and system use notification.
+    
+      Nested scheme for `settings`:
+      - `system_use_notification` - (Required, String) Message that is displayed when a user connects to PAG.
+      - `inactivity_timeout` - (Required, Number) PAG inactivity timeout value (in minutes).
 - `plan` - (Required, String) The name of the plan type supported by service i.e `standard`.
 - `name` - (Required, String) A descriptive name used to identify the resource instance.
 - `resource_group_id` - (Required, String) The ID of the resource group where you want to create the PAG service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 - `service` - (Required, String) The name of the service i.e `privileged-access-gateway`.
+- `pag_vpc_id` - (Required, String) The ID of the VPC to be used for PAG.
 - `tags` -  (Optional, Array of Strings) Tags associated with the PAG instance.
+
 
 
 

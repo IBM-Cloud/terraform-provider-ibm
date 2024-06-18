@@ -45,6 +45,7 @@ func ResourceIBMResourceKey() *schema.Resource {
 			"role": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor and Custom Roles.",
 				// ValidateFunc: validateRole,
@@ -270,7 +271,9 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error creating resource key when get role: %s", err)
 		}
-		keyParameters.SetProperty("role_crn", serviceRole.RoleID)
+		if role != "NONE" {
+			keyParameters.SetProperty("role_crn", serviceRole.RoleID)
+		}
 		resourceKeyCreate.Role = serviceRole.RoleID
 	}
 

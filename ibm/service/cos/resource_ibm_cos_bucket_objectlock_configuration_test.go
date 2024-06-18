@@ -37,6 +37,33 @@ func TestAccIBMCosBucket_Objectlock_Bucket_Enabled(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Objectlock_Bucket_Enabled_Smart_tier_bucket(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-smart-tier-ol%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "smart"
+	bucketRegionType := "cross_region_location"
+	objectLockEnabled := true
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Bucket_Enabled(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, objectLockEnabled),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCosBucket_Objectlock_Configuration_Without_Rule(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
