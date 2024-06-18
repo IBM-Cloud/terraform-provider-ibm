@@ -97,6 +97,16 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"confidential_compute_mode": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+						},
+						"enable_secure_boot": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+						},
 						isInstanceAvailablePolicyHostFailure: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -913,6 +923,10 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			catOfferingList = append(catOfferingList, currentOffering)
 			template[isInstanceTemplateCatalogOffering] = catOfferingList
 		}
+
+		template["confidential_compute_mode"] = instance.ConfidentialComputeMode
+
+		template["enable_secure_boot"] = instance.EnableSecureBoot
 
 		if instance.MetadataService != nil {
 			template[isInstanceTemplateMetadataServiceEnabled] = *instance.MetadataService.Enabled

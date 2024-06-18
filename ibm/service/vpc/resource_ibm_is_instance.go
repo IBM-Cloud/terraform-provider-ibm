@@ -215,6 +215,20 @@ func ResourceIBMISInstance() *schema.Resource {
 				Description: "Crn for this Instance",
 			},
 
+			"confidential_compute_mode": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", "confidential_compute_mode"),
+				Description:  "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+			},
+			"enable_secure_boot": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+			},
+
 			isInstanceSourceTemplate: {
 				Type:          schema.TypeString,
 				ForceNew:      true,
@@ -1655,6 +1669,16 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "confidential_compute_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "disabled, sgx, tdx",
+			Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
 			Identifier:                 isInstanceMetadataServiceRespHopLimit,
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
@@ -1760,6 +1784,12 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
 	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
@@ -2181,6 +2211,12 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
 	}
 	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
 	planOffering = nil
@@ -2610,7 +2646,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		},
 		Name: &name,
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -3045,7 +3086,12 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			ID: &vpcID,
 		},
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -3478,7 +3524,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &vpcID,
 		},
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -4044,6 +4095,16 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return nil
 		}
 		return fmt.Errorf("[ERROR] Error getting Instance: %s\n%s", err, response)
+	}
+	if !core.IsNil(instance.ConfidentialComputeMode) {
+		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+			return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+		}
+	}
+	if !core.IsNil(instance.EnableSecureBoot) {
+		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+			return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+		}
 	}
 	instanceInitialization, response, err := instanceC.GetInstanceInitialization(getinsIniOptions)
 	if err != nil {
@@ -5045,6 +5106,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	bootVolSize := "boot_volume.0.size"
+
 	if d.HasChange(bootVolSize) && !d.IsNewResource() {
 		old, new := d.GetChange(bootVolSize)
 		if new.(int) < old.(int) {
@@ -5600,24 +5662,84 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange(isInstanceName) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot")) && !d.IsNewResource() {
+		restartNeeded := false
+		serverstopped := false
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
-
-		instancePatchModel := &vpcv1.InstancePatch{
-			Name: &name,
+		instancePatchModel := &vpcv1.InstancePatch{}
+		if d.HasChange("confidential_compute_mode") {
+			instancePatchModel.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+			restartNeeded = true
 		}
+		if _, ok := d.GetOkExists("enable_secure_boot"); ok && d.HasChange("enable_secure_boot") {
+			instancePatchModel.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+		}
+		if d.HasChange("name") {
+			instancePatchModel.Name = &name
+		}
+
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updnetoptions.InstancePatch = instancePatch
+		if restartNeeded {
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			instance, response, err := instanceC.GetInstance(getinsOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+			}
 
+			if instance != nil && *instance.Status == "running" {
+				actiontype := "stop"
+				createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: &id,
+					Type:       &actiontype,
+				}
+				_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						return nil
+					}
+					return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				}
+				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+				if err != nil {
+					return err
+				}
+				serverstopped = true
+			}
+		}
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return err
+		}
+		if serverstopped {
+			actiontype := "start"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return nil
+				}
+				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			}
+			_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

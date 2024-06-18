@@ -544,6 +544,9 @@ Review the argument references that you can specify for your resource.
     ~> **Note:**
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
+- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. ** Constraints: Allowable values are: `disabled`, `sgx`** {Select Availability}
+
+  ~>**Note:** The confidential_compute_mode is `Select Availability` feature.
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 
@@ -552,6 +555,9 @@ Review the argument references that you can specify for your resource.
 
 - `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
 - `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
+- `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used. {Select Availability}
+
+  ~>**Note:** The enable_secure_boot is `Select Availability` feature.
 - `force_action` - (Optional, Boolean) Required with `action`. If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
 - `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access.
 

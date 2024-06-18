@@ -75,6 +75,16 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:     true,
 				ExactlyOneOf: []string{"identifier", isInstanceTemplateName},
 			},
+			"confidential_compute_mode": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+			},
+			"enable_secure_boot": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+			},
 			isInstanceTemplateHref: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -831,6 +841,9 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 		d.Set(isInstanceTemplateCrn, instance.CRN)
 		d.Set(isInstanceTemplateName, instance.Name)
 		d.Set(isInstanceTemplateUserData, instance.UserData)
+		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting confidential_compute_mode: %s", err))
+		}
 		// vni
 
 		networkAttachments := []map[string]interface{}{}
@@ -859,6 +872,9 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting primary_network_attachment %s", err))
 		}
 
+		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting enable_secure_boot: %s", err))
+		}
 		if instance.DefaultTrustedProfile != nil {
 			if instance.DefaultTrustedProfile.AutoLink != nil {
 				d.Set(isInstanceDefaultTrustedProfileAutoLink, instance.DefaultTrustedProfile.AutoLink)
@@ -1183,7 +1199,12 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				d.Set(isInstanceTemplateCrn, instance.CRN)
 				d.Set(isInstanceTemplateName, instance.Name)
 				d.Set(isInstanceTemplateUserData, instance.UserData)
-
+				if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error setting confidential_compute_mode: %s", err))
+				}
+				if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error setting enable_secure_boot: %s", err))
+				}
 				// catalog offering if any
 				if instance.CatalogOffering != nil {
 					catOfferingList := make([]map[string]interface{}, 0)
