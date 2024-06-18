@@ -356,7 +356,10 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 			return fmt.Errorf("[ERROR] Error while creating the instance Rule %s", resp)
 		}
 
-		d.SetId(*result.Result.ID)
+		len_rules := len(result.Result.Rules)
+		opt.SetID(*result.Result.Rules[len_rules-1].ID)
+
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, *result.Result.Rules[len_rules-1].ID))
 	}
 	return nil
 }
