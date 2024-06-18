@@ -417,6 +417,12 @@ func resourceIbmCommonSourceRegistrationRequestUpdate(context context.Context, d
 
 	updateProtectionSourceRegistrationOptions := &backuprecoveryv0.UpdateProtectionSourceRegistrationOptions{}
 
+	id, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	updateProtectionSourceRegistrationOptions.SetID(int64(id))
+
 	updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
 	if _, ok := d.GetOk("name"); ok {
 		updateProtectionSourceRegistrationOptions.SetName(d.Get("name").(string))
