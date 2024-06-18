@@ -110,6 +110,7 @@ const (
 	isInstanceCatalogOffering            = "catalog_offering"
 	isInstanceCatalogOfferingOfferingCrn = "offering_crn"
 	isInstanceCatalogOfferingVersionCrn  = "version_crn"
+	isInstanceCatalogOfferingPlanCrn     = "plan_crn"
 
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
@@ -395,6 +396,27 @@ func ResourceIBMISInstance() *schema.Resource {
 							ConflictsWith: []string{"catalog_offering.0.offering_crn"},
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a version of a catalog offering by a unique CRN property",
+						},
+						isInstanceCatalogOfferingPlanCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The CRN for this catalog offering version's billing plan",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -2129,7 +2151,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	}
 	return nil
 }
-func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, offerringCrn, versionCrn string) error {
+func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, offerringCrn, versionCrn, planCrn string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -2146,12 +2168,23 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			ID: &vpcID,
 		},
 	}
+	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
+	planOffering = nil
+	if planCrn != "" {
+		planOffering = &vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN{
+			CRN: &planCrn,
+		}
+	}
+
 	if offerringCrn != "" {
 		catalogOffering := &vpcv1.CatalogOfferingIdentityCatalogOfferingByCRN{
 			CRN: &offerringCrn,
 		}
 		offeringPrototype := &vpcv1.InstanceCatalogOfferingPrototypeCatalogOfferingByOffering{
 			Offering: catalogOffering,
+		}
+		if planOffering != nil {
+			offeringPrototype.Plan = planOffering
 		}
 		instanceproto.CatalogOffering = offeringPrototype
 	}
@@ -2161,6 +2194,9 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		}
 		versionPrototype := &vpcv1.InstanceCatalogOfferingPrototypeCatalogOfferingByVersion{
 			Version: versionOffering,
+		}
+		if planOffering != nil {
+			versionPrototype.Plan = planOffering
 		}
 		instanceproto.CatalogOffering = versionPrototype
 	}
@@ -3819,7 +3855,8 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		catalogOffering := catalogOfferingOk.([]interface{})[0].(map[string]interface{})
 		offeringCrn, _ := catalogOffering[isInstanceCatalogOfferingOfferingCrn].(string)
 		versionCrn, _ := catalogOffering[isInstanceCatalogOfferingVersionCrn].(string)
-		err := instanceCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, image, offeringCrn, versionCrn)
+		planCrn, _ := catalogOffering[isInstanceCatalogOfferingPlanCrn].(string)
+		err := instanceCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, image, offeringCrn, versionCrn, planCrn)
 		if err != nil {
 			return err
 		}
@@ -4015,6 +4052,15 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
 		catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+		if instance.CatalogOffering.Plan != nil {
+			if instance.CatalogOffering.Plan.CRN != nil && *instance.CatalogOffering.Plan.CRN != "" {
+				catalogMap[isInstanceCatalogOfferingPlanCrn] = *instance.CatalogOffering.Plan.CRN
+			}
+			if instance.CatalogOffering.Plan.Deleted != nil {
+				deletedMap := resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(*instance.CatalogOffering.Plan.Deleted)
+				catalogMap["deleted"] = []map[string]interface{}{deletedMap}
+			}
+		}
 		catalogList = append(catalogList, catalogMap)
 		d.Set(isInstanceCatalogOffering, catalogList)
 	}

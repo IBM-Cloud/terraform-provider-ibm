@@ -62,6 +62,7 @@ You can access the following attribute references after your data source is crea
   Nested scheme for `catalog_offering`:
     - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
     - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+	- `plan_crn` - (String) The CRN for this catalog offering version's billing plan
    	
 - `crn` - (String) The CRN of the instance template.
 - `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 

@@ -230,6 +230,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "boot_volume.0.encryption"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
 				),
 			},
 		},
@@ -1455,7 +1457,8 @@ func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, 
 	  resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
 		catalog_offering {
-			version_crn = data.ibm_is_images.testacc_images.images.1.catalog_offering.0.version.0.crn
+			version_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
 		}
 		boot_volume {
 			encryption = ibm_kms_key.testacc_key.crn
@@ -2470,6 +2473,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
 					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
+					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_images.testacc_images", "images.0.name"),
 				),
 			},
@@ -2515,6 +2520,7 @@ func testAccCheckIBMISInstanceCatalogImageConfig(vpcname, subnetname, sshname, p
 		}
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.0.catalog_offering.0.version.0.crn
+			plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.InstanceProfileName, userData, acc.ISZoneName)
 }
