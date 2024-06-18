@@ -184,6 +184,11 @@ func DataSourceIBMIsVirtualNetworkInterface() *schema.Resource {
 					},
 				},
 			},
+			"protocol_state_filtering_mode": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The protocol state filtering mode used for this virtual network interface.",
+			},
 			"resource_group": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -471,7 +476,9 @@ func dataSourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *sche
 	if err = d.Set("primary_ip", primaryIP); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting primary_ip %s", err))
 	}
-
+	if virtualNetworkInterface.ProtocolStateFilteringMode != nil {
+		d.Set("protocol_state_filtering_mode", virtualNetworkInterface.ProtocolStateFilteringMode)
+	}
 	resourceGroup := []map[string]interface{}{}
 	if virtualNetworkInterface.ResourceGroup != nil {
 		modelMap, err := dataSourceIBMIsVirtualNetworkInterfaceResourceGroupReferenceToMap(virtualNetworkInterface.ResourceGroup)
