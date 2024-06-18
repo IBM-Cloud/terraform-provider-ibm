@@ -52,10 +52,11 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 				Description: "Security group's vpc id",
 			},
 			isSgVPCName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Security group's vpc name",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{isSecurityGroupVPC},
+				Description:   "Security group's vpc name",
 			},
 			isSecurityGroupResourceGroup: {
 				Type:        schema.TypeString,
