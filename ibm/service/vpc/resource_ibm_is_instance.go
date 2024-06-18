@@ -656,6 +656,13 @@ func ResourceIBMISInstance() *schema.Resource {
 										ValidateFunc:  validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 										Description:   "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
+									},
 									"primary_ip": &schema.Schema{
 										Type:          schema.TypeList,
 										Optional:      true,
@@ -987,6 +994,13 @@ func ResourceIBMISInstance() *schema.Resource {
 										Computed:     true,
 										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 										Description:  "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
 									},
 									"primary_ip": &schema.Schema{
 										Type:        schema.TypeList,
@@ -4538,6 +4552,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					ipsName := fmt.Sprintf("%s.%s", nacVniName, "0.ips")
 					enableNatName := fmt.Sprintf("%s.%s", nacVniName, "0.enable_infrastructure_nat")
 					allowIpSpoofingName := fmt.Sprintf("%s.%s", nacVniName, "0.allow_ip_spoofing")
+					pStateFilteringModeSchemaName := fmt.Sprintf("%s.%s", nacVniName, "0.protocol_state_filtering_mode")
 					if d.HasChange(autoDeleteName) {
 						autodelete := d.Get(autoDeleteName).(bool)
 						virtualNetworkInterfacePatch.AutoDelete = &autodelete
@@ -4553,6 +4568,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					if d.HasChange(allowIpSpoofingName) {
 						allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
 						virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+					}
+					if d.HasChange(pStateFilteringModeSchemaName) {
+						pStateFilteringMode := d.Get(pStateFilteringModeSchemaName).(string)
+						virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
 					}
 					virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 					if err != nil {
@@ -4734,6 +4753,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			sgName := fmt.Sprintf("%s.%s", nacVniName, "0.security_groups")
 			enableNatName := fmt.Sprintf("%s.%s", nacVniName, "0.enable_infrastructure_nat")
 			allowIpSpoofingName := fmt.Sprintf("%s.%s", nacVniName, "0.allow_ip_spoofing")
+			pStateFilteringModeSchemaName := fmt.Sprintf("%s.%s", nacVniName, "0.protocol_state_filtering_mode")
 			if d.HasChange(autoDeleteName) {
 				autodelete := d.Get(autoDeleteName).(bool)
 				virtualNetworkInterfacePatch.AutoDelete = &autodelete
@@ -4749,6 +4769,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			if d.HasChange(allowIpSpoofingName) {
 				allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
 				virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+			}
+			if d.HasChange(pStateFilteringModeSchemaName) {
+				pStateFilteringMode := d.Get(pStateFilteringModeSchemaName).(string)
+				virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
 			}
 			virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 			if err != nil {
@@ -6173,6 +6197,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 	vniMap["auto_delete"] = vniDetails.AutoDelete
 	vniMap["enable_infrastructure_nat"] = vniDetails.EnableInfrastructureNat
 	vniMap["resource_group"] = vniDetails.ResourceGroup.ID
+	vniMap["protocol_state_filtering_mode"] = vniDetails.ProtocolStateFilteringMode
 	primaryipId := *vniDetails.PrimaryIP.ID
 	if !core.IsNil(vniDetails.Ips) {
 		ips := []map[string]interface{}{}
@@ -6280,6 +6305,9 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfacePrototypeAttachmentContext
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok {
+		model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
 	}
 	if modelMap["primary_ip"] != nil && len(modelMap["primary_ip"].([]interface{})) > 0 {
 		PrimaryIPModel, err := resourceIBMIsInstanceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap["primary_ip"].([]interface{})[0].(map[string]interface{}))

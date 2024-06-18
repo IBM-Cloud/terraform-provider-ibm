@@ -698,6 +698,13 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 											},
 										},
 									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
+									},
 									"resource_group": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
@@ -933,6 +940,13 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 												},
 											},
 										},
+									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
 									},
 									"resource_group": &schema.Schema{
 										Type:        schema.TypeString,
@@ -2630,6 +2644,7 @@ func resourceIBMIsInstanceTemplateNetworkAttachmentReferenceToMap(model *vpcv1.I
 			}
 			vniMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
 		}
+		vniMap["protocol_state_filtering_mode"] = pna.ProtocolStateFilteringMode
 		if pna.Subnet != nil {
 			subnet := pna.Subnet.(*vpcv1.SubnetIdentity)
 			vniMap["subnet"] = subnet.ID
@@ -2709,6 +2724,9 @@ func resourceIBMIsInstanceTemplateMapToVirtualNetworkInterfacePrototypeAttachmen
 			return model, err
 		}
 		model.PrimaryIP = PrimaryIPModel
+	}
+	if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok {
+		model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
 	}
 	if modelMap["resource_group"] != nil && modelMap["resource_group"].(string) != "" {
 		resourcegroupid := modelMap["resource_group"].(string)

@@ -432,6 +432,11 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 											},
 										},
 									},
+									"protocol_state_filtering_mode": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The protocol state filtering mode used for this virtual network interface.",
+									},
 									"resource_group": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -619,6 +624,11 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 												},
 											},
 										},
+									},
+									"protocol_state_filtering_mode": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The protocol state filtering mode used for this virtual network interface.",
 									},
 									"resource_group": &schema.Schema{
 										Type:        schema.TypeList,
@@ -1781,6 +1791,9 @@ func dataSourceIBMIsInstanceTemplateInstanceNetworkAttachmentPrototypeVirtualNet
 			}
 			modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
 		}
+		if model.ProtocolStateFilteringMode != nil {
+			modelMap["protocol_state_filtering_mode"] = model.ProtocolStateFilteringMode
+		}
 		if model.ResourceGroup != nil {
 			resourceGroupMap, err := dataSourceIBMIsInstanceTemplateResourceGroupIdentityToMap(model.ResourceGroup)
 			if err != nil {
@@ -1851,6 +1864,9 @@ func dataSourceIBMIsInstanceTemplateInstanceNetworkAttachmentPrototypeVirtualNet
 			return modelMap, err
 		}
 		modelMap["primary_ip"] = []map[string]interface{}{primaryIPMap}
+	}
+	if model.ProtocolStateFilteringMode != nil {
+		modelMap["protocol_state_filtering_mode"] = model.ProtocolStateFilteringMode
 	}
 	if model.ResourceGroup != nil {
 		resourceGroupMap, err := dataSourceIBMIsInstanceTemplateResourceGroupIdentityToMap(model.ResourceGroup)

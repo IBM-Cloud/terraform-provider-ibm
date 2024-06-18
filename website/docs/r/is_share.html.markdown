@@ -130,6 +130,12 @@ The following arguments are supported:
         - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
         - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
         - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
     - `resource_group` - (Optional, String) The ID of the resource group to use.
     - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
     - `subnet` - (Optional, string) The associated subnet.
@@ -172,6 +178,12 @@ The following arguments are supported:
         - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
         - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
         - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+      - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
       - `resource_group` - (Optional, String) The ID of the resource group to use.
       - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
       - `subnet` - (Optional, string) The associated subnet.

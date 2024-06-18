@@ -282,6 +282,12 @@ Review the argument references that you can specify for your resource.
           - `id` - (Required, String) The unique identifier for this reserved IP.
           - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
           - `resource_type` - (String) The resource type.
+      - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+            ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
       - `resource_type` - (String) The resource type.
       - `subnet` - (Required, String) The subnet id of the virtual network interface for the network attachment.
 
@@ -323,6 +329,12 @@ Review the argument references that you can specify for your resource.
           - `id` - (Required, String) The unique identifier for this reserved IP.
           - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
           - `resource_type` - (String) The resource type.
+      - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+            ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
       - `resource_type` - (String) The resource type.
       - `subnet` - (Required, String) The subnet id of the virtual network interface for the network attachment.
 
