@@ -10,6 +10,8 @@ subcategory: "MQ on Cloud"
 
 Provides a read-only data source to retrieve information about a mqcloud_queue_manager. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl
@@ -33,7 +35,6 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the mqcloud_queue_manager.
-
 * `queue_managers` - (List) List of queue managers.
   * Constraints: The maximum length is `50` items. The minimum length is `0` items.
 Nested schema for **queue_managers**:
@@ -50,8 +51,8 @@ Nested schema for **queue_managers**:
 	* `name` - (String) A queue manager name conforming to MQ restrictions.
 	  * Constraints: The maximum length is `48` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9._]*$/`.
 	* `rest_api_endpoint_url` - (String) The url through which to access REST APIs for this queue manager.
-	* `size` - (String) The queue manager sizes of deployment available. Deployment of lite queue managers for aws_us_east_1 and aws_eu_west_1 locations is not available.
-	  * Constraints: Allowable values are: `lite`, `xsmall`, `small`, `medium`, `large`.
+	* `size` - (String) The queue manager sizes of deployment available.
+	  * Constraints: Allowable values are: `xsmall`, `small`, `medium`, `large`.
 	* `status_uri` - (String) A reference uri to get deployment status of the queue manager.
 	* `upgrade_available` - (Boolean) Describes whether an upgrade is available for this queue manager.
 	* `version` - (String) The MQ version of the queue manager.

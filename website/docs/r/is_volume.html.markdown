@@ -104,6 +104,7 @@ Review the argument references that you can specify for your resource.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
 - `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 - `source_snapshot` - The ID of snapshot from which to clone the volume.
+- `source_snapshot_crn` - The CRN of snapshot from which to clone the volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `zone` - (Required, Forces new resource, String) The location of the volume.
 

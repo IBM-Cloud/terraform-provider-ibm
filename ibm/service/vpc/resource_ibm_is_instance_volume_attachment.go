@@ -143,7 +143,7 @@ func ResourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				Computed:      true,
-				AtLeastOneOf:  []string{isInstanceVolAttVol, isInstanceVolCapacity, isInstanceVolumeSnapshot},
+				AtLeastOneOf:  []string{isInstanceVolAttVol, isInstanceVolCapacity, isInstanceVolumeSnapshot, isInstanceVolumeSnapshotCrn},
 				ConflictsWith: []string{isInstanceVolAttVol},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolCapacity),
 				Description:   "The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.",
@@ -160,9 +160,18 @@ func ResourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				AtLeastOneOf:  []string{isInstanceVolAttVol, isInstanceVolCapacity, isInstanceVolumeSnapshot},
-				ConflictsWith: []string{isInstanceVolAttVol},
-				Description:   "The snapshot of the volume to be attached",
+				AtLeastOneOf:  []string{isInstanceVolAttVol, isInstanceVolCapacity, isInstanceVolumeSnapshot, isInstanceVolumeSnapshotCrn},
+				ConflictsWith: []string{isInstanceVolAttVol, isInstanceVolumeSnapshotCrn},
+				Description:   "The snapshot ID of the volume to be attached",
+			},
+			isInstanceVolumeSnapshotCrn: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				AtLeastOneOf:  []string{isInstanceVolAttVol, isInstanceVolCapacity, isInstanceVolumeSnapshot, isInstanceVolumeSnapshotCrn},
+				ConflictsWith: []string{isInstanceVolAttVol, isInstanceVolumeSnapshot},
+				Description:   "The snapshot crn of the volume to be attached",
 			},
 			isInstanceVolumeAttVolumeReferenceCrn: {
 				Type:        schema.TypeString,
@@ -312,10 +321,17 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			}
 		}
 		volSnapshotStr := ""
+		volSnapshotCrnStr := ""
 		if volSnapshot, ok := d.GetOk(isInstanceVolumeSnapshot); ok {
 			volSnapshotStr = volSnapshot.(string)
 			volProtoVol.SourceSnapshot = &vpcv1.SnapshotIdentity{
 				ID: &volSnapshotStr,
+			}
+		}
+		if volSnapshotCrn, ok := d.GetOk(isInstanceVolumeSnapshotCrn); ok {
+			volSnapshotCrnStr = volSnapshotCrn.(string)
+			volProtoVol.SourceSnapshot = &vpcv1.SnapshotIdentity{
+				CRN: &volSnapshotCrnStr,
 			}
 		}
 		encryptionCRNStr := ""
@@ -326,7 +342,10 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			}
 		}
 		var snapCapacity int64
-		if volSnapshotStr != "" {
+		if volSnapshotStr != "" || volSnapshotCrnStr != "" {
+			if volSnapshotStr == "" {
+				volSnapshotStr = volSnapshotCrnStr[strings.LastIndex(volSnapshotCrnStr, ":")+1:]
+			}
 			snapshotGet, _, err := sess.GetSnapshot(&vpcv1.GetSnapshotOptions{
 				ID: &volSnapshotStr,
 			})
@@ -475,6 +494,7 @@ func instanceVolumeAttachmentGet(d *schema.ResourceData, meta interface{}, insta
 	}
 	if volumeDetail.SourceSnapshot != nil {
 		d.Set(isInstanceVolumeSnapshot, *volumeDetail.SourceSnapshot.ID)
+		d.Set(isInstanceVolumeSnapshotCrn, *volumeDetail.SourceSnapshot.CRN)
 	}
 	return nil
 }

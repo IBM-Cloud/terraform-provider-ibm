@@ -45,6 +45,7 @@ const (
 	isInstanceZone                    = "zone"
 	isInstanceBootVolume              = "boot_volume"
 	isInstanceVolumeSnapshot          = "snapshot"
+	isInstanceVolumeSnapshotCrn       = "snapshot_crn"
 	isInstanceSourceTemplate          = "instance_template"
 	isInstanceBandwidth               = "bandwidth"
 	isInstanceTotalVolumeBandwidth    = "total_volume_bandwidth"
@@ -218,8 +219,8 @@ func ResourceIBMISInstance() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.volume_id"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "boot_volume.0.volume_id"},
 				Description:   "Id of the instance template",
 			},
 			isInstanceZone: {
@@ -1112,8 +1113,8 @@ func ResourceIBMISInstance() *schema.Resource {
 				ForceNew:      true,
 				Computed:      true,
 				Optional:      true,
-				ConflictsWith: []string{"boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 				RequiredWith:  []string{isInstanceZone, isInstanceKeys, isInstanceVPC, isInstanceProfile},
 				Description:   "image id",
 			},
@@ -1131,8 +1132,8 @@ func ResourceIBMISInstance() *schema.Resource {
 							ForceNew:      true,
 							Computed:      true,
 							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
 						},
 						isInstanceVolAttVolAutoDelete: {
@@ -1151,8 +1152,17 @@ func ResourceIBMISInstance() *schema.Resource {
 						isInstanceVolumeSnapshot: {
 							Type:          schema.TypeString,
 							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id", "boot_volume.0.snapshot_crn"},
+							Optional:      true,
+							ForceNew:      true,
+							Computed:      true,
+						},
+						isInstanceVolumeSnapshotCrn: {
+							Type:          schema.TypeString,
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
 							Optional:      true,
 							ForceNew:      true,
 							Computed:      true,
@@ -3106,6 +3116,13 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 				ID: &snapshotIdStr,
 			}
 		}
+		snapshotCrn, ok := bootvol[isInstanceVolumeSnapshotCrn]
+		snapshotCrnStr := snapshotCrn.(string)
+		if snapshotCrnStr != "" && ok {
+			volTemplate.SourceSnapshot = &vpcv1.SnapshotIdentity{
+				CRN: &snapshotCrnStr,
+			}
+		}
 		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
 		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
@@ -3831,6 +3848,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	zone := d.Get(isInstanceZone).(string)
 	image := d.Get(isInstanceImage).(string)
 	snapshot := d.Get("boot_volume.0.snapshot").(string)
+	snapshotcrn := d.Get("boot_volume.0.snapshot_crn").(string)
 	volume := d.Get("boot_volume.0.volume_id").(string)
 	template := d.Get(isInstanceSourceTemplate).(string)
 	if catalogOfferingOk, ok := d.GetOk(isInstanceCatalogOffering); ok {
@@ -3848,7 +3866,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if err != nil {
 			return err
 		}
-	} else if snapshot != "" {
+	} else if snapshot != "" || snapshotcrn != "" {
 		err := instanceCreateBySnapshot(d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
@@ -4399,6 +4417,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				if vol.SourceSnapshot != nil {
 					bootVol[isInstanceVolumeSnapshot] = vol.SourceSnapshot.ID
+					bootVol[isInstanceVolumeSnapshotCrn] = vol.SourceSnapshot.CRN
 				}
 				if vol.UserTags != nil {
 					bootVol[isInstanceBootVolumeTags] = vol.UserTags
