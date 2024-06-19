@@ -293,7 +293,6 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while listing transit gateway connections %s\n%s", err, response)
 		}
-		fmt.Println("con count:", len(listTGConnections.Connections))
 		for _, instance := range listTGConnections.Connections {
 			tgConn := map[string]interface{}{}
 

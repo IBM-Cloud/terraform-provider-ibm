@@ -190,7 +190,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Description:  "Whether to permit or deny the prefix filter",
 			},
 			tgrGREtunnels: {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				ForceNew:    false,
 				Description: "List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections",
@@ -371,13 +371,11 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		createTransitGatewayConnectionOptions.SetPrefixFiltersDefault(default_prefix_filter)
 	}
 
-	// set the tunnels
 	tunnelCreateList := make([]transitgatewayapisv1.TransitGatewayRedundantGRETunnelTemplate, 0)
-	if tunnelInputList, ok := d.GetOk(tgrGREtunnels); ok && len(tunnelInputList.([]interface{})) > 0 {
 
-		rGRetunnelInputList := tunnelInputList.([]interface{})
-
-		for _, tunnel := range rGRetunnelInputList {
+	if _, ok := d.GetOk(tgrGREtunnels); ok {
+		tunnelList := d.Get(tgrGREtunnels).(*schema.Set).List()
+		for _, tunnel := range tunnelList {
 			tunnelData := tunnel.(map[string]interface{})
 
 			tunnelTemplateModel := new(transitgatewayapisv1.TransitGatewayRedundantGRETunnelTemplate)
