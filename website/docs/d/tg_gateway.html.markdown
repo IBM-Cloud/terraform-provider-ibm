@@ -1,4 +1,3 @@
----
 
 subcategory: "Transit Gateway"
 layout: "ibm"
@@ -13,6 +12,7 @@ Retrieve information of an existing IBM Cloud infrastructure transit gateway as 
 
 ## Example usage
 
+---
 ```terraform
 resource "ibm_tg_gateway" "new_tg_gw" {
   name           = "transit-gateway-1"
@@ -20,12 +20,11 @@ resource "ibm_tg_gateway" "new_tg_gw" {
   global         = true
   resource_group = "30951d2dff914dafb26455a88c0c0092"
 }
-
 data "ibm_tg_gateway" "ds_tggateway" {
   name = ibm_tg_gateway.new_tg_gw.name
 }
 ```
-
+---
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
@@ -63,3 +62,4 @@ In addition to the argument reference list, you can access the following attribu
   - `zone` - (String) The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `status` - (String) The gateway status.
 - `updated_at` - (Timestamp) The date and time resource is last updated.
+- `default_prefix_filter` - (String) Whether to permit or deny the prefix filter, Default value for action for prefix filters

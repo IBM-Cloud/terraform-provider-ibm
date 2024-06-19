@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -522,22 +522,26 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_network_interface_ip":           vpc.DataSourceIBMIsVirtualNetworkInterfaceIP(),
 			"ibm_is_virtual_network_interface_ips":          vpc.DataSourceIBMIsVirtualNetworkInterfaceIPs(),
 
-			"ibm_is_share_mount_target":              vpc.DataSourceIBMIsShareTarget(),
-			"ibm_is_share_mount_targets":             vpc.DataSourceIBMIsShareTargets(),
-			"ibm_is_volume":                          vpc.DataSourceIBMISVolume(),
-			"ibm_is_volumes":                         vpc.DataSourceIBMIsVolumes(),
-			"ibm_is_volume_profile":                  vpc.DataSourceIBMISVolumeProfile(),
-			"ibm_is_volume_profiles":                 vpc.DataSourceIBMISVolumeProfiles(),
-			"ibm_is_vpc":                             vpc.DataSourceIBMISVPC(),
-			"ibm_is_vpc_dns_resolution_binding":      vpc.DataSourceIBMIsVPCDnsResolutionBinding(),
-			"ibm_is_vpc_dns_resolution_bindings":     vpc.DataSourceIBMIsVPCDnsResolutionBindings(),
-			"ibm_is_vpcs":                            vpc.DataSourceIBMISVPCs(),
-			"ibm_is_vpn_gateway":                     vpc.DataSourceIBMISVPNGateway(),
-			"ibm_is_vpn_gateways":                    vpc.DataSourceIBMISVPNGateways(),
-			"ibm_is_vpc_address_prefixes":            vpc.DataSourceIbmIsVpcAddressPrefixes(),
-			"ibm_is_vpc_address_prefix":              vpc.DataSourceIBMIsVPCAddressPrefix(),
-			"ibm_is_vpn_gateway_connection":          vpc.DataSourceIBMISVPNGatewayConnection(),
-			"ibm_is_vpn_gateway_connections":         vpc.DataSourceIBMISVPNGatewayConnections(),
+			"ibm_is_share_mount_target":          vpc.DataSourceIBMIsShareTarget(),
+			"ibm_is_share_mount_targets":         vpc.DataSourceIBMIsShareTargets(),
+			"ibm_is_volume":                      vpc.DataSourceIBMISVolume(),
+			"ibm_is_volumes":                     vpc.DataSourceIBMIsVolumes(),
+			"ibm_is_volume_profile":              vpc.DataSourceIBMISVolumeProfile(),
+			"ibm_is_volume_profiles":             vpc.DataSourceIBMISVolumeProfiles(),
+			"ibm_is_vpc":                         vpc.DataSourceIBMISVPC(),
+			"ibm_is_vpc_dns_resolution_binding":  vpc.DataSourceIBMIsVPCDnsResolutionBinding(),
+			"ibm_is_vpc_dns_resolution_bindings": vpc.DataSourceIBMIsVPCDnsResolutionBindings(),
+			"ibm_is_vpcs":                        vpc.DataSourceIBMISVPCs(),
+			"ibm_is_vpn_gateway":                 vpc.DataSourceIBMISVPNGateway(),
+			"ibm_is_vpn_gateways":                vpc.DataSourceIBMISVPNGateways(),
+			"ibm_is_vpc_address_prefixes":        vpc.DataSourceIbmIsVpcAddressPrefixes(),
+			"ibm_is_vpc_address_prefix":          vpc.DataSourceIBMIsVPCAddressPrefix(),
+			"ibm_is_vpn_gateway_connection":      vpc.DataSourceIBMISVPNGatewayConnection(),
+			"ibm_is_vpn_gateway_connections":     vpc.DataSourceIBMISVPNGatewayConnections(),
+
+			"ibm_is_vpn_gateway_connection_local_cidrs": vpc.DataSourceIBMIsVPNGatewayConnectionLocalCidrs(),
+			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
+
 			"ibm_is_vpc_default_routing_table":       vpc.DataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_table":               vpc.DataSourceIBMIBMIsVPCRoutingTable(),
 			"ibm_is_vpc_routing_tables":              vpc.DataSourceIBMISVPCRoutingTables(),
@@ -780,6 +784,7 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// MQ on Cloud
+			"ibm_mqcloud_queue_manager_options":  mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
 			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
 			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
 			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
@@ -940,6 +945,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_view_folders":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
 			"ibm_logs_view":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
 			"ibm_logs_views":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
+			"ibm_logs_dashboard_folders": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1109,6 +1115,7 @@ func Provider() *schema.Provider {
 			"ibm_ipsec_vpn":                                classicinfrastructure.ResourceIBMIPSecVPN(),
 			"ibm_iam_policy_template":                      iampolicy.ResourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":              iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
+			"ibm_iam_policy_assignment":                    iampolicy.ResourceIBMIAMPolicyAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1505,6 +1512,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_outgoing_webhook": logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
 			"ibm_logs_view_folder":      logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
 			"ibm_logs_view":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
+			"ibm_logs_dashboard_folder": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1942,6 +1950,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_e2m":              logs.ResourceIbmLogsE2mValidator(),
 				"ibm_logs_view":             logs.ResourceIbmLogsViewValidator(),
 				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
+				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),

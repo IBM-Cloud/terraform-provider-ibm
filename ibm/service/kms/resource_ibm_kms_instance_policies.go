@@ -6,14 +6,14 @@ package kms
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
+	"time"
 )
 
 func ResourceIBMKmsInstancePolicy() *schema.Resource {
@@ -258,6 +258,12 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 	setIfNotEmpty("rotation", instancePolicies)
 	setIfNotEmpty("metrics", instancePolicies)
 	setIfNotEmpty("key_create_import_access", instancePolicies)
+
+	if strings.Contains((kpAPI.URL).String(), "private") || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
+	}
 
 	return nil
 

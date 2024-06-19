@@ -176,6 +176,47 @@ func TestAccIbmIsShareMountTargetVNI(t *testing.T) {
 	})
 }
 
+func TestAccIbmIsShareMountTargetVNIProtocolStateFilteringMode(t *testing.T) {
+	var conf vpcv1.ShareMountTarget
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-subnet-name-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-vni-name-%d", acctest.RandIntRange(10, 100))
+	vniNameUpdated := fmt.Sprintf("tf-vni-name-updated-%d", acctest.RandIntRange(10, 100))
+	pIpName := fmt.Sprintf("tf-pip-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareTargetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringMode(vpcname, sname, targetName, subnetName, vniName, pIpName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareTargetExists("ibm_is_share_mount_target.is_share_target", conf),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetName),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.name", vniName),
+					resource.TestCheckResourceAttrSet("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.subnet"),
+					resource.TestCheckResourceAttrSet("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.primary_ip.0.name"),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.protocol_state_filtering_mode", "auto"),
+					resource.TestCheckResourceAttr("data.ibm_is_virtual_network_interface.is_virtual_network_interface", "protocol_state_filtering_mode", "auto"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringModeUpdate(vpcname, sname, targetNameUpdate, subnetName, vniNameUpdated, pIpName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetNameUpdate),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.name", vniNameUpdated),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "virtual_network_interface.0.protocol_state_filtering_mode", "enabled"),
+					resource.TestCheckResourceAttr("data.ibm_is_virtual_network_interface.is_virtual_network_interface", "protocol_state_filtering_mode", "enabled"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIbmIsShareMountTargetVNIID(t *testing.T) {
 	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
@@ -306,6 +347,82 @@ func testAccCheckIbmIsShareMountTargetConfigVNIPrimaryIPID(vpcName, sname, targe
 		name = "%s"
 	}
 	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, resIPName, vniName, targetName)
+}
+
+func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringMode(vpcName, sname, targetName, subnetName, vniName, pIpName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_share" "is_share" {
+		zone = "us-south-1"
+		size = 200
+		name = "%s"
+		profile = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_share_mount_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
+		virtual_network_interface {
+			name = "%s"
+			primary_ip {
+				name = "%s"
+				address = "${replace(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, "0/24", "14")}"
+				auto_delete = %t
+			}
+			subnet = ibm_is_subnet.testacc_subnet.id
+			protocol_state_filtering_mode = "auto"
+		}
+
+		name = "%s"
+	}
+	data "ibm_is_virtual_network_interface" "is_virtual_network_interface" {
+		virtual_network_interface = ibm_is_share_mount_target.is_share_target.virtual_network_interface.0.id
+	}
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, false, targetName)
+}
+
+func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringModeUpdate(vpcName, sname, targetName, subnetName, vniName, pIpName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_share" "is_share" {
+		zone = "us-south-1"
+		size = 200
+		name = "%s"
+		profile = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_share_mount_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
+		virtual_network_interface {
+			name = "%s"
+			primary_ip {
+				name = "%s"
+				address = "${replace(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, "0/24", "14")}"
+				auto_delete = %t
+			}
+			subnet = ibm_is_subnet.testacc_subnet.id
+			protocol_state_filtering_mode = "enabled"
+		}
+
+		name = "%s"
+	}
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, false, targetName)
 }
 
 func testAccCheckIbmIsShareMountTargetConfigVNI(vpcName, sname, targetName, subnetName, vniName, pIpName string) string {

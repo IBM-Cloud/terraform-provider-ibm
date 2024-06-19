@@ -45,6 +45,8 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 		* `state` - (String) The state of the configuration.
 		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+		* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+		  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 		* `version` - (Integer) The version number of the configuration.
 	* `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 	* `definition` - (List) The description of a project configuration.
@@ -67,6 +69,8 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 		* `state` - (String) The state of the configuration.
 		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+		* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+		  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 		* `version` - (Integer) The version number of the configuration.
 	* `deployment_model` - (String) The configuration type.
 	  * Constraints: Allowable values are: `project_deployed`, `user_deployed`, `stack`.
@@ -107,6 +111,8 @@ Nested schema for **cumulative_needs_attention_view**:
   * Constraints: The default value is `false`.
 * `definition` - (List) The definition of the project.
 Nested schema for **definition**:
+	* `auto_deploy` - (Boolean) A boolean flag to enable auto deploy.
+	  * Constraints: The default value is `false`.
 	* `description` - (String) A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.
 	  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `destroy_on_delete` - (Boolean) The policy that indicates whether the resources are destroyed or not when a project is deleted.

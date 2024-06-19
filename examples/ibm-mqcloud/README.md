@@ -10,6 +10,7 @@ The following resources are supported:
 * ibm_mqcloud_truststore_certificate
 
 The following data sources are supported:
+* ibm_mqcloud_queue_manager_options
 * ibm_mqcloud_queue_manager
 * ibm_mqcloud_queue_manager_status
 * ibm_mqcloud_application
@@ -53,7 +54,7 @@ resource "ibm_mqcloud_queue_manager" "mqcloud_queue_manager_instance" {
 | name | A queue manager name conforming to MQ restrictions. | `string` | true |
 | display_name | A displayable name for the queue manager - limited only in length. | `string` | false |
 | location | The locations in which the queue manager could be deployed. | `string` | true |
-| size | The queue manager sizes of deployment available. Deployment of lite queue managers for aws_us_east_1 and aws_eu_west_1 locations is not available. | `string` | true |
+| size | The queue manager sizes of deployment available. | `string` | true |
 | version | The MQ version of the queue manager. | `string` | false |
 
 #### Outputs
@@ -130,6 +131,14 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
   queue_manager_id = var.mqcloud_keystore_certificate_queue_manager_id
   label = var.mqcloud_keystore_certificate_label
   certificate_file = var.mqcloud_keystore_certificate_certificate_file
+
+  config {
+    ams {
+      channels {
+        name = var.mqcloud_keystore_certificate_config_ams_channel_name
+      }
+    }
+  }
 }
 ```
 
@@ -159,6 +168,7 @@ resource "ibm_mqcloud_keystore_certificate" "mqcloud_keystore_certificate_instan
 | dns_names_total_count | The total count of dns names. |
 | dns_names | The list of DNS names. |
 | href | The URL for this key store certificate. |
+| config | The configuration details for this certificate. |
 | certificate_id | ID of the certificate. |
 
 ### Resource: ibm_mqcloud_truststore_certificate
@@ -199,6 +209,29 @@ resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_in
 | certificate_id | Id of the certificate. |
 
 ## MQ on Cloud data sources
+
+### Data source: ibm_mqcloud_queue_manager_options
+
+```hcl
+data "ibm_mqcloud_queue_manager_options" "mqcloud_queue_manager_options_instance" {
+  service_instance_guid = var.mqcloud_queue_manager_options_service_instance_guid
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| service_instance_guid | The GUID that uniquely identifies the MQ on Cloud service instance. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| locations | List of deployment locations. |
+| sizes | List of queue manager sizes. |
+| versions | List of queue manager versions. |
+| latest_version | The latest Queue manager version. |
 
 ### Data source: ibm_mqcloud_queue_manager
 

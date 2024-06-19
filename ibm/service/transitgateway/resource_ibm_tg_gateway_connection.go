@@ -40,6 +40,7 @@ const (
 	tgRemoteTunnelIp                    = "remote_tunnel_ip"
 	tgZone                              = "zone"
 	tgMtu                               = "mtu"
+	tgDefaultPrefixFilter               = "default_prefix_filter"
 )
 
 func ResourceIBMTransitGatewayConnection() *schema.Resource {
@@ -177,6 +178,13 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Computed:    true,
 				Description: "The crn of the transit gateway",
 			},
+			tgDefaultPrefixFilter: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tg_connection_prefix_filter", tgAction),
+				Description:  "Whether to permit or deny the prefix filter",
+			},
 		},
 	}
 }
@@ -264,6 +272,10 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		zoneName := d.Get(tgZone).(string)
 		zoneIdentity.Name = &zoneName
 		createTransitGatewayConnectionOptions.SetZone(zoneIdentity)
+	}
+	if _, ok := d.GetOk(tgDefaultPrefixFilter); ok {
+		default_prefix_filter := d.Get(tgDefaultPrefixFilter).(string)
+		createTransitGatewayConnectionOptions.SetPrefixFiltersDefault(default_prefix_filter)
 	}
 
 	tgConnections, response, err := client.CreateTransitGatewayConnection(createTransitGatewayConnectionOptions)
@@ -374,6 +386,9 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.RequestStatus != nil {
 		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
+	if instance.PrefixFiltersDefault != nil {
+		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
+	}
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
@@ -419,6 +434,12 @@ func resourceIBMTransitGatewayConnectionUpdate(d *schema.ResourceData, meta inte
 		if d.Get(tgName) != nil {
 			name := d.Get(tgName).(string)
 			updateTransitGatewayConnectionOptions.Name = &name
+		}
+	}
+	if d.HasChange(tgDefaultPrefixFilter) {
+		if d.Get(tgDefaultPrefixFilter) != nil {
+			prefixFilter := d.Get(tgDefaultPrefixFilter).(string)
+			updateTransitGatewayConnectionOptions.PrefixFiltersDefault = &prefixFilter
 		}
 	}
 
