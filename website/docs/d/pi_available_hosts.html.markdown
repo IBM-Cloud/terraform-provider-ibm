@@ -20,7 +20,7 @@ data "ibm_pi_available_hosts" "pi_available_hosts" {
 }
 ```
 
-## Notes
+### Notes
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
