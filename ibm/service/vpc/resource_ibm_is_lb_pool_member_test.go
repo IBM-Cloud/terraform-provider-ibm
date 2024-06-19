@@ -102,6 +102,47 @@ func TestAccIBMISLBPoolMember_basic_network(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLBPoolMember_basic_network_instanceupdate(t *testing.T) {
+	var lb string
+
+	vpcname := fmt.Sprintf("tflbpm-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpmc-name-%d", acctest.RandIntRange(10, 100))
+	nlbPoolName := fmt.Sprintf("tfnlbpoolc%d", acctest.RandIntRange(10, 100))
+
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
+
+	sshname := "terraform-test-ssh-key"
+	vsiName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolMemberDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolMemberIDConfig(
+					vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, acc.IsImageName,
+					vsiName, nlbName, nlbPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "weight", "20"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolMemberIDConfig(
+					vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, acc.IsWinImage,
+					vsiName, nlbName1, nlbPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolMemberExists("ibm_is_lb_pool_member.testacc_nlb_mem", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool_member.testacc_nlb_mem", "port", "8080"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISLBPoolMember_basic_network_target_address(t *testing.T) {
 	var lb string
 
