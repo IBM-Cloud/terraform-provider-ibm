@@ -34,7 +34,7 @@ data "ibm_pi_host_groups" "hostGroup" {
      }
    ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
