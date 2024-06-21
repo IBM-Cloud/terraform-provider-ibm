@@ -75,7 +75,9 @@ const (
 	Attr_AuxiliaryVolumeName                         = "auxiliary_volume_name"
 	Attr_AvailabilityZone                            = "availability_zone"
 	Attr_AvailableCores                              = "available_cores"
+	Attr_AvailableHosts                              = "available_hosts"
 	Attr_AvailableIPCount                            = "available_ip_count"
+	Attr_AvailableMemory                             = "available_memory"
 	Attr_Bootable                                    = "bootable"
 	Attr_BootVolumeID                                = "boot_volume_id"
 	Attr_Capabilities                                = "capabilities"
@@ -96,6 +98,7 @@ const (
 	Attr_CopyType                                    = "copy_type"
 	Attr_CoreMemoryRatio                             = "core_memory_ratio"
 	Attr_Cores                                       = "cores"
+	Attr_Count                                       = "count"
 	Attr_CPUs                                        = "cpus"
 	Attr_Created                                     = "created"
 	Attr_CreateTime                                  = "create_time"
@@ -288,7 +291,7 @@ const (
 	Attr_SystemPoolName                              = "system_pool_name"
 	Attr_SystemPools                                 = "system_pools"
 	Attr_Systems                                     = "systems"
-	Attr_SysType                                     = "systype"
+	Attr_SysType                                     = "sys_type"
 	Attr_TargetVolumeName                            = "target_volume_name"
 	Attr_TenantID                                    = "tenant_id"
 	Attr_TenantName                                  = "tenant_name"
@@ -326,7 +329,9 @@ const (
 	Attr_WorkspaceStatus                             = "pi_workspace_status"
 	Attr_WorkspaceType                               = "pi_workspace_type"
 	Attr_WWN                                         = "wwn"
-	OS_IBMI                                          = "ibmi"
+
+	// OS Type
+	OS_IBMI = "ibmi"
 
 	// Affinty Values
 	Affinity     = "affinity"
