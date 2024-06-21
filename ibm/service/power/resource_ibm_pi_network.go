@@ -47,7 +47,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 			helpers.PINetworkType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vlan", "pub-vlan"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vlan", "pub-vlan", "dhcp-vlan"}),
 				Description:  "PI network type",
 			},
 			helpers.PINetworkName: {
@@ -169,7 +169,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.AccessConfig = models.AccessConfig(v.(string))
 	}
 
-	if networktype == "vlan" {
+	if networktype == "vlan" || networktype == "dhcp-vlan" {
 		var networkcidr string
 		var ipBodyRanges []*models.IPAddressRange
 		if v, ok := d.GetOk(helpers.PINetworkCidr); ok {
