@@ -334,6 +334,11 @@ const (
 	Private      = "private"
 	Public       = "public"
 
+	// Network Values
+	DHCPNetwork    = "dhcp-vlan"
+	PrivateNetwork = "vlan"
+	PublicNetwork  = "pub-vlan"
+
 	// States
 	State_Active             = "active"
 	State_ACTIVE             = "ACTIVE"
