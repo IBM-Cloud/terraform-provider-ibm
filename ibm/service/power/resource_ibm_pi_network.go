@@ -47,7 +47,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 			helpers.PINetworkType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{DHCPNetwork, PrivateNetwork, PublicNetwork}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{DHCPVlan, PubVlan, Vlan}),
 				Description:  "PI network type",
 			},
 			helpers.PINetworkName: {
@@ -169,7 +169,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.AccessConfig = models.AccessConfig(v.(string))
 	}
 
-	if networktype == DHCPNetwork || networktype == PrivateNetwork {
+	if networktype == DHCPVlan || networktype == Vlan {
 		var networkcidr string
 		var ipBodyRanges []*models.IPAddressRange
 		if v, ok := d.GetOk(helpers.PINetworkCidr); ok {
@@ -276,7 +276,7 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		body := &models.NetworkUpdate{
 			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
 		}
-		if d.Get(helpers.PINetworkType).(string) == PrivateNetwork {
+		if d.Get(helpers.PINetworkType).(string) == Vlan {
 			body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
 			body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
 		}
