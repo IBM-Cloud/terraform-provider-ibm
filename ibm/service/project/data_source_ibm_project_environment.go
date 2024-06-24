@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.91.0-d9755c53-20240605-153412
+ */
+
 package project
 
 import (
@@ -182,6 +186,7 @@ func DataSourceIbmProjectEnvironment() *schema.Resource {
 func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
+		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -205,48 +210,40 @@ func dataSourceIbmProjectEnvironmentRead(context context.Context, d *schema.Reso
 	if environment.Project != nil {
 		modelMap, err := DataSourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "project-to-map").GetDiag()
 		}
 		project = append(project, modelMap)
 	}
 	if err = d.Set("project", project); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting project: %s", err), "(Data) ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting project: %s", err), "(Data) ibm_project_environment", "read", "set-project").GetDiag()
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(environment.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_project_environment", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("target_account", environment.TargetAccount); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting target_account: %s", err), "(Data) ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target_account: %s", err), "(Data) ibm_project_environment", "read", "set-target_account").GetDiag()
 	}
 
 	if err = d.Set("modified_at", flex.DateTimeToString(environment.ModifiedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting modified_at: %s", err), "(Data) ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting modified_at: %s", err), "(Data) ibm_project_environment", "read", "set-modified_at").GetDiag()
 	}
 
 	if err = d.Set("href", environment.Href); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_project_environment", "read", "set-href").GetDiag()
 	}
 
 	definition := []map[string]interface{}{}
 	if environment.Definition != nil {
 		modelMap, err := DataSourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_project_environment", "read", "definition-to-map").GetDiag()
 		}
 		definition = append(definition, modelMap)
 	}
 	if err = d.Set("definition", definition); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting definition: %s", err), "(Data) ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting definition: %s", err), "(Data) ibm_project_environment", "read", "set-definition").GetDiag()
 	}
 
 	return nil

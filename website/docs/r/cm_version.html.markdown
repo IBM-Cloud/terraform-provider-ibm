@@ -163,6 +163,10 @@ Nested scheme for **pre_install**:
 	* `script` - (Optional, String) Optional script that needs to be run post any pre-condition script.
 	* `script_permission` - (Optional, String) Optional iam permissions that are required on the target cluster to run this script.
 * `product_kind` - (Optional, Forces new resource, String) Optional product kind for the software being onboarded.  Valid values are software, module, or solution.  Default value is software.
+* `required_resources` - (Optional, List) Resource requirments for installation.
+Nested scheme for **required_resources**:
+	* `type` - (Optional, String) Type of requirement.
+	* `value` - (Optional, String) mem, disk, cores, and nodes can be parsed as an int.  targetVersion will be a semver range value..
 * `sha` - (Optional, Forces new resource, String) SHA256 fingerprint of the image file. Required for virtual server image for VPC.
 * `solution_info` - (Optional, List) Version Solution Information.  Only supported for Product kind Solution.
 Nested scheme for **solution_info**:

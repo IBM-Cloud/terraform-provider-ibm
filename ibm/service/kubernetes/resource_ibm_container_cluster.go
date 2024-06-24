@@ -1567,7 +1567,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     20 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 
 	return stateConf.WaitForState()

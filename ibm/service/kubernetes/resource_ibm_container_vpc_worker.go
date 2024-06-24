@@ -688,7 +688,7 @@ func WaitForVpcClusterVpcWokersVersionUpdate(d *schema.ResourceData, meta interf
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 
 	return stateConf.WaitForState()

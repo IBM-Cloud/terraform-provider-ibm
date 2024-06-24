@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -146,6 +147,27 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
+			},
+			Arg_DeploymentTarget: {
+				Description: "The deployment of a dedicated host.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_ID: {
+							Description: "The uuid of the host group or host.",
+							Required:    true,
+							Type:        schema.TypeString,
+						},
+						Attr_Type: {
+							Description:  "The deployment target type. Supported values are `host` and `hostGroup`.",
+							Required:     true,
+							Type:         schema.TypeString,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{Host, HostGroup}),
+						},
+					},
+				},
+				Optional: true,
+				MaxItems: 1,
+				Type:     schema.TypeSet,
 			},
 			PIInstanceNetwork: {
 				Type:             schema.TypeList,
@@ -560,6 +582,8 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	if powervmdata.Fault != nil {
 		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
+	} else {
+		d.Set(Attr_Fault, nil)
 	}
 	return nil
 }
@@ -1389,7 +1413,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 	if pg, ok := d.GetOk(helpers.PIPlacementGroupID); ok {
 		body.PlacementGroup = pg.(string)
 	}
-
+	if deploymentTarget, ok := d.GetOk(Arg_DeploymentTarget); ok {
+		body.DeploymentTarget = expandDeploymentTarget(deploymentTarget.(*schema.Set).List())
+	}
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision: %v", err)
@@ -1581,7 +1607,9 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		}
 		body.SoftwareLicenses = sl
 	}
-
+	if deploymentTarget, ok := d.GetOk(Arg_DeploymentTarget); ok {
+		body.DeploymentTarget = expandDeploymentTarget(deploymentTarget.(*schema.Set).List())
+	}
 	pvmList, err := client.Create(body)
 
 	if err != nil {
@@ -1593,7 +1621,15 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 
 	return pvmList, nil
 }
-
+func expandDeploymentTarget(dt []interface{}) *models.DeploymentTarget {
+	dtexpanded := &models.DeploymentTarget{}
+	for _, v := range dt {
+		dtarget := v.(map[string]interface{})
+		dtexpanded.ID = core.StringPtr(dtarget[Attr_ID].(string))
+		dtexpanded.Type = core.StringPtr(dtarget[Attr_Type].(string))
+	}
+	return dtexpanded
+}
 func splitID(id string) (id1, id2 string, err error) {
 	parts, err := flex.IdParts(id)
 	if err != nil {
