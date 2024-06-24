@@ -9,16 +9,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/errors"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_service_d_h_c_p"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIBMPIDhcp() *schema.Resource {
@@ -150,7 +149,7 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 	body.SnatEnabled = &snatEnabled
 
 	// create dhcp
-	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	dhcpServer, err := client.Create(body)
 	if err != nil {
 		log.Printf("[DEBUG] create DHCP failed %v", err)
@@ -169,7 +168,6 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -183,7 +181,7 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// get dhcp
-	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	dhcpServer, err := client.Get(dhcpID)
 	if err != nil {
 		uErr := errors.Unwrap(err)
@@ -225,8 +223,8 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	return nil
 }
-func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
+func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -240,7 +238,7 @@ func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	// delete dhcp
-	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	err = client.Delete(dhcpID)
 	if err != nil {
 		uErr := errors.Unwrap(err)
@@ -264,7 +262,7 @@ func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIDhcpStatus(ctx context.Context, client *instance.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{State_Building},
 		Target:  []string{State_Active},
@@ -286,7 +284,7 @@ func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhc
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func waitForIBMPIDhcpDeleted(ctx context.Context, client *st.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIDhcpDeleted(ctx context.Context, client *instance.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{State_Deleting},
 		Target:  []string{State_Deleted},
