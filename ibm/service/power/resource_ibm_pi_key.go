@@ -121,9 +121,9 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// set attributes
-	d.Set(Attr_Name, sshkeydata.Name)
-	d.Set(Attr_Key, sshkeydata.SSHKey)
 	d.Set(Attr_CreationDate, sshkeydata.CreationDate.String())
+	d.Set(Attr_Key, sshkeydata.SSHKey)
+	d.Set(Attr_Name, sshkeydata.Name)
 
 	return nil
 }
