@@ -1111,8 +1111,8 @@ func isWaitForPIInstanceShutoff(ctx context.Context, client *st.IBMPIInstanceCli
 	}
 
 	stateConf := &retry.StateChangeConf{
-		Pending:    []string{StatusPending, helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
-		Target:     []string{helpers.PIInstanceHealthOk, StatusError, "", StatusShutoff},
+		Pending:    []string{State_PENDING, helpers.PIInstanceBuilding, helpers.PIInstanceHealthWarning},
+		Target:     []string{helpers.PIInstanceHealthOk, State_ERROR, "", State_SHUTOFF},
 		Refresh:    isPIInstanceShutoffRefreshFunc(client, id, instanceReadyStatus),
 		Delay:      30 * time.Second,
 		MinTimeout: queryTimeOut,
@@ -1129,10 +1129,10 @@ func isPIInstanceShutoffRefreshFunc(client *st.IBMPIInstanceClient, id, instance
 		if err != nil {
 			return nil, "", err
 		}
-		if *pvm.Status == StatusShutoff && (pvm.Health.Status == instanceReadyStatus || pvm.Health.Status == helpers.PIInstanceHealthOk) {
-			return pvm, StatusShutoff, nil
+		if *pvm.Status == State_SHUTOFF && (pvm.Health.Status == instanceReadyStatus || pvm.Health.Status == helpers.PIInstanceHealthOk) {
+			return pvm, State_SHUTOFF, nil
 		}
-		if *pvm.Status == StatusError {
+		if *pvm.Status == State_ERROR {
 			if pvm.Fault != nil {
 				err = fmt.Errorf("failed to create the lpar: %s", pvm.Fault.Message)
 			} else {

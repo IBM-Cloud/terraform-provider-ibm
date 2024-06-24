@@ -370,9 +370,9 @@ const (
 	Public       = "public"
 
 	// States
-	NotFound                  = "not found"
-	SctionStart               = "start"
-	SctionStop                = "stop"
+	NotFound                 = "not found"
+	SctionStart              = "start"
+	SctionStop               = "stop"
 	State_Active             = "active"
 	State_ACTIVE             = "ACTIVE"
 	State_Added              = "added"
@@ -384,22 +384,19 @@ const (
 	State_Deleted            = "deleted"
 	State_Deleting           = "deleting"
 	State_DELETING           = "DELETING"
+	State_ERROR              = "ERROR"
 	State_Failed             = "failed"
 	State_Inactive           = "inactive"
 	State_InProgress         = "in progress"
 	State_InUse              = "in-use"
 	State_NotFound           = "Not Found"
+	State_PENDING            = "PENDING"
 	State_PendingReclamation = "pending_reclamation"
 	State_Provisioning       = "provisioning"
 	State_Removed            = "removed"
+	State_RESIZE             = "RESIZE"
 	State_Retry              = "retry"
-	StatusActive              = "ACTIVE"
-	StatusBuild               = "BUILD"
-	Status_Deleting           = "deleting"
-	StatusError               = "ERROR"
-	StatusPending             = "PENDING"
-	StatusResize              = "RESIZE"
-	StatusShutoff             = "SHUTOFF"
+	State_SHUTOFF            = "SHUTOFF"
 
 	// Allowed Values
 	Host      = "host"
@@ -488,17 +485,7 @@ const (
 	// Cloud Connections
 	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
 
-	// Status states
-	StatusShutoff = "SHUTOFF"
-	StatusActive  = "ACTIVE"
-	StatusResize  = "RESIZE"
-	StatusError   = "ERROR"
-	StatusBuild   = "BUILD"
-	StatusPending = "PENDING"
-	SctionStart   = "start"
-	SctionStop    = "stop"
-
-  // Volume clone task status
+	// Volume clone task status
 	VolumeCloneCompleted = "completed"
 	VolumeCloneRunning   = "running"
 

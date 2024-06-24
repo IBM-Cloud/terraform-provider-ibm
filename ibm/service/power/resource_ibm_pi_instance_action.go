@@ -200,8 +200,8 @@ func isWaitForPIInstanceActionStatus(ctx context.Context, client *st.IBMPIInstan
 	log.Printf("Waiting for the action to be performed on the instance %s", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{StatusPending},
-		Target:     []string{targetStatus, StatusError, ""},
+		Pending:    []string{State_PENDING},
+		Target:     []string{targetStatus, State_ERROR, ""},
 		Refresh:    isPIActionRefreshFunc(client, id, targetStatus, targetHealthStatus),
 		Delay:      30 * time.Second,
 		MinTimeout: 2 * time.Minute,
@@ -233,6 +233,6 @@ func isPIActionRefreshFunc(client *st.IBMPIInstanceClient, id, targetStatus, tar
 			return pvm, *pvm.Status, err
 		}
 
-		return pvm, StatusPending, nil
+		return pvm, State_PENDING, nil
 	}
 }

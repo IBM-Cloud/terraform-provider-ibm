@@ -274,7 +274,7 @@ func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhc
 				log.Printf("[DEBUG] get DHCP failed %v", err)
 				return nil, "", err
 			}
-			if *dhcpServer.Status != StatusActive {
+			if *dhcpServer.Status != State_ACTIVE {
 				return dhcpServer, "building", nil
 			}
 			return dhcpServer, "active", nil
