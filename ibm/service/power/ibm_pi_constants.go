@@ -371,8 +371,6 @@ const (
 
 	// States
 	NotFound                 = "not found"
-	SctionStart              = "start"
-	SctionStop               = "stop"
 	State_Active             = "active"
 	State_ACTIVE             = "ACTIVE"
 	State_Added              = "added"
