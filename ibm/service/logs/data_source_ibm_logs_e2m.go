@@ -24,17 +24,17 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 			"logs_e2m_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "id of e2m to be deleted.",
+				Description: "ID of e2m to be deleted.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E2M name.",
+				Description: "Name of the E2M.",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E2m description.",
+				Description: "Description of the E2M.",
 			},
 			"create_time": &schema.Schema{
 				Type:        schema.TypeString,
@@ -49,18 +49,18 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 			"permutations": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "represents E2M permutations limit.",
+				Description: "Represents the limit of the permutations and if the limit was exceeded.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"limit": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "e2m permutation limit.",
+							Description: "E2M permutation limit.",
 						},
 						"has_exceeded_limit": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "flag to indicate if limit was exceeded.",
+							Description: "Flag to indicate if limit was exceeded.",
 						},
 					},
 				},
@@ -74,12 +74,12 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 						"target_label": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "metric label target label.",
+							Description: "Metric label target alias name.",
 						},
 						"source_field": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "metric label source field.",
+							Description: "Metric label source field.",
 						},
 					},
 				},
@@ -93,44 +93,44 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 						"target_base_metric_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "target metric field.",
+							Description: "Target metric field alias name.",
 						},
 						"source_field": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "source field.",
+							Description: "Source field.",
 						},
 						"aggregations": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "represents Aggregation type list.",
+							Description: "Represents Aggregation type list.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"enabled": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "is enabled.",
+										Description: "Is enabled.",
 									},
 									"agg_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "aggregation type.",
+										Description: "Aggregation type.",
 									},
 									"target_metric_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "target metric field.",
+										Description: "Target metric field alias name.",
 									},
 									"samples": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "e2m sample type metadata.",
+										Description: "E2M sample type metadata.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"sample_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "sample type min/max.",
+													Description: "Sample type min/max.",
 												},
 											},
 										},
@@ -138,13 +138,13 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 									"histogram": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "e2m aggregate histogram type metadata.",
+										Description: "E2M aggregate histogram type metadata.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"buckets": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "buckets that describe the e2m.",
+													Description: "Buckets of the E2M.",
 													Elem: &schema.Schema{
 														Type: schema.TypeFloat,
 													},
@@ -161,33 +161,33 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "e2m type.",
+				Description: "E2M type.",
 			},
 			"is_internal": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "a flag that represents if the e2m is for internal usage.",
+				Description: "A flag that represents if the e2m is for internal usage.",
 			},
 			"logs_query": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "logs query.",
+				Description: "E2M logs query.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"lucene": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "lucene query.",
+							Description: "Lucene query.",
 						},
 						"alias": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "alias.",
+							Description: "Alias.",
 						},
 						"applicationname_filters": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "application name filters.",
+							Description: "Application name filters.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -195,7 +195,7 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 						"subsystemname_filters": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "subsystem names filters.",
+							Description: "Subsystem names filters.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -203,7 +203,7 @@ func DataSourceIbmLogsE2m() *schema.Resource {
 						"severity_filters": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "severity type filters.",
+							Description: "Severity type filters.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -222,7 +222,6 @@ func dataSourceIbmLogsE2mRead(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))

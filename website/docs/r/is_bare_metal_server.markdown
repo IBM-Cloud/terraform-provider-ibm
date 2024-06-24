@@ -183,6 +183,12 @@ Review the argument references that you can specify for your resource.
       - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
       - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
       - `resource_type` - (Computed, String) The resource type.
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
     - `resource_group` - (Optional, List) The resource group id for this virtual network interface.
     - `security_groups` - (Optional, Array of string) The security group ids list for this virtual network interface.
     - `subnet` - (Optional, List) The associated subnet id.
@@ -239,6 +245,12 @@ Review the argument references that you can specify for your resource.
       - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
       - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
       - `resource_type` - (Computed, String) The resource type.
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
     - `resource_group` - (Optional, List) The resource group id for this virtual network interface.
     - `security_groups` - (Optional, Array of string) The security group ids list for this virtual network interface.
     - `subnet` - (Optional, List) The associated subnet id.

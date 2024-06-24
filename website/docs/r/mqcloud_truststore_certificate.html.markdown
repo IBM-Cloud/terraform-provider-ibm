@@ -10,12 +10,14 @@ subcategory: "MQ on Cloud"
 
 Create, update, and delete mqcloud_truststore_certificates with this resource.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl
 resource "ibm_mqcloud_truststore_certificate" "mqcloud_truststore_certificate_instance" {
   certificate_file = filebase64("certificate_file.data")
-  label = "label"
+  label = "certlabel"
   queue_manager_id = var.queue_manager_id
   service_instance_guid = var.service_instance_guid
 }

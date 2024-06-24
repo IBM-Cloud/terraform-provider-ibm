@@ -767,6 +767,7 @@ resource "ibm_is_instance" "instance8" {
   }
   catalog_offering {
     version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+    plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
   }
   vpc  = ibm_is_vpc.vpc2.id
   zone = "us-south-2"
@@ -777,6 +778,7 @@ resource "ibm_is_instance_template" "instancetemplate3" {
   name = "instancetemplate-3"
   catalog_offering {
     version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+    plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
   }
   profile = var.profile
 

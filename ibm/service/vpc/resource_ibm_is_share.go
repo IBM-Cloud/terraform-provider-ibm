@@ -181,6 +181,13 @@ func ResourceIbmIsShare() *schema.Resource {
 										Computed:    true,
 										Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
+									},
 									"primary_ip": {
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -388,6 +395,12 @@ func ResourceIbmIsShare() *schema.Resource {
 										Computed:    true,
 										Description: "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 									},
+									"transit_encryption": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The transit encryption mode.",
+									},
 									"virtual_network_interface": {
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -431,6 +444,13 @@ func ResourceIbmIsShare() *schema.Resource {
 													Type:        schema.TypeBool,
 													Computed:    true,
 													Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
+												},
+												"protocol_state_filtering_mode": {
+													Type:         schema.TypeString,
+													Optional:     true,
+													Computed:     true,
+													ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+													Description:  "The protocol state filtering mode used for this virtual network interface.",
 												},
 												"primary_ip": {
 													Type:        schema.TypeList,
@@ -512,6 +532,7 @@ func ResourceIbmIsShare() *schema.Resource {
 									"vpc": {
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "The ID of the VPC in which instances can mount the file share using this share target.This property will be removed in a future release.The `subnet` property should be used instead.",
 									},
 								},
@@ -1718,6 +1739,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 			vniPrimaryIpAutoDelete := fmt.Sprintf("%s.%d.virtual_network_interface.0.primary_ip.0.auto_delete", shareMountTargetSchema, targetIdx)
 			vniSubnet := fmt.Sprintf("%s.%d.virtual_network_interface.0.subnet", shareMountTargetSchema, targetIdx)
 			vniResvedIp := fmt.Sprintf("%s.%d.virtual_network_interface.0.primary_ip.0.reserved_ip", shareMountTargetSchema, targetIdx)
+			vniPSFM := fmt.Sprintf("%s.%d.virtual_network_interface.0.protocol_state_filtering_mode", shareMountTargetSchema, targetIdx)
 			mountTargetId := d.Get(targetId).(string)
 			if d.HasChange(targetName) {
 				updateShareTargetOptions := &vpcv1.UpdateShareMountTargetOptions{}
@@ -1747,7 +1769,7 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				}
 			}
 
-			if d.HasChange(vniName) || d.HasChange(vniAutoDelete) {
+			if d.HasChange(vniName) || d.HasChange(vniAutoDelete) || d.HasChange(vniPSFM) {
 				vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{}
 				if d.HasChange(vniName) {
 					vniNameStr := d.Get(vniName).(string)
@@ -1756,6 +1778,10 @@ func shareUpdate(vpcClient *vpcv1.VpcV1, context context.Context, d *schema.Reso
 				if d.HasChange(vniAutoDelete) {
 					autoDelete := d.Get(vniAutoDelete).(bool)
 					vniPatchModel.AutoDelete = &autoDelete
+				}
+				if d.HasChange(vniPSFM) {
+					psfm := d.Get(vniPSFM).(string)
+					vniPatchModel.ProtocolStateFilteringMode = &psfm
 				}
 				vniPatch, err := vniPatchModel.AsPatch()
 				if err != nil {

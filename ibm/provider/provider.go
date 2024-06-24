@@ -12,6 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
@@ -62,8 +65,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Provider returns a *schema.Provider.
@@ -619,6 +620,7 @@ func Provider() *schema.Provider {
 			"ibm_schematics_agent_health":   schematics.DataSourceIbmSchematicsAgentHealth(),
 
 			// Added for Power Resources
+			"ibm_pi_available_hosts":                        power.DataSourceIBMPIAvailableHosts(),
 			"ibm_pi_catalog_images":                         power.DataSourceIBMPICatalogImages(),
 			"ibm_pi_cloud_connection":                       power.DataSourceIBMPICloudConnection(),
 			"ibm_pi_cloud_connections":                      power.DataSourceIBMPICloudConnections(),
@@ -630,6 +632,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_dhcps":                                  power.DataSourceIBMPIDhcps(),
 			"ibm_pi_disaster_recovery_location":             power.DataSourceIBMPIDisasterRecoveryLocation(),
 			"ibm_pi_disaster_recovery_locations":            power.DataSourceIBMPIDisasterRecoveryLocations(),
+			"ibm_pi_host_group":                             power.DataSourceIBMPIHostGroup(),
+			"ibm_pi_host_groups":                            power.DataSourceIBMPIHostGroups(),
 			"ibm_pi_image":                                  power.DataSourceIBMPIImage(),
 			"ibm_pi_images":                                 power.DataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":                            power.DataSourceIBMPIInstanceIP(),
@@ -1301,6 +1305,7 @@ func Provider() *schema.Provider {
 			"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionAction(),
 			"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilter(),
 			"ibm_tg_route_report":             transitgateway.ResourceIBMTransitGatewayRouteReport(),
+			"ibm_tg_connection_rgre_tunnel":   transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnel(),
 
 			// Catalog related resources
 			"ibm_cm_offering_instance": catalogmanagement.ResourceIBMCmOfferingInstance(),
@@ -1726,6 +1731,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_tg_connection":                            transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
 				"ibm_tg_connection_action":                     transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
 				"ibm_tg_connection_prefix_filter":              transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
+				"ibm_tg_connection_rgre_tunnel":                transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
 				"ibm_dl_virtual_connection":                    directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                               directlink.ResourceIBMDLGatewayValidator(),
 				"ibm_dl_provider_gateway":                      directlink.ResourceIBMDLProviderGatewayValidator(),
