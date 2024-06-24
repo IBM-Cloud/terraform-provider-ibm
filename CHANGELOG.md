@@ -1,3 +1,8 @@
+# 1.67.0-beta1 (Jun 19, 2024)
+
+BugFixes
+* fix(MQ on Cloud): options data source ([5438](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5438))
+
 # 1.67.0-beta0 (Jun 18, 2024)
 Features
 * Support MQCloud
@@ -8,6 +13,10 @@ Features
     - **Datasources**
         - ibm_is_vpn_gateway_connection_local_cidrs
         - ibm_is_vpn_gateway_connection_peer_cidrs
+
+* Support Cloud Logs
+    - **Resources**
+        - ibm_logs_dashboard_folder
 
 Enhancements
 * Adding default prefixfiletr for TGW connection dependency ([5406](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5406))

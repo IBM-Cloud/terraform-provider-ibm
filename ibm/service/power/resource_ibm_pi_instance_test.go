@@ -225,6 +225,27 @@ func testAccCheckIBMPIInstanceReplicantConfig(name string) string {
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, acc.Pi_volume_name)
 }
 
+func testAccCheckIBMPIInstanceDeplomentTargetConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_memory            = "2"
+		pi_processors        = "1"
+		pi_instance_name     = "%[2]s"
+		pi_proc_type         = "shared"
+		pi_image_id          = "%[3]s"
+		pi_sys_type          = "s922"
+		pi_network {
+		  network_id = "%[4]s"
+		}
+		pi_deployment_target {
+			id = "308"
+			type = "host"
+		}
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
+}
+
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -305,7 +326,24 @@ func TestAccIBMPIInstanceBasic(t *testing.T) {
 		},
 	})
 }
-
+func TestAccIBMPIInstanceDeploymentTarget(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceDeplomentTargetConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMPIInstanceDeploymentType(t *testing.T) {
 	instanceRes := "ibm_pi_instance.power_instance"
 	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
