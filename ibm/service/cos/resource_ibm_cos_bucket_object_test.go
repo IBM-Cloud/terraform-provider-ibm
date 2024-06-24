@@ -179,7 +179,7 @@ func TestAccIBMCOSBucketObjectlock_Retention_Without_Mode(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccIBMCOSBucketObjectlock_retention_without_mode(name, instanceCRN, objectBody, retainUntilDateString),
-				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
 			},
 		},
 	})
@@ -267,7 +267,7 @@ func TestAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(t *testing.
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(name, instanceCRN, objectBody, mode),
-				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
 			},
 		},
 	})

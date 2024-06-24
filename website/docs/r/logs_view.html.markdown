@@ -76,16 +76,16 @@ Nested schema for **filters**:
 	  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 	Nested schema for **filters**:
 		* `name` - (Required, String) Filter name.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 		* `selected_values` - (Required, Map) Filter selected values.
-* `folder_id` - (Optional, String) View folder id.
+* `folder_id` - (Optional, String) View folder ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `name` - (Required, String) View name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `search_query` - (Required, List) View search query.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+* `search_query` - (Optional, List) View search query.
 Nested schema for **search_query**:
 	* `query` - (Required, String) View search query.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 * `time_selection` - (Required, List) View time selection.
 Nested schema for **time_selection**:
 	* `custom_selection` - (Optional, List) Custom time selection.
@@ -95,7 +95,7 @@ Nested schema for **time_selection**:
 	* `quick_selection` - (Optional, List) Quick time selection.
 	Nested schema for **quick_selection**:
 		* `caption` - (Required, String) Quick time selection caption.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 		* `seconds` - (Required, Integer) Quick time selection amount of seconds.
 		  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 
@@ -113,5 +113,10 @@ You can import the `ibm_logs_view` resource by using `id`. `id` combination of `
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_view.logs_view <region>/<instance_id>/<view_id>;
+$ terraform import ibm_logs_view.logs_view < region >/< instance_id >/< view_id >;
 </pre>
+
+# Example
+```
+$ terraform import ibm_logs_view.logs_view eu-gb/3dc02998-0b50-4ea8-b68a-4779d716fa1f/52
+```

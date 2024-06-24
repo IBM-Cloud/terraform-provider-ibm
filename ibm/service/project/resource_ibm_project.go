@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.91.0-d9755c53-20240605-153412
+ */
+
 package project
 
 import (
@@ -62,6 +66,12 @@ func ResourceIbmProject() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.",
+						},
+						"auto_deploy": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "A boolean flag to enable auto deploy.",
 						},
 						"monitoring_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -173,6 +183,11 @@ func ResourceIbmProject() *schema.Resource {
 										Computed:    true,
 										Description: "The state of the configuration.",
 									},
+									"state_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
+									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -216,6 +231,11 @@ func ResourceIbmProject() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The state of the configuration.",
+									},
+									"state_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
 									},
 									"version": &schema.Schema{
 										Type:        schema.TypeInt,
@@ -421,12 +441,10 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "location",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^$|^(us-south|us-east|eu-gb|eu-de)$`,
-			MinValueLength:             0,
-			MaxValueLength:             12,
+			AllowedValues:              "ca-tor, eu-de, eu-gb, us-east, us-south",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "resource_group",
@@ -446,6 +464,7 @@ func ResourceIbmProjectValidator() *validate.ResourceValidator {
 func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
+		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -455,7 +474,7 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 
 	definitionModel, err := ResourceIbmProjectMapToProjectPrototypeDefinition(d.Get("definition.0").(map[string]interface{}))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "create", "parse-definition").GetDiag()
 	}
 	createProjectOptions.SetDefinition(definitionModel)
 	createProjectOptions.SetLocation(d.Get("location").(string))
@@ -466,7 +485,7 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 			value := v.(map[string]interface{})
 			configsItem, err := ResourceIbmProjectMapToProjectConfigPrototype(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "create", "parse-configs").GetDiag()
 			}
 			configs = append(configs, *configsItem)
 		}
@@ -478,7 +497,7 @@ func resourceIbmProjectCreate(context context.Context, d *schema.ResourceData, m
 			value := v.(map[string]interface{})
 			environmentsItem, err := ResourceIbmProjectMapToEnvironmentPrototype(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "create", "parse-environments").GetDiag()
 			}
 			environments = append(environments, *environmentsItem)
 		}
@@ -521,75 +540,88 @@ func resourceIbmProjectRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	if err = d.Set("location", project.Location); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
+		err = fmt.Errorf("Error setting location: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-location").GetDiag()
 	}
 	if err = d.Set("resource_group", project.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+		err = fmt.Errorf("Error setting resource_group: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-resource_group").GetDiag()
 	}
 	definitionMap, err := ResourceIbmProjectProjectDefinitionPropertiesToMap(project.Definition)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "definition-to-map").GetDiag()
 	}
 	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
+		err = fmt.Errorf("Error setting definition: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-definition").GetDiag()
 	}
 	if err = d.Set("crn", project.Crn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(project.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-created_at").GetDiag()
 	}
 	cumulativeNeedsAttentionView := []map[string]interface{}{}
 	for _, cumulativeNeedsAttentionViewItem := range project.CumulativeNeedsAttentionView {
 		cumulativeNeedsAttentionViewItemMap, err := ResourceIbmProjectCumulativeNeedsAttentionToMap(&cumulativeNeedsAttentionViewItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "cumulative_needs_attention_view-to-map").GetDiag()
 		}
 		cumulativeNeedsAttentionView = append(cumulativeNeedsAttentionView, cumulativeNeedsAttentionViewItemMap)
 	}
 	if err = d.Set("cumulative_needs_attention_view", cumulativeNeedsAttentionView); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view: %s", err))
+		err = fmt.Errorf("Error setting cumulative_needs_attention_view: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-cumulative_needs_attention_view").GetDiag()
 	}
 	if !core.IsNil(project.CumulativeNeedsAttentionViewError) {
 		if err = d.Set("cumulative_needs_attention_view_error", project.CumulativeNeedsAttentionViewError); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting cumulative_needs_attention_view_error: %s", err))
+			err = fmt.Errorf("Error setting cumulative_needs_attention_view_error: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-cumulative_needs_attention_view_error").GetDiag()
 		}
 	}
 	if err = d.Set("resource_group_id", project.ResourceGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+		err = fmt.Errorf("Error setting resource_group_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-resource_group_id").GetDiag()
 	}
 	if err = d.Set("state", project.State); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+		err = fmt.Errorf("Error setting state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-state").GetDiag()
 	}
 	if err = d.Set("href", project.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-href").GetDiag()
 	}
 	if !core.IsNil(project.EventNotificationsCrn) {
 		if err = d.Set("event_notifications_crn", project.EventNotificationsCrn); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting event_notifications_crn: %s", err))
+			err = fmt.Errorf("Error setting event_notifications_crn: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-event_notifications_crn").GetDiag()
 		}
 	}
 	configs := []map[string]interface{}{}
 	for _, configsItem := range project.Configs {
 		configsItemMap, err := ResourceIbmProjectProjectConfigSummaryToMap(&configsItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "configs-to-map").GetDiag()
 		}
 		configs = append(configs, configsItemMap)
 	}
 	if err = d.Set("configs", configs); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting configs: %s", err))
+		err = fmt.Errorf("Error setting configs: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-configs").GetDiag()
 	}
 	environments := []map[string]interface{}{}
 	for _, environmentsItem := range project.Environments {
 		environmentsItemMap, err := ResourceIbmProjectProjectEnvironmentSummaryToMap(&environmentsItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "environments-to-map").GetDiag()
 		}
 		environments = append(environments, environmentsItemMap)
 	}
 	if err = d.Set("environments", environments); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting environments: %s", err))
+		err = fmt.Errorf("Error setting environments: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "read", "set-environments").GetDiag()
 	}
 
 	return nil
@@ -612,7 +644,7 @@ func resourceIbmProjectUpdate(context context.Context, d *schema.ResourceData, m
 	if d.HasChange("definition") {
 		definition, err := ResourceIbmProjectMapToProjectPatchDefinitionBlock(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project", "update", "parse-definition").GetDiag()
 		}
 		updateProjectOptions.SetDefinition(definition)
 		hasChange = true
@@ -662,6 +694,9 @@ func ResourceIbmProjectMapToProjectPrototypeDefinition(modelMap map[string]inter
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["auto_deploy"] != nil {
+		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
 	}
 	if modelMap["monitoring_enabled"] != nil {
 		model.MonitoringEnabled = core.BoolPtr(modelMap["monitoring_enabled"].(bool))
@@ -890,6 +925,9 @@ func ResourceIbmProjectMapToProjectPatchDefinitionBlock(modelMap map[string]inte
 	if modelMap["destroy_on_delete"] != nil {
 		model.DestroyOnDelete = core.BoolPtr(modelMap["destroy_on_delete"].(bool))
 	}
+	if modelMap["auto_deploy"] != nil {
+		model.AutoDeploy = core.BoolPtr(modelMap["auto_deploy"].(bool))
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -904,6 +942,7 @@ func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Project
 	modelMap["name"] = *model.Name
 	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
 	modelMap["description"] = *model.Description
+	modelMap["auto_deploy"] = *model.AutoDeploy
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
@@ -973,6 +1012,9 @@ func ResourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Project
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
 	modelMap["state"] = *model.State
+	if model.StateCode != nil {
+		modelMap["state_code"] = *model.StateCode
+	}
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["href"] = *model.Href
 	return modelMap, nil

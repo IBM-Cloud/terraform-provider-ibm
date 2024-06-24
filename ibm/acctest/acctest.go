@@ -36,6 +36,8 @@ var (
 	CloudShellAccountID             string
 	CosCRN                          string
 	BucketCRN                       string
+	ActivityTrackerInstanceCRN      string
+	MetricsMonitoringCRN            string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -227,6 +229,7 @@ var (
 	Pi_target_storage_tier          string
 	Pi_volume_clone_task_id         string
 	Pi_resource_group_id            string
+	Pi_host_group_id                string
 )
 
 var (
@@ -528,6 +531,16 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
+	if ActivityTrackerInstanceCRN == "" {
+		ActivityTrackerInstanceCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_ACTIVITY_TRACKER_CRN with a VALID ACTIVITY TRACKER INSTANCE CRN in valid region for testing ibm_cos_bucket* resources")
+	}
+	MetricsMonitoringCRN = os.Getenv("IBM_COS_METRICS_MONITORING_CRN")
+	if MetricsMonitoringCRN == "" {
+		MetricsMonitoringCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_METRICS_MONITORING_CRN with a VALID METRICS MONITORING CRN for testing ibm_cos_bucket* resources")
 	}
 	BucketName = os.Getenv("IBM_COS_BUCKET_NAME")
 	if BucketName == "" {
@@ -1166,6 +1179,11 @@ func init() {
 	if Pi_resource_group_id == "" {
 		Pi_resource_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
+	}
+	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
+	if Pi_host_group_id == "" {
+		Pi_host_group_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_HOSTGROUP_ID for testing ibm_pi_hostgroup resource else it is set to default value ''")
 	}
 
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")

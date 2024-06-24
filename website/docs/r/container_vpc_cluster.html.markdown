@@ -185,6 +185,7 @@ Review the argument references that you can specify for your resource.
   - `instance_id` - (Optional, String) The GUID of the Key Protect instance.
   - `private_endpoint` - (Optional, Bool) Set **true** to configure the KMS private service endpoint. Default value is **false**.
   - `account_id` - (Optional, String) Account ID of KMS instance holder - if not provided, defaults to the account in use.
+  - `wait_for_apply` - (Optional, Bool) Set **true** to make terraform wait until KMS is applied to master and it is ready and deployed. Default value is **false**.
 - `host_pool_id` - (Optional, String) If provided, the cluster will be associated with a dedicated host pool identified by this ID.
 - `kube_version` - (Optional, String)  Specify the Kubernetes version, including the major.minor version. If you do not include this flag, the default version is used. To see available versions, run `ibmcloud ks versions`.
 - `operating_system` - (Optional, String) The operating system of the workers in the default worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
