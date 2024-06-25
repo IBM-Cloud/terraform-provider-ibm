@@ -403,7 +403,7 @@ const (
 	State_Deleted            = "deleted"
 	State_Deleting           = "deleting"
 	State_DELETING           = "DELETING"
-  State_Down               = "down"
+	State_Down               = "down"
 	State_ERROR              = "ERROR"
 	State_Failed             = "failed"
 	State_Inactive           = "inactive"
