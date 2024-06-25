@@ -18,17 +18,17 @@ func TestAccIBMIAMPolicyAssignmentsDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyAssignmentDataSourceConfigBasic(),
+				Config: testAccCheckIBMPolicyAssignmentsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "policy_assignments.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_policy_assignments.policy_assignment", "assignments.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPolicyAssignmentDataSourceConfigBasic() string {
+func testAccCheckIBMPolicyAssignmentsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_iam_policy_assignments" "policy_assignment" {
 		}`)

@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,6 +20,12 @@ import (
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 )
 
+const (
+	cbrRuleReadPending  = "pending"
+	cbrRuleReadComplete = "finished"
+	cbrRuleReadError    = "error"
+)
+
 func ResourceIBMCbrRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCbrRuleCreate,
@@ -25,6 +33,12 @@ func ResourceIBMCbrRule() *schema.Resource {
 		UpdateContext: resourceIBMCbrRuleUpdate,
 		DeleteContext: resourceIBMCbrRuleDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Delete: schema.DefaultTimeout(2 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"description": &schema.Schema{
@@ -68,7 +82,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"attributes": &schema.Schema{
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Required:    true,
 							Description: "The resource attributes.",
 							Elem: &schema.Resource{
@@ -242,12 +256,58 @@ func ResourceIBMCbrRuleValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
+// waitForCbrRuleRead will leverage use retry.StateChangeConf due to the service's eventual consistency
+func waitForCbrRuleRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{cbrRuleReadPending},
+		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
+		Refresh: func() (interface{}, string, error) {
+			log.Printf("[DEBUG] Read cbr rule (%s) read", id)
+			getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
+			getRuleOptions.SetRuleID(id)
+			_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
+			if err != nil && response.StatusCode == 404 {
+				return response, cbrRuleReadPending, nil
+			} else if err != nil {
+				return response, cbrRuleReadError, err
+			} else {
+				return response, cbrRuleReadComplete, nil
+			}
+		},
+
+		Timeout:    120 * time.Second,
+		Delay:      20 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(context)
+}
+
+func readNewCbrRule(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, d *schema.ResourceData) diag.Diagnostics {
+	getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
+	getRuleOptions.SetRuleID(d.Id())
+
+	_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
+	if err != nil {
+		//  Leverage retry for the read due to eventual consistency of the service.
+		if response != nil && response.StatusCode == 404 {
+			log.Printf("[INFO] Read cbr rule response status code: 404, provider will try again. %s", err)
+			_, err := waitForCbrRuleRead(cbrClient, context, d.Id())
+			if err != nil {
+				log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
+				d.SetId("")
+				return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
+			}
+		}
+	}
+
+	return nil
+}
+
 func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	contextBasedRestrictionsClient, err := meta.(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	createRuleOptions := &contextbasedrestrictionsv1.CreateRuleOptions{}
 
 	if _, ok := d.GetOk("description"); ok {
@@ -301,6 +361,9 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(*rule.ID)
+
+	// handle Eventual consistency case
+	readNewCbrRule(contextBasedRestrictionsClient, context, d)
 
 	return resourceIBMCbrRuleRead(context, d, meta)
 }
@@ -505,7 +568,9 @@ func resourceIBMCbrRuleMapToRuleContextAttribute(modelMap map[string]interface{}
 func resourceIBMCbrRuleMapToResource(modelMap map[string]interface{}) (*contextbasedrestrictionsv1.Resource, error) {
 	model := &contextbasedrestrictionsv1.Resource{}
 	attributes := []contextbasedrestrictionsv1.ResourceAttribute{}
-	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
+	attributeList := modelMap["attributes"].(*schema.Set).List()
+	// for _, attributesItem := range modelMap["attributes"].([]interface{}) {
+	for _, attributesItem := range attributeList {
 		attributesItemModel, err := resourceIBMCbrRuleMapToResourceAttribute(attributesItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -588,9 +653,16 @@ func resourceIBMCbrRuleRuleContextAttributeToMap(model *contextbasedrestrictions
 	return modelMap, nil
 }
 
+func compareResAttrSetFunc(v interface{}) int {
+	m := v.(map[string]interface{})
+	name := (m["name"]).(*string)
+	return schema.HashString(*name)
+}
+
 func resourceIBMCbrRuleResourceToMap(model *contextbasedrestrictionsv1.Resource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	attributes := []map[string]interface{}{}
+	attributes := []interface{}{}
+	//attributes := []map[string]interface{}{}
 	for _, attributesItem := range model.Attributes {
 		attributesItemMap, err := resourceIBMCbrRuleResourceAttributeToMap(&attributesItem)
 		if err != nil {
@@ -598,7 +670,8 @@ func resourceIBMCbrRuleResourceToMap(model *contextbasedrestrictionsv1.Resource)
 		}
 		attributes = append(attributes, attributesItemMap)
 	}
-	modelMap["attributes"] = attributes
+	attributeSet := schema.NewSet(compareResAttrSetFunc, attributes)
+	modelMap["attributes"] = attributeSet
 	if model.Tags != nil {
 		tags := []map[string]interface{}{}
 		for _, tagsItem := range model.Tags {

@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance"
@@ -8,7 +7,7 @@ description: |-
 ---
 
 # ibm_pi_instance
-Create or update a [Power Systems Virtual Server instance](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-power-virtual-server).
+Create, delete or update a [Power Systems Virtual Server instance](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-creating-power-virtual-server).
 
 ## Example usage
 The following example creates a Power Systems Virtual Server instance. 
@@ -31,14 +30,15 @@ resource "ibm_pi_instance" "test-instance" {
 }
 ```
 
+~> **WARNING:** Updating a ibm_pi_instance resource with `pi_replicants` set does not update replicant vms!
+
 **Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
   
-  Example usage:
-  
+Example usage:  
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -64,6 +64,12 @@ Review the argument references that you can specify for your resource.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_deployment_target` - (Optional, List) The deployment of a dedicated host. Max items: 1.
+  
+  Nested scheme for `pi_deployment_target` :
+  * `id` - (Required, String) The uuid of the host group or host.
+  * `type` - (Required, String) The deployment target type. Supported values are `host` and `hostGroup`.
+
 - `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC` or `VMNoStorage`.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
 
@@ -72,12 +78,14 @@ Review the argument references that you can specify for your resource.
 - `pi_ibmi_pha` - (Optional, Boolean) IBM i Power High Availability.
 - `pi_ibmi_rds_users` - (Optional, Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
-  - **Note**: only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
+  - **Notes**:
+        - Only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
+        - If using `pi_deployment_type = VMNoStorage` then use the following images for the respective OS you intend to create the instance: `AIX-EMPTY`, `IBMI-EMPTY`, `SLES-EMPTY`, `RHEL-EMPTY`.
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
 - `pi_key_pair_name` - (Optional, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
-- `pi_license_repository_capacity` - (Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
+- `pi_license_repository_capacity` - (Deprecated, Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
   - **Note**: Provisioning VTL instances is temporarily disabled.
-- `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in gigabytes.
+- `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in GB.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
@@ -111,9 +119,17 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `fault` - (Map) Fault information, if any.
+  
+   Nested scheme for `fault`:
+      - `code` - (String) The fault status of the server.
+      - `created` - (String) The date and time the fault occurred.
+      - `details` - (String) The fault details of the server.
+      - `message` -  (String) The fault message of the server.
+
 - `health_status` - (String) The health status of the VM.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
-- `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
+- `id` - (String) The unique identifier of the instance. The ID is composed of `<cloud_instance_id>/<instance_id_1>/.../<instance_id_n>`.
 - `instance_id` - (String) The unique identifier of the instance. 
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
@@ -135,7 +151,7 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of the instance.
 ## Import
 
-The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.
+The `ibm_pi_instance` can be imported using `cloud_instance_id` and `instance_id`.
 
 **Example**
 

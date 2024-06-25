@@ -66,6 +66,7 @@ Review the argument reference that you can specify for your resource.
 - `topic_id` - (Required, String) Topic ID.
 
 - `attributes` - (Optional, List) Subscription attributes.
+
   Nested scheme for **attributes**:
 
   - `reply_to_name` - (String) The Email User Name to reply to.
@@ -81,6 +82,10 @@ Review the argument reference that you can specify for your resource.
   - `add`- (List) The Email address to add in case of updating the list of email addressses
 
   - `reomve`- (List) The Email address list to be provided in case of removing the email addresses from subscription
+
+  - `template_id_notification` - (Optional, String) The templete id for notification.
+
+  - `template_id_invitation` - (Optional, String) The templete id for invitation.
 
 ## Attribute reference
 

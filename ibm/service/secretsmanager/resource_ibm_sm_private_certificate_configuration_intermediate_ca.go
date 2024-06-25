@@ -90,11 +90,12 @@ func ResourceIbmSmPrivateCertificateConfigurationIntermediateCA() *schema.Resour
 				Description: "The Common Name (AKA CN) represents the server name that is protected by the SSL certificate.",
 			},
 			"alt_names": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:             schema.TypeList,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "With the Subject Alternative Name field, you can specify additional host names to be protected by a single SSL certificate.",
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: altNamesDiffSuppress,
 			},
 			"ip_sans": &schema.Schema{
 				Type:        schema.TypeString,

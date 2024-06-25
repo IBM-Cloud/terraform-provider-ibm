@@ -10,6 +10,8 @@ subcategory: "MQ on Cloud"
 
 Provides a read-only data source to retrieve information about a mqcloud_keystore_certificate. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl
@@ -41,6 +43,15 @@ After your data source is created, you can read values from the following attrib
 Nested schema for **key_store**:
 	* `certificate_type` - (String) The type of certificate.
 	  * Constraints: Allowable values are: `key_store`.
+	* `config` - (List) The configuration details for this certificate.
+	Nested schema for **config**:
+		* `ams` - (List) A list of channels that are configured with this certificate.
+		Nested schema for **ams**:
+			* `channels` - (List) A list of channels that are configured with this certificate.
+			  * Constraints: The maximum length is `999999999` items. The minimum length is `0` items.
+			Nested schema for **channels**:
+				* `name` - (String) The name of the channel.
+				  * Constraints: The maximum length is `20` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_.\/%]*$/`.
 	* `dns_names` - (List) The list of DNS names.
 	  * Constraints: The maximum length is `200` items. The minimum length is `0` items.
 	* `dns_names_total_count` - (Integer) The total count of dns names.
@@ -58,6 +69,5 @@ Nested schema for **key_store**:
 	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_.]*$/`.
 	* `subject_cn` - (String) Subject's Common Name.
 	* `subject_dn` - (String) Subject's Distinguished Name.
-
 * `total_count` - (Integer) The total count of key store certificates.
 

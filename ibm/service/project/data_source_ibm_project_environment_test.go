@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.91.0-d9755c53-20240605-153412
+ */
+
 package project_test
 
 import (
@@ -44,6 +48,7 @@ func testAccCheckIbmProjectEnvironmentDataSourceConfigBasic() string {
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = true
             }
         }
 

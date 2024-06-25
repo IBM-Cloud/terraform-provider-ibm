@@ -45,5 +45,5 @@ func testAccCheckIBMKpResourceConfig(instanceName, KeyName string) string {
 		standard_key =  true
 	}
 	
-`, instanceName, KeyName)
+`, addPrefixToResourceName(instanceName), KeyName)
 }

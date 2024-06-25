@@ -43,13 +43,14 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 func testAccCheckIbmProjectConfigConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			location = "us-south"
+			location = "ca-tor"
 			resource_group = "Default"
 			definition {
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = false
             }
 		}
 
@@ -62,6 +63,9 @@ func testAccCheckIbmProjectConfigConfigBasic() string {
                     api_key = "%s"
                }
                locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
+               inputs = {
+                   app_repo_name = "grit-repo-name"
+               }
             }
             lifecycle {
                 ignore_changes = [

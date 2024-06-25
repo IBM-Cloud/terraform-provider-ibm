@@ -23,7 +23,7 @@ func DataSourceIBMCmCatalog() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"catalog_identifier": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Catalog identifier.",
 			},
 			"id": &schema.Schema{
@@ -38,6 +38,7 @@ func DataSourceIBMCmCatalog() *schema.Resource {
 			},
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Display Name in the requested language.",
 			},
@@ -302,9 +303,28 @@ func dataSourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	listCatalogsOptions := &catalogmanagementv1.ListCatalogsOptions{}
+	catalogs, response, err := catalogManagementClient.ListCatalogsWithContext(context, listCatalogsOptions)
+	if err != nil {
+		log.Printf("[DEBUG] ListCatalogsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("ListCatalogsWithContext failed %s\n%s", err, response))
+	}
+
+	var catalogId string
+	for _, catalog := range catalogs.Resources {
+		if *catalog.ID == d.Get("catalog_identifier").(string) || *catalog.Label == d.Get("label").(string) {
+			catalogId = *catalog.ID
+		}
+	}
+
+	if catalogId == "" {
+		log.Printf("[DEBUG] Could not find catalog from provided ID or label")
+		return diag.FromErr(fmt.Errorf("Could not find catalog from provided ID or label"))
+	}
+
 	getCatalogOptions := &catalogmanagementv1.GetCatalogOptions{}
 
-	getCatalogOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
+	getCatalogOptions.SetCatalogIdentifier(catalogId)
 
 	catalog, response, err := catalogManagementClient.GetCatalogWithContext(context, getCatalogOptions)
 	if err != nil {

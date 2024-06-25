@@ -27,6 +27,7 @@ You can specify the following arguments for this resource.
 
 * `enum` - (Optional, List) Options for `single_select` property type. Only needed when using `single_select` property type.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
+* `locked` - (Optional, Boolean) When true, this property cannot be overridden by a trigger property or at runtime. Attempting to override it will result in run requests being rejected. The default is false.
 * `name` - (Required, Forces new resource, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 * `path` - (Optional, String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
