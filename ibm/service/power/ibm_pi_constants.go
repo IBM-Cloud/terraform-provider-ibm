@@ -362,9 +362,9 @@ const (
 	Public       = "public"
 
 	// States
-	NotFound                  = "not found"
-	SctionStart               = "start"
-	SctionStop                = "stop"
+	NotFound                 = "not found"
+	SctionStart              = "start"
+	SctionStop               = "stop"
 	State_Active             = "active"
 	State_ACTIVE             = "ACTIVE"
 	State_Added              = "added"
@@ -384,13 +384,13 @@ const (
 	State_Provisioning       = "provisioning"
 	State_Removed            = "removed"
 	State_Retry              = "retry"
-	StatusActive              = "ACTIVE"
-	StatusBuild               = "BUILD"
-	Status_Deleting           = "deleting"
-	StatusError               = "ERROR"
-	StatusPending             = "PENDING"
-	StatusResize              = "RESIZE"
-	StatusShutoff             = "SHUTOFF"
+	StatusActive             = "ACTIVE"
+	StatusBuild              = "BUILD"
+	Status_Deleting          = "deleting"
+	StatusError              = "ERROR"
+	StatusPending            = "PENDING"
+	StatusResize             = "RESIZE"
+	StatusShutoff            = "SHUTOFF"
 
 	// Allowed Values
 	Host      = "host"
