@@ -28,25 +28,25 @@ You can specify the following arguments for this data source.
 
 * `instance_id` - (Required, String)  Cloud Logs Instance GUID.
 * `region` - (Optional, String) Cloud Logs Instance Region.
-* `type` - (Optional, String) Outbound webhook type.
-  * Constraints: The default value is `ibm_event_notifications`. Allowable values are: `ibm_event_notifications`.
+* `type` - (Optional, String) The type of the deployed Outbound Integrations to list.
+  * Constraints: Allowable values are: `ibm_event_notifications`.
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the logs_outgoing_webhooks.
-* `outgoing_webhooks` - (List) List of deployed outbound webhooks.
-  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
+* `outgoing_webhooks` - (List) The list of deployed Outbound Integrations.
+  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 Nested schema for **outgoing_webhooks**:
-	* `created_at` - (String) The creation time of the outbound webhook.
-	* `external_id` - (Integer) The external ID of the outbound webhook.
+	* `created_at` - (String) The creation time of the Outbound Integration.
+	* `external_id` - (Integer) The external ID of the Outbound Integration, for connecting with other parts of the system.
 	  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
-	* `id` - (String) The ID of the outbound webhook.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
-	* `name` - (String) The type of the outbound webhook.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-	* `updated_at` - (String) The update time of the outbound webhook.
-	* `url` - (String) The URL of the outbound webhook.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+	* `id` - (String) The ID of the Outbound Integration.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+	* `name` - (String) The name of the Outbound Integration.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	* `updated_at` - (String) The update time of the Outbound Integration.
+	* `url` - (String) The URL of the Outbound Integration. Null for IBM Event Notifications integration.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 

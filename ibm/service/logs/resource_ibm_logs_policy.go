@@ -32,36 +32,36 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_policy", "name"),
-				Description:  "name of policy.",
+				Description:  "Name of policy.",
 			},
 			"description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_policy", "description"),
-				Description:  "description of policy.",
+				Description:  "Description of policy.",
 			},
 			"priority": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_policy", "priority"),
-				Description:  "the data pipeline sources that match the policy rules will go through.",
+				Description:  "The data pipeline sources that match the policy rules will go through.",
 			},
 			"application_rule": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "rule for matching with application.",
+				Description: "Rule for matching with application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule_type_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "identifier of the rule.",
+							Description: "Identifier of the rule.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "value of the rule.",
+							Description: "Value of the rule.",
 						},
 					},
 				},
@@ -70,18 +70,18 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "rule for matching with application.",
+				Description: "Rule for matching with application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule_type_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "identifier of the rule.",
+							Description: "Identifier of the rule.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "value of the rule.",
+							Description: "Value of the rule.",
 						},
 					},
 				},
@@ -90,13 +90,13 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "archive retention definition.",
+				Description: "Archive retention definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "references archive retention definition.",
+							Description: "References archive retention definition.",
 						},
 					},
 				},
@@ -105,13 +105,13 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "log rules.",
+				Description: "Log rules.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"severities": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "source severities to match with.",
+							Description: "Source severities to match with.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -120,32 +120,32 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 			"company_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "company id.",
+				Description: "Company ID.",
 			},
 			"deleted": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "soft deletion flag.",
+				Description: "Soft deletion flag.",
 			},
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "enabled flag.",
+				Description: "Enabled flag.",
 			},
 			"order": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "order of policy in relation to other policies.",
+				Description: "Order of policy in relation to other policies.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "created at timestamp.",
+				Description: "Created at date at utc+0.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "updated at timestamp.",
+				Description: "Updated at date at utc+0.",
 			},
 			"policy_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -164,7 +164,7 @@ func ResourceIbmLogsPolicyValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -173,7 +173,7 @@ func ResourceIbmLogsPolicyValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\-\s]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -394,6 +394,7 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		bodyModelMap := map[string]interface{}{}
 
 		bodyModelMap["name"] = d.Get("name")
+
 		if _, ok := d.GetOk("description"); ok {
 			bodyModelMap["description"] = d.Get("description")
 		}
@@ -470,7 +471,7 @@ func ResourceIbmLogsPolicyMapToQuotaV1Rule(modelMap map[string]interface{}) (*lo
 
 func ResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(modelMap map[string]interface{}) (*logsv0.QuotaV1ArchiveRetention, error) {
 	model := &logsv0.QuotaV1ArchiveRetention{}
-	model.ID = core.UUIDPtr(strfmt.UUID("id"))
+	model.ID = core.UUIDPtr(strfmt.UUID(modelMap["id"].(string)))
 	return model, nil
 }
 
@@ -571,7 +572,7 @@ func ResourceIbmLogsPolicyQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[strin
 
 func ResourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(model *logsv0.QuotaV1ArchiveRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = *model.ID
+	modelMap["id"] = model.ID.String()
 	return modelMap, nil
 }
 

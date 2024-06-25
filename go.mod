@@ -6,7 +6,7 @@ toolchain go1.22.3
 
 require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
-	github.com/IBM-Cloud/power-go-client v1.6.0
+	github.com/IBM-Cloud/power-go-client v1.7.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -18,21 +18,22 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.6.1
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
-	github.com/IBM/go-sdk-core/v5 v5.17.2
-	github.com/IBM/ibm-cos-sdk-go v1.10.1
-	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.0.4
+	github.com/IBM/go-sdk-core/v5 v5.17.3
+	github.com/IBM/ibm-cos-sdk-go v1.10.3
+	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.14.0
-	github.com/IBM/networking-go-sdk v0.46.1
+	github.com/IBM/logs-go-sdk v0.3.0
+	github.com/IBM/networking-go-sdk v0.47.0
 	github.com/IBM/platform-services-go-sdk v0.62.11
-	github.com/IBM/project-go-sdk v0.3.2
+	github.com/IBM/project-go-sdk v0.3.4
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.6
 	github.com/IBM/schematics-go-sdk v0.2.3
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.4
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
-	github.com/IBM/vpc-go-sdk v0.50.0
+	github.com/IBM/vpc-go-sdk v0.52.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -65,10 +66,10 @@ require (
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4
 	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/logs-go-sdk v0.1.1
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/vmware-go-sdk v0.1.2
+	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/stretchr/testify v1.9.0
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.1
@@ -143,7 +144,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hc-install v0.6.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
-	github.com/hashicorp/hcl/v2 v2.19.1 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.19.0 // indirect
 	github.com/hashicorp/terraform-json v0.17.1 // indirect
