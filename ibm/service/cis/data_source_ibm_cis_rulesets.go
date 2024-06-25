@@ -23,6 +23,7 @@ const (
 	CISRulesetsPhase                                   = "phase"
 	CISRulesetsLastUpdatedAt                           = "last_updated"
 	CISRulesetsVersion                                 = "version"
+	CISRulesetsRule                                    = "rule"
 	CISRulesetsRules                                   = "rules"
 	CISRulesetsRuleId                                  = "id"
 	CISRulesetsRuleVersion                             = "version"
@@ -46,7 +47,7 @@ const (
 	CISRulesetOverridesSensitivityLevel                = "sensitivity_level"
 	CISRulesetOverridesCategories                      = "categories"
 	CISRulesetOverridesCategoriesCategory              = "category"
-	CISRulesetOverridesRules                           = "rules"
+	CISRulesetOverridesRules                           = "override_rules"
 	CISRulesetsRuleActionCategories                    = "categories"
 	CISRulesetsRuleActionEnabled                       = "enabled"
 	CISRulesetsRuleActionDescription                   = "description"
@@ -54,6 +55,7 @@ const (
 	CISRulesetsRulePositionAfter                       = "after"
 	CISRulesetsRulePositionBefore                      = "before"
 	CISRulesetsRulePositionIndex                       = "index"
+	CISRulesetRuleId                                   = "rule_id"
 )
 
 var CISResponseObject = &schema.Resource{
@@ -153,7 +155,7 @@ var CISResponseObject = &schema.Resource{
 												Description: "Rules",
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
-														CISRulesetsId: {
+														CISRulesetRuleId: {
 															Type:        schema.TypeString,
 															Computed:    true,
 															Description: "Id of the Ruleset",
@@ -348,10 +350,12 @@ func DataSourceIBMCISRulesetsValidator() *validate.ResourceValidator {
 }
 
 func dataIBMCISRulesetsRead(d *schema.ResourceData, meta interface{}) error {
+
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
 		return err
 	}
+
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
 
@@ -564,7 +568,7 @@ func flattenCISRulesetsRuleActionParameterOverrides(rulesetsRuleActionParameterO
 		overrideRulesList := make([]map[string]interface{}, 0)
 		for _, obj := range rulesetsRuleActionParameterOverridesObj.Rules {
 			overrideRulesObj := map[string]interface{}{}
-			overrideRulesObj[CISRulesetsId] = obj.ID
+			overrideRulesObj[CISRulesetRuleId] = obj.ID
 			overrideRulesObj[CISRulesetOverridesEnabled] = obj.Enabled
 			overrideRulesObj[CISRulesetOverridesAction] = obj.Action
 

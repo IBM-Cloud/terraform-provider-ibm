@@ -68,7 +68,7 @@ func DataSourceIBMPICloudInstance() *schema.Resource {
 							Description: "The status of the instance.",
 							Type:        schema.TypeString,
 						},
-						Attr_SysType: {
+						Attr_Systype: {
 							Computed:    true,
 							Description: "System type used to host the instance.",
 							Type:        schema.TypeString,
@@ -155,7 +155,7 @@ func flattenpvminstances(list []*models.PVMInstanceReference) []map[string]inter
 			Attr_Href:         *lpars.Href,
 			Attr_Name:         *lpars.ServerName,
 			Attr_Status:       *lpars.Status,
-			Attr_SysType:      lpars.SysType,
+			Attr_Systype:      lpars.SysType,
 		}
 		pvms = append(pvms, l)
 	}
