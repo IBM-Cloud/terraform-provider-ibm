@@ -4220,7 +4220,10 @@ func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfacePrototypeAttachment
 		model.EnableInfrastructureNat = core.BoolPtr(modelMap["enable_infrastructure_nat"].(bool))
 	}
 	if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok {
-		model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		protocolStateFilteringMode := pStateFilteringInt.(string)
+		if protocolStateFilteringMode != "" {
+			model.ProtocolStateFilteringMode = core.StringPtr(protocolStateFilteringMode)
+		}
 	}
 	if modelMap["ips"] != nil && modelMap["ips"].(*schema.Set).Len() > 0 {
 		ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
