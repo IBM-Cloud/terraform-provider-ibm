@@ -1417,8 +1417,9 @@ func Provider() *schema.Provider {
 			"ibm_pag_instance": pag.ResourceIBMPag(),
 
 			// Added for Context Based Restrictions
-			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
-			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
+			"ibm_cbr_zone":           contextbasedrestrictions.ResourceIBMCbrZone(),
+			"ibm_cbr_zone_addresses": contextbasedrestrictions.ResourceIBMCbrZoneAddresses(),
+			"ibm_cbr_rule":           contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// Added for Event Notifications
 			"ibm_en_source":                    eventnotification.ResourceIBMEnSource(),
@@ -1854,9 +1855,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_metrics_router_route":                metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":             metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
-				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
-				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
+
+				// Added for Context Based Restrictions
+				"ibm_cbr_zone":           contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
+				"ibm_cbr_zone_addresses": contextbasedrestrictions.ResourceIBMCbrZoneAddressesValidator(),
+				"ibm_cbr_rule":           contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
 
 				// Added for SCC
 				"ibm_scc_instance_settings":      scc.ResourceIbmSccInstanceSettingsValidator(),
