@@ -12,6 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/apigateway"
@@ -62,8 +65,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vmware"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Provider returns a *schema.Provider.
@@ -522,22 +523,26 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_network_interface_ip":           vpc.DataSourceIBMIsVirtualNetworkInterfaceIP(),
 			"ibm_is_virtual_network_interface_ips":          vpc.DataSourceIBMIsVirtualNetworkInterfaceIPs(),
 
-			"ibm_is_share_mount_target":              vpc.DataSourceIBMIsShareTarget(),
-			"ibm_is_share_mount_targets":             vpc.DataSourceIBMIsShareTargets(),
-			"ibm_is_volume":                          vpc.DataSourceIBMISVolume(),
-			"ibm_is_volumes":                         vpc.DataSourceIBMIsVolumes(),
-			"ibm_is_volume_profile":                  vpc.DataSourceIBMISVolumeProfile(),
-			"ibm_is_volume_profiles":                 vpc.DataSourceIBMISVolumeProfiles(),
-			"ibm_is_vpc":                             vpc.DataSourceIBMISVPC(),
-			"ibm_is_vpc_dns_resolution_binding":      vpc.DataSourceIBMIsVPCDnsResolutionBinding(),
-			"ibm_is_vpc_dns_resolution_bindings":     vpc.DataSourceIBMIsVPCDnsResolutionBindings(),
-			"ibm_is_vpcs":                            vpc.DataSourceIBMISVPCs(),
-			"ibm_is_vpn_gateway":                     vpc.DataSourceIBMISVPNGateway(),
-			"ibm_is_vpn_gateways":                    vpc.DataSourceIBMISVPNGateways(),
-			"ibm_is_vpc_address_prefixes":            vpc.DataSourceIbmIsVpcAddressPrefixes(),
-			"ibm_is_vpc_address_prefix":              vpc.DataSourceIBMIsVPCAddressPrefix(),
-			"ibm_is_vpn_gateway_connection":          vpc.DataSourceIBMISVPNGatewayConnection(),
-			"ibm_is_vpn_gateway_connections":         vpc.DataSourceIBMISVPNGatewayConnections(),
+			"ibm_is_share_mount_target":          vpc.DataSourceIBMIsShareTarget(),
+			"ibm_is_share_mount_targets":         vpc.DataSourceIBMIsShareTargets(),
+			"ibm_is_volume":                      vpc.DataSourceIBMISVolume(),
+			"ibm_is_volumes":                     vpc.DataSourceIBMIsVolumes(),
+			"ibm_is_volume_profile":              vpc.DataSourceIBMISVolumeProfile(),
+			"ibm_is_volume_profiles":             vpc.DataSourceIBMISVolumeProfiles(),
+			"ibm_is_vpc":                         vpc.DataSourceIBMISVPC(),
+			"ibm_is_vpc_dns_resolution_binding":  vpc.DataSourceIBMIsVPCDnsResolutionBinding(),
+			"ibm_is_vpc_dns_resolution_bindings": vpc.DataSourceIBMIsVPCDnsResolutionBindings(),
+			"ibm_is_vpcs":                        vpc.DataSourceIBMISVPCs(),
+			"ibm_is_vpn_gateway":                 vpc.DataSourceIBMISVPNGateway(),
+			"ibm_is_vpn_gateways":                vpc.DataSourceIBMISVPNGateways(),
+			"ibm_is_vpc_address_prefixes":        vpc.DataSourceIbmIsVpcAddressPrefixes(),
+			"ibm_is_vpc_address_prefix":          vpc.DataSourceIBMIsVPCAddressPrefix(),
+			"ibm_is_vpn_gateway_connection":      vpc.DataSourceIBMISVPNGatewayConnection(),
+			"ibm_is_vpn_gateway_connections":     vpc.DataSourceIBMISVPNGatewayConnections(),
+
+			"ibm_is_vpn_gateway_connection_local_cidrs": vpc.DataSourceIBMIsVPNGatewayConnectionLocalCidrs(),
+			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
+
 			"ibm_is_vpc_default_routing_table":       vpc.DataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_table":               vpc.DataSourceIBMIBMIsVPCRoutingTable(),
 			"ibm_is_vpc_routing_tables":              vpc.DataSourceIBMISVPCRoutingTables(),
@@ -615,6 +620,7 @@ func Provider() *schema.Provider {
 			"ibm_schematics_agent_health":   schematics.DataSourceIbmSchematicsAgentHealth(),
 
 			// Added for Power Resources
+			"ibm_pi_available_hosts":                        power.DataSourceIBMPIAvailableHosts(),
 			"ibm_pi_catalog_images":                         power.DataSourceIBMPICatalogImages(),
 			"ibm_pi_cloud_connection":                       power.DataSourceIBMPICloudConnection(),
 			"ibm_pi_cloud_connections":                      power.DataSourceIBMPICloudConnections(),
@@ -626,6 +632,10 @@ func Provider() *schema.Provider {
 			"ibm_pi_dhcps":                                  power.DataSourceIBMPIDhcps(),
 			"ibm_pi_disaster_recovery_location":             power.DataSourceIBMPIDisasterRecoveryLocation(),
 			"ibm_pi_disaster_recovery_locations":            power.DataSourceIBMPIDisasterRecoveryLocations(),
+			"ibm_pi_host_group":                             power.DataSourceIBMPIHostGroup(),
+			"ibm_pi_host_groups":                            power.DataSourceIBMPIHostGroups(),
+			"ibm_pi_host":                                   power.DataSourceIBMPIHost(),
+			"ibm_pi_hosts":                                  power.DataSourceIBMPIHosts(),
 			"ibm_pi_image":                                  power.DataSourceIBMPIImage(),
 			"ibm_pi_images":                                 power.DataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":                            power.DataSourceIBMPIInstanceIP(),
@@ -780,6 +790,7 @@ func Provider() *schema.Provider {
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
 
 			// MQ on Cloud
+			"ibm_mqcloud_queue_manager_options":  mqcloud.DataSourceIbmMqcloudQueueManagerOptions(),
 			"ibm_mqcloud_queue_manager":          mqcloud.DataSourceIbmMqcloudQueueManager(),
 			"ibm_mqcloud_queue_manager_status":   mqcloud.DataSourceIbmMqcloudQueueManagerStatus(),
 			"ibm_mqcloud_application":            mqcloud.DataSourceIbmMqcloudApplication(),
@@ -925,21 +936,24 @@ func Provider() *schema.Provider {
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.DataSourceIbmVmaasVdc(),
 			// Logs Service
-			"ibm_logs_alert":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
-			"ibm_logs_alerts":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
-			"ibm_logs_rule_group":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
-			"ibm_logs_rule_groups":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
-			"ibm_logs_policy":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
-			"ibm_logs_policies":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
-			"ibm_logs_dashboard":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
-			"ibm_logs_e2m":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
-			"ibm_logs_e2ms":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
-			"ibm_logs_outgoing_webhook":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
-			"ibm_logs_outgoing_webhooks": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
-			"ibm_logs_view_folder":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
-			"ibm_logs_view_folders":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
-			"ibm_logs_view":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
-			"ibm_logs_views":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
+			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
+			"ibm_logs_alerts":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
+			"ibm_logs_rule_group":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
+			"ibm_logs_rule_groups":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
+			"ibm_logs_policy":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
+			"ibm_logs_policies":           logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
+			"ibm_logs_dashboard":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
+			"ibm_logs_e2m":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
+			"ibm_logs_e2ms":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
+			"ibm_logs_outgoing_webhook":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_outgoing_webhooks":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
+			"ibm_logs_view_folder":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
+			"ibm_logs_view_folders":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
+			"ibm_logs_view":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
+			"ibm_logs_views":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
+			"ibm_logs_dashboard_folders":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
+			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
+			"ibm_logs_enrichments":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1247,6 +1261,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_cloud_connection":                power.ResourceIBMPICloudConnection(),
 			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
 			"ibm_pi_dhcp":                            power.ResourceIBMPIDhcp(),
+			"ibm_pi_host_group":                      power.ResourceIBMPIHostGroup(),
 			"ibm_pi_ike_policy":                      power.ResourceIBMPIIKEPolicy(),
 			"ibm_pi_image_export":                    power.ResourceIBMPIImageExport(),
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
@@ -1297,6 +1312,7 @@ func Provider() *schema.Provider {
 			"ibm_tg_connection_action":        transitgateway.ResourceIBMTransitGatewayConnectionAction(),
 			"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilter(),
 			"ibm_tg_route_report":             transitgateway.ResourceIBMTransitGatewayRouteReport(),
+			"ibm_tg_connection_rgre_tunnel":   transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnel(),
 
 			// Catalog related resources
 			"ibm_cm_offering_instance": catalogmanagement.ResourceIBMCmOfferingInstance(),
@@ -1498,14 +1514,17 @@ func Provider() *schema.Provider {
 			// Added for VMware as a Service
 			"ibm_vmaas_vdc": vmware.ResourceIbmVmaasVdc(),
 			// Logs Service
-			"ibm_logs_alert":            logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
-			"ibm_logs_rule_group":       logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
-			"ibm_logs_policy":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
-			"ibm_logs_dashboard":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
-			"ibm_logs_e2m":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
-			"ibm_logs_outgoing_webhook": logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
-			"ibm_logs_view_folder":      logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
-			"ibm_logs_view":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
+			"ibm_logs_alert":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
+			"ibm_logs_rule_group":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
+			"ibm_logs_policy":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
+			"ibm_logs_dashboard":          logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
+			"ibm_logs_e2m":                logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
+			"ibm_logs_outgoing_webhook":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_view_folder":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
+			"ibm_logs_view":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
+			"ibm_logs_dashboard_folder":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
+			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
+			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1722,6 +1741,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_tg_connection":                            transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
 				"ibm_tg_connection_action":                     transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
 				"ibm_tg_connection_prefix_filter":              transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
+				"ibm_tg_connection_rgre_tunnel":                transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
 				"ibm_dl_virtual_connection":                    directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                               directlink.ResourceIBMDLGatewayValidator(),
 				"ibm_dl_provider_gateway":                      directlink.ResourceIBMDLProviderGatewayValidator(),
@@ -1943,6 +1963,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_e2m":              logs.ResourceIbmLogsE2mValidator(),
 				"ibm_logs_view":             logs.ResourceIbmLogsViewValidator(),
 				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
+				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
+				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),

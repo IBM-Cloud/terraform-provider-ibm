@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
 
 func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAccIbmMqcloudQueueManagerBasic(t *testing.T) {
 	serviceInstanceGuid := acc.MqcloudInstanceID
 	name := fmt.Sprintf("tf_queue_manager_basic%d", acctest.RandIntRange(10, 100))
 	location := acc.MqCloudQueueManagerLocation
-	size := "small"
+	size := "xsmall"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
@@ -51,7 +51,7 @@ func TestAccIbmMqcloudQueueManagerAllArgs(t *testing.T) {
 	name := fmt.Sprintf("tf_queue_manager_allargs%d", acctest.RandIntRange(10, 100))
 	displayName := name
 	location := acc.MqCloudQueueManagerLocation
-	size := "small"
+	size := "xsmall"
 	version := acc.MqCloudQueueManagerVersion
 	versionUpdate := acc.MqCloudQueueManagerVersionUpdate
 

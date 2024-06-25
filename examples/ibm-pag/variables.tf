@@ -29,19 +29,27 @@ variable "ibm_vpc_name" {}
 # For PAG Proxy Instance 1
 variable "ibm_vpc_subnet_name_instance_1" {}
 
-variable "ibm_vpc_security_groups_instance_1" {
-  type = set(string)
-}
-
 # For PAG Proxy Instance 2
 # Select the subnet from another zone
 variable "ibm_vpc_subnet_name_instance_2" {}
 
-variable "ibm_vpc_security_groups_instance_2" {
+variable "ibm_vpc_security_groups_instance" {
   type = set(string)
 }
 
 # Number of PAG Hosts
 variable "num_instances" {
   default = 2
+}
+
+variable "pag_inactivity_timeout" {
+  type        = number
+  description = "PAG inactivity timeout value (in minutes)."
+  default     = 15
+}
+
+variable "system_use_notification" {
+  type        = string
+  description = "Message that is displayed when a user connects to PAG."
+  default     = "By accessing this information system, users acknowledge and accept the following terms and conditions:\n - Users are accessing a U.S. Government or financial services information system;\n- Due to IBM security policies, information system usage will be monitored, recorded, and subject to audit in accordance with the applicable laws; and \n- Unauthorized use of the information system is prohibited and subject to criminal and civil penalties"
 }
