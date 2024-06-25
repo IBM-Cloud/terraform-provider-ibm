@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_cis_ruleset_entrypoint_version
-Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to create and update the ruleset entrypoint of an instance or domain. For more information, about IBM Cloud Internet Services ruleset entrypoint version, see [ruleset entrypoint instance]().
+Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to create and update the ruleset entrypoint of an instance or domain. For more information, about IBM Cloud Internet Services ruleset entrypoint version, see [ruleset entrypoint instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
 **As there is no option to create a ruleset entry point resource, it is required to use import module to generate the respective resource configurations([Reference](https://test.cloud.ibm.com/docs/cis?topic=cis-terraform-generating-configuration)) and use the import command to populate the state file, as stated at the end of this page.**
 
 ## Example usage
@@ -16,34 +16,29 @@ Provides an IBM Cloud Internet Services ruleset entrypoint version resource, to 
 ```terraform
 # create/update entrypoint ruleset of a domain or instance
 
-resource "ibm_cis_ruleset_entrypoint_version" "tests" {
+
+resource "ibm_cis_ruleset_entrypoint_version" "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     phase = "http_request_firewall_managed"
     rulesets {
-  
       description = "Entry Point ruleset"
       rules {
-      {
         action =  "execute"
         action_parameters  {
-          id : var.to_be_deployed_ruleset.id
+          id = var.to_be_deployed_ruleset.id
           overrides  {
             action = "log"
             enabled = true
-            rules {
-              {
-                id = var.overriden_rule.id
+            override_rules {
+                rule_id = var.overriden_rule.id
                 enabled = true
-                action = "log"
-              }
+                action = "block"
             }
             categories {
-              {
                 category = "wordpress"
                 enabled = true
                 action = "log"
-              }
             }
           }
         }
@@ -51,15 +46,12 @@ resource "ibm_cis_ruleset_entrypoint_version" "tests" {
         enabled = true
         expression = "ip.src ne 1.1.1.1"
         ref = var.reference_rule.id
-        position  {
-          index = 1
-          after = var.after_rule.id
-          before = var.before_rule.id
-        }
       }
     }
   }
-}
+
+
+
 ```
 
 ## Argument reference
@@ -89,10 +81,10 @@ Review the argument references that you can specify for your resource.
         Nested scheme of `overrides`
         - `action` (Optional, String) Action of the rule. Examples: log, block, skip.
         - `enabled` (Optional, Boolean) Enables/Disables the rule
-        - `rules` (Optional, List) List of details of rules to be overridden. These rules are already present in the managed ruleset.
+        - `override_rules` (Optional, List) List of details of rules to be overridden. These rules are already present in the managed ruleset.
 
-          Nested scheme of `rules`
-          - `id` (Required, String) Id of the rule.
+          Nested scheme of `override_rules`
+          - `rule_id` (Required, String) Id of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
         - `categories` (Optional, List)
@@ -101,15 +93,10 @@ Review the argument references that you can specify for your resource.
           - `category` (Required, String) Category of the rule.
           - `enabled` (Optional, Boolean) Enables/Disables the rule.
           - `action` (Optional, String) Action of the rule.
-    - `position` (Optional, list). Provides the position when a new rule is added or updates the position of the current rule. If not provided the new rule will be added at the end. You can use only one of the before, after, and index fields at a time.
-      - `index` (Optional, String) Index of the rule to be added. 
-      - `before` (Optional, String) ID of the rule before which new rule will be added. 
-      - `after` (Optional, String) ID of the rule after which new rule will be added.
         
+
 ## Attribute reference
-In addition to the argument reference list, you can access the following attribute reference after your resource is created.
--
-- `ruleset_id` - (String) The entrypoint ruleset ID.
+There are no attribute references in addition to the argument reference list.
 
 
 ## Import

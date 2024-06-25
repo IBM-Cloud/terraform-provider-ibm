@@ -24,8 +24,8 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.14.0
+	github.com/IBM/networking-go-sdk v0.47.1
 	github.com/IBM/logs-go-sdk v0.3.0
-	github.com/IBM/networking-go-sdk v0.47.0
 	github.com/IBM/platform-services-go-sdk v0.62.11
 	github.com/IBM/project-go-sdk v0.3.4
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5

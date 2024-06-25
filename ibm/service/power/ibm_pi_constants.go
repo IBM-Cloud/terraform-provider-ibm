@@ -23,16 +23,18 @@ const (
 	Arg_DhcpName                            = "pi_dhcp_name"
 	Arg_DhcpSnatEnabled                     = "pi_dhcp_snat_enabled"
 	Arg_HealthStatus                        = "pi_health_status"
+	Arg_Host                                = "pi_host"
 	Arg_HostGroupID                         = "pi_host_group_id"
 	Arg_HostID                              = "pi_host_id"
 	Arg_Hosts                               = "pi_hosts"
-	Arg_ImageImportDetails                  = "pi_image_import_details"
 	Arg_IBMiCSS                             = "pi_ibmi_css"
 	Arg_IBMiPHA                             = "pi_ibmi_pha"
 	Arg_IBMiRDSUsers                        = "pi_ibmi_rds_users"
 	Arg_ImageID                             = "pi_image_id"
+	Arg_ImageImportDetails                  = "pi_image_import_details"
 	Arg_ImageName                           = "pi_image_name"
 	Arg_InstanceName                        = "pi_instance_name"
+	Arg_Key                                 = "pi_ssh_key"
 	Arg_KeyName                             = "pi_key_name"
 	Arg_KeyPairName                         = "pi_key_pair_name"
 	Arg_LanguageCode                        = "pi_language_code"
@@ -435,8 +437,6 @@ const (
 
 	// States
 	NotFound                 = "not found"
-	SctionStart              = "start"
-	SctionStop               = "stop"
 	State_Active             = "active"
 	State_ACTIVE             = "ACTIVE"
 	State_Added              = "added"
@@ -446,6 +446,8 @@ const (
 	State_Creating           = "creating"
 	State_Deleted            = "deleted"
 	State_Deleting           = "deleting"
+	State_DELETING           = "DELETING"
+	State_Down               = "down"
 	State_Error              = "error"
 	State_Failed             = "failed"
 	State_Inactive           = "inactive"
@@ -460,9 +462,20 @@ const (
 	State_Retry              = "retry"
 	State_Shutoff            = "shutoff"
 	State_Stopping           = "stopping"
+	State_Up                 = "up"
 	State_VerifyResize       = "verify_resize"
+	Status_Deleting          = "deleting"
+	StatusActive             = "ACTIVE"
+	StatusBuild              = "BUILD"
+	StatusError              = "ERROR"
+	StatusPending            = "PENDING"
+	StatusResize             = "RESIZE"
+	StatusShutoff            = "SHUTOFF"
 
-	//Timeout values
+	// Health
+	Health_OK = "OK"
+
+	// Timeout values
 	Timeout_Active  = 2 * time.Minute
 	Timeout_Delay   = 60 * time.Second
 	Timeout_Warning = 60 * time.Second

@@ -202,6 +202,7 @@ var (
 	Pi_cloud_instance_id            string
 	Pi_dhcp_id                      string
 	Pi_host_group_id                string
+	Pi_host_id                      string
 	Pi_image                        string
 	Pi_image_bucket_access_key      string
 	Pi_image_bucket_file_name       string
@@ -1183,9 +1184,14 @@ func init() {
 	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
 	if Pi_host_group_id == "" {
 		Pi_host_group_id = ""
-		fmt.Println("[WARN] Set the environment variable PI_HOSTGROUP_ID for testing ibm_pi_hostgroup resource else it is set to default value ''")
+		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
 	}
 
+	Pi_host_id = os.Getenv("PI_HOST_ID")
+	if Pi_host_id == "" {
+		Pi_host_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_HOST_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if WorkspaceID == "" {
 		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"

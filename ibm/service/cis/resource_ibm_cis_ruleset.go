@@ -112,7 +112,7 @@ var CISResourceResponseObject = &schema.Resource{
 												Description: "Rules",
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
-														CISRulesetsId: {
+														CISRulesetRuleId: {
 															Type:        schema.TypeString,
 															Optional:    true,
 															Description: "Id of the Ruleset",
@@ -349,42 +349,38 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 
 		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetKind(rulesetsObject[CISRulesetsKind].(string))
 		opt.SetName(rulesetsObject[CISRulesetsName].(string))
-		opt.SetPhase(rulesetsObject[CISRulesetsPhase].(string))
 		opt.SetRulesetID(rulesetId)
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
 		opt.SetRules(rulesObj)
 
-		result, resp, err := sess.UpdateZoneRuleset(opt)
+		_, resp, err := sess.UpdateZoneRuleset(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", resp)
 		}
 
-		d.SetId(*result.Result.ID)
+		d.SetId(dataSourceCISRulesetsCheckID(d))
 
 	} else {
 		opt := sess.NewUpdateInstanceRulesetOptions(rulesetId)
 
 		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetKind(rulesetsObject[CISRulesetsKind].(string))
 		opt.SetName(rulesetsObject[CISRulesetsName].(string))
-		opt.SetPhase(rulesetsObject[CISRulesetsPhase].(string))
 		opt.SetRulesetID(rulesetId)
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
 		opt.SetRules(rulesObj)
 
-		result, _, err := sess.UpdateInstanceRuleset(opt)
+		_, _, err := sess.UpdateInstanceRuleset(opt)
 
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
-		d.SetId(*result.Result.ID)
+		d.SetId(dataSourceCISRulesetsCheckID(d))
 	}
 
 	return ResourceIBMCISRulesetRead(d, meta)
@@ -415,7 +411,6 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 
 		d.Set(CISRulesetsObjectOutput, rulesetObj)
 		d.Set(cisDomainID, zoneId)
-		d.Set(CISRulesetsId, rulesetId)
 		d.Set(cisID, crn)
 		d.SetId(dataSourceCISRulesetsCheckID(d))
 
@@ -444,13 +439,11 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	crn := d.Get(cisID).(string)
+	rulesetId, zoneId, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
-	zoneId := d.Get(cisDomainID).(string)
-	rulesetId := d.Get(CISRulesetsId).(string)
-
 	if zoneId != "" {
+		sess.ZoneIdentifier = core.StringPtr(zoneId)
 		opt := sess.NewDeleteZoneRulesetOptions(rulesetId)
 		res, err := sess.DeleteZoneRuleset(opt)
 		if err != nil {
@@ -469,51 +462,77 @@ func ResourceIBMCISRulesetDelete(d *schema.ResourceData, meta interface{}) error
 }
 
 func expandCISRules(obj interface{}) []rulesetsv1.RuleCreate {
-	ruleObj := obj.([]interface{})[0].(map[string]interface{})
-
-	id := ruleObj[CISRulesetsRuleId].(string)
-	expression := ruleObj[CISRulesetsRuleExpression].(string)
-	action := ruleObj[CISRulesetsRuleAction].(string)
-	description := ruleObj[CISRulesetsRuleActionDescription].(string)
-	enabled := ruleObj[CISRulesetsRuleActionEnabled].(bool)
-	ref := ruleObj[CISRulesetsRuleRef].(string)
-
-	actionParameterObj := rulesetsv1.ActionParameters{}
-	if len(ruleObj[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
-		actionParameterObj = expandCISRulesetsRulesActionParameters(ruleObj[CISRulesetsRuleActionParameters])
-	}
-
-	position := rulesetsv1.Position{}
-	if len(ruleObj[CISRulesetsRulePosition].(*schema.Set).List()) != 0 {
-		position = expandCISRulesetsRulesPositions(ruleObj[CISRulesetsRulePosition])
-	}
 
 	finalResponse := make([]rulesetsv1.RuleCreate, 0)
-	ruleRespObj := rulesetsv1.RuleCreate{
-		ID:               &id,
-		Expression:       &expression,
-		Action:           &action,
-		Description:      &description,
-		Enabled:          &enabled,
-		Ref:              &ref,
-		ActionParameters: &actionParameterObj,
-		Position:         &position,
-	}
 
-	finalResponse = append(finalResponse, ruleRespObj)
+	listResponse := obj.([]interface{})
+	for _, val := range listResponse {
+
+		ruleObj := val.(map[string]interface{})
+
+		id := ruleObj[CISRulesetsRuleId].(string)
+		expression := ruleObj[CISRulesetsRuleExpression].(string)
+		action := ruleObj[CISRulesetsRuleAction].(string)
+		description := ruleObj[CISRulesetsRuleActionDescription].(string)
+		enabled := ruleObj[CISRulesetsRuleActionEnabled].(bool)
+		ref := ruleObj[CISRulesetsRuleRef].(string)
+
+		actionParameterObj := rulesetsv1.ActionParameters{}
+
+		if len(ruleObj[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
+			actionParameterObj = expandCISRulesetsRulesActionParameters(ruleObj[CISRulesetsRuleActionParameters])
+		}
+
+		position := rulesetsv1.Position{}
+		if len(ruleObj[CISRulesetsRulePosition].(*schema.Set).List()) != 0 {
+			position = expandCISRulesetsRulesPositions(ruleObj[CISRulesetsRulePosition])
+		}
+
+		ruleRespObj := rulesetsv1.RuleCreate{
+			Expression:       &expression,
+			Action:           &action,
+			Description:      &description,
+			Enabled:          &enabled,
+			Ref:              &ref,
+			ActionParameters: &actionParameterObj,
+			Position:         &position,
+		}
+
+		if id != "" {
+			ruleRespObj.ID = &id
+		}
+
+		finalResponse = append(finalResponse, ruleRespObj)
+	}
 
 	return finalResponse
 }
 
 func expandCISRulesetsRulesPositions(obj interface{}) rulesetsv1.Position {
-	response := obj.(map[string]interface{})
-	before := response[CISRulesetsRulePositionBefore].(string)
-	after := response[CISRulesetsRulePositionAfter].(string)
-	index := response[CISRulesetsRulePositionIndex].(int64)
-	responseObj := rulesetsv1.Position{
-		Before: &before,
-		After:  &after,
-		Index:  &index,
+	responseObj := rulesetsv1.Position{}
+	if len(obj.(*schema.Set).List()) != 0 {
+		response := obj.(*schema.Set).List()[0].(map[string]interface{})
+
+		before := response[CISRulesetsRulePositionBefore].(string)
+		after := response[CISRulesetsRulePositionAfter].(string)
+		index := int64(response[CISRulesetsRulePositionIndex].(int))
+
+		if before != "" {
+			responseObj = rulesetsv1.Position{
+				Before: &before,
+			}
+		}
+		if after != "" {
+			responseObj = rulesetsv1.Position{
+				After: &after,
+			}
+		}
+		if index != 0 {
+			responseObj = rulesetsv1.Position{
+				Index: &index,
+			}
+		}
+
 	}
 	return responseObj
 }
@@ -531,16 +550,19 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 		ruleList[i] = fmt.Sprint(v)
 	}
 
-	overrideObj := rulesetsv1.Overrides{}
-	overrideObj = expandCISRulesetsRulesActionParametersOverrides(actionParameterObj[CISRulesetOverrides])
-
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
 	actionParameterRespObj := rulesetsv1.ActionParameters{
-		ID:        &id,
-		Rulesets:  ruleList,
-		Version:   &version,
-		Overrides: &overrideObj,
+		ID:       &id,
+		Rulesets: ruleList,
+		Version:  &version,
 	}
+
+	overrideObj := rulesetsv1.Overrides{}
+	if len(actionParameterObj[CISRulesetOverrides].(*schema.Set).List()) != 0 {
+		overrideObj = expandCISRulesetsRulesActionParametersOverrides(actionParameterObj[CISRulesetOverrides])
+		actionParameterRespObj.Overrides = &overrideObj
+	}
+
 	finalResponse = append(finalResponse, actionParameterRespObj)
 
 	return finalResponse[0]
@@ -569,10 +591,10 @@ func expandCISRulesetsRulesActionParametersOverrides(obj interface{}) rulesetsv1
 
 	rules := []rulesetsv1.RulesOverride{}
 	categories := []rulesetsv1.CategoriesOverride{}
-	if reflect.ValueOf(overrideObj[CISRulesetOverridesRules]).IsNil() {
+	if !reflect.ValueOf(overrideObj[CISRulesetOverridesRules]).IsNil() {
 		rules = expandCISRulesetsRulesActionParametersOverridesRules(overrideObj[CISRulesetOverridesRules])
 	}
-	if reflect.ValueOf(overrideObj[CISRulesetOverridesCategories]).IsNil() {
+	if !reflect.ValueOf(overrideObj[CISRulesetOverridesCategories]).IsNil() {
 		categories = expandCISRulesetsRulesActionParametersOverridesCategories(overrideObj[CISRulesetOverridesCategories])
 	}
 
@@ -616,7 +638,7 @@ func expandCISRulesetsRulesActionParametersOverridesRules(obj interface{}) []rul
 	listResponse := obj.([]interface{})
 	for _, val := range listResponse {
 		response := val.(map[string]interface{})
-		id := response[CISRulesetsId].(string)
+		id := response[CISRulesetRuleId].(string)
 		action := response[CISRulesetOverridesAction].(string)
 		enabled := response[CISRulesetOverridesEnabled].(bool)
 
