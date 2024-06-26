@@ -24,8 +24,8 @@ require (
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.14.0
-	github.com/IBM/logs-go-sdk v0.2.1
-	github.com/IBM/networking-go-sdk v0.47.0
+	github.com/IBM/networking-go-sdk v0.47.1
+	github.com/IBM/logs-go-sdk v0.3.0
 	github.com/IBM/platform-services-go-sdk v0.62.11
 	github.com/IBM/project-go-sdk v0.3.4
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
@@ -33,7 +33,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.2.3
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.4
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
-	github.com/IBM/vpc-go-sdk v0.52.0
+	github.com/IBM/vpc-go-sdk v0.53.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0

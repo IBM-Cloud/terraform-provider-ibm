@@ -582,6 +582,8 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	if powervmdata.Fault != nil {
 		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
+	} else {
+		d.Set(Attr_Fault, nil)
 	}
 	return nil
 }
