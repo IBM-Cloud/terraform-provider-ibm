@@ -503,10 +503,6 @@ const (
 	// Cloud Connections
 	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
 
-	// Volume clone task status
-	VolumeCloneCompleted = "completed"
-	VolumeCloneRunning   = "running"
-
 	// IBM PI Workspace
 	PIWorkspaceName          = "pi_name"
 	PIWorkspaceDatacenter    = "pi_datacenter"
