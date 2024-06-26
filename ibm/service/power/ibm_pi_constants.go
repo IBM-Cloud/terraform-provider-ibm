@@ -404,7 +404,6 @@ const (
 	State_Retry              = "retry"
 	State_Up                 = "up"
 	Status_Deleting          = "deleting"
-	StatusActive             = "ACTIVE"
 	StatusBuild              = "BUILD"
 	StatusError              = "ERROR"
 	StatusPending            = "PENDING"
