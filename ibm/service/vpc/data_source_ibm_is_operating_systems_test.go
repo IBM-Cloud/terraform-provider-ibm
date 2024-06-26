@@ -22,6 +22,8 @@ func TestAccIBMISOperatingSystemsDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMISOperatingSystemsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_operating_systems.testacc_ds_oslist", "operating_systems.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_operating_systems.testacc_ds_oslist", "operating_systems.0.allow_user_image_creation"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_operating_systems.testacc_ds_oslist", "operating_systems.0.user_data_format"),
 				),
 			},
 		},
