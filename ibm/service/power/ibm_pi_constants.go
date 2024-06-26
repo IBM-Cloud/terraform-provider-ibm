@@ -418,6 +418,13 @@ const (
 	State_Retry              = "retry"
 	State_SHUTOFF            = "SHUTOFF"
 	State_Up                 = "up"
+	Status_Deleting          = "deleting"
+	StatusActive             = "ACTIVE"
+	StatusBuild              = "BUILD"
+	StatusError              = "ERROR"
+	StatusPending            = "PENDING"
+	StatusResize             = "RESIZE"
+	StatusShutoff            = "SHUTOFF"
 
 	// Health
 	Health_OK = "OK"
