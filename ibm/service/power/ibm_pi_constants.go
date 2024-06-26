@@ -461,12 +461,6 @@ const (
 	Status_Error             = "ERROR"
 	Status_Pending           = "PENDING"
 	Status_Shutoff           = "SHUTOFF"
-	StatusActive             = "ACTIVE"
-	StatusBuild              = "BUILD"
-	StatusError              = "ERROR"
-	StatusPending            = "PENDING"
-	StatusResize             = "RESIZE"
-	StatusShutoff            = "SHUTOFF"
 
 	// Health
 	Health_OK = "OK"
