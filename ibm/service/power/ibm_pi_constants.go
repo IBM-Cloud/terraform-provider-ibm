@@ -464,13 +464,6 @@ const (
 	State_Stopping           = "stopping"
 	State_Up                 = "up"
 	State_VerifyResize       = "verify_resize"
-	Status_Deleting          = "deleting"
-	StatusActive             = "ACTIVE"
-	StatusBuild              = "BUILD"
-	StatusError              = "ERROR"
-	StatusPending            = "PENDING"
-	StatusResize             = "RESIZE"
-	StatusShutoff            = "SHUTOFF"
 
 	// Health
 	Health_OK = "OK"
