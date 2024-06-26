@@ -3,21 +3,19 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_snapshot"
 description: |-
-  Manages snapshots in the Power Virtual Server cloud.
+  Manages instance snapshots in the Power Virtual Server cloud.
 ---
 
 # ibm_pi_snapshot
 
-~> This resource is deprecated and will be removed in the next major version
-
-Creates, updates, deletes, and manages snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
+Creates, updates, deletes, and manages instance snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
 
 ## Example usage
 
 The following example enables you to create a snapshot:
 
 ```terraform
-resource "ibm_pi_snapshot" "testacc_snapshot"{
+resource "ibm_pi_instance_snapshot" "testacc_snapshot"{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
   pi_description  = "Testing snapshot for instance"
   pi_instance_name       = test-instance
@@ -44,7 +42,7 @@ Example usage:
   
 ## Timeouts
 
-The `ibm_pi_snapshot` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+The `ibm_pi_instance_snapshot` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for Creating snapshot.
 - **update** - (Default 60 minutes) Used for Updating snapshot.
@@ -73,10 +71,10 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_snapshot` resource can be imported by using `pi_cloud_instance_id` and `snapshot_id`.
+The `ibm_pi_instance_snapshot` resource can be imported by using `pi_cloud_instance_id` and `snapshot_id`.
 
 ### Example
 
 ```bash
-terraform import ibm_pi_snapshot.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+terraform import ibm_pi_instance_snapshot.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```

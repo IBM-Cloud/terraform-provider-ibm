@@ -1269,6 +1269,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
 			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
+			"ibm_pi_intance_snapshot":                power.ResourceIBMPIInstanceSnapshot(),
 			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
 			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),

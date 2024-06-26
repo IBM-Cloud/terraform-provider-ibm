@@ -14,15 +14,16 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func ResourceIBMPISnapshot() *schema.Resource {
+func ResourceIBMPIInstanceSnapshot() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMPISnapshotCreate,
-		ReadContext:   resourceIBMPISnapshotRead,
-		UpdateContext: resourceIBMPISnapshotUpdate,
+		CreateContext: resourceIBMPIInstanceSnapshotCreate,
+		ReadContext:   resourceIBMPIInstanceSnapshotRead,
+		UpdateContext: resourceIBMPIInstanceSnapshotUpdate,
 		DeleteContext: resourceIBMPISnapshotDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -33,7 +34,6 @@ func ResourceIBMPISnapshot() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
@@ -94,11 +94,10 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				Type:        schema.TypeMap,
 			},
 		},
-		DeprecationMessage: "Resource ibm_pi_snapshot is deprecated. Use `ibm_pi_instance_snapshot` resource instead.",
 	}
 }
 
-func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,7 +140,7 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	return resourceIBMPISnapshotRead(ctx, d, meta)
 }
 
-func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("Calling the Snapshot Read function post create")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -169,7 +168,7 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("Calling the IBM Power Snapshot update call")
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -202,7 +201,7 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 	return resourceIBMPISnapshotRead(ctx, d, meta)
 }
 
-func resourceIBMPISnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -235,4 +234,60 @@ func resourceIBMPISnapshotDelete(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId("")
 	return nil
+}
+
+func isWaitForPIInstanceSnapshotAvailable(ctx context.Context, client *instance.IBMPISnapshotClient, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for PIInstance Snapshot (%s) to be available and active ", id)
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_InProgress, State_BUILD},
+		Target:     []string{State_Available, State_ACTIVE},
+		Refresh:    isPIInstanceSnapshotRefreshFunc(client, id),
+		Delay:      30 * time.Second,
+		MinTimeout: 2 * time.Minute,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceSnapshotRefreshFunc(client *instance.IBMPISnapshotClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		snapshotInfo, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+
+		if snapshotInfo.Status == State_Available && snapshotInfo.PercentComplete == 100 {
+			log.Printf("The snapshot is now available")
+			return snapshotInfo, State_Available, nil
+
+		}
+		return snapshotInfo, State_InProgress, nil
+	}
+}
+
+func isWaitForPIInstanceSnapshotDeleted(ctx context.Context, client *instance.IBMPISnapshotClient, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for (%s) to be deleted.", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Retry, State_DELETING},
+		Target:     []string{State_NotFound},
+		Refresh:    isPIInstanceSnapshotDeleteRefreshFunc(client, id),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceSnapshotDeleteRefreshFunc(client *instance.IBMPISnapshotClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		snapshot, err := client.Get(id)
+		if err != nil {
+			log.Printf("The snapshot is not found.")
+			return snapshot, State_NotFound, nil
+		}
+		return snapshot, State_NotFound, nil
+	}
 }
