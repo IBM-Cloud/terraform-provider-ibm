@@ -811,8 +811,8 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 	if name != "" {
 		vniPrototype.Name = &name
 	}
-	if pStateFilteringInt, ok := vniMap["protocol_state_filtering_mode"]; ok && vniMap["protocol_state_filtering_mode"] != nil {
-		if pStateFilteringInt.(string) != "" {
+	if vniMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := vniMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
 			vniPrototype.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
 		}
 	}
