@@ -75,7 +75,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				),
 			},
 			{
-				Config: testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, 20000),
+				Config: testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, 25000),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
 					resource.TestCheckResourceAttr(
