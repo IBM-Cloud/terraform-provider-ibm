@@ -10,7 +10,7 @@ subcategory: "Security and Compliance Center"
 
 Create, update, and delete profiles with this resource.
 
-~> NOTE: if you specify the `region` in the provider, that region will become the default URL. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will override any URL(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://us-south.compliance.cloud.ibm.com`).
+~> NOTE: Security Compliance Center is a regional service. Please specify the IBM Cloud Provider attribute `region` to target another region. Else, exporting the environmental variable IBMCLOUD_SCC_API_ENDPOINT will also override which region is being targeted for all ibm providers(ex. `export IBMCLOUD_SCC_API_ENDPOINT=https://eu-es.compliance.cloud.ibm.com`).
 
 ## Example Usage
 
@@ -78,7 +78,7 @@ Nested schema for **controls**:
 	* `control_category` - (Optional, String) The control category.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `control_description` - (Optional, String) The control description.
-	  * Constraints: The maximum length is `1024` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+	  * Constraints: The maximum length is `1024` characters. The minimum length is `2` characters. The value must match regular expression `[A-Za-z0-9]+//`.
 	* `control_docs` - (Optional, List) The control documentation.
 	Nested schema for **control_docs**:
 		* `control_docs_id` - (Optional, String) The ID of the control documentation.
@@ -153,6 +153,7 @@ Nested schema for **default_parameters**:
   * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `profile_name` - (Required, String) The profile name.
   * Constraints: The maximum length is `64` characters. The minimum length is `2` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `profile_version` - (Optional, String) The version of the profile to set. The value must match regular expression `/\d+\.\d+\.\d+/`.
 * `profile_type` - (Required, String) The profile type, such as custom or predefined.
   * Constraints: Allowable values are: `predefined`, `custom`.
 
