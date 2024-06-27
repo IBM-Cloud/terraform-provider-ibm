@@ -133,7 +133,7 @@ func TestAccIBMISInstanceTemplate_vni(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment.0.virtual_network_interface"),
+						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment.0.virtual_network_interface.#"),
 				),
 			},
 		},
@@ -151,8 +151,8 @@ func TestAccIBMISInstanceTemplate_vniPSFM(t *testing.T) {
 	sshKeyName := fmt.Sprintf("tf-testsshkey%d", randInt)
 	protocolStateFilteringMode := "auto"
 
-	pNacName := fmt.Sprintf("tf-testvpc-pNac%d", randInt)
-	sNacName := fmt.Sprintf("tf-testvpc-sNac%d", randInt)
+	pNacName := fmt.Sprintf("tf-testvpc-pnac%d", randInt)
+	sNacName := fmt.Sprintf("tf-testvpc-snac%d", randInt)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -166,9 +166,15 @@ func TestAccIBMISInstanceTemplate_vniPSFM(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance_template.instancetemplate1", "profile"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment"),
+						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment.#"),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment.0.virtual_network_interface"),
+						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment.0.virtual_network_interface.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "primary_network_attachment.0.virtual_network_interface.0.protocol_state_filtering_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "network_attachments.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "network_attachments.0.virtual_network_interface.0.protocol_state_filtering_mode"),
 				),
 			},
 		},

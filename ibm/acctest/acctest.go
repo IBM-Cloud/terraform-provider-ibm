@@ -245,6 +245,7 @@ var ISDelegegatedVPC string
 
 var (
 	IsImageName             string
+	IsImageName2            string
 	IsImage                 string
 	IsImage2                string
 	IsImageEncryptedDataKey string
@@ -1249,6 +1250,12 @@ func init() {
 		// IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
 		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
+	}
+
+	IsImageName2 = os.Getenv("IS_IMAGE_NAME2")
+	if IsImageName2 == "" {
+		IsImageName2 = "ibm-ubuntu-20-04-6-minimal-amd64-5" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME2 for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-20-04-6-minimal-amd64-5`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
 	if IsImageEncryptedDataKey == "" {
