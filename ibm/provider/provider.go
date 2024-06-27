@@ -228,6 +228,7 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_protection_policies": backuprecovery.DataSourceIbmProtectionPolicies(),
 			"ibm_protection_policy":   backuprecovery.DataSourceIbmProtectionPolicy(),
 			"ibm_protection_sources":  backuprecovery.DataSourceIbmProtectionSources(),
 			"ibm_source_registration": backuprecovery.DataSourceIbmSourceRegistration(),

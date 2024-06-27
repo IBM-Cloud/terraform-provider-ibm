@@ -1561,9 +1561,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct the service options.
+	backupRecoveryURL := "https://141.125.105.149/v2"
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
+	}
+
 	backupRecoveryClientOptions := &backuprecoveryv0.BackupRecoveryV0Options{
 		Authenticator: authenticator,
-		URL:           "https://141.125.105.149/v2",
+		URL:           backupRecoveryURL,
 	}
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv0.NewBackupRecoveryV0(backupRecoveryClientOptions)
