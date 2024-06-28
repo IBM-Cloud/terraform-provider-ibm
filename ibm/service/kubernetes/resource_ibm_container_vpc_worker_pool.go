@@ -278,7 +278,7 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 		//read to get ID for default and d.Set!
 
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
@@ -365,7 +365,7 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 	}
 
 	workerPoolsAPI := wpClient.WorkerPools()
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -407,7 +407,7 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 			}
 		}
 
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
@@ -437,7 +437,7 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 		clusterNameOrID := d.Get("cluster").(string)
 		workerPoolName := d.Get("worker_pool_name").(string)
 		count := d.Get("worker_count").(int)
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
@@ -456,7 +456,7 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 	if d.HasChange("zones") {
 		clusterID := d.Get("cluster").(string)
 		workerPoolName := d.Get("worker_pool_name").(string)
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
@@ -518,11 +518,46 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 	return resourceIBMContainerVpcWorkerPoolRead(d, meta)
 }
 
+func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"deleting"},
+		Target:     []string{workerDeleteState},
+		Refresh:    workerPoolV2ZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func workerPoolV2ZoneDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID, zone string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
+		}
+		//Done worker has two fields State and Status , so check for those 2
+		for _, e := range workerFields {
+			if e.Location == zone {
+				if strings.Compare(e.LifeCycle.ActualState, "deleted") != 0 {
+					return workerFields, "deleting", nil
+				}
+			}
+		}
+		return workerFields, workerDeleteState, nil
+	}
+}
+
 func updateWorkerpoolTaints(d *schema.ResourceData, meta interface{}, clusterNameOrID string, workerPoolName string, taints []interface{}) error {
 
 	taintParam := expandWorkerPoolTaints(clusterNameOrID, workerPoolName, taints)
 
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -580,7 +615,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	workerPoolID := parts[1]
 
 	workerPoolsAPI := wpClient.WorkerPools()
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -653,7 +688,7 @@ func resourceIBMContainerVpcWorkerPoolDelete(d *schema.ResourceData, meta interf
 	workerPoolNameorID := parts[1]
 
 	workerPoolsAPI := wpClient.WorkerPools()
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -686,7 +721,7 @@ func resourceIBMContainerVpcWorkerPoolExists(d *schema.ResourceData, meta interf
 	workerPoolID := parts[1]
 
 	workerPoolsAPI := wpClient.WorkerPools()
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return false, err
 	}
