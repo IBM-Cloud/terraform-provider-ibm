@@ -5,6 +5,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -288,7 +289,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Default:          ingressReady,
 				DiffSuppressFunc: flex.ApplyOnce,
 				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, clusterNormal}, true),
-				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready or Normal",
+				Description:      "wait_till can be configured for Master Ready, One worker Ready, Ingress Ready or Normal",
 			},
 
 			"entitlement": {
@@ -635,7 +636,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		params.SecurityGroupIDs = securityGroups
 	}
 
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -654,34 +655,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	switch timeoutStage {
-
-	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
-		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(masterNodeReady):
-		_, err = waitForVpcClusterMasterAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(oneWorkerNodeReady):
-		_, err = waitForVpcClusterOneWorkerAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(ingressReady):
-		_, err = waitForVpcClusterIngressAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
+	_, err = waitForVpcCluster(d, meta, timeoutStage)
+	if err != nil {
+		return err
 	}
+
 	var taints []interface{}
 	if taintRes, ok := d.GetOk("taints"); ok {
 		taints = taintRes.(*schema.Set).List()
@@ -691,7 +669,6 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	}
 
 	return resourceIBMContainerVpcClusterUpdate(d, meta)
-
 }
 
 func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -701,7 +678,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -777,7 +754,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			return err
 		}
 
-		Env, err := getVpcClusterTargetHeader(d, meta)
+		Env, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
@@ -813,7 +790,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			if Error != nil {
 				return Error
 			}
-			_, err = WaitForVpcClusterVersionUpdate(d, meta, targetEnv)
+			_, err = waitForVpcClusterVersionUpdate(d, meta, targetEnv)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error waiting for cluster (%s) version to be updated: %s", d.Id(), err)
 			}
@@ -823,16 +800,12 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		if err != nil {
 			return err
 		}
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}
 
 		clusterID := d.Id()
-		cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving conatiner vpc cluster: %s", err)
-		}
 
 		// Update the worker nodes after master node kube-version is updated.
 		// workers will store the existing workers info to identify the replaced node
@@ -891,7 +864,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 						workersInfo[newWorkerID] = index
 
 						//4. wait for the worker's version update and normal state
-						_, Err := WaitForVpcClusterWokersVersionUpdate(d, meta, targetEnv, cls.MasterKubeVersion, newWorkerID)
+						_, Err := waitForVpcClusterWokersVersionUpdate(d, meta, targetEnv, newWorkerID)
 						if Err != nil {
 							d.Set("patch_version", nil)
 							return fmt.Errorf(
@@ -926,39 +899,6 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 	return resourceIBMContainerVpcClusterRead(d, meta)
 }
 
-func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
-	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-	if err != nil {
-		return nil, err
-	}
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"deleting"},
-		Target:     []string{workerDeleteState},
-		Refresh:    workerPoolV2ZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
-		Timeout:    timeout,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-func workerPoolV2ZoneDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID, zone string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
-		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
-		}
-		//Done worker has two fields State and Status , so check for those 2
-		for _, e := range workerFields {
-			if e.Location == zone {
-				if strings.Compare(e.LifeCycle.ActualState, "deleted") != 0 {
-					return workerFields, "deleting", nil
-				}
-			}
-		}
-		return workerFields, workerDeleteState, nil
-	}
-}
 func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}) error {
 
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
@@ -967,7 +907,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 	albsAPI := csClient.Albs()
 
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -1033,7 +973,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 
 func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface{}) error {
 
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -1093,10 +1033,35 @@ func resourceIBMContainerVpcClusterDelete(d *schema.ResourceData, meta interface
 	}
 	return nil
 }
+
+func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return false, err
+	}
+	targetEnv, err := getVpcClusterTargetHeader(d)
+	if err != nil {
+		return false, err
+	}
+	clusterID := d.Id()
+	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+	if err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified cluster could not be found") {
+				return false, nil
+			}
+		}
+		return false, fmt.Errorf("[ERROR] Error getting container vpc cluster: %s", err)
+	}
+	return cls.ID == clusterID, nil
+}
+
 func vpcClient(meta interface{}) (*vpcv1.VpcV1, error) {
 	sess, err := meta.(conns.ClientSession).VpcV1API()
 	return sess, err
 }
+
 func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
@@ -1111,6 +1076,7 @@ func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (int
 
 	return stateConf.WaitForState()
 }
+
 func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is lb delete function here")
@@ -1128,8 +1094,49 @@ func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFun
 	}
 }
 
+func waitForVpcCluster(d *schema.ResourceData, meta interface{}, timeoutStage string) (*v2.ClusterInfo, error) {
+	var clusterinfo interface{}
+	var err error
+	switch timeoutStage {
+
+	case strings.ToLower(clusterNormal):
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
+		clusterinfo, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
+		if err != nil {
+			return nil, err
+		}
+
+	case strings.ToLower(masterNodeReady):
+		clusterinfo, err = waitForVpcClusterMasterAvailable(d, meta)
+		if err != nil {
+			return nil, err
+		}
+
+	case strings.ToLower(oneWorkerNodeReady):
+		clusterinfo, err = waitForVpcClusterOneWorkerAvailable(d, meta)
+		if err != nil {
+			return nil, err
+		}
+
+	case strings.ToLower(ingressReady):
+		clusterinfo, err = waitForVpcClusterIngressAvailable(d, meta)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		// silent fallback
+		return nil, nil
+	}
+
+	ci, ok := clusterinfo.(*v2.ClusterInfo)
+	if !ok {
+		return nil, errors.New("[ERROR] cannot convert returned value to ClusterInfo")
+	}
+	return ci, nil
+}
+
 func waitForVpcClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
@@ -1161,7 +1168,7 @@ func waitForVpcClusterDelete(d *schema.ResourceData, meta interface{}) (interfac
 }
 
 func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
@@ -1202,7 +1209,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 }
 
 func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
@@ -1238,7 +1245,7 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 }
 
 func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
@@ -1273,7 +1280,7 @@ func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) 
 
 func waitForVpcClusterMasterKMSApply(d *schema.ResourceData, meta interface{}) (interface{}, error) {
 	log.Printf("[DEBUG] Wait for KMS to apply to master")
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
@@ -1314,7 +1321,7 @@ func waitForVpcClusterMasterKMSApply(d *schema.ResourceData, meta interface{}) (
 }
 
 func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
@@ -1347,7 +1354,7 @@ func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{})
 	return createStateConf.WaitForState()
 }
 
-func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.ClusterTargetHeader, error) {
+func getVpcClusterTargetHeader(d *schema.ResourceData) (v2.ClusterTargetHeader, error) {
 	targetEnv := v2.ClusterTargetHeader{}
 	var resourceGroup string
 	if rg, ok := d.GetOk("resource_group_id"); ok {
@@ -1358,31 +1365,8 @@ func getVpcClusterTargetHeader(d *schema.ResourceData, meta interface{}) (v2.Clu
 	return targetEnv, nil
 }
 
-func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-
-	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-	if err != nil {
-		return false, err
-	}
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
-	if err != nil {
-		return false, err
-	}
-	clusterID := d.Id()
-	cls, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified cluster could not be found") {
-				return false, nil
-			}
-		}
-		return false, fmt.Errorf("[ERROR] Error getting container vpc cluster: %s", err)
-	}
-	return cls.ID == clusterID, nil
-}
-
-// WaitForVpcClusterVersionUpdate Waits for cluster creation
-func WaitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader) (interface{}, error) {
+// waitForVpcClusterVersionUpdate Waits for cluster creation
+func waitForVpcClusterVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader) (interface{}, error) {
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return nil, err
@@ -1419,8 +1403,8 @@ func vpcClusterVersionRefreshFunc(client v2.Clusters, instanceID string, d *sche
 	}
 }
 
-// WaitForVpcClusterWokersVersionUpdate Waits for Cluster version Update
-func WaitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader, masterVersion, workerID string) (interface{}, error) {
+// waitForVpcClusterWokersVersionUpdate Waits for Cluster version Update
+func waitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader, workerID string) (interface{}, error) {
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return nil, err
@@ -1431,7 +1415,7 @@ func WaitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface
 	stateConf := &resource.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{workerNormal},
-		Refresh:                   vpcClusterWorkersVersionRefreshFunc(csClient.Workers(), workerID, clusterID, d, target, masterVersion),
+		Refresh:                   vpcClusterWorkersVersionRefreshFunc(csClient.Workers(), workerID, clusterID, target),
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
@@ -1441,7 +1425,7 @@ func WaitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface
 	return stateConf.WaitForState()
 }
 
-func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, d *schema.ResourceData, target v2.ClusterTargetHeader, masterVersion string) resource.StateRefreshFunc {
+func vpcClusterWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		worker, err := client.Get(clusterID, workerID, target)
 		if err != nil {
