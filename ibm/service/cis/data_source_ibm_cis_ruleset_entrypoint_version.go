@@ -220,3 +220,7 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 
 	return nil
 }
+
+func dataSourceCISRulesetsEPCheckID(d *schema.ResourceData) string {
+	return d.Get(CISRulesetPhase).(string) + ":" + d.Get(cisDomainID).(string) + ":" + d.Get(cisID).(string)
+}

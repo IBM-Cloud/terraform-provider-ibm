@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -26,7 +26,7 @@ func DataSourceIbmLogsViewFolder() *schema.Resource {
 			"logs_view_folder_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Folder id.",
+				Description: "Folder ID.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -44,7 +44,6 @@ func dataSourceIbmLogsViewFolderRead(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))

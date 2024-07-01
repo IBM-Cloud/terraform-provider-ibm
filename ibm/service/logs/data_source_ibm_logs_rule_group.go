@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -26,7 +26,7 @@ func DataSourceIbmLogsRuleGroup() *schema.Resource {
 			"group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The group id.",
+				Description: "The group ID.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -38,11 +38,6 @@ func DataSourceIbmLogsRuleGroup() *schema.Resource {
 				Computed:    true,
 				Description: "A description for the rule group, should express what is the rule group purpose.",
 			},
-			// "creator": &schema.Schema{
-			// 	Type:        schema.TypeString,
-			// 	Computed:    true,
-			// 	Description: "The creator of the rule group.",
-			// },
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -108,7 +103,7 @@ func DataSourceIbmLogsRuleGroup() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The id of the rule subgroup.",
+							Description: "The ID of the rule subgroup.",
 						},
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
@@ -375,7 +370,6 @@ func dataSourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceD
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -402,11 +396,6 @@ func dataSourceIbmLogsRuleGroupRead(context context.Context, d *schema.ResourceD
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_logs_rule_group", "read")
 		return tfErr.GetDiag()
 	}
-
-	// if err = d.Set("creator", ruleGroup.Creator); err != nil {
-	// 	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting creator: %s", err), "(Data) ibm_logs_rule_group", "read")
-	// 	return tfErr.GetDiag()
-	// }
 
 	if err = d.Set("enabled", ruleGroup.Enabled); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting enabled: %s", err), "(Data) ibm_logs_rule_group", "read")

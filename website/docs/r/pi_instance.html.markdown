@@ -64,6 +64,12 @@ Review the argument references that you can specify for your resource.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_deployment_target` - (Optional, List) The deployment of a dedicated host. Max items: 1.
+  
+  Nested scheme for `pi_deployment_target` :
+  * `id` - (Required, String) The uuid of the host group or host.
+  * `type` - (Required, String) The deployment target type. Supported values are `host` and `hostGroup`.
+
 - `pi_deployment_type` - (Optional, String) Custom deployment type; Allowable value: `EPIC` or `VMNoStorage`.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
 
@@ -72,7 +78,9 @@ Review the argument references that you can specify for your resource.
 - `pi_ibmi_pha` - (Optional, Boolean) IBM i Power High Availability.
 - `pi_ibmi_rds_users` - (Optional, Integer) IBM i Rational Dev Studio Number of User Licenses.
 - `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
-  - **Note**: only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
+  - **Notes**:
+        - Only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
+        - If using `pi_deployment_type = VMNoStorage` then use the following images for the respective OS you intend to create the instance: `AIX-EMPTY`, `IBMI-EMPTY`, `SLES-EMPTY`, `RHEL-EMPTY`.
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
 - `pi_key_pair_name` - (Optional, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
 - `pi_license_repository_capacity` - (Deprecated, Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
