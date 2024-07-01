@@ -55,12 +55,11 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 				Type:          schema.TypeString,
 			},
 			Arg_VolumeIDs: {
-				Description:  "List of volumes to add in volume group",
-				Elem:         &schema.Schema{Type: schema.TypeString},
-				Required:     true,
-				Set:          schema.HashString,
-				Type:         schema.TypeSet,
-				ValidateFunc: validation.NoZeroValues,
+				Description: "List of volumes to add in volume group",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Required:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 
 			// Attributes
