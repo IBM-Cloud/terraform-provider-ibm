@@ -50,6 +50,7 @@ resource "kubernetes_manifest" "ocscluster_ocscluster_auto" {
       "osdDevicePaths" = var.osdDevicePaths==null ? null : split(",", var.osdDevicePaths),
       "osdSize" = var.osdSize,
       "osdStorageClassName" = var.osdStorageClassName,
+      "workerPools" = var.workerPools==null ? null : split(",", var.workerPools),
       "workerNodes" = var.workerNodes==null ? null : split(",", var.workerNodes),
       "encryptionInTransit" = var.encryptionInTransit,
       "taintNodes" = var.taintNodes,
