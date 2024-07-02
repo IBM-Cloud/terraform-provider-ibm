@@ -123,41 +123,41 @@ func ResourceIBMPIImage() *schema.Resource {
 				Description: "Storage pool where the image will be loaded, if provided then pi_affinity_policy will be ignored",
 				ForceNew:    true,
 			},
-			PIAffinityPolicy: {
+			Arg_AffinityPolicy: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Affinity policy for image; ignored if pi_image_storage_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity"}),
 				ForceNew:     true,
 			},
-			PIAffinityVolume: {
+			Arg_AffinityVolume: {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Volume (ID or Name) to base storage affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
-				ConflictsWith: []string{PIAffinityInstance},
+				ConflictsWith: []string{Arg_AffinityInstance},
 				ForceNew:      true,
 			},
-			PIAffinityInstance: {
+			Arg_AffinityInstance: {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "PVM Instance (ID or Name) to base storage affinity policy against; required if requesting storage affinity and pi_affinity_volume is not provided",
-				ConflictsWith: []string{PIAffinityVolume},
+				ConflictsWith: []string{Arg_AffinityVolume},
 				ForceNew:      true,
 			},
-			PIAntiAffinityVolumes: {
+			Arg_AntiAffinityVolumes: {
 				Type:          schema.TypeList,
 				Optional:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Description:   "List of volumes to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
-				ConflictsWith: []string{PIAntiAffinityInstances},
+				ConflictsWith: []string{Arg_AntiAffinityInstances},
 				ForceNew:      true,
 			},
-			PIAntiAffinityInstances: {
+			Arg_AntiAffinityInstances: {
 				Type:          schema.TypeList,
 				Optional:      true,
 				Elem:          &schema.Schema{Type: schema.TypeString},
 				Description:   "List of pvmInstances to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
-				ConflictsWith: []string{PIAntiAffinityVolumes},
+				ConflictsWith: []string{Arg_AntiAffinityVolumes},
 				ForceNew:      true,
 			},
 			Arg_ImageImportDetails: {
@@ -261,27 +261,27 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		if v, ok := d.GetOk(helpers.PIImageStoragePool); ok {
 			body.StoragePool = v.(string)
 		}
-		if ap, ok := d.GetOk(PIAffinityPolicy); ok {
+		if ap, ok := d.GetOk(Arg_AffinityPolicy); ok {
 			policy := ap.(string)
 			affinity := &models.StorageAffinity{
 				AffinityPolicy: &policy,
 			}
 
 			if policy == "affinity" {
-				if av, ok := d.GetOk(PIAffinityVolume); ok {
+				if av, ok := d.GetOk(Arg_AffinityVolume); ok {
 					afvol := av.(string)
 					affinity.AffinityVolume = &afvol
 				}
-				if ai, ok := d.GetOk(PIAffinityInstance); ok {
+				if ai, ok := d.GetOk(Arg_AffinityInstance); ok {
 					afins := ai.(string)
 					affinity.AffinityPVMInstance = &afins
 				}
 			} else {
-				if avs, ok := d.GetOk(PIAntiAffinityVolumes); ok {
+				if avs, ok := d.GetOk(Arg_AntiAffinityVolumes); ok {
 					afvols := flex.ExpandStringList(avs.([]interface{}))
 					affinity.AntiAffinityVolumes = afvols
 				}
-				if ais, ok := d.GetOk(PIAntiAffinityInstances); ok {
+				if ais, ok := d.GetOk(Arg_AntiAffinityInstances); ok {
 					afinss := flex.ExpandStringList(ais.([]interface{}))
 					affinity.AntiAffinityPVMInstances = afinss
 				}

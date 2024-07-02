@@ -44,7 +44,7 @@ func ResourceIBMPIVolumeClone() *schema.Resource {
 				ForceNew:    true,
 				Description: "The base name of the newly cloned volume(s).",
 			},
-			PIVolumeIds: {
+			Arg_VolumeIDs: {
 				Type:        schema.TypeSet,
 				Required:    true,
 				ForceNew:    true,
@@ -99,7 +99,7 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	vcName := d.Get(PIVolumeCloneName).(string)
-	volids := flex.ExpandStringList((d.Get(PIVolumeIds).(*schema.Set)).List())
+	volids := flex.ExpandStringList((d.Get(Arg_VolumeIDs).(*schema.Set)).List())
 
 	body := &models.VolumesCloneAsyncRequest{
 		Name:      &vcName,
