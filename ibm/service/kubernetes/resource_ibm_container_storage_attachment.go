@@ -299,7 +299,7 @@ func waitforVolumetoAttach(d *schema.ResourceData, meta interface{}) (interface{
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 	return createStateConf.WaitForState()
 }

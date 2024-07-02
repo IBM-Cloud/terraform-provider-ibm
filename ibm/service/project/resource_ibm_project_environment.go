@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.91.0-d9755c53-20240605-153412
+ */
+
 package project
 
 import (
@@ -210,6 +214,7 @@ func ResourceIbmProjectEnvironmentValidator() *validate.ResourceValidator {
 func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
+		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -220,7 +225,7 @@ func resourceIbmProjectEnvironmentCreate(context context.Context, d *schema.Reso
 	createProjectEnvironmentOptions.SetProjectID(d.Get("project_id").(string))
 	definitionModel, err := ResourceIbmProjectEnvironmentMapToEnvironmentDefinitionRequiredProperties(d.Get("definition.0").(map[string]interface{}))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "create", "parse-definition").GetDiag()
 	}
 	createProjectEnvironmentOptions.SetDefinition(definitionModel)
 
@@ -248,8 +253,7 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "sep-id-parts").GetDiag()
 	}
 
 	getProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -268,34 +272,41 @@ func resourceIbmProjectEnvironmentRead(context context.Context, d *schema.Resour
 
 	definitionMap, err := ResourceIbmProjectEnvironmentEnvironmentDefinitionRequiredPropertiesResponseToMap(environment.Definition)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "definition-to-map").GetDiag()
 	}
 	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
+		err = fmt.Errorf("Error setting definition: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-definition").GetDiag()
 	}
 	projectMap, err := ResourceIbmProjectEnvironmentProjectReferenceToMap(environment.Project)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "project-to-map").GetDiag()
 	}
 	if err = d.Set("project", []map[string]interface{}{projectMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project: %s", err))
+		err = fmt.Errorf("Error setting project: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-project").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(environment.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-created_at").GetDiag()
 	}
 	if !core.IsNil(environment.TargetAccount) {
 		if err = d.Set("target_account", environment.TargetAccount); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting target_account: %s", err))
+			err = fmt.Errorf("Error setting target_account: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-target_account").GetDiag()
 		}
 	}
 	if err = d.Set("modified_at", flex.DateTimeToString(environment.ModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
+		err = fmt.Errorf("Error setting modified_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-modified_at").GetDiag()
 	}
 	if err = d.Set("href", environment.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("project_environment_id", environment.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_environment_id: %s", err))
+		err = fmt.Errorf("Error setting project_environment_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "read", "set-project_environment_id").GetDiag()
 	}
 
 	return nil
@@ -313,8 +324,7 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "update")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "update", "sep-id-parts").GetDiag()
 	}
 
 	updateProjectEnvironmentOptions.SetProjectID(parts[0])
@@ -325,13 +335,12 @@ func resourceIbmProjectEnvironmentUpdate(context context.Context, d *schema.Reso
 	if d.HasChange("project_id") {
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "project_id")
-		tfErr := flex.TerraformErrorf(err, errMsg, "ibm_project_environment", "update")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_project_environment", "update", "project_id-forces-new").GetDiag()
 	}
 	if d.HasChange("definition") {
 		definition, err := ResourceIbmProjectEnvironmentMapToEnvironmentDefinitionPropertiesPatch(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "update", "parse-definition").GetDiag()
 		}
 		updateProjectEnvironmentOptions.SetDefinition(definition)
 		hasChange = true
@@ -361,8 +370,7 @@ func resourceIbmProjectEnvironmentDelete(context context.Context, d *schema.Reso
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_environment", "delete")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_environment", "delete", "sep-id-parts").GetDiag()
 	}
 
 	deleteProjectEnvironmentOptions.SetProjectID(parts[0])

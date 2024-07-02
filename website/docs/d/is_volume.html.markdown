@@ -49,6 +49,15 @@ In addition to all argument reference list, you can access the following attribu
 - `bandwidth` - The maximum bandwidth (in megabits per second) for the volume
 - `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. This must be `false` to perform an operation that is specified to require serialization.
 - `capacity` - (String) The capacity of the volume in gigabytes.
+- `catalog_offering` - (List) The catalog offering this volume was created from. If a virtual server instance is provisioned with a boot_volume_attachment specifying this volume, the virtual server instance will use this volume's catalog offering, including its pricing plan.If absent, this volume was not created from a catalog offering.
+
+  Nested scheme for `catalog_offering`:
+    - `version_crn` - (String) The CRN for this version of a catalog offering
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    
+      Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
 - `created_at` - (String) The date and time that the volume was created.
 - `crn` - (String) The crn of this volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.

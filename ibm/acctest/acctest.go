@@ -36,6 +36,8 @@ var (
 	CloudShellAccountID             string
 	CosCRN                          string
 	BucketCRN                       string
+	ActivityTrackerInstanceCRN      string
+	MetricsMonitoringCRN            string
 	BucketName                      string
 	CosName                         string
 	Ibmid1                          string
@@ -196,37 +198,39 @@ var (
 // For Power Colo
 
 var (
-	Pi_image                        string
-	Pi_sap_image                    string
-	Pi_image_bucket_name            string
-	Pi_image_bucket_file_name       string
-	Pi_image_bucket_access_key      string
-	Pi_image_bucket_secret_key      string
-	Pi_image_bucket_region          string
-	Pi_key_name                     string
-	Pi_volume_name                  string
-	Pi_volume_id                    string
-	Pi_replication_volume_name      string
-	Pi_volume_onboarding_source_crn string
 	Pi_auxiliary_volume_name        string
-	Pi_volume_group_name            string
-	Pi_volume_group_id              string
-	Pi_volume_onboarding_id         string
-	Pi_network_name                 string
 	Pi_cloud_instance_id            string
-	Pi_snapshot_id                  string
-	Pi_instance_name                string
 	Pi_dhcp_id                      string
-	PiCloudConnectionName           string
-	PiSAPProfileID                  string
+	Pi_host_group_id                string
+	Pi_host_id                      string
+	Pi_image                        string
+	Pi_image_bucket_access_key      string
+	Pi_image_bucket_file_name       string
+	Pi_image_bucket_name            string
+	Pi_image_bucket_region          string
+	Pi_image_bucket_secret_key      string
+	Pi_instance_name                string
+	Pi_key_name                     string
+	Pi_network_name                 string
 	Pi_placement_group_name         string
-	Pi_spp_placement_group_id       string
-	PiStoragePool                   string
-	PiStorageType                   string
+	Pi_replication_volume_name      string
+	Pi_resource_group_id            string
+	Pi_sap_image                    string
 	Pi_shared_processor_pool_id     string
+	Pi_snapshot_id                  string
+	Pi_spp_placement_group_id       string
 	Pi_target_storage_tier          string
 	Pi_volume_clone_task_id         string
-	Pi_resource_group_id            string
+	Pi_volume_group_id              string
+	Pi_volume_group_name            string
+	Pi_volume_id                    string
+	Pi_volume_name                  string
+	Pi_volume_onboarding_id         string
+	Pi_volume_onboarding_source_crn string
+	PiCloudConnectionName           string
+	PiSAPProfileID                  string
+	PiStoragePool                   string
+	PiStorageType                   string
 )
 
 var (
@@ -241,6 +245,7 @@ var ISDelegegatedVPC string
 
 var (
 	IsImageName             string
+	IsImageName2            string
 	IsImage                 string
 	IsImage2                string
 	IsImageEncryptedDataKey string
@@ -528,6 +533,16 @@ func init() {
 	if BucketCRN == "" {
 		BucketCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_Bucket_CRN with a VALID BUCKET CRN for testing ibm_cos_bucket* resources")
+	}
+	ActivityTrackerInstanceCRN = os.Getenv("IBM_COS_ACTIVITY_TRACKER_CRN")
+	if ActivityTrackerInstanceCRN == "" {
+		ActivityTrackerInstanceCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_ACTIVITY_TRACKER_CRN with a VALID ACTIVITY TRACKER INSTANCE CRN in valid region for testing ibm_cos_bucket* resources")
+	}
+	MetricsMonitoringCRN = os.Getenv("IBM_COS_METRICS_MONITORING_CRN")
+	if MetricsMonitoringCRN == "" {
+		MetricsMonitoringCRN = ""
+		fmt.Println("[WARN] Set the environment variable IBM_COS_METRICS_MONITORING_CRN with a VALID METRICS MONITORING CRN for testing ibm_cos_bucket* resources")
 	}
 	BucketName = os.Getenv("IBM_COS_BUCKET_NAME")
 	if BucketName == "" {
@@ -1167,7 +1182,17 @@ func init() {
 		Pi_resource_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_RESOURCE_GROUP_ID for testing ibm_pi_workspace resource else it is set to default value ''")
 	}
+	Pi_host_group_id = os.Getenv("PI_HOST_GROUP_ID")
+	if Pi_host_group_id == "" {
+		Pi_host_group_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
 
+	Pi_host_id = os.Getenv("PI_HOST_ID")
+	if Pi_host_id == "" {
+		Pi_host_id = ""
+		fmt.Println("[WARN] Set the environment variable PI_HOST_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if WorkspaceID == "" {
 		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -1225,6 +1250,12 @@ func init() {
 		// IsImageName = "ibm-ubuntu-18-04-2-minimal-amd64-1" // for classic infrastructure
 		IsImageName = "ibm-ubuntu-22-04-1-minimal-amd64-4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-18-04-1-minimal-amd64-2`")
+	}
+
+	IsImageName2 = os.Getenv("IS_IMAGE_NAME2")
+	if IsImageName2 == "" {
+		IsImageName2 = "ibm-ubuntu-20-04-6-minimal-amd64-5" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_IMAGE_NAME2 for testing data source ibm_is_image else it is set to default value `ibm-ubuntu-20-04-6-minimal-amd64-5`")
 	}
 	IsImageEncryptedDataKey = os.Getenv("IS_IMAGE_ENCRYPTED_DATA_KEY")
 	if IsImageEncryptedDataKey == "" {
