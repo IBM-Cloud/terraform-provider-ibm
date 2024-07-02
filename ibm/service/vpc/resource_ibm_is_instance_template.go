@@ -2813,8 +2813,10 @@ func resourceIBMIsInstanceTemplateMapToVirtualNetworkInterfacePrototypeAttachmen
 		}
 		model.PrimaryIP = PrimaryIPModel
 	}
-	if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok {
-		model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+	if modelMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
+			model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		}
 	}
 	if modelMap["resource_group"] != nil && modelMap["resource_group"].(string) != "" {
 		resourcegroupid := modelMap["resource_group"].(string)

@@ -60,6 +60,11 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
+			Arg_HostID: {
+				Description: "The host id of a host in a host group (only available for dedicated hosts)",
+				Optional:    true,
+				Type:        schema.TypeString,
+			},
 
 			// Optional Arguments
 			Arg_SharedProcessorPoolPlacementGroupID: {
@@ -174,12 +179,14 @@ func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.Resou
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	name := d.Get(Arg_SharedProcessorPoolName).(string)
 	hostGroup := d.Get(Arg_SharedProcessorPoolHostGroup).(string)
+	hostID := d.Get(Arg_HostID).(string)
 	reservedCores := d.Get(Arg_SharedProcessorPoolReservedCores).(int)
 	cores := int64(reservedCores)
 	client := st.NewIBMPISharedProcessorPoolClient(ctx, sess, cloudInstanceID)
 	body := &models.SharedProcessorPoolCreate{
-		Name:          &name,
 		HostGroup:     &hostGroup,
+		HostID:        hostID,
+		Name:          &name,
 		ReservedCores: &cores,
 	}
 

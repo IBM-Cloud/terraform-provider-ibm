@@ -16,7 +16,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 
 	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -304,9 +304,9 @@ func ValidateWeight(v interface{}, k string) (ws []string, errors []error) {
 
 func ValidateSizePerZone(v interface{}, k string) (ws []string, errors []error) {
 	sizePerZone := v.(int)
-	if sizePerZone <= 0 {
+	if sizePerZone < 0 {
 		errors = append(errors, fmt.Errorf(
-			"%q must be greater than 0",
+			"%q must be non-negative",
 			k))
 	}
 	return
