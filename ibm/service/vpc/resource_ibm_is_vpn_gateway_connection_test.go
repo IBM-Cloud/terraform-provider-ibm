@@ -331,7 +331,7 @@ func TestAccIBMISVPNGatewayConnection_admin_state(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISVPNGatewayConnectionAdminStateConfig(vpcname1, subnetname1, vpnname1, name1, vpcname2, subnetname2, vpnname2, updname2, name3, name4, adminStateUp1Update, adminStateUp2Update),
+				Config: testAccCheckIBMISVPNGatewayConnectionAdminStateConfig(vpcname1, subnetname1, vpnname1, name1, updname2, vpcname2, subnetname2, vpnname2, name3, name4, adminStateUp1Update, adminStateUp2Update),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", VPNGatewayConnection),
 					resource.TestCheckResourceAttr(
