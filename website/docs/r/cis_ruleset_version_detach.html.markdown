@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_cis_version_detach
-Provides an IBM Cloud Internet Services ruleset version resource of an instance or domain to be detached. This allow ruleset version to delete. For more information about IBM Cloud Internet Services ruleset version detach, see [ruleset instance]().
+Provides an IBM Cloud Internet Services ruleset version resource of an instance or domain to be detached. This allow ruleset version to delete. For more information about IBM Cloud Internet Services ruleset version detach, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
 
 ## Example usage
 

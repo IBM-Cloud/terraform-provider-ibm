@@ -20,11 +20,13 @@ resource "ibm_tg_gateway" "new_tg_gw" {
   global         = true
   resource_group = "30951d2dff914dafb26455a88c0c0092"
 }
+
 data "ibm_tg_gateway" "ds_tggateway" {
   name = ibm_tg_gateway.new_tg_gw.name
 }
 ```
 ---
+
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
@@ -62,4 +64,19 @@ In addition to the argument reference list, you can access the following attribu
   - `zone` - (String) The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `status` - (String) The gateway status.
 - `updated_at` - (Timestamp) The date and time resource is last updated.
-- `default_prefix_filter` - (String) Whether to permit or deny the prefix filter, Default value for action for prefix filters
+- `tunnels` - (List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
+          
+        Nested scheme for `tunnel`:
+  - `name` - (Required, String) The user-defined name for this tunnel connection.
+  - `local_gateway_ip` - (String)  The local gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `local_tunnel_ip` - (String) The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `remote_gateway_ip` - (String) The remote gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `remote_tunnel_ip` - (String) The remote tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `zone` - (String) - The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `remote_bgp_asn` - (Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type`gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `created_at` -  (Timestamp) The date and time the connection  tunnel was created. 
+  - `id` - (String) The unique identifier of the connection tunnel ID resource.
+  - `mtu` - (Integer) GRE tunnel MTU.
+  - `status` - (String) The configuration status of the connection tunnel, such as **attached**, **failed**,
+  - `updated_at` - (Timestamp) Last updated date and time of the connection tunnel.
+  - `local_bgp_asn` - (Integer) The local network BGP ASN.

@@ -25,9 +25,6 @@ func ResourceIBMCISRulesetEntryPointVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
-				// ValidateFunc: validate.InvokeDataSourceValidator(
-				// 	"ibm_cis_ruleset_entrypoint_version",
-				// 	"cis_id"),
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
@@ -71,38 +68,38 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	crn := d.Get(cisID).(string)
+	ruleset_phase, zoneId, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error while ConvertTftoCisThreeVar %s", err)
+	}
 	sess.Crn = core.StringPtr(crn)
-
-	zoneId := d.Get(cisDomainID).(string)
-	ruleset_phase := d.Get(CISRulesetPhase).(string)
 
 	if zoneId != "" {
 		sess.ZoneIdentifier = core.StringPtr(zoneId)
-		opt := sess.NewGetZoneEntryPointRulesetVersionOptions(zoneId, ruleset_phase)
-		result, resp, err := sess.GetZoneEntryPointRulesetVersion(opt)
+		opt := sess.Clone().NewGetZoneEntrypointRulesetOptions(ruleset_phase)
+		result, resp, err := sess.GetZoneEntrypointRuleset(opt)
 		if err != nil {
 			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
 		rulesetObj := flattenCISRulesets(*result.Result)
 
-		d.SetId(dataSourceCISRulesetsCheckID(d))
-		d.Set(CISRulesetsListOutput, rulesetObj)
+		d.Set(CISRulesetsEntryPointOutput, rulesetObj)
 		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
+		d.Set(CISRulesetPhase, ruleset_phase)
 
 	} else {
-		opt := sess.NewGetInstanceEntryPointRulesetVersionOptions(zoneId, ruleset_phase)
-		result, resp, err := sess.GetInstanceEntryPointRulesetVersion(opt)
+		opt := sess.NewGetInstanceEntrypointRulesetOptions(ruleset_phase)
+		result, resp, err := sess.GetInstanceEntrypointRuleset(opt)
 		if err != nil {
 			return fmt.Errorf("[WARN] Get zone ruleset failed: %v", resp)
 		}
 		rulesetObj := flattenCISRulesets(*result.Result)
 
-		d.SetId(dataSourceCISRulesetsCheckID(d))
-		d.Set(CISRulesetsListOutput, rulesetObj)
+		d.Set(CISRulesetsEntryPointOutput, rulesetObj)
 		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
+		d.Set(CISRulesetPhase, ruleset_phase)
 
 	}
 
@@ -115,22 +112,22 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleset_phase, zoneId, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error while ConvertTftoCisThreeVar %s", err)
-	}
+	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
+
+	zoneId := d.Get(cisDomainID).(string)
+	ruleset_phase := d.Get(CISRulesetPhase).(string)
 
 	if zoneId != "" {
 		sess.ZoneIdentifier = &zoneId
 
 		opt := sess.NewUpdateZoneEntrypointRulesetOptions(ruleset_phase)
 
-		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
+		cis_ruleset_object := d.Get(CISRulesetsObjectOutput)
+
+		rulesetsObject := cis_ruleset_object.(*schema.Set).List()[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetKind(rulesetsObject[CISRulesetsKind].(string))
 		opt.SetName(rulesetsObject[CISRulesetsName].(string))
-		opt.SetPhase(rulesetsObject[CISRulesetsPhase].(string))
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
 		opt.SetRules(rulesObj)
@@ -145,9 +142,7 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 
 		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetKind(rulesetsObject[CISRulesetsKind].(string))
 		opt.SetName(rulesetsObject[CISRulesetsName].(string))
-		opt.SetPhase(rulesetsObject[CISRulesetsPhase].(string))
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
 		opt.SetRules(rulesObj)
@@ -158,6 +153,7 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 		}
 
 	}
+	d.SetId(dataSourceCISRulesetsEPCheckID(d))
 	return ResourceIBMCISRulesetEntryPointVersionRead(d, meta)
 }
 

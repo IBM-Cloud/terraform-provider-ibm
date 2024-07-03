@@ -39,6 +39,7 @@ func ResourceIbmLogsView() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "View search query.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -105,6 +106,7 @@ func ResourceIbmLogsView() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "View selected filters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -452,7 +454,11 @@ func ResourceIbmLogsViewMapToApisViewsV1TimeSelectionSelectionTypeCustomSelectio
 
 func ResourceIbmLogsViewMapToApisViewsV1SearchQuery(modelMap map[string]interface{}) (*logsv0.ApisViewsV1SearchQuery, error) {
 	model := &logsv0.ApisViewsV1SearchQuery{}
-	model.Query = core.StringPtr(modelMap["query"].(string))
+	query := ""
+	if modelMap["query"] != nil {
+		query = modelMap["query"].(string)
+	}
+	model.Query = &query
 	return model, nil
 }
 
