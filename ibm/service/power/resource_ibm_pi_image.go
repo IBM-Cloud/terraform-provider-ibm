@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -159,6 +160,34 @@ func ResourceIBMPIImage() *schema.Resource {
 				ConflictsWith: []string{PIAntiAffinityVolumes},
 				ForceNew:      true,
 			},
+			Arg_ImageImportDetails: {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_LicenseType: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{BYOL}),
+							Description:  "Origin of the license of the product.",
+						},
+						Attr_Product: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{Hana, Netweaver}),
+							Description:  "Product within the image.",
+						},
+						Attr_Vendor: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{SAP}),
+							Description:  "Vendor supporting the product.",
+						},
+					},
+				},
+			},
 
 			// Computed Attribute
 			"image_id": {
@@ -211,7 +240,6 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		bucketImageFileName := d.Get(helpers.PIImageBucketFileName).(string)
 		bucketRegion := d.Get(helpers.PIImageBucketRegion).(string)
 		bucketAccess := d.Get(helpers.PIImageBucketAccess).(string)
-
 		body := &models.CreateCosImageImportJob{
 			ImageName:     &imageName,
 			BucketName:    &bucketName,
@@ -259,6 +287,15 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 				}
 			}
 			body.StorageAffinity = affinity
+		}
+		if _, ok := d.GetOk(Arg_ImageImportDetails); ok {
+			details := d.Get(Arg_ImageImportDetails + ".0").(map[string]interface{})
+			importDetailsModel := models.ImageImportDetails{
+				LicenseType: core.StringPtr(details[Attr_LicenseType].(string)),
+				Product:     core.StringPtr(details[Attr_Product].(string)),
+				Vendor:      core.StringPtr(details[Attr_Vendor].(string)),
+			}
+			body.ImportDetails = &importDetailsModel
 		}
 		imageResponse, err := client.CreateCosImage(body)
 		if err != nil {

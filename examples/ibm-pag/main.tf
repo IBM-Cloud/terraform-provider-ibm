@@ -27,14 +27,9 @@ data "ibm_is_subnet" "pag_instance_2" {
   name = var.ibm_vpc_subnet_name_instance_2
 }
 
-data "ibm_is_security_group" "pag_instance_1" {
+data "ibm_is_security_group" "pag_instance" {
   name     = each.value
-  for_each = var.ibm_vpc_security_groups_instance_1
-}
-
-data "ibm_is_security_group" "pag_instance_2" {
-  name     = each.value
-  for_each = var.ibm_vpc_security_groups_instance_2
+  for_each = var.ibm_vpc_security_groups_instance
 }
 
 resource "ibm_pag_instance" "pag" {
@@ -51,7 +46,7 @@ resource "ibm_pag_instance" "pag" {
       "proxies" : [
         {
           "name" : "proxy1",
-          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance_1 : sg.id],
+          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance : sg.id],
           "subnet" : {
             "crn" : data.ibm_is_subnet.pag_instance_1.crn,
             "cidr" : data.ibm_is_subnet.pag_instance_1.ipv4_cidr_block
@@ -59,13 +54,18 @@ resource "ibm_pag_instance" "pag" {
         },
         {
           "name" : "proxy2",
-          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance_2 : sg.id],
+          "securitygroups" : [for sg in data.ibm_is_security_group.pag_instance : sg.id],
           "subnet" : {
             "crn" : data.ibm_is_subnet.pag_instance_2.crn,
             "cidr" : data.ibm_is_subnet.pag_instance_2.ipv4_cidr_block
           }
         }
-      ]
+       ],
+       "settings" : {
+        "inactivity_timeout" : var.pag_inactivity_timeout,
+        "system_use_notification" : var.system_use_notification
+     },
+    "vpc_id" : data.ibm_is_vpc.pag.id
     }
   )
   timeouts {
