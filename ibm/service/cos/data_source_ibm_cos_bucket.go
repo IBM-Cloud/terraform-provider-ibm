@@ -4,7 +4,6 @@
 package cos
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -23,6 +22,11 @@ import (
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
+
+var cosConfigUrls = map[string]string{
+	"private": "https://config.private.cloud-object-storage.cloud.ibm.com/v1",
+	"direct":  "https://config.direct.cloud-object-storage.cloud.ibm.com/v1",
+}
 
 func DataSourceIBMCosBucket() *schema.Resource {
 	return &schema.Resource{
@@ -712,17 +716,14 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	cosConfigURLsJson := sess.GetServiceURL()
-	cosConfigURLs := new(map[string]string)
-	if err := json.Unmarshal([]byte(cosConfigURLsJson), cosConfigURLs); err != nil {
-		return err
-	}
+	if endpointType != "public" {
+		// uses default url in case url is not defined for the corresponding visibility
+		// cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, endpointType, "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
 
-	cosConfigURL, exists := (*cosConfigURLs)[endpointType]
-	if !exists {
-		return fmt.Errorf("failed to get %s cos config endpoint for COS bucket: %s endpoint not set", endpointType, endpointType)
+		// uses default url when IBMCLOUD_COS_CONFIG_ENDPOINT is not set.
+		cosConfigURL := conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigUrls[endpointType])
+		sess.SetServiceURL(cosConfigURL)
 	}
-	sess.SetServiceURL(cosConfigURL)
 
 	if bucketType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, satlc_id)

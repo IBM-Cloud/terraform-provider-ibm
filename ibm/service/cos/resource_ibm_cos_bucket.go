@@ -5,7 +5,6 @@ package cos
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
@@ -925,17 +924,14 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	cosConfigURLsJson := sess.GetServiceURL()
-	cosConfigURLs := new(map[string]string)
-	if err := json.Unmarshal([]byte(cosConfigURLsJson), cosConfigURLs); err != nil {
-		return err
-	}
+	if endpointType != "public" {
+		// uses default url in case url is not defined for the corresponding visibility
+		// cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, endpointType, "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
 
-	cosConfigURL, exists := (*cosConfigURLs)[endpointType]
-	if !exists {
-		return fmt.Errorf("failed to get %s cos config endpoint for COS bucket: %s endpoint not set", endpointType, endpointType)
+		// uses default url when IBMCLOUD_COS_CONFIG_ENDPOINT is not set.
+		cosConfigURL := conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigUrls[endpointType])
+		sess.SetServiceURL(cosConfigURL)
 	}
-	sess.SetServiceURL(cosConfigURL)
 
 	if apiType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
@@ -1165,17 +1161,14 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	cosConfigURLsJson := sess.GetServiceURL()
-	cosConfigURLs := new(map[string]string)
-	if err := json.Unmarshal([]byte(cosConfigURLsJson), cosConfigURLs); err != nil {
-		return err
-	}
+	if endpointType != "public" {
+		// uses default url in case url is not defined for the corresponding visibility
+		// cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, endpointType, "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
 
-	cosConfigURL, exists := (*cosConfigURLs)[endpointType]
-	if !exists {
-		return fmt.Errorf("failed to get %s cos config endpoint for COS bucket: %s endpoint not set", endpointType, endpointType)
+		// uses default url when IBMCLOUD_COS_CONFIG_ENDPOINT is not set.
+		cosConfigURL := conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigUrls[endpointType])
+		sess.SetServiceURL(cosConfigURL)
 	}
-	sess.SetServiceURL(cosConfigURL)
 
 	if apiType == "sl" {
 
