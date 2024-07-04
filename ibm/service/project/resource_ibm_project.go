@@ -942,7 +942,9 @@ func ResourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Project
 	modelMap["name"] = *model.Name
 	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
 	modelMap["description"] = *model.Description
-	modelMap["auto_deploy"] = *model.AutoDeploy
+	if model.AutoDeploy != nil {
+		modelMap["auto_deploy"] = *model.AutoDeploy
+	}
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
