@@ -3479,7 +3479,6 @@ func newSession(c *Config) (*Session, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		ibmSession.BluemixSession = sess
 	}
 
