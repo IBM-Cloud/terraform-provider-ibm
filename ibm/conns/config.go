@@ -2015,13 +2015,31 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// OBJECT STORAGE Service
-	cosconfigurl := "https://config.cloud-object-storage.cloud.ibm.com/v1"
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		cosconfigurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COS_CONFIG_ENDPOINT", c.Region, cosconfigurl)
+
+	// default urls
+	configUrls := map[string]string{
+		"public":  "https://config.cloud-object-storage.cloud.ibm.com/v1",
+		"private": "https://config.private.cloud-object-storage.cloud.ibm.com/v1",
+		"direct":  "https://config.direct.cloud-object-storage.cloud.ibm.com/v1",
+	}
+	// set urls present in fileMap
+	if fileMap != nil && (c.Visibility != "public-and-private") {
+		for visibility, url := range configUrls {
+			configUrls[visibility] = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COS_CONFIG_ENDPOINT", c.Region, url)
+		}
+	}
+	// set urls to environment variable
+	for visibility, url := range configUrls {
+		configUrls[visibility] = EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, url)
+	}
+
+	cosConfigURLsJson, err := json.Marshal(configUrls)
+	if err != nil {
+		return nil, err
 	}
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
 		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosconfigurl),
+		URL:           string(cosConfigURLsJson),
 	}
 	cosconfigclient, err := cosconfig.NewResourceConfigurationV1(cosconfigoptions)
 	if err != nil {
@@ -3479,6 +3497,7 @@ func newSession(c *Config) (*Session, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		ibmSession.BluemixSession = sess
 	}
 

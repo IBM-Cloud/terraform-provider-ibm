@@ -5,6 +5,7 @@ package cos
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
@@ -152,7 +153,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Description:      "public or private",
+				Description:      "COS endpoint type: public, private, direct",
 				ConflictsWith:    []string{"satellite_location_id"},
 				DiffSuppressFunc: flex.ApplyOnce,
 				Default:          "public",
@@ -923,12 +924,18 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	if endpointType == "private" {
-		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+
+	cosConfigURLsJson := sess.GetServiceURL()
+	cosConfigURLs := new(map[string]string)
+	if err := json.Unmarshal([]byte(cosConfigURLsJson), cosConfigURLs); err != nil {
+		return err
 	}
-	if endpointType == "direct" {
-		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+
+	cosConfigURL, exists := (*cosConfigURLs)[endpointType]
+	if !exists {
+		return fmt.Errorf("failed to get %s cos config endpoint for COS bucket: %s endpoint not set", endpointType, endpointType)
 	}
+	sess.SetServiceURL(cosConfigURL)
 
 	if apiType == "sl" {
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
