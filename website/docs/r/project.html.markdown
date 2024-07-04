@@ -32,7 +32,7 @@ You can specify the following arguments for this resource.
 
 * `definition` - (Required, List) The definition of the project.
 Nested schema for **definition**:
-	* `auto_deploy` - (Required, Boolean) A boolean flag to enable auto deploy.
+	* `auto_deploy` - (Optional, Boolean) A boolean flag to enable auto deploy.
 	  * Constraints: The default value is `false`.
 	* `description` - (Required, String) A brief explanation of the project's use in the configuration of a deployable architecture. You can create a project without providing a description.
 	  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
