@@ -513,6 +513,8 @@ func Provider() *schema.Provider {
 			"ibm_is_shares":                      vpc.DataSourceIbmIsShares(),
 			"ibm_is_share_profile":               vpc.DataSourceIbmIsShareProfile(),
 			"ibm_is_share_profiles":              vpc.DataSourceIbmIsShareProfiles(),
+			"ibm_is_share_accessor_bindings":     vpc.DataSourceIBMIsShareAccessorBindings(),
+			"ibm_is_share_accessor_binding":      vpc.DataSourceIBMIsShareAccessorBinding(),
 			"ibm_is_virtual_network_interface":   vpc.DataSourceIBMIsVirtualNetworkInterface(),
 			"ibm_is_virtual_network_interfaces":  vpc.DataSourceIBMIsVirtualNetworkInterfaces(),
 
@@ -1176,6 +1178,7 @@ func Provider() *schema.Provider {
 			"ibm_is_share":                                  vpc.ResourceIbmIsShare(),
 			"ibm_is_share_replica_operations":               vpc.ResourceIbmIsShareReplicaOperations(),
 			"ibm_is_share_mount_target":                     vpc.ResourceIBMIsShareMountTarget(),
+			"ibm_is_share_delete_accessor_binding":          vpc.ResourceIbmIsShareDeleteAccessorBinding(),
 			"ibm_is_subnet":                                 vpc.ResourceIBMISSubnet(),
 			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),

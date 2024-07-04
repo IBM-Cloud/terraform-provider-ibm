@@ -254,12 +254,30 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode1, tEMode2, shareName, shareName1),
+				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.resource_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.accessor.#"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode2, shareName, shareName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "allowed_transit_encryption_modes.#"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode2),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode2),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.crn"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.id"),
@@ -305,7 +323,7 @@ func testAccCheckIbmIsShareConfigVNIID(vpcName, sname, targetName, vniName, shar
 	`, vpcName, sname, acc.ISCIDR, vniName, shareName, targetName)
 }
 
-func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode1, tEMode2, shareName, shareName1 string) string {
+func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1 string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_is_vpc" "testacc_vpc" {
@@ -318,7 +336,7 @@ func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode1, tEMo
 		ipv4_cidr_block = "%s"
 	}
 	resource "ibm_is_share" "is_share" {
-		allowed_transit_encryption_modes = ["%s", "%s"]
+		allowed_transit_encryption_modes = ["%s"]
 		zone    = "us-south-1"
 		size    = 220
 		name    = "%s"
@@ -332,7 +350,7 @@ func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode1, tEMo
 		}
 		
 	  }
-	`, vpcName, sname, acc.ISCIDR, tEMode1, tEMode2, shareName, shareName1)
+	`, vpcName, sname, acc.ISCIDR, tEMode, shareName, shareName1)
 }
 
 func testAccCheckIbmIsShareConfigBasic(name string) string {

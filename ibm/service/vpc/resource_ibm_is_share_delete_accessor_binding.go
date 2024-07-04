@@ -17,37 +17,30 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
-func ResourceIbmIsShareAccessorBindingOperations() *schema.Resource {
+func ResourceIbmIsShareDeleteAccessorBinding() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmIsShareAccessorBindingOperationsCreate,
-		ReadContext:   resourceIbmIsShareAccessorBindingOperationsRead,
-		UpdateContext: resourceIbmIsShareAccessorBindingOperationsUpdate,
-		DeleteContext: resourceIbmIsShareAccessorBindingOperationsDelete,
+		CreateContext: resourceIbmIsShareDeleteAccessorBindingCreate,
+		ReadContext:   resourceIbmIsShareDeleteAccessorBindingRead,
+		UpdateContext: resourceIbmIsShareDeleteAccessorBindingUpdate,
+		DeleteContext: resourceIbmIsShareDeleteAccessorBindingDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"share": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The file share identifier.",
 			},
 			"share_accessor_binding": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The accessor binding id",
-			},
-			"delete_accessor_binding": {
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Boolean to indicate if binding should be deleted",
 			},
 		},
 	}
 }
 
-func resourceIbmIsShareAccessorBindingOperationsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmIsShareDeleteAccessorBindingCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -108,16 +101,16 @@ func isShareAccessorBindingRefreshFunc(context context.Context, vpcClient *vpcv1
 	}
 }
 
-func resourceIbmIsShareAccessorBindingOperationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmIsShareDeleteAccessorBindingRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceIbmIsShareAccessorBindingOperationsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmIsShareDeleteAccessorBindingUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	return nil
 }
 
-func resourceIbmIsShareAccessorBindingOperationsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmIsShareDeleteAccessorBindingDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	return nil
 }
