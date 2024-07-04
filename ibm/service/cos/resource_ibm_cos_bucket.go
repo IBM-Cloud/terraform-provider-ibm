@@ -1165,12 +1165,17 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if endpointType == "private" {
-		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
+	cosConfigURLsJson := sess.GetServiceURL()
+	cosConfigURLs := new(map[string]string)
+	if err := json.Unmarshal([]byte(cosConfigURLsJson), cosConfigURLs); err != nil {
+		return err
 	}
-	if endpointType == "direct" {
-		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+
+	cosConfigURL, exists := (*cosConfigURLs)[endpointType]
+	if !exists {
+		return fmt.Errorf("failed to get %s cos config endpoint for COS bucket: %s endpoint not set", endpointType, endpointType)
 	}
+	sess.SetServiceURL(cosConfigURL)
 
 	if apiType == "sl" {
 
