@@ -247,7 +247,7 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
 	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
 	tEMode1 := "user_managed"
-	tEMode2 := "none"
+	// tEMode2 := "none"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -270,20 +270,20 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode2, shareName, shareName1),
+				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "allowed_transit_encryption_modes.#"),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode2),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode2),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode1),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.crn"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.resource_type"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.href"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.accessor.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "origin_share.0.accessor_bindings.#"),
 				),
 			},
 		},

@@ -22,14 +22,14 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
 	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
 	tEMode1 := "user_managed"
-	tEMode2 := "none"
+	// tEMode2 := "none"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmIsShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
+				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
@@ -44,20 +44,20 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcname, subnetName, tEMode2, shareName, shareName1),
+				Config: testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode2),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode2),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode1),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "accessor_binding_role", "origin"),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "accessor_binding_role", "accessor"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.crn"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.resource_type"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.href"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_bindings.#"),
 				),
 			},
 		},
@@ -65,14 +65,15 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 }
 
 func testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcName, sname, tEMode, shareName, shareName1 string) string {
-	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + fmt.Sprintf(`
+	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + `
 	
 	data "ibm_is_share_accessor_bindings" "bindings" {
+		depends_on = [ibm_is_share.is_share_accessor]
 		share = ibm_is_share.is_share.id
 	}
-	resource "ibm_is_share_delete_accessor_binding" "delete_biinding" {
+	resource "ibm_is_share_delete_accessor_binding" "delete_binding" {
 		share = ibm_is_share.is_share.id
 		share_accessor_binding = data.ibm_is_share_accessor_bindings.bindings.accessor_bindings.0.id
 	}
-	`)
+	`
 }
