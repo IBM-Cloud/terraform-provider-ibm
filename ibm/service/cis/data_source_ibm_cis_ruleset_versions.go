@@ -105,7 +105,7 @@ func dataIBMCISRulesetVersionsRead(d *schema.ResourceData, meta interface{}) err
 			rulesetObj := flattenCISRulesets(*result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsListOutput, rulesetObj)
+			d.Set(CISRulesetsObjectOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
@@ -149,7 +149,7 @@ func dataIBMCISRulesetVersionsRead(d *schema.ResourceData, meta interface{}) err
 			rulesetObj := flattenCISRulesets(*result.Result)
 
 			d.SetId(dataSourceCISRulesetsCheckID(d))
-			d.Set(CISRulesetsListOutput, rulesetObj)
+			d.Set(CISRulesetsObjectOutput, rulesetObj)
 			d.Set(cisID, crn)
 
 		} else {
