@@ -830,8 +830,9 @@ func Provider() *schema.Provider {
 			"ibm_pag_instance": pag.DataSourceIBMPag(),
 
 			// Added for Context Based Restrictions
-			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
-			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
+			"ibm_cbr_zone":           contextbasedrestrictions.DataSourceIBMCbrZone(),
+			"ibm_cbr_zone_addresses": contextbasedrestrictions.DataSourceIBMCbrZoneAddresses(),
+			"ibm_cbr_rule":           contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// Added for Event Notifications
 			"ibm_en_source":                    eventnotification.DataSourceIBMEnSource(),

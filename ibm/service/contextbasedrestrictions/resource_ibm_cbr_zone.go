@@ -318,7 +318,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	}
 	addresses := []contextbasedrestrictionsv1.AddressIntf{}
 	if _, ok := d.GetOk("addresses"); ok {
-		addresses, err = encodeAddressList(d.Get("addresses").([]interface{}), cbrZoneAddressIdDefault)
+		addresses, err = resourceEncodeAddressList(d.Get("addresses").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -326,7 +326,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	createZoneOptions.SetAddresses(addresses)
 	if _, ok := d.GetOk("excluded"); ok {
 		var excluded []contextbasedrestrictionsv1.AddressIntf
-		excluded, err = encodeAddressList(d.Get("excluded").([]interface{}), cbrZoneAddressIdDefault)
+		excluded, err = resourceEncodeAddressList(d.Get("excluded").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -384,7 +384,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	var addresses []map[string]interface{}
-	addresses, err = decodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
+	addresses, err = resourceDecodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -393,7 +393,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	var excluded []map[string]interface{}
-	excluded, err = decodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
+	excluded, err = resourceDecodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -470,7 +470,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	}
 	addresses := []contextbasedrestrictionsv1.AddressIntf{}
 	if _, ok := d.GetOk("addresses"); ok {
-		addresses, err = encodeAddressList(d.Get("addresses").([]interface{}), cbrZoneAddressIdDefault)
+		addresses, err = resourceEncodeAddressList(d.Get("addresses").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -484,7 +484,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	replaceZoneOptions.SetAddresses(addresses)
 	if _, ok := d.GetOk("excluded"); ok {
 		var excluded []contextbasedrestrictionsv1.AddressIntf
-		excluded, err = encodeAddressList(d.Get("excluded").([]interface{}), cbrZoneAddressIdDefault)
+		excluded, err = resourceEncodeAddressList(d.Get("excluded").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -703,7 +703,7 @@ func resourceIBMCbrZoneAddressVPCToMap(model *contextbasedrestrictionsv1.Address
 	return modelMap, nil
 }
 
-func decodeAddressList(addresses []contextbasedrestrictionsv1.AddressIntf, wantAddressId string) (result []map[string]interface{}, err error) {
+func resourceDecodeAddressList(addresses []contextbasedrestrictionsv1.AddressIntf, wantAddressId string) (result []map[string]interface{}, err error) {
 	result = make([]map[string]interface{}, 0, len(addresses))
 	for _, addr := range addresses {
 		var m map[string]interface{}
@@ -719,7 +719,7 @@ func decodeAddressList(addresses []contextbasedrestrictionsv1.AddressIntf, wantA
 	return
 }
 
-func encodeAddressList(addresses []interface{}, addressId string) (result []contextbasedrestrictionsv1.AddressIntf, err error) {
+func resourceEncodeAddressList(addresses []interface{}, addressId string) (result []contextbasedrestrictionsv1.AddressIntf, err error) {
 	result = make([]contextbasedrestrictionsv1.AddressIntf, 0, len(addresses))
 	for _, item := range addresses {
 		var addr contextbasedrestrictionsv1.AddressIntf

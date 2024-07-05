@@ -117,7 +117,7 @@ func ResourceIBMCbrZoneAddressesValidator() *validate.ResourceValidator {
 			Identifier:                 "zone_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9\-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128,
@@ -149,7 +149,7 @@ func ResourceIBMCbrZoneAddressesValidator() *validate.ResourceValidator {
 func resourceIBMCbrZoneAddressesCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	addressId, _ := uuid.GenerateUUID()
 	d.SetId(composeZoneAddressesId(d.Get("zone_id").(string), "TF-"+addressId))
-	err := replaceZoneAddresses(context, d, meta)
+	err := resourceReplaceZoneAddresses(context, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -180,7 +180,7 @@ func resourceIBMCbrZoneAddressesRead(context context.Context, d *schema.Resource
 	}
 
 	var addresses []map[string]interface{}
-	addresses, err = decodeAddressList(zone.Addresses, addressesId)
+	addresses, err = resourceDecodeAddressList(zone.Addresses, addressesId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,7 +197,7 @@ func resourceIBMCbrZoneAddressesRead(context context.Context, d *schema.Resource
 }
 
 func resourceIBMCbrZoneAddressesUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	err := replaceZoneAddresses(context, d, meta)
+	err := resourceReplaceZoneAddresses(context, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,7 +209,7 @@ func resourceIBMCbrZoneAddressesDelete(context context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting addresses: %s", err))
 	}
-	err = replaceZoneAddresses(context, d, meta)
+	err = resourceReplaceZoneAddresses(context, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -218,7 +218,7 @@ func resourceIBMCbrZoneAddressesDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func replaceZoneAddresses(context context.Context, d *schema.ResourceData, meta interface{}) error {
+func resourceReplaceZoneAddresses(context context.Context, d *schema.ResourceData, meta interface{}) error {
 	contextBasedRestrictionsClient, err := meta.(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
 		return err
@@ -256,7 +256,7 @@ func replaceZoneAddresses(context context.Context, d *schema.ResourceData, meta 
 
 	addresses := []contextbasedrestrictionsv1.AddressIntf{}
 	if _, ok := d.GetOk("addresses"); ok {
-		addresses, err = encodeAddressList(d.Get("addresses").([]interface{}), addressesId)
+		addresses, err = resourceEncodeAddressList(d.Get("addresses").([]interface{}), addressesId)
 		if err != nil {
 			return err
 		}

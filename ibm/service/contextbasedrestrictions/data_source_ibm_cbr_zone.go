@@ -6,8 +6,6 @@ package contextbasedrestrictions
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -163,17 +161,19 @@ func dataSourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	getZoneOptions := &contextbasedrestrictionsv1.GetZoneOptions{}
+	zoneId := d.Get("zone_id").(string)
 
-	getZoneOptions.SetZoneID(d.Get("zone_id").(string))
-
-	zone, response, err := contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
+	var zone *contextbasedrestrictionsv1.Zone
+	var found bool
+	zone, _, found, err = getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
-		log.Printf("[DEBUG] GetZoneWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetZoneWithContext failed %s\n%s", err, response))
+		return diag.FromErr(err)
+	}
+	if !found {
+		return diag.Errorf("zone_id %s not found", zoneId)
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getZoneOptions.ZoneID))
+	d.SetId(zoneId)
 
 	if err = d.Set("crn", zone.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
@@ -199,29 +199,19 @@ func dataSourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 
-	addresses := []map[string]interface{}{}
-	if zone.Addresses != nil {
-		for _, modelItem := range zone.Addresses {
-			modelMap, err := dataSourceIBMCbrZoneAddressToMap(modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			addresses = append(addresses, modelMap)
-		}
+	var addresses []map[string]interface{}
+	addresses, err = dataSourceDecodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	if err = d.Set("addresses", addresses); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting addresses %s", err))
 	}
 
-	excluded := []map[string]interface{}{}
-	if zone.Excluded != nil {
-		for _, modelItem := range zone.Excluded {
-			modelMap, err := dataSourceIBMCbrZoneAddressToMap(modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			excluded = append(excluded, modelMap)
-		}
+	var excluded []map[string]interface{}
+	excluded, err = dataSourceDecodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	if err = d.Set("excluded", excluded); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting excluded %s", err))
@@ -250,37 +240,45 @@ func dataSourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func dataSourceIBMCbrZoneAddressToMap(model contextbasedrestrictionsv1.AddressIntf) (map[string]interface{}, error) {
+func dataSourceIBMCbrZoneAddressToMap(model contextbasedrestrictionsv1.AddressIntf) (modelMap map[string]interface{}, addressId string, err error) {
 	if _, ok := model.(*contextbasedrestrictionsv1.AddressIPAddress); ok {
-		return dataSourceIBMCbrZoneAddressIPAddressToMap(model.(*contextbasedrestrictionsv1.AddressIPAddress))
+		modelMap, err = dataSourceIBMCbrZoneAddressIPAddressToMap(model.(*contextbasedrestrictionsv1.AddressIPAddress))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressIPAddressRange); ok {
-		return dataSourceIBMCbrZoneAddressIPAddressRangeToMap(model.(*contextbasedrestrictionsv1.AddressIPAddressRange))
+		modelMap, err = dataSourceIBMCbrZoneAddressIPAddressRangeToMap(model.(*contextbasedrestrictionsv1.AddressIPAddressRange))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressSubnet); ok {
-		return dataSourceIBMCbrZoneAddressSubnetToMap(model.(*contextbasedrestrictionsv1.AddressSubnet))
+		modelMap, err = dataSourceIBMCbrZoneAddressSubnetToMap(model.(*contextbasedrestrictionsv1.AddressSubnet))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressVPC); ok {
-		return dataSourceIBMCbrZoneAddressVPCToMap(model.(*contextbasedrestrictionsv1.AddressVPC))
+		modelMap, err = dataSourceIBMCbrZoneAddressVPCToMap(model.(*contextbasedrestrictionsv1.AddressVPC))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressServiceRef); ok {
-		return dataSourceIBMCbrZoneAddressServiceRefToMap(model.(*contextbasedrestrictionsv1.AddressServiceRef))
+		modelMap, err = dataSourceIBMCbrZoneAddressServiceRefToMap(model.(*contextbasedrestrictionsv1.AddressServiceRef))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.Address); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*contextbasedrestrictionsv1.Address)
-		if model.Type != nil {
-			modelMap["type"] = *model.Type
+		modelMap = make(map[string]interface{})
+		address := model.(*contextbasedrestrictionsv1.Address)
+		if address.Type != nil {
+			modelMap["type"] = *address.Type
 		}
-		if model.Value != nil {
-			modelMap["value"] = *model.Value
+		if address.Value != nil {
+			modelMap["value"] = *address.Value
 		}
-		if model.Ref != nil {
-			refMap, err := dataSourceIBMCbrZoneServiceRefValueToMap(model.Ref)
+		if address.Ref != nil {
+			var refMap map[string]interface{}
+			refMap, err = dataSourceIBMCbrZoneServiceRefValueToMap(address.Ref)
 			if err != nil {
-				return modelMap, err
+				return
 			}
 			modelMap["ref"] = []map[string]interface{}{refMap}
 		}
-		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized contextbasedrestrictionsv1.AddressIntf subtype encountered")
+		err = fmt.Errorf("Unrecognized contextbasedrestrictionsv1.AddressIntf subtype encountered")
+		return
 	}
+
+	if _, ok := modelMap["type"]; ok {
+		var addressType string
+		addressType, addressId = decodeZoneAddressType(modelMap["type"].(string))
+		modelMap["type"] = addressType
+	}
+	return
 }
 
 func dataSourceIBMCbrZoneServiceRefValueToMap(model *contextbasedrestrictionsv1.ServiceRefValue) (map[string]interface{}, error) {
@@ -360,4 +358,20 @@ func dataSourceIBMCbrZoneAddressVPCToMap(model *contextbasedrestrictionsv1.Addre
 		modelMap["value"] = *model.Value
 	}
 	return modelMap, nil
+}
+
+func dataSourceDecodeAddressList(addresses []contextbasedrestrictionsv1.AddressIntf, wantAddressId string) (result []map[string]interface{}, err error) {
+	result = make([]map[string]interface{}, 0, len(addresses))
+	for _, addr := range addresses {
+		var m map[string]interface{}
+		var addressId string
+		m, addressId, err = dataSourceIBMCbrZoneAddressToMap(addr)
+		if err != nil {
+			return
+		}
+		if addressId == wantAddressId {
+			result = append(result, m)
+		}
+	}
+	return
 }
