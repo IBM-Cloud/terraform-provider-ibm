@@ -1,8 +1,8 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.22.2
+go 1.23
 
-toolchain go1.22.4
+// toolchain go1.22.4
 
 require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
@@ -33,7 +33,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.2.3
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.4
 	github.com/IBM/vpc-beta-go-sdk v0.6.0
-	github.com/IBM/vpc-go-sdk v0.53.0
+	github.com/IBM/vpc-go-sdk v0.54.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -246,8 +246,6 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
