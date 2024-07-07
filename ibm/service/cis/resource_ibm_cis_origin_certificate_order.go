@@ -165,7 +165,7 @@ func ResourceIBMCISOriginCertificateRead(d *schema.ResourceData, meta interface{
 	d.Set(cisOriginCertificate, result.Result.Certificate)
 	d.Set(cisOriginCertificateHosts, flex.FlattenStringList(result.Result.Hostnames))
 	d.Set(cisOriginCertificateExpiresOn, result.Result.ExpiresOn)
-	d.Set(cisOriginCertificateType, result.Result.ExpiresOn)
+	d.Set(cisOriginCertificateType, result.Result.RequestType)
 	d.Set(cisOriginCertificateValidityDays, result.Result.RequestedValidity)
 	d.Set(cisOriginCertificateCSR, result.Result.Csr)
 	d.Set(cisOriginCertificatePrivateKey, result.Result.PrivateKey)
