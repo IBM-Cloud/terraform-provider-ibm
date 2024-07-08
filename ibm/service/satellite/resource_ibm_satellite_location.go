@@ -257,10 +257,9 @@ func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 		},
 		validate.ValidateSchema{
 			Identifier:                 "physical_address",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			ValidateFunctionIdentifier: validate.StringLenBetween,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             0,
 			MaxValueLength:             400,
 		},
@@ -313,7 +312,7 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 
 	if v, ok := d.GetOk("capabilities"); ok {
 		z := v.(*schema.Set)
-		createSatLocOptions.Capabilities = flex.FlattenStringList(z)
+		createSatLocOptions.CapabilitiesManagedBySatellite = flex.FlattenSatelliteWorkerCapabilities(z)
 	}
 
 	if v, ok := d.GetOk("description"); ok {
@@ -342,6 +341,8 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 		serviceSubnet := v.(string)
 		createSatLocOptions.ServiceSubnet = &serviceSubnet
 	}
+
+	core.GetLogger().SetLogLevel(core.LevelDebug)
 
 	instance, response, err := satClient.CreateSatelliteLocation(createSatLocOptions)
 	if err != nil || instance == nil {
@@ -399,8 +400,8 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("physical_address", *instance.PhysicalAddress)
 	}
 
-	if instance.Capabilities != nil {
-		d.Set("capabilities", *instance.Capabilities)
+	if instance.CapabilitiesManagedBySatellite != nil {
+		d.Set("capabilities", instance.CapabilitiesManagedBySatellite)
 	}
 
 	if instance.CoreosEnabled != nil {

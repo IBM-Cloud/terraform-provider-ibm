@@ -172,7 +172,6 @@ func testAccCheckSatelliteLocationCreate(name, managed_from string, physical_add
 		managed_from = "%s"
 		physical_address = "%s"
 		coreos_enabled = "%s"
-		physical_address = "%s"
 		description = "test"
 		zones = ["us-east-1", "us-east-2", "us-east-3"]
 		resource_group_id = data.ibm_resource_group.res_group.id

@@ -205,8 +205,8 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 	if instance.PhysicalAddress != nil {
 		d.Set("physical_address", *instance.PhysicalAddress)
 	}
-	if instance.Capabilities != nil {
-		d.Set("capabilities", *instance.Capabilities)
+	if instance.CapabilitiesManagedBySatellite != nil {
+		d.Set("capabilities", instance.CapabilitiesManagedBySatellite)
 	}
 	if instance.CoreosEnabled != nil {
 		d.Set("coreos_enabled", *instance.CoreosEnabled)
