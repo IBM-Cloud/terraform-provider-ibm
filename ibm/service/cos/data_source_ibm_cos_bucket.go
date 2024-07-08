@@ -602,7 +602,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		keyProtectFlag = true
 	}
 
-	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint string
+	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if satlc, ok := d.GetOk("satellite_location_id"); ok {
 		satlc_id = satlc.(string)
@@ -617,15 +617,19 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	} else {
 		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
 
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bucketRegion, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
@@ -717,11 +721,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	if endpointType != "public" {
-		// uses default url in case url is not defined for the corresponding visibility
-		// cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, endpointType, "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
-
-		// uses default url when IBMCLOUD_COS_CONFIG_ENDPOINT is not set.
-		cosConfigURL := conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigUrls[endpointType])
+		// User is expected to define both private and direct url type under "private" in endpoints file since visibility type "direct" is not supported.
+		cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, "private", "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
+		cosConfigURL = conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigURL)
 		sess.SetServiceURL(cosConfigURL)
 	}
 
