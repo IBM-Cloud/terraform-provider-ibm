@@ -32,7 +32,7 @@ func DataSourceIBMSatelliteLocations() *schema.Resource {
 				Computed:    true,
 				Description: "The IBM Cloud metro from which the Satellite location is managed",
 			},
-			"capabilities": {
+			"capabilitiesManagedBySatellite": {
 				Type:        schema.TypeSet,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -195,8 +195,8 @@ func dataSourceIBMSatelliteLocationsRead(d *schema.ResourceData, meta interface{
 	d.SetId(*instance.ID)
 	d.Set("location", location)
 	d.Set("description", *instance.Description)
-	if instance.Capabilities != nil {
-		d.Set("capabilities", *instance.Capabilities)
+	if instance.CapabilitiesManagedBySatellite != nil {
+		d.Set("capabilitiesManagedBySatellite", *instance.CapabilitiesManagedBySatellite)
 	}
 	if instance.CoreosEnabled != nil {
 		d.Set("coreos_enabled", *instance.CoreosEnabled)
