@@ -99,7 +99,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 				Optional:    true,
 				Description: "An optional physical address of the new Satellite location which is deployed on premise",
 			},
-			"capabilities": {
+			"capabilitiesManagedBySatellite": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -240,9 +240,9 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 	}
 }
 
-// TO-DO: If validation for Address and Capabilities have to be added here? How has it been done in modules other
+// TO-DO: If validation for Address and CapabilitiesManagedBySatellite have to be added here? How has it been done in modules other
 // than Satellite - for e.g. AccessGroup?
-// TODO Add validation for PhysicalAddress and Capabilities(on-prem)
+// TODO Add validation for PhysicalAddress and CapabilitiesManagedBySatellite(on-prem)
 func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -265,7 +265,7 @@ func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 			MaxValueLength:             400,
 		},
 		validate.ValidateSchema{
-			Identifier:                 "capabilities",
+			Identifier:                 "capabilitiesManagedBySatellite",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
@@ -311,9 +311,9 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 		createSatLocOptions.PhysicalAddress = &addr
 	}
 
-	if v, ok := d.GetOk("capabilities"); ok {
+	if v, ok := d.GetOk("capabilitiesManagedBySatellite"); ok {
 		z := v.(*schema.Set)
-		createSatLocOptions.Capabilities = flex.FlattenStringList(z)
+		createSatLocOptions.CapabilitiesManagedBySatellite = flex.FlattenStringList(z)
 	}
 
 	if v, ok := d.GetOk("description"); ok {
@@ -399,8 +399,8 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("physical_address", *instance.PhysicalAddress)
 	}
 
-	if instance.Capabilities != nil {
-		d.Set("capabilities", *instance.Capabilities)
+	if instance.CapabilitiesManagedBySatellite != nil {
+		d.Set("capabilitiesManagedBySatellite", *instance.CapabilitiesManagedBySatellite)
 	}
 
 	if instance.CoreosEnabled != nil {
