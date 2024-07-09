@@ -202,7 +202,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionAdminStateup: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "VPN gateway connection admin state",
 			},
 			// deprecated
@@ -416,10 +416,6 @@ func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interf
 	peerAddress := d.Get(isVPNGatewayConnectionPeerAddress).(string)
 	prephasedKey := d.Get(isVPNGatewayConnectionPreSharedKey).(string)
 
-	stateUp := false
-	if _, ok := d.GetOk(isVPNGatewayConnectionAdminStateup); ok {
-		stateUp = d.Get(isVPNGatewayConnectionAdminStateup).(bool)
-	}
 	var interval, timeout int64
 	if intvl, ok := d.GetOk(isVPNGatewayConnectionDeadPeerDetectionInterval); ok {
 		interval = int64(intvl.(int))
@@ -439,14 +435,14 @@ func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interf
 		action = "none"
 	}
 
-	err := vpngwconCreate(d, meta, name, gatewayID, peerAddress, prephasedKey, action, interval, timeout, stateUp)
+	err := vpngwconCreate(d, meta, name, gatewayID, peerAddress, prephasedKey, action, interval, timeout)
 	if err != nil {
 		return err
 	}
 	return resourceIBMISVPNGatewayConnectionRead(d, meta)
 }
 
-func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, peerAddress, prephasedKey, action string, interval, timeout int64, stateUp bool) error {
+func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, peerAddress, prephasedKey, action string, interval, timeout int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -464,14 +460,18 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	if *vpngateway.(*vpcv1.VPNGateway).Mode == "policy" {
 
 		vpnGatewayConnectionPrototypeModel := &vpcv1.VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype{
-			Psk:          &prephasedKey,
-			AdminStateUp: &stateUp,
+			Psk: &prephasedKey,
 			DeadPeerDetection: &vpcv1.VPNGatewayConnectionDpdPrototype{
 				Action:   &action,
 				Interval: &interval,
 				Timeout:  &timeout,
 			},
 			Name: &name,
+		}
+
+		if _, ok := d.GetOkExists(isVPNGatewayConnectionAdminStateup); ok {
+			stateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
+			vpnGatewayConnectionPrototypeModel.AdminStateUp = core.BoolPtr(stateUp)
 		}
 
 		var ikePolicyIdentity, ipsecPolicyIdentity string
@@ -560,8 +560,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	} else if *vpngateway.(*vpcv1.VPNGateway).Mode == "route" {
 
 		vpnGatewayConnectionPrototypeModel := &vpcv1.VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype{
-			Psk:          &prephasedKey,
-			AdminStateUp: &stateUp,
+			Psk: &prephasedKey,
 			DeadPeerDetection: &vpcv1.VPNGatewayConnectionDpdPrototype{
 				Action:   &action,
 				Interval: &interval,
@@ -569,7 +568,10 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 			},
 			Name: &name,
 		}
-
+		if _, ok := d.GetOkExists(isVPNGatewayConnectionAdminStateup); ok {
+			stateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
+			vpnGatewayConnectionPrototypeModel.AdminStateUp = core.BoolPtr(stateUp)
+		}
 		var ikePolicyIdentity, ipsecPolicyIdentity string
 		// new breaking changes
 		if establishModeOk, ok := d.GetOk("establish_mode"); ok {
