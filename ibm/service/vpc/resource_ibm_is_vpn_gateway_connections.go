@@ -123,12 +123,13 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 							},
 						},
 						"cidrs": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							ForceNew:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Set:         schema.HashString,
-							Description: "VPN gateway connection local CIDRs",
+							Type:          schema.TypeSet,
+							Optional:      true,
+							Computed:      true,
+							ConflictsWith: []string{"local_cidrs"},
+							Elem:          &schema.Schema{Type: schema.TypeString},
+							Set:           schema.HashString,
+							Description:   "VPN gateway connection local CIDRs",
 						},
 					},
 				},
@@ -168,10 +169,11 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 							Description: "Indicates whether `peer.address` or `peer.fqdn` is used.",
 						},
 						"address": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The IP address of the peer VPN gateway for this connection.",
+							Type:          schema.TypeString,
+							Optional:      true,
+							Computed:      true,
+							ConflictsWith: []string{"peer_address"},
+							Description:   "The IP address of the peer VPN gateway for this connection.",
 						},
 						"fqdn": &schema.Schema{
 							Type:        schema.TypeString,
@@ -180,12 +182,13 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 							Description: "The FQDN of the peer VPN gateway for this connection.",
 						},
 						"cidrs": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							ForceNew:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Set:         schema.HashString,
-							Description: "VPN gateway connection peer CIDRs",
+							Type:          schema.TypeSet,
+							Optional:      true,
+							Computed:      true,
+							ConflictsWith: []string{"peer_cidrs"},
+							Elem:          &schema.Schema{Type: schema.TypeString},
+							Set:           schema.HashString,
+							Description:   "VPN gateway connection peer CIDRs",
 						},
 					},
 				},
@@ -199,7 +202,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 			isVPNGatewayConnectionAdminStateup: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "VPN gateway connection admin state",
 			},
 			// deprecated
@@ -413,10 +416,6 @@ func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interf
 	peerAddress := d.Get(isVPNGatewayConnectionPeerAddress).(string)
 	prephasedKey := d.Get(isVPNGatewayConnectionPreSharedKey).(string)
 
-	stateUp := false
-	if _, ok := d.GetOk(isVPNGatewayConnectionAdminStateup); ok {
-		stateUp = d.Get(isVPNGatewayConnectionAdminStateup).(bool)
-	}
 	var interval, timeout int64
 	if intvl, ok := d.GetOk(isVPNGatewayConnectionDeadPeerDetectionInterval); ok {
 		interval = int64(intvl.(int))
@@ -436,14 +435,14 @@ func resourceIBMISVPNGatewayConnectionCreate(d *schema.ResourceData, meta interf
 		action = "none"
 	}
 
-	err := vpngwconCreate(d, meta, name, gatewayID, peerAddress, prephasedKey, action, interval, timeout, stateUp)
+	err := vpngwconCreate(d, meta, name, gatewayID, peerAddress, prephasedKey, action, interval, timeout)
 	if err != nil {
 		return err
 	}
 	return resourceIBMISVPNGatewayConnectionRead(d, meta)
 }
 
-func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, peerAddress, prephasedKey, action string, interval, timeout int64, stateUp bool) error {
+func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, peerAddress, prephasedKey, action string, interval, timeout int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -461,8 +460,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	if *vpngateway.(*vpcv1.VPNGateway).Mode == "policy" {
 
 		vpnGatewayConnectionPrototypeModel := &vpcv1.VPNGatewayConnectionPrototypeVPNGatewayConnectionPolicyModePrototype{
-			Psk:          &prephasedKey,
-			AdminStateUp: &stateUp,
+			Psk: &prephasedKey,
 			DeadPeerDetection: &vpcv1.VPNGatewayConnectionDpdPrototype{
 				Action:   &action,
 				Interval: &interval,
@@ -470,9 +468,10 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 			},
 			Name: &name,
 		}
-		options := &vpcv1.CreateVPNGatewayConnectionOptions{
-			VPNGatewayID:                  &gatewayID,
-			VPNGatewayConnectionPrototype: vpnGatewayConnectionPrototypeModel,
+
+		if _, ok := d.GetOkExists(isVPNGatewayConnectionAdminStateup); ok {
+			stateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
+			vpnGatewayConnectionPrototypeModel.AdminStateUp = core.BoolPtr(stateUp)
 		}
 
 		var ikePolicyIdentity, ipsecPolicyIdentity string
@@ -530,6 +529,11 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 			vpnGatewayConnectionPrototypeModel.IpsecPolicy = nil
 		}
 
+		options := &vpcv1.CreateVPNGatewayConnectionOptions{
+			VPNGatewayID:                  &gatewayID,
+			VPNGatewayConnectionPrototype: vpnGatewayConnectionPrototypeModel,
+		}
+
 		vpnGatewayConnectionIntf, response, err := sess.CreateVPNGatewayConnection(options)
 		if err != nil {
 			return fmt.Errorf("[DEBUG] Create VPN Gateway Connection err %s\n%s", err, response)
@@ -556,8 +560,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	} else if *vpngateway.(*vpcv1.VPNGateway).Mode == "route" {
 
 		vpnGatewayConnectionPrototypeModel := &vpcv1.VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype{
-			Psk:          &prephasedKey,
-			AdminStateUp: &stateUp,
+			Psk: &prephasedKey,
 			DeadPeerDetection: &vpcv1.VPNGatewayConnectionDpdPrototype{
 				Action:   &action,
 				Interval: &interval,
@@ -565,11 +568,10 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 			},
 			Name: &name,
 		}
-		options := &vpcv1.CreateVPNGatewayConnectionOptions{
-			VPNGatewayID:                  &gatewayID,
-			VPNGatewayConnectionPrototype: vpnGatewayConnectionPrototypeModel,
+		if _, ok := d.GetOkExists(isVPNGatewayConnectionAdminStateup); ok {
+			stateUp := d.Get(isVPNGatewayConnectionAdminStateup).(bool)
+			vpnGatewayConnectionPrototypeModel.AdminStateUp = core.BoolPtr(stateUp)
 		}
-
 		var ikePolicyIdentity, ipsecPolicyIdentity string
 		// new breaking changes
 		if establishModeOk, ok := d.GetOk("establish_mode"); ok {
@@ -613,6 +615,11 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 			}
 		} else {
 			vpnGatewayConnectionPrototypeModel.IpsecPolicy = nil
+		}
+
+		options := &vpcv1.CreateVPNGatewayConnectionOptions{
+			VPNGatewayID:                  &gatewayID,
+			VPNGatewayConnectionPrototype: vpnGatewayConnectionPrototypeModel,
 		}
 
 		vpnGatewayConnectionIntf, response, err := sess.CreateVPNGatewayConnection(options)

@@ -1590,6 +1590,42 @@ func TestAccIBMCosBucket_Retention(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Retention_Rule_Existing_bucket(t *testing.T) {
+	cosCrn := acc.CosCRN
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	default_retention := 0
+	maximum_retention := 1
+	minimum_retention := 0
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_retention_basic_bucket(bucketName, cosCrn, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_retention_existing_bucket(bucketName, cosCrn, bucketRegionType, bucketRegion, bucketClass, default_retention, maximum_retention, minimum_retention),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "retention_rule.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCosBucket_Object_Versioning(t *testing.T) {
 
 	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
@@ -3487,6 +3523,42 @@ func testAccCheckIBMCosBucket_retention(cosServiceName string, bucketName string
 	`, cosServiceName, bucketName, region, storageClass, default_retention, maximum_retention, minimum_retention)
 }
 
+func testAccCheckIBMCosBucket_retention_basic_bucket(bucketName string, cosCrn string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = "%s"
+	    region_location       = "%s"
+		storage_class         = "%s"
+	}
+	`, bucketName, cosCrn, region, storageClass)
+}
+func testAccCheckIBMCosBucket_retention_existing_bucket(bucketName string, cosCrn string, regiontype string, region string, storageClass string, default_retention int, maximum_retention int, minimum_retention int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = "%s"
+	    region_location       = "%s"
+		storage_class         = "%s"
+		retention_rule {
+			default = %d
+			maximum = %d
+			minimum = %d
+			permanent = false
+		}
+	}
+	`, bucketName, cosCrn, region, storageClass, default_retention, maximum_retention, minimum_retention)
+}
 func testAccCheckIBMCosBucket_object_versioning(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, enable bool) string {
 
 	return fmt.Sprintf(`
