@@ -240,9 +240,6 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 	}
 }
 
-// TO-DO: If validation for Address and Capabilities have to be added here? How has it been done in modules other
-// than Satellite - for e.g. AccessGroup?
-// TODO Add validation for PhysicalAddress and Capabilities(on-prem)
 func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
