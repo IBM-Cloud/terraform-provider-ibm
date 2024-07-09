@@ -342,8 +342,6 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 		createSatLocOptions.ServiceSubnet = &serviceSubnet
 	}
 
-	core.GetLogger().SetLogLevel(core.LevelDebug)
-
 	instance, response, err := satClient.CreateSatelliteLocation(createSatLocOptions)
 	if err != nil || instance == nil {
 		return fmt.Errorf("[ERROR] Error Creating Satellite Location: %s\n%s", err, response)
