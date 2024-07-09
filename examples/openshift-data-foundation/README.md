@@ -6,7 +6,7 @@ OpenShift Data Foundation is a highly available storage solution that you can us
 
 If you'd like to Deploy and Manage the different configurations for ODF on a Red Hat OpenShift Cluster (VPC) head over to the [addon](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/openshift-data-foundation/addon) folder.
 
-## Updating or replacing worker nodes that use OpenShift Data Foundation on ROKS VPC
+## Updating or replacing worker nodes that use OpenShift Data Foundation on VPC clusters
 
 If you'd like to update or replace the different worker nodes with ODF enabled, head over to the [vpc-worker-replace](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/openshift-data-foundation/vpc-worker-replace) folder. This inherently covers the worker replace steps of sequential cordon, drain, and replace.
 
