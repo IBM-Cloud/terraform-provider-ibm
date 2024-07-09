@@ -14,6 +14,7 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -258,7 +259,6 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(helpers.PINetworkIPAddressRange, ipRangesMap)
 
 	return nil
-
 }
 
 func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -312,12 +312,17 @@ func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	err = networkC.Delete(networkID)
-
+	client := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	err = client.Delete(networkID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	_, err = isWaitForIBMPINetworkDeleted(ctx, client, networkID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId("")
 	return nil
 }
@@ -347,6 +352,29 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id string) resourc
 		}
 
 		return network, helpers.PINetworkProvisioning, nil
+	}
+}
+
+func isWaitForIBMPINetworkDeleted(ctx context.Context, client *st.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Found},
+		Target:     []string{State_NotFound},
+		Refresh:    isIBMPINetworkRefreshDeleteFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isIBMPINetworkRefreshDeleteFunc(client *st.IBMPINetworkClient, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		network, err := client.Get(id)
+		if err != nil {
+			return network, State_NotFound, nil
+		}
+		return network, State_Found, nil
 	}
 }
 

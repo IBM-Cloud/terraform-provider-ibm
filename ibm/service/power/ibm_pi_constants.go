@@ -401,6 +401,7 @@ const (
 	State_DELETING           = "DELETING"
 	State_Down               = "down"
 	State_Failed             = "failed"
+	State_Found              = "Found"
 	State_Inactive           = "inactive"
 	State_InProgress         = "in progress"
 	State_InUse              = "in-use"
