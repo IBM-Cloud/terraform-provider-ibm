@@ -2,9 +2,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 
 go 1.22.2
 
-toolchain go1.22.4
-
-// toolchain go1.22.4
+toolchain go1.22.3
 
 require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
