@@ -8,11 +8,15 @@ description: |-
 ---
 
 # ibm_pi_image
+
 Create, update, or delete for a Power Systems Virtual Server image. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
+
 The following example enables you to create a image in your project:
+
 - stock-images import
+
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "7200-03-02"
@@ -20,7 +24,9 @@ resource "ibm_pi_image" "testacc_image  "{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
+
 - COS image import
+
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "test_image"
@@ -33,11 +39,12 @@ resource "ibm_pi_image" "testacc_image  "{
 }
 ```
 
-**Note**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+## Notes
+
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
   
   Example usage:
   
@@ -52,11 +59,12 @@ resource "ibm_pi_image" "testacc_image  "{
 
 The   ibm_pi_image   provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **Create** The creation of the image is considered failed if no response is received for 60 minutes. 
-- **Delete** The deletion of the image is considered failed if no response is received for 60 minutes. 
+- **create** - (Default 60 minutes) Used for creating an image.
+- **delete** - (Default 60 minutes) Used for deleting an image.
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+
+Review the argument references that you can specify for your resource.
 
 - `pi_affinity_instance` - (Optional, String) PVM Instance (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_volume` is not provided.
 - `pi_affinity_policy` - (Optional, String) Affinity policy for image; ignored if `pi_image_storage_pool` provided; for policy affinity requires one of `pi_affinity_instance` or `pi_affinity_volume` to be specified; for policy anti-affinity requires one of `pi_anti_affinity_instances` or `pi_anti_affinity_volumes` to be specified; Allowable values: `affinity`, `anti-affinity`
@@ -74,17 +82,24 @@ Review the argument references that you can specify for your resource.
 - `pi_image_bucket_access` - (Optional, String) Indicates if the bucket has public or private access. The default value is `public`.
 - `pi_image_bucket_file_name` - (Optional, String) Cloud Object Storage image filename
   - `pi_image_bucket_file_name` is required with `pi_image_bucket_name`
-- `pi_image_bucket_region` - (Optional, String) Cloud Object Storage region
+- `pi_image_bucket_region` - (Optional, String) Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
   - `pi_image_bucket_region` is required with `pi_image_bucket_name`
 - `pi_image_secret_key` - (Optional, String, Sensitive) Cloud Object Storage secret key; required for buckets with private access.
   - `pi_image_secret_key` is required with `pi_image_access_key`
 - `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_affinity_policy` will be ignored. Used only when importing an image from cloud storage.
 - `pi_image_storage_type` - (Optional, String) Type of storage; If not provided the storage type will default to 'tier3'. Used only when importing an image from cloud storage.
 
+- `pi_image_import_details` - (Optional, Forces new resource, List) Import details for SAP images
+  Nested schema for **pi_image_import_details**:
+  - `license_type` - (Required, String) Origin of the license of the product. Allowable value is: `byol`.
+  - `product` - (Required, String) Product within the image.Allowable values are: `Hana`, `Netweaver`.
+  - `vendor` - (Required, String) Vendor supporting the product. Allowable value is: `SAP`.
+
 ## Attribute reference
+
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of an image. The ID is composed of `<pi_cloud_instance_id>/<image_id>`. 
+- `id` - (String) The unique identifier of an image. The ID is composed of `<pi_cloud_instance_id>/<image_id>`.
 - `image_id` - (String) The unique identifier of an image.
 
 ## Import
@@ -94,5 +109,5 @@ The `ibm_pi_image` can be imported by using `pi_cloud_instance_id` and `image_id
 **Example**
 
 ```
-$ terraform import ibm_pi_image.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+terraform import ibm_pi_image.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```

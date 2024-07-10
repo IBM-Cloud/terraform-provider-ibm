@@ -102,6 +102,15 @@ In addition to all argument reference list, you can access the following attribu
     - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
     - `resource_type` - (String) The type of resource referenced.
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
+- `catalog_offering` - (List) The catalog offering inherited from the snapshot's source. If a virtual server instance is provisioned with a source_snapshot specifying this snapshot, the virtual server instance will use this snapshot's catalog offering, including its pricing plan. If absent, this snapshot is not associated with a catalog offering.
+
+  Nested scheme for `catalog_offering`:
+    - `version_crn` - (String) The CRN for this version of a catalog offering
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    
+      Nested schema for `deleted`:
+        - `more_info`  - (String) Link to documentation about deleted resources.
 - `clones` - (List) The list of zones where clones of this snapshot exist.
 - `copies` - (List) The copies of this snapshot in other regions.
   
@@ -128,6 +137,7 @@ In addition to all argument reference list, you can access the following attribu
 - `minimum_capacity` - (Integer) The minimum capacity of a volume created from this snapshot. When a snapshot is created, this sets to the capacity of the source_volume.
 - `operating_system` - (String) The globally unique name for the operating system included in this image.
 - `resource_type` - (String) The resource type.
+- `service_tags` - (List) The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) prefixed with `is.snapshot:` associated with this snapshot.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `snapshot_consistency_group` - (List) The snapshot consistency group which created this snapshot.
 

@@ -156,6 +156,20 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 								},
 							},
 						},
+						"cloudlogs_endpoint": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Property values for the IBM Cloud Logs endpoint in responses.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"target_crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN of the IBM Cloud Logs instance",
+									},
+								},
+							},
+						},
 						"cos_write_status": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -340,6 +354,13 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["eventstreams_endpoint"] = []map[string]interface{}{eventstreamsEndpointMap}
 	}
+	if model.CloudlogsEndpoint != nil {
+		cloudlogsEndpointMap, err := DataSourceIBMAtrackerTargetsCloudlogsEndpointToMap(model.CloudlogsEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cloudlogs_endpoint"] = []map[string]interface{}{cloudlogsEndpointMap}
+	}
 	if model.WriteStatus != nil {
 		writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
 		if err != nil {
@@ -399,6 +420,14 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 	}
 	if model.APIKey != nil {
 		modelMap["api_key"] = *model.APIKey // pragma: allowlist secret
+	}
+	return modelMap, nil
+}
+
+func DataSourceIBMAtrackerTargetsCloudlogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetCRN != nil {
+		modelMap["target_crn"] = *model.TargetCRN
 	}
 	return modelMap, nil
 }

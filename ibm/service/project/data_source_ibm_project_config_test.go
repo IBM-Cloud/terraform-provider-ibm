@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ */
+
 package project_test
 
 import (
@@ -25,6 +29,7 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project_config_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "version"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "is_draft"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "needs_attention_state.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "modified_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "outputs.#"),
@@ -48,6 +53,7 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = false
             }
 		}
 
@@ -60,6 +66,9 @@ func testAccCheckIbmProjectConfigDataSourceConfigBasic() string {
                     api_key = "%s"
                 }
                 locator_id = "1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.cd596f95-95a2-4f21-9b84-477f21fd1e95-global"
+                inputs = {
+                    app_repo_name = "grit-repo-name"
+                }
             }
             lifecycle {
                 ignore_changes = [

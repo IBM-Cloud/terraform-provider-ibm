@@ -28,3 +28,4 @@ osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false
+taintNodes = false

@@ -28,12 +28,41 @@ resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
   secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
   source_service {
 	instance {
-		crn = "crn:v1:staging:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
+		crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
 	}
 	role {
 		crn = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
 	}
 	parameters = {"HMAC": true}
+  }
+  ttl = "1800"
+}
+```
+
+## Example Usage with existing service ID
+
+```hcl
+resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
+  instance_id   = ibm_resource_instance.sm_instance.guid
+  region        = "us-south"
+  name 			= "secret-name"
+  custom_metadata = {"key":"value"}
+  description = "Extended description for this secret."
+  labels = ["my-label"]
+  rotation {
+		auto_rotate = true
+		interval = 1
+		unit = "day"
+  }
+  secret_group_id = ibm_sm_secret_group.sm_secret_group.secret_group_id
+  source_service {
+	instance {
+		crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
+	}
+	role {
+		crn = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
+	}
+	parameters = {"HMAC": true, "serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/22222f3c34444ff155555d15ca616946::serviceid:ServiceId-1234f56e-1d23-45e6-123c-cfb456b87fyb"}
   }
   ttl = "1800"
 }
@@ -48,7 +77,7 @@ resource "ibm_sm_service_credentials_secret" "sm_service_credentials_secret" {
   name 			= "secret-name"
   source_service {
 	instance {
-		crn = "crn:v1:staging:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
+		crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/111f5fb10986423e9saa8512f1db7e65:111133c8-49ea-41xe-8c40-122038246f5b::"
 	}
 	role {
 		crn = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
@@ -75,7 +104,7 @@ Review the argument reference that you can specify for your resource.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
     * Constraints: Allowable values are: `private`, `public`.
 * `name` - (Required, String) The human-readable name of your secret.
-    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9][A-Za-z0-9]*(?:_*-*\\.*[A-Za-z0-9]+)*$`.
+    * Constraints: The maximum length is `256` characters. The minimum length is `2` characters. The value must match regular expression `^[A-Za-z0-9_][A-Za-z0-9_]*(?:_*-*\.*[A-Za-z0-9]*)*[A-Za-z0-9]+$`.
 * `custom_metadata` - (Optional, Map) The secret metadata that a user can customize.
 * `description` - (Optional, String) An extended description of your secret.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group.
   * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/(.*?)/`.

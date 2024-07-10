@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -39,13 +39,14 @@ func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceAllArgs(t *testing.T) {
 	triggerPropertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
 	triggerPropertyType := "text"
 	triggerPropertyPath := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
+	triggerPropertyLocked := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig("", "", triggerPropertyName, triggerPropertyValue, triggerPropertyType, triggerPropertyPath),
+				Config: testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig("", "", triggerPropertyName, triggerPropertyValue, triggerPropertyType, triggerPropertyPath, triggerPropertyLocked),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "property_name"),
@@ -53,6 +54,7 @@ func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "value"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property", "locked"),
 				),
 			},
 		},
@@ -133,7 +135,7 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(trigger
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPropertyPipelineID string, triggerPropertyTriggerID string, triggerPropertyName string, triggerPropertyValue string, triggerPropertyType string, triggerPropertyPath string) string {
+func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPropertyPipelineID string, triggerPropertyTriggerID string, triggerPropertyName string, triggerPropertyValue string, triggerPropertyType string, triggerPropertyPath string, triggerPropertyLocked string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -198,11 +200,12 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPrope
 			name = "%s"
 			type = "%s"
 			value = "%s"
+			locked = "%s"
 		}
 		data "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
 			pipeline_id = ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property.trigger_id
 			property_name = "%s"
 		}
-	`, rgName, tcName, triggerPropertyName, triggerPropertyType, triggerPropertyValue, triggerPropertyName)
+	`, rgName, tcName, triggerPropertyName, triggerPropertyType, triggerPropertyValue, triggerPropertyLocked, triggerPropertyName)
 }

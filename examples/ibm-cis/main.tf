@@ -640,3 +640,141 @@ resource "ibm_cis_origin_auth" "test" {
   enabled                   = true
   level                     = "hostname"
 }
+
+# CIS ruleset data source
+data "ibm_cis_rulesets" "tests" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = data.ibm_cis_ruleset.cis_ruleset.ruleset_id
+}
+
+# CIS ruleset version data source
+data "ibm_cis_ruleset_versions" "tests" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = data.ibm_cis_ruleset.cis_ruleset.ruleset_id
+    version = data.ibm_cis_ruleset.cis_ruleset.version
+}
+
+# CIS entry point version data source
+data "ibm_cis_ruleset_entrypoint_versions" "test"{
+    cis_id    = ibm_cis.instance.id
+    domain_id= data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    version = "2"
+    list_all = false
+} 
+
+# CIS ruleset rules by tag data source
+data "ibm_cis_ruleset_rules_by_tag" "test"{
+    cis_id    = ibm_cis.instance.id
+    ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
+    version = "2"
+    rulesets_rule_tag = "wordpress"
+}  
+
+# Update ruleset
+resource "ibm_cis_ruleset" "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "943c5da120114ea5831dc1edf8b6f769"
+    rulesets {
+      description = "Entry Point Ruleset"
+      rules {
+        id = ruleset.rule.id
+        action =  "execute"
+        action_parameters {
+          id = var.to_be_deployed_ruleset.id
+          overrides {
+            action = "log"
+            enabled = true
+            override_rules {
+                rule_id = var.overriden_rule.id
+                enabled = true
+                action = "block"
+            }
+            categories {
+                category = "wordpress"
+                enabled = true
+                action = "block"
+            }
+          }
+        }
+        description = var.rule.description
+        enabled = false
+        expression = "true"
+      }
+    }
+  }
+
+
+
+# Update ruleset entry point 
+resource "ibm_cis_ruleset_entrypoint_version" "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    phase = "http_request_firewall_managed"
+    rulesets {
+      description = "Entry Point ruleset"
+      rules {
+        action =  "execute"
+        action_parameters  {
+          id = var.to_be_deployed_ruleset.id
+          overrides  {
+            action = "log"
+            enabled = true
+            override_rules {
+                rule_id = var.overriden_rule.id
+                enabled = true
+                action = "block"
+            }
+            categories {
+                category = "wordpress"
+                enabled = true
+                action = "log"
+            }
+          }
+        }
+        description = var.rule.description
+        enabled = true
+        expression = "ip.src ne 1.1.1.1"
+      }
+    }
+  }
+
+# Update ruleset rule
+resource "ibm_cis_ruleset_rule" "config" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "943c5da120114ea5831dc1edf8b6f769"
+      rule {
+        action =  "execute"
+        action_parameters  {
+          id = var.to_be_deployed_ruleset.id
+          overrides {
+            action =  "block"
+            enabled = true
+            override_rules {
+              rule_id = var.overriden_rule.id
+              enabled = true
+              action = "block"
+            }
+            categories {
+              category = "wordpress"
+              enabled = true
+              action = "block"
+            }
+          }
+        }
+        description = var.rule.description
+        expression = "true"
+      }
+}
+
+# Detach ruleset version
+resource "ibm_cis_ruleset_version_detach" "tests" {
+    cis_id    = ibm_cis.instance.id
+    domain_id = data.ibm_cis_domain.cis_domain.domain_id
+    ruleset_id = "<id of the ruleset>"
+    version = "<ruleset version>"
+}

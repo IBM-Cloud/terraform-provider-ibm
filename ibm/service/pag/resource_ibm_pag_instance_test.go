@@ -176,7 +176,12 @@ func testAccCheckIBMResourceInstanceBasic(cos_instance_name string, cos_bucket_n
 				  "cidr" : data.ibm_is_subnet.pag_instance_2.ipv4_cidr_block
 				}
 			  }
-			]
+			],
+			"settings" : {
+				"inactivity_timeout" : 15,
+				"system_use_notification" : ""
+			  },
+			  "vpc_id" : data.ibm_is_vpc.pag.id
 		  }
 		)
 		timeouts {

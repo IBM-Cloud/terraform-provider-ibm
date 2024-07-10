@@ -690,6 +690,9 @@ func FlattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interf
 		if in.WriteDataEvents != nil {
 			att["write_data_events"] = *in.WriteDataEvents
 		}
+		if in.ManagementEvents != nil {
+			att["management_events"] = *in.ManagementEvents
+		}
 		if in.ActivityTrackerCrn != nil {
 			att["activity_tracker_crn"] = *in.ActivityTrackerCrn
 		}
@@ -2559,7 +2562,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error updating database tags %v : %s\n%s", add, err, resp)
 		}
-		response, errored := waitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
+		response, errored := WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
 		if errored != nil {
 			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
 %v`, resourceID, errored, response)
@@ -2569,7 +2572,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 	return nil
 }
 
-func waitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
+func WaitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for tag attachment (%s) to be successful.", resourceID)
 
 	stateConf := &resource.StateChangeConf{
@@ -3157,12 +3160,25 @@ func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []ma
 			metricsMap = append(metricsMap, policyInstance)
 		}
 		if policy.PolicyType == "keyCreateImportAccess" {
-			policyInstance["enabled"] = policy.PolicyData.Enabled
-			policyInstance["create_root_key"] = policy.PolicyData.Attributes.CreateRootKey
-			policyInstance["create_standard_key"] = policy.PolicyData.Attributes.CreateStandardKey
-			policyInstance["import_root_key"] = policy.PolicyData.Attributes.ImportRootKey
-			policyInstance["import_standard_key"] = policy.PolicyData.Attributes.ImportStandardKey
-			policyInstance["enforce_token"] = policy.PolicyData.Attributes.EnforceToken
+			if policy.PolicyData.Enabled != nil {
+				policyInstance["enabled"] = *policy.PolicyData.Enabled
+			}
+			if policy.PolicyData.Attributes.CreateRootKey != nil {
+				policyInstance["create_root_key"] = *policy.PolicyData.Attributes.CreateRootKey
+			}
+			if policy.PolicyData.Attributes.CreateStandardKey != nil {
+				policyInstance["create_standard_key"] = *policy.PolicyData.Attributes.CreateStandardKey
+			}
+			if policy.PolicyData.Attributes.ImportRootKey != nil {
+				policyInstance["import_root_key"] = *policy.PolicyData.Attributes.ImportRootKey
+			}
+			if policy.PolicyData.Attributes.ImportStandardKey != nil {
+				policyInstance["import_standard_key"] = *policy.PolicyData.Attributes.ImportStandardKey
+			}
+			if policy.PolicyData.Attributes.EnforceToken != nil {
+				policyInstance["enforce_token"] = *policy.PolicyData.Attributes.EnforceToken
+			}
+
 			keyCreateImportAccessMap = append(keyCreateImportAccessMap, policyInstance)
 		}
 	}
@@ -3418,6 +3434,14 @@ func FindRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (
 			}
 		}
 	}
+	if name == "NONE" {
+		name := "NONE"
+		r := iampolicymanagementv1.PolicyRole{
+			DisplayName: &name,
+			RoleID:      &name,
+		}
+		return r, nil
+	}
 	supportedRoles := getSupportedRolesStr(supported)
 	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
 		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
@@ -3440,7 +3464,7 @@ func FindRoleByCRN(supported []iampolicymanagementv1.PolicyRole, crn string) (ia
 }
 
 func getSupportedRolesStr(supported []iampolicymanagementv1.PolicyRole) string {
-	rolesStr := ""
+	rolesStr := "NONE, "
 	for index, role := range supported {
 		if index != 0 {
 			rolesStr += ", "
@@ -4326,4 +4350,28 @@ func Listdifference(a, b []string) []string {
 		}
 	}
 	return ab
+}
+
+// Stringify returns the stringified form of value "v".
+// If "v" is a string-based type (string, strfmt.Date, strfmt.DateTime, strfmt.UUID, etc.),
+// then it is returned unchanged (e.g. `this is a string`, `foo`, `2025-06-03`).
+// Otherwise, json.Marshal() is used to serialze "v" and the resulting string is returned
+// (e.g. `32`, `true`, `[true, false, true]`, `{"foo": "bar"}`).
+// Note: the backticks in the comments above are not part of the returned strings.
+func Stringify(v interface{}) string {
+	if !core.IsNil(v) {
+		if s, ok := v.(string); ok {
+			return s
+		} else if s, ok := v.(interface{ String() string }); ok {
+			return s.String()
+		} else {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				log.Printf("[ERROR] Error marshaling 'any type' value as string: %s", err.Error())
+				return ""
+			}
+			return string(bytes)
+		}
+	}
+	return ""
 }

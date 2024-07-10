@@ -30,6 +30,7 @@ numOfOsd = "1"
 ocsUpgrade = "false"
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-5iops-tier"
+workerPools = null
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false

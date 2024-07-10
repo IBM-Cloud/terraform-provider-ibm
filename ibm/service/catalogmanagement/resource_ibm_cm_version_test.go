@@ -240,6 +240,10 @@ func testAccCheckIBMCmVersionComplexConfig(zipurl string, targetVersion string, 
 					}
 				}
 			}
+			required_resources {
+				type = "terraformVersion"
+				value = "1.5"
+			}
 		}
 	`, zipurl, targetVersion, usageText, installInstructions, iamPermissionServiceNameOne, iamPermissionsRoleCRNsOne, iamPermissionServiceNameTwo, iamPermissionsRoleCRNsTwo, featureTitleOne, featureDescriptionOne, featureTitleTwo, featureDescriptionTwo, archDiagDesc, archDiagCaption, archDiagType, archDiagURL)
 }

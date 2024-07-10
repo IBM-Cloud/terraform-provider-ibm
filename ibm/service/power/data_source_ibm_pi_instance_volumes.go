@@ -76,7 +76,7 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 						},
 						Attr_Size: {
 							Computed:    true,
-							Description: "The size of this volume in gigabytes.",
+							Description: "The size of this volume in GB.",
 							Type:        schema.TypeFloat,
 						},
 						Attr_State: {
