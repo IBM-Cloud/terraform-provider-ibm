@@ -370,7 +370,7 @@ func ResourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(model *iampolicyman
 func ResourceIBMPolicyAssignmentResourceTargetDetailsToMap(model *iampolicymanagementv1.AssignmentTargetDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
-		modelMap["version"] = *model.Type
+		modelMap["type"] = *model.Type
 	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -393,13 +393,6 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsToMap(model iampo
 				return modelMap, err
 			}
 			modelMap["target"] = targetMap
-		}
-		if model.Options != nil {
-			optionsMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsToMap(model.Options)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["options"] = []map[string]interface{}{optionsMap}
 		}
 		if model.ID != nil {
 			modelMap["id"] = *model.ID
@@ -472,45 +465,6 @@ func DataSourceIBMPolicyAssignmentAssignmentTargetDetailsToMap(model *iampolicym
 	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsToMap(model *iampolicymanagementv1.PolicyAssignmentV1Options) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	rootMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsRootToMap(model.Root)
-	if err != nil {
-		return modelMap, err
-	}
-	modelMap["root"] = []map[string]interface{}{rootMap}
-	return modelMap, nil
-}
-
-func DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsRootToMap(model *iampolicymanagementv1.PolicyAssignmentV1OptionsRoot) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.RequesterID != nil {
-		modelMap["requester_id"] = *model.RequesterID
-	}
-	if model.AssignmentID != nil {
-		modelMap["assignment_id"] = *model.AssignmentID
-	}
-	if model.Template != nil {
-		templateMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsRootTemplateToMap(model.Template)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["template"] = []map[string]interface{}{templateMap}
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMPolicyAssignmentPolicyAssignmentV1OptionsRootTemplateToMap(model *iampolicymanagementv1.PolicyAssignmentV1OptionsRootTemplate) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Version != nil {
-		modelMap["version"] = *model.Version
 	}
 	return modelMap, nil
 }
@@ -665,17 +619,6 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentT
 	if model.Target != nil {
 		modelMap["target"] = *model.Target
 	}
-	if model.Options != nil {
-		options := []map[string]interface{}{}
-		for _, optionsItem := range model.Options {
-			optionsItemMap, err := DataSourceIBMPolicyAssignmentPolicyAssignmentOptionsToMap(&optionsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			options = append(options, optionsItemMap)
-		}
-		modelMap["options"] = options
-	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
 	}
@@ -710,20 +653,6 @@ func DataSourceIBMPolicyAssignmentPolicyTemplateAssignmentItemsPolicyAssignmentT
 	}
 	if model.Status != nil {
 		modelMap["status"] = *model.Status
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMPolicyAssignmentPolicyAssignmentOptionsToMap(model *iampolicymanagementv1.PolicyAssignmentOptions) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["subject_type"] = *model.SubjectType
-	modelMap["subject_id"] = *model.SubjectID
-	modelMap["root_requester_id"] = *model.RootRequesterID
-	if model.RootTemplateID != nil {
-		modelMap["root_template_id"] = *model.RootTemplateID
-	}
-	if model.RootTemplateVersion != nil {
-		modelMap["root_template_version"] = *model.RootTemplateVersion
 	}
 	return modelMap, nil
 }

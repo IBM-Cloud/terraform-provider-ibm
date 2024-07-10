@@ -77,13 +77,6 @@ func testAccCheckIBMPolicyAssignmentConfigBasic(name string, targetId string) st
 				type = "Account"
 				id = "%s"
 			}
-
-			options {
-				root { 
-					requester_id = "orchestrator"
-					assignment_id =  "test"
-				}
-			}
 			templates{
 				id = ibm_iam_policy_template.policy_s2s_template.template_id 
 				version = ibm_iam_policy_template.policy_s2s_template.version
@@ -147,12 +140,6 @@ func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) s
 				id = "%s"
 			}
 
-			options {
-				root { 
-					requester_id = "orchestrator"
-					assignment_id =  "test"
-				}
-			}
 			templates{
 				id = ibm_iam_policy_template.policy_s2s_template.template_id 
 				version = ibm_iam_policy_template.policy_s2s_template.version
