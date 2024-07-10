@@ -50,6 +50,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 func TestAccIBMISBareMetalServer_bandwidth(t *testing.T) {
 	var server string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	pipName := fmt.Sprintf("tf-vpc-pip-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
@@ -63,7 +64,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		CheckDestroy: testAccCheckIBMISBareMetalServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, 10000),
+				Config: testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, pipName, 10000),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
 					resource.TestCheckResourceAttr(
@@ -75,13 +76,13 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				),
 			},
 			{
-				Config: testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, 25000),
+				Config: testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, pipName, 25000),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_is_bare_metal_server.testacc_bms", "bandwidth", "20000"),
+						"ibm_is_bare_metal_server.testacc_bms", "bandwidth", "25000"),
 				),
 			},
 		},
@@ -528,7 +529,7 @@ func testAccCheckIBMISBareMetalServerConfig(vpcname, subnetname, sshname, public
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
 }
 
-func testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name string, bandwidth int) string {
+func testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshname, publicKey, name, pipName string, bandwidth int) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_vpc" "testacc_vpc" {
 			name = "%s"
@@ -553,12 +554,20 @@ func testAccCheckIBMISBareMetalServerBandwidthConfig(vpcname, subnetname, sshnam
 			image 				= "%s"
 			zone 				= "%s"
 			keys 				= [ibm_is_ssh_key.testacc_sshkey.id]
-			primary_network_interface {
-				subnet     		= ibm_is_subnet.testacc_subnet.id
+			primary_network_attachment {
+				virtual_network_interface { 
+						auto_delete = true
+						enable_infrastructure_nat = true
+						primary_ip {
+							name = "%s"
+						}
+						subnet = ibm_is_subnet.testacc_subnet.id
+				}
+				allowed_vlans = [100, 102]
 			}
 			vpc 				= ibm_is_vpc.testacc_vpc.id
 		}
-`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, bandwidth, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, bandwidth, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName, pipName)
 }
 
 func testAccCheckIBMISBareMetalServerVNIConfig(vpcname, subnetname, sshname, publicKey, vniname, name string) string {
