@@ -137,7 +137,8 @@ To use public and private regional endpoints for a service, you must add these e
 **Note:** 
 
 The endpoints file accepts "public", "private" and "public-and-private" as visibility while COS resources support "public", "private" and "direct as endpoint-types. 
-Since endpoints file does not accomodate type "direct", users must define the url for "direct" endpoint-type under exisiting visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+Since endpoints file schema does not supprt "direct", users must define the url for "direct" endpoint-type under exisiting visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+The user cannot define urls for both private and direct endpoint-type simultaneously in the endpoints file under "private" field. 
 
 **Example**:
 
@@ -149,6 +150,21 @@ Since endpoints file does not accomodate type "direct", users must define the ur
         },
         "private":{
             "us-south":"https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
+OR 
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.private.cloud-object-storage.cloud.ibm.com/v1"
         }
     }
 }
