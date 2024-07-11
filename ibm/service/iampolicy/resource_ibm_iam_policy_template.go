@@ -567,7 +567,6 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource, listRoleOptions *iampolicymanagementv1.ListRolesOptions, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, *iampolicymanagementv1.RoleCollection, error) {
 	modelMap := make(map[string]interface{})
 	attributes := []map[string]interface{}{}
-	// var roles *iampolicymanagementv1.RoleCollection
 
 	for _, attributesItem := range model.Attributes {
 		if *attributesItem.Key == "serviceName" &&
