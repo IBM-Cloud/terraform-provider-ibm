@@ -44,14 +44,14 @@ func TestAccIBMIAMPolicyTemplateBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMIAMPolicyTemplateBasicUpdateTest(t *testing.T) {
+func TestAccIBMIAMPolicyTemplateBasicS2SUpdateTest(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCreatePolicyS2STemplateConfigBasic(name, "iam-identity", "secrets-manager"),
+				Config: testAccCheckIBMPolicyS2STemplateUpdateConfigBasicTest(name, "Service ID creator", "iam-identity", "secrets-manager"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
@@ -307,39 +307,6 @@ func testAccCheckIBMPolicyTemplateConfigBasic(name string, serviceName string) s
 	`, name, serviceName)
 }
 
-func testAccCheckIBMCreatePolicyS2STemplateConfigBasic(name string, resourceServiceName string, subjectServiceName string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_iam_policy_template" "policy_template" {
-    		committed   = false
-    		name        = "%s"
-    		policy {
-        		description = "description"
-        		roles       = [
-            		"Service ID creator",
-        		]
-        		type        = "authorization"
-
-        		resource {
-            		attributes {
-                		key      = "serviceName"
-                		operator = "stringEquals"
-                		value    = "%s"
-            		}
-        		}
-
-        		subject {
-            		attributes {
-                		key      = "serviceName"
-                		operator = "stringEquals"
-                		value    = "%s"
-            		}
-        		}
-    		}
-		}
-	`, name, resourceServiceName, subjectServiceName)
-}
-
 func testAccCheckIBMPolicyS2STemplateUpdateConfigBasicTest(name string, role string, resourceServiceName string, subjectServiceName string) string {
 	return fmt.Sprintf(`
 
@@ -388,7 +355,7 @@ func testAccCheckIBMPolicyS2STemplateConfigBasicTest(name string, sourceServiceN
 					}
 					attributes {
 						key = "volumeId"
-						operator = "stringEquals"
+						operator = "stringExists"
 						value = "%s"
 					}
 				}
