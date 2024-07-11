@@ -59,6 +59,8 @@ const (
 	cisDomainSettingsMobileRedirectStripURI          = "strip_uri"
 	cisDomainSettingsMaxUpload                       = "max_upload"
 	cisDomainSettingsCipher                          = "cipher"
+	cisDomainSettingsOriginMaxHTTPVersion            = "origin_max_http_version"
+	cisDomainSettingsOriginPostQuantumEncryption     = "origin_post_quantum_encryption"
 	// cisDomainSettingsONOFFValidatorID                = "on_off"
 	// cisDomainSettingsActiveDisableValidatorID        = "active_disable"
 	cisDomainSettingsSSLSettingValidatorID      = "ssl_setting"
@@ -349,6 +351,24 @@ func ResourceIBMCISSettings() *schema.Resource {
 						cisDomainSettingsCipherValidatorID),
 				},
 			},
+			cisDomainSettingsOriginMaxHTTPVersion: {
+				Type:        schema.TypeString,
+				Description: "Max HTTP Version",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsOriginMaxHTTPVersion),
+			},
+			cisDomainSettingsOriginPostQuantumEncryption: {
+				Type:        schema.TypeString,
+				Description: "Post Quantum Encryption",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsOriginPostQuantumEncryption),
+			},
 			cisDomainSettingsMinify: {
 				Type:        schema.TypeList,
 				Description: "Minify setting",
@@ -474,6 +494,7 @@ func ResourceIBMCISDomainSettingValidator() *validate.ResourceValidator {
 	challengeTTL := "300, 900, 1800, 2700, 3600, 7200, 10800, 14400, 28800, 57600, 86400, 604800, 2592000, 31536000"
 	maxUpload := "100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500"
 	cipher := "ECDHE-ECDSA-AES128-GCM-SHA256,ECDHE-ECDSA-CHACHA20-POLY1305, ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-CHACHA20-POLY1305, ECDHE-ECDSA-AES128-SHA256, ECDHE-ECDSA-AES128-SHA, ECDHE-RSA-AES128-SHA256, ECDHE-RSA-AES128-SHA, AES128-GCM-SHA256, AES128-SHA256, AES128-SHA, ECDHE-ECDSA-AES256-GCM-SHA384, ECDHE-ECDSA-AES256-SHA384, ECDHE-RSA-AES256-GCM-SHA384, ECDHE-RSA-AES256-SHA384, ECDHE-RSA-AES256-SHA, AES256-GCM-SHA384, AES256-SHA256, AES256-SHA, DES-CBC3-SHA, AEAD-AES128-GCM-SHA256, AEAD-AES256-GCM-SHA384, AEAD-CHACHA20-POLY1305-SHA256"
+	quantumEncryption := "off, preferred, supported"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -727,6 +748,20 @@ func ResourceIBMCISDomainSettingValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              cipher})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsOriginMaxHTTPVersion,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "1,2"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsOriginPostQuantumEncryption,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              quantumEncryption})
 	ibmCISDomainSettingResourceValidator := validate.ResourceValidator{
 		ResourceName: ibmCISDomainSettings,
 		Schema:       validateSchema}
@@ -765,6 +800,8 @@ var settingsList = []string{
 	cisDomainSettingsMobileRedirect,
 	cisDomainSettingsMaxUpload,
 	cisDomainSettingsCipher,
+	cisDomainSettingsOriginMaxHTTPVersion,
+	cisDomainSettingsOriginPostQuantumEncryption,
 }
 
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -1013,6 +1050,22 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					opt := cisClient.NewUpdateCiphersOptions()
 					opt.SetValue(cipherValue)
 					_, resp, err = cisClient.UpdateCiphers(opt)
+				}
+			}
+		case cisDomainSettingsOriginMaxHTTPVersion:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateOriginMaxHttpVersionOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateOriginMaxHttpVersion(opt)
+				}
+			}
+		case cisDomainSettingsOriginPostQuantumEncryption:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateOriginPostQuantumEncryptionOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateOriginPostQuantumEncryption(opt)
 				}
 			}
 		case cisDomainSettingsMinify:
@@ -1356,6 +1409,23 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			result, resp, err := cisClient.GetCiphers(opt)
 			if err == nil {
 				d.Set(cisDomainSettingsCipher, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
+
+		case cisDomainSettingsOriginMaxHTTPVersion:
+			opt := cisClient.NewGetOriginMaxHttpVersionOptions()
+			result, resp, err := cisClient.GetOriginMaxHttpVersion(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsOriginMaxHTTPVersion, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
+		case cisDomainSettingsOriginPostQuantumEncryption:
+			opt := cisClient.NewGetOriginPostQuantumEncryptionOptions()
+			result, resp, err := cisClient.GetOriginPostQuantumEncryption(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsOriginPostQuantumEncryption, result.Result.Value)
 			}
 			settingResponse = resp
 			settingErr = err
