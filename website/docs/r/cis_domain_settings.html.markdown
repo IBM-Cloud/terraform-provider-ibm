@@ -45,6 +45,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = ["AES128-SHA256"]
+  origin_max_http_version     = "1"
+  origin_post_quantum_encryption = "off"
   minify {
     css  = "off"
     js   = "off"
@@ -70,6 +72,8 @@ resource "ibm_cis_domain_settings" "test" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.2"
+  origin_max_http_version     = "2"
+  origin_post_quantum_encryption = "supported"
 }
 ```
 ---
@@ -109,6 +113,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = []
+  origin_max_http_version     = "1"
+  origin_post_quantum_encryption = "off"
   minify {
     css  = "off"
     js   = "off"
@@ -134,6 +140,8 @@ resource "ibm_cis_domain_settings" "test" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.3"
+  origin_max_http_version     = "2"
+  origin_post_quantum_encryption = "supported"
 }
 ```
 ---
@@ -189,6 +197,8 @@ Review the argument references that you can specify for your resource.
 - `true_client_ip_header` - (Optional, String) Supported values are `off` and `on`.
 - `waf` - (Optional, String) Enable a web application firewall (WAF). Supported values are `off` and `on`.
 - `websockets` - (Optional, String) Supported values are `off` and `on`.
+- `origin_max_http_version` - (Optional, String) Sets the highest HTTP version to use with origin. Supported values are `1` and `2`.
+- `origin_post_quantum_encryption` - (Optional, String) Weather or not to use Post-Quantum key agreement algorithms when connecting to the origin. Supported values are `off`, `preferred` and `supported`.
 
 **Note**
 
