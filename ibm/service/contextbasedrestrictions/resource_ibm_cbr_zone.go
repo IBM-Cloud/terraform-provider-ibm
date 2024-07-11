@@ -474,7 +474,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 	}
-	preservedAddresses := filterAddressList(currentZone.Addresses, func(id string) bool {
+	preservedAddresses := FilterAddressList(currentZone.Addresses, func(id string) bool {
 		return id != cbrZoneAddressIdDefault
 	})
 	if len(preservedAddresses) > 0 {
@@ -757,7 +757,7 @@ func resourceEncodeAddressList(addresses []interface{}, addressId string) (resul
 	return
 }
 
-func filterAddressList(addresses []contextbasedrestrictionsv1.AddressIntf, keep func(id string) bool) (result []contextbasedrestrictionsv1.AddressIntf) {
+func FilterAddressList(addresses []contextbasedrestrictionsv1.AddressIntf, keep func(id string) bool) (result []contextbasedrestrictionsv1.AddressIntf) {
 	result = make([]contextbasedrestrictionsv1.AddressIntf, 0, len(addresses))
 	for _, addr := range addresses {
 		_, addressId, err := resourceIBMCbrZoneAddressToMap(addr)

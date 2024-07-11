@@ -261,7 +261,7 @@ func resourceReplaceZoneAddresses(context context.Context, d *schema.ResourceDat
 			return err
 		}
 	}
-	preservedAddresses := filterAddressList(currentZone.Addresses, func(id string) bool {
+	preservedAddresses := FilterAddressList(currentZone.Addresses, func(id string) bool {
 		return id != addressesId
 	})
 	if len(preservedAddresses) > 0 {
