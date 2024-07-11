@@ -22,6 +22,7 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 	managed_from := "wdc04"
 	physical_address := "test-road 10, 111 test-country"
 	coreos_enabled := "true"
+	capabilities := []kubernetesserviceapiv1.CapabilityManagedBySatellite{kubernetesserviceapiv1.OnPrem}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -30,13 +31,14 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from, physical_address, coreos_enabled, "", ""),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, physical_address, coreos_enabled, "", "", capabilities),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "managed_from", managed_from),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "physical_address", physical_address),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "coreos_enabled", coreos_enabled),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.#", "1"),
 				),
 			},
 		},
@@ -49,6 +51,7 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 	managed_from := "wdc04"
 	physical_address := "test-road 10, 111 test-country"
 	coreos_enabled := "true"
+	capabilities := []kubernetesserviceapiv1.CapabilityManagedBySatellite{kubernetesserviceapiv1.OnPrem}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -57,12 +60,13 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from, physical_address, coreos_enabled, "", ""),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, physical_address, coreos_enabled, "", "", capabilities),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "managed_from", managed_from),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "physical_address", physical_address),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.#", "1"),
 				),
 			},
 			{
@@ -82,6 +86,7 @@ func TestAccSatelliteLocation_PodAndServiceSubnet(t *testing.T) {
 	coreos_enabled := "true"
 	pod_subnet := "10.69.0.0/16"
 	service_subnet := "192.168.42.0/24"
+	capabilities := []kubernetesserviceapiv1.CapabilityManagedBySatellite{kubernetesserviceapiv1.OnPrem}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -89,7 +94,7 @@ func TestAccSatelliteLocation_PodAndServiceSubnet(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from, physical_address, coreos_enabled, pod_subnet, service_subnet),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, physical_address, coreos_enabled, pod_subnet, service_subnet, capabilities),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
@@ -98,6 +103,7 @@ func TestAccSatelliteLocation_PodAndServiceSubnet(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "coreos_enabled", coreos_enabled),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "pod_subnet", pod_subnet),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "service_subnet", service_subnet),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.#", "1"),
 				),
 			},
 		},
@@ -160,7 +166,7 @@ func testAccCheckSatelliteLocationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSatelliteLocationCreate(name, managed_from string, physical_address string, coreos_enabled string, pod_subnet, service_subnet string) string {
+func testAccCheckSatelliteLocationCreate(name, managed_from string, physical_address string, coreos_enabled string, pod_subnet, service_subnet string, capabilities []kubernetesserviceapiv1.CapabilityManagedBySatellite) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "res_group" {
@@ -178,7 +184,8 @@ func testAccCheckSatelliteLocationCreate(name, managed_from string, physical_add
 		tags = ["env:dev"]
 		pod_subnet = "%s"
 		service_subnet = "%s"
+		capabilities = "%q"
 	}
 	  
-`, name, managed_from, physical_address, coreos_enabled, pod_subnet, service_subnet)
+`, name, managed_from, physical_address, coreos_enabled, pod_subnet, service_subnet, capabilities)
 }
