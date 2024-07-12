@@ -43,10 +43,9 @@ data "ibm_is_share_accessor_bindings" "example" {
   share = ibm_is_share.example.id
 }
 
-resource "ibm_share_accessor_binding_operations" "example" {
+resource "ibm_share_delete_accessor_binding" "example" {
     share = ibm_is_share.example.id
-    share_accessor_binding = data.ibm_is_share_accessor_bindings.example.accessor_bindings.0.id
-    delete_accessor_binding = true
+    accessor_binding = data.ibm_is_share_accessor_bindings.example.accessor_bindings.0.id
 }
 ```
 
@@ -55,8 +54,7 @@ resource "ibm_share_accessor_binding_operations" "example" {
 The following arguments are supported:
 
 - `share` - (Required, string) The file share identifier.
-- `share_accessor_binding` - (Required, string) The share accessor binding ID
-- `delete_accessor_binding` - (Required, boolean) Indicates the binding has to be deleted
+- `accessor_binding` - (Required, string) The share accessor binding ID
 
 ## Attribute Reference
 

@@ -30,7 +30,7 @@ func DataSourceIBMIsShareAccessorBinding() *schema.Resource {
 				Required:    true,
 				Description: "The file share identifier.",
 			},
-			"share_accessor_binding": &schema.Schema{
+			"accessor_binding": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The file share accessor binding identifier.",
@@ -166,7 +166,7 @@ func dataSourceIBMIsShareAccessorBindingRead(context context.Context, d *schema.
 	getShareAccessorBindingOptions := &vpcv1.GetShareAccessorBindingOptions{}
 
 	getShareAccessorBindingOptions.SetShareID(d.Get("share").(string))
-	getShareAccessorBindingOptions.SetID(d.Get("share_accessor_binding").(string))
+	getShareAccessorBindingOptions.SetID(d.Get("accessor_binding").(string))
 
 	shareAccessorBinding, _, err := vpcClient.GetShareAccessorBindingWithContext(context, getShareAccessorBindingOptions)
 	if err != nil {

@@ -73,7 +73,7 @@ func testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcName, sname, tEMode, s
 	}
 	resource "ibm_is_share_delete_accessor_binding" "delete_binding" {
 		share = ibm_is_share.is_share.id
-		share_accessor_binding = data.ibm_is_share_accessor_bindings.bindings.accessor_bindings.0.id
+		accessor_binding = data.ibm_is_share_accessor_bindings.bindings.accessor_bindings.0.id
 	}
 	`
 }

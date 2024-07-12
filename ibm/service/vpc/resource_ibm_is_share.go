@@ -805,6 +805,32 @@ func ResourceIbmIsShare() *schema.Resource {
 					},
 				},
 			},
+			"lifecycle_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A reason code for this lifecycle state",
+						},
+
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
+						},
+					},
+				},
+			},
 			"lifecycle_state": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -1014,11 +1040,11 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 			if replicaShareMap["name"] != nil {
 				replicaShare.Name = core.StringPtr(replicaShareMap["name"].(string))
 			}
-			// if replicaShareMap["profile"] != nil {
-			// 	replicaShare.Profile = &vpcv1.ShareProfileIdentity{
-			// 		Name: core.StringPtr(replicaShareMap["profile"].(string)),
-			// 	}
-			// }
+			if replicaShareMap["profile"] != nil {
+				replicaShare.Profile = &vpcv1.ShareProfileIdentity{
+					Name: core.StringPtr(replicaShareMap["profile"].(string)),
+				}
+			}
 			if replicaShareMap["replication_cron_spec"] != nil {
 				replicaShare.ReplicationCronSpec = core.StringPtr(replicaShareMap["replication_cron_spec"].(string))
 			}
@@ -1366,6 +1392,11 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 	}
 	if err = d.Set("href", share.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+	if share.LifecycleReasons != nil {
+		if err := d.Set("lifecycle_reasons", resourceShareLifecycleReasons(share.LifecycleReasons)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_reasons: %s", err))
+		}
 	}
 	if err = d.Set("lifecycle_state", share.LifecycleState); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting lifecycle_state: %s", err))
@@ -2177,4 +2208,19 @@ func ResourceIBMIsShareShareReferenceDeletedToMap(model *vpcv1.ShareReferenceDel
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = *model.MoreInfo
 	return modelMap
+}
+func resourceShareLifecycleReasons(lifecycleReasons []vpcv1.ShareLifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+	lifecycleReasonsList = make([]map[string]interface{}, 0)
+	for _, lr := range lifecycleReasons {
+		currentLR := map[string]interface{}{}
+		if lr.Code != nil && lr.Message != nil {
+			currentLR["code"] = *lr.Code
+			currentLR["message"] = *lr.Message
+			if lr.MoreInfo != nil {
+				currentLR["more_info"] = *lr.MoreInfo
+			}
+			lifecycleReasonsList = append(lifecycleReasonsList, currentLR)
+		}
+	}
+	return lifecycleReasonsList
 }

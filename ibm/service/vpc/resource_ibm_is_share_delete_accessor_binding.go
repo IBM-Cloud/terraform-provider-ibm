@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,10 +32,11 @@ func ResourceIbmIsShareDeleteAccessorBinding() *schema.Resource {
 				Required:    true,
 				Description: "The file share identifier.",
 			},
-			"share_accessor_binding": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The accessor binding id",
+			"accessor_binding": {
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The accessor binding id",
 			},
 		},
 	}
@@ -48,7 +50,7 @@ func resourceIbmIsShareDeleteAccessorBindingCreate(context context.Context, d *s
 
 	share_id := d.Get("share").(string)
 
-	bindingId := d.Get("share_accessor_binding").(string)
+	bindingId := d.Get("accessor_binding").(string)
 
 	deleteAccessBindingOptions := &vpcv1.DeleteShareAccessorBindingOptions{
 		ShareID: &share_id,

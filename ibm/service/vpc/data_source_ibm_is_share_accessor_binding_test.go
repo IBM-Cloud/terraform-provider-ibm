@@ -46,7 +46,7 @@ func testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_is_share_accessor_binding" "is_share_accessor_binding_instance" {
 			share = "share_id"
-			share_accessor_binding = "id"
+			accessor_binding = "id"
 		}
 	`)
 }
