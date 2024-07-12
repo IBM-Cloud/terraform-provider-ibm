@@ -35,7 +35,7 @@ func ResourceIBMCISOriginCertificateOrder() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
-				Description: "CIS object id or CRN",
+				Description: "CIS object ID or CRN",
 				Required:    true,
 				ValidateFunc: validate.InvokeValidator(ibmCISOriginCertificateOrder,
 					"cis_id"),
@@ -48,43 +48,43 @@ func ResourceIBMCISOriginCertificateOrder() *schema.Resource {
 			},
 			cisOriginCertificateID: {
 				Type:        schema.TypeString,
-				Description: "certificate id",
+				Description: "Certificate ID",
 				Computed:    true,
 			},
 			cisOriginCertificateType: {
 				Type:        schema.TypeString,
-				Description: "certificate type",
+				Description: "Certificate type",
 				Required:    true,
 			},
 			cisOriginCertificateHosts: {
 				Type:        schema.TypeList,
-				Description: "Hosts which certificate need to be ordered",
+				Description: "Hosts for which certificates need to be ordered",
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			cisOriginCertificateValidityDays: {
 				Type:        schema.TypeInt,
-				Description: "validity days",
+				Description: "Calidity days",
 				Required:    true,
 			},
 			cisOriginCertificateCSR: {
 				Type:        schema.TypeString,
-				Description: "validity days",
+				Description: "CSR",
 				Required:    true,
 			},
 			cisOriginCertificatePrivateKey: {
 				Type:        schema.TypeString,
-				Description: "certificate id",
+				Description: "Certificate private key",
 				Computed:    true,
 			},
 			cisOriginCertificate: {
 				Type:        schema.TypeString,
-				Description: "certificate id",
+				Description: "Certificate",
 				Computed:    true,
 			},
 			cisOriginCertificateExpiresOn: {
 				Type:        schema.TypeString,
-				Description: "certificate id",
+				Description: "Expiration date of the certificate",
 				Computed:    true,
 			},
 		},
@@ -132,7 +132,7 @@ func ResourceIBMCISOriginCertificateCreate(d *schema.ResourceData, meta interfac
 
 	result, resp, err := cisClient.CreateOriginCertificate(opt)
 	if err != nil {
-		log.Printf("Origin Certificate  order failed: %v", resp)
+		log.Printf("Origin Certificate order failed: %v", resp)
 		return err
 	}
 
@@ -148,7 +148,7 @@ func ResourceIBMCISOriginCertificateRead(d *schema.ResourceData, meta interface{
 	}
 	certificateID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		log.Println("Error in reading certificate id")
+		log.Println("Error in reading certificate ID")
 		return err
 	}
 	cisClient.Crn = core.StringPtr(crn)
@@ -179,7 +179,7 @@ func ResourceIBMCISOriginCertificateDelete(d *schema.ResourceData, meta interfac
 	}
 	certificateID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		log.Println("Error in reading certificate id")
+		log.Println("Error in reading certificate Id")
 		return err
 	}
 	cisClient.Crn = core.StringPtr(crn)
@@ -191,73 +191,5 @@ func ResourceIBMCISOriginCertificateDelete(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	// _, err = waitForCISCertificateOrderDelete(d, meta)
-	// if err != nil {
-	// 	return err
-	// }
-
 	return nil
 }
-
-/*
-func ResourceIBMCISCertificateOrderExist(d *schema.ResourceData, meta interface{}) (bool, error) {
-	cisClient, err := meta.(conns.ClientSession).CisSSLClientSession()
-	if err != nil {
-		return false, err
-	}
-	certificateID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
-	if err != nil {
-		log.Println("Error in reading certificate id")
-		return false, err
-	}
-	cisClient.Crn = core.StringPtr(crn)
-	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-	opt := cisClient.NewGetCustomCertificateOptions(certificateID)
-	_, response, err := cisClient.GetCustomCertificate(opt)
-	if err != nil {
-		if response != nil && response.StatusCode == 400 {
-			log.Printf("Certificate is not found")
-			return false, nil
-		}
-		log.Printf("Get Certificate failed: %v", response)
-		return false, err
-	}
-	return true, nil
-}
-*/
-/*
-func waitForCISCertificateOrderDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	cisClient, err := meta.(conns.ClientSession).CisSSLClientSession()
-	if err != nil {
-		return nil, err
-	}
-	certificateID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
-	if err != nil {
-		log.Println("Error in reading certificate id")
-		return nil, err
-	}
-	cisClient.Crn = core.StringPtr(crn)
-	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
-	opt := cisClient.NewGetCustomCertificateOptions(certificateID)
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{cisCertificateOrderDeletePending},
-		Target:  []string{cisCertificateOrderDeleted},
-		Refresh: func() (interface{}, string, error) {
-			_, detail, err := cisClient.GetCustomCertificate(opt)
-			if err != nil {
-				if detail != nil && detail.StatusCode == 400 {
-					return detail, cisCertificateOrderDeleted, nil
-				}
-				return nil, "", err
-			}
-			return detail, cisCertificateOrderDeletePending, nil
-		},
-		Timeout:      d.Timeout(schema.TimeoutDelete),
-		Delay:        10 * time.Second,
-		MinTimeout:   10 * time.Second,
-		PollInterval: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-*/

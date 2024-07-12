@@ -38,7 +38,7 @@ func ResourceIBMCISAdvancedCertificatePackOrder() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
-				Description: "CIS object id or CRN",
+				Description: "CIS object ID or CRN",
 				Required:    true,
 				ValidateFunc: validate.InvokeValidator(ibmCISAdvancedCertificatePackOrder,
 					"cis_id"),
@@ -51,12 +51,12 @@ func ResourceIBMCISAdvancedCertificatePackOrder() *schema.Resource {
 			},
 			cisAdvancedCertificatePackOrderID: {
 				Type:        schema.TypeString,
-				Description: "certificate id",
+				Description: "Certificate ID",
 				Computed:    true,
 			},
 			cisAdvancedCertificatePackOrderType: {
 				Type:        schema.TypeString,
-				Description: "certificate type",
+				Description: "Certificate type",
 				Optional:    true,
 				Default:     cisAdvancedCertificatePackOrderTypeAdvanced,
 				ValidateFunc: validate.InvokeValidator(ibmCISAdvancedCertificatePackOrder,
@@ -64,33 +64,33 @@ func ResourceIBMCISAdvancedCertificatePackOrder() *schema.Resource {
 			},
 			cisAdvancedCertificatePackOrderHosts: {
 				Type:        schema.TypeList,
-				Description: "Hosts which certificate need to be ordered",
+				Description: "Hosts for which certificates need to be ordered",
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			cisAdvancedCertificatePackOrderStatus: {
 				Type:        schema.TypeString,
-				Description: "certificate status",
+				Description: "Certificate status",
 				Computed:    true,
 			},
 			cisAdvancedCertificatePackValidationMethod: {
 				Type:        schema.TypeString,
-				Description: "validation method",
+				Description: "Validation method",
 				Required:    true,
 			},
 			cisAdvancedCertificatePackValidityDays: {
 				Type:        schema.TypeInt,
-				Description: "validity days",
+				Description: "Validity days",
 				Required:    true,
 			},
 			cisAdvancedCertificatePackCertificateAthority: {
 				Type:        schema.TypeString,
-				Description: "certificate authority",
+				Description: "Certificate authority",
 				Required:    true,
 			},
 			cisAdvancedCertificatePackCloudflareBranding: {
 				Type:        schema.TypeBool,
-				Description: "cloudflare branding",
+				Description: "Cloudflare branding",
 				Optional:    true,
 				Default:     false,
 			},
@@ -173,7 +173,7 @@ func ResourceIBMCISAdvancedCertificatePackOrderDelete(d *schema.ResourceData, me
 	}
 	certificateID, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
-		log.Println("Error in reading certificate id")
+		log.Println("Error in reading certificate ID")
 		return err
 	}
 	cisClient.Crn = core.StringPtr(crn)

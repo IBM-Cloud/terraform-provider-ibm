@@ -22,7 +22,7 @@ func DataSourceIBMCISOriginCertificateOrder() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
-				Description: "CIS object id or CRN",
+				Description: "CIS object ID or CRN",
 				Required:    true,
 				ValidateFunc: validate.InvokeValidator(ibmCISOriginCertificateOrder,
 					"cis_id"),
@@ -35,7 +35,7 @@ func DataSourceIBMCISOriginCertificateOrder() *schema.Resource {
 			},
 			cisOriginCertificateID: {
 				Type:        schema.TypeString,
-				Description: "certificate id",
+				Description: "Certificate ID",
 				Optional:    true,
 			},
 			cisOriginCertificateList: {
@@ -46,43 +46,43 @@ func DataSourceIBMCISOriginCertificateOrder() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						cisOriginCertificateID: {
 							Type:        schema.TypeString,
-							Description: "certificate id",
+							Description: "Certificate ID",
 							Computed:    true,
 						},
 						cisOriginCertificateType: {
 							Type:        schema.TypeString,
-							Description: "certificate type",
+							Description: "Certificate type",
 							Computed:    true,
 						},
 						cisOriginCertificateHosts: {
 							Type:        schema.TypeList,
-							Description: "Hosts which certificate need to be ordered",
+							Description: "Hosts for which certificates need to be ordered",
 							Computed:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						cisOriginCertificateValidityDays: {
 							Type:        schema.TypeInt,
-							Description: "validity days",
+							Description: "Validity days",
 							Computed:    true,
 						},
 						cisOriginCertificateCSR: {
 							Type:        schema.TypeString,
-							Description: "validity days",
+							Description: "CSR",
 							Computed:    true,
 						},
 						cisOriginCertificatePrivateKey: {
 							Type:        schema.TypeString,
-							Description: "certificate id",
+							Description: "Certificate private key",
 							Computed:    true,
 						},
 						cisOriginCertificate: {
 							Type:        schema.TypeString,
-							Description: "certificate id",
+							Description: "Certificate",
 							Computed:    true,
 						},
 						cisOriginCertificateExpiresOn: {
 							Type:        schema.TypeString,
-							Description: "certificate id",
+							Description: "Expiration date of the certificate",
 							Computed:    true,
 						},
 					},
