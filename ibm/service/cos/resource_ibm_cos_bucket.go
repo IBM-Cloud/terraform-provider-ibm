@@ -357,7 +357,6 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Optional:    true,
 				MaxItems:    1,
 				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
-				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default": {

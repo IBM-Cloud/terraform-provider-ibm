@@ -189,6 +189,268 @@ func TestAccIBMISVPNGatewayConnection_route(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVPNGatewayConnection_admin_state(t *testing.T) {
+	var VPNGatewayConnection string
+	vpcname1 := fmt.Sprintf("tfvpngc-vpc-%d", acctest.RandIntRange(100, 200))
+	vpcname2 := fmt.Sprintf("tfvpngc-vpc-%d", acctest.RandIntRange(100, 200))
+	subnetname1 := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(100, 200))
+	subnetname2 := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(100, 200))
+	vpnname1 := fmt.Sprintf("tfvpngc-vpn-%d", acctest.RandIntRange(100, 200))
+	vpnname2 := fmt.Sprintf("tfvpngc-vpn-%d", acctest.RandIntRange(100, 200))
+	name1 := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(100, 200))
+	name2 := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(100, 200))
+	name3 := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(100, 200))
+	name4 := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(100, 200))
+	adminStateUp1 := true
+	adminStateUp1Update := false
+	adminStateUp2 := true
+	adminStateUp2Update := false
+	updname2 := fmt.Sprintf("tfvpngc-updatename-%d", acctest.RandIntRange(100, 200))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayConnectionAdminStateConfig(vpcname1, subnetname1, vpnname1, name1, name2, vpcname2, subnetname2, vpnname2, name3, name4, adminStateUp1, adminStateUp2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "mode", "route"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "admin_state_up", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "status"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "name", name2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "mode", "route"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "admin_state_up", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "status"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "name", name3),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "mode", "policy"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "admin_state_up", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "status"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "name", name4),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "mode", "policy"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "admin_state_up", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "status"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPNGatewayConnectionAdminStateConfig(vpcname1, subnetname1, vpnname1, name1, updname2, vpcname2, subnetname2, vpnname2, name3, name4, adminStateUp1Update, adminStateUp2Update),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "mode", "route"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "admin_state_up", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "status"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "name", updname2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "mode", "route"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "admin_state_up", "false"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "status"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "name", name3),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "mode", "policy"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "admin_state_up", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection3", "status"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "name", name4),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "mode", "policy"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "action"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "admin_state_up"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "admin_state_up", "false"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "authentication_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "created_at"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "establish_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "interval"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "preshared_key"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "resource_type", "vpn_gateway_connection"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection4", "status"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVPNGatewayConnection_multiple(t *testing.T) {
 	var VPNGatewayConnection string
 	var VPNGatewayConnection2 string
@@ -680,6 +942,69 @@ func testAccCheckIBMISVPNGatewayConnectionRouteConfig(vpc1, subnet1, vpnname1, n
 		preshared_key = "VPNDemoPassword"
 	}
 	`, vpc1, subnet1, acc.ISZoneName, acc.ISCIDR, vpnname1, name1, vpc2, subnet2, acc.ISZoneName, acc.ISCIDR, vpnname2, name2)
+
+}
+func testAccCheckIBMISVPNGatewayConnectionAdminStateConfig(vpc1, subnet1, vpnname1, name1, name2, vpc2, subnet2, vpnname2, name3, name4 string, adminStateUp1, adminStateUp2 bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name 			= "%s"
+		vpc 			= "${ibm_is_vpc.testacc_vpc1.id}"
+		zone 			= "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway1" {
+		name 	= "%s"
+		subnet 	= "${ibm_is_subnet.testacc_subnet1.id}"
+		mode 	= "route"
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection1" {
+		name 			= "%s"
+		vpn_gateway 	= "${ibm_is_vpn_gateway.testacc_VPNGateway1.id}"
+		peer_address 	= "${ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address}"
+		preshared_key 	= "VPNDemoPassword"
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection2" {
+		name 			= "%s"
+		admin_state_up	= %t
+		vpn_gateway 	= "${ibm_is_vpn_gateway.testacc_VPNGateway1.id}"
+		peer_address 	= "${ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address}"
+		preshared_key 	= "VPNDemoPassword"
+	}
+	resource "ibm_is_vpc" "testacc_vpc2" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name 				= "%s"
+		vpc 				= "${ibm_is_vpc.testacc_vpc2.id}"
+		zone 				= "%s"
+		ipv4_cidr_block 	= "%s"
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway2" {
+		name 	= "%s"
+		subnet 	= "${ibm_is_subnet.testacc_subnet2.id}"
+		mode 	= "policy"
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection3" {
+		name 			= "%s"
+		vpn_gateway 	= "${ibm_is_vpn_gateway.testacc_VPNGateway2.id}"
+		peer_address 	= "${ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address}"
+		preshared_key 	= "VPNDemoPassword"
+		local_cidrs   	= ["${ibm_is_subnet.testacc_subnet2.ipv4_cidr_block}"]
+		peer_cidrs    	= ["${ibm_is_subnet.testacc_subnet1.ipv4_cidr_block}"]
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection4" {
+		name 			= "%s"
+		admin_state_up	= %t
+		vpn_gateway 	= "${ibm_is_vpn_gateway.testacc_VPNGateway2.id}"
+		peer_address 	= "${ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address}"
+		preshared_key 	= "VPNDemoPassword"
+		local_cidrs   	= ["${ibm_is_subnet.testacc_subnet1.ipv4_cidr_block}"]
+		peer_cidrs    	= ["${ibm_is_subnet.testacc_subnet2.ipv4_cidr_block}"]
+	}
+	`, vpc1, subnet1, acc.ISZoneName, acc.ISCIDR, vpnname1, name1, name2, adminStateUp1, vpc2, subnet2, acc.ISZoneName, acc.ISCIDR, vpnname2, name3, name4, adminStateUp2)
 
 }
 func testAccCheckIBMISVPNGatewayConnectionMultipleConfig(vpc1, subnet1, vpnname1, name1, vpc2, subnet2, vpnname2, name2 string) string {
