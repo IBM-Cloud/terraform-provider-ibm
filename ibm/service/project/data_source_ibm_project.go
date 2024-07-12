@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.91.0-d9755c53-20240605-153412
+ * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
  */
 
 package project
@@ -681,7 +681,9 @@ func DataSourceIbmProjectProjectDefinitionPropertiesToMap(model *projectv1.Proje
 	modelMap["name"] = *model.Name
 	modelMap["destroy_on_delete"] = *model.DestroyOnDelete
 	modelMap["description"] = *model.Description
-	modelMap["auto_deploy"] = *model.AutoDeploy
+	if model.AutoDeploy != nil {
+		modelMap["auto_deploy"] = *model.AutoDeploy
+	}
 	if model.MonitoringEnabled != nil {
 		modelMap["monitoring_enabled"] = *model.MonitoringEnabled
 	}
