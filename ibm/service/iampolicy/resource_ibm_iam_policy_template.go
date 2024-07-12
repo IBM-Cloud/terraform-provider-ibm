@@ -347,7 +347,7 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 				listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 			}
 
-			if *attributesItemModel.Key == "resourceType" && targetServiceName == "" {
+			if *model.Type == "authorization" && *attributesItemModel.Key == "resourceType" && targetServiceName == "" {
 				targetServiceName = "resource-controller"
 			}
 
@@ -403,7 +403,7 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", attributesItemModel.Value)
 					}
 				}
-				if *attributesItemModel.Operator == "" && attributesItemModel.Value == "*" && *attributesItemModel.Key == "resourceGroupId" {
+				if *model.Type == "authorization" && *attributesItemModel.Operator == "" && attributesItemModel.Value == "*" && *attributesItemModel.Key == "resourceGroupId" {
 					attributesItemModel.Value = true
 					*attributesItemModel.Operator = "stringExists"
 				}
