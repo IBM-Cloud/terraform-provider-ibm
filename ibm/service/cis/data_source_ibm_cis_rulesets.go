@@ -467,6 +467,7 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 	rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 	rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 	rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+	rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
 
 	ruleDetailsList := make([]map[string]interface{}, 0)
 	for _, ruleDetailsObj := range rulesetObj.Rules {

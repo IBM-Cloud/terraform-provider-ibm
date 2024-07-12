@@ -7,7 +7,7 @@ description: |-
   Provides a IBM CIS ruleset resource.
 ---
 
-# ibm_cis_rulesets
+# ibm_cis_ruleset
 Provides an IBM Cloud Internet Services ruleset resource, to update and delete the ruleset of an Instance or Domain. For more information about IBM Cloud Internet Services ruleset, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
 **As there is no option to create a ruleset resource, it is required to use import module to generate the respective resource configurations([Reference](https://test.cloud.ibm.com/docs/cis?topic=cis-terraform-generating-configuration)) and use the import command to populate the state file, as stated at the end of this page.**
 
@@ -65,7 +65,8 @@ Review the argument references that you can specify for your resource.
   - `rules` (optional, list) Rules which are required to be added/modified.
 
   Nested scheme of `rules`
-    - `action` (String). Action of the rule.
+    - `id` (Required, String) ID of the rule.
+    - `action` (Required, String). Action of the rule. 
     - `description` (Optional, String) Description of the rule.
     - `enable` (Optional, Boolean) Enables/Disables the rule.
     - `expression` (Optional, String) Expression used by the rule to match the incoming request.
