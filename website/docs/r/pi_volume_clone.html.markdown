@@ -76,7 +76,7 @@ In addition to all argument reference list, you can access the following attribu
 
 The `ibm_pi_volume_clone` resource can be imported by using `pi_cloud_instance_id` and `task_id`.
 
-## Example
+### Example
 
 ```bash
 terraform import ibm_pi_volume_clone.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb

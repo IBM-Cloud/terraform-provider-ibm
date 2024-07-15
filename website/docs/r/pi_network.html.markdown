@@ -30,7 +30,7 @@ resource "ibm_pi_network" "power_networks" {
 }
 ```
 
-**Note**
+### Notes
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
@@ -61,7 +61,7 @@ Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_network_name` - (Required, String) The name of the network.
-- `pi_network_type` - (Required, String) The type of network that you want to create, such as `pub-vlan` or `vlan`.
+- `pi_network_type` - (Required, String) The type of network that you want to create. Valid values are `pub-vlan`, `vlan` and `dhcp-vlan`.
 - `pi_dns` - (Optional, Set of String) The DNS Servers for the network. If not specified, default is 127.0.0.1 for 'vlan' (private network) and 9.9.9.9 for 'pub-vlan' (public network). A maximum of one DNS server can be specified for private networks in Power Edge Router workspaces.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
 - `pi_gateway` - (Optional, String) The gateway ip address.
@@ -85,8 +85,8 @@ In addition to all argument reference list, you can access the following attribu
 
 The `ibm_pi_network` resource can be imported by using `power_instance_id` and `network_id`.
 
-**Example**
+## Example
 
-```
-$ terraform import ibm_pi_network.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```bash
+terraform import ibm_pi_network.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
