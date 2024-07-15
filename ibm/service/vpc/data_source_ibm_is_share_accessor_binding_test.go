@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -21,12 +22,17 @@ import (
 )
 
 func TestAccIBMIsShareAccessorBindingDataSourceBasic(t *testing.T) {
+	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
+	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
+	tEMode1 := "user_managed"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic(),
+				Config: testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "share_id"),
@@ -42,11 +48,15 @@ func TestAccIBMIsShareAccessorBindingDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic() string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic(vpcName, sname, tEMode, shareName, shareName1 string) string {
+	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + fmt.Sprintf(`
+		data "ibm_is_share_accessor_binding" "bindings" {
+			depends_on = [ibm_is_share.is_share_accessor]
+			share = ibm_is_share.is_share.id
+		}
 		data "ibm_is_share_accessor_binding" "is_share_accessor_binding_instance" {
-			share = "share_id"
-			accessor_binding = "id"
+			share = ibm_is_share.is_share.id
+			accessor_binding = data.ibm_is_share_accessor_binding.bindings.accessor_bindings.0.id
 		}
 	`)
 }

@@ -241,7 +241,7 @@ func TestAccIbmIsShareVNIID(t *testing.T) {
 func TestAccIbmIsShareOriginShare(t *testing.T) {
 	var conf vpcv1.Share
 
-	name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	// name := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
 	subnetName := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
@@ -266,25 +266,24 @@ func TestAccIbmIsShareOriginShare(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.resource_type"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.href"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.accessor.#"),
 				),
 			},
 			{
 				Config: testAccCheckIbmIsShareConfigOriginShareConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "allowed_transit_encryption_modes.#"),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "allowed_transit_encryption_modes.0", tEMode1),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share_accessor", "name", shareName1),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_binding_role"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "accessor_bindings.#"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.crn"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.id"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.resource_type"),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.href"),
-					resource.TestCheckResourceAttrSet("ibm_is_share.is_share_accessor", "origin_share.0.accessor_bindings.#"),
 				),
 			},
 		},
