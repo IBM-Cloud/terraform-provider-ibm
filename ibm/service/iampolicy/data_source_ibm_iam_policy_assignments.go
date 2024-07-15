@@ -58,50 +58,6 @@ func DataSourceIBMIAMPolicyAssignments() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"options": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The set of properties required for a policy assignment.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"root": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"requester_id": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"assignment_id": {
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Passed in value to correlate with other assignments.",
-												},
-												"template": {
-													Type:     schema.TypeList,
-													Computed: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"id": {
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "The template id where this policy is being assigned from.",
-															},
-															"version": {
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "The template version where this policy is being assigned from.",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,

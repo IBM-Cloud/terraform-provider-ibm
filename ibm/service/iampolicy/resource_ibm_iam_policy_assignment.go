@@ -48,6 +48,7 @@ func ResourceIBMIAMPolicyAssignment() *schema.Resource {
 			"templates": {
 				Type:        schema.TypeList,
 				Required:    true,
+				MinItems:    1,
 				Description: "policy template details.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
