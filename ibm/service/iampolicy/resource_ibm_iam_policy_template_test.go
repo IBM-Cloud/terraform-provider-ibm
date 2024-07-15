@@ -44,6 +44,34 @@ func TestAccIBMIAMPolicyTemplateBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateBasicS2SUpdateTest(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyS2STemplateUpdateConfigBasicTest(name, "Service ID creator", "iam-identity", "secrets-manager"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "iam-identity"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", "secrets-manager"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPolicyS2STemplateUpdateConfigBasicTest(name, "Operator", "iam-identity", "secrets-manager"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "iam-identity"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", "secrets-manager"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMPolicyTemplateBasicUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -108,6 +136,23 @@ func TestAccIBMIAMPolicyTemplateBasicCommit(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateBasicCommitWithPolicyType(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyTemplateConfigBasicTest(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMPolicyTemplateBasicS2S(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -121,6 +166,27 @@ func TestAccIBMIAMPolicyTemplateBasicS2S(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", updatedServiceName),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", sourceServiceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMPolicyTemplateBasicS2STest(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyS2STemplateConfigBasicTest("TerraformS2STest", "is", "true", "is", "backup-policy"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", "TerraformS2STest"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.1.value", "true"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.1.value", "backup-policy"),
 				),
 			},
 		},
@@ -241,6 +307,77 @@ func testAccCheckIBMPolicyTemplateConfigBasic(name string, serviceName string) s
 	`, name, serviceName)
 }
 
+func testAccCheckIBMPolicyS2STemplateUpdateConfigBasicTest(name string, role string, resourceServiceName string, subjectServiceName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_policy_template" "policy_template" {
+    		name        = "%s"
+    		policy {
+        		description = "description"
+        		roles       = [
+            		"%s",
+        		]
+        		type        = "authorization"
+
+        		resource {
+            		attributes {
+                		key      = "serviceName"
+                		operator = "stringEquals"
+                		value    = "%s"
+            		}
+        		}
+
+        		subject {
+            		attributes {
+                		key      = "serviceName"
+                		operator = "stringEquals"
+                		value    = "%s"
+            		}
+        		}
+    		}
+		}
+	`, name, role, resourceServiceName, subjectServiceName)
+}
+
+func testAccCheckIBMPolicyS2STemplateConfigBasicTest(name string, sourceServiceName string, volumeId string, serviceName string, resourceServiceName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "authorization"
+				description = "Test terraform enterprise S2S"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+					attributes {
+						key = "volumeId"
+						operator = "stringExists"
+						value = "%s"
+					}
+				}
+				subject {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+					attributes {
+						key = "resourceType"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Operator"]
+			}
+			committed=true
+		}
+	`, name, sourceServiceName, volumeId, serviceName, resourceServiceName)
+}
+
 func testAccCheckIBMPolicyS2STemplateConfigBasic(name string, sourceServiceName string, resourceServiceName string) string {
 	return fmt.Sprintf(`
 
@@ -338,6 +475,19 @@ func testAccCheckIBMPolicyTemplateConfigBasicCommit(name string, serviceName str
 			committed = true
 		}
 	`, name, serviceName)
+}
+
+func testAccCheckIBMPolicyTemplateConfigBasicTest(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+			}
+		}
+	`, name)
 }
 
 func testAccCheckIBMPolicyTemplateConfigBasicWithTags(name string, serviceName string, tagValue string) string {

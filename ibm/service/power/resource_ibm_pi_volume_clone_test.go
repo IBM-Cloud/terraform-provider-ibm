@@ -9,8 +9,9 @@ import (
 	"fmt"
 	"testing"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -42,7 +43,6 @@ func TestAccIBMPIVolumeClone(t *testing.T) {
 
 func testAccCheckIBMPIVolumeCloneExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
@@ -63,7 +63,7 @@ func testAccCheckIBMPIVolumeCloneExists(n string) resource.TestCheckFunc {
 			return err
 		}
 		cloudInstanceID, vcTaskID := ids[0], ids[1]
-		client := st.NewIBMPICloneVolumeClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPICloneVolumeClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(vcTaskID)
 		if err != nil {
@@ -75,25 +75,23 @@ func testAccCheckIBMPIVolumeCloneExists(n string) resource.TestCheckFunc {
 
 func testAccCheckIBMPIVolumeCloneConfig(name string) string {
 	return volumesCloneConfig(name, true) + fmt.Sprintf(`
-	resource "ibm_pi_volume_clone" "power_volume_clone" {
-		pi_cloud_instance_id   			= "%[1]s"
-		pi_volume_clone_name     		= "%[2]s"
-		pi_volume_ids 					= ibm_pi_volume.power_volume.*.volume_id
-		pi_target_storage_tier 			= "%[3]s"
-		pi_replication_enabled 			= %[4]v
-	}
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_target_storage_tier, false)
+		resource "ibm_pi_volume_clone" "power_volume_clone" {
+			pi_cloud_instance_id   			= "%[1]s"
+			pi_replication_enabled 			= %[4]v
+			pi_target_storage_tier 			= "%[3]s"
+			pi_volume_clone_name     		= "%[2]s"
+			pi_volume_ids 					= ibm_pi_volume.power_volume.*.volume_id
+		} `, acc.Pi_cloud_instance_id, name, acc.Pi_target_storage_tier, false)
 }
 
 func volumesCloneConfig(name string, volumeReplicationEnabled bool) string {
 	return fmt.Sprintf(`
-	resource "ibm_pi_volume" "power_volume" {
-		count = 2
-		pi_volume_size         = 2
-		pi_volume_name         = "%[1]s-${count.index}"
-		pi_volume_pool         = "%[3]s"
-		pi_cloud_instance_id   = "%[2]s"
-		pi_replication_enabled = %[4]v
-	}
-	`, name, acc.Pi_cloud_instance_id, acc.PiStoragePool, volumeReplicationEnabled)
+		resource "ibm_pi_volume" "power_volume" {
+			count = 2
+			pi_cloud_instance_id   = "%[2]s"
+			pi_replication_enabled = %[4]v
+			pi_volume_name         = "%[1]s-${count.index}"
+			pi_volume_pool         = "%[3]s"
+			pi_volume_size         = 2
+		} `, name, acc.Pi_cloud_instance_id, acc.PiStoragePool, volumeReplicationEnabled)
 }
