@@ -598,3 +598,37 @@ id = `$CRN:meta:$buckettype:$bucketlocation`
 $ terraform import ibm_cos_bucket.cos_bucket crn:v1:staging:public:cloud-object-storage:satloc_dal_c8fctn320qtrspbisg80:a/81ee25188545f05150650a0a4ee015bb:a2deec95-0836-4720-bfc7-ca41c28a8c66:bucket:tf-listbuckettest:meta:sl:c8fctn320qtrspbisg80:public
 
 ```
+
+**Note:**
+
+Since the current endpoints file schema does not support "direct", the user must define direct url under "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+
+**Example**:
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
+OR 
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.private.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```

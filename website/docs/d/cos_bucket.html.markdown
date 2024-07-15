@@ -233,4 +233,36 @@ In addition to all argument reference list, you can access the following attribu
 - `s3_endpoint_private` - (String) Private endpoint for cos bucket.
 - `s3_endpoint_direct` - (String) Direct endpoint for cos bucket.
 **Note:**
-Since the current endpoints file schema does not support "direct" as visibility type, the user must define url for the same under exisiting visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+
+Since the current endpoints file schema does not support "direct", the user must define direct url under "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+
+
+**Example**:
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
+OR 
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.private.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
