@@ -451,17 +451,9 @@ const (
 	State_Retry              = "retry"
 	State_Shutoff            = "shutoff"
 	State_Up                 = "up"
-	Status_Active            = "ACTIVE"
-	Status_Deleting          = "deleting"
 	Status_Error             = "ERROR"
 	Status_Pending           = "PENDING"
 	Status_Shutoff           = "SHUTOFF"
-	StatusActive             = "ACTIVE"
-	StatusBuild              = "BUILD"
-	StatusError              = "ERROR"
-	StatusPending            = "PENDING"
-	StatusResize             = "RESIZE"
-	StatusShutoff            = "SHUTOFF"
 
 	// TODO: Second Half Cleanup, remove extra variables
 
