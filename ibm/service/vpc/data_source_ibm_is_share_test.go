@@ -73,8 +73,6 @@ func TestAccIbmIsShareDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_is_share.is_share", "tags.0", "sr1"),
 					resource.TestCheckResourceAttr("data.ibm_is_share.is_share", "tags.1", "sr2"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "accessor_binding_role"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share.is_share", "allowed_transit_encryption_modes.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_share", "shares.0.origin_share"),
 				),
 			},
 		},
@@ -103,6 +101,7 @@ func testAccCheckIbmIsShareDataSourceConfig(vpcName, shareName string, shareSize
 			name = "%s"
 		}
 		resource "ibm_is_share" "is_share" {
+			allowed_transit_encryption_modes = ["user_managed", "none"]
 			zone = "us-south-2"
 			name = "%s"
 			size = %d

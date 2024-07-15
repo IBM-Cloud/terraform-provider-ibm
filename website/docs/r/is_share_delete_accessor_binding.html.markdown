@@ -1,8 +1,8 @@
 ---
 layout: "ibm"
-page_title: "IBM : is_share_accessor_binding_operations"
+page_title: "IBM : is_share_delete_accessor_binding"
 description: |-
-  Manages Share accessor binding operations.
+  Delete a share accessor binding.
 subcategory: "VPC infrastructure"
 ---
 
@@ -11,7 +11,7 @@ subcategory: "VPC infrastructure"
 Provides a resource for managing the share accessor binding operations like delete binding.
 
 ~> **NOTE**
-`ibm_share_accessor_binding_operations` is used for deleting share accessor binding
+`ibm_share_delete_accessor_binding` is used for deleting share accessor binding
 
 
 ## Example Usage

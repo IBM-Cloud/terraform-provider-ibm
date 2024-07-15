@@ -341,6 +341,49 @@ func DataSourceIbmIsShare() *schema.Resource {
 					},
 				},
 			},
+			"mount_targets": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Mount targets for the file share.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this share target.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this share target.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this share target.",
+						},
+						"resource_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of resource referenced.",
+						},
+					},
+				},
+			},
 			"zone": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -668,6 +711,10 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	}
 	if share.MountTargets != nil {
 		err = d.Set("share_targets", dataSourceShareFlattenTargets(share.MountTargets))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
+		}
+		err = d.Set("mount_targets", dataSourceShareFlattenTargets(share.MountTargets))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
 		}
