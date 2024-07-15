@@ -30,6 +30,11 @@ func DataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindings() *schema.R
 				Optional:    true,
 				Description: "Filters the collection to resources with the specified account identifier.",
 			},
+			"status": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filters the collection to resources with the specified status.",
+			},
 			"endpoint_gateway_bindings": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -114,6 +119,11 @@ func dataSourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingsRead(context
 	if accountIntf, ok := d.GetOk("account"); ok {
 		account := accountIntf.(string)
 		listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.AccountID = &account
+	}
+
+	if statusIntf, ok := d.GetOk("status"); ok {
+		status := statusIntf.(string)
+		listPrivatePathServiceGatewayEndpointGatewayBindingsOptions.Status = &status
 	}
 
 	var pager *vpcv1.PrivatePathServiceGatewayEndpointGatewayBindingsPager

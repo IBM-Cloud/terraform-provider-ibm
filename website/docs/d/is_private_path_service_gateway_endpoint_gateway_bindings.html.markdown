@@ -35,6 +35,7 @@ resource "ibm_is_private_path_service_gateway" "example" {
   service_endpoints = ["example-fqdn"]
 }
 data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "example" {
+	status = "pending"
 	private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
 }
 ```
@@ -43,7 +44,9 @@ data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "example" {
 
 Review the argument reference that you can specify for your data source.
 
-- `private_path_service_gateway` - (Required, Forces new resource, String) The private path service gateway identifier.
+- `private_path_service_gateway` - (Required, String) The private path service gateway identifier.
+- `status` - (Optional, String) Status of the binding
+- `account` - (Optional, String) ID of the account to filter
 
 ## Attribute Reference
 
