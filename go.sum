@@ -134,6 +134,8 @@ github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1W
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
 github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752 h1:S5NT0aKKUqd9hnIrPN/qUijKx9cZjJi3kfFpog0ByDA=
 github.com/IBM/code-engine-go-sdk v0.0.0-20231106200405-99e81b3ee752/go.mod h1:noWxHQUgW9msjOrDpV17gnwWbTbUlSmWMGq7/Vi/n9I=
+github.com/IBM/code-engine-go-sdk v0.0.0-20240126185534-a6e054aa01ed h1:X0VrZW5ulbqxbOmy5JoZcH0A+tw80k0/ZmRZz1NqogM=
+github.com/IBM/code-engine-go-sdk v0.0.0-20240126185534-a6e054aa01ed/go.mod h1:m4pD/58c6NVzlAFkN3XCYXpmDFmUyTG31ivLy/loyHQ=
 github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
 github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
 github.com/IBM/continuous-delivery-go-sdk v1.5.0 h1:FHSRruNt9WK7SavpIVuV6N+xll90UgZsuQjZvQ+slB4=
@@ -155,6 +157,8 @@ github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
 github.com/IBM/go-sdk-core/v5 v5.17.3 h1:CZSVCKzhQc/hRQZOtuEmi9dlNtWMnxJvOsPtQKP7cZ4=
 github.com/IBM/go-sdk-core/v5 v5.17.3/go.mod h1:GatGZpxlo1KaxiRN6E10/rNgWtUtx1hN/GoHSCaSPKA=
+github.com/IBM/go-sdk-core/v5 v5.17.4 h1:VGb9+mRrnS2HpHZFM5hy4J6ppIWnwNrw0G+tLSgcJLc=
+github.com/IBM/go-sdk-core/v5 v5.17.4/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
 github.com/IBM/ibm-cos-sdk-go v1.10.3 h1:YfZSLqMiCrqDPbr3r+amY2sicIXlrd+3L5pok6QRXIQ=
 github.com/IBM/ibm-cos-sdk-go v1.10.3/go.mod h1:T9x7pC47DUd5jD/TMFzlvly39P6EdW5wOemA78XEo2g=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0 h1:U7EmXSfv7jtugRpTpOkPUmgS/xiNKtGfKVH3BGyC1hg=
@@ -174,6 +178,8 @@ github.com/IBM/networking-go-sdk v0.47.1 h1:Zqqu9CrZ86jkjMyuIJtBLLOE0D7YtirxnlFy
 github.com/IBM/networking-go-sdk v0.47.1/go.mod h1:yF4XStkswGgVwQVqPUk6b4YTP0dVap52q8HDYwY4gXQ=
 github.com/IBM/platform-services-go-sdk v0.62.11 h1:EGsiY90bM9M9sSdBVgpsX4QK1z99JZzedVDlrY2gzmc=
 github.com/IBM/platform-services-go-sdk v0.62.11/go.mod h1:M26dloj9C48k9AjfMcKGsgH/acEjaUvxjVS8z41Q8dg=
+github.com/IBM/platform-services-go-sdk v0.64.3 h1:AKDrLXjybG09i5MyqptY0UpyejeiYrTbdylDC7FQM1k=
+github.com/IBM/platform-services-go-sdk v0.64.3/go.mod h1:6rYd3stLSnotYmZlxclw45EJPaQuLmh5f7c+Mg7rOg4=
 github.com/IBM/project-go-sdk v0.3.4 h1:VJqGdrWZLlb+f5/fH5mcSpt8t0QoYEq4QgFWVnn8mCs=
 github.com/IBM/project-go-sdk v0.3.4/go.mod h1:FOJM9ihQV3EEAY6YigcWiTNfVCThtdY8bLC/nhQHFvo=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=

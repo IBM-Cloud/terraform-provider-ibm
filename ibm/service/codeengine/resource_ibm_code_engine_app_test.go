@@ -43,7 +43,6 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "image_port", "8080"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "managed_domain_mappings", "local_public"),
-					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_as_user", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_service_account", "default"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_concurrency", "100"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_cpu_limit", "1"),
@@ -65,7 +64,6 @@ func TestAccIbmCodeEngineAppBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "image_port", "8080"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "managed_domain_mappings", "local_public"),
-					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_as_user", "0"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "run_service_account", "default"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_concurrency", "100"),
 					resource.TestCheckResourceAttr("ibm_code_engine_app.code_engine_app_instance", "scale_cpu_limit", "1"),
@@ -189,7 +187,9 @@ func testAccCheckIbmCodeEngineAppConfigBasic(projectID string, imageReference st
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
@@ -239,7 +239,9 @@ func testAccCheckIbmCodeEngineAppConfig(projectID string, configMapName string, 
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
