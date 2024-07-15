@@ -394,7 +394,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	d.SetId(cls.ID)
 
-	returnedClusterInfo, err := waitForVpcCluster(d, meta, timeoutStage)
+	returnedClusterInfo, err := waitForVpcCluster(d, meta, timeoutStage, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return err
 	}

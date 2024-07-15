@@ -655,7 +655,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	_, err = waitForVpcCluster(d, meta, timeoutStage)
+	_, err = waitForVpcCluster(d, meta, timeoutStage, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -1094,32 +1094,32 @@ func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFun
 	}
 }
 
-func waitForVpcCluster(d *schema.ResourceData, meta interface{}, timeoutStage string) (*v2.ClusterInfo, error) {
+func waitForVpcCluster(d *schema.ResourceData, meta interface{}, timeoutStage string, timeout time.Duration) (*v2.ClusterInfo, error) {
 	var clusterinfo interface{}
 	var err error
 	switch timeoutStage {
 
 	case strings.ToLower(clusterNormal):
 		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
-		clusterinfo, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
+		clusterinfo, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates, timeout)
 		if err != nil {
 			return nil, err
 		}
 
 	case strings.ToLower(masterNodeReady):
-		clusterinfo, err = waitForVpcClusterMasterAvailable(d, meta)
+		clusterinfo, err = waitForVpcClusterMasterAvailable(d, meta, timeout)
 		if err != nil {
 			return nil, err
 		}
 
 	case strings.ToLower(oneWorkerNodeReady):
-		clusterinfo, err = waitForVpcClusterOneWorkerAvailable(d, meta)
+		clusterinfo, err = waitForVpcClusterOneWorkerAvailable(d, meta, timeout)
 		if err != nil {
 			return nil, err
 		}
 
 	case strings.ToLower(ingressReady):
-		clusterinfo, err = waitForVpcClusterIngressAvailable(d, meta)
+		clusterinfo, err = waitForVpcClusterIngressAvailable(d, meta, timeout)
 		if err != nil {
 			return nil, err
 		}
@@ -1167,7 +1167,7 @@ func waitForVpcClusterDelete(d *schema.ResourceData, meta interface{}) (interfac
 	return deleteStateConf.WaitForState()
 }
 
-func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
@@ -1200,7 +1200,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 			return workers, deployInProgress, nil
 
 		},
-		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Timeout:                   timeout,
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
 		ContinuousTargetOccurence: 3,
@@ -1208,7 +1208,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 	return createStateConf.WaitForState()
 }
 
-func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
+func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
@@ -1236,7 +1236,7 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 
 			return clusterInfo, clusterInfo.State, nil
 		},
-		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Timeout:                   timeout,
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
 		ContinuousTargetOccurence: 3,
@@ -1244,7 +1244,7 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 	return createStateConf.WaitForState()
 }
 
-func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
@@ -1270,7 +1270,7 @@ func waitForVpcClusterMasterAvailable(d *schema.ResourceData, meta interface{}) 
 			return clusterInfo, deployInProgress, nil
 
 		},
-		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Timeout:                   timeout,
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
 		ContinuousTargetOccurence: 3,
@@ -1320,7 +1320,7 @@ func waitForVpcClusterMasterKMSApply(d *schema.ResourceData, meta interface{}) (
 	return createStateConf.WaitForState()
 }
 
-func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
@@ -1346,7 +1346,7 @@ func waitForVpcClusterIngressAvailable(d *schema.ResourceData, meta interface{})
 			return clusterInfo, deployInProgress, nil
 
 		},
-		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Timeout:                   timeout,
 		Delay:                     10 * time.Second,
 		MinTimeout:                5 * time.Second,
 		ContinuousTargetOccurence: 3,
