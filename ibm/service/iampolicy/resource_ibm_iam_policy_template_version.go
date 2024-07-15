@@ -55,7 +55,7 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 							Type:        schema.TypeList,
 							MinItems:    1,
 							MaxItems:    1,
-							Required:    true,
+							Optional:    true,
 							Description: "The resource attributes to which the policy grants access.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -206,7 +206,7 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 						},
 						"roles": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Role names of the policy definition",
 						},
