@@ -203,7 +203,7 @@ Review the argument references that you can specify for your resource.
 - `waf` - (Optional, String) Enable a web application firewall (WAF). Supported values are `off` and `on`.
 - `websockets` - (Optional, String) Supported values are `off` and `on`.
 - `origin_max_http_version` - (Optional, String) Sets the highest HTTP version to use with origin. Supported values are `1` and `2`.
-- `origin_post_quantum_encryption` - (Optional, String) Weather to use Post-Quantum key agreement algorithms when connecting to the origin. Supported values are `off`, `preferred` and `supported`.
+- `origin_post_quantum_encryption` - (Optional, String) Wheather to use post-quantum key agreement algorithms when connecting to the origin. Supported values are `off`, `preferred` and `supported`.
 
 ### Note
 
@@ -211,6 +211,6 @@ Extra settings are not implemented in this version of the provider.
 
 ## Attribute reference
 
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
 - `certificate_status` - (String)  The value is displayed as `none`, `initializing`, `authorizing`, or `active`.
