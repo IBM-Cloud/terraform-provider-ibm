@@ -36,10 +36,6 @@ Nested schema for **assignments**:
 	* `id` - (String) Policy assignment ID.
 	* `last_modified_at` - (String) The UTC timestamp when the policy assignment was last modified.
 	* `last_modified_by_id` - (String) The iam ID of the entity that last modified the policy assignment.
-	* `templates` - (Required, List) The set of properties required for a policy assignment.
-    Nested schema for **templates**:
-			* `id` - (String) The policy assignment template id.
-        	* `version` - (String) The orchestrator template version.
 	* `resources` - (List) Object for each account assigned.
 	  * Constraints: The minimum length is `1` item.
 	Nested schema for **resources**:
