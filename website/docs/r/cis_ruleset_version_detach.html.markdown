@@ -2,12 +2,12 @@
 
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_version_detach"
+page_title: "IBM: ibm_cis_ruleset_version_detach"
 description: |-
   Provides an IBM CIS ruleset version resource.
 ---
 
-# ibm_cis_version_detach
+# ibm_cis_ruleset_version_detach
 Provides an IBM Cloud Internet Services ruleset version resource of an instance or domain to be detached. This allow ruleset version to delete. For more information about IBM Cloud Internet Services ruleset version detach, see [ruleset instance](https://cloud.ibm.com/docs/cis?topic=cis-managed-rules-overview).
 
 ## Example usage
@@ -15,7 +15,7 @@ Provides an IBM Cloud Internet Services ruleset version resource of an instance 
 ```terraform
 # delete ruleset of a domain or instance
 
-resource "ibm_cis_version_detach" "tests" {
+resource "ibm_cis_ruleset_version_detach" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     ruleset_id = "<id of the ruleset>"

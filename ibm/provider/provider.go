@@ -954,6 +954,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_dashboard_folders":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichments":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
+			"ibm_logs_data_access_rules":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1526,6 +1527,7 @@ func Provider() *schema.Provider {
 			"ibm_logs_dashboard_folder":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
+			"ibm_logs_data_access_rule":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1966,6 +1968,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_view_folder":      logs.ResourceIbmLogsViewFolderValidator(),
 				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
 				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
+				"ibm_logs_data_access_rule": logs.ResourceIbmLogsDataAccessRuleValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
