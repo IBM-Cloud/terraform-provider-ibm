@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -45,6 +46,13 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, clusterNormal}, true),
 				Description:  "wait_till can be configured for Master Ready, One worker Ready, Ingress Ready or Normal",
+			},
+			"wait_till_timeout": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      "20",
+				Description:  "timeout for wait_till in minutes",
+				RequiredWith: []string{"wait_till"},
 			},
 			"worker_count": {
 				Description: "Number of workers",
@@ -383,8 +391,11 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
+	var timeout time.Duration = 20 * time.Minute
 	if v, ok := d.GetOk("wait_till"); ok {
 		timeoutStage = strings.ToLower(v.(string))
+		timeoutInt := d.Get("wait_till_timeout").(int)
+		timeout = time.Duration(timeoutInt) * time.Minute
 	}
 
 	cls, err := csClient.Clusters().GetCluster(clusterNameOrID, targetEnv)
@@ -394,10 +405,11 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	d.SetId(cls.ID)
 
-	returnedClusterInfo, err := waitForVpcCluster(d, meta, timeoutStage, d.Timeout(schema.TimeoutRead))
+	returnedClusterInfo, err := waitForVpcCluster(d, meta, timeoutStage, timeout)
 	if err != nil {
 		return err
 	}
+
 	if returnedClusterInfo != nil {
 		cls = returnedClusterInfo
 	}
