@@ -21,6 +21,7 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
 	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
+	shareName2 := fmt.Sprintf("tf-share2-%d", acctest.RandIntRange(10, 100))
 	tEMode1 := "user_managed"
 	// tEMode2 := "none"
 	resource.Test(t, resource.TestCase{
@@ -44,7 +45,7 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcname, subnetName, tEMode1, shareName, shareName1),
+				Config: testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcname, subnetName, tEMode1, shareName, shareName1, shareName2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
@@ -64,9 +65,15 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcName, sname, tEMode, shareName, shareName1 string) string {
-	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + `
-	
+func testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcName, sname, tEMode, shareName, shareName1, shareName2 string) string {
+	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + fmt.Sprintf(`
+	resource "ibm_is_share" "is_share_accessor1" {
+		name    = "%s"
+		origin_share{
+			crn = ibm_is_share.is_share.crn
+		}
+		
+	  }
 	data "ibm_is_share_accessor_bindings" "bindings" {
 		depends_on = [ibm_is_share.is_share_accessor]
 		share = ibm_is_share.is_share.id
@@ -75,5 +82,5 @@ func testAccCheckIbmIsShareDeleteAccessorBindingConfig(vpcName, sname, tEMode, s
 		share = ibm_is_share.is_share.id
 		accessor_binding = data.ibm_is_share_accessor_bindings.bindings.accessor_bindings.0.id
 	}
-	`
+	`, shareName2)
 }

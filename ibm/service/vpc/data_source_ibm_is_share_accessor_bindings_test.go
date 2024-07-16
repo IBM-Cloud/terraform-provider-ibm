@@ -35,9 +35,10 @@ func TestAccIBMIsShareAccessorBindingsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMIsShareAccessorBindingsDataSourceConfigBasic(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_bindings.is_share_accessor_bindings_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_bindings.is_share_accessor_bindings_instance", "is_share_accessor_bindings_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_bindings.is_share_accessor_bindings_instance", "accessor_bindings.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_bindings.is_share_accessor_bindings_instance", "accessor_bindings.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_bindings.is_share_accessor_bindings_instance", "accessor_bindings.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_bindings.is_share_accessor_bindings_instance", "accessor_bindings.0.accessor.#"),
 				),
 			},
 		},
@@ -47,7 +48,7 @@ func TestAccIBMIsShareAccessorBindingsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMIsShareAccessorBindingsDataSourceConfigBasic(vpcName, sname, tEMode, shareName, shareName1 string) string {
 	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + fmt.Sprintf(`
 		data "ibm_is_share_accessor_bindings" "is_share_accessor_bindings_instance" {
-			depends_on = [ibm_is_share.is_accessor_share]
+			depends_on = [ibm_is_share.is_share_accessor]
 			share = ibm_is_share.is_share.id
 		}
 	`)

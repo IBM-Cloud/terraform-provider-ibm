@@ -34,10 +34,9 @@ func TestAccIBMIsShareAccessorBindingDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic(vpcname, subnetName, tEMode1, shareName, shareName1),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "share_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "is_share_accessor_binding_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "share"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "accessor.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "accessor.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_share_accessor_binding.is_share_accessor_binding_instance", "lifecycle_state"),
@@ -50,13 +49,13 @@ func TestAccIBMIsShareAccessorBindingDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMIsShareAccessorBindingDataSourceConfigBasic(vpcName, sname, tEMode, shareName, shareName1 string) string {
 	return testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, shareName, shareName1) + fmt.Sprintf(`
-		data "ibm_is_share_accessor_binding" "bindings" {
+		data "ibm_is_share_accessor_bindings" "bindings" {
 			depends_on = [ibm_is_share.is_share_accessor]
 			share = ibm_is_share.is_share.id
 		}
 		data "ibm_is_share_accessor_binding" "is_share_accessor_binding_instance" {
 			share = ibm_is_share.is_share.id
-			accessor_binding = data.ibm_is_share_accessor_binding.bindings.accessor_bindings.0.id
+			accessor_binding = data.ibm_is_share_accessor_bindings.bindings.accessor_bindings.0.id
 		}
 	`)
 }
