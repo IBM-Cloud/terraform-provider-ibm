@@ -1,4 +1,4 @@
----
+
 subcategory: "Transit Gateway"
 layout: "ibm"
 page_title: "IBM : tg_connection"
@@ -11,6 +11,7 @@ Create, update and delete for the transit gateway's connection resource. For mor
 
 ## Example usage
 
+---
 ```terraform
 resource "ibm_tg_connection" "test_ibm_tg_connection" {
   gateway      = ibm_tg_gateway.test_tg_gateway.id
@@ -18,8 +19,33 @@ resource "ibm_tg_connection" "test_ibm_tg_connection" {
   name         = "myconnection"
   network_id   = ibm_is_vpc.test_tg_vpc.resource_crn
 }
+
+resource "ibm_tg_connection" "test_ibm_tg_rgre_connection" {
+  gateway      = ibm_tg_gateway.test_tg_gateway.id
+  name = redundant_ugre_vpc
+  network_type = redundant_gre
+  base_network_type = vpc
+  network_id = ibm_is_vpc.test_tg_vpc.resource_crn
+  tunnels {
+           local_gateway_ip = "192.129.200.1"
+           local_tunnel_ip = "192.158.239.2"
+           name =  "tunne1_testtgw1461"
+           remote_gateway_ip = "10.186.203.4"
+           remote_tunnel_ip = "192.158.239.1"
+           zone =  "us-south-1"
+        }    
+ tunnels {
+             local_gateway_ip = "192.129.220.1"
+             local_tunnel_ip = "192.158.249.2"
+             name =  "tunne2_testtgw1462"
+             remote_gateway_ip = "10.186.203.4"
+             remote_tunnel_ip = "192.158.249.1"
+             zone =  "us-south-1"
+         }  
+}
   
 ```
+---
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -37,6 +63,15 @@ Review the argument references that you can specify for your resource.
 - `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `zone` - (Optional, Forces new resource, String) - The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+- `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
+Nested scheme for `tunnel`:
+  - `name` - (Required, String) The user-defined name for this tunnel connection.
+  - `local_gateway_ip` - (Required, String)  The local gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `local_tunnel_ip` - (Required, String) The local tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `remote_gateway_ip` - (Required, String) The remote gateway IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `remote_tunnel_ip` - (Required, String) The remote tunnel IP address. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.
+  - `zone` - (Optional, Forces new resource, String) - The location of the GRE tunnel. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
+  - `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type`gre_tunnel` and `unbound_gre_tunnel` connections.
 
 ## Attribute reference
 
@@ -49,6 +84,15 @@ In addition to all argument reference list, you can access the following attribu
 - `mtu` - (Integer) GRE tunnel MTU. This field only applies to network type `gre_tunnel` connections.
 - `status` - (String) The configuration status of the connection, such as **attached**, **failed**, **pending**, **deleting**.
 - `updated_at` - (Timestamp) Last updated date and time of the connection.
+-  `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
+   Nested scheme for `tunnel`:
+   - `created_at` -  (Timestamp) The date and time the connection  tunnel was created. 
+   - `id` - (String) The unique identifier of the connection tunnel ID resource.
+   - `mtu` - (Integer) GRE tunnel MTU.
+   - `status` - (String) The configuration status of the connection tunnel, such as **attached**, **failed**,
+   - `updated_at` - (Timestamp) Last updated date and time of the connection tunnel.
+   - `local_bgp_asn` - (Integer) The local network BGP ASN.
+ 
 
 **Note**
 
@@ -60,7 +104,9 @@ The `ibm_tg_connection` resource can be imported by using transit gateway ID and
 
 **Example**
 
+---
 ```
 $ terraform import ibm_tg_connection.example 5ffda12064634723b079acdb018ef308/cea6651a-bd0a-4438-9f8a-a0770bbf3ebb
 
 ```
+---

@@ -827,6 +827,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"required_resources": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "Resource requirments for installation.",
 				Elem: &schema.Resource{
@@ -1912,6 +1913,22 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
 	}
+	if _, ok := d.GetOk("required_resources"); ok {
+		var method string
+		if activeVersion.RequiredResources == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/required_resources", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("required_resources"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
 	if _, ok := d.GetOk("install"); ok {
 		var method string
 		if activeVersion.Install == nil {
@@ -2416,6 +2433,22 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Op:    &method,
 			Path:  &path,
 			Value: d.Get("iam_permissions"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("required_resources") {
+		var method string
+		if activeVersion.RequiredResources == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/required_resources", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("required_resources"),
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true

@@ -5,6 +5,7 @@ package codeengine_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -238,8 +239,8 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 	format := "tls"
 	name := fmt.Sprintf("tf-secret-tls-%d", acctest.RandIntRange(10, 1000))
 	nameUpdate := fmt.Sprintf("tf-secret-tls-update-%d", acctest.RandIntRange(10, 1000))
-	tlsKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
-	tlsCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
+	tlsKey, _ := os.ReadFile(acc.CeTLSKeyFilePath)
+	tlsCert, _ := os.ReadFile(acc.CeTLSCertFilePath)
 
 	projectID := acc.CeProjectId
 
@@ -249,7 +250,7 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineSecretTLSConfig(projectID, tlsKey, tlsCert, format, name),
+				Config: testAccCheckIbmCodeEngineSecretTLSConfig(projectID, string(tlsKey), string(tlsCert), format, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -261,7 +262,7 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineSecretTLSConfig(projectID, tlsKey, tlsCert, format, nameUpdate),
+				Config: testAccCheckIbmCodeEngineSecretTLSConfig(projectID, string(tlsKey), string(tlsCert), format, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "format", format),

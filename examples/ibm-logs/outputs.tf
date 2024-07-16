@@ -28,6 +28,12 @@ output "ibm_logs_dashboard" {
   value       = ibm_logs_dashboard.logs_dashboard_instance
   description = "logs_dashboard resource instance"
 }
+// This output allows logs_dashboard_folder data to be referenced by other resources and the terraform CLI
+// Modify this output if only certain data should be exposed
+output "ibm_logs_dashboard_folder" {
+  value       = ibm_logs_dashboard_folder.logs_dashboard_folder_instance
+  description = "logs_dashboard_folder resource instance"
+}
 // This output allows logs_e2m data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
 output "ibm_logs_e2m" {

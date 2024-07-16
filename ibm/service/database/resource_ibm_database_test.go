@@ -4,9 +4,11 @@
 package database
 
 import (
-	"github.com/IBM/go-sdk-core/v5/core"
-	"gotest.tools/assert"
 	"testing"
+
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"gotest.tools/assert"
 )
 
 func TestValidateUserPassword(t *testing.T) {
@@ -191,5 +193,22 @@ func TestValidateRBACRole(t *testing.T) {
 
 			assert.Equal(t, tc.expectedError, errMsg)
 		}
+	}
+}
+
+func TestAppendSwitchoverWarning(t *testing.T) {
+	diags := appendSwitchoverWarning()
+	warningNote := "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models"
+
+	if len(diags) != 1 {
+		t.Fatalf("expected 1 diagnostic, got %d", len(diags))
+	}
+
+	if diags[0].Severity != diag.Warning {
+		t.Errorf("expected severity %v, got %v", diag.Warning, diags[0].Severity)
+	}
+
+	if diags[0].Summary != warningNote {
+		t.Errorf("expected summary %v, got %v", warningNote, diags[0].Summary)
 	}
 }
