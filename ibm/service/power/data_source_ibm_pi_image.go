@@ -47,7 +47,6 @@ func DataSourceIBMPIImage() *schema.Resource {
 				Description: "The identifier of this image type.",
 				Type:        schema.TypeString,
 			},
-			// TODO: Relabel this one "operating_system" to match catalog images
 			Attr_OperatingSystem: {
 				Computed:    true,
 				Description: "The operating system that is installed with the image.",
@@ -57,6 +56,11 @@ func DataSourceIBMPIImage() *schema.Resource {
 				Computed:    true,
 				Description: "The size of the image in megabytes.",
 				Type:        schema.TypeInt,
+			},
+			Attr_SourceChecksum: {
+				Computed:    true,
+				Description: "Checksum of image.",
+				Type:        schema.TypeString,
 			},
 			Attr_State: {
 				Computed:    true,
@@ -97,6 +101,7 @@ func dataSourceIBMPIImagesRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_ImageType, imagedata.Specifications.ImageType)
 	d.Set(Attr_OperatingSystem, imagedata.Specifications.OperatingSystem)
 	d.Set(Attr_Size, imagedata.Size)
+	d.Set(Attr_SourceChecksum, imagedata.Specifications.SourceChecksum)
 	d.Set(Attr_State, imagedata.State)
 	d.Set(Attr_StoragePool, imagedata.StoragePool)
 	d.Set(Attr_StorageType, imagedata.StorageType)
