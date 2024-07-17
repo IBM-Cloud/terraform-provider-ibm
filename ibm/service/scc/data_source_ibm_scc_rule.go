@@ -155,45 +155,45 @@ func dataSourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, m
 	rule, response, err := configManagerClient.GetRuleWithContext(context, getRuleOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetRuleWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getRuleOptions.RuleID))
 
 	if err = d.Set("created_on", flex.DateTimeToString(rule.CreatedOn)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_on: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_on: %s", err))
 	}
 
 	if err = d.Set("created_by", rule.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_by: %s", err))
 	}
 
 	if err = d.Set("updated_on", flex.DateTimeToString(rule.UpdatedOn)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_on: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting updated_on: %s", err))
 	}
 
 	if err = d.Set("updated_by", rule.UpdatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting updated_by: %s", err))
 	}
 
 	if err = d.Set("id", rule.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting id: %s", err))
 	}
 
 	if err = d.Set("account_id", rule.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting account_id: %s", err))
 	}
 
 	if err = d.Set("description", rule.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting description: %s", err))
 	}
 
 	if err = d.Set("type", rule.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting type: %s", err))
 	}
 
 	if err = d.Set("version", rule.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting version: %s", err))
 	}
 
 	importVar := []map[string]interface{}{}
@@ -205,12 +205,12 @@ func dataSourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, m
 		importVar = append(importVar, modelMap)
 	}
 	if err = d.Set("import", importVar); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting import %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting import %s", err))
 	}
 
 	target := []map[string]interface{}{}
 	if rule.Target != nil {
-		modelMap, err := dataSourceIbmSccRuleTargetToMap(rule.Target)
+		modelMap, err := targetToModelMap(rule.Target)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -218,23 +218,23 @@ func dataSourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, m
 	}
 
 	if err = d.Set("target", target); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting target %s", err))
 	}
 
 	if err = d.Set("labels", rule.Labels); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting labels: %s", err))
 	}
 
 	requiredConfig := []map[string]interface{}{}
 	if rule.RequiredConfig != nil {
-		modelMap, err := ibmSccRuleRequiredConfigToMap(rule.RequiredConfig)
+		modelMap, err := requiredConfigToModelMap(rule.RequiredConfig)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		requiredConfig = append(requiredConfig, modelMap)
 	}
 	if err = d.Set("required_config", requiredConfig); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting required_config %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting required_config %s", err))
 	}
 
 	return nil
@@ -269,41 +269,6 @@ func dataSourceIbmSccRuleParameterToMap(model *securityandcompliancecenterapiv3.
 	}
 	if model.Type != nil {
 		modelMap["type"] = model.Type
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSccRuleTargetToMap(model *securityandcompliancecenterapiv3.Target) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["service_name"] = model.ServiceName
-	if model.ServiceDisplayName != nil {
-		modelMap["service_display_name"] = model.ServiceDisplayName
-	}
-	modelMap["resource_kind"] = model.ResourceKind
-	if model.AdditionalTargetAttributes != nil {
-		additionalTargetAttributes := []map[string]interface{}{}
-		for _, additionalTargetAttributesItem := range model.AdditionalTargetAttributes {
-			additionalTargetAttributesItemMap, err := dataSourceIbmSccRuleAdditionalTargetAttributeToMap(&additionalTargetAttributesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			additionalTargetAttributes = append(additionalTargetAttributes, additionalTargetAttributesItemMap)
-		}
-		modelMap["additional_target_attributes"] = additionalTargetAttributes
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSccRuleAdditionalTargetAttributeToMap(model *securityandcompliancecenterapiv3.AdditionalTargetAttribute) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.Operator != nil {
-		modelMap["operator"] = model.Operator
-	}
-	if model.Value != nil {
-		modelMap["value"] = model.Value
 	}
 	return modelMap, nil
 }

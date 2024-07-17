@@ -120,9 +120,9 @@ func TestAccIbmSccRuleSubRuleBasic(t *testing.T) {
 func TestAccIbmSccRuleWithNumberRC(t *testing.T) {
 	var conf securityandcompliancecenterapiv3.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	version := fmt.Sprintf("0.0.%d", acctest.RandIntRange(10, 100))
+	version := fmt.Sprintf("0.0.%d", acctest.RandIntRange(1, 10))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := fmt.Sprintf("0.0.%d", acctest.RandIntRange(2, 100))
+	versionUpdate := fmt.Sprintf("0.0.%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckScc(t) },
