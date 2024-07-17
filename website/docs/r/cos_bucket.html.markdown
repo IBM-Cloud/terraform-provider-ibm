@@ -11,6 +11,8 @@ description:
 Create or delete an IBM Cloud Object Storage bucket. The bucket is used to store your data. For more information, about configuration options, see [Create some buckets to store your data](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-getting-started-cloud-object-storage#gs-create-buckets). 
 
 To create a bucket, you must provision an IBM Cloud Object Storage instance first by using the [`ibm_resource_instance`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance) resource.
+
+
   **Note:**
 
 A bucket name can be reused as soon as 15 minutes after the contents of the bucket have been deleted and the bucket has been deleted. Then, the objects and bucket are irrevocably deleted and can not be restored.
