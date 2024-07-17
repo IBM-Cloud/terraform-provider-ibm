@@ -125,8 +125,39 @@ func TestAccIBMPINetworkGatewaybasicSatellite(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
+func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPINetworkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworDHCPConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_network_name", name),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_network_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
+				),
+			},
+		},
+	})
+}
 
+func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -148,6 +179,7 @@ func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 
 	return nil
 }
+
 func testAccCheckIBMPINetworkExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
@@ -211,6 +243,19 @@ func testAccCheckIBMPINetworkGatewayConfig(name string) string {
 	`, acc.Pi_cloud_instance_id, name)
 }
 
+func testAccCheckIBMPINetworkGatewayConfigSatellite(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network" "power_networks" {
+			pi_cloud_instance_id 		= "%s"
+			pi_network_name      		= "%s"
+			pi_network_type      		= "vlan"
+			pi_cidr              		= "192.168.17.0/24"
+			pi_network_mtu		 		= 6500
+			pi_network_access_config	= "outbound-only"
+		}
+	`, acc.Pi_cloud_instance_id, name)
+}
+
 func testAccCheckIBMPINetworkConfigGatewayUpdateDNS(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_network" "power_networks" {
@@ -228,15 +273,26 @@ func testAccCheckIBMPINetworkConfigGatewayUpdateDNS(name string) string {
 	`, acc.Pi_cloud_instance_id, name)
 }
 
-func testAccCheckIBMPINetworkGatewayConfigSatellite(name string) string {
+func testAccCheckIBMPINetworDHCPConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_network" "power_networks" {
 			pi_cloud_instance_id 		= "%s"
 			pi_network_name      		= "%s"
-			pi_network_type      		= "vlan"
-			pi_cidr              		= "192.168.17.0/24"
-			pi_network_mtu		 		= 6500
-			pi_network_access_config	= "outbound-only"
+			pi_network_type      		= "dhcp-vlan"
+			pi_cidr              		= "10.1.2.0/26"
+			pi_dns               		= ["10.1.0.68"]
+		}
+	`, acc.Pi_cloud_instance_id, name)
+}
+
+func testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network" "power_networks" {
+			pi_cloud_instance_id = "%s"
+			pi_network_name      = "%s"
+			pi_network_type      = "dhcp-vlan"
+			pi_cidr              = "10.1.2.0/26"
+			pi_dns               = ["10.1.0.69"]
 		}
 	`, acc.Pi_cloud_instance_id, name)
 }
