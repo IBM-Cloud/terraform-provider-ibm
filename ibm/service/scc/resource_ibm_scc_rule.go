@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -167,202 +166,7 @@ func ResourceIbmSccRule() *schema.Resource {
 				Required:    true,
 				Description: "The required configurations.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The required config description.",
-						},
-						"and": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The `AND` required configurations.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"description": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The required config description.",
-									},
-									"or": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The `OR` required configurations.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"description": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The required config description.",
-												},
-												"property": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The property.",
-												},
-												"operator": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The operator.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Schema for any JSON type.",
-												},
-											},
-										},
-									},
-									"and": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The `AND` required configurations.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"description": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The required config description.",
-												},
-												"property": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The property.",
-												},
-												"operator": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The operator.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Schema for any JSON type.",
-												},
-											},
-										},
-									},
-									"property": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The property.",
-									},
-									"operator": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The operator.",
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Schema for any JSON type.",
-									},
-								},
-							},
-						},
-						"or": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The `OR` required configurations.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"description": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The required config description.",
-									},
-									"or": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The `OR` required configurations.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"description": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The required config description.",
-												},
-												"property": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The property.",
-												},
-												"operator": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The operator.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Schema for any JSON type.",
-												},
-											},
-										},
-									},
-									"and": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The `AND` required configurations.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"description": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The required config description.",
-												},
-												"property": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The property.",
-												},
-												"operator": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The operator.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Schema for any JSON type.",
-												},
-											},
-										},
-									},
-									"property": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The property.",
-									},
-									"operator": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The operator.",
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Schema for any JSON type.",
-									},
-								},
-							},
-						},
-						"property": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The property.",
-						},
-						"operator": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The operator.",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Schema for any JSON type.",
-						},
-					},
+					Schema: getRequiredConfigSchema(0),
 				},
 			},
 			"target": {
@@ -372,58 +176,7 @@ func ResourceIbmSccRule() *schema.Resource {
 				Required:    true,
 				Description: "The rule target.",
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"service_name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target service name.",
-						},
-						"service_display_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The display name of the target service.",
-							// Manual Intervention
-							DiffSuppressFunc: func(_, oldVal, newVal string, d *schema.ResourceData) bool {
-								if newVal == "" {
-									return true
-								}
-								if strings.ToLower(oldVal) == strings.ToLower(newVal) {
-									return true
-								}
-								return false
-							},
-							// End Manual Intervention
-						},
-						"resource_kind": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The target resource kind.",
-						},
-						"additional_target_attributes": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The list of targets supported properties.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The additional target attribute name.",
-									},
-									"operator": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The operator.",
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The value.",
-									},
-								},
-							},
-						},
-					},
+					Schema: getTargetSchema(),
 				},
 			},
 			"type": {
@@ -488,7 +241,7 @@ func resourceIbmSccRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	createRuleOptions.SetDescription(d.Get("description").(string))
 	// Manual Intervention
-	targetModel, err := resourceIbmSccRuleMapToTarget(d.Get("target.0").(map[string]interface{}))
+	targetModel, err := ibmSccTargetMapToTarget(d.Get("target.0").(map[string]interface{}))
 	// End Manual Intervention
 	if err != nil {
 		return diag.FromErr(err)
@@ -498,7 +251,6 @@ func resourceIbmSccRuleCreate(context context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	fmt.Printf("BEFORE required_config=%#v\n", requiredConfigModel)
 	createRuleOptions.SetRequiredConfig(requiredConfigModel)
 	if _, ok := d.GetOk("version"); ok {
 		createRuleOptions.SetVersion(d.Get("version").(string))
@@ -588,14 +340,13 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	targetMap, err := resourceIbmSccRuleTargetToMap(rule.Target)
+	targetMap, err := ibmSccRuleTargetToMap(rule.Target)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("target", []map[string]interface{}{targetMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting target: %s", err))
 	}
-	fmt.Printf("AFTER requiredConfig Reading=%#v", rule.RequiredConfig)
 	requiredConfigMap, err := ibmSccRuleRequiredConfigToMap(rule.RequiredConfig)
 	if err != nil {
 		return diag.FromErr(err)
@@ -604,7 +355,6 @@ func resourceIbmSccRuleRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting required_config: %s", err))
 	}
 	if !core.IsNil(rule.Labels) {
-		log.Printf("[INFO] rule.Labels = %v\n", rule.Labels)
 		if err = d.Set("labels", rule.Labels); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 		}
@@ -651,7 +401,7 @@ func resourceIbmSccRuleUpdate(context context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("description") || d.HasChange("target") || d.HasChange("required_config") {
 		replaceRuleOptions.SetDescription(d.Get("description").(string))
-		target, err := resourceIbmSccRuleMapToTarget(d.Get("target.0").(map[string]interface{}))
+		target, err := ibmSccTargetMapToTarget(d.Get("target.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}

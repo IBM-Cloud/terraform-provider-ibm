@@ -16,7 +16,7 @@ import (
 
 const (
 	INSTANCE_ID               = "instance_id"
-	MAX_REQUIRED_CONFIG_DEPTH = 3
+	MAX_REQUIRED_CONFIG_DEPTH = 5
 )
 
 // AddSchemaData will add the Schemas 'instance_id' and 'region' to the resource
@@ -65,7 +65,7 @@ func getRequiredConfigSchema(currentDepth int) map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "",
-			Description: "The value that you want to apply to `name` field.Options differ depending on the rule or template that you configure. For more information, refer to the service documentation.",
+			Description: "The value that you want to apply to `value` field. Options differ depending on the rule or template that you configure. For more information, refer to the service documentation.",
 		},
 		"operator": &schema.Schema{
 			Type:         schema.TypeString,
@@ -77,10 +77,11 @@ func getRequiredConfigSchema(currentDepth int) map[string]*schema.Schema {
 	if currentDepth > MAX_REQUIRED_CONFIG_DEPTH {
 		return baseMap
 	}
+
 	baseMap["and"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "A condition with the and logical operator.",
+		Description: "A list of property conditions where all items need to be satisfied",
 		Elem: &schema.Resource{
 			Schema: getRequiredConfigSchema(currentDepth + 1),
 		},
@@ -89,7 +90,7 @@ func getRequiredConfigSchema(currentDepth int) map[string]*schema.Schema {
 	baseMap["or"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "A condition with the or logical operator.",
+		Description: "A list of property conditions where any item needs to be satisfied",
 		Elem: &schema.Resource{
 			Schema: getRequiredConfigSchema(currentDepth + 1),
 		},
@@ -156,6 +157,11 @@ func getTargetSchema() map[string]*schema.Schema {
 			},
 			// End Manual Intervention
 		},
+		"reference_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The target reference name",
+		},
 		"resource_kind": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -214,7 +220,6 @@ func getSubRuleSchema(currentDepth int) map[string]*schema.Schema {
 func ibmSccRuleRequiredConfigToMap(model securityandcompliancecenterapiv3.RequiredConfigIntf) (map[string]interface{}, error) {
 	if rc, ok := model.(*securityandcompliancecenterapiv3.RequiredConfig); ok {
 		modelMap := make(map[string]interface{})
-		fmt.Printf("%#v\n", rc)
 		if rc.Description != nil {
 			modelMap["description"] = rc.Description
 		}
@@ -227,6 +232,7 @@ func ibmSccRuleRequiredConfigToMap(model securityandcompliancecenterapiv3.Requir
 				}
 				rcItems = append(rcItems, rcMap)
 			}
+			modelMap["and"] = rcItems
 		}
 		if rc.Or != nil {
 			rcItems := []map[string]interface{}{}
@@ -237,7 +243,65 @@ func ibmSccRuleRequiredConfigToMap(model securityandcompliancecenterapiv3.Requir
 				}
 				rcItems = append(rcItems, rcMap)
 			}
+			modelMap["or"] = rcItems
 		}
+		if rc.All != nil {
+			srMap := make(map[string]interface{})
+			subRuleTarget, err := ibmSccRuleTargetToMap(rc.All.Target)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["target"] = []interface{}{subRuleTarget}
+			subRuleConfig, err := ibmSccRuleRequiredConfigToMap(rc.All.RequiredConfig)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["required_config"] = []interface{}{subRuleConfig}
+			modelMap["all"] = []map[string]interface{}{srMap}
+		}
+		if rc.AllIf != nil {
+			srMap := make(map[string]interface{})
+			subRuleTarget, err := ibmSccRuleTargetToMap(rc.AllIf.Target)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["target"] = []interface{}{subRuleTarget}
+			subRuleConfig, err := ibmSccRuleRequiredConfigToMap(rc.AllIf.RequiredConfig)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["required_config"] = []interface{}{subRuleConfig}
+			modelMap["all_if"] = []map[string]interface{}{srMap}
+		}
+		if rc.Any != nil {
+			srMap := make(map[string]interface{})
+			subRuleTarget, err := ibmSccRuleTargetToMap(rc.Any.Target)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["target"] = []interface{}{subRuleTarget}
+			subRuleConfig, err := ibmSccRuleRequiredConfigToMap(rc.Any.RequiredConfig)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["required_config"] = []interface{}{subRuleConfig}
+			modelMap["any"] = []map[string]interface{}{srMap}
+		}
+		if rc.AnyIf != nil {
+			srMap := make(map[string]interface{})
+			subRuleTarget, err := ibmSccRuleTargetToMap(rc.AnyIf.Target)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["target"] = []interface{}{subRuleTarget}
+			subRuleConfig, err := ibmSccRuleRequiredConfigToMap(rc.AnyIf.RequiredConfig)
+			if err != nil {
+				return map[string]interface{}{}, err
+			}
+			srMap["required_config"] = []interface{}{subRuleConfig}
+			modelMap["any_if"] = []map[string]interface{}{srMap}
+		}
+		// base config
 		if rc.Property != nil {
 			modelMap["property"] = rc.Property
 		}
@@ -245,7 +309,15 @@ func ibmSccRuleRequiredConfigToMap(model securityandcompliancecenterapiv3.Requir
 			modelMap["operator"] = rc.Operator
 		}
 		if rc.Value != nil {
-			modelMap["value"] = rc.Value
+			if valList, ok := rc.Value.([]interface{}); ok {
+				s := make([]string, len(valList))
+				for i, v := range valList {
+					s[i] = fmt.Sprint(v)
+				}
+				modelMap["value"] = fmt.Sprintf("[%s]", strings.Join(s, ","))
+			} else {
+				modelMap["value"] = rc.Value
+			}
 		}
 		return modelMap, nil
 	} else {
@@ -280,9 +352,9 @@ func ibmSccRCMapToRequiredConfig(modelMap map[string]interface{}) (securityandco
 		}
 		model.And = and
 	}
-	if modelMap["any"] != nil {
+	if anySM, ok := modelMap["any"].([]interface{}); ok && len(anySM) > 0 {
 		anySubRule := securityandcompliancecenterapiv3.RequiredConfigSubRule{}
-		anyCondition := modelMap["any"].(map[string]interface{})
+		anyCondition := anySM[0].(map[string]interface{})
 		target, err := ibmSccTargetMapToTarget(anyCondition["target"].(map[string]interface{}))
 		if err != nil {
 			return &anySubRule, err
@@ -295,22 +367,22 @@ func ibmSccRCMapToRequiredConfig(modelMap map[string]interface{}) (securityandco
 		anySubRule.RequiredConfig = rc.(*securityandcompliancecenterapiv3.RequiredConfig)
 		model.Any = &anySubRule
 	}
-	if modelMap["any_if"] != nil {
+	if anyIfSM, ok := modelMap["any_if"].([]interface{}); ok && len(anyIfSM) > 0 {
 		anyIfSubRule := securityandcompliancecenterapiv3.RequiredConfigSubRule{}
-		anyIfCondition := modelMap["any_if"].(map[string]interface{})
-		target, err := ibmSccTargetMapToTarget(anyIfCondition["target"].(map[string]interface{}))
+		anyIfCondition := anyIfSM[0].(map[string]interface{})
+		target, err := ibmSccTargetMapToTarget(anyIfCondition["target"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return &anyIfSubRule, err
 		}
 		anyIfSubRule.Target = target
-		rc, err := ibmSccRCMapToRequiredConfig(anyIfCondition["required_config"].(map[string]interface{}))
+		rc, err := ibmSccRCMapToRequiredConfig(anyIfCondition["required_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return &anyIfSubRule, err
 		}
 		anyIfSubRule.RequiredConfig = rc.(*securityandcompliancecenterapiv3.RequiredConfig)
 		model.AnyIf = &anyIfSubRule
 	}
-	if modelMap["all"] != nil {
+	if modelMap["all"] != nil && len(modelMap["all"].([]interface{})) > 0 {
 		allSubRule := securityandcompliancecenterapiv3.RequiredConfigSubRule{}
 		anyCondition := modelMap["all"].(map[string]interface{})
 		target, err := ibmSccTargetMapToTarget(anyCondition["target"].(map[string]interface{}))
@@ -325,13 +397,27 @@ func ibmSccRCMapToRequiredConfig(modelMap map[string]interface{}) (securityandco
 		allSubRule.RequiredConfig = rc.(*securityandcompliancecenterapiv3.RequiredConfig)
 		model.Any = &allSubRule
 	}
+	if modelMap["all_if"] != nil && len(modelMap["all_if"].([]interface{})) > 0 {
+		allIfSubRule := securityandcompliancecenterapiv3.RequiredConfigSubRule{}
+		anyCondition := modelMap["all_if"].(map[string]interface{})
+		target, err := ibmSccTargetMapToTarget(anyCondition["target"].(map[string]interface{}))
+		if err != nil {
+			return &allIfSubRule, err
+		}
+		allIfSubRule.Target = target
+		rc, err := ibmSccRCMapToRequiredConfig(anyCondition["required_config"].(map[string]interface{}))
+		if err != nil {
+			return &allIfSubRule, err
+		}
+		allIfSubRule.RequiredConfig = rc.(*securityandcompliancecenterapiv3.RequiredConfig)
+		model.Any = &allIfSubRule
+	}
 	if modelMap["property"] != nil && modelMap["property"].(string) != "" {
 		model.Property = core.StringPtr(modelMap["property"].(string))
 	}
 	if modelMap["operator"] != nil && modelMap["operator"].(string) != "" {
 		model.Operator = core.StringPtr(modelMap["operator"].(string))
 	}
-
 	if modelMap["value"] != nil && len(modelMap["value"].(string)) > 0 {
 		// model.Value = modelMap["value"].(string)
 		sLit := strings.Trim(modelMap["value"].(string), "[]")
@@ -351,6 +437,9 @@ func ibmSccTargetMapToTarget(modelMap map[string]interface{}) (*securityandcompl
 	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
 	if modelMap["service_display_name"] != nil && modelMap["service_display_name"].(string) != "" {
 		model.ServiceDisplayName = core.StringPtr(modelMap["service_display_name"].(string))
+	}
+	if modelMap["reference_name"] != nil && modelMap["reference_name"].(string) != "" {
+		model.ReferenceName = core.StringPtr(modelMap["reference_name"].(string))
 	}
 	model.ResourceKind = core.StringPtr(modelMap["resource_kind"].(string))
 	if modelMap["additional_target_attributes"] != nil {
@@ -373,6 +462,10 @@ func ibmSccRuleTargetToMap(model *securityandcompliancecenterapiv3.Target) (map[
 	modelMap["service_name"] = model.ServiceName
 
 	modelMap["resource_kind"] = model.ResourceKind
+
+	if model.ReferenceName != nil {
+		modelMap["reference_name"] = model.ReferenceName
+	}
 
 	if model.ServiceDisplayName != nil {
 		modelMap["service_display_name"] = model.ServiceDisplayName

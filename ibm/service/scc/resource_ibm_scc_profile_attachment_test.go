@@ -168,7 +168,7 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark"]
+		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 		name = "profile_attachment_name"
 		description = "scc_profile_attachment_description"
 			scope {
@@ -253,7 +253,7 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark"]
+		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 		name = "profile_attachment_name"
 		description = "scc_profile_attachment_description"
 			scope {
