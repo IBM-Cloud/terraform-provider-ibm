@@ -56,7 +56,7 @@ func DataSourceIBMPIImages() *schema.Resource {
 						},
 						Attr_SourceChecksum: {
 							Computed:    true,
-							Description: "Checksum of image.",
+							Description: "Checksum of the image.",
 							Type:        schema.TypeString,
 						},
 						Attr_State: {
