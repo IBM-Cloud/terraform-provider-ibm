@@ -6,7 +6,7 @@ toolchain go1.22.3
 
 require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
-	github.com/IBM-Cloud/power-go-client v1.7.0
+	github.com/IBM-Cloud/power-go-client v1.8.0-beta2
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
