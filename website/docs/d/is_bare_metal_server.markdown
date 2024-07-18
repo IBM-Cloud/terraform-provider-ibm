@@ -171,7 +171,11 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_group` - (String) resource group id of the bare metal server.
 - `resource_type` - (String) The type of resource referenced
 - `firmwate_update_type_available` - (String) The firmware update type available for the bare metal server.
-  -> **Supported firmware update types** </br>&#x2022; none </br>&#x2022; optional </br>&#x2022; required
+  
+  -> **Supported firmware update types** 
+    </br>&#x2022; none 
+    </br>&#x2022; optional 
+    </br>&#x2022; required
 - `status` - (String) The status of the bare metal server.
 
   -> **Supported Status** 
