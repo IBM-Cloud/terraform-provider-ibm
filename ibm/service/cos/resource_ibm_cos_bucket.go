@@ -1101,8 +1101,8 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		serviceID = bucketsatcrn
 	}
 
-	var apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint string
-
+	var apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint, visibility string
+	visibility = endpointType
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
@@ -1112,11 +1112,14 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			apiEndpoint = apiEndpointPrivate
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
 
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
