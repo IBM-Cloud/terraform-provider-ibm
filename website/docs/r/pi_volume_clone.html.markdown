@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume_clone"
@@ -8,9 +7,11 @@ description: |-
 ---
 
 # ibm_pi_volume_clone
+
 Create a volume clone. For more information, about managing volume clone, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
+
 The following example creates a volume clone.
 
 ```terraform
@@ -23,11 +24,12 @@ resource "ibm_pi_volume_clone" "testacc_volume_clone" {
 }
 ```
 
-**Note**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+### Notes
+
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
 
   Example usage:
   
@@ -45,8 +47,9 @@ ibm_pi_volume_clone provides the following [timeouts](https://www.terraform.io/d
 - **create** - (Default 15 minutes) Used for creating volume clone.
 - **delete** - (Default 15 minutes) Used for deleting volume clone.
 
-## Argument reference 
-Review the argument references that you can specify for your resource. 
+## Argument reference
+
+Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_replication_enabled` - (Optional, Boolean) Indicates whether the cloned volume should have replication enabled. If no value is provided, it will default to the replication status of the source volume(s).
@@ -55,6 +58,7 @@ Review the argument references that you can specify for your resource.
 - `pi_volume_ids` - (Required, Set of String) List of volumes to be cloned.
 
 ## Attribute reference
+
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `cloned_volumes` - (List of objects) The List of cloned volumes.
@@ -72,8 +76,8 @@ In addition to all argument reference list, you can access the following attribu
 
 The `ibm_pi_volume_clone` resource can be imported by using `pi_cloud_instance_id` and `task_id`.
 
-**Example**
+### Example
 
-```
-$ terraform import ibm_pi_volume_clone.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```bash
+terraform import ibm_pi_volume_clone.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```

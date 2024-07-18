@@ -175,6 +175,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			},
 			isBareMetalServerBandwidth: {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "The total bandwidth (in megabits per second)",
 			},
@@ -1246,6 +1247,10 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		imageStr = image.(string)
 	}
 
+	if bandwidthIntf, ok := d.GetOk(isBareMetalServerBandwidth); ok {
+		bandwidth := int64(bandwidthIntf.(int))
+		options.Bandwidth = &bandwidth
+	}
 	// enable secure boot
 
 	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
@@ -3433,6 +3438,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	}
 	bmsPatchModel := &vpcv1.BareMetalServerPatch{}
 	flag := false
+
+	if d.HasChange(isBareMetalServerBandwidth) && !d.IsNewResource() {
+		bandwidth := int64(d.Get(isBareMetalServerBandwidth).(int))
+		bmsPatchModel.Bandwidth = &bandwidth
+		flag = true
+	}
 
 	if d.HasChange(isBareMetalServerEnableSecureBoot) {
 		newEnableSecureBoot := d.Get(isBareMetalServerEnableSecureBoot).(bool)

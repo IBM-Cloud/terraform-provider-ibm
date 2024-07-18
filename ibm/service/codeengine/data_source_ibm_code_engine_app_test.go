@@ -109,7 +109,9 @@ func testAccCheckIbmCodeEngineAppDataSourceConfigBasic(projectID string, appImag
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
@@ -153,7 +155,9 @@ func testAccCheckIbmCodeEngineAppDataSourceConfig(projectID string, appImageRefe
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
