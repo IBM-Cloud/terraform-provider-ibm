@@ -447,8 +447,7 @@ func resourceIbmSccRuleUpdate(context context.Context, d *schema.ResourceData, m
 		_, response, err := configManagerClient.ReplaceRuleWithContext(context, replaceRuleOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplaceRuleWithContext failed %s\n%s", err, response)
-			// return diag.FromErr(flex.FmtErrorf("ReplaceRuleWithContext failed %s\n%s", err, response))
-			return newTfError(err, "ReplaceRuleWithContext failed:", "ibm_scc_rule", "update")
+			return diag.FromErr(flex.FmtErrorf("ReplaceRuleWithContext failed %s\n%s", err, response))
 		}
 	}
 

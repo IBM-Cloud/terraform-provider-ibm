@@ -52,8 +52,8 @@ func setRegionData(d *schema.ResourceData, region string) error {
 	return nil
 }
 
-func newTfError(err error, errString, resource, action string) diag.Diagnostics {
-	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s: %s", errString, err.Error()), resource, action)
+func newTfError(err error, errString, resource, op string) diag.Diagnostics {
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s: %s", errString, err.Error()), resource, op)
 	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 	return tfErr.GetDiag()
 }
@@ -426,6 +426,7 @@ func modelMapToRequiredConfig(modelMap map[string]interface{}) (securityandcompl
 	return model, nil
 }
 
+// modelMapToTarget transforms a map and converts it to a Target object
 func modelMapToTarget(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.Target, error) {
 	model := &securityandcompliancecenterapiv3.Target{}
 	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))

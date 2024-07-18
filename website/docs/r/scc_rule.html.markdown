@@ -52,9 +52,9 @@ resource "ibm_scc_rule" "scc_rule_instance" {
 ```
 ```hcl
 resource "ibm_scc_rule" "scc_rule_instance" {
-			instance_id = "%s"
-			description = "%s"
-			version = "%s"
+			instance_id = "00000000-1111-2222-3333-444444444444"
+			description = "This rule will determine if a cloud object storage bucket is configured my way"
+			version = "1.0.0"
 			import {
 				parameters {
 					name = "name"
@@ -97,6 +97,48 @@ resource "ibm_scc_rule" "scc_rule_instance" {
 			labels = ["FIXME"]
 		}
 ```
+```hcl
+resource "ibm_scc_rule" "scc_rule_instance" {
+			instance_id = "00000000-1111-2222-3333-444444444444"
+			description = "This rule will determine if Activity Tracker is correctly configured"
+			version = "0.1.0"
+			target {
+				service_name = "atracker"
+				resource_kind = "target"
+				reference_name = "this-target"
+				additional_target_attributes {
+					name = "type"
+					operator = "string_equals"
+					value = "cloud_object_storage"
+				}
+			}
+			required_config {
+				or {
+					property = "route_attached"
+					operator = "is_false"
+				}
+				or {
+					any_if {
+						target {
+							service_name = "cloud-object-storage"
+							resource_kind = "bucket"
+							additional_target_attributes {
+								name = "location"
+								operator = "strings_in_list"
+								value = "$${this-target}.bucket_name"
+							}
+						}
+						required_config {
+							property = "location"
+							operator = "strings_in_list"
+							value = jsonencode(["us-south","us-east"])
+						}
+					}
+				}
+			}
+			labels = ["FIXME"]
+		}
+```
 
 ## Timeouts
 
@@ -130,52 +172,124 @@ You can specify the following arguments for this resource.
 		* Constraints: Allowable values are: `string`, `numeric`, `general`, `boolean`, `string_list`, `ip_list`, `timestamp`. The maximum length is `11` characters. The minimum length is `6` characters. The value must match regular expression `/[A-Za-z]+/`.
 * `labels` - (Optional, List) The list of labels.
   * Constraints: The list items must match regular expression `/[A-Za-z0-9]+/`. The maximum length is `32` items. The minimum length is `0` items.
-* `required_config` - (Required, List) The condition or conditions specified to satisfy the rule. See the [required_config](#required_config) section for more details.
-* `target` - (Required, List) The rule target or service applicable to the rule. See [rule_target](#rule_target) for more details.
+* `required_config` - (Required, List) The specified settings by which your target service will be evaluated against. See the [required_config](#required_config) section for more details.
+* `target` - (Required, List) The service or resource used in the assessment. See [rule_target](#rule_target) for more details.
 * `version` - (Optional, String) The version number of a rule.
   * Constraints: The maximum length is `10` characters. The minimum length is `5` characters. The value must match regular expression `/^[0-9][0-9.]*$/`.
 
 ### required_config
+The `required_config` is specified setting by which the target will be evaluated against. 
 
 The `required_config` block supports any of the following schemas:
- - [sub_rule_condition](#sub_rule_condition)
- - [list_condition](#list_condition)
  - [base_condition](#base_condtion)
+ - [list_condition](#list_condition)
+ - [sub_rule](#sub_rule)
 
-### sub_rule_condition
-A sub_rule_condition a rule condition within a rule that needs to be satisfied
+### base_condition
+A base_condition is the basic object in `required_config` block. It details the expected specifications of a service/resource. 
 
-* `all` - (Optional) A subrule where all targets must satisfy the condtion/conditions specified in the `required_config` argument. If no targets are found during evaluation, the subrule condition will fail.
-* `all_if` - (Optional) A subrule where all targets must satisfy the condition/conditions specified in the `required_config` argument. If no targets are found, the subrule condition will pass.
-* `any` - (Optional) A subrule where one of the targets must satisfy the condition/conditions specified in the `required_config` argument. If no targets are found, the subrule condition will fail.
-* `any_if` - (Optional) A subrule where one of the targets must satisfy the condition/conditions specified in the `required_config` argument. If no targets are found, the subrule condition will fail. 
+```hcl
+required_config {
+	property = "location"
+	operator = "strings_in_list"
+	description = "Must be in the region us-south or us-east"
+	value = jsonencode(["us-south","us-east"])
+}
+```
 
-The arguments for `all`, `all_if`, `any`, `any_if`: 
-* `target` - (Required) see the section [rule_target](#rule_target)
-* `required_config` - (Required) see the section [required_config](#required_config)
+* `description` - (Optional, String) The details of the expected setting.
+* `property` - (Required, String) The property.
+	* Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `operator` - (Required, String) The operator.
+	* Constraints: Allowable values are: 
+		* `string_equals`
+		* `string_not_equals` 
+		* `string_match` 
+		* `string_not_match`
+		* `string_contains`
+		* `string_not_contains`
+		* `num_equals`
+		* `num_not_equals`
+		* `num_less_than`
+		* `num_less_than_equals`
+		* `num_greater_than`
+		* `num_greater_than_equals`
+		* `is_empty`
+		* `is_not_empty`
+		* `is_true`
+		* `is_false`
+		* `strings_in_list`
+		* `strings_allowed`
+		* `strings_required`
+		* `ips_in_range`
+		* `ips_equals`
+		* `ips_not_equals`
+		* `days_less_than`
+		
+		The maximum length is `23` characters. The minimum length is `7` characters.
+* `value` - (Optional, String) Value of the condition to satisfy. Target/Imports can be used here.
+
+	~> NOTE: If the value requires a list/array, please use the terraform function `jsonencode`
+	```hcl
+	jsonencode(["us-south","us-east"])
+	```
 
 ### list_condition
-A list_condition is a list of conditions where one or all condtions specified must be satisfied depending on the usage of `and`/`or`.
-
+A list_condition is a collection of `and/or` conditons. One or all condtions must be satisfied for the rule to be compliant.
+```hcl
+required_config {
+	...
+	and {
+		property = "app_lb_pools_with_multiple_members_count"
+		operator = "num_not_equals"
+		value = "0"
+	}
+	and {
+		property = "app_lb_pools_without_multiple_members_count"
+		operator = "num_not_equals"
+		value = "0"
+	}
+}
+```
+One of the following attributes can be used to denote a list_condition
 * `and` - (Optional, List) A list of conditions where all conditions listed must be satisfied. 
 * `or` - (Optional, List) A list of conditions where one condition listed must be satisfied.
 
 `and`, `or` supports a combination of the following schemas in the list:
 * [base_condition](#base_condition)
-* [sub_rule_condition](#sub_rule_condition)
-* [list_condition](#list_rule_condition)
+* [list_condition](#list_condition)
+* [sub_rule_condition](#sub_rule)
 
-### base_condition
-A base_condition is a condition specified in order to satisfy the rule.
+### sub_rule
+A sub_rule is a rule condition within a rule used to evaluate a target.
+```hcl
+required_config {
+	...
+	any_if {
+		target {
+			service_name = "cloud-object-storage"
+			resource_kind = "bucket"
+		}
+		required_config {
+			property = "location"
+			operator = "strings_in_list"
+			value = jsonencode(["us-south","us-east"])
+		}
+	}
+}
+```
+One of the following attributes can be used to denote a subrule: 
+* `all` - (Optional) A subrule where all targets must satisfy the settings specified in the `required_config` argument. If no targets are found during evaluation, the subrule condition will fail.
+* `all_if` - (Optional) A subrule where all targets must satisfy the setting specified in the `required_config` argument. If no targets are found, the subrule condition will pass.
+* `any` - (Optional) A subrule where one of the targets must satisfy the setting specified in the `required_config` argument. If no targets are found, the subrule condition will fail.
+* `any_if` - (Optional) A subrule where one of the targets must satisfy the setting specified in the `required_config` argument. If no targets are found, the subrule condition will fail. 
 
-* `description` - (Optional, String) The required config description.
-* `property` - (Required, String) The property.
-	* Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
-* `operator` - (Required, String) The operator.
-	* Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`. The maximum length is `23` characters. The minimum length is `7` characters.
-* `value` - (Optional, String) Value of the condition to satisfy.
+The arguments for `all`, `all_if`, `any`, `any_if`: 
+* `target` - (Required) see the section [rule_target](#rule_target) for more details
+* `required_config` - (Required) see the section [required_config](#required_config) for more details
 
 ### rule_target
+The `rule_target` is the target the rule is evaluating. This target can be a service or a resource.
 
 Nested schema for **rule_target**:
 * `additional_target_attributes` - (Optional, List) The list of targets supported properties.
@@ -184,11 +298,35 @@ Nested schema for **rule_target**:
 	* `name` - (Optional, String) The additional target attribute name.
 		* Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 	* `operator` - (Optional, String) The operator.
-		  * Constraints: Allowable values are: `string_equals`, `string_not_equals`, `string_match`, `string_not_match`, `string_contains`, `string_not_contains`, `num_equals`, `num_not_equals`, `num_less_than`, `num_less_than_equals`, `num_greater_than`, `num_greater_than_equals`, `is_empty`, `is_not_empty`, `is_true`, `is_false`, `strings_in_list`, `strings_allowed`, `strings_required`, `ips_in_range`, `ips_equals`, `ips_not_equals`, `days_less_than`.
+		* Constraints: Allowable values are:
+			- `string_equals`
+			- `string_not_equals`
+			- `string_match`
+			- `string_not_match`
+			- `string_contains`
+			- `string_not_contains`
+			- `num_equals`
+			- `num_not_equals`
+			- `num_less_than`
+			- `num_less_than_equals`
+			- `num_greater_than`
+			- `num_greater_than_equals`
+			- `is_empty`
+			- `is_not_empty`
+			- `is_true`
+			- `is_false`
+			- `strings_in_list`
+			- `strings_allowed`
+			- `strings_required`
+			- `ips_in_range`
+			- `ips_equals`
+			- `ips_not_equals`
+			- `days_less_than`
 	* `value` - (Optional, String) The value.
 		* Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `resource_kind` - (Required, String) The target resource kind.
 	* Constraints: The maximum length is `99999` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
+* `reference_name` - (Optional, String) The variable that can be used in the `required_config`. 
 * `service_display_name` - (Optional, String) The display name of the target service.
 	* Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9]+/`.
 * `service_name` - (Required, String) The target service name.
