@@ -5,15 +5,12 @@ package scc
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -50,12 +47,6 @@ func setRegionData(d *schema.ResourceData, region string) error {
 		return d.Set("region", val.(string))
 	}
 	return nil
-}
-
-func newTfError(err error, errString, resource, op string) diag.Diagnostics {
-	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s: %s", errString, err.Error()), resource, op)
-	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	return tfErr.GetDiag()
 }
 
 // getRequiredConfigSchema will return the schema for a scc rule required_config. This schema is recursive.
@@ -144,6 +135,7 @@ func getRequiredConfigSchema(currentDepth int) map[string]*schema.Schema {
 	return baseMap
 }
 
+// getTargetSchema returns a terraform Schema defining the attributes of a Target object
 func getTargetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"service_name": {
@@ -204,6 +196,7 @@ func getTargetSchema() map[string]*schema.Schema {
 	}
 }
 
+// getSubRuleSchema returns a terraform Schema that define attributes of a subRule
 func getSubRuleSchema(currentDepth int) map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"required_config": {
@@ -241,8 +234,8 @@ func requiredConfigItemsToListMap(items securityandcompliancecenterapiv3.Require
 	return rcItems, nil
 }
 
-// requiredConfigSubRuleToMap will dicipher the sub rule brought in and return a []map[string]interface{} to abide to the
-// terraform type TypeList
+// requiredConfigSubRuleToMap will dicipher the sub rule brought in and return a []map[string]interface{} for the terraform
+// state file
 func requiredConfigSubRuleToMap(subRule *securityandcompliancecenterapiv3.RequiredConfigSubRule) ([]map[string]interface{}, error) {
 	srMap := make(map[string]interface{})
 	subRuleTarget, err := targetToModelMap(subRule.Target)
@@ -258,8 +251,8 @@ func requiredConfigSubRuleToMap(subRule *securityandcompliancecenterapiv3.Requir
 	return []map[string]interface{}{srMap}, nil
 }
 
-// ibmSccRuleRequiredConfigToMap will dicipher a scc rule required_config and return back to a map[string]interface{} to abide to
-// the terraform type TypeList
+// ibmSccRuleRequiredConfigToMap will dicipher a scc rule required_config and return back to a map[string]interface{}
+// for the terraform state file
 func requiredConfigToModelMap(model securityandcompliancecenterapiv3.RequiredConfigIntf) (map[string]interface{}, error) {
 	if rc, ok := model.(*securityandcompliancecenterapiv3.RequiredConfig); ok {
 		modelMap := make(map[string]interface{})
@@ -334,6 +327,7 @@ func requiredConfigToModelMap(model securityandcompliancecenterapiv3.RequiredCon
 	}
 }
 
+// listMapToSccSubRule is a helper function that converts a map into a SubRule
 func listMapToSccSubRule(subRuleModel []interface{}) (*securityandcompliancecenterapiv3.RequiredConfigSubRule, error) {
 	subRule := securityandcompliancecenterapiv3.RequiredConfigSubRule{}
 	subMap := subRuleModel[0].(map[string]interface{})
@@ -350,7 +344,7 @@ func listMapToSccSubRule(subRuleModel []interface{}) (*securityandcompliancecent
 	return &subRule, nil
 }
 
-// modelMapToRequiredConfig diciphers a map and converts the map to a RequiredConfig
+// modelMapToRequiredConfig converts the map to a RequiredConfig
 func modelMapToRequiredConfig(modelMap map[string]interface{}) (securityandcompliancecenterapiv3.RequiredConfigIntf, error) {
 	model := &securityandcompliancecenterapiv3.RequiredConfig{}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
@@ -426,7 +420,7 @@ func modelMapToRequiredConfig(modelMap map[string]interface{}) (securityandcompl
 	return model, nil
 }
 
-// modelMapToTarget transforms a map and converts it to a Target object
+// modelMapToTarget transforms a map and transforms into a Target object
 func modelMapToTarget(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.Target, error) {
 	model := &securityandcompliancecenterapiv3.Target{}
 	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
@@ -451,6 +445,7 @@ func modelMapToTarget(modelMap map[string]interface{}) (*securityandcompliancece
 	return model, nil
 }
 
+// ruleMapToAdditionalTargetAttribute will convert a given map to a AdditionalTargetAttribute object
 func ruleMapToAdditionalTargetAttribute(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.AdditionalTargetAttribute, error) {
 	model := &securityandcompliancecenterapiv3.AdditionalTargetAttribute{}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
@@ -465,6 +460,7 @@ func ruleMapToAdditionalTargetAttribute(modelMap map[string]interface{}) (*secur
 	return model, nil
 }
 
+// targetToModelMap will convert a Target object to a map for the terraform state file.
 func targetToModelMap(model *securityandcompliancecenterapiv3.Target) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 
@@ -494,6 +490,7 @@ func targetToModelMap(model *securityandcompliancecenterapiv3.Target) (map[strin
 	return modelMap, nil
 }
 
+// converts a AdditionalTargetAttribute object into a map for the terraform state file.
 func ruleAdditionalTargetAttributeToMap(model *securityandcompliancecenterapiv3.AdditionalTargetAttribute) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
