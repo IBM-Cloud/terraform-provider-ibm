@@ -822,9 +822,10 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 	if err = d.Set("identifier", *bms.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting identifier: %s", err))
 	}
-
-	if err = d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting availble firmware update type: %s", err))
+	if bms.Firmware != nil && bms.Firmware.Update != nil {
+		if err = d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting availble firmware update type: %s", err))
+		}
 	}
 
 	//enable secure boot

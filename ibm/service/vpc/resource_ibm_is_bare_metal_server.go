@@ -1954,7 +1954,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	d.Set(isBareMetalServerCPU, cpuList)
 	d.Set(isBareMetalServerCRN, *bms.CRN)
-	d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update)
+	if bms.Firmware != nil && bms.Firmware.Update != nil {
+		d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update)
+	}
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {

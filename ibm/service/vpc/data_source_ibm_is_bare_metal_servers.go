@@ -1085,7 +1085,9 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 
 		l[isBareMetalServerImage] = *initialization.Image.ID
-		l[isBareMetalServerFirmwareUpdateTypeAvailable] = *bms.Firmware.Update
+		if bms.Firmware != nil && bms.Firmware.Update != nil {
+			l[isBareMetalServerFirmwareUpdateTypeAvailable] = *bms.Firmware.Update
+		}
 
 		keyListList := []string{}
 		for i := 0; i < len(initialization.Keys); i++ {
