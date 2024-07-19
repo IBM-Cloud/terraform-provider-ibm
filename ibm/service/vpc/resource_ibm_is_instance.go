@@ -45,6 +45,7 @@ const (
 	isInstanceZone                    = "zone"
 	isInstanceBootVolume              = "boot_volume"
 	isInstanceVolumeSnapshot          = "snapshot"
+	isInstanceVolumeSnapshotCrn       = "snapshot_crn"
 	isInstanceSourceTemplate          = "instance_template"
 	isInstanceBandwidth               = "bandwidth"
 	isInstanceTotalVolumeBandwidth    = "total_volume_bandwidth"
@@ -109,6 +110,7 @@ const (
 	isInstanceCatalogOffering            = "catalog_offering"
 	isInstanceCatalogOfferingOfferingCrn = "offering_crn"
 	isInstanceCatalogOfferingVersionCrn  = "version_crn"
+	isInstanceCatalogOfferingPlanCrn     = "plan_crn"
 
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
@@ -213,12 +215,26 @@ func ResourceIBMISInstance() *schema.Resource {
 				Description: "Crn for this Instance",
 			},
 
+			"confidential_compute_mode": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", "confidential_compute_mode"),
+				Description:  "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+			},
+			"enable_secure_boot": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+			},
+
 			isInstanceSourceTemplate: {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.volume_id"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "boot_volume.0.volume_id"},
 				Description:   "Id of the instance template",
 			},
 			isInstanceZone: {
@@ -384,7 +400,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.version_crn"},
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
+							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a catalog offering by a unique CRN property",
 						},
 						isInstanceCatalogOfferingVersionCrn: {
@@ -392,8 +408,29 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.offering_crn"},
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
+							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a version of a catalog offering by a unique CRN property",
+						},
+						isInstanceCatalogOfferingPlanCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The CRN for this catalog offering version's billing plan",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -655,6 +692,13 @@ func ResourceIBMISInstance() *schema.Resource {
 										Computed:      true,
 										ValidateFunc:  validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 										Description:   "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
 									},
 									"primary_ip": &schema.Schema{
 										Type:          schema.TypeList,
@@ -988,6 +1032,13 @@ func ResourceIBMISInstance() *schema.Resource {
 										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 										Description:  "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
+									},
 									"primary_ip": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -1090,9 +1141,9 @@ func ResourceIBMISInstance() *schema.Resource {
 				ForceNew:      true,
 				Computed:      true,
 				Optional:      true,
-				ConflictsWith: []string{"boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-				RequiredWith:  []string{isInstanceZone, isInstanceKeys, isInstanceVPC, isInstanceProfile},
+				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+				RequiredWith:  []string{isInstanceZone, isInstanceVPC, isInstanceProfile},
 				Description:   "image id",
 			},
 
@@ -1108,9 +1159,9 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							Computed:      true,
-							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceVPC},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
 						},
 						isInstanceVolAttVolAutoDelete: {
@@ -1128,9 +1179,18 @@ func ResourceIBMISInstance() *schema.Resource {
 
 						isInstanceVolumeSnapshot: {
 							Type:          schema.TypeString,
-							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceVPC},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id", "boot_volume.0.snapshot_crn"},
+							Optional:      true,
+							ForceNew:      true,
+							Computed:      true,
+						},
+						isInstanceVolumeSnapshotCrn: {
+							Type:          schema.TypeString,
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceVPC},
+							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
+							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
 							Optional:      true,
 							ForceNew:      true,
 							Computed:      true,
@@ -1609,6 +1669,16 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "confidential_compute_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "disabled, sgx, tdx",
+			Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
 			Identifier:                 isInstanceMetadataServiceRespHopLimit,
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
@@ -1714,6 +1784,12 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
 	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
@@ -2045,16 +2121,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -2119,7 +2197,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 	}
 	return nil
 }
-func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, offerringCrn, versionCrn string) error {
+func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, offerringCrn, versionCrn, planCrn string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -2136,12 +2214,29 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			ID: &vpcID,
 		},
 	}
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
+	planOffering = nil
+	if planCrn != "" {
+		planOffering = &vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN{
+			CRN: &planCrn,
+		}
+	}
+
 	if offerringCrn != "" {
 		catalogOffering := &vpcv1.CatalogOfferingIdentityCatalogOfferingByCRN{
 			CRN: &offerringCrn,
 		}
 		offeringPrototype := &vpcv1.InstanceCatalogOfferingPrototypeCatalogOfferingByOffering{
 			Offering: catalogOffering,
+		}
+		if planOffering != nil {
+			offeringPrototype.Plan = planOffering
 		}
 		instanceproto.CatalogOffering = offeringPrototype
 	}
@@ -2151,6 +2246,9 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		}
 		versionPrototype := &vpcv1.InstanceCatalogOfferingPrototypeCatalogOfferingByVersion{
 			Version: versionOffering,
+		}
+		if planOffering != nil {
+			versionPrototype.Plan = planOffering
 		}
 		instanceproto.CatalogOffering = versionPrototype
 	}
@@ -2472,16 +2570,18 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -2550,7 +2650,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		},
 		Name: &name,
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -2893,16 +2998,18 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -2985,7 +3092,12 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			ID: &vpcID,
 		},
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -3068,6 +3180,13 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		if snapshotIdStr != "" && ok {
 			volTemplate.SourceSnapshot = &vpcv1.SnapshotIdentity{
 				ID: &snapshotIdStr,
+			}
+		}
+		snapshotCrn, ok := bootvol[isInstanceVolumeSnapshotCrn]
+		snapshotCrnStr := snapshotCrn.(string)
+		if snapshotCrnStr != "" && ok {
+			volTemplate.SourceSnapshot = &vpcv1.SnapshotIdentity{
+				CRN: &snapshotCrnStr,
 			}
 		}
 		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
@@ -3314,16 +3433,18 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -3411,7 +3532,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &vpcID,
 		},
 	}
-
+	if _, ok := d.GetOk("confidential_compute_mode"); ok {
+		instanceproto.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+	}
+	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
+		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -3708,16 +3834,18 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -3795,13 +3923,15 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	zone := d.Get(isInstanceZone).(string)
 	image := d.Get(isInstanceImage).(string)
 	snapshot := d.Get("boot_volume.0.snapshot").(string)
+	snapshotcrn := d.Get("boot_volume.0.snapshot_crn").(string)
 	volume := d.Get("boot_volume.0.volume_id").(string)
 	template := d.Get(isInstanceSourceTemplate).(string)
 	if catalogOfferingOk, ok := d.GetOk(isInstanceCatalogOffering); ok {
 		catalogOffering := catalogOfferingOk.([]interface{})[0].(map[string]interface{})
 		offeringCrn, _ := catalogOffering[isInstanceCatalogOfferingOfferingCrn].(string)
 		versionCrn, _ := catalogOffering[isInstanceCatalogOfferingVersionCrn].(string)
-		err := instanceCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, image, offeringCrn, versionCrn)
+		planCrn, _ := catalogOffering[isInstanceCatalogOfferingPlanCrn].(string)
+		err := instanceCreateByCatalogOffering(d, meta, profile, name, vpcID, zone, image, offeringCrn, versionCrn, planCrn)
 		if err != nil {
 			return err
 		}
@@ -3811,7 +3941,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if err != nil {
 			return err
 		}
-	} else if snapshot != "" {
+	} else if snapshot != "" || snapshotcrn != "" {
 		err := instanceCreateBySnapshot(d, meta, profile, name, vpcID, zone)
 		if err != nil {
 			return err
@@ -3976,6 +4106,16 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("[ERROR] Error getting Instance: %s\n%s", err, response)
 	}
+	if !core.IsNil(instance.ConfidentialComputeMode) {
+		if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+			return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+		}
+	}
+	if !core.IsNil(instance.EnableSecureBoot) {
+		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+			return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+		}
+	}
 	instanceInitialization, response, err := instanceC.GetInstanceInitialization(getinsIniOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting Instance initialization details: %s\n%s", err, response)
@@ -3997,6 +4137,15 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
 		catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+		if instance.CatalogOffering.Plan != nil {
+			if instance.CatalogOffering.Plan.CRN != nil && *instance.CatalogOffering.Plan.CRN != "" {
+				catalogMap[isInstanceCatalogOfferingPlanCrn] = *instance.CatalogOffering.Plan.CRN
+			}
+			if instance.CatalogOffering.Plan.Deleted != nil {
+				deletedMap := resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(*instance.CatalogOffering.Plan.Deleted)
+				catalogMap["deleted"] = []map[string]interface{}{deletedMap}
+			}
+		}
 		catalogList = append(catalogList, catalogMap)
 		d.Set(isInstanceCatalogOffering, catalogList)
 	}
@@ -4353,6 +4502,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				if vol.SourceSnapshot != nil {
 					bootVol[isInstanceVolumeSnapshot] = vol.SourceSnapshot.ID
+					bootVol[isInstanceVolumeSnapshotCrn] = vol.SourceSnapshot.CRN
 				}
 				if vol.UserTags != nil {
 					bootVol[isInstanceBootVolumeTags] = vol.UserTags
@@ -4538,6 +4688,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					ipsName := fmt.Sprintf("%s.%s", nacVniName, "0.ips")
 					enableNatName := fmt.Sprintf("%s.%s", nacVniName, "0.enable_infrastructure_nat")
 					allowIpSpoofingName := fmt.Sprintf("%s.%s", nacVniName, "0.allow_ip_spoofing")
+					pStateFilteringModeSchemaName := fmt.Sprintf("%s.%s", nacVniName, "0.protocol_state_filtering_mode")
 					if d.HasChange(autoDeleteName) {
 						autodelete := d.Get(autoDeleteName).(bool)
 						virtualNetworkInterfacePatch.AutoDelete = &autodelete
@@ -4553,6 +4704,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 					if d.HasChange(allowIpSpoofingName) {
 						allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
 						virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+					}
+					if d.HasChange(pStateFilteringModeSchemaName) {
+						pStateFilteringMode := d.Get(pStateFilteringModeSchemaName).(string)
+						virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
 					}
 					virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 					if err != nil {
@@ -4734,6 +4889,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			sgName := fmt.Sprintf("%s.%s", nacVniName, "0.security_groups")
 			enableNatName := fmt.Sprintf("%s.%s", nacVniName, "0.enable_infrastructure_nat")
 			allowIpSpoofingName := fmt.Sprintf("%s.%s", nacVniName, "0.allow_ip_spoofing")
+			pStateFilteringModeSchemaName := fmt.Sprintf("%s.%s", nacVniName, "0.protocol_state_filtering_mode")
 			if d.HasChange(autoDeleteName) {
 				autodelete := d.Get(autoDeleteName).(bool)
 				virtualNetworkInterfacePatch.AutoDelete = &autodelete
@@ -4749,6 +4905,10 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			if d.HasChange(allowIpSpoofingName) {
 				allIpSpoofing := d.Get(allowIpSpoofingName).(bool)
 				virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+			}
+			if d.HasChange(pStateFilteringModeSchemaName) {
+				pStateFilteringMode := d.Get(pStateFilteringModeSchemaName).(string)
+				virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
 			}
 			virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 			if err != nil {
@@ -4956,6 +5116,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	bootVolSize := "boot_volume.0.size"
+
 	if d.HasChange(bootVolSize) && !d.IsNewResource() {
 		old, new := d.GetChange(bootVolSize)
 		if new.(int) < old.(int) {
@@ -5511,24 +5672,84 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange(isInstanceName) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot")) && !d.IsNewResource() {
+		restartNeeded := false
+		serverstopped := false
 		name := d.Get(isInstanceName).(string)
 		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
-
-		instancePatchModel := &vpcv1.InstancePatch{
-			Name: &name,
+		instancePatchModel := &vpcv1.InstancePatch{}
+		if d.HasChange("confidential_compute_mode") {
+			instancePatchModel.ConfidentialComputeMode = core.StringPtr(d.Get("confidential_compute_mode").(string))
+			restartNeeded = true
 		}
+		if _, ok := d.GetOkExists("enable_secure_boot"); ok && d.HasChange("enable_secure_boot") {
+			instancePatchModel.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+		}
+		if d.HasChange("name") {
+			instancePatchModel.Name = &name
+		}
+
 		instancePatch, err := instancePatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error calling asPatch for InstancePatch: %s", err)
 		}
 		updnetoptions.InstancePatch = instancePatch
+		if restartNeeded {
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			instance, response, err := instanceC.GetInstance(getinsOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				return fmt.Errorf("[ERROR] Error Getting Instance (%s): %s\n%s", id, err, response)
+			}
 
+			if instance != nil && *instance.Status == "running" {
+				actiontype := "stop"
+				createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: &id,
+					Type:       &actiontype,
+				}
+				_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						return nil
+					}
+					return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+				}
+				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+				if err != nil {
+					return err
+				}
+				serverstopped = true
+			}
+		}
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
 		if err != nil {
 			return err
+		}
+		if serverstopped {
+			actiontype := "start"
+			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+				InstanceID: &id,
+				Type:       &actiontype,
+			}
+			_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					return nil
+				}
+				return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+			}
+			_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -6173,6 +6394,7 @@ func resourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1.I
 	vniMap["auto_delete"] = vniDetails.AutoDelete
 	vniMap["enable_infrastructure_nat"] = vniDetails.EnableInfrastructureNat
 	vniMap["resource_group"] = vniDetails.ResourceGroup.ID
+	vniMap["protocol_state_filtering_mode"] = vniDetails.ProtocolStateFilteringMode
 	primaryipId := *vniDetails.PrimaryIP.ID
 	if !core.IsNil(vniDetails.Ips) {
 		ips := []map[string]interface{}{}
@@ -6280,6 +6502,11 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfacePrototypeAttachmentContext
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
+			model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		}
 	}
 	if modelMap["primary_ip"] != nil && len(modelMap["primary_ip"].([]interface{})) > 0 {
 		PrimaryIPModel, err := resourceIBMIsInstanceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap["primary_ip"].([]interface{})[0].(map[string]interface{}))

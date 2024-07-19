@@ -1,10 +1,12 @@
-# Example for UsageReportsV4
+# Examples for Usage Reports
 
-This example illustrates how to use the UsageReportsV4
+These examples illustrate how to use the resources and data sources associated with Usage Reports.
 
-The following types of resources are supported:
+The following resources are supported:
+* ibm_billing_report_snapshot
 
-* billing_report_snapshot
+The following data sources are supported:
+* ibm_billing_snapshot_list
 
 ## Usage
 
@@ -18,14 +20,12 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
+## Usage Reports resources
 
-## UsageReportsV4 resources
-
-billing_report_snapshot resource:
+### Resource: ibm_billing_report_snapshot
 
 ```hcl
-resource "billing_report_snapshot" "billing_report_snapshot_instance" {
-  account_id = var.billing_report_snapshot_account_id
+resource "ibm_billing_report_snapshot" "billing_report_snapshot_instance" {
   interval = var.billing_report_snapshot_interval
   versioning = var.billing_report_snapshot_versioning
   report_types = var.billing_report_snapshot_report_types
@@ -35,18 +35,59 @@ resource "billing_report_snapshot" "billing_report_snapshot_instance" {
 }
 ```
 
-## UsageReportsV4 data sources
+#### Inputs
 
-billing_snapshot_list data source:
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| interval | Frequency of taking the snapshot of the billing reports. | `string` | true |
+| versioning | A new version of report is created or the existing report version is overwritten with every update. | `string` | false |
+| report_types | The type of billing reports to take snapshot of. Possible values are [account_summary, enterprise_summary, account_resource_instance_usage]. | `list(string)` | false |
+| cos_reports_folder | The billing reports root folder to store the billing reports snapshots. Defaults to "IBMCloud-Billing-Reports". | `string` | false |
+| cos_bucket | The name of the COS bucket to store the snapshot of the billing reports. | `string` | true |
+| cos_location | Region of the COS instance. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| state | Status of the billing snapshot configuration. Possible values are [enabled, disabled]. |
+| account_type | Type of account. Possible values are [enterprise, account]. |
+| compression | Compression format of the snapshot report. |
+| content_type | Type of content stored in snapshot report. |
+| cos_endpoint | The endpoint of the COS instance. |
+| created_at | Timestamp in milliseconds when the snapshot configuration was created. |
+| last_updated_at | Timestamp in milliseconds when the snapshot configuration was last updated. |
+| history | List of previous versions of the snapshot configurations. |
+
+## Usage Reports data sources
+
+### Data source: ibm_billing_snapshot_list
 
 ```hcl
-data "billing_snapshot_list" "billing_snapshot_list_instance" {
-  account_id = var.billing_snapshot_list_account_id
+data "ibm_billing_snapshot_list" "billing_snapshot_list_instance" {
   month = var.billing_snapshot_list_month
   date_from = var.billing_snapshot_list_date_from
   date_to = var.billing_snapshot_list_date_to
+  limit = var.billing_snapshot_list_limit
 }
 ```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| month | The month for which billing report snapshot is requested.  Format is yyyy-mm. | `string` | true |
+| date_from | Timestamp in milliseconds for which billing report snapshot is requested. | `number` | false |
+| date_to | Timestamp in milliseconds for which billing report snapshot is requested. | `number` | false |
+| limit | Number of usage records returned. The default value is 30. Maximum value is 200. | `number` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| count | Number of total snapshots. |
+| snapshots |  |
 
 ## Assumptions
 
@@ -67,27 +108,3 @@ data "billing_snapshot_list" "billing_snapshot_list_instance" {
 | Name | Version |
 |------|---------|
 | ibm | 1.13.1 |
-
-## Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| account_id | Account ID for which billing report snapshot is configured. | `string` | true |
-| interval | Frequency of taking the snapshot of the billing reports. | `string` | true |
-| versioning | A new version of report is created or the existing report version is overwritten with every update. | `string` | false |
-| report_types | The type of billing reports to take snapshot of. Possible values are [account_summary, enterprise_summary, account_resource_instance_usage]. | `list(string)` | false |
-| cos_reports_folder | The billing reports root folder to store the billing reports snapshots. Defaults to "IBMCloud-Billing-Reports". | `string` | false |
-| cos_bucket | The name of the COS bucket to store the snapshot of the billing reports. | `string` | true |
-| cos_location | Region of the COS instance. | `string` | true |
-| account_id | Account ID for which the billing report snapshot is requested. | `string` | true |
-| month | The month for which billing report snapshot is requested.  Format is yyyy-mm. | `string` | true |
-| date_from | Timestamp in milliseconds for which billing report snapshot is requested. | `number` | false |
-| date_to | Timestamp in milliseconds for which billing report snapshot is requested. | `number` | false |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| billing_report_snapshot | billing_report_snapshot object |
-| billing_snapshot_list | billing_snapshot_list object |

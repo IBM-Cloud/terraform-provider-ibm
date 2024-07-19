@@ -6,14 +6,14 @@ package kms
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
+	"time"
 )
 
 func ResourceIBMKmsInstancePolicy() *schema.Resource {
@@ -259,6 +259,12 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 	setIfNotEmpty("metrics", instancePolicies)
 	setIfNotEmpty("key_create_import_access", instancePolicies)
 
+	if strings.Contains((kpAPI.URL).String(), "private") || strings.Contains(kpAPI.Config.BaseURL, "private") {
+		d.Set("endpoint_type", "private")
+	} else {
+		d.Set("endpoint_type", "public")
+	}
+
 	return nil
 
 }
@@ -331,13 +337,30 @@ func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI
 	if kciaip, ok := d.GetOk("key_create_import_access"); ok {
 		kciaipList := kciaip.([]interface{})
 		if len(kciaipList) != 0 {
-			mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
-				Enabled:           kciaipList[0].(map[string]interface{})["enabled"].(bool),
-				CreateRootKey:     kciaipList[0].(map[string]interface{})["create_root_key"].(bool),
-				CreateStandardKey: kciaipList[0].(map[string]interface{})["create_standard_key"].(bool),
-				ImportRootKey:     kciaipList[0].(map[string]interface{})["import_root_key"].(bool),
-				ImportStandardKey: kciaipList[0].(map[string]interface{})["import_standard_key"].(bool),
-				EnforceToken:      kciaipList[0].(map[string]interface{})["enforce_token"].(bool),
+			enabled := kciaipList[0].(map[string]interface{})["enabled"].(bool)
+			create_root_key := kciaipList[0].(map[string]interface{})["create_root_key"].(bool)
+			create_standard_key := kciaipList[0].(map[string]interface{})["create_standard_key"].(bool)
+			import_root_key := kciaipList[0].(map[string]interface{})["import_root_key"].(bool)
+			import_standard_key := kciaipList[0].(map[string]interface{})["import_standard_key"].(bool)
+			enforce_token := kciaipList[0].(map[string]interface{})["enforce_token"].(bool)
+
+			// we must make sure not to attempt any updates on attributes when enabled is false or face input validation errors
+			if enabled {
+				mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
+					Enabled: enabled,
+					Attributes: &kp.KeyCreateImportAccessInstancePolicyAttributes{
+						CreateRootKey:     &create_root_key,
+						CreateStandardKey: &create_standard_key,
+						ImportRootKey:     &import_root_key,
+						ImportStandardKey: &import_standard_key,
+						EnforceToken:      &enforce_token,
+					},
+				}
+			} else {
+				mulPolicy.KeyCreateImportAccess = &kp.KeyCreateImportAccessInstancePolicy{
+					Enabled:    enabled,
+					Attributes: nil,
+				}
 			}
 		}
 	}

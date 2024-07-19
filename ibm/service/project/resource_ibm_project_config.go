@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
+ */
+
 package project
 
 import (
@@ -413,12 +417,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "This property can be any value - a string, number, boolean, array, or object.",
 						},
-						"value_json": &schema.Schema{
-							Type:        schema.TypeString,
-							Deprecated:  "This property will be deprecated, it will be replaced by the existing property 'value'.",
-							Computed:    true,
-							Description: "This property can be any value - a string, number, boolean, array, or object.",
-						},
 					},
 				},
 			},
@@ -580,6 +578,11 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "The state of the configuration.",
 						},
+						"state_code": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
+						},
 						"version": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -625,6 +628,11 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "The state of the configuration.",
 						},
+						"state_code": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
+						},
 						"version": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -667,6 +675,7 @@ func ResourceIbmProjectConfigValidator() *validate.ResourceValidator {
 func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	projectClient, err := meta.(conns.ClientSession).ProjectV1()
 	if err != nil {
+		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_config", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -677,13 +686,13 @@ func resourceIbmProjectConfigCreate(context context.Context, d *schema.ResourceD
 	createConfigOptions.SetProjectID(d.Get("project_id").(string))
 	definitionModel, err := ResourceIbmProjectConfigMapToProjectConfigDefinitionPrototype(d.Get("definition.0").(map[string]interface{}))
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "create", "parse-definition").GetDiag()
 	}
 	createConfigOptions.SetDefinition(definitionModel)
 	if _, ok := d.GetOk("schematics"); ok {
 		schematicsModel, err := ResourceIbmProjectConfigMapToSchematicsWorkspace(d.Get("schematics.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "create", "parse-schematics").GetDiag()
 		}
 		createConfigOptions.SetSchematics(schematicsModel)
 	}
@@ -712,8 +721,7 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_config", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "sep-id-parts").GetDiag()
 	}
 
 	getConfigOptions.SetProjectID(parts[0])
@@ -732,112 +740,131 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 
 	definitionMap, err := ResourceIbmProjectConfigProjectConfigDefinitionResponseToMap(projectConfig.Definition)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "definition-to-map").GetDiag()
 	}
 	if err = d.Set("definition", []map[string]interface{}{definitionMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting definition: %s", err))
+		err = fmt.Errorf("Error setting definition: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-definition").GetDiag()
 	}
 	if err = d.Set("version", flex.IntValue(projectConfig.Version)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		err = fmt.Errorf("Error setting version: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-version").GetDiag()
 	}
 	if err = d.Set("is_draft", projectConfig.IsDraft); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_draft: %s", err))
+		err = fmt.Errorf("Error setting is_draft: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-is_draft").GetDiag()
 	}
 	needsAttentionState := []map[string]interface{}{}
 	for _, needsAttentionStateItem := range projectConfig.NeedsAttentionState {
 		needsAttentionStateItemMap, err := ResourceIbmProjectConfigProjectConfigNeedsAttentionStateToMap(&needsAttentionStateItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "needs_attention_state-to-map").GetDiag()
 		}
 		needsAttentionState = append(needsAttentionState, needsAttentionStateItemMap)
 	}
 	if err = d.Set("needs_attention_state", needsAttentionState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting needs_attention_state: %s", err))
+		err = fmt.Errorf("Error setting needs_attention_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-needs_attention_state").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(projectConfig.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("modified_at", flex.DateTimeToString(projectConfig.ModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting modified_at: %s", err))
+		err = fmt.Errorf("Error setting modified_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-modified_at").GetDiag()
 	}
 	if !core.IsNil(projectConfig.LastSavedAt) {
 		if err = d.Set("last_saved_at", flex.DateTimeToString(projectConfig.LastSavedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_saved_at: %s", err))
+			err = fmt.Errorf("Error setting last_saved_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-last_saved_at").GetDiag()
 		}
 	}
 	outputs := []map[string]interface{}{}
 	for _, outputsItem := range projectConfig.Outputs {
 		outputsItemMap, err := ResourceIbmProjectConfigOutputValueToMap(&outputsItem)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "outputs-to-map").GetDiag()
 		}
 		outputs = append(outputs, outputsItemMap)
 	}
 	if err = d.Set("outputs", outputs); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting outputs: %s", err))
+		err = fmt.Errorf("Error setting outputs: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-outputs").GetDiag()
 	}
 	projectMap, err := ResourceIbmProjectConfigProjectReferenceToMap(projectConfig.Project)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "project-to-map").GetDiag()
 	}
 	if err = d.Set("project", []map[string]interface{}{projectMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project: %s", err))
+		err = fmt.Errorf("Error setting project: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-project").GetDiag()
 	}
 	if err = d.Set("state", projectConfig.State); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+		err = fmt.Errorf("Error setting state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-state").GetDiag()
 	}
 	if !core.IsNil(projectConfig.UpdateAvailable) {
 		if err = d.Set("update_available", projectConfig.UpdateAvailable); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting update_available: %s", err))
+			err = fmt.Errorf("Error setting update_available: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-update_available").GetDiag()
 		}
 	}
 	if !core.IsNil(projectConfig.TemplateID) {
 		if err = d.Set("template_id", projectConfig.TemplateID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting template_id: %s", err))
+			err = fmt.Errorf("Error setting template_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-template_id").GetDiag()
 		}
 	}
 	if !core.IsNil(projectConfig.MemberOf) {
 		memberOfMap, err := ResourceIbmProjectConfigMemberOfDefinitionToMap(projectConfig.MemberOf)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "member_of-to-map").GetDiag()
 		}
 		if err = d.Set("member_of", []map[string]interface{}{memberOfMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting member_of: %s", err))
+			err = fmt.Errorf("Error setting member_of: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-member_of").GetDiag()
 		}
 	}
 	if err = d.Set("href", projectConfig.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-href").GetDiag()
 	}
 	if !core.IsNil(projectConfig.DeploymentModel) {
 		if err = d.Set("deployment_model", projectConfig.DeploymentModel); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deployment_model: %s", err))
+			err = fmt.Errorf("Error setting deployment_model: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-deployment_model").GetDiag()
 		}
 	}
 	if !core.IsNil(projectConfig.StateCode) {
 		if err = d.Set("state_code", projectConfig.StateCode); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting state_code: %s", err))
+			err = fmt.Errorf("Error setting state_code: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-state_code").GetDiag()
 		}
 	}
 	if !core.IsNil(projectConfig.ApprovedVersion) {
 		approvedVersionMap, err := ResourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.ApprovedVersion)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "approved_version-to-map").GetDiag()
 		}
 		if err = d.Set("approved_version", []map[string]interface{}{approvedVersionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting approved_version: %s", err))
+			err = fmt.Errorf("Error setting approved_version: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-approved_version").GetDiag()
 		}
 	}
 	if !core.IsNil(projectConfig.DeployedVersion) {
 		deployedVersionMap, err := ResourceIbmProjectConfigProjectConfigVersionSummaryToMap(projectConfig.DeployedVersion)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "deployed_version-to-map").GetDiag()
 		}
 		if err = d.Set("deployed_version", []map[string]interface{}{deployedVersionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deployed_version: %s", err))
+			err = fmt.Errorf("Error setting deployed_version: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-deployed_version").GetDiag()
 		}
 	}
 	if err = d.Set("project_config_id", projectConfig.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting project_config_id: %s", err))
+		err = fmt.Errorf("Error setting project_config_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-project_config_id").GetDiag()
 	}
 
 	return nil
@@ -855,8 +882,7 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_config", "update")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "update", "sep-id-parts").GetDiag()
 	}
 
 	updateConfigOptions.SetProjectID(parts[0])
@@ -867,13 +893,12 @@ func resourceIbmProjectConfigUpdate(context context.Context, d *schema.ResourceD
 	if d.HasChange("project_id") {
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "project_id")
-		tfErr := flex.TerraformErrorf(err, errMsg, "ibm_project_config", "update")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_project_config", "update", "project_id-forces-new").GetDiag()
 	}
 	if d.HasChange("definition") {
 		definition, err := ResourceIbmProjectConfigMapToProjectConfigDefinitionPatch(d.Get("definition.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "update", "parse-definition").GetDiag()
 		}
 		updateConfigOptions.SetDefinition(definition)
 		hasChange = true
@@ -903,8 +928,7 @@ func resourceIbmProjectConfigDelete(context context.Context, d *schema.ResourceD
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_project_config", "delete")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "delete", "sep-id-parts").GetDiag()
 	}
 
 	deleteConfigOptions.SetProjectID(parts[0])
@@ -1649,7 +1673,6 @@ func ResourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map
 	}
 	if model.Value != nil {
 		modelMap["value"] = flex.Stringify(model.Value)
-		modelMap["value_json"] = modelMap["value"]
 	}
 	return modelMap, nil
 }
@@ -1709,6 +1732,9 @@ func ResourceIbmProjectConfigProjectConfigVersionSummaryToMap(model *projectv1.P
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
 	modelMap["state"] = *model.State
+	if model.StateCode != nil {
+		modelMap["state_code"] = *model.StateCode
+	}
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["href"] = *model.Href
 	return modelMap, nil

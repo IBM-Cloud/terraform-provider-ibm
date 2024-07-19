@@ -75,6 +75,128 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+
+func TestAccIBMISInstanceWithoutKeys_basic(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	userData1 := "a"
+	userData2 := "b"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceWithoutKeysConfig(vpcname, subnetname, name, userData1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "user_data", userData1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.0.manufacturer"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceWithoutKeysConfig(vpcname, subnetname, name, userData2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "user_data", userData2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "primary_network_interface.0.port_speed"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.0.manufacturer"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "numa_count"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstance_concom(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	userData1 := "a"
+	userData2 := "b"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceConComConfig(vpcname, subnetname, sshname, publicKey, name, userData1, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "user_data", userData1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.0.manufacturer"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "confidential_compute_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "enable_secure_boot"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "enable_secure_boot", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceConComConfig(vpcname, subnetname, sshname, publicKey, name, userData2, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "user_data", userData2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "primary_network_interface.0.port_speed"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "vcpu.0.manufacturer"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "numa_count"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "confidential_compute_mode"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "enable_secure_boot"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "enable_secure_boot", "true"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISInstance_vni(t *testing.T) {
 	var instance string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -132,14 +254,15 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	pnaNameUpdated := fmt.Sprintf("tf-pna-upd-%d", acctest.RandIntRange(10, 100))
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
 	userData1 := "a"
-
+	protocolStateFilteringMode := "auto"
+	protocolStateFilteringUpdated := "enabled"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData1),
+				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData1, protocolStateFilteringMode),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -162,10 +285,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "network_attachments.0.name", snaName),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.name", inlinevniname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.protocol_state_filtering_mode", protocolStateFilteringMode),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniupdatedname, pnaNameUpdated, snaNameUpdated, userData1),
+				Config: testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniupdatedname, pnaNameUpdated, snaNameUpdated, userData1, protocolStateFilteringUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -188,6 +313,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "network_attachments.0.name", snaNameUpdated),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.name", inlinevniupdatedname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "network_attachments.0.virtual_network_interface.0.protocol_state_filtering_mode", protocolStateFilteringUpdated),
 				),
 			},
 		},
@@ -230,6 +357,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_instance.testacc_instance", "boot_volume.0.encryption"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
 				),
 			},
 		},
@@ -1003,6 +1132,44 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+func TestAccIBMISInstanceSnapshotRestore_crn(t *testing.T) {
+	var instance, instanceRestore string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	snapshot := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
+	vsiRestore := fmt.Sprintf("tf-instancerestore-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceSnapshotRestoreCrnConfig(vpcname, subnetname, sshname, publicKey, name, snapshot, vsiRestore),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance_restore", instanceRestore),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "name", snapshot),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_restore", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_restore", "name", vsiRestore),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_restore", "boot_volume.0.name", "boot-restore"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISInstanceSnapshotRestore_forcenew(t *testing.T) {
 	var instance, instanceRestore string
@@ -1290,6 +1457,73 @@ func testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, na
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, userData, acc.ISZoneName)
 }
+
+func testAccCheckIBMISInstanceWithoutKeysConfig(vpcname, subnetname, name, userData string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		user_data = "%s"
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, acc.IsImage, acc.InstanceProfileName, userData, acc.ISZoneName)
+}
+
+func testAccCheckIBMISInstanceConComConfig(vpcname, subnetname, sshname, publicKey, name, userData string, esb bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		enable_secure_boot = %t
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		user_data = "%s"
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, esb, userData, acc.ISZoneName)
+}
 func testAccCheckIBMISInstanceVniConfig(vpcname, subnetname, sshname, publicKey, name, vniname, userData string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
@@ -1330,7 +1564,7 @@ resource "ibm_is_instance" "testacc_instance" {
 	keys = [ibm_is_ssh_key.testacc_sshkey.id]
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, vniname, name, acc.IsImage, acc.InstanceProfileName, userData, acc.ISZoneName)
 }
-func testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData string) string {
+func testAccCheckIBMISInstanceVniUpdateConfig(vpcname, subnetname, sshname, publicKey, name, vniname, inlinevniname, pnaName, snaName, userData, protocolStateFilteringMode string) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
 	name = "%s"
@@ -1362,6 +1596,7 @@ resource "ibm_is_instance" "testacc_instance" {
         name = "%s"
         virtual_network_interface { 
             id = ibm_is_virtual_network_interface.testacc_vni.id
+			protocol_state_filtering_mode = "%s"
         }
     }
 	network_attachments {
@@ -1373,13 +1608,14 @@ resource "ibm_is_instance" "testacc_instance" {
 				address 		= cidrhost(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, 23)
 			}
 			subnet = ibm_is_subnet.testacc_subnet.id
+			protocol_state_filtering_mode = "%s"
         }
 	}
 	user_data = "%s"
 	vpc  = ibm_is_vpc.testacc_vpc.id
 	zone = "%s"
 	keys = [ibm_is_ssh_key.testacc_sshkey.id]
-}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, vniname, name, acc.IsImage, acc.InstanceProfileName, pnaName, snaName, inlinevniname, userData, acc.ISZoneName)
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, vniname, name, acc.IsImage, acc.InstanceProfileName, pnaName, protocolStateFilteringMode, snaName, inlinevniname, protocolStateFilteringMode, userData, acc.ISZoneName)
 }
 
 func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, publicKey, name, userData, resourceName, keyName string) string {
@@ -1417,7 +1653,8 @@ func testAccCheckIBMISInstanceCatEncryptionConfig(vpcname, subnetname, sshname, 
 	  resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
 		catalog_offering {
-			version_crn = data.ibm_is_images.testacc_images.images.1.catalog_offering.0.version.0.crn
+			version_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+			plan_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
 		}
 		boot_volume {
 			encryption = ibm_kms_key.testacc_key.crn
@@ -1774,6 +2011,64 @@ func testAccCheckIBMISInstanceSnapshotRestoreConfig(vpcname, subnetname, sshname
 		boot_volume {
 			name     = "boot-restore"
 			snapshot = ibm_is_snapshot.testacc_snapshot.id
+		}
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }
+	  `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, snapshot, insRestore, acc.InstanceProfileName, acc.ISZoneName)
+}
+func testAccCheckIBMISInstanceSnapshotRestoreCrnConfig(vpcname, subnetname, sshname, publicKey, name, snapshot, insRestore string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		total_ipv4_address_count 	= 16
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }
+	  resource "ibm_is_snapshot" "testacc_snapshot" {
+		name 			= "%s"
+		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+	  }
+
+	  resource "ibm_is_instance" "testacc_instance_restore" {
+		name    = "%s"
+		profile = "%s"
+		boot_volume {
+			name     		= "boot-restore"
+			snapshot_crn 	= ibm_is_snapshot.testacc_snapshot.crn
 		}
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
@@ -2374,6 +2669,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_instance.testacc_instance", "catalog_offering.0.version_crn"),
 					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "catalog_offering.0.plan_crn"),
+					resource.TestCheckResourceAttrSet(
 						"data.ibm_is_images.testacc_images", "images.0.name"),
 				),
 			},
@@ -2419,6 +2716,7 @@ func testAccCheckIBMISInstanceCatalogImageConfig(vpcname, subnetname, sshname, p
 		}
 		catalog_offering {
 			version_crn = data.ibm_is_images.testacc_images.images.0.catalog_offering.0.version.0.crn
+			plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.InstanceProfileName, userData, acc.ISZoneName)
 }

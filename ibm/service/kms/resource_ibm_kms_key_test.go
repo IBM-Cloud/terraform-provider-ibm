@@ -168,7 +168,7 @@ func testAccCheckIBMKmsResourceConfig(instanceName, resource, KeyName string, st
 		standard_key = %t
 		force_delete = true
 	}
-`, instanceName, resource, KeyName, standard_key)
+`, addPrefixToResourceName(instanceName), resource, KeyName, standard_key)
 }
 
 func testAccCheckIBMKmsResourceConfigDescription(instanceName, resource, KeyName string, standard_key bool, description string) string {
@@ -186,7 +186,7 @@ func testAccCheckIBMKmsResourceConfigDescription(instanceName, resource, KeyName
 		description = "%s"
 		force_delete = true
 	}
-`, instanceName, resource, KeyName, standard_key, description)
+`, addPrefixToResourceName(instanceName), resource, KeyName, standard_key, description)
 }
 
 func testAccCheckIBMKmsResourceImportConfig(instanceName, resource, KeyName string, standard_key bool, payload string) string {
@@ -205,7 +205,7 @@ func testAccCheckIBMKmsResourceImportConfig(instanceName, resource, KeyName stri
 		force_delete = true
 	}
 
-`, instanceName, resource, KeyName, standard_key, payload)
+`, addPrefixToResourceName(instanceName), resource, KeyName, standard_key, payload)
 }
 
 func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resource, KeyName, cosInstanceName, bucketName string) string {
@@ -242,7 +242,7 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resource, KeyN
 		storage_class        = "smart"
 		kms_key_crn          = ibm_kms_key.test.id
 	}
-`, instanceName, resource, KeyName, cosInstanceName, bucketName)
+`, addPrefixToResourceName(instanceName), resource, KeyName, cosInstanceName, bucketName)
 }
 
 func testAccCheckIBMKmsResourceHpcsConfig(hpcsInstanceID, KeyName string) string {
@@ -272,7 +272,7 @@ func testAccCheckIBMKmsCreateStandardKeyConfig(instanceName, resource, KeyName, 
 		force_delete = true
 		expiration_date = "%s"
 	}
-`, instanceName, resource, KeyName, expirationDate)
+`, addPrefixToResourceName(instanceName), resource, KeyName, expirationDate)
 }
 
 func testAccCheckIBMKmsCreateRootKeyConfig(instanceName, resource, KeyName, expirationDate string) string {
@@ -290,7 +290,7 @@ func testAccCheckIBMKmsCreateRootKeyConfig(instanceName, resource, KeyName, expi
 		force_delete = true
 		expiration_date = "%s"
 	}
-`, instanceName, resource, KeyName, expirationDate)
+`, addPrefixToResourceName(instanceName), resource, KeyName, expirationDate)
 }
 
 // This test is invalid as ibm_kms_key does not support policies anymore

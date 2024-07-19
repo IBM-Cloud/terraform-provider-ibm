@@ -24,6 +24,10 @@ func suppressKMSInstanceIDDiff(k, old, new string, d *schema.ResourceData) bool 
 	return old == getInstanceIDFromCRN(new)
 }
 
+func getInstanceIDFromResourceData(d *schema.ResourceData, key string) string {
+	return getInstanceIDFromCRN(d.Get(key).(string))
+}
+
 // Get Instance ID from CRN
 func getInstanceIDFromCRN(crn string) string {
 	crnSegments := strings.Split(crn, ":")

@@ -34,10 +34,10 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the logs_view_folders.
 * `view_folders` - (List) List of view folders.
-  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
+  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 Nested schema for **view_folders**:
-	* `id` - (String) Folder id.
+	* `id` - (String) Folder ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 	* `name` - (String) Folder name.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 

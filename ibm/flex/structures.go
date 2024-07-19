@@ -690,6 +690,9 @@ func FlattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interf
 		if in.WriteDataEvents != nil {
 			att["write_data_events"] = *in.WriteDataEvents
 		}
+		if in.ManagementEvents != nil {
+			att["management_events"] = *in.ManagementEvents
+		}
 		if in.ActivityTrackerCrn != nil {
 			att["activity_tracker_crn"] = *in.ActivityTrackerCrn
 		}
@@ -3157,12 +3160,25 @@ func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []ma
 			metricsMap = append(metricsMap, policyInstance)
 		}
 		if policy.PolicyType == "keyCreateImportAccess" {
-			policyInstance["enabled"] = policy.PolicyData.Enabled
-			policyInstance["create_root_key"] = policy.PolicyData.Attributes.CreateRootKey
-			policyInstance["create_standard_key"] = policy.PolicyData.Attributes.CreateStandardKey
-			policyInstance["import_root_key"] = policy.PolicyData.Attributes.ImportRootKey
-			policyInstance["import_standard_key"] = policy.PolicyData.Attributes.ImportStandardKey
-			policyInstance["enforce_token"] = policy.PolicyData.Attributes.EnforceToken
+			if policy.PolicyData.Enabled != nil {
+				policyInstance["enabled"] = *policy.PolicyData.Enabled
+			}
+			if policy.PolicyData.Attributes.CreateRootKey != nil {
+				policyInstance["create_root_key"] = *policy.PolicyData.Attributes.CreateRootKey
+			}
+			if policy.PolicyData.Attributes.CreateStandardKey != nil {
+				policyInstance["create_standard_key"] = *policy.PolicyData.Attributes.CreateStandardKey
+			}
+			if policy.PolicyData.Attributes.ImportRootKey != nil {
+				policyInstance["import_root_key"] = *policy.PolicyData.Attributes.ImportRootKey
+			}
+			if policy.PolicyData.Attributes.ImportStandardKey != nil {
+				policyInstance["import_standard_key"] = *policy.PolicyData.Attributes.ImportStandardKey
+			}
+			if policy.PolicyData.Attributes.EnforceToken != nil {
+				policyInstance["enforce_token"] = *policy.PolicyData.Attributes.EnforceToken
+			}
+
 			keyCreateImportAccessMap = append(keyCreateImportAccessMap, policyInstance)
 		}
 	}
@@ -3418,6 +3434,14 @@ func FindRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (
 			}
 		}
 	}
+	if name == "NONE" {
+		name := "NONE"
+		r := iampolicymanagementv1.PolicyRole{
+			DisplayName: &name,
+			RoleID:      &name,
+		}
+		return r, nil
+	}
 	supportedRoles := getSupportedRolesStr(supported)
 	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
 		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
@@ -3440,7 +3464,7 @@ func FindRoleByCRN(supported []iampolicymanagementv1.PolicyRole, crn string) (ia
 }
 
 func getSupportedRolesStr(supported []iampolicymanagementv1.PolicyRole) string {
-	rolesStr := ""
+	rolesStr := "NONE, "
 	for index, role := range supported {
 		if index != 0 {
 			rolesStr += ", "

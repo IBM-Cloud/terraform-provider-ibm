@@ -32,36 +32,46 @@ func ResourceIbmLogsOutgoingWebhook() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_outgoing_webhook", "type"),
-				Description:  "Outbound webhook type.",
+				Description:  "The type of the deployed Outbound Integrations to list.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_outgoing_webhook", "name"),
-				Description:  "The name of the outbound webhook.",
+				Description:  "The name of the Outbound Integration.",
 			},
 			"url": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_outgoing_webhook", "url"),
-				Description:  "The URL of the outbound webhook.",
+				Description:  "The URL of the Outbound Integration. Null for IBM Event Notifications integration.",
 			},
 			"ibm_event_notifications": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "The configuration of an IBM Event Notifications outbound webhook.",
+				Description: "The configuration of the IBM Event Notifications Outbound Integration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"event_notifications_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The instance ID of the IBM Event Notifications configuration.",
+							Description: "The ID of the selected IBM Event Notifications instance.",
 						},
 						"region_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The region ID of the IBM Event Notifications configuration.",
+							Description: "The region ID of the selected IBM Event Notifications instance.",
+						},
+						"source_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the created source in the IBM Event Notifications instance. Corresponds to the Cloud Logs instance crn. Not required when creating an Outbound Integration.",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the created source in the IBM Event Notifications instance. Not required when creating an Outbound Integration.",
 						},
 					},
 				},
@@ -69,17 +79,17 @@ func ResourceIbmLogsOutgoingWebhook() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The creation time of the outbound webhook.",
+				Description: "The creation time of the Outbound Integration.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The update time of the outbound webhook.",
+				Description: "The update time of the Outbound Integration.",
 			},
 			"external_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The external ID of the outbound webhook.",
+				Description: "The external ID of the Outbound Integration, for connecting with other parts of the system.",
 			},
 			"webhook_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -105,7 +115,7 @@ func ResourceIbmLogsOutgoingWebhookValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -113,8 +123,8 @@ func ResourceIbmLogsOutgoingWebhookValidator() *validate.ResourceValidator {
 			Identifier:                 "url",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Required:                   true,
-			Regexp:                     `^https?:\/\/.*$`,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -213,8 +223,10 @@ func resourceIbmLogsOutgoingWebhookRead(context context.Context, d *schema.Resou
 	if err = d.Set("name", outgoingWebhook.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if err = d.Set("url", outgoingWebhook.URL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting url: %s", err))
+	if !core.IsNil(outgoingWebhook.URL) {
+		if err = d.Set("url", outgoingWebhook.URL); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting url: %s", err))
+		}
 	}
 	if !core.IsNil(outgoingWebhook.IbmEventNotifications) {
 		ibmEventNotificationsMap, err := ResourceIbmLogsOutgoingWebhookOutgoingWebhooksV1IbmEventNotificationsConfigToMap(outgoingWebhook.IbmEventNotifications)
@@ -327,7 +339,13 @@ func resourceIbmLogsOutgoingWebhookDelete(context context.Context, d *schema.Res
 func ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhooksV1IbmEventNotificationsConfig(modelMap map[string]interface{}) (*logsv0.OutgoingWebhooksV1IbmEventNotificationsConfig, error) {
 	model := &logsv0.OutgoingWebhooksV1IbmEventNotificationsConfig{}
 	model.EventNotificationsInstanceID = core.UUIDPtr(strfmt.UUID(modelMap["event_notifications_instance_id"].(string)))
-	model.RegionID = core.StringPtr(modelMap["region_id"].(string))
+	model.RegionID = core.StringPtr(modelMap["region_id"].(string)) // TODO: is source_id and source_name supported by SDK?
+	// if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
+	// 	model.SourceID = core.StringPtr(modelMap["source_id"].(string))
+	// }
+	// if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
+	// 	model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	// }
 	return model, nil
 }
 
@@ -335,7 +353,7 @@ func ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhookPrototype(modelMap map[st
 	model := &logsv0.OutgoingWebhookPrototype{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["url"] != nil {
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
 		model.URL = core.StringPtr(modelMap["url"].(string))
 	}
 	if modelMap["ibm_event_notifications"] != nil && len(modelMap["ibm_event_notifications"].([]interface{})) > 0 {
@@ -352,7 +370,9 @@ func ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhookPrototypeOutgoingWebhooks
 	model := &logsv0.OutgoingWebhookPrototypeOutgoingWebhooksV1OutgoingWebhookInputDataConfigIbmEventNotifications{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
+		model.URL = core.StringPtr(modelMap["url"].(string))
+	}
 	if modelMap["ibm_event_notifications"] != nil && len(modelMap["ibm_event_notifications"].([]interface{})) > 0 {
 		IbmEventNotificationsModel, err := ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhooksV1IbmEventNotificationsConfig(modelMap["ibm_event_notifications"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -367,5 +387,11 @@ func ResourceIbmLogsOutgoingWebhookOutgoingWebhooksV1IbmEventNotificationsConfig
 	modelMap := make(map[string]interface{})
 	modelMap["event_notifications_instance_id"] = model.EventNotificationsInstanceID.String()
 	modelMap["region_id"] = *model.RegionID
+	// if model.SourceID != nil {
+	// 	modelMap["source_id"] = *model.SourceID
+	// }
+	// if model.SourceName != nil {
+	// 	modelMap["source_name"] = *model.SourceName
+	// }
 	return modelMap, nil
 }

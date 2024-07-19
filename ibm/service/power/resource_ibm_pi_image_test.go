@@ -136,3 +136,43 @@ func testAccCheckIBMPIImageCOSPublicConfig(name string) string {
 	}
 	`, name, acc.Pi_cloud_instance_id, acc.Pi_image_bucket_name, acc.Pi_image_bucket_file_name)
 }
+
+func TestAccIBMPIImageBYOLImport(t *testing.T) {
+	imageRes := "ibm_pi_image.cos_image"
+	name := fmt.Sprintf("tf-pi-image-byoi-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIImageBYOLConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIImageExists(imageRes),
+					resource.TestCheckResourceAttr(imageRes, "pi_image_name", name),
+					resource.TestCheckResourceAttrSet(imageRes, "image_id"),
+				),
+			},
+		},
+	})
+}
+func testAccCheckIBMPIImageBYOLConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_image" "cos_image" {
+		pi_cloud_instance_id = "%[2]s"
+		pi_image_access_key = "%[5]s"
+		pi_image_bucket_access = "private"
+		pi_image_bucket_file_name = "%[4]s" 
+		pi_image_bucket_name = "%[3]s" 
+		pi_image_bucket_region = "us-east"
+		pi_image_name       = "%[1]s"
+		pi_image_secret_key = "%[6]s"
+		pi_image_storage_type = "tier3"
+		pi_image_import_details {
+			license_type = "byol"
+			product = "Hana"
+			vendor = "SAP"
+		}
+	}
+	`, name, acc.Pi_cloud_instance_id, acc.Pi_image_bucket_name, acc.Pi_image_bucket_file_name, acc.Pi_image_bucket_access_key, acc.Pi_image_bucket_secret_key)
+}

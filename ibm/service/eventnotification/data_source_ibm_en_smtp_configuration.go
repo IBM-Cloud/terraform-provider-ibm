@@ -57,15 +57,15 @@ func DataSourceIBMEnSMTPConfiguration() *schema.Resource {
 							Description: "The DKIM attributes.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"public_key": &schema.Schema{
+									"txt_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "dkim public key.",
+										Description: "DMIM text name.",
 									},
-									"selector": &schema.Schema{
+									"txt_value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "dkim selector.",
+										Description: "DMIM text value.",
 									},
 									"verification": &schema.Schema{
 										Type:        schema.TypeString,
@@ -128,9 +128,6 @@ func DataSourceIBMEnSMTPConfiguration() *schema.Resource {
 func dataSourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		// tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_en_smtp_configuration", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		// return tfErr.GetDiag()
 		return diag.FromErr(err)
 	}
 
@@ -141,29 +138,20 @@ func dataSourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Res
 
 	smtpConfiguration, _, err := eventNotificationsClient.GetSMTPConfigurationWithContext(context, getSMTPConfigurationOptions)
 	if err != nil {
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSMTPConfigurationWithContext failed: %s", err.Error()), "(Data) ibm_en_smtp_configuration", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(err)
-		// return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getSMTPConfigurationOptions.InstanceID, *getSMTPConfigurationOptions.ID))
 
 	if err = d.Set("name", smtpConfiguration.Name); err != nil {
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_en_smtp_configuration", "read")
-		// return tfErr.GetDiag()
 		return diag.FromErr(err)
 	}
 
 	if err = d.Set("description", smtpConfiguration.Description); err != nil {
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_en_smtp_configuration", "read")
-		// return tfErr.GetDiag()
 		return diag.FromErr(err)
 	}
 
 	if err = d.Set("domain", smtpConfiguration.Domain); err != nil {
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting domain: %s", err), "(Data) ibm_en_smtp_configuration", "read")
-		// return tfErr.GetDiag()
 		return diag.FromErr(err)
 	}
 
@@ -171,21 +159,15 @@ func dataSourceIBMEnSMTPConfigurationRead(context context.Context, d *schema.Res
 	if smtpConfiguration.Config != nil {
 		modelMap, err := dataSourceIBMEnSMTPConfigurationSMTPConfigToMap(smtpConfiguration.Config)
 		if err != nil {
-			// tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_en_smtp_configuration", "read")
-			// return tfErr.GetDiag()
 			return diag.FromErr(err)
 		}
 		config = append(config, modelMap)
 	}
 	if err = d.Set("config", config); err != nil {
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config: %s", err), "(Data) ibm_en_smtp_configuration", "read")
-		// return tfErr.GetDiag()
 		return diag.FromErr(err)
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(smtpConfiguration.UpdatedAt)); err != nil {
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_en_smtp_configuration", "read")
-		// return tfErr.GetDiag()
 		return diag.FromErr(err)
 	}
 
@@ -218,13 +200,13 @@ func dataSourceIBMEnSMTPConfigurationSMTPConfigToMap(model *en.SMTPConfig) (map[
 	return modelMap, nil
 }
 
-func dataSourceIBMEnSMTPConfigurationDkimAttributesToMap(model *en.DkimAttributes) (map[string]interface{}, error) {
+func dataSourceIBMEnSMTPConfigurationDkimAttributesToMap(model *en.SmtpdkimAttributes) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.PublicKey != nil {
-		modelMap["public_key"] = model.PublicKey
+	if model.TxtName != nil {
+		modelMap["txt_name"] = model.TxtName
 	}
-	if model.Selector != nil {
-		modelMap["selector"] = model.Selector
+	if model.TxtValue != nil {
+		modelMap["txt_value"] = model.TxtValue
 	}
 	if model.Verification != nil {
 		modelMap["verification"] = model.Verification
