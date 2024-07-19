@@ -119,7 +119,7 @@ func ResourceIBMObLogging() *schema.Resource {
 	}
 }
 func waitForClusterIntegration(d *schema.ResourceData, meta interface{}, clusterID string) (interface{}, error) {
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	targetEnv, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return nil, err
 	}
