@@ -22,6 +22,11 @@ Run `terraform destroy` when you don't need these resources.
 
 Create an IBM Cloud Object Storage bucket. The bucket is used to store your data:
 
+  **Note:**
+
+A bucket name can be reused as soon as 15 minutes after the contents of the bucket have been deleted and the bucket has been deleted. Then, the objects and bucket are irrevocably deleted and can not be restored.
+For more information, please refer to [this link](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-faq-bucket#faq-reuse-name)
+
 ```terraform
 
 data "ibm_resource_group" "cos_group" {

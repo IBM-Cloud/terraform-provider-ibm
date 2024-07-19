@@ -1,4 +1,4 @@
-# OpenShift-Data-Foundation VPC Worker Replace
+# OpenShift-Data-Foundation VPC ROKS Worker Replace
 
 This example shows how to replace & update the Kubernetes VPC Gen-2 worker installed with Openshift-Data-Foundation to the latest patch in the specified cluster.
 

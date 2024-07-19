@@ -686,12 +686,12 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isVolumeHealthReasons, healthReasonsList)
 	}
 	// catalog
+	catalogList := make([]map[string]interface{}, 0)
 	if vol.CatalogOffering != nil {
 		versionCrn := ""
 		if vol.CatalogOffering.Version != nil && vol.CatalogOffering.Version.CRN != nil {
 			versionCrn = *vol.CatalogOffering.Version.CRN
 		}
-		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
 		if versionCrn != "" {
 			catalogMap[isVolumeCatalogOfferingVersionCrn] = versionCrn
@@ -710,8 +710,8 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		catalogList = append(catalogList, catalogMap)
-		d.Set(isVolumeCatalogOffering, catalogList)
 	}
+	d.Set(isVolumeCatalogOffering, catalogList)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
