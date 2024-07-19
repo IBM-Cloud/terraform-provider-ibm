@@ -328,7 +328,7 @@ In addition to all argument reference list, you can access the following attribu
     - `vlan` -  (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface. [ conflicts with `allowed_vlans`]
 
 - `resource_type` - (String) The type of resource.
-- `firmwate_update_type_available` - (String) The firmware update type available for the bare metal server.
+- `firmware_update_type_available` - (String) The firmware update type available for the bare metal server.
   -> **Supported firmware update types** </br>&#x2022; none </br>&#x2022; optional </br>&#x2022; required
 - `status` - (String) The status of the bare metal server.
 

@@ -69,7 +69,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISBareMetalServerExists("ibm_is_bare_metal_server.testacc_bms", server),
 					resource.TestCheckResourceAttrSet(resName, "servers.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "servers.0.id"),
-					resource.TestCheckResourceAttrSet(resName, "servers.0.firmwate_update_type_available"),
+					resource.TestCheckResourceAttrSet(resName, "servers.0.firmware_update_type_available"),
 				),
 			},
 		},

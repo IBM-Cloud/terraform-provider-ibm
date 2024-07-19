@@ -65,7 +65,7 @@ const (
 	isBareMetalServerStatusReasonsMoreInfo               = "more_info"
 	isBareMetalServerDeleteType                          = "delete_type"
 	isBareMetalServerImage                               = "image"
-	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmwate_update_type_available"
+	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmware_update_type_available"
 	isBareMetalServerKeys                                = "keys"
 	isBareMetalServerUserData                            = "user_data"
 	isBareMetalServerNicName                             = "name"

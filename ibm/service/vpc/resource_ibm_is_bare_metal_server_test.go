@@ -69,7 +69,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "name", name),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_bare_metal_server.testacc_bms", "firmwate_update_type_available"),
+						"ibm_is_bare_metal_server.testacc_bms", "firmware_update_type_available"),
 				),
 			},
 		},
