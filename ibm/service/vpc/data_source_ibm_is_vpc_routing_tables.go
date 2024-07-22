@@ -17,6 +17,7 @@ import (
 const (
 	isRoutingTableAcceptRoutesFrom      = "accept_routes_from"
 	isRoutingTableID                    = "routing_table"
+	isRoutingTableCrn                   = "routing_table_crn"
 	isRoutingTableHref                  = "href"
 	isRoutingTableName                  = "name"
 	isRoutingTableResourceType          = "resource_type"

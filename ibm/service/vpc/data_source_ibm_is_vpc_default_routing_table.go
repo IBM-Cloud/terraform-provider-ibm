@@ -12,6 +12,7 @@ import (
 const (
 	isDefaultRoutingTableID             = "default_routing_table"
 	isDefaultRoutingTableHref           = "href"
+	isDefaultRoutingTableCrn            = "crn"
 	isDefaultRoutingTableName           = "name"
 	isDefaultRoutingTableResourceType   = "resource_type"
 	isDefaultRoutingTableCreatedAt      = "created_at"
@@ -49,6 +50,11 @@ func DataSourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Default Routing table Name",
+			},
+			isDefaultRoutingTableCrn: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default Routing table Crn",
 			},
 			isDefaultRoutingTableResourceType: {
 				Type:        schema.TypeString,
@@ -150,6 +156,7 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 	d.Set(isDefaultRoutingTableID, *result.ID)
 	d.Set(isDefaultRoutingTableHref, *result.Href)
 	d.Set(isDefaultRoutingTableName, *result.Name)
+	d.Set(isDefaultRoutingTableCrn, *result.CRN)
 	d.Set(isDefaultRoutingTableResourceType, *result.ResourceType)
 	createdAt := *result.CreatedAt
 	d.Set(isDefaultRoutingTableCreatedAt, createdAt.String())

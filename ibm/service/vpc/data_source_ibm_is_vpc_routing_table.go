@@ -59,7 +59,11 @@ func DataSourceIBMIBMIsVPCRoutingTable() *schema.Resource {
 				Optional:      true,
 				Description:   "The routing table identifier.",
 			},
-
+			rtCrn: &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The routing table CRN.",
+			},
 			"advertise_routes_to": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -311,6 +315,11 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 	if err = d.Set("advertise_routes_to", routingTable.AdvertiseRoutesTo); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting value of advertise_routes_to: %s", err))
 	}
+
+	if err = d.Set(rtCrn, routingTable.CRN); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting value of crn: %s", err))
+	}
+
 	routes := []map[string]interface{}{}
 	if routingTable.Routes != nil {
 		for _, modelItem := range routingTable.Routes {
