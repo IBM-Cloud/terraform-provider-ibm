@@ -1135,6 +1135,7 @@ func Provider() *schema.Provider {
 			// bare_metal_server
 			"ibm_is_bare_metal_server_action":                        vpc.ResourceIBMIsBareMetalServerAction(),
 			"ibm_is_bare_metal_server_disk":                          vpc.ResourceIBMIsBareMetalServerDisk(),
+			"ibm_is_bare_metal_server_initialization":                vpc.ResourceIBMIsBareMetalServerInitialization(),
 			"ibm_is_bare_metal_server_network_attachment":            vpc.ResourceIBMIsBareMetalServerNetworkAttachment(),
 			"ibm_is_bare_metal_server_network_interface_allow_float": vpc.ResourceIBMIsBareMetalServerNetworkInterfaceAllowFloat(),
 			"ibm_is_bare_metal_server_network_interface_floating_ip": vpc.ResourceIBMIsBareMetalServerNetworkInterfaceFloatingIp(),
