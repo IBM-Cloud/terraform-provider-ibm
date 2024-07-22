@@ -129,7 +129,7 @@ variable "osdStorageClassName" {
     type = string
     default = "ibmc-vpc-block-metro-10iops-tier"
     description = "Enter the storage class to be used to provision block volumes for Object Storage Daemon (OSD) pods."
-  
+
 }
 
 variable "autoDiscoverDevices" {
@@ -154,6 +154,12 @@ variable "kmsSecretName" {
     type = string
     default = null
     description = "Please provide the HPCS secret name"
+}
+
+variable "workerPools" {
+    type = string
+    default =  null
+    description = "Provide the names/ID of the workerpool on which to install ODF. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers."
 }
 
 variable "workerNodes" {

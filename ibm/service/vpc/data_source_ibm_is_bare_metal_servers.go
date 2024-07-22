@@ -652,6 +652,11 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 							Computed:    true,
 							Description: "image id",
 						},
+						isBareMetalServerFirmwareUpdateTypeAvailable: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of firmware update available",
+						},
 						isBareMetalServerProfile: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -1080,6 +1085,9 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 
 		l[isBareMetalServerImage] = *initialization.Image.ID
+		if bms.Firmware != nil && bms.Firmware.Update != nil {
+			l[isBareMetalServerFirmwareUpdateTypeAvailable] = *bms.Firmware.Update
+		}
 
 		keyListList := []string{}
 		for i := 0; i < len(initialization.Keys); i++ {
