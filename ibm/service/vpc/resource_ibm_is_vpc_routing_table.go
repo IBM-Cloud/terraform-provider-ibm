@@ -114,6 +114,11 @@ func ResourceIBMISVPCRoutingTable() *schema.Resource {
 				Computed:    true,
 				Description: "The routing table identifier.",
 			},
+			rtCrn: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The routing table CRN.",
+			},
 			rtHref: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -269,6 +274,7 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set(rtVpcID, idSet[0])
 	d.Set(rtID, routeTable.ID)
+	d.Set(rtCrn, routeTable.CRN)
 	d.Set(rtName, routeTable.Name)
 	d.Set(rtHref, routeTable.Href)
 	d.Set(rtLifecycleState, routeTable.LifecycleState)

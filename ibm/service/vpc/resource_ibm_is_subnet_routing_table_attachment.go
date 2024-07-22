@@ -37,9 +37,17 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 			},
 
 			isRoutingTableID: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The unique identifier of routing table",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{isRoutingTableID, isRoutingTableCrn},
+				Description:  "The unique identifier of routing table",
+			},
+
+			isRoutingTableCrn: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{isRoutingTableID, isRoutingTableCrn},
+				Description:  "The crn of routing table",
 			},
 
 			rtRouteDirectLinkIngress: {
@@ -130,16 +138,29 @@ func resourceIBMISSubnetRoutingTableAttachmentCreate(context context.Context, d 
 	}
 
 	subnet := d.Get(isSubnetID).(string)
-	routingTable := d.Get(isRoutingTableID).(string)
-
-	// Construct an instance of the RoutingTableIdentityByID model
-	routingTableIdentityModel := new(vpcv1.RoutingTableIdentityByID)
-	routingTableIdentityModel.ID = &routingTable
-
-	// Construct an instance of the ReplaceSubnetRoutingTableOptions model
+	routingTableID := d.Get(isRoutingTableID).(string)
+	routingTableCrn := d.Get(isRoutingTableCrn).(string)
 	replaceSubnetRoutingTableOptionsModel := new(vpcv1.ReplaceSubnetRoutingTableOptions)
 	replaceSubnetRoutingTableOptionsModel.ID = &subnet
-	replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
+
+	if routingTableID != "" {
+		// Construct an instance of the RoutingTableIdentityByID model
+		routingTableIdentityModel := new(vpcv1.RoutingTableIdentityByID)
+		routingTableIdentityModel.ID = &routingTableID
+
+		// Construct an instance of the ReplaceSubnetRoutingTableOptions model
+		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
+	}
+
+	if routingTableCrn != "" {
+		// Construct an instance of the RoutingTableIdentityByID model
+		routingTableIdentityModel := new(vpcv1.RoutingTableIdentityByCRN)
+		routingTableIdentityModel.CRN = &routingTableCrn
+
+		// Construct an instance of the ReplaceSubnetRoutingTableOptions model
+		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
+	}
+
 	resultRT, response, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
 
 	if err != nil {
@@ -175,6 +196,7 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 	d.Set(isRoutingTableName, *subRT.Name)
 	d.Set(isSubnetID, id)
 	d.Set(isRoutingTableID, *subRT.ID)
+	d.Set(isRoutingTableCrn, *subRT.CRN)
 	d.Set(isRoutingTableResourceType, *subRT.ResourceType)
 	d.Set(rtRouteDirectLinkIngress, *subRT.RouteDirectLinkIngress)
 	d.Set(rtIsDefault, *subRT.IsDefault)
@@ -228,6 +250,30 @@ func resourceIBMISSubnetRoutingTableAttachmentUpdate(context context.Context, d 
 			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
 		}
 		log.Printf("[INFO] Updated subnet %s with Routing Table : %s", subnet, *resultRT.ID)
+
+		d.SetId(subnet)
+		return resourceIBMISSubnetRoutingTableAttachmentRead(context, d, meta)
+	}
+
+	if d.HasChange(isRoutingTableCrn) {
+		subnet := d.Get(isSubnetID).(string)
+		routingTableCrn := d.Get(isRoutingTableCrn).(string)
+
+		// Construct an instance of the RoutingTableIdentityByID model
+		routingTableIdentityModel := new(vpcv1.RoutingTableIdentityByCRN)
+		routingTableIdentityModel.CRN = &routingTableCrn
+
+		// Construct an instance of the ReplaceSubnetRoutingTableOptions model
+		replaceSubnetRoutingTableOptionsModel := new(vpcv1.ReplaceSubnetRoutingTableOptions)
+		replaceSubnetRoutingTableOptionsModel.ID = &subnet
+		replaceSubnetRoutingTableOptionsModel.RoutingTableIdentity = routingTableIdentityModel
+		resultRT, response, err := sess.ReplaceSubnetRoutingTableWithContext(context, replaceSubnetRoutingTableOptionsModel)
+
+		if err != nil {
+			log.Printf("[DEBUG] Error while attaching a routing table to a subnet %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error while attaching a routing table to a subnet %s\n%s", err, response))
+		}
+		log.Printf("[INFO] Updated subnet %s with Routing Table Crn : %s", subnet, *resultRT.CRN)
 
 		d.SetId(subnet)
 		return resourceIBMISSubnetRoutingTableAttachmentRead(context, d, meta)
