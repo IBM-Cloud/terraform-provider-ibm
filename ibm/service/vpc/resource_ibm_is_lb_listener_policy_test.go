@@ -263,6 +263,51 @@ func TestAccIBMISLBListenerPolicyHttpRedirectNew_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISLBListenerPolicyParameterizedRedirectNew_basic(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblis-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblis%d", acctest.RandIntRange(10, 100))
+	lbpolicyname := fmt.Sprintf("tflblispol%d", acctest.RandIntRange(10, 100))
+	protocol1 := "https"
+	port1 := "9086"
+	url := "https://{host}:8080/{port}/{host}/{path}"
+	urlUpdate := "{protocol}://test.{host}:80/{path}"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBListenerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1, lbpolicyname, url),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.http_status_code", "302"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.url", url),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1, lbpolicyname, urlUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.http_status_code", "302"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.url", urlUpdate),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISLBListenerPolicyDestroy(s *terraform.State) error {
 
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
@@ -789,6 +834,42 @@ func testAccCheckIBMISLBListenerPolicyHttpsRedirectNewConfigRemoveUri(vpcname, s
 		}
 		priority = 2
 	}`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance, acc.LbListerenerCertificateInstance, lbpolicyname)
+
+}
+
+func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname, url string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		type = "private"
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "http"
+	}
+	
+	resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		listener = ibm_is_lb_listener.lb_listener1.listener_id
+		action = "redirect"
+		target {
+			http_status_code = 302
+			url = "%s"
+		}
+		priority = 2
+	}`, vpcname, subnetname, zone, cidr, lbname, lbpolicyname, url)
 
 }
 func testAccCheckIBMISLBListenerPolicyHttpsRedirectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
