@@ -30,7 +30,7 @@ func TestAccIBMContainerNLBDNSDatasourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMContainerNLBDNSDataSourceConfig(name string) string {
-	return testAccCheckIBMContainerVpcClusterBasic(name) + `
+	return testAccCheckIBMContainerVpcClusterBasic(name, "OneWorkerNodeReady") + `
 	data "ibm_container_nlb_dns" "dns" {
 	    cluster = ibm_container_vpc_cluster.cluster.id
 	}

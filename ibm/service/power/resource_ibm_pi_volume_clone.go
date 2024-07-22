@@ -9,14 +9,14 @@ import (
 	"log"
 	"time"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIBMPIVolumeClone() *schema.Resource {
@@ -32,60 +32,81 @@ func ResourceIBMPIVolumeClone() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			// Arguments
 			Arg_CloudInstanceID: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The GUID of the service instance associated with an account.",
+				Description:  "The GUID of the service instance associated with an account.",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
 			},
-			PIVolumeCloneName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The base name of the newly cloned volume(s).",
-			},
-			PIVolumeIds: {
-				Type:        schema.TypeSet,
-				Required:    true,
-				ForceNew:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Set:         schema.HashString,
-				Description: "List of volumes to be cloned.",
-			},
-			PITargetStorageTier: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+			Arg_TargetStorageTier: {
 				Description: "The storage tier for the cloned volume(s).",
-			},
-			helpers.PIReplicationEnabled: {
-				Type:        schema.TypeBool,
-				Optional:    true,
 				ForceNew:    true,
+				Optional:    true,
+				Type:        schema.TypeString,
+			},
+			Arg_ReplicationEnabled: {
 				Description: "Indicates whether the cloned volume should have replication enabled. If no value is provided, it will default to the replication status of the source volume(s).",
+				ForceNew:    true,
+				Optional:    true,
+				Type:        schema.TypeBool,
+			},
+			Arg_VolumeCloneName: {
+				Description:  "The base name of the newly cloned volume(s).",
+				ForceNew:     true,
+				Required:     true,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.NoZeroValues,
+			},
+			Arg_VolumeIDs: {
+				Description: "List of volumes to be cloned.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ForceNew:    true,
+				Required:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 
-			// Computed attributes
-			"task_id": {
-				Type:        schema.TypeString,
+			// Attributes
+			Attr_ClonedVolumes: {
 				Computed:    true,
-				Description: "The ID of the volume clone task.",
+				Description: "The List of cloned volumes.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_CloneVolumeID: {
+							Computed:    true,
+							Description: "The ID of the newly cloned volume.",
+							Type:        schema.TypeString,
+						},
+						Attr_SourceVolumeID: {
+							Computed:    true,
+							Description: "The ID of the source volume.",
+							Type:        schema.TypeString,
+						},
+					},
+				},
+				Type: schema.TypeList,
 			},
-			"cloned_volumes": clonedVolumesSchema(),
-			"failure_reason": {
-				Type:        schema.TypeString,
+			Attr_FailureReason: {
 				Computed:    true,
-				Description: "The reason for the failure of the volume clone task.",
+				Description: "The reason the clone volumes task has failed.",
+				Type:        schema.TypeString,
 			},
-			"percent_complete": {
-				Type:        schema.TypeInt,
+			Attr_PercentComplete: {
 				Computed:    true,
 				Description: "The completion percentage of the volume clone task.",
+				Type:        schema.TypeInt,
 			},
-			"status": {
-				Type:        schema.TypeString,
+			Attr_Status: {
 				Computed:    true,
 				Description: "The status of the volume clone task.",
+				Type:        schema.TypeString,
+			},
+			Attr_TaskID: {
+				Computed:    true,
+				Description: "The ID of the volume clone task.",
+				Type:        schema.TypeString,
 			},
 		},
 	}
@@ -98,23 +119,23 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
-	vcName := d.Get(PIVolumeCloneName).(string)
-	volids := flex.ExpandStringList((d.Get(PIVolumeIds).(*schema.Set)).List())
+	vcName := d.Get(Arg_VolumeCloneName).(string)
+	volids := flex.ExpandStringList((d.Get(Arg_VolumeIDs).(*schema.Set)).List())
 
 	body := &models.VolumesCloneAsyncRequest{
 		Name:      &vcName,
 		VolumeIDs: volids,
 	}
 
-	if v, ok := d.GetOk(PITargetStorageTier); ok {
+	if v, ok := d.GetOk(Arg_TargetStorageTier); ok {
 		body.TargetStorageTier = v.(string)
 	}
 
-	if !d.GetRawConfig().GetAttr(helpers.PIReplicationEnabled).IsNull() {
-		body.TargetReplicationEnabled = flex.PtrToBool(d.Get(helpers.PIReplicationEnabled).(bool))
+	if !d.GetRawConfig().GetAttr(Arg_ReplicationEnabled).IsNull() {
+		body.TargetReplicationEnabled = flex.PtrToBool(d.Get(Arg_ReplicationEnabled).(bool))
 	}
 
-	client := st.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
 	volClone, err := client.Create(body)
 	if err != nil {
 		return diag.FromErr(err)
@@ -131,7 +152,6 @@ func resourceIBMPIVolumeCloneCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -142,21 +162,21 @@ func resourceIBMPIVolumeCloneRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	client := st.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPICloneVolumeClient(ctx, sess, cloudInstanceID)
 	volCloneTask, err := client.Get(vcTaskID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("task_id", vcTaskID)
-	if volCloneTask.Status != nil {
-		d.Set("status", *volCloneTask.Status)
-	}
-	d.Set("failure_reason", volCloneTask.FailedReason)
+	d.Set(Attr_FailureReason, volCloneTask.FailedReason)
 	if volCloneTask.PercentComplete != nil {
-		d.Set("percent_complete", *volCloneTask.PercentComplete)
+		d.Set(Attr_PercentComplete, *volCloneTask.PercentComplete)
 	}
-	d.Set("cloned_volumes", flattenClonedVolumes(volCloneTask.ClonedVolumes))
+	if volCloneTask.Status != nil {
+		d.Set(Attr_Status, *volCloneTask.Status)
+	}
+	d.Set(Attr_TaskID, vcTaskID)
+	d.Set(Attr_ClonedVolumes, flattenClonedVolumes(volCloneTask.ClonedVolumes))
 
 	return nil
 }
@@ -172,8 +192,8 @@ func flattenClonedVolumes(list []*models.ClonedVolume) (cloneVolumes []map[strin
 		cloneVolumes := make([]map[string]interface{}, len(list))
 		for i, data := range list {
 			l := map[string]interface{}{
-				"clone_volume_id":  data.ClonedVolumeID,
-				"source_volume_id": data.SourceVolumeID,
+				Attr_CloneVolumeID:  data.ClonedVolumeID,
+				Attr_SourceVolumeID: data.SourceVolumeID,
 			}
 			cloneVolumes[i] = l
 		}
@@ -182,12 +202,12 @@ func flattenClonedVolumes(list []*models.ClonedVolume) (cloneVolumes []map[strin
 	return
 }
 
-func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *st.IBMPICloneVolumeClient, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *instance.IBMPICloneVolumeClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume clone (%s) to be completed.", id)
 
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{VolumeCloneRunning},
-		Target:     []string{VolumeCloneCompleted},
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Creating},
+		Target:     []string{State_Completed},
 		Refresh:    isIBMPIVolumeCloneRefreshFunc(client, id),
 		Delay:      10 * time.Second,
 		MinTimeout: 2 * time.Minute,
@@ -197,39 +217,17 @@ func isWaitForIBMPIVolumeCloneCompletion(ctx context.Context, client *st.IBMPICl
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIVolumeCloneRefreshFunc(client *st.IBMPICloneVolumeClient, id string) resource.StateRefreshFunc {
+func isIBMPIVolumeCloneRefreshFunc(client *instance.IBMPICloneVolumeClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		volClone, err := client.Get(id)
 		if err != nil {
 			return nil, "", err
 		}
 
-		if *volClone.Status == VolumeCloneCompleted {
-			return volClone, VolumeCloneCompleted, nil
+		if *volClone.Status == State_Completed {
+			return volClone, State_Completed, nil
 		}
 
-		return volClone, VolumeCloneRunning, nil
-	}
-}
-
-func clonedVolumesSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "The List of cloned volumes.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"clone_volume_id": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "The ID of the newly cloned volume.",
-				},
-				"source_volume_id": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "The ID of the source volume.",
-				},
-			},
-		},
+		return volClone, State_Creating, nil
 	}
 }

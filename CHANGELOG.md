@@ -1,3 +1,9 @@
+# 1.67.1 (July 05, 2024)
+BugFixes
+* Error: The terraform-provider-ibm_v1.67.0 plugin crashed! ([5485](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5485))
+* Fix for adding retention rule issue for existing bucket ([5481](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5481))
+
+
 # 1.67.0 (July 02, 2024)
 Features
 * Support MQCloud
