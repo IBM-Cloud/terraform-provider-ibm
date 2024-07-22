@@ -272,6 +272,8 @@ func TestAccIBMISLBListenerPolicyParameterizedRedirectNew_basic(t *testing.T) {
 	lbpolicyname := fmt.Sprintf("tflblispol%d", acctest.RandIntRange(10, 100))
 	protocol1 := "https"
 	port1 := "9086"
+	url := "https://{host}:8080/{port}/{host}/{path}"
+	urlUpdate := "{protocol}://test.{host}:80/{path}"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -279,7 +281,7 @@ func TestAccIBMISLBListenerPolicyParameterizedRedirectNew_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISLBListenerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1, lbpolicyname),
+				Config: testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1, lbpolicyname, url),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
 					resource.TestCheckResourceAttr(
@@ -287,19 +289,19 @@ func TestAccIBMISLBListenerPolicyParameterizedRedirectNew_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.http_status_code", "302"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.url", "https://{host}:8080/{port}/{host}/{path}"),
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.url", url),
 				),
 			},
 			{
-				Config: testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfigUpdate(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1, lbpolicyname),
+				Config: testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1, lbpolicyname, urlUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", lbname),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.http_status_code", "301"),
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.http_status_code", "302"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.url", "{protocol}://test.{host}:80/{path}"),
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target.0.url", urlUpdate),
 				),
 			},
 		},
@@ -835,7 +837,7 @@ func testAccCheckIBMISLBListenerPolicyHttpsRedirectNewConfigRemoveUri(vpcname, s
 
 }
 
-func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
+func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname, url string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -849,12 +851,12 @@ func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, su
 	resource "ibm_is_lb" "testacc_LB" {
 		name = "%s"
 		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		type = "private"
 	}
 	resource "ibm_is_lb_listener" "lb_listener1"{
 		lb       = ibm_is_lb.testacc_LB.id
 		port     = "9086"
-		protocol = "https"
-		certificate_instance="%s"
+		protocol = "http"
 	}
 	
 	resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
@@ -864,10 +866,10 @@ func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfig(vpcname, su
 		action = "redirect"
 		target {
 			http_status_code = 302
-			uri = "https://{host}:8080/{port}/{host}/{path}"
+			url = "%s"
 		}
 		priority = 2
-	}`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance, acc.LbListerenerCertificateInstance, lbpolicyname)
+	}`, vpcname, subnetname, zone, cidr, lbname, lbpolicyname, url)
 
 }
 func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
@@ -902,7 +904,7 @@ func testAccCheckIBMISLBListenerPolicyParameterizedRedirectNewConfigUpdate(vpcna
 			uri = "{protocol}://test.{host}:80/{path}"
 		}
 		priority = 2
-	}`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance, acc.LbListerenerCertificateInstance, lbpolicyname)
+	}`, vpcname, subnetname, zone, cidr, lbname, acc.LbListerenerCertificateInstance, lbpolicyname)
 
 }
 func testAccCheckIBMISLBListenerPolicyHttpsRedirectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
