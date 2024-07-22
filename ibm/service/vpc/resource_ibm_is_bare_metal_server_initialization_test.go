@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMISBareMetalServerInitializationReplace_basic(t *testing.T) {
+func TestAccReinitIBMISBareMetalServerreinitbasic(t *testing.T) {
 	var server string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
@@ -39,6 +39,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_bare_metal_server.testacc_bms", "zone", acc.ISZoneName),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server.testacc_bms", "user_data", userdata),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "image", acc.IsBareMetalServerImage),
 				),
 			},
 			{
@@ -53,6 +55,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_bare_metal_server.testacc_bms", "user_data", userdata),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_bare_metal_server_initialization.testacc_bms_initialization", "id"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_bare_metal_server.testacc_bms", "image", acc.IsBareMetalServerImage),
 				),
 			},
 		},
@@ -90,7 +94,7 @@ func testAccCheckIBMISBareMetalServerInitializationReplaceConfig(vpcname, subnet
 			vpc 				= ibm_is_vpc.testacc_vpc.id
 		}
 		
-`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsImage, acc.ISZoneName, userData1)
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName, userData1)
 }
 func testAccCheckIBMISBareMetalServerInitializationReplaceConfigUpdate(vpcname, subnetname, sshname, publicKey, name, userData1, userData2 string) string {
 	return fmt.Sprintf(`
@@ -121,6 +125,9 @@ func testAccCheckIBMISBareMetalServerInitializationReplaceConfigUpdate(vpcname, 
 				subnet     		= ibm_is_subnet.testacc_subnet.id
 			}
 			vpc 				= ibm_is_vpc.testacc_vpc.id
+			lifecycle {
+				ignore_changes = [ image, keys, user_data ]
+			}
 		}
 		resource "ibm_is_bare_metal_server_initialization" "testacc_bms_initialization" {
 			bare_metal_server 	= ibm_is_bare_metal_server.testacc_bms.id
@@ -129,5 +136,5 @@ func testAccCheckIBMISBareMetalServerInitializationReplaceConfigUpdate(vpcname, 
 			user_data         	= "%s"
 		}
 		
-`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsImage, acc.ISZoneName, userData1, acc.IsImage2, userData2)
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName, userData1, acc.IsBareMetalServerImage2, userData2)
 }

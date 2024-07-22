@@ -141,7 +141,7 @@ Review the argument references that you can specify for your resource.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces. The specified value must match one of the bandwidth values in the bare metal server's profile.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
-- `image` - (Required, String) ID of the image. (Update/OS reload is possible for servers in stopped state)
+- `image` - (Required, String) ID of the image. (Update/OS reload is possible for servers in stopped state, else server will be stopped/restarted during update )
 - `keys` - (Required, List) Comma separated IDs of ssh keys. (Update/keys reload is possible for servers in stopped state)
 
   ~> **Note:**

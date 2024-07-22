@@ -194,7 +194,6 @@ func isBareMetalServerInitializationRefreshFunc(client *vpcv1.VpcV1, id string, 
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
 		}
-		d.Set(isBareMetalServerStatus, *bms.Status)
 
 		select {
 		case data := <-communicator:
@@ -208,23 +207,6 @@ func isBareMetalServerInitializationRefreshFunc(client *vpcv1.VpcV1, id string, 
 			close(communicator)
 			if *bms.Status == "failed" {
 				bmsStatusReason := bms.StatusReasons
-
-				//set the status reasons
-				if bms.StatusReasons != nil {
-					statusReasonsList := make([]map[string]interface{}, 0)
-					for _, sr := range bms.StatusReasons {
-						currentSR := map[string]interface{}{}
-						if sr.Code != nil && sr.Message != nil {
-							currentSR[isBareMetalServerStatusReasonsCode] = *sr.Code
-							currentSR[isBareMetalServerStatusReasonsMessage] = *sr.Message
-							if sr.MoreInfo != nil {
-								currentSR[isBareMetalServerStatusReasonsMoreInfo] = *sr.MoreInfo
-							}
-							statusReasonsList = append(statusReasonsList, currentSR)
-						}
-					}
-					d.Set(isBareMetalServerStatusReasons, statusReasonsList)
-				}
 
 				out, err := json.MarshalIndent(bmsStatusReason, "", "    ")
 				if err != nil {
