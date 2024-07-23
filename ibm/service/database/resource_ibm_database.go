@@ -965,7 +965,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "group_id",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "member, analytics, bi_connector, search",
+			AllowedValues:              "member, analytics, bi_connector",
 			Required:                   true})
 
 	ibmICDResourceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
