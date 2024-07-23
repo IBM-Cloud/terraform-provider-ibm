@@ -778,3 +778,31 @@ resource "ibm_cis_ruleset_version_detach" "tests" {
     ruleset_id = "<id of the ruleset>"
     version = "<ruleset version>"
 }
+
+# Order Advanced Certificate Pack
+resource "ibm_cis_advanced_certificate_pack_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hosts     = ["example.com"]
+  certificate_authority = "lets_encrypt"
+  cloudflare_branding = false
+  validation_method = "txt"
+  validity = 90
+}
+
+# Order Origin Certificate
+resource "ibm_cis_origin_certificate_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hostnames     = ["example.com"]
+  request_type = "origin-rsa"
+  requested_validity = 5475
+  csr = "-----BEGIN CERTIFICATE REQUEST-----\nMIICxzCC***TA67sdbcQ==\n-----END CERTIFICATE REQUEST-----"
+}
+
+# Get Origin Certificates
+data ibm_cis_origin_certificates "test" {
+  cis_id    = ibm_cis.instance.id
+  domain_id = ibm_cis_domain.example.id
+  certificate_id = "25392180178235735583993116186144990011711092749"
+}
