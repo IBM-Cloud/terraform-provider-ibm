@@ -12,6 +12,8 @@ This resource can be used for management of keys in both Key Protect and Hyper P
 
 After creating an  Hyper Protect Crypto Service instance you need to initialize the instance properly with the crypto units, in order to create, or manage Hyper Protect Crypto Service keys. For more information, about how to initialize the Hyper Protect Crypto Service instance, see [Initialize Hyper Protect Crypto](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm) only for HPCS instance.
 
+  ~>**Important:**
+  If the key is used with other IBM Cloud resources that require an `ibm_iam_authorization_policy` resource (requires [service authorization](https://cloud.ibm.com/docs/account?topic=account-serviceauth&interface=ui)), make sure to include `depends_on` targing the `ibm_iam_authorization_policy` involved to ensure proper deletion of resources with `terraform destroy`.
 
   ~>**Deprecated:**
   The ability to use the ibm_kms_key resource to create or update key policies in Terraform has been removed in favor of a dedicated ibm_kms_key_policies resource. For more information, check out [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key_policies#example-usage-to-create-a-[…]and-associate-a-key-policy)
