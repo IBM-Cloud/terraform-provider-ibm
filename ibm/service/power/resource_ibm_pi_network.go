@@ -277,10 +277,14 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
 		}
 		networkType := d.Get(helpers.PINetworkType).(string)
-		if d.HasChange(helpers.PINetworkIPAddressRange) {
+		if d.HasChange(helpers.PINetworkIPAddressRange) || d.HasChange(helpers.PINetworkGateway) {
 			if networkType == Vlan {
-				body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
-				body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+				if d.HasChange(helpers.PINetworkIPAddressRange) {
+					body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+				}
+				if d.HasChange(helpers.PINetworkGateway) {
+					body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
+				}
 			} else {
 				return diag.Errorf("%v type does not allow ip-address range or gateway update", networkType)
 			}
