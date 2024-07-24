@@ -37,22 +37,22 @@ func dataSourceIBMKMSKmipAdapterBaseSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The data specific to the KMIP Adapter profile",
 		},
-		"created_by": &schema.Schema{
+		"created_by": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The unique identifier that is associated with the entity that created the adapter.",
 		},
-		"created_at": &schema.Schema{
+		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date when a resource was created. The date format follows RFC 3339.",
 		},
-		"updated_by": &schema.Schema{
+		"updated_by": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The unique identifier that is associated with the entity that updated the adapter.",
 		},
-		"updated_at": &schema.Schema{
+		"updated_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date when a resource was updated. The date format follows RFC 3339.",

@@ -29,12 +29,12 @@ func dataSourceIBMKmsKMIPClientCertificateBaseSchema() map[string]*schema.Schema
 			Sensitive:   true,
 			Description: "The PEM-encoded contents of the certificate",
 		},
-		"created_by": &schema.Schema{
+		"created_by": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The unique identifier that is associated with the entity that created the adapter.",
 		},
-		"created_at": &schema.Schema{
+		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date when a resource was created. The date format follows RFC 3339.",
@@ -101,7 +101,7 @@ func dataSourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}
 	// get adapterID and certID
 	nameOrID, hasID := d.GetOk("adapter_id")
 	if !hasID {
-		nameOrID, hasID = d.GetOk("adapter_name")
+		nameOrID = d.Get("adapter_name")
 	}
 	adapterNameOrID := nameOrID.(string)
 
