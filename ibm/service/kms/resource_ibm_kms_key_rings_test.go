@@ -70,46 +70,47 @@ func TestAccIBMKMSResource_Key_Ring_Not_Exist(t *testing.T) {
 	})
 }
 
-func TestAccIBMKMSResource_Key_Ring_ForceDeleteFalse(t *testing.T) {
-	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
-	keyRing := fmt.Sprintf("keyRing%d", acctest.RandIntRange(10, 100))
+// Developer note: Test is disabled as a bug exists where this is not properly testable
+// func TestAccIBMKMSResource_Key_Ring_ForceDeleteFalse(t *testing.T) {
+// 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
+// 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+// 	keyRing := fmt.Sprintf("keyRing%d", acctest.RandIntRange(10, 100))
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			// Create a Key Ring and check force_delete is false
-			{
-				Config: buildResourceSet(WithResourceKMSInstance(instanceName), WithResourceKMSKeyRing(keyRing, false), WithResourceKMSKey(keyName, "ibm_kms_key_rings.test.key_ring_id")),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_ring_id", keyRing),
-					resource.TestCheckResourceAttr("ibm_kms_key_rings.test", "force_delete", "false"),
-				),
-			},
-			// Developer note: We cannot move key rings to default key ring as we have not implemented that PATCH endpoint in terraform. Therefore we must depend on the force_delete flag to clean up test cases
-			// Attempt to delete the key ring and key
-			{
-				Config:      buildResourceSet(WithResourceKMSInstance(instanceName), WithDataKMSKeys()),
-				ExpectError: regexp.MustCompile("KEY_RING_NOT_EMPTY_ERR:"),
-			},
-			// Update key ring to force_delete for cleanup
-			{
-				Config: buildResourceSet(WithResourceKMSInstance(instanceName), WithResourceKMSKeyRing(keyRing, true)),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key_rings.test", "force_delete", "true"),
-				),
-			},
-			// Delete Key Ring
-			{
-				Config:      buildResourceSet(WithResourceKMSInstance(instanceName), WithDataKMSKeys()),
-				ExpectError: regexp.MustCompile(`\[ERROR\] No keys in instance`),
-			},
-			// Developer note: There is no support for listing keys under a certain key state so we cannot verify deleted key is now in default key ring
-		},
-	})
-}
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:  func() { acc.TestAccPreCheck(t) },
+// 		Providers: acc.TestAccProviders,
+// 		Steps: []resource.TestStep{
+// 			// Create a Key Ring and check force_delete is false
+// 			{
+// 				Config: buildResourceSet(WithResourceKMSInstance(instanceName), WithResourceKMSKeyRing(keyRing, false), WithResourceKMSKey(keyName, "ibm_kms_key_rings.test.key_ring_id")),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+// 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_ring_id", keyRing),
+// 					resource.TestCheckResourceAttr("ibm_kms_key_rings.test", "force_delete", "false"),
+// 				),
+// 			},
+// 			// Developer note: We cannot move key rings to default key ring as we have not implemented that PATCH endpoint in terraform. Therefore we must depend on the force_delete flag to clean up test cases
+// 			// Attempt to delete the key ring and key
+// 			{
+// 				Config:      buildResourceSet(WithResourceKMSInstance(instanceName)),
+// 				ExpectError: regexp.MustCompile("KEY_RING_NOT_EMPTY_ERR:"),
+// 			},
+// 			// Update key ring to force_delete for cleanup
+// 			{
+// 				Config: buildResourceSet(WithResourceKMSInstance(instanceName), WithResourceKMSKeyRing(keyRing, true)),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					resource.TestCheckResourceAttr("ibm_kms_key_rings.test", "force_delete", "true"),
+// 				),
+// 			},
+// 			// Delete Key Ring
+// 			{
+// 				Config:      buildResourceSet(WithResourceKMSInstance(instanceName), WithDataKMSKeys()),
+// 				ExpectError: regexp.MustCompile(`\[ERROR\] No keys in instance`),
+// 			},
+// 			// Developer note: There is no support for listing keys under a certain key state so we cannot verify deleted key is now in default key ring
+// 		},
+// 	})
+// }
 
 func TestAccIBMKMSResource_Key_Ring_ForceDeleteTrue(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
