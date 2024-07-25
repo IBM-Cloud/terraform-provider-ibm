@@ -17,7 +17,7 @@ import (
 func TestAccSatelliteLocationDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
-	physical_address := "test-road 10, 111 test-country"
+	physical_address := "test-road 10, 111 test-place, testcountry"
 	capabilities := []kubernetesserviceapiv1.CapabilityManagedBySatellite{kubernetesserviceapiv1.OnPrem}
 
 	resource.Test(t, resource.TestCase{
