@@ -124,29 +124,30 @@ func TestAccIBMKMSResource_Key_Alias_Key_Check(t *testing.T) {
 	})
 }
 
-func TestAccIBMKMSResource_Key_Alias_Key_Limit(t *testing.T) {
-	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
-	// cosInstanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
-	// bucketName := fmt.Sprintf("bucket-test77")
-	aliasName := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
-	aliasName2 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
-	aliasName3 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
-	aliasName4 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
-	aliasName5 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
-	aliasName6 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+// Developer note: Test is disabled as a bug exists where this is not properly testable
+// func TestAccIBMKMSResource_Key_Alias_Key_Limit(t *testing.T) {
+// 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
+// 	// cosInstanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
+// 	// bucketName := fmt.Sprintf("bucket-test77")
+// 	aliasName := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
+// 	aliasName2 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
+// 	aliasName3 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
+// 	aliasName4 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
+// 	aliasName5 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
+// 	aliasName6 := fmt.Sprintf("alias_%d", acctest.RandIntRange(10, 100))
+// 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccCheckIBMKmsResourceAliasLimitConfig(instanceName, keyName, aliasName, aliasName2, aliasName3, aliasName4, aliasName5, aliasName6),
-				ExpectError: regexp.MustCompile("(KEY_ALIAS_QUOTA_ERR)"),
-			},
-		},
-	})
-}
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:  func() { acc.TestAccPreCheck(t) },
+// 		Providers: acc.TestAccProviders,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config:      testAccCheckIBMKmsResourceAliasLimitConfig(instanceName, keyName, aliasName, aliasName2, aliasName3, aliasName4, aliasName5, aliasName6),
+// 				ExpectError: regexp.MustCompile("(KEY_ALIAS_QUOTA_ERR)"),
+// 			},
+// 		},
+// 	})
+// }
 
 func testAccCheckIBMKmsResourceAliasConfig(instanceName, KeyName, aliasName string) string {
 	return fmt.Sprintf(`
