@@ -1,3 +1,38 @@
+# 1.68.0-beta0 (July 23, 2024)
+Features
+* Support CBR
+    - **Datasources**
+        - ibm_cbr_zone_addresses
+    - **Resources**
+        - ibm_cbr_zone_addresses
+* Support CIS
+    - **Datasources**
+        - ibm_cis_origin_certificates
+    - **Resources**
+        - ibm_cis_advanced_certificate_pack_order
+        - ibm_cis_origin_certificate_order
+    
+Enhancements
+* Add dhcp network support for stratos ([5503](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5503))
+* IAM Policy Assignment: S2S Policy Assignments ([5499](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5499))
+* Code Engine Provider and Documentation Update ([5347](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5347))
+* move wait_till logic into function, integrate it into vpc_cluster datasource ([5476](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5346))
+* Remove hardcoded values for private and direct cos config endpoint ([5484](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5484))
+* feat(bm-dynamic-bandwidth): Support for bandwidth in bare metal ([5493](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5493))
+* Doc update for ODF ([5454](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5454))
+* feat(fs-cross-account): Support for file share cross account access ([5510](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5510))
+* feat Bm firmware update ([5519](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5519))
+* Changing the documentation for SCC ([5456](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5456))
+* feat(lb-parameterized-redirect): Update doc to specify parameterized url redirect ([5521](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5521))
+
+
+BugFixes
+* fix(CIS): updating managed ruleset documents ([5488](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5488))
+* fix(ins-keys): Make VSI keys optional ([5518](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5518))
+* fix(is-volume): Set catalogoffering computed attribute empty list ([5514](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5514))
+* add import_on_create param to ibm_container_vpc_worker_pool doc ([5506](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5506))
+
+
 # 1.67.1 (July 05, 2024)
 BugFixes
 * Error: The terraform-provider-ibm_v1.67.0 plugin crashed! ([5485](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5485))

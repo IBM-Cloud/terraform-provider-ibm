@@ -65,6 +65,7 @@ const (
 	isBareMetalServerStatusReasonsMoreInfo               = "more_info"
 	isBareMetalServerDeleteType                          = "delete_type"
 	isBareMetalServerImage                               = "image"
+	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmware_update_type_available"
 	isBareMetalServerKeys                                = "keys"
 	isBareMetalServerUserData                            = "user_data"
 	isBareMetalServerNicName                             = "name"
@@ -174,6 +175,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			},
 			isBareMetalServerBandwidth: {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "The total bandwidth (in megabits per second)",
 			},
@@ -216,6 +218,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this bare metal server",
+			},
+			isBareMetalServerFirmwareUpdateTypeAvailable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of firmware update available",
 			},
 			isBareMetalServerDisks: {
 				Type:        schema.TypeList,
@@ -1240,6 +1247,10 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		imageStr = image.(string)
 	}
 
+	if bandwidthIntf, ok := d.GetOk(isBareMetalServerBandwidth); ok {
+		bandwidth := int64(bandwidthIntf.(int))
+		options.Bandwidth = &bandwidth
+	}
 	// enable secure boot
 
 	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
@@ -1943,6 +1954,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	d.Set(isBareMetalServerCPU, cpuList)
 	d.Set(isBareMetalServerCRN, *bms.CRN)
+	if bms.Firmware != nil && bms.Firmware.Update != nil {
+		d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update)
+	}
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
@@ -3426,6 +3440,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	}
 	bmsPatchModel := &vpcv1.BareMetalServerPatch{}
 	flag := false
+
+	if d.HasChange(isBareMetalServerBandwidth) && !d.IsNewResource() {
+		bandwidth := int64(d.Get(isBareMetalServerBandwidth).(int))
+		bmsPatchModel.Bandwidth = &bandwidth
+		flag = true
+	}
 
 	if d.HasChange(isBareMetalServerEnableSecureBoot) {
 		newEnableSecureBoot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
