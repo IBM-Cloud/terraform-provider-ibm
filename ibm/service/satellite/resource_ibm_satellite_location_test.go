@@ -184,7 +184,7 @@ func testAccCheckSatelliteLocationCreate(name, managed_from string, physical_add
 		tags = ["env:dev"]
 		pod_subnet = "%s"
 		service_subnet = "%s"
-		capabilities = "%q"
+		capabilities = %q
 	}
 	  
 `, name, managed_from, physical_address, coreos_enabled, pod_subnet, service_subnet, capabilities)
