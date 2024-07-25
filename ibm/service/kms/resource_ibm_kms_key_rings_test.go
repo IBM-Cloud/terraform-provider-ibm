@@ -259,3 +259,14 @@ func WithDataKMSKeyRings() CreateResourceOption {
    		}`
 	}
 }
+
+func WithResourceKMSKeyAlias(tfConfigId string, alias string, tfConfigKeyId string) CreateResourceOption {
+	return func(resources *string) {
+		*resources += fmt.Sprintf(`
+		resource "ibm_kms_key_alias" "%s" {
+			instance_id = "${ibm_resource_instance.kms_instance.guid}"
+			alias = "%s"
+			key_id = "${%s}"
+		}`, tfConfigId, alias, tfConfigKeyId)
+	}
+}
