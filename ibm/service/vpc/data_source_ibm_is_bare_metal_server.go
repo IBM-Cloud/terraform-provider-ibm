@@ -609,6 +609,11 @@ func DataSourceIBMIsBareMetalServer() *schema.Resource {
 				Computed:    true,
 				Description: "image name",
 			},
+			isBareMetalServerFirmwareUpdateTypeAvailable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of firmware update available",
+			},
 			isBareMetalServerProfile: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -816,6 +821,11 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 	}
 	if err = d.Set("identifier", *bms.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting identifier: %s", err))
+	}
+	if bms.Firmware != nil && bms.Firmware.Update != nil {
+		if err = d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting availble firmware update type: %s", err))
+		}
 	}
 
 	//enable secure boot

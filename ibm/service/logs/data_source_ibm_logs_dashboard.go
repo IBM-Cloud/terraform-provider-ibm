@@ -1040,6 +1040,11 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																							},
 																						},
 																					},
+																					"stacked_line": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Stacked lines.",
+																					},
 																				},
 																			},
 																		},
@@ -5480,6 +5485,16 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																	},
 																},
 															},
+															"created_at": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Creation timestamp.",
+															},
+															"updated_at": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Last update timestamp.",
+															},
 														},
 													},
 												},
@@ -5583,39 +5598,6 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 																			Description: "List of constant values.",
 																			Elem: &schema.Schema{
 																				Type: schema.TypeString,
-																			},
-																		},
-																	},
-																},
-															},
-															"span_field": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Unique values for a given span field.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"value": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Group by fields.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"metadata_field": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Metadata field.",
-																					},
-																					"tag_field": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Tag field.",
-																					},
-																					"process_tag_field": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Process tag field.",
-																					},
-																				},
 																			},
 																		},
 																	},
@@ -6220,12 +6202,12 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 						"from": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "from is the start of the time frame.",
+							Description: "From is the start of the time frame.",
 						},
 						"to": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "to is the end of the time frame.",
+							Description: "To is the end of the time frame.",
 						},
 					},
 				},
@@ -6267,16 +6249,28 @@ func DataSourceIbmLogsDashboard() *schema.Resource {
 				},
 			},
 			"false": &schema.Schema{
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Auto refresh interval is set to off.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{},
+				},
 			},
 			"two_minutes": &schema.Schema{
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Auto refresh interval is set to two minutes.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{},
+				},
 			},
 			"five_minutes": &schema.Schema{
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Auto refresh interval is set to five minutes.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{},
+				},
 			},
 		},
 	}
@@ -6289,7 +6283,6 @@ func dataSourceIbmLogsDashboardRead(context context.Context, d *schema.ResourceD
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -6432,17 +6425,44 @@ func dataSourceIbmLogsDashboardRead(context context.Context, d *schema.ResourceD
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("false", dashboard.False); err != nil {
+	falseVar := []map[string]interface{}{}
+	if dashboard.False != nil {
+		modelMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstDashboardAutoRefreshOffEmptyToMap(dashboard.False)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_dashboard", "read")
+			return tfErr.GetDiag()
+		}
+		falseVar = append(falseVar, modelMap)
+	}
+	if err = d.Set("false", falseVar); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting false: %s", err), "(Data) ibm_logs_dashboard", "read")
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("two_minutes", dashboard.TwoMinutes); err != nil {
+	twoMinutes := []map[string]interface{}{}
+	if dashboard.TwoMinutes != nil {
+		modelMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstDashboardAutoRefreshTwoMinutesEmptyToMap(dashboard.TwoMinutes)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_dashboard", "read")
+			return tfErr.GetDiag()
+		}
+		twoMinutes = append(twoMinutes, modelMap)
+	}
+	if err = d.Set("two_minutes", twoMinutes); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting two_minutes: %s", err), "(Data) ibm_logs_dashboard", "read")
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("five_minutes", dashboard.FiveMinutes); err != nil {
+	fiveMinutes := []map[string]interface{}{}
+	if dashboard.FiveMinutes != nil {
+		modelMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstDashboardAutoRefreshFiveMinutesEmptyToMap(dashboard.FiveMinutes)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_dashboard", "read")
+			return tfErr.GetDiag()
+		}
+		fiveMinutes = append(fiveMinutes, modelMap)
+	}
+	if err = d.Set("five_minutes", fiveMinutes); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting five_minutes: %s", err), "(Data) ibm_logs_dashboard", "read")
 		return tfErr.GetDiag()
 	}
@@ -6550,6 +6570,12 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetToMap(model *logsv0.Apis
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
 	return modelMap, nil
 }
 
@@ -6648,6 +6674,9 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsLineChartToMap(model *l
 			queryDefinitions = append(queryDefinitions, queryDefinitionsItemMap)
 		}
 		modelMap["query_definitions"] = queryDefinitions
+	}
+	if model.StackedLine != nil {
+		modelMap["stacked_line"] = *model.StackedLine
 	}
 	return modelMap, nil
 }
@@ -6823,7 +6852,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationToMap(model 
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1CommonLogsAggregation)
 		if model.Count != nil {
-			countMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationCountToMap(model.Count)
+			countMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationCountEmptyToMap(model.Count)
 			if err != nil {
 				return modelMap, err
 			}
@@ -6877,7 +6906,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationToMap(model 
 	}
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationCountToMap(model *logsv0.ApisDashboardsV1CommonLogsAggregationCount) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationCountEmptyToMap(model *logsv0.ApisDashboardsV1CommonLogsAggregationCountEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -6957,7 +6986,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationPercentileTo
 func DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationValueCountToMap(model *logsv0.ApisDashboardsV1CommonLogsAggregationValueCount) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Count != nil {
-		countMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationCountToMap(model.Count)
+		countMap, err := DataSourceIbmLogsDashboardApisDashboardsV1CommonLogsAggregationCountEmptyToMap(model.Count)
 		if err != nil {
 			return modelMap, err
 		}
@@ -7106,7 +7135,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionToMap(mod
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstFilterEqualsSelection)
 		if model.All != nil {
-			allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionAllSelectionToMap(model.All)
+			allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmptyToMap(model.All)
 			if err != nil {
 				return modelMap, err
 			}
@@ -7125,7 +7154,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionToMap(mod
 	}
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionAllSelectionToMap(model *logsv0.ApisDashboardsV1AstFilterEqualsSelectionAllSelection) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmptyToMap(model *logsv0.ApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -7141,7 +7170,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionListSelec
 func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionValueAllToMap(model *logsv0.ApisDashboardsV1AstFilterEqualsSelectionValueAll) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.All != nil {
-		allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionAllSelectionToMap(model.All)
+		allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterEqualsSelectionAllSelectionEmptyToMap(model.All)
 		if err != nil {
 			return modelMap, err
 		}
@@ -7308,7 +7337,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFilterSourceToMap(model logsv0
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
 		}
-
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstFilterMetricsFilterToMap(model.Metrics)
 			if err != nil {
@@ -7443,7 +7471,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableQueryToMap(mod
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
 		}
-
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsDataTableMetricsQueryToMap(model.Metrics)
 			if err != nil {
@@ -7865,7 +7892,6 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartQueryToMap(mode
 			}
 			modelMap["logs"] = []map[string]interface{}{logsMap}
 		}
-
 		if model.Metrics != nil {
 			metricsMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsPieChartMetricsQueryToMap(model.Metrics)
 			if err != nil {
@@ -8284,21 +8310,21 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByToMap(mod
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstWidgetsCommonColorsBy)
 		if model.Stack != nil {
-			stackMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByStackToMap(model.Stack)
+			stackMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByStackEmptyToMap(model.Stack)
 			if err != nil {
 				return modelMap, err
 			}
 			modelMap["stack"] = []map[string]interface{}{stackMap}
 		}
 		if model.GroupBy != nil {
-			groupByMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByToMap(model.GroupBy)
+			groupByMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByEmptyToMap(model.GroupBy)
 			if err != nil {
 				return modelMap, err
 			}
 			modelMap["group_by"] = []map[string]interface{}{groupByMap}
 		}
 		if model.Aggregation != nil {
-			aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationToMap(model.Aggregation)
+			aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationEmptyToMap(model.Aggregation)
 			if err != nil {
 				return modelMap, err
 			}
@@ -8310,17 +8336,17 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByToMap(mod
 	}
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByStackToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByColorsByStack) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByStackEmptyToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByColorsByStackEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupBy) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByEmptyToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregation) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationEmptyToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -8328,7 +8354,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByA
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByValueStackToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByValueStack) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Stack != nil {
-		stackMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByStackToMap(model.Stack)
+		stackMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByStackEmptyToMap(model.Stack)
 		if err != nil {
 			return modelMap, err
 		}
@@ -8340,7 +8366,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByValueStac
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByValueGroupByToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByValueGroupBy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.GroupBy != nil {
-		groupByMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByToMap(model.GroupBy)
+		groupByMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByGroupByEmptyToMap(model.GroupBy)
 		if err != nil {
 			return modelMap, err
 		}
@@ -8352,7 +8378,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByValueGrou
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByValueAggregationToMap(model *logsv0.ApisDashboardsV1AstWidgetsCommonColorsByValueAggregation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Aggregation != nil {
-		aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationToMap(model.Aggregation)
+		aggregationMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByColorsByAggregationEmptyToMap(model.Aggregation)
 		if err != nil {
 			return modelMap, err
 		}
@@ -8370,7 +8396,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisToMap(mode
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxis)
 		if model.Value != nil {
-			valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueToMap(model.Value)
+			valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmptyToMap(model.Value)
 			if err != nil {
 				return modelMap, err
 			}
@@ -8389,7 +8415,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisToMap(mode
 	}
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueToMap(model *logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValue) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmptyToMap(model *logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -8408,7 +8434,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTim
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisTypeValueToMap(model *logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisTypeValue) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Value != nil {
-		valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueToMap(model.Value)
+		valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmptyToMap(model.Value)
 		if err != nil {
 			return modelMap, err
 		}
@@ -8683,14 +8709,14 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxis
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewBy)
 		if model.Category != nil {
-			categoryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryToMap(model.Category)
+			categoryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryEmptyToMap(model.Category)
 			if err != nil {
 				return modelMap, err
 			}
 			modelMap["category"] = []map[string]interface{}{categoryMap}
 		}
 		if model.Value != nil {
-			valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueToMap(model.Value)
+			valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueEmptyToMap(model.Value)
 			if err != nil {
 				return modelMap, err
 			}
@@ -8702,12 +8728,12 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxis
 	}
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategory) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryEmptyToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValue) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueEmptyToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -8715,7 +8741,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxis
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewCategoryToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewCategory) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Category != nil {
-		categoryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryToMap(model.Category)
+		categoryMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByCategoryEmptyToMap(model.Category)
 		if err != nil {
 			return modelMap, err
 		}
@@ -8727,7 +8753,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxis
 func DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewValueToMap(model *logsv0.ApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewValue) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Value != nil {
-		valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueToMap(model.Value)
+		valueMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstWidgetsHorizontalBarChartYAxisViewByYAxisViewByValueEmptyToMap(model.Value)
 		if err != nil {
 			return modelMap, err
 		}
@@ -8981,7 +9007,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionToMap(mode
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.ApisDashboardsV1AstMultiSelectSelection)
 		if model.All != nil {
-			allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionAllSelectionToMap(model.All)
+			allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionAllSelectionEmptyToMap(model.All)
 			if err != nil {
 				return modelMap, err
 			}
@@ -9000,7 +9026,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionToMap(mode
 	}
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionAllSelectionToMap(model *logsv0.ApisDashboardsV1AstMultiSelectSelectionAllSelection) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionAllSelectionEmptyToMap(model *logsv0.ApisDashboardsV1AstMultiSelectSelectionAllSelectionEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -9016,7 +9042,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionListSelect
 func DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionValueAllToMap(model *logsv0.ApisDashboardsV1AstMultiSelectSelectionValueAll) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.All != nil {
-		allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionAllSelectionToMap(model.All)
+		allMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstMultiSelectSelectionAllSelectionEmptyToMap(model.All)
 		if err != nil {
 			return modelMap, err
 		}
@@ -9147,7 +9173,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1CommonPromQlQueryToMap(model *log
 func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationMetricsSourceStrategyToMap(model *logsv0.ApisDashboardsV1AstAnnotationMetricsSourceStrategy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.StartTimeMetric != nil {
-		startTimeMetricMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationMetricsSourceStartTimeMetricToMap(model.StartTimeMetric)
+		startTimeMetricMap, err := DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationMetricsSourceStartTimeMetricEmptyToMap(model.StartTimeMetric)
 		if err != nil {
 			return modelMap, err
 		}
@@ -9156,7 +9182,7 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationMetricsSourceStrateg
 	return modelMap, nil
 }
 
-func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationMetricsSourceStartTimeMetricToMap(model *logsv0.ApisDashboardsV1AstAnnotationMetricsSourceStartTimeMetric) (map[string]interface{}, error) {
+func DataSourceIbmLogsDashboardApisDashboardsV1AstAnnotationMetricsSourceStartTimeMetricEmptyToMap(model *logsv0.ApisDashboardsV1AstAnnotationMetricsSourceStartTimeMetricEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -9351,5 +9377,20 @@ func DataSourceIbmLogsDashboardApisDashboardsV1AstFolderPathToMap(model *logsv0.
 	if model.Segments != nil {
 		modelMap["segments"] = model.Segments
 	}
+	return modelMap, nil
+}
+
+func DataSourceIbmLogsDashboardApisDashboardsV1AstDashboardAutoRefreshOffEmptyToMap(model *logsv0.ApisDashboardsV1AstDashboardAutoRefreshOffEmpty) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	return modelMap, nil
+}
+
+func DataSourceIbmLogsDashboardApisDashboardsV1AstDashboardAutoRefreshTwoMinutesEmptyToMap(model *logsv0.ApisDashboardsV1AstDashboardAutoRefreshTwoMinutesEmpty) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	return modelMap, nil
+}
+
+func DataSourceIbmLogsDashboardApisDashboardsV1AstDashboardAutoRefreshFiveMinutesEmptyToMap(model *logsv0.ApisDashboardsV1AstDashboardAutoRefreshFiveMinutesEmpty) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }

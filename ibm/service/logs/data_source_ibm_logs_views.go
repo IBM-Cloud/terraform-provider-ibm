@@ -31,7 +31,7 @@ func DataSourceIbmLogsViews() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "View id.",
+							Description: "View ID.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -133,7 +133,7 @@ func DataSourceIbmLogsViews() *schema.Resource {
 						"folder_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "View folder id.",
+							Description: "View folder ID.",
 						},
 					},
 				},
@@ -149,7 +149,6 @@ func dataSourceIbmLogsViewsRead(context context.Context, d *schema.ResourceData,
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -193,11 +192,13 @@ func DataSourceIbmLogsViewsViewToMap(model *logsv0.View) (map[string]interface{}
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	modelMap["name"] = *model.Name
-	searchQueryMap, err := DataSourceIbmLogsViewsApisViewsV1SearchQueryToMap(model.SearchQuery)
-	if err != nil {
-		return modelMap, err
+	if model.SearchQuery != nil {
+		searchQueryMap, err := DataSourceIbmLogsViewsApisViewsV1SearchQueryToMap(model.SearchQuery)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["search_query"] = []map[string]interface{}{searchQueryMap}
 	}
-	modelMap["search_query"] = []map[string]interface{}{searchQueryMap}
 	timeSelectionMap, err := DataSourceIbmLogsViewsApisViewsV1TimeSelectionToMap(model.TimeSelection)
 	if err != nil {
 		return modelMap, err

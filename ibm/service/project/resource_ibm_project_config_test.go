@@ -43,13 +43,14 @@ func TestAccIbmProjectConfigBasic(t *testing.T) {
 func testAccCheckIbmProjectConfigConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_project" "project_instance" {
-			location = "us-south"
+			location = "ca-tor"
 			resource_group = "Default"
 			definition {
                 name = "acme-microservice"
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = false
             }
 		}
 

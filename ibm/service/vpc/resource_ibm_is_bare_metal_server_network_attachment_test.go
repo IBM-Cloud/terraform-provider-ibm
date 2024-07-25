@@ -94,6 +94,65 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMIsBareMetalServerNetworkAttachmentVlanPSFM(t *testing.T) {
+	var conf vpcv1.BareMetalServerNetworkAttachment
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-server-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfip-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-sshname-%d", acctest.RandIntRange(10, 100))
+	vniname := fmt.Sprintf("tf-vni-%d", acctest.RandIntRange(10, 100))
+	psfm1 := "auto"
+	psfm2 := "disabled"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsBareMetalServerNetworkAttachmentDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsBareMetalServerNetworkAttachmentConfigVlanPSFM(vpcname, subnetname, sshname, publicKey, vniname, name, psfm1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsBareMetalServerNetworkAttachmentExists("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", conf),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "vlan"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "interface_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "name"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "port_speed"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "virtual_network_interface.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "virtual_network_interface.0.primary_ip.#"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "vlan", "100"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "type", "secondary"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "resource_type", "bare_metal_server_network_attachment"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIsBareMetalServerNetworkAttachmentConfigVlanPSFM(vpcname, subnetname, sshname, publicKey, vniname, name, psfm2),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsBareMetalServerNetworkAttachmentExists("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", conf),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "vlan"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "interface_type"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "name"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "port_speed"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "virtual_network_interface.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "virtual_network_interface.0.primary_ip.#"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "vlan", "100"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "type", "secondary"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "lifecycle_state", "stable"),
+					resource.TestCheckResourceAttr("ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment", "resource_type", "bare_metal_server_network_attachment"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsBareMetalServerNetworkAttachmentConfigVlan(vpcname, subnetname, sshname, publicKey, vniname, name string) string {
 	return testAccCheckIBMISBareMetalServerVNIConfig(vpcname, subnetname, sshname, publicKey, vniname, name) + fmt.Sprintf(`
 	resource "ibm_is_virtual_network_interface" "testacc_vni1"{
@@ -111,6 +170,24 @@ func testAccCheckIBMIsBareMetalServerNetworkAttachmentConfigVlan(vpcname, subnet
 	}
 	`)
 }
+
+func testAccCheckIBMIsBareMetalServerNetworkAttachmentConfigVlanPSFM(vpcname, subnetname, sshname, publicKey, vniname, name, psfm string) string {
+	return testAccCheckIBMISBareMetalServerVNIConfig(vpcname, subnetname, sshname, publicKey, vniname, name) + fmt.Sprintf(`
+	
+	resource "ibm_is_bare_metal_server_network_attachment" "is_bare_metal_server_network_attachment" {
+			bare_metal_server 		= ibm_is_bare_metal_server.testacc_bms.id
+			vlan 					= 100
+			virtual_network_interface { 
+				name 						= "%s"
+				subnet 						= "0717-a68ebc16-d63c-44e7-aa37-4b3791415b1d"
+				enable_infrastructure_nat 	= true
+				allow_ip_spoofing 			= true
+				protocol_state_filtering_mode = "%s"
+			}
+	}
+	`, vniname, psfm)
+}
+
 func testAccCheckIBMIsBareMetalServerNetworkAttachmentConfigPci(vpcname, subnetname, sshname, publicKey, vniname, name string) string {
 	return testAccCheckIBMISBareMetalServerVNIConfig(vpcname, subnetname, sshname, publicKey, vniname, name) + fmt.Sprintf(`
 	resource "ibm_is_virtual_network_interface" "testacc_vni1"{

@@ -34,6 +34,7 @@ func TestAccIBMISImage_basic(t *testing.T) {
 					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
 					resource.TestCheckResourceAttr(
 						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
 				),
 			},
 		},

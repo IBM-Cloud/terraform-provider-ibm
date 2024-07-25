@@ -49,6 +49,33 @@ resource "ibm_is_lb_listener_policy" "example" {
 }
 ```
 
+### Sample to create a load balancer listener policy for a `redirect` action with parameterized url.
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
+}
+
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
+  port     = "9086"
+  protocol = "http"
+}
+
+resource "ibm_is_lb_listener_policy" "example" {
+  lb       = ibm_is_lb.example.id
+  listener = ibm_is_lb_listener.example.listener_id
+  action   = "redirect"
+  priority = 4
+  name     = "example-listener-policy"
+  target {
+    http_status_code = 302
+    url              = "https://{host}:8080/{port}/{host}/{path}"
+  }
+}
+```
+
 ### Sample to create a load balancer listener policy for a `https_redirect` action.
 
 ```terraform
@@ -177,7 +204,14 @@ Review the argument references that you can specify for your resource.
 		- `href` - (Optional, String) The listener's canonical URL.
 		- `id` - (Optional, String) The unique identifier for this load balancer listener.
 	- `name` - (Computed, String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
-	- `url` - (Optional, String) The redirect target URL.
+	- `url` - (Optional, String) The redirect target URL. The URL supports [RFC 6570 level 1 expressions](https://datatracker.ietf.org/doc/html/rfc6570#section-1.2) for the following variables which expand to values from the originally requested URL (or the indicated defaults if the request did not include them):
+
+      **&#x2022;** protocol </br>
+      **&#x2022;** host </br>
+      **&#x2022;** port (default: 80 for HTTP requests, 443 for HTTPS requests) </br>
+      **&#x2022;** path (default: '/') </br>
+      **&#x2022;** query (default: '') </br>
+
 	  
 ~> **Note:** When action is `forward`, `target.id` should specify which pool the load balancer forwards the traffic to.
 When action is `redirect`, `target.url` should specify the `url` and `target.http_status_code` to specify the code used in the redirect response.

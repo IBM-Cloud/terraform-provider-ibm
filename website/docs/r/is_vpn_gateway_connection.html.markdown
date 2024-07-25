@@ -92,13 +92,30 @@ Review the argument references that you can specify for your resource.
 
 - `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `restart`.
 - `admin_state_up` - (Optional, Bool) The VPN gateway connection status. Default value is **false**. If set to false, the VPN gateway connection is shut down.
+- `establish_mode` - (Optional, String) The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.
 - `ike_policy` - (Optional, String) The ID of the IKE policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
 - `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 2.
 - `ipsec_policy` - (Optional, String) The ID of the IPSec policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
-- `local_cidrs` - (Optional, Forces new resource, List) List of local CIDRs for this resource.
+- `local` - (Optional, List) 
+  Nested schema for **local**:
+	- `ike_identities` - (Required, List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
+	  Nested schema for **ike_identities**:
+		- `type` - (Required, String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (Optional, String) The IKE identity FQDN value.
+- `local_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of local CIDRs for this resource.
 - `name` - (Required, String) The name of the VPN gateway connection.
-- `peer_cidrs` - (Optional, Forces new resource, List) List of peer CIDRs for this resource.
-- `peer_address` - (Required, String) The IP address of the peer VPN gateway.
+- `peer` - (Optional, List) 
+  Nested schema for **peer**:
+	- `address` - (Optional, String) The IP address of the peer VPN gateway for this connection.
+	- `fqdn` - (Optional, String) The FQDN of the peer VPN gateway for this connection.
+	- `ike_identity` - (Required, List) The peer IKE identity.
+	  Nested schema for **ike_identity**:
+		- `type` - (Required, String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (Optional, String) The IKE identity FQDN value.
+	- `type` - (Computed, String) Indicates whether `peer.address` or `peer.fqdn` is used.
+
+- `peer_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of peer CIDRs for this resource.
+- `peer_address` - (Optional, DEPRECATED, String) The IP address of the peer VPN gateway.
 - `preshared_key` - (Required, Forces new resource, String) The preshared key.
 - `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 10.
 - `vpn_gateway` - (Required, Forces new resource, String) The unique identifier of the VPN gateway.

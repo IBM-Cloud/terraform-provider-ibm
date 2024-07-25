@@ -31,7 +31,7 @@ func DataSourceIbmLogsViewFolders() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Folder id.",
+							Description: "Folder ID.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -52,7 +52,6 @@ func dataSourceIbmLogsViewFoldersRead(context context.Context, d *schema.Resourc
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))

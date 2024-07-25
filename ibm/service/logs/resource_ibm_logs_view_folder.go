@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -51,7 +51,7 @@ func ResourceIbmLogsViewFolderValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},

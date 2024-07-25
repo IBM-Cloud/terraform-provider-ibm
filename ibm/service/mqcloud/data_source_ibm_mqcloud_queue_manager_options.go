@@ -97,6 +97,17 @@ func dataSourceIbmMqcloudQueueManagerOptionsRead(context context.Context, d *sch
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting latest_version: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-latest_version").GetDiag()
 	}
 
+	if err = d.Set("locations", configurationOptions.Locations); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting locations: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-locations").GetDiag()
+	}
+
+	if err = d.Set("versions", configurationOptions.Versions); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting versions: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-versions").GetDiag()
+	}
+
+	if err = d.Set("sizes", configurationOptions.Sizes); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting sizes: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-sizes").GetDiag()
+	}
 	return nil
 }
 

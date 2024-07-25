@@ -97,6 +97,16 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"confidential_compute_mode": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+						},
+						"enable_secure_boot": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+						},
 						isInstanceAvailablePolicyHostFailure: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -251,6 +261,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 										Computed:    true,
 										Description: "Identifies a version of a catalog offering by a unique CRN property",
 									},
+									isInstanceTemplateCatalogOfferingPlanCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this catalog offering version's billing plan",
+									},
 								},
 							},
 						},
@@ -384,6 +399,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 															},
 														},
 													},
+												},
+												"protocol_state_filtering_mode": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The protocol state filtering mode used for this virtual network interface.",
 												},
 												"resource_group": &schema.Schema{
 													Type:        schema.TypeList,
@@ -572,6 +592,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 															},
 														},
 													},
+												},
+												"protocol_state_filtering_mode": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The protocol state filtering mode used for this virtual network interface.",
 												},
 												"resource_group": &schema.Schema{
 													Type:        schema.TypeList,
@@ -889,9 +914,19 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 				version := insTempCatalogOffering.Version.(*vpcv1.CatalogOfferingVersionIdentity)
 				currentOffering[isInstanceTemplateCatalogOfferingVersionCrn] = *version.CRN
 			}
+			if insTempCatalogOffering.Plan != nil {
+				plan := insTempCatalogOffering.Plan.(*vpcv1.CatalogOfferingVersionPlanIdentity)
+				if plan.CRN != nil && *plan.CRN != "" {
+					currentOffering[isInstanceTemplateCatalogOfferingPlanCrn] = *plan.CRN
+				}
+			}
 			catOfferingList = append(catOfferingList, currentOffering)
 			template[isInstanceTemplateCatalogOffering] = catOfferingList
 		}
+
+		template["confidential_compute_mode"] = instance.ConfidentialComputeMode
+
+		template["enable_secure_boot"] = instance.EnableSecureBoot
 
 		if instance.MetadataService != nil {
 			template[isInstanceTemplateMetadataServiceEnabled] = *instance.MetadataService.Enabled

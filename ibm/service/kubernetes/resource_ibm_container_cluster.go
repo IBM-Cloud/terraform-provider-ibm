@@ -690,7 +690,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 	d.SetId(cls.ID)
 
-	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
+	targetEnvV2, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -929,7 +929,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
+	targetEnvV2, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}

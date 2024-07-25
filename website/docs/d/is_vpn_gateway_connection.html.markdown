@@ -59,6 +59,8 @@ In addition to all argument references listed, you can access the following attr
 	- `interval` - (Integer) Dead Peer Detection interval in seconds.
 	- `timeout` - (Integer) Dead Peer Detection timeout in seconds. Must be at least the interval.
 
+- `establish_mode` - (String) The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.
+
 - `href` - (String) The VPN connection's canonical URL.
 
 - `ike_policy` - (List) The IKE policy. If absent, [auto-negotiation isused](https://cloud.ibm.com/docs/vpc?topic=vpc-using-vpn&interface=ui#ike-auto-negotiation-phase-1).
@@ -83,9 +85,26 @@ In addition to all argument references listed, you can access the following attr
 
 - `local_cidrs` - (List) The local CIDRs for this resource.
 
+- `local` - (List) 
+	Nested schema for **local**:
+	- `ike_identities` - (List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
+		Nested schema for **ike_identities**:
+		- `type` - (String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (String) The IKE identity FQDN value.
+
 - `mode` - (String) The mode of the VPN gateway.
 
 - `name` - (String) The user-defined name for this VPN gateway connection.
+
+- `peer` - (List) 
+	Nested schema for **peer**:
+	- `address` - (String) The IP address of the peer VPN gateway for this connection.
+	- `fqdn` - (String) The FQDN of the peer VPN gateway for this connection.
+	- `ike_identity` - (List) The peer IKE identity.
+		Nested schema for **ike_identity**:
+		- `type` - (String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `value` - (String) The IKE identity FQDN value.
+	- `type` - (String) Indicates whether `peer.address` or `peer.fqdn` is used.
 
 - `peer_address` - (String) The IP address of the peer VPN gateway.
 

@@ -5,9 +5,10 @@ package codeengine_test
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -19,15 +20,15 @@ func TestAccIbmCodeEngineDomainMappingDataSourceBasic(t *testing.T) {
 
 	projectID := acc.CeProjectId
 	domainMappingName := acc.CeDomainMappingName
-	domainMappingTLSKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
-	domainMappingTLSCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
+	domainMappingTLSKey, _ := os.ReadFile(acc.CeTLSKeyFilePath)
+	domainMappingTLSCert, _ := os.ReadFile(acc.CeTLSCertFilePath)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCodeEngine(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineDomainMappingDataSourceConfigBasic(projectID, appName, domainMappingTLSKey, domainMappingTLSCert, secretName, domainMappingName),
+			{
+				Config: testAccCheckIbmCodeEngineDomainMappingDataSourceConfigBasic(projectID, appName, string(domainMappingTLSKey), string(domainMappingTLSCert), secretName, domainMappingName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance", "href"),
@@ -47,7 +48,7 @@ func TestAccIbmCodeEngineDomainMappingDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineDomainMappingDataSourceConfigBasic(projectID string, appName string, tlsKey string, tslCert string, secretName string, domainMappingName string) string {
+func testAccCheckIbmCodeEngineDomainMappingDataSourceConfigBasic(projectID string, appName string, tlsKey string, tlsCert string, secretName string, domainMappingName string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -60,7 +61,9 @@ func testAccCheckIbmCodeEngineDomainMappingDataSourceConfigBasic(projectID strin
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables
+					run_env_variables,
+					probe_liveness,
+					probe_readiness
 				]
 			}
 		}
@@ -103,5 +106,5 @@ EOT
 			name = ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance.name
 		}
 
-	`, projectID, appName, tlsKey, tslCert, secretName, domainMappingName)
+	`, projectID, appName, tlsKey, tlsCert, secretName, domainMappingName)
 }

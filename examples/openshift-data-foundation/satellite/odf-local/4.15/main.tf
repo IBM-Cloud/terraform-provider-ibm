@@ -35,6 +35,7 @@ resource "ibm_satellite_storage_configuration" "storage_configuration" {
         "perform-cleanup"= var.performCleanup,
         "disable-noobaa-LB"= var.disableNoobaaLB,
         "encryption-intransit"= var.encryptionInTransit,
+        "worker-pools"=var.workerPools,
         "worker-nodes"= var.workerNodes,
         "add-single-replica-pool" = var.addSingleReplicaPool,
         "taint-nodes" = var.taintNodes,

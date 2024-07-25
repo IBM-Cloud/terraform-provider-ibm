@@ -97,11 +97,37 @@ resource "ibm_is_share" "example-4" {
   replication_cron_spec = "0 */5 * * *"
 }
 ```
+
+## Example share (Create accessor share for an origin share)
+```terraform
+resource "ibm_is_share" "example-4" {
+  allowed_transit_encryption_modes = ["user_managed", "none"]
+  access_control_mode = "security_group"
+  name    = "my-share"
+  size    = 200
+  profile = "dp2"
+  zone    = "au-syd-2"
+}
+resource "ibm_is_share" "example-5" {
+  origin_share {
+    crn = ibm_is_share.example-4.crn
+  }     
+  name                  = "my-replica1"
+}
+resource "ibm_is_share" "example-6" {
+  origin_share {
+    id = ibm_is_share.example-4.id
+  }     
+  name                  = "my-replica1"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
 - `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **security_group**
+- `allowed_transit_encryption_modes` - (Optional, List of string) The transit encryption modes allowed for this share.
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 - `initial_owner` - (Optional, List) The initial owner for the file share.
@@ -115,7 +141,7 @@ The following arguments are supported:
   - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
 
     Nested scheme for `virtual_network_interface`:
-    - `name` - (Required, String) Name for this virtual network interface.
+    - `name` - (Required, String) Name for this virtual network interface. The name must not be used by another virtual network interface in the VPC.
     - `id` - (Optional) The ID for virtual network interface. Mutually exclusive with other `virtual_network_interface` arguments.
     
     ~> **Note**
@@ -130,6 +156,12 @@ The following arguments are supported:
         - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
         - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
         - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
     - `resource_group` - (Optional, String) The ID of the resource group to use.
     - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
     - `subnet` - (Optional, string) The associated subnet.
@@ -145,6 +177,10 @@ The following arguments are supported:
   ~> **Note**
     `virtual_network_interface` and `vpc` are mutually exclusive and one of them must be provided.
 - `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
+- `origin_share` - (Optional, List) The origin share this accessor share is referring to.
+  Nested schema for **origin_share**:
+	- `crn` - (Optional, String) The CRN for this file share.
+	- `id` - (Optional, String) The unique identifier for this file share.
 - `profile` - (Required, string) The globally unique name for this share profile.
 
   ~> **NOTE** 
@@ -158,7 +194,7 @@ The following arguments are supported:
     - `name` - (Optional, String)
     - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
       Nested scheme for `virtual_network_interface`:
-      - `name` - (Required, String) Name for this virtual network interface.
+      - `name` - (Required, String) Name for this virtual network interface. The name must not be used by another virtual network interface in the VPC.
       - `id` - (Optional) The ID for virtual network interface. Mutually exclusive with other `virtual_network_interface` arguments.
       
       ~> **Note**
@@ -172,6 +208,12 @@ The following arguments are supported:
         - `address` - (Optional, Forces new resource, String) The IP address to reserve. If unspecified, an available address on the subnet will automatically be selected.
         - `name`- (Optional, String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with ibm- are reserved for provider-owned resources, and are not allowed.
         - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+      - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
       - `resource_group` - (Optional, String) The ID of the resource group to use.
       - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
       - `subnet` - (Optional, string) The associated subnet.
@@ -200,6 +242,13 @@ The following attributes are exported:
 
 - `access_control_mode` - (Boolean) The access control mode for the share.
 - `access_tags`  - (String) Access management tags associated to the share.
+- `accessor_binding_role` - (String) The accessor binding role of this file share:- `none`: This file share is not participating in access with another file share- `origin`: This file share is the origin for one or more file shares  (which may be in other accounts)- `accessor`: This file share is providing access to another file share  (which may be in another account).
+- `accessor_bindings` - (List) The accessor bindings for this file share. Each accessor binding identifies a resource (possibly in another account) with access to this file share's data.
+  Nested schema for **accessor_bindings**:
+	- `href` - (String) The URL for this share accessor binding.
+	- `id` - (String) The unique identifier for this share accessor binding.
+	- `resource_type` - (String) The resource type.
+- `allowed_transit_encryption_modes` - (List of string) The transit encryption modes allowed for this share.
 - `created_at` - (String) The date and time that the file share is created.
 - `crn` - (String) The CRN for this share.
 - `encryption` - (String) The type of encryption used for this file share.
@@ -243,6 +292,26 @@ Nested `latest_sync` blocks have the following structure:
     - `resource_type` - (String) Resource type of this virtual network interface.
     - `security_groups`- (List of string) The security groups to use for this virtual network interface.
     - `subnet` - (string) The associated subnet.
+- `origin_share` - (Optional, List) The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.
+  Nested schema for **origin_share**:
+	- `crn` - (Computed, String) The CRN for this file share.
+	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (Computed, String) Link to documentation about deleted resources.
+	- `href` - (Computed, String) The URL for this file share.
+	- `id` - (Computed, String) The unique identifier for this file share.
+	- `name` - (Computed, String) The name for this share. The name is unique across all shares in the region.
+	- `remote` - (Optional, List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
+	  Nested schema for **remote**:
+		- `account` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisaccount, and identifies the owning account.
+		  Nested schema for **account**:
+			- `id` - (Computed, String) The unique identifier for this account.
+			- `resource_type` - (Computed, String) The resource type.
+		- `region` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisregion, and identifies the native region.
+		  Nested schema for **region**:
+			- `href` - (Computed, String) The URL for this region.
+			- `name` - (Computed, String) The globally unique name for this region.
+	- `resource_type` - (Computed, String) The resource type.
 - `resource_type` - (String) The type of resource referenced.
 - `replica_share` - (List) Configuration for a replica file share to create and associate with this file share.
   - `crn` - (String) CRN of replica share

@@ -674,136 +674,101 @@ data "ibm_cis_ruleset_rules_by_tag" "test"{
 }  
 
 # Update ruleset
-resource "ibm_cis_ruleset" "tests" {
+resource "ibm_cis_ruleset" "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
+    ruleset_id = "943c5da120114ea5831dc1edf8b6f769"
     rulesets {
       description = "Entry Point Ruleset"
       rules {
-      {
+        id = ruleset.rule.id
         action =  "execute"
-        action_parameters  {
-          id : var.to_be_deployed_ruleset.id
-          overrides  {
+        action_parameters {
+          id = var.to_be_deployed_ruleset.id
+          overrides {
             action = "log"
             enabled = true
-            rules {
-              {
-                id = var.overriden_rule.id
+            override_rules {
+                rule_id = var.overriden_rule.id
                 enabled = true
-                action = "log"
-              }
+                action = "block"
             }
             categories {
-              {
                 category = "wordpress"
                 enabled = true
-                action = "log"
-              }
+                action = "block"
             }
           }
         }
         description = var.rule.description
-        enabled = true
-        expression = "ip.src ne 1.1.1.1"
-        ref = var.reference_rule.id
-        position  {
-          index = 1
-          after = var.after_rule.id
-          before = var.before_rule.id
-        }
+        enabled = false
+        expression = "true"
       }
     }
   }
-}
+
+
 
 # Update ruleset entry point 
-resource "ibm_cis_ruleset_entrypoint_version" "tests" {
+resource "ibm_cis_ruleset_entrypoint_version" "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     phase = "http_request_firewall_managed"
     rulesets {
-  
       description = "Entry Point ruleset"
       rules {
-      {
         action =  "execute"
         action_parameters  {
-          id : var.to_be_deployed_ruleset.id
+          id = var.to_be_deployed_ruleset.id
           overrides  {
             action = "log"
             enabled = true
-            rules {
-              {
-                id = var.overriden_rule.id
+            override_rules {
+                rule_id = var.overriden_rule.id
                 enabled = true
-                action = "log"
-              }
+                action = "block"
             }
             categories {
-              {
                 category = "wordpress"
                 enabled = true
                 action = "log"
-              }
             }
           }
         }
         description = var.rule.description
         enabled = true
         expression = "ip.src ne 1.1.1.1"
-        ref = var.reference_rule.id
-        position  {
-          index = 1
-          after = var.after_rule.id
-          before = var.before_rule.id
-        }
       }
     }
   }
-}
 
 # Update ruleset rule
-resource "ibm_cis_ruleset_rule" "tests" {
+resource "ibm_cis_ruleset_rule" "config" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
-    ruleset_id = "dcdec3fe0cbe41edac08619503da8de5"
-    rules {
-    {
-      action =  "execute"
-      action_parameters  {
-        id : var.to_be_deployed_ruleset.id
-        overrides  {
-          action = "log"
-          enabled = true
-          rules {
-            {
-              id = var.overriden_rule.id
+    ruleset_id = "943c5da120114ea5831dc1edf8b6f769"
+      rule {
+        action =  "execute"
+        action_parameters  {
+          id = var.to_be_deployed_ruleset.id
+          overrides {
+            action =  "block"
+            enabled = true
+            override_rules {
+              rule_id = var.overriden_rule.id
               enabled = true
-              action = "log"
+              action = "block"
             }
-          }
-          categories {
-            {
+            categories {
               category = "wordpress"
               enabled = true
-              action = "log"
+              action = "block"
             }
           }
         }
+        description = var.rule.description
+        expression = "true"
       }
-      description = var.rule.description
-      enabled = true
-      expression = "ip.src ne 1.1.1.1"
-      ref = var.reference_rule.id
-      position  {
-        index = 1
-        after = <id of any existing rule>
-        before = <id of any existing rule>
-      }
-    }
-  }
 }
 
 # Detach ruleset version
@@ -812,4 +777,32 @@ resource "ibm_cis_ruleset_version_detach" "tests" {
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     ruleset_id = "<id of the ruleset>"
     version = "<ruleset version>"
+}
+
+# Order Advanced Certificate Pack
+resource "ibm_cis_advanced_certificate_pack_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hosts     = ["example.com"]
+  certificate_authority = "lets_encrypt"
+  cloudflare_branding = false
+  validation_method = "txt"
+  validity = 90
+}
+
+# Order Origin Certificate
+resource "ibm_cis_origin_certificate_order" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  hostnames     = ["example.com"]
+  request_type = "origin-rsa"
+  requested_validity = 5475
+  csr = "-----BEGIN CERTIFICATE REQUEST-----\nMIICxzCC***TA67sdbcQ==\n-----END CERTIFICATE REQUEST-----"
+}
+
+# Get Origin Certificates
+data ibm_cis_origin_certificates "test" {
+  cis_id    = ibm_cis.instance.id
+  domain_id = ibm_cis_domain.example.id
+  certificate_id = "25392180178235735583993116186144990011711092749"
 }

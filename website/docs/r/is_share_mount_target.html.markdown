@@ -116,7 +116,7 @@ The following arguments are supported:
 
 - `share` - (Required, String) The file share identifier.
 - `virtual_network_interface` (Optional, List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is `security_group`.
-  - `name` - (Required, String) Name for this virtual network interface.
+  - `name` - (Required, String) Name for this virtual network interface. The name must not be used by another virtual network interface in the VPC.
   Nested scheme for `virtual_network_interface`:
   - `id` - (Optional) The ID for virtual network interface. Mutually exclusive with other `virtual_network_interface` arguments.
   
@@ -134,7 +134,12 @@ The following arguments are supported:
 
   ~> **Note**
     Within `primary_ip`, `reserved_ip` is mutually exclusive to  `auto_delete`, `address` and `name`
+  - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
 
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
   - `resource_group` - (Optional, String) The ID of the resource group to use.
   - `security_groups`- (Optional, List of string) The security groups to use for this virtual network interface.
   - `subnet` - (Optional, string) The associated subnet.

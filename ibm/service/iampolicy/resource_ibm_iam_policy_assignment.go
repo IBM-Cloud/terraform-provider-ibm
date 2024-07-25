@@ -66,54 +66,6 @@ func ResourceIBMIAMPolicyAssignment() *schema.Resource {
 					},
 				},
 			},
-			"options": {
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "The set of properties required for a policy assignment.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"root": {
-							Type:     schema.TypeList,
-							MinItems: 1,
-							MaxItems: 1,
-							Required: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"requester_id": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"assignment_id": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Passed in value to correlate with other assignments.",
-									},
-									"template": {
-										Type:     schema.TypeList,
-										Optional: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The template id where this policy is being assigned from.",
-												},
-												"version": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The template version where this policy is being assigned from.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -304,11 +256,6 @@ func resourceIBMPolicyAssignmentCreate(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 	createPolicyTemplateAssignmentOptions.SetTarget(targetModel)
-	optionsModel, err := ResourceIBMPolicyAssignmentMapToPolicyAssignmentV1Options(d.Get("options.0").(map[string]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	createPolicyTemplateAssignmentOptions.SetOptions(optionsModel)
 	var templates []iampolicymanagementv1.AssignmentTemplateDetails
 	for _, v := range d.Get("templates").([]interface{}) {
 		value := v.(map[string]interface{})
@@ -367,13 +314,6 @@ func resourceIBMPolicyAssignmentRead(context context.Context, d *schema.Resource
 
 	if err = d.Set("target", targetMap); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting target: %s", err))
-	}
-	optionsMap, err := ResourceIBMPolicyAssignmentPolicyAssignmentV1OptionsToMap(assignmentDetails.Options)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("options", []map[string]interface{}{optionsMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting options: %s", err))
 	}
 	if !core.IsNil(assignmentDetails.AccountID) {
 		if err = d.Set("account_id", assignmentDetails.AccountID); err != nil {
@@ -512,45 +452,6 @@ func ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(modelMap map[string
 	}
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMPolicyAssignmentMapToPolicyAssignmentV1Options(modelMap map[string]interface{}) (*iampolicymanagementv1.PolicyAssignmentV1Options, error) {
-	model := &iampolicymanagementv1.PolicyAssignmentV1Options{}
-	RootModel, err := ResourceIBMPolicyAssignmentMapToPolicyAssignmentV1OptionsRoot(modelMap["root"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Root = RootModel
-	return model, nil
-}
-
-func ResourceIBMPolicyAssignmentMapToPolicyAssignmentV1OptionsRoot(modelMap map[string]interface{}) (*iampolicymanagementv1.PolicyAssignmentV1OptionsRoot, error) {
-	model := &iampolicymanagementv1.PolicyAssignmentV1OptionsRoot{}
-	if modelMap["requester_id"] != nil && modelMap["requester_id"].(string) != "" {
-		model.RequesterID = core.StringPtr(modelMap["requester_id"].(string))
-	}
-	if modelMap["assignment_id"] != nil && modelMap["assignment_id"].(string) != "" {
-		model.AssignmentID = core.StringPtr(modelMap["assignment_id"].(string))
-	}
-	if modelMap["template"] != nil && len(modelMap["template"].([]interface{})) > 0 {
-		TemplateModel, err := ResourceIBMPolicyAssignmentMapToPolicyAssignmentV1OptionsRootTemplate(modelMap["template"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Template = TemplateModel
-	}
-	return model, nil
-}
-
-func ResourceIBMPolicyAssignmentMapToPolicyAssignmentV1OptionsRootTemplate(modelMap map[string]interface{}) (*iampolicymanagementv1.PolicyAssignmentV1OptionsRootTemplate, error) {
-	model := &iampolicymanagementv1.PolicyAssignmentV1OptionsRootTemplate{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["version"] != nil && modelMap["version"].(string) != "" {
-		model.Version = core.StringPtr(modelMap["version"].(string))
 	}
 	return model, nil
 }

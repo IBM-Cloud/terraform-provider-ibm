@@ -40,7 +40,7 @@ https://cloud.ibm.com/docs/schematics?topic=schematics-get-started-terraform
 The default input.tfvars is given below, the user should just change the value of the parameters in accorandance to their requirment.
 
 ```hcl
-# Common for both storage configuration and assignment 
+# Common for both storage configuration and assignment
 ibmcloud_api_key = ""
 location = "" #Location of your storage configuration and assignment
 configName = "" #Name of your storage configuration
@@ -66,6 +66,7 @@ numOfOsd = "1"
 ocsUpgrade = "false"
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-5iops-tier"
+workerPools = null
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false
@@ -103,11 +104,13 @@ The following variables in the `input.tfvars` file can be edited
 
 * numOfOsd - To scale your storage
 * workerNodes - To increase the number of Worker Nodes with ODF
+* workerPools - To increase the number of Worker Nodes with ODF by including new workerpools
 
 ```hcl
 numOfOsd = "1" -> "2"
 workerNodes = null -> "worker_1_ID,worker_2_ID"
 updateConfigRevision = true
+workerPools = "workerpool_1" -> "workerpool_1,workerpool_2"
 ```
 In this example we set the `updateConfigRevision` parameter to true in order to update our storage assignment with the latest configuration revision i.e the OcsCluster CRD is updated with the latest changes.
 
@@ -115,6 +118,11 @@ You could also use `updateAssignments` to directly update the storage configurat
 
 ### Upgrade of ODF
 
+**Step 1:**
+Follow the [worker upgrade documentation](https://cloud.ibm.com/docs/satellite?topic=satellite-sat-storage-odf-update&interface=ui) from step 1 to step 7 to perform worker upgrade.
+
+**Step 2:**
+Follow the below steps to upgrade ODF to next version.
 The following variables in the `input.tfvars` file should be changed in order to upgrade the ODF add-on and the Ocscluster CRD.
 
 * storageTemplateVersion - Specify the version you wish to upgrade to
@@ -170,6 +178,7 @@ Note this operation deletes the existing configuration and it's respective assig
 | kmsTokenUrl | The HPCS Token URL | `string` | no | null
 | ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
+| workerPools | Provide the names/ID of the workerpool on which to install ODF. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
 | taintNodes | Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster. | `bool` | no | false
@@ -185,5 +194,6 @@ Refer - https://cloud.ibm.com/docs/satellite?topic=satellite-storage-odf-remote&
 ## Note
 
 * Users should only change the values of the variables within quotes, variables should be left untouched with the default values if they are not set.
+* `workerPools` takes a string containing comma separated values of the names of the workerpool you wish to enable ODF on. Specify either workerpool or worker nodes to select storage nodes. If none of them specified, ODF will install on all workers
 * `workerNodes` takes a string containing comma separated values of the names of the worker nodes you wish to enable ODF on.
 * During ODF Storage Template Update, it is recommended to delete all terraform related assignments before handed, as their lifecycle will be affected, during update new storage assignments are made back internally with new UUIDs.

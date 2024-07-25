@@ -31,13 +31,13 @@ func ResourceIbmLogsE2m() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_e2m", "name"),
-				Description:  "E2M name.",
+				Description:  "Name of the E2M.",
 			},
 			"description": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_e2m", "description"),
-				Description:  "E2m description.",
+				Description:  "Description of the E2M.",
 			},
 			"metric_labels": &schema.Schema{
 				Type:        schema.TypeList,
@@ -48,12 +48,12 @@ func ResourceIbmLogsE2m() *schema.Resource {
 						"target_label": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "metric label target label.",
+							Description: "Metric label target alias name.",
 						},
 						"source_field": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "metric label source field.",
+							Description: "Metric label source field.",
 						},
 					},
 				},
@@ -67,47 +67,45 @@ func ResourceIbmLogsE2m() *schema.Resource {
 						"target_base_metric_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "target metric field.",
+							Description: "Target metric field alias name.",
 						},
 						"source_field": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "source field.",
+							Description: "Source field.",
 						},
 						"aggregations": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "represents Aggregation type list.",
+							Description: "Represents Aggregation type list.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"enabled": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
-										Description: "is enabled.",
+										Description: "Is enabled.",
 									},
 									"agg_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Default:     "unspecified",
-										Description: "aggregation type.",
+										Description: "Aggregation type.",
 									},
 									"target_metric_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "target metric field.",
+										Description: "Target metric field alias name.",
 									},
 									"samples": &schema.Schema{
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
-										Description: "e2m sample type metadata.",
+										Description: "E2M sample type metadata.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"sample_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "unspecified",
-													Description: "sample type min/max.",
+													Description: "Sample type min/max.",
 												},
 											},
 										},
@@ -116,13 +114,13 @@ func ResourceIbmLogsE2m() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
-										Description: "e2m aggregate histogram type metadata.",
+										Description: "E2M aggregate histogram type metadata.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"buckets": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
-													Description: "buckets that describe the e2m.",
+													Description: "Buckets of the E2M.",
 													Elem:        &schema.Schema{Type: schema.TypeFloat},
 												},
 											},
@@ -137,43 +135,42 @@ func ResourceIbmLogsE2m() *schema.Resource {
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "unspecified",
 				ValidateFunc: validate.InvokeValidator("ibm_logs_e2m", "type"),
-				Description:  "e2m type.",
+				Description:  "E2M type.",
 			},
 			"logs_query": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "logs query.",
+				Description: "E2M logs query.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"lucene": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "lucene query.",
+							Description: "Lucene query.",
 						},
 						"alias": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "alias.",
+							Description: "Alias.",
 						},
 						"applicationname_filters": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "application name filters.",
+							Description: "Application name filters.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"subsystemname_filters": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "subsystem names filters.",
+							Description: "Subsystem names filters.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"severity_filters": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "severity type filters.",
+							Description: "Severity type filters.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -192,18 +189,18 @@ func ResourceIbmLogsE2m() *schema.Resource {
 			"permutations": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "represents E2M permutations limit.",
+				Description: "Represents the limit of the permutations and if the limit was exceeded.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"limit": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "e2m permutation limit.",
+							Description: "E2M permutation limit.",
 						},
 						"has_exceeded_limit": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "flag to indicate if limit was exceeded.",
+							Description: "Flag to indicate if limit was exceeded.",
 						},
 					},
 				},
@@ -211,7 +208,7 @@ func ResourceIbmLogsE2m() *schema.Resource {
 			"is_internal": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "a flag that represents if the e2m is for internal usage.",
+				Description: "A flag that represents if the e2m is for internal usage.",
 			},
 			"e2m_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -230,7 +227,7 @@ func ResourceIbmLogsE2mValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -239,7 +236,7 @@ func ResourceIbmLogsE2mValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\-\s]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -453,6 +450,7 @@ func resourceIbmLogsE2mUpdate(context context.Context, d *schema.ResourceData, m
 		d.HasChange("metric_fields") ||
 		d.HasChange("type") ||
 		d.HasChange("logs_query") {
+
 		bodyModelMap := map[string]interface{}{}
 		bodyModelMap["name"] = d.Get("name")
 		if _, ok := d.GetOk("description"); ok {
@@ -475,7 +473,7 @@ func resourceIbmLogsE2mUpdate(context context.Context, d *schema.ResourceData, m
 		}
 		convertedModel, err := ResourceIbmLogsE2mMapToEvent2MetricPrototype(bodyModelMap)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_e2m", "create")
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_e2m", "update")
 			return tfErr.GetDiag()
 		}
 		replaceE2mOptions.Event2MetricPrototype = convertedModel

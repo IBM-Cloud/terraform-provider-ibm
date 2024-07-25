@@ -36,6 +36,23 @@ func TestAccIBMIAMPolicyTemplateVersionBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateVersionBasicWithPolcyType(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyTemplateVersionConfigBasicWithPolicyType(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "name", name),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMPolicyTemplateVersionUpdateCommit(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -147,6 +164,27 @@ func testAccCheckIBMPolicyTemplateVersionConfigBasic(name string, serviceName st
 			description = "Template version"
 		}
 	`, name, serviceName, updatedService)
+}
+
+func testAccCheckIBMPolicyTemplateVersionConfigBasicWithPolicyType(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+			}
+		}
+
+		resource "ibm_iam_policy_template_version" "template_version" {
+			template_id = ibm_iam_policy_template.policy_template.template_id
+			policy {
+				type = "access"
+				description = "template description"
+			}
+			description = "Template version"
+		}
+	`, name)
 }
 
 func testAccCheckIBMPolicyTemplateVersionUpdateCommit(name string, serviceName string, updatedService string) string {

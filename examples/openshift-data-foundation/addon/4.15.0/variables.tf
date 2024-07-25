@@ -2,7 +2,7 @@ variable "ibmcloud_api_key" {
 
     type = string
     description = "IBM Cloud API Key"
-  
+
 }
 
 variable "cluster" {
@@ -15,7 +15,7 @@ variable "region" {
 
     type = string
     description = "Enter Cluster Region"
-  
+
 }
 
 variable "odfVersion" {
@@ -23,7 +23,7 @@ variable "odfVersion" {
     type = string
     default = "4.15.0"
     description = "Provide the ODF Version you wish to install on your cluster"
-  
+
 }
 
 variable "numOfOsd" {
@@ -31,7 +31,7 @@ variable "numOfOsd" {
 type = string
 default = "1"
 description = "Number of Osd"
-  
+
 }
 
 variable "osdDevicePaths" {
@@ -48,7 +48,7 @@ variable "ocsUpgrade" {
     default = "false"
     description = "Set to true to upgrade Ocscluster"
 
-  
+
 }
 
 variable "clusterEncryption" {
@@ -62,14 +62,14 @@ variable "billingType" {
     type = string
     default = "advanced"
     description = "Choose between advanced and essentials"
-  
+
 }
 
 variable "ignoreNoobaa" {
     type = bool
     default = false
     description = "Set to true if you do not want MultiCloudGateway"
-  
+
 }
 
 variable "osdSize" {
@@ -82,7 +82,7 @@ variable "osdStorageClassName" {
     type = string
     default = "ibmc-vpc-block-metro-10iops-tier"
     description = "Enter the storage class to be used to provision block volumes for Object Storage Daemon (OSD) pods."
-  
+
 }
 
 variable "autoDiscoverDevices" {
@@ -98,7 +98,7 @@ variable "hpcsEncryption" {
     type = string
     default = "false"
     description = "Set to true to enable HPCS Encryption"
-  
+
 }
 
 variable "hpcsServiceName" {
@@ -113,6 +113,13 @@ variable "hpcsSecretName" {
     type = string
     default = null
     description = "Please provide the HPCS secret name"
+}
+
+variable "workerPools" {
+
+    type = string
+    default =  null
+    description = "A list of the worker pool names where you want to deploy ODF. Either specify workerpool or workernodes to deploy ODF, if not specified ODF will deploy on all nodes"
 }
 
 variable "workerNodes" {
@@ -148,7 +155,7 @@ variable "encryptionInTransit" {
     type = bool
     default = false
     description = "Enter true to enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one."
-  
+
 }
 
 variable "taintNodes" {

@@ -72,6 +72,59 @@ func TestAccIBMContainerWorkerPoolBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerWorkerPoolZeroSize(t *testing.T) {
+
+	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerWorkerPoolZeroSize(clusterName, workerPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "worker_pool_name", workerPoolName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "size_per_zone", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "state", "active"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerWorkerPoolZeroSizeUpdate(clusterName, workerPoolName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "worker_pool_name", workerPoolName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "size_per_zone", "0"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "state", "active"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_worker_pool.test_pool",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccIBMContainerWorkerPoolInvalidSizePerZone(t *testing.T) {
 	workerPoolName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
 	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
@@ -82,7 +135,7 @@ func TestAccIBMContainerWorkerPoolInvalidSizePerZone(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMContainerWorkerPoolInvalidSizePerZone(clusterName, workerPoolName),
-				ExpectError: regexp.MustCompile("must be greater than 0"),
+				ExpectError: regexp.MustCompile("must be non-negative"),
 			},
 		},
 	})
@@ -190,13 +243,79 @@ resource "ibm_container_worker_pool" "test_pool" {
 }`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion, workerPoolName, acc.MachineType)
 }
 
+func testAccCheckIBMContainerWorkerPoolZeroSize(clusterName, workerPoolName string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name            = "%s"
+  datacenter      = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  kube_version    = "%s"
+  wait_till         = "OneWorkerNodeReady"
+  taints {
+	key    = "key1"
+	value  = "value1"
+	effect = "NoSchedule"
+  }
+}
+
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "%s"
+  machine_type     = "%s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 1
+  hardware         = "shared"
+  disk_encryption  = true
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+  taints {
+	key    = "key1"
+	value  = "value1"
+	effect = "NoSchedule"
+  }
+}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion, workerPoolName, acc.MachineType)
+}
+
+func testAccCheckIBMContainerWorkerPoolZeroSizeUpdate(clusterName, workerPoolName string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name            = "%s"
+  datacenter      = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  kube_version    = "%s"
+  wait_till         = "OneWorkerNodeReady"
+}
+
+resource "ibm_container_worker_pool" "test_pool" {
+  worker_pool_name = "%s"
+  machine_type     = "%s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 0
+  hardware         = "shared"
+  disk_encryption  = true
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion, workerPoolName, acc.MachineType)
+}
+
 func testAccCheckIBMContainerWorkerPoolInvalidSizePerZone(clusterName, workerPoolName string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_worker_pool" "test_pool" {
   worker_pool_name = "%s"
   machine_type     = "%s"
   cluster          = "%s"
-  size_per_zone    = 0
+  size_per_zone    = -1
   hardware         = "shared"
   disk_encryption  = true
 

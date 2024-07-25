@@ -5,6 +5,7 @@ package codeengine_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -132,8 +133,8 @@ func TestAccIbmCodeEngineSecretDataSourceSSHAuth(t *testing.T) {
 func TestAccIbmCodeEngineSecretDataSourceTls(t *testing.T) {
 	secretFormat := "tls"
 	secretName := fmt.Sprintf("tf-data-secret-tls-%d", acctest.RandIntRange(10, 1000))
-	tlsKey := decodeBase64EnvVar(acc.CeTLSKey, CeTlsKey)
-	tlsCert := decodeBase64EnvVar(acc.CeTLSCert, CeTlsCert)
+	tlsKey, _ := os.ReadFile(acc.CeTLSKeyFilePath)
+	tlsCert, _ := os.ReadFile(acc.CeTLSCertFilePath)
 
 	projectID := acc.CeProjectId
 
@@ -142,7 +143,7 @@ func TestAccIbmCodeEngineSecretDataSourceTls(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineSecretDataSourceTLSConfigBasic(projectID, tlsKey, tlsCert, secretFormat, secretName),
+				Config: testAccCheckIbmCodeEngineSecretDataSourceTLSConfigBasic(projectID, string(tlsKey), string(tlsCert), secretFormat, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_secret.code_engine_secret_instance", "format", secretFormat),

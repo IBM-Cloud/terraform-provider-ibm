@@ -199,14 +199,30 @@ resource "ibm_is_vpn_gateway" "VPNGateway1" {
   subnet = ibm_is_subnet.subnet1.id
 }
 
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
-  name          = "vpnconn1"
+// Deprecated: peer_address, local_cidrs, peer_cidrs
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1_deprecated" {
+  name          = "vpnconn1-deprecated"
   vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
   peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
   preshared_key = "VPNDemoPassword"
   local_cidrs   = [ibm_is_subnet.subnet1.ipv4_cidr_block]
   peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
   ipsec_policy  = ibm_is_ipsec_policy.example.id
+}
+
+resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
+  name          = "vpnconn1"
+  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
+  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
+  preshared_key = "VPNDemoPassword"
+  peer {
+    address    = ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address : ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address2
+    peer_cidrs = [ibm_is_subnet.subnet2.ipv4_cidr_block]
+  }
+  local {
+    cidrs = [ibm_is_subnet.subnet1.ipv4_cidr_block]
+  }
+  ipsec_policy = ibm_is_ipsec_policy.example.id
 }
 
 resource "ibm_is_ssh_key" "sshkey" {
@@ -751,6 +767,7 @@ resource "ibm_is_instance" "instance8" {
   }
   catalog_offering {
     version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+    plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
   }
   vpc  = ibm_is_vpc.vpc2.id
   zone = "us-south-2"
@@ -761,6 +778,7 @@ resource "ibm_is_instance_template" "instancetemplate3" {
   name = "instancetemplate-3"
   catalog_offering {
     version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+    plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
   }
   profile = var.profile
 
@@ -1592,7 +1610,7 @@ resource "ibm_is_reservation" "example" {
     term = "one_year"
   }
   profile {
-    name = "ba2-2x8"
+    name          = "ba2-2x8"
     resource_type = "instance_profile"
   }
   zone = "us-east-3"

@@ -2,7 +2,7 @@
 ## Please change according to your configuratiom ##
 
 
-# Common for both storage configuration and assignment 
+# Common for both storage configuration and assignment
 ibmcloud_api_key = ""
 location = "" #Location of your storage configuration and assignment
 configName = "" #Name of your storage configuration
@@ -30,6 +30,7 @@ numOfOsd = "1"
 ocsUpgrade = "false"
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-5iops-tier"
+workerPools = null
 workerNodes = null
 encryptionInTransit = false
 disableNoobaaLB = false

@@ -38,32 +38,32 @@ You can specify the following arguments for this resource.
 * `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
 * `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
-* `application_rule` - (Optional, List) rule for matching with application.
+* `application_rule` - (Optional, List) Rule for matching with application.
 Nested schema for **application_rule**:
-	* `name` - (Required, String) value of the rule.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-	* `rule_type_id` - (Required, String) identifier of the rule.
-	  * Constraints: The default value is `unspecified`. Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
-* `archive_retention` - (Optional, List) archive retention definition.
+	* `name` - (Required, String) Value of the rule.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	* `rule_type_id` - (Required, String) Identifier of the rule.
+	  * Constraints: Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
+* `archive_retention` - (Optional, List) Archive retention definition.
 Nested schema for **archive_retention**:
-	* `id` - (Required, String) references archive retention definition.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `description` - (Optional, String) description of policy.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `log_rules` - (Optional, List) log rules.
+	* `id` - (Required, String) References archive retention definition.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+* `description` - (Optional, String) Description of policy.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\-\\s]+$/`.
+* `log_rules` - (Optional, List) Log rules.
 Nested schema for **log_rules**:
-	* `severities` - (Optional, List) source severities to match with.
-	  * Constraints: Allowable list items are: `unspecified`, `debug`, `verbose`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `1` item.
-* `name` - (Required, String) name of policy.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `priority` - (Required, String) the data pipeline sources that match the policy rules will go through.
-  * Constraints: The default value is `type_unspecified`. Allowable values are: `type_unspecified`, `type_block`, `type_low`, `type_medium`, `type_high`.
-* `subsystem_rule` - (Optional, List) rule for matching with application.
+	* `severities` - (Optional, List) Source severities to match with.
+	  * Constraints: Allowable list items are: `unspecified`, `debug`, `verbose`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
+* `name` - (Required, String) Name of policy.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+* `priority` - (Required, String) The data pipeline sources that match the policy rules will go through.
+  * Constraints: Allowable values are: `type_unspecified`, `type_block`, `type_low`, `type_medium`, `type_high`.
+* `subsystem_rule` - (Optional, List) Rule for matching with application.
 Nested schema for **subsystem_rule**:
-	* `name` - (Required, String) value of the rule.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-	* `rule_type_id` - (Required, String) identifier of the rule.
-	  * Constraints: The default value is `unspecified`. Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
+	* `name` - (Required, String) Value of the rule.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	* `rule_type_id` - (Required, String) Identifier of the rule.
+	  * Constraints: Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
 
 ## Attribute Reference
 
@@ -71,14 +71,14 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the logs_policy resource.
 * `policy_id` - The unique identifier of the logs_policy.
-* `company_id` - (Integer) company id.
-* `created_at` - (String) created at timestamp.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `deleted` - (Boolean) soft deletion flag.
-* `enabled` - (Boolean) enabled flag.
-* `order` - (Integer) order of policy in relation to other policies.
-* `updated_at` - (String) updated at timestamp.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+* `company_id` - (Integer) Company ID.
+* `created_at` - (String) Created at date at utc+0.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"$/`.
+* `deleted` - (Boolean) Soft deletion flag.
+* `enabled` - (Boolean) Enabled flag.
+* `order` - (Integer) Order of policy in relation to other policies.
+* `updated_at` - (String) Updated at date at utc+0.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"$/`.
 
 
 ## Import
@@ -87,5 +87,10 @@ You can import the `ibm_logs_policy` resource by using `id`. `id` combination of
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_policy.logs_policy <region>/<instance_id>/<policy_id>;
+$ terraform import ibm_logs_policy.logs_policy < region >/< instance_id >/< policy_id >;
 </pre>
+
+# Example
+```
+$ terraform import ibm_logs_policy.logs_policy eu-gb/3dc02998-0b50-4ea8-b68a-4779d716fa1f/3dc02998-0b50-4ea8-b68a-4779d716fa1f
+```

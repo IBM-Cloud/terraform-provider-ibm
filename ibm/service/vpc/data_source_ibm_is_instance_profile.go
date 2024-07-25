@@ -4,6 +4,8 @@
 package vpc
 
 import (
+	"fmt"
+
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -25,6 +27,60 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 			isInstanceProfileName: {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+
+			"confidential_compute_modes": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default confidential compute mode for this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported confidential compute modes.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+
+			"secure_boot_modes": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The default secure boot mode for this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported `enable_secure_boot` values for an instance using this profile.",
+							Elem: &schema.Schema{
+								Type: schema.TypeBool,
+							},
+						},
+					},
+				},
 			},
 
 			isInstanceProfileFamily: {
@@ -709,6 +765,31 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	if profile.Status != nil {
 		d.Set("status", profile.Status)
 	}
+
+	confidentialComputeModes := []map[string]interface{}{}
+	if profile.ConfidentialComputeModes != nil {
+		modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedConfidentialComputeModesToMap(profile.ConfidentialComputeModes)
+		if err != nil {
+			return (err)
+		}
+		confidentialComputeModes = append(confidentialComputeModes, modelMap)
+	}
+	if err = d.Set("confidential_compute_modes", confidentialComputeModes); err != nil {
+		return fmt.Errorf("Error setting confidential_compute_modes %s", err)
+	}
+
+	secureBootModes := []map[string]interface{}{}
+	if profile.SecureBootModes != nil {
+		modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedSecureBootModesToMap(profile.SecureBootModes)
+		if err != nil {
+			return err
+		}
+		secureBootModes = append(secureBootModes, modelMap)
+	}
+	if err = d.Set("secure_boot_modes", secureBootModes); err != nil {
+		return fmt.Errorf("Error setting secure_boot_modes %s", err)
+	}
+
 	if profile.Bandwidth != nil {
 		err = d.Set("bandwidth", dataSourceInstanceProfileFlattenBandwidth(*profile.Bandwidth.(*vpcv1.InstanceProfileBandwidth)))
 		if err != nil {
@@ -1334,4 +1415,20 @@ func dataSourceInstanceProfileNumaCountToMap(numaItem vpcv1.InstanceProfileNumaC
 	}
 
 	return numaMap
+}
+
+func dataSourceIBMIsInstanceProfileInstanceProfileSupportedSecureBootModesToMap(model *vpcv1.InstanceProfileSupportedSecureBootModes) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = model.Default
+	modelMap["type"] = model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func dataSourceIBMIsInstanceProfileInstanceProfileSupportedConfidentialComputeModesToMap(model *vpcv1.InstanceProfileSupportedConfidentialComputeModes) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = model.Default
+	modelMap["type"] = model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
 }

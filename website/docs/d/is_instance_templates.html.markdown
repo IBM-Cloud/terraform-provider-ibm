@@ -44,17 +44,19 @@ You can access the following attribute references after your data source is crea
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
 		- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags).
-
+	- `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.
 	- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
 
 		Nested scheme for `catalog_offering`:
 
 		- `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
 		- `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+		- `plan_crn` - (String) The CRN for this catalog offering version's billing plan
 			
 	- `crn` - (String) The CRN of the instance template.
 	- `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 
 	- `default_trusted_profile_target` - (String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
+	- `enable_secure_boot` - (Boolean) Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.
 	- `href` - (String) The URL of the instance template.
 	- `id` - (String) The ID of the instance template.
 	- `image` - (String) The ID of the image to create the template.
@@ -90,6 +92,7 @@ You can access the following attribute references after your data source is crea
 				- `id` - (String) The unique identifier for this reserved IP.
 				- `name` - (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
 			- `name` - (String) The name for this virtual network interface. The name must not be used by another virtual network interface in the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words. Names beginning with `ibm-` are reserved for provider-owned resources, and are not allowed.
+			- `protocol_state_filtering_mode` - (String) The protocol state filtering mode to use for this virtual network interface.
 			- `primary_ip` - (List) The primary IP address to bind to the virtual network interface. May be either areserved IP identity, or a reserved IP prototype object which will be used to create anew reserved IP.If a reserved IP identity is provided, the specified reserved IP must be unbound.If a reserved IP prototype object with an address is provided, the address must beavailable on the virtual network interface's subnet. If no address is specified,an available address on the subnet will be automatically selected and reserved.
 				Nested schema for **primary_ip**:
 				- `address` - (String) The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.
@@ -143,6 +146,7 @@ You can access the following attribute references after your data source is crea
 				- `id` - (String) The unique identifier for this reserved IP.
 				- `name` - (String) The name for this reserved IP. The name must not be used by another reserved IP in the subnet. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed. If unspecified, the name will be a hyphenated list of randomly-selected words.
 			- `name` - (String) The name for this virtual network interface. The name must not be used by another virtual network interface in the VPC. If unspecified, the name will be a hyphenated list of randomly-selected words. Names beginning with `ibm-` are reserved for provider-owned resources, and are not allowed.
+			- `protocol_state_filtering_mode` - (String) The protocol state filtering mode to use for this virtual network interface.
 			- `primary_ip` - (List) The primary IP address to bind to the virtual network interface. May be either areserved IP identity, or a reserved IP prototype object which will be used to create anew reserved IP.If a reserved IP identity is provided, the specified reserved IP must be unbound.If a reserved IP prototype object with an address is provided, the address must beavailable on the virtual network interface's subnet. If no address is specified,an available address on the subnet will be automatically selected and reserved.
 				Nested schema for **primary_ip**:
 				- `address` - (String) The IP address to reserve, which must not already be reserved on the subnet.If unspecified, an available address on the subnet will automatically be selected.

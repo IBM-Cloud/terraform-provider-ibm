@@ -46,6 +46,30 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
+	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyAssignmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyAssignmentS2SConfigBasic(name, acc.TargetAccountId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.resource.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.resource.0.attributes.1.value", "true"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.subject.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.subject.0.attributes.1.value", "backup-policy"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPolicyAssignmentConfigBasic(name string, targetId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_policy_template" "policy_s2s_template" {
@@ -77,13 +101,6 @@ func testAccCheckIBMPolicyAssignmentConfigBasic(name string, targetId string) st
 				type = "Account"
 				id = "%s"
 			}
-
-			options {
-				root { 
-					requester_id = "orchestrator"
-					assignment_id =  "test"
-				}
-			}
 			templates{
 				id = ibm_iam_policy_template.policy_s2s_template.template_id 
 				version = ibm_iam_policy_template.policy_s2s_template.version
@@ -91,9 +108,59 @@ func testAccCheckIBMPolicyAssignmentConfigBasic(name string, targetId string) st
 		}`, name, targetId)
 }
 
-func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) string {
+func testAccCheckIBMPolicyAssignmentS2SConfigBasic(name string, targetId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_policy_template" "policy_s2s_template" {
+			name = "%s"
+			policy {
+				type = "authorization"
+				description = "Test terraform enterprise S2S"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "is"
+					}
+					attributes {
+						key = "volumeId"
+						operator = "stringExists"
+						value = "true"
+					}
+				}
+				subject {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "is"
+					}
+					attributes {
+						key = "resourceType"
+						operator = "stringEquals"
+						value = "backup-policy"
+					}
+				}
+				roles = ["Operator"]
+			}
+			committed=true
+		}
+		resource "ibm_iam_policy_assignment" "policy_assignment" {
+			version = "1.0"
+			target  ={
+				type = "Account"
+				id = "%s"
+			}
+			templates{
+				id = ibm_iam_policy_template.policy_s2s_template.template_id 
+				version = ibm_iam_policy_template.policy_s2s_template.version
+			}
+		}
+		
+	`, name, targetId)
+}
+
+func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_policy_template" "policy_s2stemplate" {
 			name = "%s"
 			policy {
 				type = "authorization"
@@ -147,17 +214,10 @@ func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) s
 				id = "%s"
 			}
 
-			options {
-				root { 
-					requester_id = "orchestrator"
-					assignment_id =  "test"
-				}
-			}
 			templates{
-				id = ibm_iam_policy_template.policy_s2s_template.template_id 
-				version = ibm_iam_policy_template.policy_s2s_template.version
+				id = ibm_iam_policy_template.policy_s2stemplate.template_id 
+				version = ibm_iam_policy_template.policy_s2stemplate.version
 			}
-			template_version=ibm_iam_policy_template_version.template_version.version
 		}`, name, targetId)
 }
 

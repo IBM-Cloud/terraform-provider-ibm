@@ -67,12 +67,6 @@ resource "ibm_iam_policy_assignment" "policy_assignment" {
 		id = "<target-accountId>"
 	}
 	
-	options {
-	  root { 
-	    requester_id = "orchestrator"
-	    assignment_id =  "test"
-	  }
-	}
 	templates{
 		id = ibm_iam_policy_template.policy_s2s_template.template_id 
 		version = ibm_iam_policy_template.policy_s2s_template.version
@@ -89,25 +83,17 @@ You can specify the following arguments for this resource.
 
 * `accept_language` - (Optional, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
   * Constraints: The default value is `default`. The minimum length is `1` character.
-* `options` - (Required, List) The set of properties required for a policy assignment.
-Nested schema for **options**:
-	* `root` - (Required, List)
-	Nested schema for **root**:
-		* `assignment_id` - (Optional, String) Passed in value to correlate with other assignments.
-		  * Constraints: The maximum length is `122` characters. The minimum length is `1` character.
-		* `requester_id` - (Required, String)
-		  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^((IBMid)|(iam-ServiceId)|(AccessGroupId)|(iam-Profile)|(SL)|([a-zA-Z0-9]{3,10}))-/`.
-		* `template` - (Optional, List)
-		Nested schema for **template**:
-			* `id` - (Required, String) The template id where this policy is being assigned from.
-			  * Constraints: The maximum length is `300` characters. The minimum length is `1` character.
-			* `version` - (Required, String) The template version where this policy is being assigned from.
-			  * Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
+* `templates` - (Required, List) The set of properties required for a policy assignment.
+Nested schema for **templates**:
+	* `id` - (Required, String) ID of the template.
+		* Constraints: The maximum length is `51` characters. The minimum length is `1` character. The value must match regular expression `/^policyTemplate-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
+	* `version` - (Required, String) template version .
+		* Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 * `target` - (Required, List) assignment target account and type.
 Nested schema for **target**:
-	* `id` - (Optional, String) ID of the target account.
+	* `id` - (Required, String) ID of the target account.
 	  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
-	* `type` - (Optional, String) Assignment target type.
+	* `type` - (Required, String) Assignment target type.
 	  * Constraints: Allowable values are: `Account`. The maximum length is `30` characters. The minimum length is `1` character.
 * `version` - (Required, String) specify version of response body format.
   * Constraints: Allowable values are: `1.0`. The minimum length is `1` character.

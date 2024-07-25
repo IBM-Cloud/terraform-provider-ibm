@@ -152,6 +152,13 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "name"),
 				Description:  "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 			},
+			"protocol_state_filtering_mode": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+				Description:  "The protocol state filtering mode used for this virtual network interface.",
+			},
 			"primary_ip": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -374,6 +381,15 @@ func ResourceIBMIsVirtualNetworkInterfaceValidator() *validate.ResourceValidator
 			MaxValueLength:             63,
 		},
 	)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "protocol_state_filtering_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "auto, enabled, disabled",
+		},
+	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_virtual_network_interface", Schema: validateSchema}
 	return &resourceValidator
@@ -410,6 +426,9 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 	}
 	if _, ok := d.GetOk("name"); ok {
 		createVirtualNetworkInterfaceOptions.SetName(d.Get("name").(string))
+	}
+	if psFilteringIntf, ok := d.GetOk("protocol_state_filtering_mode"); ok {
+		createVirtualNetworkInterfaceOptions.SetProtocolStateFilteringMode(psFilteringIntf.(string))
 	}
 	if _, ok := d.GetOk("primary_ip"); ok {
 		autodelete := true
@@ -530,6 +549,9 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		if err = d.Set("name", virtualNetworkInterface.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
 		}
+	}
+	if !core.IsNil(virtualNetworkInterface.ProtocolStateFilteringMode) {
+		d.Set("protocol_state_filtering_mode", virtualNetworkInterface.ProtocolStateFilteringMode)
 	}
 	if !core.IsNil(virtualNetworkInterface.PrimaryIP) {
 		autodelete := d.Get("primary_ip.0.auto_delete").(bool)
@@ -668,6 +690,12 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
 		patchVals.Name = &newName
+		hasChange = true
+	}
+
+	if d.HasChange("protocol_state_filtering_mode") {
+		pStateFilteringMode := d.Get("protocol_state_filtering_mode").(string)
+		patchVals.ProtocolStateFilteringMode = &pStateFilteringMode
 		hasChange = true
 	}
 

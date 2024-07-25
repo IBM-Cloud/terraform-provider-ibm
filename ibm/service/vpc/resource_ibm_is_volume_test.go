@@ -78,6 +78,35 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+func TestAccIBMISVolume_snapshotcrn(t *testing.T) {
+	var vol string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeConfigSnapshotCrn(vpcname, subnetname, sshname, publicKey, volname, name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "health_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "health_reasons.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", volname),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVolumeUsertag_basic(t *testing.T) {
 	var vol string
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
@@ -545,6 +574,17 @@ func testAccCheckIBMISVolumeConfigSnapshot(vpcname, subnetname, sshname, publicK
 		   profile = "general-purpose"
 		   zone    = "%s"
 		   source_snapshot= ibm_is_snapshot.testacc_snapshot.id
+		 }
+	`, volname, acc.ISZoneName)
+}
+func testAccCheckIBMISVolumeConfigSnapshotCrn(vpcname, subnetname, sshname, publicKey, volname, name, name1 string) string {
+
+	return testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, volname, name, name1) + fmt.Sprintf(`
+	 resource "ibm_is_volume" "storage" {
+		   name    = "%s"
+		   profile = "general-purpose"
+		   zone    = "%s"
+		   source_snapshot_crn = ibm_is_snapshot.testacc_snapshot.crn
 		 }
 	`, volname, acc.ISZoneName)
 }

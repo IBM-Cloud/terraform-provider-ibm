@@ -153,12 +153,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -193,7 +193,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -212,7 +212,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -231,7 +230,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -308,12 +306,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -348,7 +346,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -367,7 +365,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -386,7 +383,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -403,7 +399,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 									"evaluation_window": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Default:     "rolling_or_unspecified",
 										Description: "The evaluation window for the alert condition.",
 									},
 								},
@@ -469,12 +464,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -509,7 +504,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -528,7 +523,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -547,7 +541,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -624,12 +617,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -664,7 +657,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -683,7 +676,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -702,7 +694,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -735,37 +726,36 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"groups": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
-													Description: "list of groups of alerts.",
+													Description: "List of groups of alerts.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"alerts": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "list of alerts.",
+																Description: "List of alerts.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"op": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Default:     "and",
-																			Description: "operator for the alerts.",
+																			Description: "Operator for the alerts.",
 																		},
 																		"values": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "list of alerts.",
+																			Description: "List of alerts.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
 																					"id": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Optional:    true,
-																						Description: "alert id.",
+																						Description: "The alert ID.",
 																					},
 																					"not": &schema.Schema{
 																						Type:        schema.TypeBool,
 																						Optional:    true,
-																						Description: "alert not.",
+																						Description: "The alert not.",
 																					},
 																				},
 																			},
@@ -776,8 +766,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"next_op": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "and",
-																Description: "operator for the alerts.",
+																Description: "Operator for the alerts.",
 															},
 														},
 													},
@@ -786,13 +775,13 @@ func ResourceIbmLogsAlert() *schema.Resource {
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
-													Description: "timeframe for the flow.",
+													Description: "Timeframe for the flow.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"ms": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "timeframe in milliseconds.",
+																Description: "Timeframe in milliseconds.",
 															},
 														},
 													},
@@ -852,12 +841,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -892,7 +881,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -911,7 +900,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -930,7 +918,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -1012,12 +999,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -1052,7 +1039,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -1071,7 +1058,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -1090,7 +1076,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -1167,12 +1152,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"sample_threshold_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "The threshold percentage.",
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -1207,7 +1192,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															},
 															"non_null_percentage": &schema.Schema{
 																Type:        schema.TypeInt,
-																Required:    true,
+																Optional:    true,
 																Description: "Non null percentage of the evaluation.",
 															},
 															"swap_null_values": &schema.Schema{
@@ -1226,7 +1211,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 												"relative_timeframe": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Default:     "hour_or_unspecified",
 													Description: "The relative timeframe for time relative alerts.",
 												},
 												"cardinality_fields": &schema.Schema{
@@ -1245,7 +1229,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 															"cleanup_deadman_duration": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Default:     "cleanup_deadman_duration_never_or_unspecified",
 																Description: "Cleanup deadman duration.",
 															},
 															"should_trigger_deadman": &schema.Schema{
@@ -1291,13 +1274,12 @@ func ResourceIbmLogsAlert() *schema.Resource {
 									"notify_on": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Default:     "triggered_only",
 										Description: "Notify on setting.",
 									},
 									"integration_id": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Integration id.",
+										Description: "Integration ID.",
 									},
 									"recipients": &schema.Schema{
 										Type:        schema.TypeList,
@@ -1342,12 +1324,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 							Description: "The metadata filters.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"categories": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The categories to filter.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
 									"applications": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -1358,30 +1334,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "The subsystems to filter.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"computers": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The computers to filter.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"classes": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The classes to filter.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"methods": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The methods to filter.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"ip_addresses": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The IP addresses to filter.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
@@ -1405,7 +1357,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"alias": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The alias of the filter.",
 									},
 									"text": &schema.Schema{
@@ -1443,7 +1395,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 						"filter_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "text_or_unspecified",
 							Description: "The type of the filter.",
 						},
 					},
@@ -1568,89 +1519,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 				Description: "The Meta labels to add to the alert as string with ':' separator.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"tracing_alert": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Description: "The definition for tracing alert.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"condition_latency": &schema.Schema{
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "The latency condition in milliseconds.",
-						},
-						"field_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The tracing field filters.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"field": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The field name.",
-									},
-									"filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The field filters.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"values": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Description: "The filter values.",
-													Elem:        &schema.Schema{Type: schema.TypeString},
-												},
-												"operator": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The filter operator.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-						"tag_filters": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The tracing tag filters.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"field": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The field name.",
-									},
-									"filters": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "The field filters.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"values": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Description: "The filter values.",
-													Elem:        &schema.Schema{Type: schema.TypeString},
-												},
-												"operator": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The filter operator.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 			"incident_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -1666,7 +1534,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 						"notify_on": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "triggered_only",
 							Description: "Notify on setting.",
 						},
 						"use_as_notification_settings": &schema.Schema{
@@ -1699,7 +1566,7 @@ func ResourceIbmLogsAlertValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -1708,7 +1575,7 @@ func ResourceIbmLogsAlertValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[A-Za-z0-9_\-\s]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -1807,13 +1674,6 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 		}
 		createAlertOptions.SetMetaLabelsStrings(metaLabelsStrings)
 	}
-	if _, ok := d.GetOk("tracing_alert"); ok {
-		tracingAlertModel, err := ResourceIbmLogsAlertMapToAlertsV1TracingAlert(d.Get("tracing_alert.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createAlertOptions.SetTracingAlert(tracingAlertModel)
-	}
 	if _, ok := d.GetOk("incident_settings"); ok {
 		incidentSettingsModel, err := ResourceIbmLogsAlertMapToAlertsV2AlertIncidentSettings(d.Get("incident_settings.0").(map[string]interface{}))
 		if err != nil {
@@ -1842,7 +1702,6 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -1952,15 +1811,6 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 			return diag.FromErr(fmt.Errorf("Error setting meta_labels_strings: %s", err))
 		}
 	}
-	if !core.IsNil(alert.TracingAlert) {
-		tracingAlertMap, err := ResourceIbmLogsAlertAlertsV1TracingAlertToMap(alert.TracingAlert)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("tracing_alert", []map[string]interface{}{tracingAlertMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tracing_alert: %s", err))
-		}
-	}
 	if !core.IsNil(alert.IncidentSettings) {
 		incidentSettingsMap, err := ResourceIbmLogsAlertAlertsV2AlertIncidentSettingsToMap(alert.IncidentSettings)
 		if err != nil {
@@ -1991,22 +1841,36 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	updateAlertOptions := &logsv0.UpdateAlertOptions{}
 
 	updateAlertOptions.SetID(core.UUIDPtr(strfmt.UUID(alertId)))
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("is_active") || d.HasChange("severity") || d.HasChange("condition") || d.HasChange("notification_groups") || d.HasChange("filters") {
+	if d.HasChange("name") ||
+		d.HasChange("is_active") ||
+		d.HasChange("severity") ||
+		d.HasChange("condition") ||
+		d.HasChange("notification_groups") ||
+		d.HasChange("filters") ||
+		d.HasChange("description") ||
+		d.HasChange("expiration") ||
+		d.HasChange("active_when") ||
+		d.HasChange("notification_payload_filters") ||
+		d.HasChange("meta_labels") ||
+		d.HasChange("meta_labels_strings") ||
+		d.HasChange("incident_settings") {
+
 		updateAlertOptions.SetName(d.Get("name").(string))
 		updateAlertOptions.SetIsActive(d.Get("is_active").(bool))
 		updateAlertOptions.SetSeverity(d.Get("severity").(string))
-		condition, err := ResourceIbmLogsAlertMapToAlertsV2AlertCondition(d.Get("condition.0").(map[string]interface{}))
+
+		conditionModel, err := ResourceIbmLogsAlertMapToAlertsV2AlertCondition(d.Get("condition.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateAlertOptions.SetCondition(condition)
+		updateAlertOptions.SetCondition(conditionModel)
+
 		var notificationGroups []logsv0.AlertsV2AlertNotificationGroups
 		for _, v := range d.Get("notification_groups").([]interface{}) {
 			value := v.(map[string]interface{})
@@ -2017,78 +1881,67 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 			notificationGroups = append(notificationGroups, *notificationGroupsItem)
 		}
 		updateAlertOptions.SetNotificationGroups(notificationGroups)
-		filters, err := ResourceIbmLogsAlertMapToAlertsV1AlertFilters(d.Get("filters.0").(map[string]interface{}))
+
+		filtersModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFilters(d.Get("filters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateAlertOptions.SetFilters(filters)
-		hasChange = true
-	}
-	if d.HasChange("description") {
-		updateAlertOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
-	if d.HasChange("expiration") {
-		expiration, err := ResourceIbmLogsAlertMapToAlertsV1Date(d.Get("expiration.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		updateAlertOptions.SetFilters(filtersModel)
+
+		if _, ok := d.GetOk("description"); ok {
+			updateAlertOptions.SetDescription(d.Get("description").(string))
 		}
-		updateAlertOptions.SetExpiration(expiration)
-		hasChange = true
-	}
-	if d.HasChange("active_when") {
-		activeWhen, err := ResourceIbmLogsAlertMapToAlertsV1AlertActiveWhen(d.Get("active_when.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateAlertOptions.SetActiveWhen(activeWhen)
-		hasChange = true
-	}
-	if d.HasChange("notification_payload_filters") {
-		var notificationPayloadFilters []string
-		for _, v := range d.Get("notification_payload_filters").([]interface{}) {
-			notificationPayloadFiltersItem := v.(string)
-			notificationPayloadFilters = append(notificationPayloadFilters, notificationPayloadFiltersItem)
-		}
-		updateAlertOptions.SetNotificationPayloadFilters(notificationPayloadFilters)
-		hasChange = true
-	}
-	if d.HasChange("meta_labels") {
-		var metaLabels []logsv0.AlertsV1MetaLabel
-		for _, v := range d.Get("meta_labels").([]interface{}) {
-			value := v.(map[string]interface{})
-			metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
+
+		if _, ok := d.GetOk("expiration"); ok {
+			expirationModel, err := ResourceIbmLogsAlertMapToAlertsV1Date(d.Get("expiration.0").(map[string]interface{}))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			metaLabels = append(metaLabels, *metaLabelsItem)
+			updateAlertOptions.SetExpiration(expirationModel)
 		}
-		updateAlertOptions.SetMetaLabels(metaLabels)
-		hasChange = true
-	}
-	if d.HasChange("meta_labels_strings") {
-		var metaLabelsStrings []string
-		for _, v := range d.Get("meta_labels_strings").([]interface{}) {
-			metaLabelsStringsItem := v.(string)
-			metaLabelsStrings = append(metaLabelsStrings, metaLabelsStringsItem)
+		if _, ok := d.GetOk("active_when"); ok {
+			activeWhenModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertActiveWhen(d.Get("active_when.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			updateAlertOptions.SetActiveWhen(activeWhenModel)
 		}
-		updateAlertOptions.SetMetaLabelsStrings(metaLabelsStrings)
-		hasChange = true
-	}
-	if d.HasChange("tracing_alert") {
-		tracingAlert, err := ResourceIbmLogsAlertMapToAlertsV1TracingAlert(d.Get("tracing_alert.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		if _, ok := d.GetOk("notification_payload_filters"); ok {
+			var notificationPayloadFilters []string
+			for _, v := range d.Get("notification_payload_filters").([]interface{}) {
+				notificationPayloadFiltersItem := v.(string)
+				notificationPayloadFilters = append(notificationPayloadFilters, notificationPayloadFiltersItem)
+			}
+			updateAlertOptions.SetNotificationPayloadFilters(notificationPayloadFilters)
 		}
-		updateAlertOptions.SetTracingAlert(tracingAlert)
-		hasChange = true
-	}
-	if d.HasChange("incident_settings") {
-		incidentSettings, err := ResourceIbmLogsAlertMapToAlertsV2AlertIncidentSettings(d.Get("incident_settings.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+
+		if _, ok := d.GetOk("meta_labels"); ok {
+			var metaLabels []logsv0.AlertsV1MetaLabel
+			for _, v := range d.Get("meta_labels").([]interface{}) {
+				value := v.(map[string]interface{})
+				metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				metaLabels = append(metaLabels, *metaLabelsItem)
+			}
+			updateAlertOptions.SetMetaLabels(metaLabels)
 		}
-		updateAlertOptions.SetIncidentSettings(incidentSettings)
+		if _, ok := d.GetOk("meta_labels_strings"); ok {
+			var metaLabelsStrings []string
+			for _, v := range d.Get("meta_labels_strings").([]interface{}) {
+				metaLabelsStringsItem := v.(string)
+				metaLabelsStrings = append(metaLabelsStrings, metaLabelsStringsItem)
+			}
+			updateAlertOptions.SetMetaLabelsStrings(metaLabelsStrings)
+		}
+		if _, ok := d.GetOk("incident_settings"); ok {
+			incidentSettingsModel, err := ResourceIbmLogsAlertMapToAlertsV2AlertIncidentSettings(d.Get("incident_settings.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			updateAlertOptions.SetIncidentSettings(incidentSettingsModel)
+		}
 		hasChange = true
 	}
 
@@ -2136,7 +1989,7 @@ func resourceIbmLogsAlertDelete(context context.Context, d *schema.ResourceData,
 func ResourceIbmLogsAlertMapToAlertsV2AlertCondition(modelMap map[string]interface{}) (logsv0.AlertsV2AlertConditionIntf, error) {
 	model := &logsv0.AlertsV2AlertCondition{}
 	if modelMap["immediate"] != nil && len(modelMap["immediate"].([]interface{})) > 0 {
-		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateCondition(modelMap["immediate"].([]interface{})[0].(map[string]interface{}))
+		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap["immediate"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2194,8 +2047,8 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertCondition(modelMap map[string]interfa
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV2ImmediateCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2ImmediateCondition, error) {
-	model := &logsv0.AlertsV2ImmediateCondition{}
+func ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap map[string]interface{}) (*logsv0.AlertsV2ImmediateConditionEmpty, error) {
+	model := &logsv0.AlertsV2ImmediateConditionEmpty{}
 	return model, nil
 }
 
@@ -2265,8 +2118,12 @@ func ResourceIbmLogsAlertMapToAlertsV1MetricAlertConditionParameters(modelMap ma
 	if modelMap["arithmetic_operator_modifier"] != nil {
 		model.ArithmeticOperatorModifier = core.Int64Ptr(int64(modelMap["arithmetic_operator_modifier"].(int)))
 	}
-	model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMap["sample_threshold_percentage"].(int)))
-	model.NonNullPercentage = core.Int64Ptr(int64(modelMap["non_null_percentage"].(int)))
+	if modelMap["sample_threshold_percentage"] != nil {
+		model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMap["sample_threshold_percentage"].(int)))
+	}
+	if modelMap["non_null_percentage"] != nil {
+		model.NonNullPercentage = core.Int64Ptr(int64(modelMap["non_null_percentage"].(int)))
+	}
 	if modelMap["swap_null_values"] != nil {
 		model.SwapNullValues = core.BoolPtr(modelMap["swap_null_values"].(bool))
 	}
@@ -2280,7 +2137,9 @@ func ResourceIbmLogsAlertMapToAlertsV1MetricAlertPromqlConditionParameters(model
 		model.ArithmeticOperatorModifier = core.Int64Ptr(int64(modelMap["arithmetic_operator_modifier"].(int)))
 	}
 	model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMap["sample_threshold_percentage"].(int)))
-	model.NonNullPercentage = core.Int64Ptr(int64(modelMap["non_null_percentage"].(int)))
+	if modelMap["non_null_percentage"] != nil {
+		model.NonNullPercentage = core.Int64Ptr(int64(modelMap["non_null_percentage"].(int)))
+	}
 	if modelMap["swap_null_values"] != nil {
 		model.SwapNullValues = core.BoolPtr(modelMap["swap_null_values"].(bool))
 	}
@@ -2456,7 +2315,7 @@ func ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap map[string
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionImmediate(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionImmediate, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionImmediate{}
 	if modelMap["immediate"] != nil && len(modelMap["immediate"].([]interface{})) > 0 {
-		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateCondition(modelMap["immediate"].([]interface{})[0].(map[string]interface{}))
+		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap["immediate"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2678,13 +2537,6 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertFilters(modelMap map[string]interface
 
 func ResourceIbmLogsAlertMapToAlertsV1AlertFiltersMetadataFilters(modelMap map[string]interface{}) (*logsv0.AlertsV1AlertFiltersMetadataFilters, error) {
 	model := &logsv0.AlertsV1AlertFiltersMetadataFilters{}
-	if modelMap["categories"] != nil {
-		categories := []string{}
-		for _, categoriesItem := range modelMap["categories"].([]interface{}) {
-			categories = append(categories, categoriesItem.(string))
-		}
-		model.Categories = categories
-	}
 	if modelMap["applications"] != nil {
 		applications := []string{}
 		for _, applicationsItem := range modelMap["applications"].([]interface{}) {
@@ -2698,34 +2550,6 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertFiltersMetadataFilters(modelMap map[s
 			subsystems = append(subsystems, subsystemsItem.(string))
 		}
 		model.Subsystems = subsystems
-	}
-	if modelMap["computers"] != nil {
-		computers := []string{}
-		for _, computersItem := range modelMap["computers"].([]interface{}) {
-			computers = append(computers, computersItem.(string))
-		}
-		model.Computers = computers
-	}
-	if modelMap["classes"] != nil {
-		classes := []string{}
-		for _, classesItem := range modelMap["classes"].([]interface{}) {
-			classes = append(classes, classesItem.(string))
-		}
-		model.Classes = classes
-	}
-	if modelMap["methods"] != nil {
-		methods := []string{}
-		for _, methodsItem := range modelMap["methods"].([]interface{}) {
-			methods = append(methods, methodsItem.(string))
-		}
-		model.Methods = methods
-	}
-	if modelMap["ip_addresses"] != nil {
-		ipAddresses := []string{}
-		for _, ipAddressesItem := range modelMap["ip_addresses"].([]interface{}) {
-			ipAddresses = append(ipAddresses, ipAddressesItem.(string))
-		}
-		model.IpAddresses = ipAddresses
 	}
 	return model, nil
 }
@@ -2852,66 +2676,6 @@ func ResourceIbmLogsAlertMapToAlertsV1MetaLabel(modelMap map[string]interface{})
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV1TracingAlert(modelMap map[string]interface{}) (*logsv0.AlertsV1TracingAlert, error) {
-	model := &logsv0.AlertsV1TracingAlert{}
-	model.ConditionLatency = core.Int64Ptr(int64(modelMap["condition_latency"].(int)))
-	if modelMap["field_filters"] != nil {
-		fieldFilters := []logsv0.AlertsV1FilterData{}
-		for _, fieldFiltersItem := range modelMap["field_filters"].([]interface{}) {
-			fieldFiltersItemModel, err := ResourceIbmLogsAlertMapToAlertsV1FilterData(fieldFiltersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			fieldFilters = append(fieldFilters, *fieldFiltersItemModel)
-		}
-		model.FieldFilters = fieldFilters
-	}
-	if modelMap["tag_filters"] != nil {
-		tagFilters := []logsv0.AlertsV1FilterData{}
-		for _, tagFiltersItem := range modelMap["tag_filters"].([]interface{}) {
-			tagFiltersItemModel, err := ResourceIbmLogsAlertMapToAlertsV1FilterData(tagFiltersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			tagFilters = append(tagFilters, *tagFiltersItemModel)
-		}
-		model.TagFilters = tagFilters
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV1FilterData(modelMap map[string]interface{}) (*logsv0.AlertsV1FilterData, error) {
-	model := &logsv0.AlertsV1FilterData{}
-	model.Field = core.StringPtr(modelMap["field"].(string))
-	if modelMap["filters"] != nil {
-		filters := []logsv0.AlertsV1Filters{}
-		for _, filtersItem := range modelMap["filters"].([]interface{}) {
-			filtersItemModel, err := ResourceIbmLogsAlertMapToAlertsV1Filters(filtersItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			filters = append(filters, *filtersItemModel)
-		}
-		model.Filters = filters
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV1Filters(modelMap map[string]interface{}) (*logsv0.AlertsV1Filters, error) {
-	model := &logsv0.AlertsV1Filters{}
-	if modelMap["values"] != nil {
-		values := []string{}
-		for _, valuesItem := range modelMap["values"].([]interface{}) {
-			values = append(values, valuesItem.(string))
-		}
-		model.Values = values
-	}
-	if modelMap["operator"] != nil && modelMap["operator"].(string) != "" {
-		model.Operator = core.StringPtr(modelMap["operator"].(string))
-	}
-	return model, nil
-}
-
 func ResourceIbmLogsAlertMapToAlertsV2AlertIncidentSettings(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertIncidentSettings, error) {
 	model := &logsv0.AlertsV2AlertIncidentSettings{}
 	if modelMap["retriggering_period_seconds"] != nil {
@@ -2961,7 +2725,7 @@ func ResourceIbmLogsAlertAlertsV2AlertConditionToMap(model logsv0.AlertsV2AlertC
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.AlertsV2AlertCondition)
 		if model.Immediate != nil {
-			immediateMap, err := ResourceIbmLogsAlertAlertsV2ImmediateConditionToMap(model.Immediate)
+			immediateMap, err := ResourceIbmLogsAlertAlertsV2ImmediateConditionEmptyToMap(model.Immediate)
 			if err != nil {
 				return modelMap, err
 			}
@@ -3022,7 +2786,7 @@ func ResourceIbmLogsAlertAlertsV2AlertConditionToMap(model logsv0.AlertsV2AlertC
 	}
 }
 
-func ResourceIbmLogsAlertAlertsV2ImmediateConditionToMap(model *logsv0.AlertsV2ImmediateCondition) (map[string]interface{}, error) {
+func ResourceIbmLogsAlertAlertsV2ImmediateConditionEmptyToMap(model *logsv0.AlertsV2ImmediateConditionEmpty) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	return modelMap, nil
 }
@@ -3085,8 +2849,12 @@ func ResourceIbmLogsAlertAlertsV1MetricAlertConditionParametersToMap(model *logs
 	if model.ArithmeticOperatorModifier != nil {
 		modelMap["arithmetic_operator_modifier"] = flex.IntValue(model.ArithmeticOperatorModifier)
 	}
-	modelMap["sample_threshold_percentage"] = flex.IntValue(model.SampleThresholdPercentage)
-	modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	if model.SampleThresholdPercentage != nil {
+		modelMap["sample_threshold_percentage"] = flex.IntValue(model.SampleThresholdPercentage)
+	}
+	if model.NonNullPercentage != nil {
+		modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	}
 	if model.SwapNullValues != nil {
 		modelMap["swap_null_values"] = *model.SwapNullValues
 	}
@@ -3100,7 +2868,9 @@ func ResourceIbmLogsAlertAlertsV1MetricAlertPromqlConditionParametersToMap(model
 		modelMap["arithmetic_operator_modifier"] = flex.IntValue(model.ArithmeticOperatorModifier)
 	}
 	modelMap["sample_threshold_percentage"] = flex.IntValue(model.SampleThresholdPercentage)
-	modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	if model.NonNullPercentage != nil {
+		modelMap["non_null_percentage"] = flex.IntValue(model.NonNullPercentage)
+	}
 	if model.SwapNullValues != nil {
 		modelMap["swap_null_values"] = *model.SwapNullValues
 	}
@@ -3276,7 +3046,7 @@ func ResourceIbmLogsAlertAlertsV2LessThanUsualConditionToMap(model *logsv0.Alert
 func ResourceIbmLogsAlertAlertsV2AlertConditionConditionImmediateToMap(model *logsv0.AlertsV2AlertConditionConditionImmediate) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Immediate != nil {
-		immediateMap, err := ResourceIbmLogsAlertAlertsV2ImmediateConditionToMap(model.Immediate)
+		immediateMap, err := ResourceIbmLogsAlertAlertsV2ImmediateConditionEmptyToMap(model.Immediate)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3495,35 +3265,18 @@ func ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(model *logsv0.AlertsV1AlertFi
 
 func ResourceIbmLogsAlertAlertsV1AlertFiltersMetadataFiltersToMap(model *logsv0.AlertsV1AlertFiltersMetadataFilters) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Categories != nil {
-		modelMap["categories"] = model.Categories
-	}
 	if model.Applications != nil {
 		modelMap["applications"] = model.Applications
 	}
 	if model.Subsystems != nil {
 		modelMap["subsystems"] = model.Subsystems
 	}
-	if model.Computers != nil {
-		modelMap["computers"] = model.Computers
-	}
-	if model.Classes != nil {
-		modelMap["classes"] = model.Classes
-	}
-	if model.Methods != nil {
-		modelMap["methods"] = model.Methods
-	}
-	if model.IpAddresses != nil {
-		modelMap["ip_addresses"] = model.IpAddresses
-	}
 	return modelMap, nil
 }
 
 func ResourceIbmLogsAlertAlertsV1AlertFiltersRatioAlertToMap(model *logsv0.AlertsV1AlertFiltersRatioAlert) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Alias != nil {
-		modelMap["alias"] = *model.Alias
-	}
+	modelMap["alias"] = *model.Alias
 	if model.Text != nil {
 		modelMap["text"] = *model.Text
 	}
@@ -3603,62 +3356,6 @@ func ResourceIbmLogsAlertAlertsV1MetaLabelToMap(model *logsv0.AlertsV1MetaLabel)
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
-	}
-	return modelMap, nil
-}
-
-func ResourceIbmLogsAlertAlertsV1TracingAlertToMap(model *logsv0.AlertsV1TracingAlert) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["condition_latency"] = flex.IntValue(model.ConditionLatency)
-	if model.FieldFilters != nil {
-		fieldFilters := []map[string]interface{}{}
-		for _, fieldFiltersItem := range model.FieldFilters {
-			fieldFiltersItemMap, err := ResourceIbmLogsAlertAlertsV1FilterDataToMap(&fieldFiltersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			fieldFilters = append(fieldFilters, fieldFiltersItemMap)
-		}
-		modelMap["field_filters"] = fieldFilters
-	}
-	if model.TagFilters != nil {
-		tagFilters := []map[string]interface{}{}
-		for _, tagFiltersItem := range model.TagFilters {
-			tagFiltersItemMap, err := ResourceIbmLogsAlertAlertsV1FilterDataToMap(&tagFiltersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			tagFilters = append(tagFilters, tagFiltersItemMap)
-		}
-		modelMap["tag_filters"] = tagFilters
-	}
-	return modelMap, nil
-}
-
-func ResourceIbmLogsAlertAlertsV1FilterDataToMap(model *logsv0.AlertsV1FilterData) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["field"] = *model.Field
-	if model.Filters != nil {
-		filters := []map[string]interface{}{}
-		for _, filtersItem := range model.Filters {
-			filtersItemMap, err := ResourceIbmLogsAlertAlertsV1FiltersToMap(&filtersItem)
-			if err != nil {
-				return modelMap, err
-			}
-			filters = append(filters, filtersItemMap)
-		}
-		modelMap["filters"] = filters
-	}
-	return modelMap, nil
-}
-
-func ResourceIbmLogsAlertAlertsV1FiltersToMap(model *logsv0.AlertsV1Filters) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Values != nil {
-		modelMap["values"] = model.Values
-	}
-	if model.Operator != nil {
-		modelMap["operator"] = *model.Operator
 	}
 	return modelMap, nil
 }

@@ -21,7 +21,18 @@ resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instan
   subnet = "7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
 }
 ```
+## Example Usage with protocol_state_filtering_mode enabled
 
+```terraform
+resource "ibm_is_virtual_network_interface" "is_virtual_network_interface_instance" {
+  allow_ip_spoofing = true
+  auto_delete = false
+  enable_infrastructure_nat = true
+  name = "my-virtual-network-interface"
+  subnet = "7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+  protocol_state_filtering_mode = "enabled"
+}
+```
 ## Argument Reference
 
 You can specify the following arguments for this resource.
@@ -44,6 +55,12 @@ You can specify the following arguments for this resource.
 	Nested schema for **ips**:
 	- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
 - `name` - (Optional, String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+- `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+  ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+  **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+  **&#x2022;** instance_network_attachment: enabled </br>
+  **&#x2022;** share_mount_target: enabled </br>
 - `primary_ip` - (Optional, List) The reserved IP for this virtual network interface.
 	Nested schema for **primary_ip**:
 	- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.

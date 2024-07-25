@@ -28,7 +28,7 @@ func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, power.Health_OK),
+				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, power.OK),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
 					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),

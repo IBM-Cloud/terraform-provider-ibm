@@ -97,13 +97,17 @@ func AddLogsInstanceFields(resource *schema.Resource) *schema.Resource {
 func updateClientURLWithInstanceEndpoint(id string, logsClient *logsv0.LogsV0, d *schema.ResourceData) (*logsv0.LogsV0, string, string, string, error) {
 
 	idList, err := flex.IdParts(id)
-	if err != nil || len(idList) != 3 {
+	if err != nil || len(idList) < 2 {
 		return logsClient, "", "", "", fmt.Errorf("Invalid Id %s. Error: %s", id, err)
 	}
 
 	region := idList[0]
 	instanceId := idList[1]
-	resourceId := idList[2]
+	var resourceId string
+	if len(idList) > 2 {
+		resourceId = idList[2]
+	}
+
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
 
 	return logsClient, region, instanceId, resourceId, nil

@@ -5,6 +5,7 @@ package codeengine_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -14,6 +15,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
@@ -113,4 +115,96 @@ func testAccCheckIbmCodeEngineProjectDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func RetrieveProjectIdByName(projectName string, apiKey string, apiEndpoint string) (projectId *string, err error) {
+	iamEndpoint := determineEnvironment(apiEndpoint)
+
+	codeEngineService, err := codeenginev2.NewCodeEngineV2(&codeenginev2.CodeEngineV2Options{
+		Authenticator: &core.IamAuthenticator{
+			ApiKey:       apiKey,
+			ClientId:     "bx",
+			ClientSecret: "bx",
+			URL:          iamEndpoint,
+		},
+		URL: apiEndpoint,
+	})
+
+	if err != nil {
+		return
+	}
+
+	limit := int64(100)
+	listProjectsOptions := &codeenginev2.ListProjectsOptions{
+		Limit: &limit,
+	}
+	pager, err := codeEngineService.NewProjectsPager(listProjectsOptions)
+	if err != nil {
+		panic(err)
+	}
+
+	var allResults []codeenginev2.Project
+	for pager.HasNext() {
+		nextPage, err := pager.GetNext()
+		if err != nil {
+			panic(err)
+		}
+		allResults = append(allResults, nextPage...)
+	}
+
+	for _, project := range allResults {
+		if project.Name == &projectName {
+			if *project.Status == "soft_delete" {
+				err = fmt.Errorf("Error project '%s' is in 'soft_delete' status, please clean it up first", projectName)
+				break
+			}
+
+			projectId = project.ID
+			break
+		}
+	}
+
+	// if projectId == nil {
+	// 	createProjectOptions := codeenginev2.CreateProjectOptions{
+	// 		Name: &projectName,
+	// 	}
+
+	// 	createdProject, res, err := codeEngineService.CreateProject(&createProjectOptions)
+
+	// 	if err != nil {
+	// 		err = fmt.Errorf("Error created project '%s': '%s'", projectName, err)
+	// 	} else if res.StatusCode != 202 {
+	// 		err = fmt.Errorf("Error created project '%s'", projectName)
+	// 	} else if createdProject == nil {
+	// 		err = fmt.Errorf("Error created project '%s'", projectName)
+	// 	}
+
+	// 	createdProjectId := string(*createdProject.ID)
+
+	// 	println("!!!createdProject.ID: ", createdProjectId)
+	// 	attempts := 25
+	// 	getProjectOptions := codeenginev2.GetProjectOptions{
+	// 		ID: createdProject.ID,
+	// 	}
+	// 	for i := 0; i < attempts; i++ {
+	// 		retrievedProject, res, err := codeEngineService.GetProject(&getProjectOptions)
+	// 		if err != nil || res.StatusCode != 200 || *retrievedProject.Status != "active" {
+	// 			log.Println("Project not ready yet, waiting....", err)
+	// 			time.Sleep(5 * time.Second)
+	// 		} else {
+	// 			projectId = retrievedProject.ID
+	// 			break
+	// 		}
+	// 	}
+	// }
+
+	return
+}
+
+func determineEnvironment(apiEndpoint string) string {
+	if strings.Contains(apiEndpoint, "codeengine.test.cloud") || strings.Contains(apiEndpoint, "codeengine.dev.cloud") {
+		return "https://iam.test.cloud.ibm.com"
+	} else {
+		return "https://iam.cloud.ibm.com"
+	}
 }

@@ -1,19 +1,19 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_versions"
+page_title: "IBM: ibm_cis_ruleset_versions"
 description: |-
   Get information on an IBM Cloud Internet Services ruleset version.
 ---
 
-# ibm_cis_versions
+# ibm_cis_ruleset_versions
 
 Retrieve information about an IBM Cloud Internet Services Instance/Zone ruleset's version data sources. For more information, see [IBM Cloud Internet Services].
 
 ## Example usage
 
 ```terraform
-data "ibm_cis_versions" "tests" {
+data "ibm_cis_ruleset_versions" "tests" {
     cis_id    = ibm_cis.instance.id
     domain_id = data.ibm_cis_domain.cis_domain.domain_id
     ruleset_id = data.ibm_cis_ruleset.cis_ruleset.ruleset_id

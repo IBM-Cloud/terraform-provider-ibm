@@ -17,7 +17,7 @@ import (
 
 func TestAccIbmProjectBasic(t *testing.T) {
 	var conf projectv1.Project
-	location := fmt.Sprintf("us-south")
+	location := "us-south"
 	resourceGroup := fmt.Sprintf("Default")
 
 	resource.Test(t, resource.TestCase{
@@ -52,6 +52,7 @@ func testAccCheckIbmProjectConfigBasic(location string, resourceGroup string) st
                 description = "acme-microservice description"
                 destroy_on_delete = true
                 monitoring_enabled = true
+                auto_deploy = true
             }
 		}
 	`, location, resourceGroup)

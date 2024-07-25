@@ -34,18 +34,22 @@ You can specify the following arguments for this resource.
 * `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
 * `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
-* `ibm_event_notifications` - (Optional, List) The configuration of an IBM Event Notifications outbound webhook.
+* `ibm_event_notifications` - (Optional, List) The configuration of the IBM Event Notifications Outbound Integration.
 Nested schema for **ibm_event_notifications**:
-	* `event_notifications_instance_id` - (Required, String) The instance ID of the IBM Event Notifications configuration.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
-	* `region_id` - (Required, String) The region ID of the IBM Event Notifications configuration.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `4` characters. The value must match regular expression `/^[a-z]{2}-[a-z]+-\\d+$/`.
-* `name` - (Required, String) The name of the outbound webhook.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `type` - (Required, String) Outbound webhook type.
-  * Constraints: The default value is `ibm_event_notifications`. Allowable values are: `ibm_event_notifications`.
-* `url` - (Required, String) The URL of the outbound webhook.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^https?:\/\/.*$/`.
+	* `event_notifications_instance_id` - (Required, String) The ID of the selected IBM Event Notifications instance.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+	* `region_id` - (Required, String) The region ID of the selected IBM Event Notifications instance.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `4` characters. The value must match regular expression `/^[a-z]{2}-[a-z]+$/`.
+	* `source_id` - (Optional, String) The ID of the created source in the IBM Event Notifications instance. Corresponds to the Cloud Logs instance crn. Not required when creating an Outbound Integration.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	* `source_name` - (Optional, String) The name of the created source in the IBM Event Notifications instance. Not required when creating an Outbound Integration.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+* `name` - (Required, String) The name of the Outbound Integration.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+* `type` - (Required, String) The type of the deployed Outbound Integrations to list.
+  * Constraints: Allowable values are: `ibm_event_notifications`.
+* `url` - (Optional, String) The URL of the Outbound Integration. Null for IBM Event Notifications integration.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 
 ## Attribute Reference
 
@@ -53,10 +57,10 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the logs_outgoing_webhook resource.
 * `webhook_id` - The unique identifier of the logs_outgoing_webhook.
-* `created_at` - (String) The creation time of the outbound webhook.
-* `external_id` - (Integer) The external ID of the outbound webhook.
+* `created_at` - (String) The creation time of the Outbound Integration.
+* `external_id` - (Integer) The external ID of the Outbound Integration, for connecting with other parts of the system.
   * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
-* `updated_at` - (String) The update time of the outbound webhook.
+* `updated_at` - (String) The update time of the Outbound Integration.
 
 
 ## Import
@@ -65,5 +69,10 @@ You can import the `ibm_logs_outgoing_webhook` resource by using `id`. `id` comb
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_outgoing_webhook.logs_outgoing_webhook <region>/<instance_id>/<webhook_id>;
+$ terraform import ibm_logs_outgoing_webhook.logs_outgoing_webhook < region >/< instance_id >/< webhook_id >;
 </pre>
+
+# Example
+```
+$ terraform import ibm_logs_outgoing_webhook.logs_outgoing_webhook eu-gb/3dc02998-0b50-4ea8-b68a-4779d716fa1f/585bea36-bdd1-4bfb-9a26-51f1f8a12660
+```

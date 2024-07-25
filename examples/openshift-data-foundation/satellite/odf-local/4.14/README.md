@@ -115,6 +115,11 @@ You could also use `updateAssignments` to directly update the storage configurat
 
 ### Upgrade of ODF
 
+**Step 1:**
+Follow the [Satellite worker upgrade documentation](https://cloud.ibm.com/docs/satellite?topic=satellite-sat-storage-odf-update&interface=ui) step 1 to step 7 to perform worker upgrade.
+
+**Step 2:**
+Follow the below steps to upgrade ODF to next version.
 The following variables in the `input.tfvars` file should be changed in order to upgrade the ODF add-on and the Ocscluster CRD.
 
 * storageTemplateVersion - Specify the version you wish to upgrade to

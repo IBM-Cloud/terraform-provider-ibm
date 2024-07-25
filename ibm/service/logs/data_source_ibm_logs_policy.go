@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -26,58 +26,58 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 			"logs_policy_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "id of policy.",
+				Description: "ID of policy.",
 			},
 			"company_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "company id.",
+				Description: "Company ID.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "name of policy.",
+				Description: "Name of policy.",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "description of policy.",
+				Description: "Description of policy.",
 			},
 			"priority": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "the data pipeline sources that match the policy rules will go through.",
+				Description: "The data pipeline sources that match the policy rules will go through.",
 			},
 			"deleted": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "soft deletion flag.",
+				Description: "Soft deletion flag.",
 			},
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "enabled flag.",
+				Description: "Enabled flag.",
 			},
 			"order": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "order of policy in relation to other policies.",
+				Description: "Order of policy in relation to other policies.",
 			},
 			"application_rule": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "rule for matching with application.",
+				Description: "Rule for matching with application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule_type_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "identifier of the rule.",
+							Description: "Identifier of the rule.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "value of the rule.",
+							Description: "Value of the rule.",
 						},
 					},
 				},
@@ -85,18 +85,18 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 			"subsystem_rule": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "rule for matching with application.",
+				Description: "Rule for matching with application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule_type_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "identifier of the rule.",
+							Description: "Identifier of the rule.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "value of the rule.",
+							Description: "Value of the rule.",
 						},
 					},
 				},
@@ -104,23 +104,23 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "created at timestamp.",
+				Description: "Created at date at utc+0.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "updated at timestamp.",
+				Description: "Updated at date at utc+0.",
 			},
 			"archive_retention": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "archive retention definition.",
+				Description: "Archive retention definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "references archive retention definition.",
+							Description: "References archive retention definition.",
 						},
 					},
 				},
@@ -128,13 +128,13 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 			"log_rules": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "log rules.",
+				Description: "Log rules.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"severities": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "source severities to match with.",
+							Description: "Source severities to match with.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -153,7 +153,6 @@ func dataSourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -285,7 +284,7 @@ func DataSourceIbmLogsPolicyQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[str
 
 func DataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(model *logsv0.QuotaV1ArchiveRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = *model.ID
+	modelMap["id"] = model.ID.String()
 	return modelMap, nil
 }
 

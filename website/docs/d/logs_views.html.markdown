@@ -34,7 +34,7 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the logs_views.
 * `views` - (List) List of views.
-  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
+  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 Nested schema for **views**:
 	* `filters` - (List) View selected filters.
 	Nested schema for **filters**:
@@ -42,17 +42,17 @@ Nested schema for **views**:
 		  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 		Nested schema for **filters**:
 			* `name` - (String) Filter name.
-			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 			* `selected_values` - (Map) Filter selected values.
-	* `folder_id` - (String) View folder id.
+	* `folder_id` - (String) View folder ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-	* `id` - (Integer) View id.
+	* `id` - (Integer) View ID.
 	* `name` - (String) View name.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 	* `search_query` - (List) View search query.
 	Nested schema for **search_query**:
 		* `query` - (String) View search query.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 	* `time_selection` - (List) View time selection.
 	Nested schema for **time_selection**:
 		* `custom_selection` - (List) Custom time selection.
@@ -62,7 +62,7 @@ Nested schema for **views**:
 		* `quick_selection` - (List) Quick time selection.
 		Nested schema for **quick_selection**:
 			* `caption` - (String) Quick time selection caption.
-			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 			* `seconds` - (Integer) Quick time selection amount of seconds.
 			  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 

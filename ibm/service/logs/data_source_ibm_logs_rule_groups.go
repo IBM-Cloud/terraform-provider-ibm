@@ -31,7 +31,7 @@ func DataSourceIbmLogsRuleGroups() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The id of the rule group.",
+							Description: "The ID of the rule group.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -43,11 +43,6 @@ func DataSourceIbmLogsRuleGroups() *schema.Resource {
 							Computed:    true,
 							Description: "A description for the rule group, should express what is the rule group purpose.",
 						},
-						// "creator": &schema.Schema{
-						// 	Type:        schema.TypeString,
-						// 	Computed:    true,
-						// 	Description: "The creator of the rule group.",
-						// },
 						"enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -113,7 +108,7 @@ func DataSourceIbmLogsRuleGroups() *schema.Resource {
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The id of the rule subgroup.",
+										Description: "The ID of the rule subgroup.",
 									},
 									"rules": &schema.Schema{
 										Type:        schema.TypeList,
@@ -383,7 +378,6 @@ func dataSourceIbmLogsRuleGroupsRead(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -430,9 +424,6 @@ func DataSourceIbmLogsRuleGroupsRuleGroupToMap(model *logsv0.RuleGroup) (map[str
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
-	// if model.Creator != nil {
-	// 	modelMap["creator"] = *model.Creator
-	// }
 	if model.Enabled != nil {
 		modelMap["enabled"] = *model.Enabled
 	}

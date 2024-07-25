@@ -41,6 +41,12 @@ Review the argument references that you can specify for your data source.
 - `name` - (Optional, string) The name of the image.
 - `visibility` - (Optional, string) Visibility of the image. Accepted values : **private**, **public**
 - `status` - (Optional, string) Status of the image. Accepted value : **available**, **deleting**, **deprecated**, **failed**, **obsolete**, **pending**, **unusable**
+- `user_data_format` - (String) The user data format for this image.  
+   
+    ~> **Note:** </br> Allowed values are : </br>
+    **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>
+    **&#x2022;** `esxi_kickstart`: user_data will be interpreted as a VMware ESXi installation script.</br>
+    **&#x2022;**  `ipxe`: user_data will be interpreted as a single URL to an iPXE script or as the text of an iPXE script.</br>
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
@@ -68,12 +74,19 @@ You can access the following attribute references after your data source is crea
   - `operating_system` - (List) The operating system details. 
     
       Nested scheme for `operating_system`:
+      - `allow_user_image_creation` - (String) Users may create new images with this operating system.
       - `architecture` - (String) The operating system architecture.
       - `dedicated_host_only` - (Bool) Images with this operating system can only be used on dedicated hosts or dedicated host groups.
       - `display_name` - (String) A unique, display-friendly name for the operating system.
       - `family` - (String) The software family for this operating system.
       - `href` - (String) The URL for this operating system.
       - `name` - (String) The globally unique name for this operating system.
+      - `user_data_format` - (String) The user data format for this image.
+  
+      ~> **Note:** </br> Supported values are : </br>
+        **&#x2022;** `cloud_init`: user_data will be interpreted according to the cloud-init standard.</br>
+        **&#x2022;** `esxi_kickstart`: user_data will be interpreted as a VMware ESXi installation script.</br>
+        **&#x2022;**  `ipxe`: user_data will be interpreted as a single URL to an iPXE script or as the text of an iPXE script.</br>
       - `vendor` - (String) The vendor of the operating system.
       - `version` - (String) The major release version of this operating system.
   - `resource_group` - (List) The resource group object, for this image.

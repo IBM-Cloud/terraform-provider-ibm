@@ -22,7 +22,8 @@ data "ibm_cm_catalog" "cm_catalog" {
 
 Review the argument reference that you can specify for your data source.
 
-* `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
+* `catalog_identifier` - (Optional, String) Catalog identifier.
+* `label` - (Optional, String) Catalog label.
 
 ## Attribute Reference
 

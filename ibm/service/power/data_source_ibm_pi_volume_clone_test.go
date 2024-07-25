@@ -30,9 +30,8 @@ func TestAccIBMPIVolumeClone_basic(t *testing.T) {
 
 func testAccCheckIBMPIVolumeCloneBasicConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume_clone" "testacc_ds_volume_clone" {
-    pi_volume_clone_task_id		= "%s"
-    pi_cloud_instance_id		= "%s"
-}`, acc.Pi_volume_clone_task_id, acc.Pi_cloud_instance_id)
-
+		data "ibm_pi_volume_clone" "testacc_ds_volume_clone" {
+			pi_cloud_instance_id		= "%s"
+			pi_volume_clone_task_id		= "%s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_volume_clone_task_id)
 }

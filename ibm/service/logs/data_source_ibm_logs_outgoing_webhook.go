@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -26,53 +26,63 @@ func DataSourceIbmLogsOutgoingWebhook() *schema.Resource {
 			"logs_outgoing_webhook_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Outbound webhook ID.",
+				Description: "The ID of the Outbound Integration to delete.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Outbound webhook type.",
+				Description: "The type of the deployed Outbound Integrations to list.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the outbound webhook.",
+				Description: "The name of the Outbound Integration.",
 			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The URL of the outbound webhook.",
+				Description: "The URL of the Outbound Integration. Null for IBM Event Notifications integration.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The creation time of the outbound webhook.",
+				Description: "The creation time of the Outbound Integration.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The update time of the outbound webhook.",
+				Description: "The update time of the Outbound Integration.",
 			},
 			"external_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The external ID of the outbound webhook.",
+				Description: "The external ID of the Outbound Integration, for connecting with other parts of the system.",
 			},
 			"ibm_event_notifications": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The configuration of an IBM Event Notifications outbound webhook.",
+				Description: "The configuration of the IBM Event Notifications Outbound Integration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"event_notifications_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The instance ID of the IBM Event Notifications configuration.",
+							Description: "The ID of the selected IBM Event Notifications instance.",
 						},
 						"region_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The region ID of the IBM Event Notifications configuration.",
+							Description: "The region ID of the selected IBM Event Notifications instance.",
+						},
+						"source_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the created source in the IBM Event Notifications instance. Corresponds to the Cloud Logs instance crn. Not required when creating an Outbound Integration.",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the created source in the IBM Event Notifications instance. Not required when creating an Outbound Integration.",
 						},
 					},
 				},
@@ -88,7 +98,6 @@ func dataSourceIbmLogsOutgoingWebhookRead(context context.Context, d *schema.Res
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
 	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
@@ -158,5 +167,11 @@ func DataSourceIbmLogsOutgoingWebhookOutgoingWebhooksV1IbmEventNotificationsConf
 	modelMap := make(map[string]interface{})
 	modelMap["event_notifications_instance_id"] = model.EventNotificationsInstanceID.String()
 	modelMap["region_id"] = *model.RegionID
+	// if model.SourceID != nil {
+	// 	modelMap["source_id"] = *model.SourceID
+	// }
+	// if model.SourceName != nil {
+	// 	modelMap["source_name"] = *model.SourceName
+	// }
 	return modelMap, nil
 }

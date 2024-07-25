@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.90.1-64fd3296-20240515-180710
+ * IBM OpenAPI Terraform Generator Version: 3.92.1-44330004-20240620-143510
  */
 
 package project

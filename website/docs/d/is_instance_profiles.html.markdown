@@ -50,6 +50,13 @@ You can access the following attribute references after your data source is crea
       - `type` - (String) The type for this profile field.
       - `value` - (String) The value for this profile field.
       - `values` - (String) The permitted values for this profile field.
+  - `confidential_compute_modes` - (List) 
+
+      Nested schema for **confidential_compute_modes**:
+      - `default` - (String) The default confidential compute mode for this profile.
+      - `type` - (String) The type for this profile field.
+      - `values` - (List) The supported confidential compute modes.
+
   - `disks` - (List) Collection of the instance profile's disks. Nested `disks` blocks has the following structure.
 
       Nested scheme for `disks`:
@@ -153,6 +160,13 @@ You can access the following attribute references after your data source is crea
       Nested scheme for `port_speed`:
       - `type` - (String) The type for this profile field.
       - `value` - (String) The value for this profile field.
+  - `secure_boot_modes` - (List) 
+  
+      Nested schema for **secure_boot_modes**:
+      - `default` - (Boolean) The default secure boot mode for this profile.
+      - `type` - (String) The type for this profile field.
+      - `values` - (List) The supported `enable_secure_boot` values for an instance using   this profile.
+  
   - `vcpu_architecture` - (List) Nested `vcpu_architecture` blocks have the following structure:
 
       Nested scheme for `vcpu_architecture`:
