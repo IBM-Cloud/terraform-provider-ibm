@@ -48,7 +48,7 @@ func testAccCheckSatelliteLocationDataSource(name, managed_from string, physical
 		description	  = "satellite service"	
 		zones		  = ["us-east-1", "us-east-2", "us-east-3"]
 		tags		  = ["env:dev"]
-		capabilities = "%q"
+		capabilities = %q
 	}
 
     data "ibm_satellite_location" "test_location" {
