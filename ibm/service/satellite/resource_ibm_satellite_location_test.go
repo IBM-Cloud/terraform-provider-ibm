@@ -20,7 +20,7 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
-	physical_address := "test-road 10, 111 test-country"
+	physical_address := "test-road 10, 111 test-place, testcountry"
 	coreos_enabled := "true"
 	capabilities := []kubernetesserviceapiv1.CapabilityManagedBySatellite{kubernetesserviceapiv1.OnPrem}
 
@@ -49,7 +49,7 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
-	physical_address := "test-road 10, 111 test-country"
+	physical_address := "test-road 10, 111 test-place, testcountry"
 	coreos_enabled := "true"
 	capabilities := []kubernetesserviceapiv1.CapabilityManagedBySatellite{kubernetesserviceapiv1.OnPrem}
 
@@ -82,7 +82,7 @@ func TestAccSatelliteLocation_PodAndServiceSubnet(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
-	physical_address := "test-road 10, 111 test-country"
+	physical_address := "test-road 10, 111 test-place, testcountry"
 	coreos_enabled := "true"
 	pod_subnet := "10.69.0.0/16"
 	service_subnet := "192.168.42.0/24"

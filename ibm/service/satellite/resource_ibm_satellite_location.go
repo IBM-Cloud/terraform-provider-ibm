@@ -265,7 +265,7 @@ func ResourceIBMSatelliteLocationValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "on-prem,",
+			AllowedValues:              "on-prem",
 		},
 	)
 
