@@ -13,7 +13,7 @@ This resource can be used for management of keys in both Key Protect and Hyper P
 After creating an  Hyper Protect Crypto Service instance you need to initialize the instance properly with the crypto units, in order to create, or manage Hyper Protect Crypto Service keys. For more information, about how to initialize the Hyper Protect Crypto Service instance, see [Initialize Hyper Protect Crypto](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm) only for HPCS instance.
 
   ~>**Important:**
-  If the key is used with other IBM Cloud resources that require an `ibm_iam_authorization_policy` resource (requires [service authorization](https://cloud.ibm.com/docs/account?topic=account-serviceauth&interface=ui)), make sure to include `depends_on` targing the `ibm_iam_authorization_policy` involved to ensure proper deletion of resources with `terraform destroy`.
+  If the key is used with other IBM Cloud resources that require an `ibm_iam_authorization_policy` resource (requires [service authorization](https://cloud.ibm.com/docs/account?topic=account-serviceauth&interface=ui)), make sure to include `depends_on` targeting the `ibm_iam_authorization_policy` involved to ensure proper deletion of resources with `terraform destroy`. See an [example usage](#example-usage-between-a-cloud-object-storage-bucket-and-a-key) to create service authorization between a Cloud Object Storage bucket and a key
 
   ~>**Deprecated:**
   The ability to use the ibm_kms_key resource to create or update key policies in Terraform has been removed in favor of a dedicated ibm_kms_key_policies resource. For more information, check out [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key_policies#example-usage-to-create-a-[…]and-associate-a-key-policy)
@@ -28,22 +28,15 @@ resource "ibm_resource_instance" "kms_instance" {
   plan     = "tiered-pricing"
   location = "us-south"
 }
+
 resource "ibm_kms_key" "test" {
   instance_id  = ibm_resource_instance.kms_instance.guid
   key_name     = "key-name"
   standard_key = false
-  force_delete =true
-}
-resource "ibm_cos_bucket" "smart-us-south" {
-  bucket_name          = "atest-bucket"
-  resource_instance_id = "cos-instance-id"
-  region_location      = "us-south"
-  storage_class        = "smart"
-  kms_key_crn          = ibm_kms_key.test.id
+  force_delete = true
 }
 ```
-  **Note:**
-  
+ ~>**Note:**
  `key_protect` attribute to associate a kms_key with a COS bucket has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 
 
@@ -94,6 +87,51 @@ resource "ibm_kms_key" "key" {
   key_name       = "key"
   standard_key   = false
   payload = "aW1wb3J0ZWQucGF5bG9hZA=="
+}
+```
+
+## Example usage between a Cloud Object Storage bucket and a key
+
+```terraform
+resource "ibm_resource_instance" "kms_instance" {
+    name = "terraform_instance"
+    service = "kms"
+    plan = "tiered-pricing"
+    location = "us-south"
+}
+
+resource "ibm_kms_key" "kms_root_key_1" {
+    depends_on = [ ibm_iam_authorization_policy.policy_s2_kms_cos ]
+
+    instance_id = ibm_resource_instance.kms_instance.guid
+    key_name = "root_k1"
+    standard_key = false
+    force_delete = true
+}
+
+resource "ibm_resource_instance" "cos_instance" {
+    name = "terraform_cos_instance"
+    service = "cloud-object-storage"
+    plan = "standard"
+    location = "global"
+}
+
+resource "ibm_iam_authorization_policy" "policy_s2_kms_cos" {
+    roles = ["Reader"]
+
+    source_service_name = "cloud-object-storage"
+    source_resource_instance_id = ibm_resource_instance.cos_instance.guid
+
+    target_service_name = "kms"
+    target_resource_instance_id = ibm_resource_instance.kms_instance.guid
+}
+
+resource "ibm_cos_bucket" "cos_bk_1" {
+    bucket_name = "cos-bk-1"
+    resource_instance_id = ibm_resource_instance.cos_instance.id
+    region_location = "us-south"
+    storage_class = "smart"
+    kms_key_crn = ibm_kms_key.kms_root_key_1.id
 }
 ```
 
