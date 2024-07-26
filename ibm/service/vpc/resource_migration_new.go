@@ -12,11 +12,15 @@ import (
 
 var _ resource.Resource = &MigrationNewResource{}
 
-func NewMigrationNewResource() resource.Resource {
-	return &MigrationNewResource{}
+func NewMigrationNewResource(client interface{}) resource.Resource {
+	return &MigrationNewResource{
+		client: client,
+	}
 }
 
-type MigrationNewResource struct{}
+type MigrationNewResource struct {
+	client interface{}
+}
 
 type MigrationNewResourceModel struct {
 	Id                 types.String `tfsdk:"id"`

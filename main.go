@@ -7,6 +7,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -15,10 +16,6 @@ import (
 
 func main() {
 	log.Println("IBM Cloud Provider version", version.Version, version.VersionPrerelease, version.GitCommit)
-	// plugin.Serve(&plugin.ServeOpts{
-	// 	ProviderFunc: provider.Provider,
-	// })
-
 	var debugMode bool
 	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
@@ -33,12 +30,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// frameworkServer := providerserver.NewProtocol6(provider.NewFrameworkProvider(version.Version)())
+	frameworkServer := providerserver.NewProtocol6(provider.NewFrameworkProvider(version.Version)())
 
 	muxServer, err := tf6muxserver.NewMuxServer(
 		ctx,
 		func() tfprotov6.ProviderServer { return upgradedSdkServer },
-		// frameworkServer,
+		frameworkServer,
 	)
 	if err != nil {
 		log.Fatal(err)

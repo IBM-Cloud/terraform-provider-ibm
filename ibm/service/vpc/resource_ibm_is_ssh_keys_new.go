@@ -5,6 +5,10 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -13,15 +17,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 var _ resource.Resource = &SSHKeyResource{}
 
-func NewSSHKeyResource() resource.Resource {
-	return &SSHKeyResource{}
+type SSHKeyResource struct {
+	client interface{}
 }
 
-type SSHKeyResource struct{}
+func NewSSHKeyResource(client interface{}) resource.Resource {
+	return &SSHKeyResource{
+		client: client,
+	}
+}
 
 func (r *SSHKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_is_ssh_key_new"
@@ -115,79 +124,61 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 
 func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan SSHKeyResourceModel
-	// req.Plan.Get(ctx, &plan)
-	log.Printf("[INFO] UJJK create ctx is %v \n and req is %v \n    response is %v \n", PrettifyPrint(ctx), PrettifyPrint(req), PrettifyPrint(resp))
-	log.Printf("[INFO] UJJK create ctx is %+v \n and req is %+v \n  response is %v \n", ctx, req, resp)
-	log.Printf("[INFO] UJJK create ctx is %#v \n and req is %#v \n  response is %v \n", ctx, req, resp)
-
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	sess, err := r.client.(conns.ClientSession).VpcV1API()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating session",
+			err.Error(),
+		)
+	}
 
-	log.Printf("[INFO] UJJK create ctx is %v \n and req is %v \n    response is %v \n plan is %v \n", PrettifyPrint(ctx), PrettifyPrint(req), PrettifyPrint(resp), PrettifyPrint(plan))
-	log.Printf("[INFO] UJJK create ctx is %+v \n and req is %+v \n  response is %v \n plan is %v \n", ctx, req, resp, plan)
-	log.Printf("[INFO] UJJK create ctx is %#v \n and req is %#v \n  response is %v \n plan is %v \n", ctx, req, resp, plan)
+	options := &vpcv1.CreateKeyOptions{}
+	if plan.ResourceGroup.ValueString() != "" {
+		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+			ID: core.StringPtr(plan.ResourceGroup.ValueString()),
+		}
+	}
+	if plan.Name.ValueString() != "" {
+		options.Name = core.StringPtr(plan.Name.ValueString())
+	}
+	if plan.Type.ValueString() != "" {
+		options.Type = core.StringPtr(plan.Type.ValueString())
+	}
+	key, _, err := sess.CreateKey(options)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating key",
+			err.Error(),
+		)
+		return
+	}
 
-	// sess, err := ctx.(conns.ClientSession).VpcV1API()
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error creating session",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	plan.Id = basetypes.NewStringValue(*key.ID)
+	plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
+	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
 
-	// options := &vpcv1.CreateKeyOptions{
-	// 	PublicKey: core.StringPtr(plan.PublicKey.ValueString()),
-	// }
+	if !plan.Tags.IsNull() {
+		newList := plan.Tags.Elements()
+		err = flex.UpdateGlobalTagsElementsUsingCRN(nil, newList, r.client, *key.CRN, "", isKeyUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of vpc SSH Key (%s) tags: %s", plan.Id.ValueString(), err)
+		}
+	}
 
-	// if plan.ResourceGroup.ValueString() != "" {
-	// 	options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
-	// 		ID: core.StringPtr(plan.ResourceGroup.ValueString()),
-	// 	}
-	// }
-	// if plan.Name.ValueString() != "" {
-	// 	options.Name = core.StringPtr(plan.Name.ValueString())
-	// }
-
-	// if plan.Type.ValueString() != "" {
-	// 	options.Type = core.StringPtr(plan.Type.ValueString())
-	// }
-
-	// key, _, err := sess.CreateKey(options)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error creating key",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
-
-	// plan.Id = types.String{*key.ID}
-	// plan.Fingerprint = types.String{Value: *key.Fingerprint}
-	// plan.Length = types.Int64{Value: int64(*key.Length)}
-
-	// if plan.Tags != nil {
-	// 	oldList := plan.Tags.ValueString()
-	// 	newList := plan.Tags.ValueString()
-	// 	err = updateGlobalTags(ctx, sess, oldList, newList, *key.CRN, isKeyUserTagType)
-	// 	if err != nil {
-	// 		log.Printf(
-	// 			"Error on create of vpc SSH Key (%s) tags: %s", plan.ID.ValueString(), err)
-	// 	}
-	// }
-
-	// if plan.AccessTags != nil {
-	// 	oldList := plan.AccessTags.ValueString()
-	// 	newList := plan.AccessTags.ValueString()
-	// 	err = updateGlobalTags(ctx, sess, oldList, newList, *key.CRN, isKeyAccessTagType)
-	// 	if err != nil {
-	// 		log.Printf(
-	// 			"Error on create of vpc SSH Key (%s) access tags: %s", plan.ID.ValueString(), err)
-	// 	}
-	// }
+	if !plan.AccessTags.IsNull() {
+		newList := plan.AccessTags.Elements()
+		err = flex.UpdateGlobalTagsElementsUsingCRN(nil, newList, r.client, *key.CRN, "", isKeyAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of vpc SSH Key (%s) access tags: %s", plan.Id.ValueString(), err)
+		}
+	}
 
 	resp.State.Set(ctx, plan)
 }
@@ -195,112 +186,127 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state SSHKeyResourceModel
 
-	log.Printf("[INFO] UJJK read ctx is %v \n and req is %v \n ", PrettifyPrint(ctx), PrettifyPrint(req))
-	log.Printf("[INFO] UJJK read ctx is %+v \n and req is %+v \n ", ctx, req)
-	log.Printf("[INFO] UJJK read ctx is %#v \n and req is %#v \n ", ctx, req)
-	// req.State.Get(ctx, &state)
+	req.State.Get(ctx, &state)
 
-	// sess, err := ctx.(conns.ClientSession).VpcV1API()
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error creating session",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	sess, err := ctx.(conns.ClientSession).VpcV1API()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating session",
+			err.Error(),
+		)
+		return
+	}
 
-	// options := &vpcv1.GetKeyOptions{
-	// 	ID: &state.ID.ValueString(),
-	// }
+	options := &vpcv1.GetKeyOptions{
+		ID: core.StringPtr(state.Id.ValueString()),
+	}
 
-	// key, _, err := sess.GetKey(options)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error getting key",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	key, _, err := sess.GetKey(options)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting key",
+			err.Error(),
+		)
+		return
+	}
 
-	// state.Name = types.String{Value: *key.Name}
-	// state.PublicKey = types.String{Value: *key.PublicKey}
-	// state.Type = types.String{Value: *key.Type}
-	// state.Fingerprint = types.String{Value: *key.Fingerprint}
-	// state.Length = types.Int64{Value: int64(*key.Length)}
+	state.Name = basetypes.NewStringValue(*key.Name)
+	state.PublicKey = basetypes.NewStringValue(*key.PublicKey)
+	state.Type = basetypes.NewStringValue(*key.Type)
+	state.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
+	state.Length = basetypes.NewInt64Value(int64(*key.Length))
+	state.Id = basetypes.NewStringValue(*key.ID)
+	state.ResourceGroup = basetypes.NewStringValue(*key.ResourceGroup.ID)
+	controller, err := flex.GetBaseController(r.client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting base controller",
+			err.Error(),
+		)
+		return
+	}
+	state.ResourceControllerURL = basetypes.NewStringValue(controller + "/vpc-ext/compute/sshKeys")
+	state.ResourceControllerURL = basetypes.NewStringValue(*key.ResourceGroup.ID)
+	state.ResourceName = basetypes.NewStringValue(*key.ResourceGroup.Name)
+	state.ResourceCRN = basetypes.NewStringValue(*key.CRN)
+	state.Crn = basetypes.NewStringValue(*key.CRN)
+	state.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
+	// state.Tags, _ = basetypes.NewListValue()
+	// state.AccessTags            =
 
 	resp.State.Set(ctx, state)
 }
 
 func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan SSHKeyResourceModel
-	// req.Plan.Get(ctx, &plan)
+	req.Plan.Get(ctx, &plan)
 
-	// var state SSHKeyResourceModel
-	// req.State.Get(ctx, &state)
+	var state SSHKeyResourceModel
+	req.State.Get(ctx, &state)
 
-	// sess, err := ctx.(conns.ClientSession).VpcV1API()
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error creating session",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	sess, err := ctx.(conns.ClientSession).VpcV1API()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating session",
+			err.Error(),
+		)
+		return
+	}
 
-	// if plan.Name != state.Name {
-	// 	options := &vpcv1.UpdateKeyOptions{
-	// 		ID: &state.ID.ValueString(),
-	// 	}
-	// 	keyPatchModel := &vpcv1.KeyPatch{
-	// 		Name: &plan.Name.ValueString(),
-	// 	}
-	// 	keyPatch, err := keyPatchModel.AsPatch()
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Error creating key patch",
-	// 			err.Error(),
-	// 		)
-	// 		return
-	// 	}
-	// 	options.KeyPatch = keyPatch
-	// 	_, _, err = sess.UpdateKey(options)
-	// 	if err != nil {
-	// 		resp.Diagnostics.AddError(
-	// 			"Error updating key",
-	// 			err.Error(),
-	// 		)
-	// 		return
-	// 	}
-	// }
+	if plan.Name != state.Name {
+		options := &vpcv1.UpdateKeyOptions{
+			ID: core.StringPtr(state.Id.ValueString()),
+		}
+		keyPatchModel := &vpcv1.KeyPatch{
+			Name: core.StringPtr(plan.Name.ValueString()),
+		}
+		keyPatch, err := keyPatchModel.AsPatch()
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating key patch",
+				err.Error(),
+			)
+			return
+		}
+		options.KeyPatch = keyPatch
+		_, _, err = sess.UpdateKey(options)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating key",
+				err.Error(),
+			)
+			return
+		}
+	}
 
 	resp.State.Set(ctx, plan)
 }
 
 func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// var state SSHKeyResourceModel
-	// req.State.Get(ctx, &state)
+	var state SSHKeyResourceModel
+	req.State.Get(ctx, &state)
 
-	// sess, err := ctx.(conns.ClientSession).VpcV1API()
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error creating session",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	sess, err := ctx.(conns.ClientSession).VpcV1API()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating session",
+			err.Error(),
+		)
+		return
+	}
 
-	// options := &vpcv1.DeleteKeyOptions{
-	// 	ID: &state.ID.ValueString(),
-	// }
+	options := &vpcv1.DeleteKeyOptions{
+		ID: core.StringPtr(state.Id.ValueString()),
+	}
 
-	// _, err = sess.DeleteKey(options)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error deleting key",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	_, err = sess.DeleteKey(options)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error deleting key",
+			err.Error(),
+		)
+		return
+	}
 
 	resp.State.RemoveResource(ctx)
 }
