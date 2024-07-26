@@ -87,8 +87,8 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `cos_credentials`:
   - `access_key-id` - (Required, String)The `HMAC` secret access key ID.
   - `secret_access_key`-  (Optional, String) The `HMAC` secret access key.
-  - `physical_address` -  (Optional, String) The physical address of the new Satellite location which is deployed on premise.
-  - `capabilities` - (Optional, Array of Strings) Satellite capabilities attached to the location. It is mandatory to add the value 'on-prem' to 'capabilitiesManagedBySatellite', if a value has been set for 'physicalAddress'. On the other hand, value can be added to 'capabilitiesManagedBySatellite' without setting any value to 'physicalAddress'. In other words, 'capabilitiesManagedBySatellite' is optional, unless 'physicalAddress' gets set.
+- `physical_address` -  (Optional, String) The physical address of the new Satellite location which is deployed on premise.
+- `capabilities` - (Optional, Array of Strings) Satellite capabilities attached to the location. It is mandatory to add the value 'on-prem' to 'capabilitiesManagedBySatellite', if a value has been set for 'physicalAddress'. On the other hand, value can be added to 'capabilitiesManagedBySatellite' without setting any value to 'physicalAddress'. In other words, 'capabilitiesManagedBySatellite' is optional, unless 'physicalAddress' gets set.
 - `description` - (Optional, String)  A description of the new Satellite location.
 - `is_location_exist`- (Optional, Bool) Determines the location has to be created or not.
 - `location` - (Required, String) The name of the location to be created or pass existing location name.
