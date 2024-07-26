@@ -75,7 +75,12 @@ func ResourceIBMResourceKey() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Arbitrary parameters to pass. Must be a JSON object",
 			},
-
+			// ### Modification addded onetime_credentials to Resource scehama
+			"onetime_credentials": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "onetime_credentials of resource key",
+			},
 			"credentials": {
 				Description: "Credentials asociated with the key",
 				Type:        schema.TypeMap,
@@ -366,6 +371,8 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_group_id", *resourceKey.ResourceGroupID)
 	d.Set("source_crn", *resourceKey.SourceCRN)
 	d.Set("state", *resourceKey.State)
+	// ### Modificataion : Setting  "onetime_credentials"
+	d.Set("onetime_credentials", *resourceKey.OnetimeCredentials)
 	d.Set("iam_compatible", *resourceKey.IamCompatible)
 	d.Set("resource_instance_url", *resourceKey.ResourceInstanceURL)
 	if resourceKey.CreatedAt != nil {
