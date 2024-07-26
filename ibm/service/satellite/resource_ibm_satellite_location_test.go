@@ -39,6 +39,7 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "physical_address", physical_address),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "coreos_enabled", coreos_enabled),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.#", "1"),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.0", "on-prem"),
 				),
 			},
 		},
@@ -67,6 +68,7 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "managed_from", managed_from),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "physical_address", physical_address),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.#", "1"),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.0", "on-prem"),
 				),
 			},
 			{
@@ -104,6 +106,7 @@ func TestAccSatelliteLocation_PodAndServiceSubnet(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "pod_subnet", pod_subnet),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "service_subnet", service_subnet),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.#", "1"),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "capabilities.0", "on-prem"),
 				),
 			},
 		},
