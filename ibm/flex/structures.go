@@ -2429,7 +2429,7 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	return taggingResult, nil
 }
 
-func GetGlobalTagsElementsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+func GetGlobalTagsElementsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) ([]string, error) {
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return nil, err
@@ -2456,7 +2456,7 @@ func GetGlobalTagsElementsUsingCRN(meta interface{}, resourceID, resourceType, t
 	return taggingResult, nil
 }
 
-func GetGlobalTagsElementsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+func GetGlobalTagsElementsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) ([]string, error) {
 
 	gsClient, err := meta.(conns.ClientSession).GlobalSearchAPIV2()
 	if err != nil {
@@ -2503,7 +2503,7 @@ func GetGlobalTagsElementsUsingSearchAPI(meta interface{}, resourceID, resourceT
 			}
 		}
 	}
-	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+	return taglist, nil
 }
 
 func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {

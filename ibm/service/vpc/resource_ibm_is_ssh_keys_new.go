@@ -2,8 +2,12 @@ package vpc
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
+	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -11,6 +15,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -18,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"golang.org/x/crypto/ssh"
 )
 
 var _ resource.Resource = &SSHKeyResource{}
@@ -65,7 +71,7 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"access_tags": schema.ListAttribute{
 				MarkdownDescription: "Access list for this ssh key",
-				Required:            true,
+				Optional:            true,
 				ElementType:         types.StringType,
 				Validators: []validator.List{
 					listvalidator.SizeAtLeast(1),
@@ -146,6 +152,9 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 	if plan.Name.ValueString() != "" {
 		options.Name = core.StringPtr(plan.Name.ValueString())
 	}
+	if plan.PublicKey.ValueString() != "" {
+		options.PublicKey = core.StringPtr(plan.PublicKey.ValueString())
+	}
 	if plan.Type.ValueString() != "" {
 		options.Type = core.StringPtr(plan.Type.ValueString())
 	}
@@ -162,6 +171,27 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 	plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
 	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
 
+	plan.Name = basetypes.NewStringValue(*key.Name)
+	plan.PublicKey = basetypes.NewStringValue(*key.PublicKey)
+	plan.Type = basetypes.NewStringValue(*key.Type)
+	plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
+	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
+	plan.Id = basetypes.NewStringValue(*key.ID)
+	plan.ResourceGroup = basetypes.NewStringValue(*key.ResourceGroup.ID)
+	controller, err := flex.GetBaseController(r.client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting base controller",
+			err.Error(),
+		)
+		return
+	}
+	plan.ResourceControllerURL = basetypes.NewStringValue(controller + "/vpc-ext/compute/sshKeys")
+	plan.ResourceGroup = basetypes.NewStringValue(*key.ResourceGroup.ID)
+	plan.ResourceName = basetypes.NewStringValue(*key.ResourceGroup.Name)
+	plan.ResourceCRN = basetypes.NewStringValue(*key.CRN)
+	plan.Crn = basetypes.NewStringValue(*key.CRN)
+	plan.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
 	if !plan.Tags.IsNull() {
 		newList := plan.Tags.Elements()
 		err = flex.UpdateGlobalTagsElementsUsingCRN(nil, newList, r.client, *key.CRN, "", isKeyUserTagType)
@@ -179,7 +209,6 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 				"Error on create of vpc SSH Key (%s) access tags: %s", plan.Id.ValueString(), err)
 		}
 	}
-
 	resp.State.Set(ctx, plan)
 }
 
@@ -231,19 +260,15 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	state.ResourceCRN = basetypes.NewStringValue(*key.CRN)
 	state.Crn = basetypes.NewStringValue(*key.CRN)
 	state.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
-	// state.Tags, _ = basetypes.NewListValue()
-	// state.AccessTags            =
+	tags, _ := flex.GetGlobalTagsElementsUsingCRN(r.client, *key.CRN, "", isKeyUserTagType)
+	access, _ := flex.GetGlobalTagsElementsUsingCRN(r.client, *key.CRN, "", isKeyAccessTagType)
+	state.Tags, _ = basetypes.NewListValue(convertStringSliceToListValue(tags))
+	state.AccessTags, _ = basetypes.NewListValue(convertStringSliceToListValue(access))
 
 	resp.State.Set(ctx, state)
 }
 
 func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan SSHKeyResourceModel
-	req.Plan.Get(ctx, &plan)
-
-	var state SSHKeyResourceModel
-	req.State.Get(ctx, &state)
-
 	sess, err := ctx.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -252,34 +277,40 @@ func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		)
 		return
 	}
-
-	if plan.Name != state.Name {
-		options := &vpcv1.UpdateKeyOptions{
-			ID: core.StringPtr(state.Id.ValueString()),
-		}
-		keyPatchModel := &vpcv1.KeyPatch{
-			Name: core.StringPtr(plan.Name.ValueString()),
-		}
-		keyPatch, err := keyPatchModel.AsPatch()
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error creating key patch",
-				err.Error(),
-			)
-			return
-		}
-		options.KeyPatch = keyPatch
-		_, _, err = sess.UpdateKey(options)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error updating key",
-				err.Error(),
-			)
-			return
-		}
+	var plan, state SSHKeyResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	resp.State.Set(ctx, plan)
+	if !plan.Name.Equal(state.Name) {
+		input := &vpcv1.UpdateKeyOptions{}
+
+		keyPatchModel := &vpcv1.KeyPatch{}
+		keyPatchModel.Name = core.StringPtr(plan.Name.ValueString())
+		keyPatchAsPatch, err := keyPatchModel.AsPatch()
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error applying asPatch of keyPatchModel",
+				err.Error(),
+			)
+			return
+		}
+		input.KeyPatch = keyPatchAsPatch
+
+		_, res, err := sess.UpdateKey(input)
+
+		if err != nil {
+			resp.Diagnostics.AddError(fmt.Sprintf(
+				"Error creating key %v", res),
+				err.Error(),
+			)
+			return
+		}
+		resp.State.Set(ctx, plan)
+	}
+	return
 }
 
 func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -326,4 +357,46 @@ type SSHKeyResourceModel struct {
 	ResourceGroupName     types.String `tfsdk:"resource_group_name"`
 	Tags                  types.List   `tfsdk:"tags"`
 	AccessTags            types.List   `tfsdk:"access_tags"`
+}
+
+func convertStringSliceToListValue(stringSlice []string) (attr.Type, []attr.Value) {
+	valueType := basetypes.StringType{}
+	values := make([]attr.Value, len(stringSlice))
+
+	for i, s := range stringSlice {
+		values[i] = basetypes.NewStringValue(s)
+	}
+
+	return valueType, values
+}
+
+func parseKeySshNew(s string) (ssh.PublicKey, error) {
+	keyBytes := []byte(s)
+
+	// Accepts formats of PublicKey:
+	// - <base64 key>
+	// - ssh-rsa/ssh-ed25519 <base64 key>
+	// - ssh-rsa/ssh-ed25519 <base64 key> <comment>
+	// if PublicKey provides other than just base64 key, then first part must be "ssh-rsa" or "ssh-ed25519"
+	if subStrs := strings.Split(s, " "); len(subStrs) > 1 && subStrs[0] != "ssh-rsa" && subStrs[0] != "ssh-ed25519" {
+		return nil, errors.New("not an RSA key OR ED25519 key")
+	}
+
+	pk, _, _, _, e := ssh.ParseAuthorizedKey(keyBytes)
+	if e == nil {
+		return pk, nil
+	}
+
+	decodedKey := make([]byte, base64.StdEncoding.DecodedLen(len(keyBytes)))
+	n, e := base64.StdEncoding.Decode(decodedKey, keyBytes)
+	if e != nil {
+		return nil, e
+	}
+	decodedKey = decodedKey[:n]
+
+	pk, e = ssh.ParsePublicKey(decodedKey)
+	if e == nil {
+		return pk, nil
+	}
+	return nil, e
 }
