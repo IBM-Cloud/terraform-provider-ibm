@@ -123,7 +123,7 @@ import (
 	"github.com/IBM/logs-go-sdk/logsv0"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv0"
+	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -232,7 +232,7 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
-	BackupRecoveryV0() (*backuprecoveryv0.BackupRecoveryV0, error)
+	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -552,7 +552,7 @@ type clientSession struct {
 	resourceControllerAPI *resourcecontroller.ResourceControllerV2
 
 	// BAAS service
-	backupRecoveryClient    *backuprecoveryv0.BackupRecoveryV0
+	backupRecoveryClient    *backuprecoveryv1.BackupRecoveryV1
 	backupRecoveryClientErr error
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
@@ -1116,7 +1116,7 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
-func (session clientSession) BackupRecoveryV0() (*backuprecoveryv0.BackupRecoveryV0, error) {
+func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error) {
 	return session.backupRecoveryClient, session.backupRecoveryClientErr
 }
 
@@ -1567,12 +1567,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 	}
 
-	backupRecoveryClientOptions := &backuprecoveryv0.BackupRecoveryV0Options{
+	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
 		Authenticator: authenticator,
 		URL:           backupRecoveryURL,
 	}
 	// Construct the service client.
-	session.backupRecoveryClient, err = backuprecoveryv0.NewBackupRecoveryV0(backupRecoveryClientOptions)
+	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)
 	tr := &gohttp.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	session.backupRecoveryClient.Service.Client.Transport = tr
 	if err == nil {

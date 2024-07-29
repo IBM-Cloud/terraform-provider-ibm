@@ -8,4 +8,4 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 * IBM Provider Docs: [Home](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs)
 * IBM Provider Docs: [One of the  resources](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/common_source_registration_request)
 * IBM API Docs: [IBM API Docs for ]()
-* IBM  SDK: [IBM SDK for ](https://github.com/IBM/appconfiguration-go-admin-sdk/tree/master/backuprecoveryv0)
+* IBM  SDK: [IBM SDK for ](https://github.com/IBM/appconfiguration-go-admin-sdk/tree/master/backuprecoveryv1)
