@@ -26,7 +26,11 @@ Review the argument reference that you can specify for your data source.
 * `instance_id` - (Required, Forces new resource, String) The GUID of the Secrets Manager instance.
 * `region` - (Optional, Forces new resource, String) The region of the Secrets Manager instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `endpoint_type` - (Optional, String) - The endpoint type. If not provided the endpoint type is determined by the `visibility` argument provided in the provider configuration.
-	* Constraints: Allowable values are: `private`, `public`.
+    * Constraints: Allowable values are: `private`, `public`.
+* `sort` - (Optional, String) - Sort a collection of configurations by the specified field in ascending order. To sort in descending order use the `-` character.
+    * Constraints: Allowable values are: `config_type`, `secret_type`, `name`.
+* `search` - (Optional, String) - Obtain a collection of configurations that contain the specified string in one or more of the fields: `name`, `config_type`, `secret_type`.
+* `secret_types` - (Optional, List) - Filter configurations by secret types: `iam_credentials`, `public_cert` or `private_cert`. You can apply multiple filters by using a comma-separated list of secret types.
 	
 ## Attribute Reference
 

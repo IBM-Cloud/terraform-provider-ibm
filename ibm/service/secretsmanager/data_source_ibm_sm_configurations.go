@@ -36,6 +36,12 @@ func DataSourceIbmSmConfigurations() *schema.Resource {
 				Optional:    true,
 				Description: "Filter secrets by groups. You can apply multiple filters by using a comma-separated list of secret group IDs. If you need to filter secrets that are in the default secret group, use the `default` keyword.",
 			},
+			"secret_types": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Filter secrets by secret types.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"total_count": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -214,6 +220,14 @@ func dataSourceIbmSmConfigurationsRead(context context.Context, d *schema.Resour
 	if ok {
 		searchStr := search.(string)
 		listConfigurationsOptions.SetSearch(searchStr)
+	}
+	if _, ok := d.GetOk("secret_types"); ok {
+		secretTypes := d.Get("secret_types").([]interface{})
+		parsedTypes := make([]string, len(secretTypes))
+		for i, v := range secretTypes {
+			parsedTypes[i] = fmt.Sprint(v)
+		}
+		listConfigurationsOptions.SetSecretTypes(parsedTypes)
 	}
 
 	var pager *secretsmanagerv2.ConfigurationsPager
