@@ -65,6 +65,7 @@ const (
 	isBareMetalServerStatusReasonsMoreInfo               = "more_info"
 	isBareMetalServerDeleteType                          = "delete_type"
 	isBareMetalServerImage                               = "image"
+	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmware_update_type_available"
 	isBareMetalServerKeys                                = "keys"
 	isBareMetalServerUserData                            = "user_data"
 	isBareMetalServerNicName                             = "name"
@@ -174,6 +175,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			},
 			isBareMetalServerBandwidth: {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "The total bandwidth (in megabits per second)",
 			},
@@ -216,6 +218,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN for this bare metal server",
+			},
+			isBareMetalServerFirmwareUpdateTypeAvailable: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of firmware update available",
 			},
 			isBareMetalServerDisks: {
 				Type:        schema.TypeList,
@@ -568,6 +575,13 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Computed:      true,
 										ValidateFunc:  validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 										Description:   "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
 									},
 									"primary_ip": &schema.Schema{
 										Type:          schema.TypeList,
@@ -959,6 +973,13 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 										Description:  "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 									},
+									"protocol_state_filtering_mode": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+										Description:  "The protocol state filtering mode used for this virtual network interface.",
+									},
 									"primary_ip": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -1226,6 +1247,10 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		imageStr = image.(string)
 	}
 
+	if bandwidthIntf, ok := d.GetOk(isBareMetalServerBandwidth); ok {
+		bandwidth := int64(bandwidthIntf.(int))
+		options.Bandwidth = &bandwidth
+	}
 	// enable secure boot
 
 	if _, ok := d.GetOkExists(isBareMetalServerEnableSecureBoot); ok {
@@ -1929,6 +1954,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	d.Set(isBareMetalServerCPU, cpuList)
 	d.Set(isBareMetalServerCRN, *bms.CRN)
+	if bms.Firmware != nil && bms.Firmware.Update != nil {
+		d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update)
+	}
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
@@ -2386,6 +2414,10 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			if d.HasChange("primary_network_attachment.0.virtual_network_interface.0.allow_ip_spoofing") {
 				allIpSpoofing := d.Get("primary_network_attachment.0.virtual_network_interface.0.allow_ip_spoofing").(bool)
 				virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+			}
+			if d.HasChange("primary_network_attachment.0.virtual_network_interface.0.protocol_state_filtering_mode") {
+				psfMode := d.Get("primary_network_attachment.0.virtual_network_interface.0.protocol_state_filtering_mode").(string)
+				virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &psfMode
 			}
 			virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 			if err != nil {
@@ -3409,6 +3441,12 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	bmsPatchModel := &vpcv1.BareMetalServerPatch{}
 	flag := false
 
+	if d.HasChange(isBareMetalServerBandwidth) && !d.IsNewResource() {
+		bandwidth := int64(d.Get(isBareMetalServerBandwidth).(int))
+		bmsPatchModel.Bandwidth = &bandwidth
+		flag = true
+	}
+
 	if d.HasChange(isBareMetalServerEnableSecureBoot) {
 		newEnableSecureBoot := d.Get(isBareMetalServerEnableSecureBoot).(bool)
 		bmsPatchModel.EnableSecureBoot = &newEnableSecureBoot
@@ -4058,6 +4096,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 	vniMap["auto_delete"] = vniDetails.AutoDelete
 	vniMap["enable_infrastructure_nat"] = vniDetails.EnableInfrastructureNat
 	vniMap["resource_group"] = vniDetails.ResourceGroup.ID
+	vniMap["protocol_state_filtering_mode"] = vniDetails.ProtocolStateFilteringMode
 	primaryipId := *vniDetails.PrimaryIP.ID
 	if !core.IsNil(vniDetails.Ips) {
 		ips := []map[string]interface{}{}
@@ -4199,6 +4238,14 @@ func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfacePrototypeAttachment
 	}
 	if _, ok := d.GetOkExists(enablenat); ok && modelMap["enable_infrastructure_nat"] != nil {
 		model.EnableInfrastructureNat = core.BoolPtr(modelMap["enable_infrastructure_nat"].(bool))
+	}
+	if modelMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok {
+			protocolStateFilteringMode := pStateFilteringInt.(string)
+			if protocolStateFilteringMode != "" {
+				model.ProtocolStateFilteringMode = core.StringPtr(protocolStateFilteringMode)
+			}
+		}
 	}
 	if modelMap["ips"] != nil && modelMap["ips"].(*schema.Set).Len() > 0 {
 		ips := []vpcv1.VirtualNetworkInterfaceIPPrototypeIntf{}
@@ -4458,6 +4505,9 @@ func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string) 
 						}
 						virtualNetworkInterface.PrimaryIP = primaryIPModel
 					}
+					if newListItemVniMap["protocol_state_filtering_mode"] != nil && newListItemVniMap["protocol_state_filtering_mode"].(string) != "" {
+						virtualNetworkInterface.ProtocolStateFilteringMode = core.StringPtr(newListItemVniMap["protocol_state_filtering_mode"].(string))
+					}
 					if newListItemVniMap["resource_group"] != nil && newListItemVniMap["resource_group"].(string) != "" {
 
 						virtualNetworkInterface.ResourceGroup = &vpcv1.ResourceGroupIdentity{
@@ -4543,6 +4593,9 @@ func compareAddedNacs(oldList, newList []interface{}, bareMetalServerId string) 
 							primaryIPModel.Name = core.StringPtr(primaryIPMapModel["name"].(string))
 						}
 						virtualNetworkInterface.PrimaryIP = primaryIPModel
+					}
+					if newListVniitemmMap["protocol_state_filtering_mode"] != nil && newListVniitemmMap["protocol_state_filtering_mode"].(string) != "" {
+						virtualNetworkInterface.ProtocolStateFilteringMode = core.StringPtr(newListVniitemmMap["protocol_state_filtering_mode"].(string))
 					}
 					if newListVniitemmMap["resource_group"] != nil && newListVniitemmMap["resource_group"].(string) != "" {
 
@@ -4657,6 +4710,8 @@ func compareModifiedNacs(oldList, newList []interface{}, bareMetalServerId strin
 					s2vniMapIPS := s2VniMap["ips"]
 					s2vniMapName := s2VniMap["name"]
 					s2vniMapSG := s2VniMap["security_groups"]
+					s1vniPSFM := s1VniMap["protocol_state_filtering_mode"]
+					s2vniPSFM := s2VniMap["protocol_state_filtering_mode"]
 					vniUpdateOptions := &vpcv1.UpdateVirtualNetworkInterfaceOptions{
 						ID: &vniId,
 					}
@@ -4678,7 +4733,13 @@ func compareModifiedNacs(oldList, newList []interface{}, bareMetalServerId strin
 						vniPatch.Name = core.StringPtr(s2vniMapName.(string))
 						hasChanged = true
 					}
+					if s1vniPSFM != nil && s2vniPSFM != nil && s1vniPSFM.(string) != s2vniPSFM.(string) {
+						vniPatch.ProtocolStateFilteringMode = core.StringPtr(s2vniPSFM.(string))
+						hasChanged = true
+					}
 					if hasChanged {
+						virtualNetworkInterfacePatchAsPatch, err := vniPatch.AsPatch()
+						vniUpdateOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
 						_, res, err := sess.UpdateVirtualNetworkInterface(vniUpdateOptions)
 						if err != nil {
 							return fmt.Errorf("%s/n%v", err, res)

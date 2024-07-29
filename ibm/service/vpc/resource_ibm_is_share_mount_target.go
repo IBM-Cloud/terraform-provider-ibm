@@ -103,6 +103,13 @@ func ResourceIBMIsShareMountTarget() *schema.Resource {
 							Computed:    true,
 							Description: "If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.",
 						},
+						"protocol_state_filtering_mode": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+							Description:  "The protocol state filtering mode used for this virtual network interface.",
+						},
 						"primary_ip": {
 							Type:        schema.TypeList,
 							MinItems:    0,
@@ -457,7 +464,7 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		hasChange = true
 	}
 
-	if d.HasChange("virtual_network_interface.0.name") || d.HasChange("virtual_network_interface.0.auto_delete") {
+	if d.HasChange("virtual_network_interface.0.name") || d.HasChange("virtual_network_interface.0.auto_delete") || d.HasChange("virtual_network_interface.0.protocol_state_filtering_mode") {
 		vniPatchModel := &vpcv1.VirtualNetworkInterfacePatch{}
 		if d.HasChange("virtual_network_interface.0.name") {
 			vniName := d.Get("virtual_network_interface.0.name").(string)
@@ -466,6 +473,10 @@ func resourceIBMIsShareMountTargetUpdate(context context.Context, d *schema.Reso
 		if d.HasChange("virtual_network_interface.0.auto_delete") {
 			autoDelete := d.Get("virtual_network_interface.0.auto_delete").(bool)
 			vniPatchModel.AutoDelete = &autoDelete
+		}
+		if d.HasChange("virtual_network_interface.0.protocol_state_filtering_mode") {
+			psfm := d.Get("virtual_network_interface.0.protocol_state_filtering_mode").(string)
+			vniPatchModel.ProtocolStateFilteringMode = &psfm
 		}
 		vniPatch, err := vniPatchModel.AsPatch()
 		if err != nil {
@@ -781,6 +792,8 @@ func ShareMountTargetVirtualNetworkInterfaceToMap(context context.Context, vpcCl
 	vniMap["subnet"] = vni.Subnet.ID
 	vniMap["resource_type"] = vni.ResourceType
 	vniMap["resource_group"] = vni.ResourceGroup.ID
+	vniMap["protocol_state_filtering_mode"] = vni.ProtocolStateFilteringMode
+
 	if len(vni.SecurityGroups) != 0 {
 		secgrpList := []string{}
 		for i := 0; i < len(vni.SecurityGroups); i++ {
@@ -797,6 +810,11 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 	name, _ := vniMap["name"].(string)
 	if name != "" {
 		vniPrototype.Name = &name
+	}
+	if vniMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := vniMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
+			vniPrototype.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		}
 	}
 	primaryIp, ok := vniMap["primary_ip"]
 	if ok && len(primaryIp.([]interface{})) > 0 {

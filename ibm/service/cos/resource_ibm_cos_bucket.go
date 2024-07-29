@@ -15,7 +15,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/core"
-	rcsdk "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
+
+	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
@@ -152,7 +153,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Description:      "public or private",
+				Description:      "COS endpoint type: public, private, direct",
 				ConflictsWith:    []string{"satellite_location_id"},
 				DiffSuppressFunc: flex.ApplyOnce,
 				Default:          "public",
@@ -185,25 +186,30 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events",
+				Description: "Enables sending log data to IBM Cloud Activity Tracker to provide visibility into bucket management, object read and write events.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"read_data_events": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "If set to true, all object read events will be sent to Activity Tracker.",
+							Description: "If set to `true`, all object read events (i.e. downloads) will be sent to Activity Tracker.",
 						},
 						"write_data_events": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "If set to true, all object write events will be sent to Activity Tracker.",
+							Description: "If set to `true`, all object write events (i.e. uploads) will be sent to Activity Tracker.",
+						},
+						"management_events": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If set to `true`, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated.",
 						},
 						"activity_tracker_crn": {
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The instance of Activity Tracker that will receive object event data",
+							Optional:    true,
+							Description: "When the activity_tracker_crn is not populated, then enabled events are sent to the Activity Tracker instance associated to the container's location unless otherwise specified in the Activity Tracker Event Routing service configuration.If `activity_tracker_crn` is populated, then enabled events are sent to the Activity Tracker instance specified and bucket management events are always enabled.",
 						},
 					},
 				},
@@ -212,25 +218,25 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Enables sending metrics to IBM Cloud Monitoring.",
+				Description: " Enables sending metrics to IBM Cloud Monitoring.All metrics are opt-in",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"usage_metrics_enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "Usage metrics will be sent to the monitoring service.",
+							Description: "If set to true, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.",
 						},
 						"request_metrics_enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "Request metrics will be sent to the monitoring service.",
+							Description: "If set to true, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service.",
 						},
 						"metrics_monitoring_crn": {
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Instance of IBM Cloud Monitoring that will receive the bucket metrics.",
+							Optional:    true,
+							Description: "When the metrics_monitoring_crn is not populated, then enabled metrics are sent to the monitoring instance associated to the container's location unless otherwise specified in the Metrics Router service configuration.If metrics_monitoring_crn is populated, then enabled events are sent to the Metrics Monitoring instance specified.",
 						},
 					},
 				},
@@ -351,7 +357,6 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Optional:    true,
 				MaxItems:    1,
 				Description: "A retention policy is enabled at the IBM Cloud Object Storage bucket level. Minimum, maximum and default retention period are defined by this policy and apply to all objects in the bucket.",
-				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default": {
@@ -746,20 +751,26 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		serviceID = bucketsatcrn
 	}
 
-	var apiEndpoint, apiEndpointPrivate, directApiEndpoint string
+	var apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
 		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
+
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 
@@ -769,7 +780,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -782,7 +793,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
@@ -923,11 +934,12 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	if endpointType == "private" {
-		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
-	}
-	if endpointType == "direct" {
-		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+
+	if endpointType != "public" {
+		// User is expected to define both private and direct url type under "private" in endpoints file since visibility type "direct" is not supported.
+		cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, "private", "IBMCLOUD_COS_CONFIG_ENDPOINT", bLocation, cosConfigUrls[endpointType])
+		cosConfigURL = conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigURL)
+		sess.SetServiceURL(cosConfigURL)
 	}
 
 	if apiType == "sl" {
@@ -940,7 +952,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	//BucketName
 	bucketName = d.Get("bucket_name").(string)
-	bucketPatchModel := new(rcsdk.BucketPatch)
+	bucketPatchModel := new(resourceconfigurationv1.BucketPatch)
 	if d.HasChange("hard_quota") {
 		hasChanged = true
 		bucketPatchModel.HardQuota = core.Int64Ptr(int64(d.Get("hard_quota").(int)))
@@ -948,7 +960,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("allowed_ip") {
-		firewall := &rcsdk.Firewall{}
+		firewall := &resourceconfigurationv1.Firewall{}
 		var ips = make([]string, 0)
 		if ip, ok := d.GetOk("allowed_ip"); ok && ip != nil {
 			for _, i := range ip.([]interface{}) {
@@ -963,7 +975,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("activity_tracking") {
-		activityTracker := &rcsdk.ActivityTracking{}
+		activityTracker := &resourceconfigurationv1.ActivityTracking{}
 		if activity, ok := d.GetOk("activity_tracking"); ok {
 			activitylist := activity.([]interface{})
 			for _, l := range activitylist {
@@ -980,10 +992,28 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 					writeSet := writeEvent.(bool)
 					activityTracker.WriteDataEvents = &writeSet
 				}
+				if managementEventSet, ok := d.GetOkExists("activity_tracking.0.management_events"); ok {
+					managementEventValue := managementEventSet.(bool)
+					activityTracker.ManagementEvents = &managementEventValue
+				}
 
-				//crn - Required field
-				crn := activityMap["activity_tracker_crn"].(string)
-				activityTracker.ActivityTrackerCrn = &crn
+				//crn - Optional field
+
+				oldATCrnValue, newATCrnValue := d.GetChange("activity_tracking.0.activity_tracker_crn")
+				if newATCrnValue != "" {
+					if activityMap["activity_tracker_crn"] != nil {
+						crnSet := activityMap["activity_tracker_crn"]
+						crnstring := crnSet.(string)
+						if crnstring != "" {
+							crn := activityMap["activity_tracker_crn"].(string)
+							activityTracker.ActivityTrackerCrn = &crn
+						}
+
+					}
+				} else if oldATCrnValue != "" && newATCrnValue == "" {
+					println("this is upgrading to new config")
+					activityTracker.ActivityTrackerCrn = aws.String("")
+				}
 			}
 		}
 		hasChanged = true
@@ -992,25 +1022,37 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("metrics_monitoring") {
-		metricsMonitoring := &rcsdk.MetricsMonitoring{}
+		metricsMonitoring := &resourceconfigurationv1.MetricsMonitoring{}
 		if metrics, ok := d.GetOk("metrics_monitoring"); ok {
 			metricslist := metrics.([]interface{})
 			for _, l := range metricslist {
 				metricsMap, _ := l.(map[string]interface{})
 
 				//metrics enabled - as its optional check for existence
-				if metricsSet := metricsMap["usage_metrics_enabled"]; metricsSet != nil {
-					metrics := metricsSet.(bool)
+				if metricsUsageSet := metricsMap["usage_metrics_enabled"]; metricsUsageSet != nil {
+					metrics := metricsUsageSet.(bool)
 					metricsMonitoring.UsageMetricsEnabled = &metrics
 				}
 				// request metrics enabled - as its optional check for existence
-				if metricsSet := metricsMap["request_metrics_enabled"]; metricsSet != nil {
-					metrics := metricsSet.(bool)
+				if metricsRequestSet := metricsMap["request_metrics_enabled"]; metricsRequestSet != nil {
+					metrics := metricsRequestSet.(bool)
 					metricsMonitoring.RequestMetricsEnabled = &metrics
 				}
-				//crn - Required field
-				crn := metricsMap["metrics_monitoring_crn"].(string)
-				metricsMonitoring.MetricsMonitoringCrn = &crn
+				//crn - optional field
+				oldMMCrnValue, newMMCrnValue := d.GetChange("metrics_monitoring.0.metrics_monitoring_crn")
+				if newMMCrnValue != "" {
+					if metricsMap["metrics_monitoring_crn"] != nil {
+						crnSet := metricsMap["metrics_monitoring_crn"]
+						crnstring := crnSet.(string)
+						if crnstring != "" {
+							crn := crnSet.(string)
+							metricsMonitoring.MetricsMonitoringCrn = &crn
+						}
+					}
+				} else if oldMMCrnValue != "" && newMMCrnValue == "" {
+					println("Setting the metricsMonitoring crn as null")
+					metricsMonitoring.MetricsMonitoringCrn = aws.String("")
+				}
 			}
 		}
 		hasChanged = true
@@ -1023,10 +1065,10 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		if asPatchErr != nil {
 			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, bucketPatchModelAsPatch)
 		}
-		setOptions := new(rcsdk.UpdateBucketConfigOptions)
-		setOptions.SetBucket(bucketName)
-		setOptions.BucketPatch = bucketPatchModelAsPatch
-		response, err := sess.UpdateBucketConfig(setOptions)
+		updateBucketConfig := new(resourceconfigurationv1.UpdateBucketConfigOptions)
+		updateBucketConfig.Bucket = &bucketName
+		updateBucketConfig.BucketPatch = bucketPatchModelAsPatch
+		response, err := sess.UpdateBucketConfig(updateBucketConfig)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, response)
 		}
@@ -1059,21 +1101,25 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		serviceID = bucketsatcrn
 	}
 
-	var apiEndpoint, apiEndpointPrivate, directApiEndpoint string
-
+	var apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint, visibility string
+	visibility = endpointType
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpoint = apiEndpointPublic
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
 
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
@@ -1148,7 +1194,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
 	d.Set("bucket_name", bucketName)
-	d.Set("s3_endpoint_public", apiEndpoint)
+	d.Set("s3_endpoint_public", apiEndpointPublic)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
 	d.Set("s3_endpoint_direct", directApiEndpoint)
 	if endpointType != "" {
@@ -1158,11 +1204,11 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if endpointType == "private" {
-		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
-	}
-	if endpointType == "direct" {
-		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	if endpointType != "public" {
+		// User is expected to define both private and direct url type under "private" in endpoints file since visibility type "direct" is not supported.
+		cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, "private", "IBMCLOUD_COS_CONFIG_ENDPOINT", bLocation, cosConfigUrls[endpointType])
+		cosConfigURL = conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigURL)
+		sess.SetServiceURL(cosConfigURL)
 	}
 
 	if apiType == "sl" {
@@ -1172,9 +1218,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		sess.SetServiceURL(satconfig)
 	}
 
-	getOptions := new(rcsdk.GetBucketConfigOptions)
-	getOptions.SetBucket(bucketName)
-	bucketPtr, response, err := sess.GetBucketConfig(getOptions)
+	getBucketConfig := new(resourceconfigurationv1.GetBucketConfigOptions)
+	getBucketConfig.Bucket = &bucketName
+	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfig)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
@@ -1346,22 +1392,25 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 
 	var endpointType = d.Get("endpoint_type").(string)
 
-	var apiEndpoint, privateApiEndpoint, directApiEndpoint string
+	var apiEndpoint, privateApiEndpoint, directApiEndpoint, visibility string
 	if apiType == "sl" {
-
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
 		apiEndpoint, privateApiEndpoint, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = privateApiEndpoint
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
 
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
 	if apiEndpoint == "" {
@@ -1377,6 +1426,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		create = &s3.CreateBucketInput{
 			Bucket:                     aws.String(bucketName),
 			ObjectLockEnabledForBucket: aws.Bool(true),
+			CreateBucketConfiguration: &s3.CreateBucketConfiguration{
+				LocationConstraint: aws.String(lConstraint),
+			},
 		}
 	} else {
 		create = &s3.CreateBucketInput{
@@ -1462,7 +1514,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 
 	endpointType := parseBucketId(d.Id(), "endpointType")
 
-	var apiEndpoint, apiEndpointPrivate, directApiEndpoint string
+	var apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if apiType == "sl" {
 
@@ -1470,15 +1522,19 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 
 	} else {
 		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
 
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
 	if apiEndpoint == "" {
