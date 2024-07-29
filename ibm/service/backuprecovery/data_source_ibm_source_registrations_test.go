@@ -12,27 +12,30 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmSourceRegistrationDataSourceBasic(t *testing.T) {
+func TestAccIbmSourceRegistrationsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSourceRegistrationDataSourceConfigBasic(),
+				Config: testAccCheckIbmSourceRegistrationsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_source_registration.source_registration_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_source_registration.source_registration_instance", "source_registration_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_source_registrations.source_registrations_instance", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmSourceRegistrationDataSourceConfigBasic() string {
+func testAccCheckIbmSourceRegistrationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_source_registration" "source_registration_instance" {
-			id = 1
-			requestInitiatorType = "UIUser"
+		data "ibm_source_registrations" "source_registrations_instance" {
+			ids = [ 1 ]
+			tenantIds = [ "tenantIds" ]
+			includeTenants = true
+			includeSourceCredentials = true
+			encryptionKey = "encryptionKey"
+			useCachedData = true
 		}
 	`)
 }

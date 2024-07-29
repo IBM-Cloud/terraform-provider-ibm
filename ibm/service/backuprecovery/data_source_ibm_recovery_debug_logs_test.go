@@ -12,27 +12,26 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmSourceRegistrationDataSourceBasic(t *testing.T) {
+func TestAccIbmRecoveryDebugLogsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSourceRegistrationDataSourceConfigBasic(),
+				Config: testAccCheckIbmRecoveryDebugLogsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_source_registration.source_registration_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_source_registration.source_registration_instance", "source_registration_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_recovery_debug_logs.recovery_debug_logs_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_recovery_debug_logs.recovery_debug_logs_instance", "recovery_debug_logs_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmSourceRegistrationDataSourceConfigBasic() string {
+func testAccCheckIbmRecoveryDebugLogsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_source_registration" "source_registration_instance" {
-			id = 1
-			requestInitiatorType = "UIUser"
+		data "ibm_recovery_debug_logs" "recovery_debug_logs_instance" {
+			id = "id"
 		}
 	`)
 }

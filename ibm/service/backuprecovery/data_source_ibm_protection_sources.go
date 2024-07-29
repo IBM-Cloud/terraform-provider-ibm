@@ -14,7 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv0"
+	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func DataSourceIbmProtectionSources() *schema.Resource {
@@ -115,46 +115,6 @@ func DataSourceIbmProtectionSources() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies the operating system type of the object.",
-						},
-						"v_center_summary": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"is_cloud_env": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
-									},
-								},
-							},
-						},
-						"sharepoint_site_summary": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Specifies the common parameters for Sharepoint site objects.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"site_web_url": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the web url for the Sharepoint site.",
-									},
-								},
-							},
-						},
-						"windows_cluster_summary": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cluster_source_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the type of cluster resource this source represents.",
-									},
-								},
-							},
 						},
 						"protection_stats": &schema.Schema{
 							Type:        schema.TypeList,
@@ -269,63 +229,6 @@ func DataSourceIbmProtectionSources() *schema.Resource {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Name of the Tenant.",
-												},
-												"description": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Description about the tenant.",
-												},
-												"status": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Current Status of the Tenant.",
-												},
-												"network": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Networking information about a Tenant on a Cluster.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"connector_enabled": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Whether connector (hybrid extender) is enabled.",
-															},
-															"cluster_hostname": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "The hostname for Cohesity cluster as seen by tenants and as is routable from the tenant's network. Tenant's VLAN's hostname, if available can be used instead but it is mandatory to provide this value if there's no VLAN hostname to use. Also, when set, this field would take precedence over VLAN hostname.",
-															},
-															"cluster_ips": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Set of IPs as seen from the tenant's network for the Cohesity cluster. Only one from 'clusterHostname' and 'clusterIps' is needed.",
-																Elem: &schema.Schema{
-																	Type: schema.TypeString,
-																},
-															},
-														},
-													},
-												},
-												"created_at_time_msecs": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
-													Description: "Epoch time when tenant was created.",
-												},
-												"last_updated_at_time_msecs": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
-													Description: "Epoch time when tenant was last updated.",
-												},
-												"deleted_at_time_msecs": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
-													Description: "Epoch time when tenant was last updated.",
-												},
-												"is_managed_on_helios": &schema.Schema{
-													Type:        schema.TypeBool,
-													Computed:    true,
-													Description: "Flag to indicate if tenant is managed on helios.",
 												},
 											},
 										},
@@ -445,12 +348,12 @@ func DataSourceIbmProtectionSources() *schema.Resource {
 }
 
 func dataSourceIbmProtectionSourcesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV0()
+	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getProtectionSourcesOptions := &backuprecoveryv0.GetProtectionSourcesOptions{}
+	getProtectionSourcesOptions := &backuprecoveryv1.GetProtectionSourcesOptions{}
 
 	if _, ok := d.GetOk("request_initiator_type"); ok {
 		getProtectionSourcesOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
@@ -503,7 +406,7 @@ func dataSourceIbmProtectionSourcesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIbmProtectionSourcesSourceToMap(model *backuprecoveryv0.Source) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesSourceToMap(model *backuprecoveryv1.Source) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -541,27 +444,6 @@ func dataSourceIbmProtectionSourcesSourceToMap(model *backuprecoveryv0.Source) (
 	if model.OsType != nil {
 		modelMap["os_type"] = model.OsType
 	}
-	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := dataSourceIbmProtectionSourcesObjectTypeVCenterParamsToMap(model.VCenterSummary)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
-	}
-	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := dataSourceIbmProtectionSourcesSharepointObjectParamsToMap(model.SharepointSiteSummary)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
-	}
-	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := dataSourceIbmProtectionSourcesObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
-	}
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
@@ -581,14 +463,14 @@ func dataSourceIbmProtectionSourcesSourceToMap(model *backuprecoveryv0.Source) (
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
 	if model.OracleParams != nil {
-		oracleParamsMap, err := dataSourceIbmProtectionSourcesSourceOracleParamsToMap((*backuprecoveryv0.ObjectOracleParams)(model.OracleParams))
+		oracleParamsMap, err := dataSourceIbmProtectionSourcesObjectOracleParamsToMap(model.OracleParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["oracle_params"] = []map[string]interface{}{oracleParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := dataSourceIbmProtectionSourcesSourcePhysicalParamsToMap((*backuprecoveryv0.ObjectPhysicalParams)(model.PhysicalParams))
+		physicalParamsMap, err := dataSourceIbmProtectionSourcesObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -603,31 +485,7 @@ func dataSourceIbmProtectionSourcesSourceToMap(model *backuprecoveryv0.Source) (
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesObjectTypeVCenterParamsToMap(model *backuprecoveryv0.ObjectTypeVCenterParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.IsCloudEnv != nil {
-		modelMap["is_cloud_env"] = model.IsCloudEnv
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProtectionSourcesSharepointObjectParamsToMap(model *backuprecoveryv0.SharepointObjectParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.SiteWebURL != nil {
-		modelMap["site_web_url"] = model.SiteWebURL
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProtectionSourcesObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv0.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ClusterSourceType != nil {
-		modelMap["cluster_source_type"] = model.ClusterSourceType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProtectionSourcesObjectProtectionStatsSummaryToMap(model *backuprecoveryv0.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Environment != nil {
 		modelMap["environment"] = model.Environment
@@ -650,7 +508,7 @@ func dataSourceIbmProtectionSourcesObjectProtectionStatsSummaryToMap(model *back
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesPermissionInfoToMap(model *backuprecoveryv0.PermissionInfo) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -687,7 +545,7 @@ func dataSourceIbmProtectionSourcesPermissionInfoToMap(model *backuprecoveryv0.P
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesUserToMap(model *backuprecoveryv0.User) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name
@@ -701,7 +559,7 @@ func dataSourceIbmProtectionSourcesUserToMap(model *backuprecoveryv0.User) (map[
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesGroupToMap(model *backuprecoveryv0.Group) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name
@@ -715,7 +573,7 @@ func dataSourceIbmProtectionSourcesGroupToMap(model *backuprecoveryv0.Group) (ma
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesTenantToMap(model *backuprecoveryv0.Tenant) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -723,47 +581,10 @@ func dataSourceIbmProtectionSourcesTenantToMap(model *backuprecoveryv0.Tenant) (
 	if model.Name != nil {
 		modelMap["name"] = model.Name
 	}
-	if model.Description != nil {
-		modelMap["description"] = model.Description
-	}
-	if model.Status != nil {
-		modelMap["status"] = model.Status
-	}
-	if model.Network != nil {
-		networkMap, err := dataSourceIbmProtectionSourcesTenantNetworkToMap(model.Network)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["network"] = []map[string]interface{}{networkMap}
-	}
-	if model.CreatedAtTimeMsecs != nil {
-		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
-	}
-	if model.LastUpdatedAtTimeMsecs != nil {
-		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
-	}
-	if model.DeletedAtTimeMsecs != nil {
-		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
-	}
-	if model.IsManagedOnHelios != nil {
-		modelMap["is_managed_on_helios"] = model.IsManagedOnHelios
-	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesTenantNetworkToMap(model *backuprecoveryv0.TenantNetwork) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["connector_enabled"] = model.ConnectorEnabled
-	if model.ClusterHostname != nil {
-		modelMap["cluster_hostname"] = model.ClusterHostname
-	}
-	if model.ClusterIps != nil {
-		modelMap["cluster_ips"] = model.ClusterIps
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProtectionSourcesSourceOracleParamsToMap(model *backuprecoveryv0.ObjectOracleParams) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesObjectOracleParamsToMap(model *backuprecoveryv1.ObjectOracleParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DatabaseEntityInfo != nil {
 		databaseEntityInfoMap, err := dataSourceIbmProtectionSourcesDatabaseEntityInfoToMap(model.DatabaseEntityInfo)
@@ -782,7 +603,7 @@ func dataSourceIbmProtectionSourcesSourceOracleParamsToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesDatabaseEntityInfoToMap(model *backuprecoveryv0.DatabaseEntityInfo) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesDatabaseEntityInfoToMap(model *backuprecoveryv1.DatabaseEntityInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ContainerDatabaseInfo != nil {
 		containerDatabaseInfo := []map[string]interface{}{}
@@ -805,7 +626,7 @@ func dataSourceIbmProtectionSourcesDatabaseEntityInfoToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesPluggableDatabaseInfoToMap(model *backuprecoveryv0.PluggableDatabaseInfo) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesPluggableDatabaseInfoToMap(model *backuprecoveryv1.PluggableDatabaseInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DatabaseID != nil {
 		modelMap["database_id"] = model.DatabaseID
@@ -816,7 +637,7 @@ func dataSourceIbmProtectionSourcesPluggableDatabaseInfoToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesDataGuardInfoToMap(model *backuprecoveryv0.DataGuardInfo) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesDataGuardInfoToMap(model *backuprecoveryv1.DataGuardInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Role != nil {
 		modelMap["role"] = model.Role
@@ -827,7 +648,7 @@ func dataSourceIbmProtectionSourcesDataGuardInfoToMap(model *backuprecoveryv0.Da
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesHostInformationToMap(model *backuprecoveryv0.HostInformation) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -841,7 +662,7 @@ func dataSourceIbmProtectionSourcesHostInformationToMap(model *backuprecoveryv0.
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionSourcesSourcePhysicalParamsToMap(model *backuprecoveryv0.ObjectPhysicalParams) (map[string]interface{}, error) {
+func dataSourceIbmProtectionSourcesObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = model.EnableSystemBackup

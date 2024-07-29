@@ -14,14 +14,14 @@ import (
 )
 
 func TestAccIbmProtectionPolicyDataSourceBasic(t *testing.T) {
-	protectionPolicyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	protectionPolicyResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProtectionPolicyDataSourceConfigBasic(protectionPolicyName),
+				Config: testAccCheckIbmProtectionPolicyDataSourceConfigBasic(protectionPolicyResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "protection_policy_id"),
@@ -34,20 +34,20 @@ func TestAccIbmProtectionPolicyDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIbmProtectionPolicyDataSourceAllArgs(t *testing.T) {
-	protectionPolicyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	protectionPolicyDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	protectionPolicyDataLock := "Compliance"
-	protectionPolicyVersion := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	protectionPolicyIsCBSEnabled := "true"
-	protectionPolicyLastModificationTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	protectionPolicyTemplateID := fmt.Sprintf("tf_template_id_%d", acctest.RandIntRange(10, 100))
+	protectionPolicyResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	protectionPolicyResponseDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	protectionPolicyResponseDataLock := "Compliance"
+	protectionPolicyResponseVersion := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
+	protectionPolicyResponseIsCBSEnabled := "true"
+	protectionPolicyResponseLastModificationTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
+	protectionPolicyResponseTemplateID := fmt.Sprintf("tf_template_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmProtectionPolicyDataSourceConfig(protectionPolicyName, protectionPolicyDescription, protectionPolicyDataLock, protectionPolicyVersion, protectionPolicyIsCBSEnabled, protectionPolicyLastModificationTimeUsecs, protectionPolicyTemplateID),
+				Config: testAccCheckIbmProtectionPolicyDataSourceConfig(protectionPolicyResponseName, protectionPolicyResponseDescription, protectionPolicyResponseDataLock, protectionPolicyResponseVersion, protectionPolicyResponseIsCBSEnabled, protectionPolicyResponseLastModificationTimeUsecs, protectionPolicyResponseTemplateID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "protection_policy_id"),
@@ -70,13 +70,17 @@ func TestAccIbmProtectionPolicyDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "is_cbs_enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "last_modification_time_usecs"),
 					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "template_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "is_usable"),
+					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "is_replicated"),
+					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "num_protection_groups"),
+					resource.TestCheckResourceAttrSet("data.ibm_protection_policy.protection_policy_instance", "num_protected_objects"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmProtectionPolicyDataSourceConfigBasic(protectionPolicyName string) string {
+func testAccCheckIbmProtectionPolicyDataSourceConfigBasic(protectionPolicyResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_protection_policy" "protection_policy_instance" {
 			name = "%s"
@@ -291,10 +295,10 @@ func testAccCheckIbmProtectionPolicyDataSourceConfigBasic(protectionPolicyName s
 			protection_policy_id = "protection_policy_id"
 			request_initiator_type = "UIUser"
 		}
-	`, protectionPolicyName)
+	`, protectionPolicyResponseName)
 }
 
-func testAccCheckIbmProtectionPolicyDataSourceConfig(protectionPolicyName string, protectionPolicyDescription string, protectionPolicyDataLock string, protectionPolicyVersion string, protectionPolicyIsCBSEnabled string, protectionPolicyLastModificationTimeUsecs string, protectionPolicyTemplateID string) string {
+func testAccCheckIbmProtectionPolicyDataSourceConfig(protectionPolicyResponseName string, protectionPolicyResponseDescription string, protectionPolicyResponseDataLock string, protectionPolicyResponseVersion string, protectionPolicyResponseIsCBSEnabled string, protectionPolicyResponseLastModificationTimeUsecs string, protectionPolicyResponseTemplateID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_protection_policy" "protection_policy_instance" {
 			name = "%s"
@@ -1002,5 +1006,5 @@ func testAccCheckIbmProtectionPolicyDataSourceConfig(protectionPolicyName string
 			protection_policy_id = "protection_policy_id"
 			request_initiator_type = "UIUser"
 		}
-	`, protectionPolicyName, protectionPolicyDescription, protectionPolicyDataLock, protectionPolicyVersion, protectionPolicyIsCBSEnabled, protectionPolicyLastModificationTimeUsecs, protectionPolicyTemplateID)
+	`, protectionPolicyResponseName, protectionPolicyResponseDescription, protectionPolicyResponseDataLock, protectionPolicyResponseVersion, protectionPolicyResponseIsCBSEnabled, protectionPolicyResponseLastModificationTimeUsecs, protectionPolicyResponseTemplateID)
 }

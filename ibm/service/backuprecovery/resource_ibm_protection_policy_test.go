@@ -13,11 +13,11 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv0"
+	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func TestAccIbmProtectionPolicyBasic(t *testing.T) {
-	var conf backuprecoveryv0.ProtectionPolicyResponse
+	var conf backuprecoveryv1.ProtectionPolicyResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -44,7 +44,7 @@ func TestAccIbmProtectionPolicyBasic(t *testing.T) {
 }
 
 func TestAccIbmProtectionPolicyAllArgs(t *testing.T) {
-	var conf backuprecoveryv0.ProtectionPolicyResponse
+	var conf backuprecoveryv1.ProtectionPolicyResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	dataLock := "Compliance"
@@ -1019,7 +1019,7 @@ func testAccCheckIbmProtectionPolicyConfig(name string, description string, data
 	`, name, description, dataLock, version, isCbsEnabled, lastModificationTimeUsecs, templateID)
 }
 
-func testAccCheckIbmProtectionPolicyExists(n string, obj backuprecoveryv0.ProtectionPolicyResponse) resource.TestCheckFunc {
+func testAccCheckIbmProtectionPolicyExists(n string, obj backuprecoveryv1.ProtectionPolicyResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -1027,27 +1027,27 @@ func testAccCheckIbmProtectionPolicyExists(n string, obj backuprecoveryv0.Protec
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV0()
+		backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 		if err != nil {
 			return err
 		}
 
-		getProtectionPolicyByIdOptions := &backuprecoveryv0.GetProtectionPolicyByIdOptions{}
+		getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
 
 		getProtectionPolicyByIdOptions.SetID(rs.Primary.ID)
 
-		protectionPolicy, _, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)
+		protectionPolicyResponse, _, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *protectionPolicy
+		obj = *protectionPolicyResponse
 		return nil
 	}
 }
 
 func testAccCheckIbmProtectionPolicyDestroy(s *terraform.State) error {
-	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV0()
+	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		return err
 	}
@@ -1056,7 +1056,7 @@ func testAccCheckIbmProtectionPolicyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getProtectionPolicyByIdOptions := &backuprecoveryv0.GetProtectionPolicyByIdOptions{}
+		getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
 
 		getProtectionPolicyByIdOptions.SetID(rs.Primary.ID)
 
@@ -1064,9 +1064,9 @@ func testAccCheckIbmProtectionPolicyDestroy(s *terraform.State) error {
 		_, response, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)
 
 		if err == nil {
-			return fmt.Errorf("Protection Policy still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("protection_policy still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for Protection Policy (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for protection_policy (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
