@@ -309,7 +309,7 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 
 	if v, ok := d.GetOk("capabilities"); ok {
 		z := v.(*schema.Set)
-		createSatLocOptions.CapabilitiesManagedBySatellite = flex.FlattenSatelliteWorkerCapabilities(z)
+		createSatLocOptions.CapabilitiesManagedBySatellite = flex.FlattenSatelliteCapabilities(z)
 	}
 
 	if v, ok := d.GetOk("description"); ok {
