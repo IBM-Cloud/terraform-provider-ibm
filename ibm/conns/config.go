@@ -30,6 +30,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/logs-router-go-sdk/ibmcloudlogsroutingv0"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
@@ -232,6 +233,7 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
+	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -645,6 +647,10 @@ type clientSession struct {
 	// Cloud Logs
 	logsClient    *logsv0.LogsV0
 	logsClientErr error
+
+	// Logs Routing
+	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
+	ibmCloudLogsRoutingClientErr error
 }
 
 // Usage Reports
@@ -1247,6 +1253,11 @@ func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
 	return session.logsClient, session.logsClientErr
 }
 
+// IBM Cloud Logs Routing
+func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error) {
+	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1342,6 +1353,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.projectClientErr = errEmptyBluemixCredentials
 		session.mqcloudClientErr = errEmptyBluemixCredentials
 		session.logsClientErr = errEmptyBluemixCredentials
+		session.ibmCloudLogsRoutingClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1603,6 +1615,39 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.logsClientErr = fmt.Errorf("Error occurred while configuring Cloud Logs API service: %q", err)
+	}
+
+	// LOGS ROUTER Version 0
+	var logsrouterClientURL string
+	var logsrouterURLErr error
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion(c.Region)
+	}
+	if logsrouterURLErr != nil {
+		logsrouterClientURL = ibmcloudlogsroutingv0.DefaultServiceURL
+	}
+	ibmCloudLogsRoutingClientOptions := &ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0Options{
+		Authenticator: authenticator,
+		URL:           logsrouterClientURL,
+	}
+
+	// Construct the service client.
+	session.ibmCloudLogsRoutingClient, err = ibmcloudlogsroutingv0.NewIBMCloudLogsRoutingV0(ibmCloudLogsRoutingClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ibmCloudLogsRoutingClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ibmCloudLogsRoutingClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ibmCloudLogsRoutingClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Logs Routing service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the service client.
