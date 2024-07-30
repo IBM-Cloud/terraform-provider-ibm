@@ -34,7 +34,7 @@ func DataSourceIBMSatelliteLocation() *schema.Resource {
 			},
 			"physical_address": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "An optional physical address of the new Satellite location which is deployed on premise",
 			},
 			"capabilities": {
