@@ -104,6 +104,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 				Type:             schema.TypeSet,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Optional:         true,
+				RequiredWith:     []string{"physical_address"},
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              schema.HashString,
 				Description:      "The satellite capabilities attached to the location",
