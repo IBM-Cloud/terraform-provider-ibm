@@ -275,14 +275,14 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 	if bmsId, ok := d.GetOk(isBareMetalServerID); ok {
 		bareMetalServerId = bmsId.(string)
 	}
-
+	interfaceType := ""
 	if allowedVlansOk, ok := d.GetOk(isBareMetalServerNicAllowedVlans); ok {
 		sess, err := vpcClient(meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		options := &vpcv1.CreateBareMetalServerNetworkInterfaceOptions{}
-		interfaceType := "pci"
+		interfaceType = "pci"
 		// to create pci, server needs to be in stopped state
 
 		getbmsoptions := &vpcv1.GetBareMetalServerOptions{
@@ -418,7 +418,6 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 		log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
 		nicAfterWait, err := isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
@@ -441,6 +440,10 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 			return diag.FromErr(fmt.Errorf("[ERROR] Error starting bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
 		}
 		_, err = isWaitForBareMetalServerAvailableForNIC(sess, bareMetalServerId, d.Timeout(schema.TimeoutCreate), d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
