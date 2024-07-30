@@ -39,7 +39,7 @@ resource "ibm_pi_image" "testacc_image  "{
 }
 ```
 
-## Notes
+### Notes
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
@@ -75,6 +75,7 @@ Review the argument references that you can specify for your resource.
 - `pi_image_name` - (Required, String) The name of an image.
 - `pi_image_id` - (Optional, String) Image ID of existing source image; required for copy image.
   - Either `pi_image_id` or `pi_image_bucket_name` is required.
+  - You can retrieve this value from [pi_catalog_images](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_catalog_images#image_id) as `image_id` from the stock image you intend to use.
 - `pi_image_bucket_name` - (Optional, String) Cloud Object Storage bucket name; `bucket-name[/optional/folder]`
   - Either `pi_image_bucket_name` or `pi_image_id` is required.
 - `pi_image_access_key` - (Optional, String, Sensitive) Cloud Object Storage access key; required for buckets with private access.
@@ -106,8 +107,8 @@ In addition to all argument reference list, you can access the following attribu
 
 The `ibm_pi_image` can be imported by using `pi_cloud_instance_id` and `image_id`.
 
-**Example**
+### Example
 
-```
+```bash
 terraform import ibm_pi_image.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
