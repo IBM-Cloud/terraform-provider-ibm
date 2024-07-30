@@ -49,9 +49,9 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 | targets | List of targets. | `list()` | true |
 | targets.log_sink_crn | CRN of the Mezmo or Cloud Logs instance to sends logs to | `string` | true |
 | targets.name | The name for this target. The name is regionally unique for this tenant. | `string` | true |
-| targets.parameters.host | Host name of the log-sin | `string` | true |
+| targets.parameters.host | Host name of the log-sink | `string` | true |
 | targets.parameters.port | Network port of the log-sink | `integer` | true |
-| targets.parameters.access_credential | Secret to connect to the Mezmo log sink. This is not required for log sink of type Cloud Logs | `string` | false |
+| targets.parameters.access_credential | Secret to connect to the Mezmo log-sink. This is not required for log-sink of type Cloud Logs | `string` | false |
 
 #### Outputs
 
@@ -106,14 +106,6 @@ data "ibm_logs_router_targets" "logs_router_targets_instance" {
 | Name | Description |
 |------|-------------|
 | targets | List of targets of a tenant. |
-
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
 
 ## Requirements
 

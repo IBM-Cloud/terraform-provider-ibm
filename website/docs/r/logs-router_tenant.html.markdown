@@ -46,7 +46,7 @@ Nested schema for **targets**:
 		  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/[a-z,A-Z,0-9,-,.]/`.
 		* `port` - (Required, Integer) Network port of the log-sink.
 		  * Constraints: The maximum value is `65535`. The minimum value is `1`.
-		* `access_credential` - (Optional, String) Secret to connect to the Mezmo log sink. This is not required for log sink of type Cloud Logs.
+		* `access_credential` - (Optional, String) Secret to connect to the Mezmo log-sink. This is not required for log-sink of type Cloud Logs.
 
 
 ## Attribute Reference
