@@ -27,7 +27,7 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerClusterBasic(clusterName),
+				Config: testAccCheckIBMContainerClusterBasic(clusterName, "masterNodeReady"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
@@ -42,9 +42,9 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "labels.%", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "tags.#", "1"),
+						"ibm_container_cluster.testacc_cluster", "image_security_enforcement", "false"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers_info.#", "2"),
+						"ibm_container_cluster.testacc_cluster", "workers_info.#", "1"),
 				),
 			},
 			{
@@ -53,7 +53,7 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "default_pool_size", "2"),
+						"ibm_container_cluster.testacc_cluster", "default_pool_size", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_cluster.testacc_cluster", "hardware", "shared"),
 					resource.TestCheckResourceAttr(
@@ -61,11 +61,11 @@ func TestAccIBMContainerCluster_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_container_cluster.testacc_cluster", "resource_group_id"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "labels.%", "3"),
+						"ibm_container_cluster.testacc_cluster", "labels.%", "2"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "tags.#", "2"),
+						"ibm_container_cluster.testacc_cluster", "image_security_enforcement", "true"),
 					resource.TestCheckResourceAttr(
-						"ibm_container_cluster.testacc_cluster", "workers_info.#", "4"),
+						"ibm_container_cluster.testacc_cluster", "workers_info.#", "1"),
 				),
 			},
 		},
@@ -227,7 +227,7 @@ func testAccCheckIBMContainerClusterDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMContainerClusterBasic(clusterName string) string {
+func testAccCheckIBMContainerClusterBasic(clusterName, wait_till string) string {
 	return fmt.Sprintf(`
 
 data "ibm_resource_group" "testacc_ds_resource_group" {
@@ -245,13 +245,17 @@ resource "ibm_container_cluster" "testacc_cluster" {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   no_subnet       = true
-  tags            = ["test"]
+  labels = {
+    "test"  = "test-label"
+    "test1" = "test-label1"
+  }
+  wait_till       = "%s"
   timeouts {
     create = "720m"
 	update = "720m"
   }
   
-}	`, clusterName, acc.Datacenter, acc.KubeVersion, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID)
+}	`, clusterName, acc.Datacenter, acc.KubeVersion, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, wait_till)
 }
 
 func testAccCheckIBMContainerClusterKmsEnable(clusterName, kmsInstanceName, rootKeyName string) string {
@@ -331,7 +335,7 @@ data "ibm_resource_group" "testacc_ds_resource_group" {
 resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
-  default_pool_size = 2
+  default_pool_size  = 2 # default_pool_size is applyonce, so should not modify anything in case of update
   hardware           = "shared"
   resource_group_id  = data.ibm_resource_group.testacc_ds_resource_group.id
   kube_version       = "%s"
@@ -340,7 +344,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   private_vlan_id    = "%s"
   no_subnet          = true
   update_all_workers = true
-  tags            = ["test", "once"]
+  image_security_enforcement = true
   timeouts {
     create = "720m"
 	update = "720m"
