@@ -2357,7 +2357,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return err
 	}
-	if d.HasChange("image") {
+	if d.HasChange("image") || d.HasChange("keys") || d.HasChange("user_data") {
 		stopServerIfStartingForInitialization := false
 		newImageId := d.Get("image").(string)
 		initializationPatch := &vpcv1.ReplaceBareMetalServerInitializationOptions{
