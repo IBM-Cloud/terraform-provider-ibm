@@ -109,8 +109,8 @@ Review the argument references that you can specify for your resource.
 - `pi_storage_pool_affinity` - (Optional, Boolean) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment; If storage type is not provided the storage type will default to `tier3`.
 - `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Only supported value is `vSCSI`.
-- `pi_sys_type` - (Optional, String) The type of system on which to create the VM (s922/e880/e980/s1022).
-  - Supported SAP system types are (e880/e980).
+- `pi_sys_type` - (Optional, String) The type of system on which to create the VM (e880/e980/e1080/s922/s1022).
+  - Supported SAP system types are (e880/e980/e1080).
 - `pi_user_data` - (Optional, String) The user data `cloud-init` to pass to the instance during creation. It can be a base64 encoded or an unencoded string. If it is an unencoded string, the provider will encode it before it passing it down.
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
 - `pi_virtual_optical_device` - (Optional, String) Virtual Machine's Cloud Initialization Virtual Optical Device.
