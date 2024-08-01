@@ -74,6 +74,7 @@ In addition to all argument reference list, you can access the following attribu
 - `public_service_endpoint_url` - (String) The URL of the public service endpoint for your cluster.
 - `private_service_endpoint` -  (Bool) Indicates if the private service endpoint is enabled (**true**) or disabled (**false**) for a cluster. 
 - `private_service_endpoint_url` - (String) The URL of the private service endpoint for your cluster.
+- `state` - (String) The state of the cluster.
 - `vlans`- (List of objects) A list of VLANs that are attached to the cluster. 
 
   Nested scheme for `vlans`:
