@@ -5,7 +5,7 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
-	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b
+	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.7.0
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
@@ -26,7 +26,7 @@ require (
 	github.com/IBM/keyprotect-go-client v0.14.0
 	github.com/IBM/logs-go-sdk v0.3.0
 	github.com/IBM/networking-go-sdk v0.48.0
-	github.com/IBM/platform-services-go-sdk v0.64.4
+	github.com/IBM/platform-services-go-sdk v0.65.0
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v5 v5.1.6
@@ -64,7 +64,7 @@ require (
 )
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20240719075425-078fcb3a55be
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/sarama v1.41.2
