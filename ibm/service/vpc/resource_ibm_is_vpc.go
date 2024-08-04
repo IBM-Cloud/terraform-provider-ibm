@@ -958,7 +958,9 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if vpc.DefaultRoutingTable != nil {
 		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 		d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
-		d.Set(isVPCDefaultRoutingTableCRN, *vpc.DefaultRoutingTable.CRN)
+		if vpc.DefaultRoutingTable.CRN != nil {
+			d.Set(isVPCDefaultRoutingTableCRN, *vpc.DefaultRoutingTable.CRN)
+		}
 	}
 	healthReasons := []map[string]interface{}{}
 	if vpc.HealthReasons != nil {
