@@ -17,13 +17,41 @@ import (
 
 func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerClusterDataSourceBasic(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_cluster.testacc_ds_cluster", "id"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_cluster.testacc_ds_cluster", "state", "deploying"),
+				),
+			},
+			{
+				Config: testAccCheckIBMContainerClusterDataSourceBasic_update(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_container_cluster.testacc_ds_cluster", "id"),
+					resource.TestCheckResourceAttr(
+						"data.ibm_container_cluster.testacc_ds_cluster", "state", "normal"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerClusterDataSourceBindServiceBasic(t *testing.T) {
+	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 	serviceName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerClusterDataSource(clusterName, serviceName),
+				Config: testAccCheckIBMContainerClusterDataSourceBindServiceBasic(clusterName, serviceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_container_cluster.testacc_ds_cluster", "id"),
@@ -56,14 +84,34 @@ func testAccIBMClusterVlansCheck(n string) resource.TestCheckFunc {
 		return nil
 	}
 }
-func testAccCheckIBMContainerClusterDataSource(clusterName, serviceName string) string {
+
+func testAccCheckIBMContainerClusterDataSourceBasic(clusterName string) string {
+	return testAccCheckIBMContainerClusterBasic(clusterName, "IngressReady") + `
+	data "ibm_container_cluster" "testacc_ds_cluster" {
+		cluster_name_id       = ibm_container_cluster.testacc_cluster.id
+		list_bounded_services = "false"
+	}
+	`
+}
+
+func testAccCheckIBMContainerClusterDataSourceBasic_update(clusterName string) string {
+	return testAccCheckIBMContainerClusterBasic(clusterName, "IngressReady") + `
+	data "ibm_container_cluster" "testacc_ds_cluster" {
+		cluster_name_id       = ibm_container_cluster.testacc_cluster.id
+		list_bounded_services = "false"
+		wait_till             = "normal"
+	}
+	`
+}
+
+func testAccCheckIBMContainerClusterDataSourceBindServiceBasic(clusterName, serviceName string) string {
 	return testAccCheckIBMContainerBindServiceBasic(clusterName, serviceName) + `
 	data "ibm_container_cluster" "testacc_ds_cluster" {
 		cluster_name_id = ibm_container_cluster.testacc_cluster.id
 	}
 	data "ibm_container_bind_service" "bind_service" {
 		cluster_name_id       = ibm_container_bind_service.bind_service.cluster_name_id
-		service_instance_id = ibm_container_bind_service.bind_service.service_instance_id
+		service_instance_id   = ibm_container_bind_service.bind_service.service_instance_id
 		namespace_id          = "default"
 	}
 	`
