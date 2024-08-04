@@ -39,6 +39,7 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 			isRoutingTableID: {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ExactlyOneOf: []string{isRoutingTableID, isRoutingTableCrn},
 				Description:  "The unique identifier of routing table",
 			},
@@ -46,6 +47,7 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 			isRoutingTableCrn: {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ExactlyOneOf: []string{isRoutingTableID, isRoutingTableCrn},
 				Description:  "The crn of routing table",
 			},
