@@ -158,8 +158,7 @@ func testAccCheckIbmCodeEngineJobConfigBasic(projectID string, name string, imag
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables,
-					scale_array_spec
+					run_env_variables
 				]
 			}
 		}
@@ -187,8 +186,7 @@ func testAccCheckIbmCodeEngineJobConfig(projectID string, name string, imageRefe
 
 			lifecycle {
 				ignore_changes = [
-					run_env_variables,
-					scale_array_spec
+					run_env_variables
 				]
 			}
 		}
