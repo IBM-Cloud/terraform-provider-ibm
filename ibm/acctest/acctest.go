@@ -169,9 +169,8 @@ var (
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType              string
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn       string
 	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId string
-
-	SecretsManagerSecretType string
-	SecretsManagerSecretID   string
+	SecretsManagerSecretType                                                        string
+	SecretsManagerSecretID                                                          string
 )
 
 var (
