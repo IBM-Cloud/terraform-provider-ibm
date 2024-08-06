@@ -45,6 +45,7 @@ func ResourceIBMResourceKey() *schema.Resource {
 			"role": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor and Custom Roles.",
 				// ValidateFunc: validateRole,
@@ -74,7 +75,12 @@ func ResourceIBMResourceKey() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Arbitrary parameters to pass. Must be a JSON object",
 			},
-
+			// ### Modification addded onetime_credentials to Resource scehama
+			"onetime_credentials": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "onetime_credentials of resource key",
+			},
 			"credentials": {
 				Description: "Credentials asociated with the key",
 				Type:        schema.TypeMap,
@@ -270,7 +276,9 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error creating resource key when get role: %s", err)
 		}
-		keyParameters.SetProperty("role_crn", serviceRole.RoleID)
+		if role != "NONE" {
+			keyParameters.SetProperty("role_crn", serviceRole.RoleID)
+		}
 		resourceKeyCreate.Role = serviceRole.RoleID
 	}
 
@@ -363,6 +371,8 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_group_id", *resourceKey.ResourceGroupID)
 	d.Set("source_crn", *resourceKey.SourceCRN)
 	d.Set("state", *resourceKey.State)
+	// ### Modificataion : Setting  "onetime_credentials"
+	d.Set("onetime_credentials", *resourceKey.OnetimeCredentials)
 	d.Set("iam_compatible", *resourceKey.IamCompatible)
 	d.Set("resource_instance_url", *resourceKey.ResourceInstanceURL)
 	if resourceKey.CreatedAt != nil {

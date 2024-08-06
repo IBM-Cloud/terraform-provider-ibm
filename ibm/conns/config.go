@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package conns
@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -3565,6 +3566,27 @@ func EnvFallBack(envs []string, defaultValue string) string {
 		}
 	}
 	return defaultValue
+}
+
+func FileFallBack(endpointsFile, visibility, key, region, defaultValue string) string {
+	var fileMap map[string]interface{}
+	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, endpointsFile); f != "" {
+		jsonFile, err := os.Open(f)
+		if err != nil {
+			log.Fatalf("Unable to open Endpoints File %s", err)
+		}
+		defer jsonFile.Close()
+		bytes, err := io.ReadAll(jsonFile)
+		if err != nil {
+			log.Fatalf("Unable to read Endpoints File %s", err)
+		}
+		err = json.Unmarshal([]byte(bytes), &fileMap)
+		if err != nil {
+			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
+		}
+	}
+
+	return fileFallBack(fileMap, visibility, key, region, defaultValue)
 }
 
 func fileFallBack(fileMap map[string]interface{}, visibility, key, region, defaultValue string) string {

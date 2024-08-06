@@ -53,6 +53,8 @@ const (
 	defaultWorkerPool = "default"
 	computeWorkerPool = "compute"
 	gatewayWorkerpool = "gateway"
+
+	masterDeployed = "deployed"
 )
 
 const PUBLIC_SUBNET_TYPE = "public"
@@ -688,7 +690,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 	d.SetId(cls.ID)
 
-	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
+	targetEnvV2, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -927,7 +929,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
-	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
+	targetEnvV2, err := getVpcClusterTargetHeader(d)
 	if err != nil {
 		return err
 	}
@@ -1565,7 +1567,7 @@ func WaitForClusterVersionUpdate(d *schema.ResourceData, meta interface{}, targe
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		Delay:                     20 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 3,
 	}
 
 	return stateConf.WaitForState()

@@ -1850,14 +1850,6 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	secure := []map[string]interface{}{}
-	if conn.Secure != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionDataStaxConnectionURIToMap(conn.Secure)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
-		}
-		secure = append(secure, modelMap)
-	}
 	if err = d.Set("secure", secure); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secure: %s", err), "(Data) ibm_database_connection", "read")
 		return tfErr.GetDiag()
@@ -2231,36 +2223,6 @@ func DataSourceIBMDatabaseConnectionMySQLConnectionURIToMap(model *clouddatabase
 	}
 	if model.Database != nil {
 		modelMap["database"] = *model.Database
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMDatabaseConnectionDataStaxConnectionURIToMap(model *clouddatabasesv5.DataStaxConnectionURI) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Hosts != nil {
-		hosts := []map[string]interface{}{}
-		for _, hostsItem := range model.Hosts {
-			hostsItemMap, err := DataSourceIBMDatabaseConnectionConnectionHostToMap(&hostsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			hosts = append(hosts, hostsItemMap)
-		}
-		modelMap["hosts"] = hosts
-	}
-	if model.Authentication != nil {
-		authenticationMap, err := DataSourceIBMDatabaseConnectionConnectionAuthenticationToMap(model.Authentication)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["authentication"] = []map[string]interface{}{authenticationMap}
-	}
-	if model.Bundle != nil {
-		bundleMap, err := DataSourceIBMDatabaseConnectionConnectionBundleToMap(model.Bundle)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["bundle"] = []map[string]interface{}{bundleMap}
 	}
 	return modelMap, nil
 }

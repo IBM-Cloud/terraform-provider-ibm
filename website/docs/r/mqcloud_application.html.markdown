@@ -10,6 +10,8 @@ subcategory: "MQ on Cloud"
 
 Create, update, and delete mqcloud_applications with this resource.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl

@@ -213,3 +213,4 @@ In addition to all argument reference list, you can access the following attribu
 - `type` - (String) The type of the instance. For example, `service_instance`.
 - `update_at` - (Timestamp) The date when the instance last updated.
 - `update_by` - (String) The subject who updated the instance.
+- `onetime_credentials` - (Bool) A boolean that dictates if the onetime_credentials is true or false.
