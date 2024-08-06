@@ -279,9 +279,9 @@ func resourceIBMISLBPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	if hmp, ok := d.GetOk(isLBPoolHealthMonitorPort); ok {
 		healthMonitorPort = int64(hmp.(int))
 	}
-	isLBKey := "load_balancer_key_" + lbID
-	conns.IbmMutexKV.Lock(isLBKey)
-	defer conns.IbmMutexKV.Unlock(isLBKey)
+	// isLBKey := "load_balancer_key_" + lbID
+	// conns.IbmMutexKV.Lock(isLBKey)
+	// defer conns.IbmMutexKV.Unlock(isLBKey)
 
 	err := lbPoolCreate(d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
 	if err != nil {
@@ -297,10 +297,10 @@ func lbPoolCreate(d *schema.ResourceData, meta interface{}, name, lbID, algorith
 		return err
 	}
 
-	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
-	}
+	// _, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	// if err != nil {
+	// 	return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+	// }
 
 	options := &vpcv1.CreateLoadBalancerPoolOptions{
 		LoadBalancerID: &lbID,

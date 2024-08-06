@@ -184,15 +184,15 @@ func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID st
 	if err != nil {
 		return err
 	}
-	_, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
-	}
+	// _, err = isWaitForLBPoolActive(sess, lbID, lbPoolID, d.Timeout(schema.TimeoutCreate))
+	// if err != nil {
+	// 	return fmt.Errorf("[ERROR] Error checking for load balancer pool (%s) is active: %s", lbPoolID, err)
+	// }
 
-	_, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
-	}
+	// _, err = isWaitForLBAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
+	// if err != nil {
+	// 	return fmt.Errorf("[ERROR] Error checking for load balancer (%s) is active: %s", lbID, err)
+	// }
 
 	options := &vpcv1.CreateLoadBalancerPoolMemberOptions{
 		LoadBalancerID: &lbID,
