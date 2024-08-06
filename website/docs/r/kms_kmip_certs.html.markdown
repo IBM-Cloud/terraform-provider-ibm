@@ -6,7 +6,7 @@ description: |-
   Manages kmip certs for IBM hs-crypto and KMS.
 ---
 
-# ibm_kms_kmip_adapter
+# ibm_kms_kmip_client_cert
 Register or delete a KMIP Client Certificate to a given KMIP adapter. Certificates are PEM-encoded SSL certificates that will be used by a KMIP client to communicate with the KMIP server. For more information, about KMIP as a whole, see [Using the key management interoperability protocol (KMIP)](https://cloud.ibm.com/docs/key-protect?topic=key-protect-kmip&interface=ui).
 
 

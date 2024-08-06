@@ -94,6 +94,13 @@ func DataSourceIBMResourceInstance() *schema.Resource {
 				Description: "Guid of resource instance",
 			},
 
+			// ### Modification addded onetime_credentials to Resource scehama
+			"onetime_credentials": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "onetime_credentials of resource instance",
+			},
+
 			"parameters_json": {
 				Description: "Parameters asociated with instance in json string",
 				Type:        schema.TypeString,
@@ -270,6 +277,8 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
 	d.Set(flex.ResourceStatus, instance.State)
+	// ### Modifiction : Setting the onetime credientials
+	d.Set("onetime_credentials", instance.OnetimeCredentials)
 	if instance.Parameters != nil {
 		params, err := json.Marshal(instance.Parameters)
 		if err != nil {

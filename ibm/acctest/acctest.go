@@ -97,6 +97,7 @@ var (
 	InstanceProfileNameUpdate       string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
+	IsBareMetalServerImage2         string
 	DNSInstanceCRN                  string
 	DNSZoneID                       string
 	DNSInstanceCRN1                 string
@@ -854,6 +855,12 @@ func init() {
 	if IsBareMetalServerImage == "" {
 		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+	}
+
+	IsBareMetalServerImage2 = os.Getenv("IS_BARE_METAL_SERVER_IMAGE2")
+	if IsBareMetalServerImage2 == "" {
+		IsBareMetalServerImage2 = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage2 for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
 	}
 
 	DNSInstanceCRN = os.Getenv("IS_DNS_INSTANCE_CRN")
