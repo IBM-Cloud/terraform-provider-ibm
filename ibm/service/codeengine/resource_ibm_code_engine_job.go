@@ -157,6 +157,7 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 			"scale_array_spec": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Default:      "0",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_job", "scale_array_spec"),
 				Description:  "Define a custom set of array indices as a comma-separated list containing single values and hyphen-separated ranges, such as  5,12-14,23,27. Each instance gets its array index value from the environment variable JOB_INDEX. The number of unique array indices that you specify with this parameter determines the number of job instances to run.",
 			},
