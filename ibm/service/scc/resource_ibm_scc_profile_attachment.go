@@ -6,7 +6,10 @@ package scc
 import (
 	"context"
 	"fmt"
+	"hash/crc32"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -166,7 +169,7 @@ func ResourceIbmSccProfileAttachment() *schema.Resource {
 				Optional:    true,
 				Description: "The profile parameters for the attachment.",
 				Elem:        schemaAttachmentParameters(),
-				Set:         hashAttachmentParameters,
+				Set:         attachmentParametersSchemaSetFunc("assessment_id", "parameter_name", "parameter_display_name", "parameter_type", "parameter_value"),
 			},
 			"last_scan": {
 				Type:        schema.TypeList,
@@ -236,13 +239,49 @@ func ResourceIbmSccProfileAttachmentValidator() *validate.ResourceValidator {
 
 // hashAttachmentParameters will determine how to hash the AttachmentParameters schema.Resource
 // It uses the 'assessment_id' in order to determine the difference.
-func hashAttachmentParameters(v interface{}) int {
-	if v == nil {
-		return 0
+func attachmentParametersSchemaSetFunc(keys ...string) schema.SchemaSetFunc {
+	return func(v interface{}) int {
+		var str strings.Builder
+
+		if m, ok := v.(map[string]interface{}); ok {
+			for _, key := range keys {
+				if v, ok := m[key]; ok {
+					switch v := v.(type) {
+					case bool:
+						str.WriteRune('-')
+						str.WriteString(strconv.FormatBool(v))
+					case int:
+						str.WriteRune('-')
+						str.WriteString(strconv.Itoa(v))
+					case string:
+						str.WriteRune('-')
+						str.WriteString(v)
+					case []interface{}:
+						str.WriteRune('-')
+						s := make([]string, len(v))
+						for i, v := range v {
+							s[i] = fmt.Sprint(v)
+						}
+						str.WriteString(fmt.Sprintf("[%s]", strings.Join(s, ",")))
+					}
+				}
+			}
+		}
+
+		return stringHashcode(str.String())
 	}
-	m := v.(map[string]interface{})
-	id := (m["assessment_id"]).(string)
-	return schema.HashString(id)
+}
+
+func stringHashcode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
 }
 
 // schemaAttachmentParameters returns a *schema.Resource for AttachmentParameters
@@ -437,7 +476,9 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 		}
 	}
 	if !core.IsNil(attachmentItem.AttachmentParameters) {
-		attachmentParameters := &schema.Set{F: hashAttachmentParameters}
+		attachmentParameters := &schema.Set{
+			F: attachmentParametersSchemaSetFunc("assessment_id", "parameter_name", "parameter_display_name", "parameter_type", "parameter_value"),
+		}
 		for _, attachmentParametersItem := range attachmentItem.AttachmentParameters {
 			attachmentParametersItemMap, err := resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(&attachmentParametersItem)
 			if err != nil {
@@ -549,8 +590,14 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 		if replaceProfileAttachmentOptions.Name == nil {
 			replaceProfileAttachmentOptions.SetName(d.Get("name").(string))
 		}
+		if replaceProfileAttachmentOptions.Status == nil {
+			replaceProfileAttachmentOptions.SetStatus(d.Get("status").(string))
+		}
 		if replaceProfileAttachmentOptions.Schedule == nil {
 			replaceProfileAttachmentOptions.SetSchedule(d.Get("schedule").(string))
+		}
+		if replaceProfileAttachmentOptions.Description == nil {
+			replaceProfileAttachmentOptions.SetDescription(d.Get("description").(string))
 		}
 		if replaceProfileAttachmentOptions.Notifications == nil {
 			notificationsItem := d.Get("notifications.0").(map[string]interface{})
@@ -559,6 +606,9 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 				return diag.FromErr(err)
 			}
 			replaceProfileAttachmentOptions.SetNotifications(updateNotifications)
+		}
+		if replaceProfileAttachmentOptions.Status == nil {
+			replaceProfileAttachmentOptions.SetSchedule(d.Get("status").(string))
 		}
 		if len(replaceProfileAttachmentOptions.Scope) == 0 {
 			scope := []securityandcompliancecenterapiv3.MultiCloudScope{}
@@ -912,14 +962,14 @@ func resourceIbmSccProfileAttachmentAttachmentParameterPrototypeToMap(model *sec
 	if model.ParameterName != nil {
 		modelMap["parameter_name"] = flex.StringValue(model.ParameterName)
 	}
-	if model.ParameterValue != nil {
-		modelMap["parameter_value"] = flex.StringValue(model.ParameterValue)
-	}
 	if model.ParameterDisplayName != nil {
 		modelMap["parameter_display_name"] = flex.StringValue(model.ParameterDisplayName)
 	}
 	if model.ParameterType != nil {
 		modelMap["parameter_type"] = flex.StringValue(model.ParameterType)
+	}
+	if model.ParameterValue != nil {
+		modelMap["parameter_value"] = flex.StringValue(model.ParameterValue)
 	}
 	return modelMap, nil
 }
