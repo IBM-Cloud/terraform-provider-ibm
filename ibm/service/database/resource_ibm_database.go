@@ -1754,7 +1754,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 
 	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s\n Hint: Check if there is a mismatch between your database location and IBMCLOUD_REGION", err))
 	}
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
