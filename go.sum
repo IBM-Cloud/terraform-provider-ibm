@@ -118,8 +118,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062/go.mod h1:/7h
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
-github.com/IBM-Cloud/power-go-client v1.8.1 h1:tx1aPJmIQrNru1MD1VHGNasGx3eRIs0zzPZ0KvdFQrg=
-github.com/IBM-Cloud/power-go-client v1.8.1/go.mod h1:N4RxrsMUvBQjSQ/qPk0iMZ8zK+fZPRTnHi/gTaASw0g=
+github.com/IBM-Cloud/power-go-client v1.8.3 h1:QsBuIS6KvKsiEpe0yiHYKhWgXlqkcJ7XqFHtATj8Yh4=
+github.com/IBM-Cloud/power-go-client v1.8.3/go.mod h1:UDyXeIKEp6r7yWUXYu3r0ZnFSlNZ2YeQTHwM2Tmlgv0=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
@@ -1653,8 +1653,10 @@ github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+hCSs=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
+github.com/xdg-go/scram v1.1.2/go.mod h1:RT/sEzTbU5y00aCK8UOx6R7YryM0iF1N2MOmC3kKLN4=
 github.com/xdg-go/stringprep v1.0.2/go.mod h1:8F9zXuvzgwmyT5DUm4GUfZGDdT3W+LCvS6+da4O5kxM=
 github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgklLGvcBnW8=
+github.com/xdg-go/stringprep v1.0.4/go.mod h1:mPGuuIYwz7CmR2bT9j4GbQqutWS1zV24gijq1dTyGkM=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
