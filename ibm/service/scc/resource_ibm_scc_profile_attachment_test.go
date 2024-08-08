@@ -168,7 +168,7 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark"]
+		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 		name = "profile_attachment_name"
 		description = "scc_profile_attachment_description"
 			scope {
@@ -253,7 +253,7 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark"]
+		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 		name = "profile_attachment_name"
 		description = "scc_profile_attachment_description"
 			scope {
@@ -325,7 +325,7 @@ func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcomplian
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		securityandcompliancecenterapiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecurityAndComplianceCenterV3()
@@ -379,9 +379,9 @@ func testAccCheckIbmSccProfileAttachmentDestroy(s *terraform.State) error {
 		_, response, err := securityandcompliancecenterapiClient.GetProfileAttachment(getProfileAttachmentOptions)
 
 		if err == nil {
-			return fmt.Errorf("scc_profile_attachment still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("scc_profile_attachment still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for scc_profile_attachment (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for scc_profile_attachment (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

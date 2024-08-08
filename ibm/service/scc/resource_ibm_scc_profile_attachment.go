@@ -331,7 +331,7 @@ func resourceIbmSccProfileAttachmentCreate(context context.Context, d *schema.Re
 	attachmentPrototype, response, err := securityandcompliancecenterapiClient.CreateAttachmentWithContext(context, createAttachmentOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateAttachmentWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("CreateAttachmentWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instance_id, *createAttachmentOptions.ProfileID, *attachmentPrototype.Attachments[0].ID))
@@ -363,25 +363,25 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 			return nil
 		}
 		log.Printf("[DEBUG] GetProfileAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileAttachmentWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetProfileAttachmentWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("instance_id", parts[0]); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting instance_id: %s", err))
 	}
 	if !core.IsNil(attachmentItem.ID) {
 		if err = d.Set("profile_attachment_id", attachmentItem.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting profile_id: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.ProfileID) {
 		if err = d.Set("profile_id", attachmentItem.ProfileID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting profile_id: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.AccountID) {
 		if err = d.Set("account_id", attachmentItem.AccountID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting account_id: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Scope) {
@@ -394,37 +394,37 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 			scope = append(scope, scopeItemMap)
 		}
 		if err = d.Set("scope", scope); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting scope: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting scope: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.CreatedOn) {
 		if err = d.Set("created_on", flex.DateTimeToString(attachmentItem.CreatedOn)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_on: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting created_on: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.CreatedBy) {
 		if err = d.Set("created_by", attachmentItem.CreatedBy); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting created_by: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.UpdatedOn) {
 		if err = d.Set("updated_on", flex.DateTimeToString(attachmentItem.UpdatedOn)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_on: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting updated_on: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.UpdatedBy) {
 		if err = d.Set("updated_by", attachmentItem.UpdatedBy); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting updated_by: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Status) {
 		if err = d.Set("status", attachmentItem.Status); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting status: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Schedule) {
 		if err = d.Set("schedule", attachmentItem.Schedule); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting schedule: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting schedule: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Notifications) {
@@ -433,7 +433,7 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 			return diag.FromErr(err)
 		}
 		if err = d.Set("notifications", []map[string]interface{}{notificationsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting notifications: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting notifications: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.AttachmentParameters) {
@@ -446,7 +446,7 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 			attachmentParameters.Add(attachmentParametersItemMap)
 		}
 		if err = d.Set("attachment_parameters", attachmentParameters); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting attachment_parameters: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting attachment_parameters: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.LastScan) {
@@ -455,27 +455,27 @@ func resourceIbmSccProfileAttachmentRead(context context.Context, d *schema.Reso
 			return diag.FromErr(err)
 		}
 		if err = d.Set("last_scan", []map[string]interface{}{lastScanMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_scan: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting last_scan: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.NextScanTime) {
 		if err = d.Set("next_scan_time", flex.DateTimeToString(attachmentItem.NextScanTime)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next_scan_time: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting next_scan_time: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Name) {
 		if err = d.Set("name", attachmentItem.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.Description) {
 		if err = d.Set("description", attachmentItem.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting description: %s", err))
 		}
 	}
 	if !core.IsNil(attachmentItem.ID) {
 		if err = d.Set("attachment_id", attachmentItem.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting attachment_id: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting attachment_id: %s", err))
 		}
 	}
 
@@ -502,7 +502,7 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 	hasChange := false
 
 	if d.HasChange("profile_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+		return diag.FromErr(flex.FmtErrorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "profile_id"))
 	}
 
@@ -574,7 +574,7 @@ func resourceIbmSccProfileAttachmentUpdate(context context.Context, d *schema.Re
 		_, response, err := securityandcompliancecenterapiClient.ReplaceProfileAttachmentWithContext(context, replaceProfileAttachmentOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplaceProfileAttachmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("ReplaceProfileAttachmentWithContext failed %s\n%s", err, response))
+			return diag.FromErr(flex.FmtErrorf("ReplaceProfileAttachmentWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -601,7 +601,7 @@ func resourceIbmSccProfileAttachmentDelete(context context.Context, d *schema.Re
 	_, response, err := securityandcompliancecenterapiClient.DeleteProfileAttachmentWithContext(context, deleteProfileAttachmentOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteProfileAttachmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteProfileAttachmentWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("DeleteProfileAttachmentWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

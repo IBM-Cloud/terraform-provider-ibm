@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 )
@@ -135,27 +136,27 @@ func dataSourceIbmSccControlLibrariesRead(context context.Context, d *schema.Res
 	pager, err := securityandcompliancecenterapiClient.NewControlLibrariesPager(listControlLibrariesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListControlLibrarysWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("ListControlLibrarysWithContext failed %s", err))
+		return diag.FromErr(flex.FmtErrorf("ListControlLibrarysWithContext failed %s", err))
 	}
 	controlLibraryList, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] ListControlLibrarysWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("ListControlLibrarysWithContext failed %s", err))
+		return diag.FromErr(flex.FmtErrorf("ListControlLibrarysWithContext failed %s", err))
 	}
 	d.SetId(fmt.Sprintf("%s/control_libraries", d.Get("instance_id").(string)))
 	if err = d.Set("instance_id", d.Get("instance_id")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_id %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting instance_id %s", err))
 	}
 	controlLibraries := []map[string]interface{}{}
 	for _, cl := range controlLibraryList {
 		modelMap, err := dataSourceIbmSccControlLibraryToMap(&cl)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting control library:%v\n%s", cl, err))
+			return diag.FromErr(flex.FmtErrorf("Error setting control library:%v\n%s", cl, err))
 		}
 		controlLibraries = append(controlLibraries, modelMap)
 	}
 	if err = d.Set("control_libraries", controlLibraries); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting control_libraries: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting control_libraries: %s", err))
 	}
 	return nil
 }

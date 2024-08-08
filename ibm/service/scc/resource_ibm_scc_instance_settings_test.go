@@ -12,6 +12,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 )
 
@@ -92,7 +93,7 @@ func testAccCheckIbmSccInstanceSettingsExists(n string, obj securityandcomplianc
 	return func(s *terraform.State) error {
 		_, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		adminClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecurityAndComplianceCenterV3()
@@ -131,7 +132,7 @@ func testAccCheckIbmSccInstanceSettingsDestroy(s *terraform.State) error {
 		// Deleting a instance_settings_resource doesn't delete the entity
 		_, response, err := adminClient.GetSettings(getSettingsOptions)
 		if response.StatusCode != 200 {
-			return fmt.Errorf("Error checking for scc_instance_settings (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for scc_instance_settings (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

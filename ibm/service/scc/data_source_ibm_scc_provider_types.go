@@ -124,7 +124,7 @@ func dataSourceIbmSccProviderTypesRead(context context.Context, d *schema.Resour
 	providerTypeItems, response, err := securityAndComplianceCenterApIsClient.ListProviderTypesWithContext(context, listProviderTypesByIdOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetProviderTypeByIDWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProviderTypeByIDWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetProviderTypeByIDWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/provider_types", d.Get("instance_id").(string)))
@@ -133,12 +133,12 @@ func dataSourceIbmSccProviderTypesRead(context context.Context, d *schema.Resour
 	for _, providerType := range providerTypeItems.ProviderTypes {
 		modelMap, err := dataSourceIbmSccProviderToMap(&providerType)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting provider_type: %v\n%s", providerType, err))
+			return diag.FromErr(flex.FmtErrorf("Error setting provider_type: %v\n%s", providerType, err))
 		}
 		providerTypes = append(providerTypes, modelMap)
 	}
 	if err = d.Set("provider_types", providerTypes); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provider_types: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting provider_types: %s", err))
 	}
 
 	return nil
