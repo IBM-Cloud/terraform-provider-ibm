@@ -68,9 +68,6 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
 
 	// call GetKMIPAdapters api
 	opts := &kp.ListKmipAdaptersOptions{}

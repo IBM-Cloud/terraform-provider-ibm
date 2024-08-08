@@ -1065,17 +1065,16 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			},
 
 			isBareMetalServerKeys: {
-				Type:             schema.TypeSet,
-				Required:         true,
-				Elem:             &schema.Schema{Type: schema.TypeString},
-				Set:              schema.HashString,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "SSH key Ids for the bare metal server",
+				Type:        schema.TypeSet,
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "SSH key Ids for the bare metal server",
 			},
 
 			isBareMetalServerImage: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				ForceNew:    false,
 				Required:    true,
 				Description: "image id",
 			},
@@ -1088,7 +1087,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 
 			isBareMetalServerUserData: {
 				Type:        schema.TypeString,
-				ForceNew:    true,
+				ForceNew:    false,
 				Optional:    true,
 				Description: "User data given for the bare metal server",
 			},
@@ -2357,6 +2356,50 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
+	}
+	if d.HasChange("image") || d.HasChange("keys") || d.HasChange("user_data") {
+		stopServerIfStartingForInitialization := false
+		newImageId := d.Get("image").(string)
+		initializationPatch := &vpcv1.ReplaceBareMetalServerInitializationOptions{
+			ID: &id,
+			Image: &vpcv1.ImageIdentityByID{
+				ID: &newImageId,
+			},
+		}
+		// apply the user data file, if its not updated use the existing
+		newUserData := d.Get("user_data").(string)
+		initializationPatch.UserData = &newUserData
+		// apply the keys, if its not updated use the existing
+		keySet := d.Get(isBareMetalServerKeys).(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
+			}
+			initializationPatch.Keys = keyobjs
+		}
+
+		stopServerIfStartingForInitialization, err = resourceStopServerIfRunning(id, "hard", d, context, sess, stopServerIfStartingForInitialization)
+		if err != nil {
+			return err
+		}
+		_, res, err := sess.ReplaceBareMetalServerInitialization(initializationPatch)
+		if err != nil {
+			return fmt.Errorf("ReplaceBareMetalServerInitialization failed %s\n%s", err, res)
+		}
+		_, err = isWaitForBareMetalServerStoppedOnReload(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return err
+		}
+		if stopServerIfStartingForInitialization {
+			_, err = resourceStartServerIfStopped(id, "hard", d, context, sess, stopServerIfStartingForInitialization)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	isServerStopped := false
 
@@ -3799,6 +3842,73 @@ func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.Reso
 
 		}
 		return bms, isBareMetalServerStatusPending, nil
+	}
+}
+func isWaitForBareMetalServerStoppedOnReload(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
+	log.Printf("Waiting for Bare Metal Server (%s) to be stopped for reload success.", id)
+	communicator := make(chan interface{})
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting, "reinitializing"},
+		Target:     []string{isBareMetalServerStatusRunning, isBareMetalServerStatusFailed, "stopped"},
+		Refresh:    isBareMetalServerRefreshFuncForReload(client, id, d, communicator),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+
+func isBareMetalServerRefreshFuncForReload(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
+			ID: &id,
+		}
+		bms, response, err := client.GetBareMetalServer(bmsgetoptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server: %s\n%s", err, response)
+		}
+		d.Set(isBareMetalServerStatus, *bms.Status)
+
+		select {
+		case data := <-communicator:
+			return nil, "", data.(error)
+		default:
+			fmt.Println("no message sent")
+		}
+
+		if *bms.Status == "running" || *bms.Status == "failed" {
+			// let know the isRestartStartAction() to stop
+			close(communicator)
+			if *bms.Status == "failed" {
+				bmsStatusReason := bms.StatusReasons
+
+				//set the status reasons
+				if bms.StatusReasons != nil {
+					statusReasonsList := make([]map[string]interface{}, 0)
+					for _, sr := range bms.StatusReasons {
+						currentSR := map[string]interface{}{}
+						if sr.Code != nil && sr.Message != nil {
+							currentSR[isBareMetalServerStatusReasonsCode] = *sr.Code
+							currentSR[isBareMetalServerStatusReasonsMessage] = *sr.Message
+							if sr.MoreInfo != nil {
+								currentSR[isBareMetalServerStatusReasonsMoreInfo] = *sr.MoreInfo
+							}
+							statusReasonsList = append(statusReasonsList, currentSR)
+						}
+					}
+					d.Set(isBareMetalServerStatusReasons, statusReasonsList)
+				}
+
+				out, err := json.MarshalIndent(bmsStatusReason, "", "    ")
+				if err != nil {
+					return bms, *bms.Status, fmt.Errorf("[ERROR] The Bare Metal Server (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted bare metal server and attempt to create the bare metal server again replacing the previous configuration", *bms.ID)
+				}
+				return bms, *bms.Status, fmt.Errorf("[ERROR] Bare Metal Server (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted Bare Metal Server and attempt to create the Bare Metal Server again replacing the previous configuration", *bms.ID, string(out))
+			}
+			return bms, *bms.Status, nil
+
+		}
+		return bms, *bms.Status, nil
 	}
 }
 

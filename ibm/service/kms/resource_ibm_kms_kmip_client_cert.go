@@ -63,12 +63,12 @@ func ResourceIBMKmsKMIPClientCertificate() *schema.Resource {
 				Sensitive:   true,
 				Description: "The PEM-encoded contents of the certificate",
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier that is associated with the entity that created the adapter.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when a resource was created. The date format follows RFC 3339.",
@@ -104,8 +104,6 @@ func resourceIBMKmsKMIPClientCertCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}) error {
-	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Get("adapter_id").(string)
 	// use instanceID and adapterID here to support terraform import case
 	instanceID, adapterID, certID, err := splitCertID(d.Id())
 	if err != nil {
@@ -148,8 +146,6 @@ func resourceIBMKmsKMIPClientCertDelete(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMKmsKMIPClientCertExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Get("adapter_id").(string)
 	// use instanceID and adapterID here to support terraform import case
 	instanceID, adapterID, certID, err := splitCertID(d.Id())
 	if err != nil {
