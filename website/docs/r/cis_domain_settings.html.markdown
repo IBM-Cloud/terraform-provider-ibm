@@ -13,6 +13,7 @@ Customize the IBM Cloud Internet Services domain settings. For more information,
 ## Example usage 1
 
 ---
+
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
   cis_id    = data.ibm_cis.cis.id
@@ -45,6 +46,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = ["AES128-SHA256"]
+  origin_max_http_version     = "1"
+  origin_post_quantum_encryption = "off"
   minify {
     css  = "off"
     js   = "off"
@@ -70,13 +73,17 @@ resource "ibm_cis_domain_settings" "test" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.2"
+  origin_max_http_version     = "2"
+  origin_post_quantum_encryption = "supported"
 }
 ```
+
 ---
 
 ## Example usage 2 : For TLS v1.3
 
 ---
+
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
   cis_id    = data.ibm_cis.cis.id
@@ -109,6 +116,8 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = []
+  origin_max_http_version     = "1"
+  origin_post_quantum_encryption = "off"
   minify {
     css  = "off"
     js   = "off"
@@ -134,19 +143,23 @@ resource "ibm_cis_domain_settings" "test" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.3"
+  origin_max_http_version     = "2"
+  origin_post_quantum_encryption = "supported"
 }
 ```
+
 ---
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+
+Review the argument references that you can specify for your resource.
 
 - `always_use_https` - (Optional, String) Supported values are `off` and `on`.
 - `automatic_https_rewrites` - (Optional, String) Enable HTTPS rewrites. Allowed values are `off` and `on`.
 - `browser_check` - (Optional, String) Enable a client browser check to look for common HTTP headers that are used by malicious users. If HTTP headers are found,  access to your website is blocked. Supported values are `off` and `on`.
 - `brotli` - (Optional, String) Supported values are `off` and `on`.
 - `challenge_ttl` - (Optional, String) Challenge TTL values are `300`, `900`, `1800`, `2700`, `3600`, `7200`, `10800`, `14400`, `28800`, `57600`, `86400`, `604800`, `2592000`, and `31536000`.
-- `cipher` - (Optional, List) Cipher setting values are  `ECDHE-ECDSA-AES128-GCM-SHA256`, `ECDHE-ECDSA-CHACHA20-POLY1305`,`ECDHE-RSA-AES128-GCM-SHA256`, `ECDHE-RSA-CHACHA20-POLY1305`, `ECDHE-ECDSA-AES128-SHA256`, `ECDHE-ECDSA-AES128-SHA`, `ECDHE-RSA-AES128-SHA256`, `ECDHE-RSA-AES128-SHA`, `AES128-GCM-SHA256`, `AES128-SHA256`, `AES128-SHA`, `ECDHE-ECDSA-AES256-GCM-SHA384`, `ECDHE-ECDSA-AES256-SHA384`, `ECDHE-RSA-AES256-GCM-SHA384`, `ECDHE-RSA-AES256-SHA384`, `ECDHE-RSA-AES256-SHA`, `AES256-GCM-SHA384`, `AES256-SHA256`, `AES256-SHA`, `DES-CBC3-SHA`. To use default cipher value, pass empty list `[]`. 
+- `cipher` - (Optional, List) Cipher setting values are  `ECDHE-ECDSA-AES128-GCM-SHA256`, `ECDHE-ECDSA-CHACHA20-POLY1305`,`ECDHE-RSA-AES128-GCM-SHA256`, `ECDHE-RSA-CHACHA20-POLY1305`, `ECDHE-ECDSA-AES128-SHA256`, `ECDHE-ECDSA-AES128-SHA`, `ECDHE-RSA-AES128-SHA256`, `ECDHE-RSA-AES128-SHA`, `AES128-GCM-SHA256`, `AES128-SHA256`, `AES128-SHA`, `ECDHE-ECDSA-AES256-GCM-SHA384`, `ECDHE-ECDSA-AES256-SHA384`, `ECDHE-RSA-AES256-GCM-SHA384`, `ECDHE-RSA-AES256-SHA384`, `ECDHE-RSA-AES256-SHA`, `AES256-GCM-SHA384`, `AES256-SHA256`, `AES256-SHA`, `DES-CBC3-SHA`. To use default cipher value, pass empty list `[]`.
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
 - `cname_flattening` - (Optional, String) Supported values are `flatten_at_root`, `flatten_all`, and `flatten_none`.
 - `domain_id` - (Required, String) The ID of the domain that you want to customize.
@@ -189,12 +202,15 @@ Review the argument references that you can specify for your resource.
 - `true_client_ip_header` - (Optional, String) Supported values are `off` and `on`.
 - `waf` - (Optional, String) Enable a web application firewall (WAF). Supported values are `off` and `on`.
 - `websockets` - (Optional, String) Supported values are `off` and `on`.
+- `origin_max_http_version` - (Optional, String) Sets the highest HTTP version to use with origin. Supported values are `1` and `2`.
+- `origin_post_quantum_encryption` - (Optional, String) Wheather to use post-quantum key agreement algorithms when connecting to the origin. Supported values are `off`, `preferred` and `supported`.
 
-**Note**
+### Note
 
 Extra settings are not implemented in this version of the provider.
- 
+
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
 - `certificate_status` - (String)  The value is displayed as `none`, `initializing`, `authorizing`, or `active`.
