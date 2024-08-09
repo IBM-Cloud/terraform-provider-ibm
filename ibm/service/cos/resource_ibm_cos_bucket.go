@@ -742,7 +742,10 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
-	endpointType := d.Get("endpoint_type").(string)
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	if endpointType == "" {
+		endpointType = d.Get("endpoint_type").(string)
+	}
 	bLocation := parseBucketId(d.Id(), "bLocation")
 	apiType := parseBucketId(d.Id(), "apiType")
 	if apiType == "sl" {
@@ -1088,7 +1091,10 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
-	endpointType := d.Get("endpoint_type").(string)
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	if endpointType == "" {
+		endpointType = d.Get("endpoint_type").(string)
+	}
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
 
@@ -1516,8 +1522,10 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		apiType = "sl"
 	}
 
-	endpointType := d.Get("endpoint_type").(string)
-
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	if endpointType == "" {
+		endpointType = d.Get("endpoint_type").(string)
+	}
 	var apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if apiType == "sl" {
@@ -1642,8 +1650,11 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
-	endpointType := d.Get("endpoint_type").(string)
 
+	endpointType := parseBucketId(d.Id(), "endpointType")
+	if endpointType == "" {
+		endpointType = d.Get("endpoint_type").(string)
+	}
 	if apiType == "sl" {
 		satloc_guid := strings.Split(serviceID, ":")
 		bucketsatcrn := satloc_guid[0]
