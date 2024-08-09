@@ -50,12 +50,12 @@ func ResourceIBMEnSlackTemplate() *schema.Resource {
 			"params": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"body": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The Slack Template body.",
 						},
 					},
