@@ -21,6 +21,7 @@ resource "ibm_en_subscription_slack" "slack_subscription" {
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     "attachment_color" = "#FF0000"
+    template_id_notification = "e40843c8-hgft-4717-8ee4-f923f2786a34"
   }
 }
 ```
@@ -39,14 +40,13 @@ Review the argument reference that you can specify for your resource.
 
 - `topic_id` - (Required, String) Topic ID.
 
-- `template_id_notification` - (Optional, String) The templete id for notification.
-
 
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 
   - `attachment_color` - (Optional, String) The color code for slack attachment.
 
+  - `template_id_notification` - (Optional, String) The templete id for notification.
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.

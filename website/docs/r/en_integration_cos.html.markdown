@@ -13,7 +13,7 @@ Manage COS integration using IBM Cloud™ Event Notifications.
 ## Example usage
 
 ```terraform
-resource "ibm_en_integration" "en_cos_integration" {
+resource "ibm_en_integration_cos" "en_cos_integration" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   type = "collect_failed_events"
   metadata {

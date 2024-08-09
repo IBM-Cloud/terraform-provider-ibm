@@ -888,6 +888,8 @@ func Provider() *schema.Provider {
 			"ibm_en_smtp_user":                 eventnotification.DataSourceIBMEnSMTPUser(),
 			"ibm_en_smtp_users":                eventnotification.DataSourceIBMEnSMTPUsers(),
 			"ibm_en_slack_template":            eventnotification.DataSourceIBMEnSlackTemplate(),
+			"ibm_en_metrics":                   eventnotification.DataSourceIBMEnMetrics(),
+			"ibm_en_smtp_allowed_ips":          eventnotification.DataSourceIBMEnSMTPAllowedIps(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),

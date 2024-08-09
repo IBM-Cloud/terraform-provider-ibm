@@ -83,6 +83,7 @@ provider "ibm" {
 |Transit Gateway|IBMCLOUD_TG_API_ENDPOINT|
 |UAA|IBMCLOUD_UAA_ENDPOINT|
 |User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
+|Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
 
 ## File structure for endpoints file
 

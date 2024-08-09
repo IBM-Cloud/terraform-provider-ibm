@@ -50,12 +50,12 @@ func ResourceIBMEnSlackTemplate() *schema.Resource {
 			"params": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"body": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The Slack Template body.",
 						},
 					},
@@ -103,7 +103,7 @@ func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.Resourc
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	params := EmailTemplateParamsMap(d.Get("params").(map[string]interface{}))
+	params := EmailTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
 	options.SetParams(&params)
 
 	result, response, err := enClient.CreateTemplateWithContext(context, options)
