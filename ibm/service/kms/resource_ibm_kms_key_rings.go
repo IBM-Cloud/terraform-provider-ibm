@@ -39,7 +39,7 @@ func ResourceIBMKmskeyRings() *schema.Resource {
 			"force_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "set to true to force delete this key ring. This allows key ring deletion as long as all keys inside have key state equals to 5 (destroyed). Keys are moved to the default key ring.",
+				Description: "(Deprecated) set to true to force delete this key ring. This allows key ring deletion as long as all keys inside have key state equals to 5 (destroyed). Keys are moved to the default key ring.",
 				ForceNew:    false,
 				Default:     false,
 			},
@@ -148,14 +148,11 @@ func resourceIBMKmsKeyRingDelete(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	force_delete := d.Get("force_delete").(bool)
 
-	err = kpAPI.DeleteKeyRing(context.Background(), id[0], kp.WithForce(force_delete))
+	err = kpAPI.DeleteKeyRing(context.Background(), id[0], kp.WithForce(true))
 	if err != nil {
 		kpError := err.(*kp.Error)
-		// Key ring deletion used to occur by silencing the 409 failed deletion and allowing instance deletion to clean it up
-		// Will be deprecated in the future in favor of force_delete flag
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+		if kpError.StatusCode == 404 {
 			return nil
 		} else {
 			return fmt.Errorf(" failed to Destroy key ring with error: %s", err)
