@@ -50,6 +50,11 @@ func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 							Description: "Date of snapshot creation.",
 							Type:        schema.TypeString,
 						},
+						Attr_CRN: {
+							Computed:    true,
+							Description: "CRN of resource",
+							Type:        schema.TypeString,
+						},
 						Attr_Description: {
 							Computed:    true,
 							Description: "The description of the snapshot.",
@@ -121,6 +126,7 @@ func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface
 		l := map[string]interface{}{
 			Attr_Action:          i.Action,
 			Attr_CreationDate:    i.CreationDate.String(),
+			Attr_CRN:             i.Crn,
 			Attr_Description:     i.Description,
 			Attr_ID:              *i.SnapshotID,
 			Attr_LastUpdatedDate: i.LastUpdateDate.String(),

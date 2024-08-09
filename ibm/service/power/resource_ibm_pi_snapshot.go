@@ -58,6 +58,13 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_UserTags: {
+				Description: "List of user tags.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ForceNew:    true,
+				Optional:    true,
+				Type:        schema.TypeList,
+			},
 			Arg_VolumeIDs: {
 				Description:      "A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.",
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -71,6 +78,11 @@ func ResourceIBMPISnapshot() *schema.Resource {
 			Attr_CreationDate: {
 				Computed:    true,
 				Description: "Creation date of the snapshot.",
+				Type:        schema.TypeString,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "CRN of resource",
 				Type:        schema.TypeString,
 			},
 			Attr_LastUpdateDate: {
@@ -123,6 +135,11 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 		log.Printf("no volumeids provided. Will snapshot the entire instance")
 	}
 
+	if v, ok := d.GetOk(Arg_UserTags); ok {
+		userTags := flex.ExpandStringList(v.([]interface{}))
+		snapshotBody.UserTags = userTags
+	}
+
 	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)
@@ -160,6 +177,7 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.Set(Arg_SnapShotName, snapshotdata.Name)
 	d.Set(Attr_CreationDate, snapshotdata.CreationDate.String())
+	d.Set(Attr_CRN, snapshotdata.Crn)
 	d.Set(Attr_LastUpdateDate, snapshotdata.LastUpdateDate.String())
 	d.Set(Attr_SnapshotID, *snapshotdata.SnapshotID)
 	d.Set(Attr_Status, snapshotdata.Status)
