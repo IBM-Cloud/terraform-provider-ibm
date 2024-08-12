@@ -37,9 +37,9 @@ Review the argument reference that you can specify for your resource.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `source` - (Required, List) Source repository containing the Tekton pipeline definition.
-Nested scheme for **source**:
+Nested schema for **source**:
 	* `properties` - (Required, List) Properties of the source, which define the URL of the repository and a branch or tag.
-	Nested scheme for **properties**:
+	Nested schema for **properties**:
 		* `branch` - (Optional, String) A branch from the repo, specify one of branch or tag only.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `path` - (Required, String) The path to the definition's YAML files.
@@ -47,7 +47,7 @@ Nested scheme for **source**:
 		* `tag` - (Optional, String) A tag from the repo, specify one of branch or tag only.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
 		* `tool` - (Optional, List) Reference to the repository tool in the parent toolchain.
-		Nested scheme for **tool**:
+		Nested schema for **tool**:
 			* `id` - (Computed, String) ID of the repository tool instance in the parent toolchain.
 			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `url` - (Required, Forces new resource, String) URL of the definition repository.

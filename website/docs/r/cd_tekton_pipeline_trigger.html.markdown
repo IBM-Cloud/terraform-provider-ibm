@@ -47,7 +47,7 @@ Review the argument reference that you can specify for your resource.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `secret` - (Optional, List) Only needed for Generic Webhook trigger type. The secret is used to start the Generic Webhook trigger.
-Nested scheme for **secret**:
+Nested schema for **secret**:
 	* `algorithm` - (Optional, String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
 	  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
 	* `key_name` - (Optional, String) Secret name, not needed if type is `internal_validation`.
@@ -59,9 +59,9 @@ Nested scheme for **secret**:
 	* `value` - (Optional, String) Secret value, not needed if secret type is `internal_validation`.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `source` - (Optional, List) Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain API https://cloud.ibm.com/apidocs/toolchain#list-tools.
-Nested scheme for **source**:
+Nested schema for **source**:
 	* `properties` - (Required, List) Properties of the source, which define the URL of the repository and a branch or pattern.
-	Nested scheme for **properties**:
+	Nested schema for **properties**:
 		* `branch` - (Optional, String) Name of a branch from the repo. Only one of branch, pattern, or filter should be specified.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `pattern` - (Optional, String) The pattern of Git branch or tag. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags or branches in the repository.The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. Only one of branch, pattern, or filter should be specified.
@@ -77,7 +77,7 @@ Nested scheme for **source**:
 * `type` - (Required, String) Trigger type.
   * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 * `worker` - (Optional, List) Specify the worker used to run the trigger. Use `worker: { id: 'public' }` to use the IBM Managed workers. The default is to inherit the worker set in the pipeline settings, which can also be explicitly set using `worker: { id: 'inherit' }`.
-Nested scheme for **worker**:
+Nested schema for **worker**:
 	* `id` - (Required, String) ID of the worker.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
 
@@ -90,7 +90,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `properties` - (List) Optional trigger properties are used to override or supplement the pipeline properties when triggering a pipeline run.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
-Nested scheme for **properties**:
+Nested schema for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 	* `href` - (String) API URL for interacting with the trigger property.
