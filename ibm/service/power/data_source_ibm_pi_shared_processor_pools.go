@@ -42,6 +42,11 @@ func DataSourceIBMPISharedProcessorPools() *schema.Resource {
 							Description: "The available cores in the shared processor pool.",
 							Type:        schema.TypeInt,
 						},
+						Attr_CRN: {
+							Computed:    true,
+							Description: "CRN of shared processor pool.",
+							Type:        schema.TypeString,
+						},
 						Attr_HostID: {
 							Computed:    true,
 							Description: "The host ID where the shared processor pool resides.",
@@ -72,6 +77,12 @@ func DataSourceIBMPISharedProcessorPools() *schema.Resource {
 							Description: "The status details of the shared processor pool.",
 							Type:        schema.TypeString,
 						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user specified tags.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+						},
 					},
 				},
 				Type: schema.TypeList,
@@ -99,12 +110,14 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 		key := map[string]interface{}{
 			Attr_AllocatedCores:        *pool.AllocatedCores,
 			Attr_AvailableCores:        *pool.AvailableCores,
+			Attr_CRN:                   pool.Crn,
 			Attr_HostID:                pool.HostID,
 			Attr_Name:                  *pool.Name,
 			Attr_ReservedCores:         *pool.ReservedCores,
 			Attr_SharedProcessorPoolID: *pool.ID,
 			Attr_Status:                pool.Status,
 			Attr_StatusDetail:          pool.StatusDetail,
+			Attr_UserTags:              pool.UserTags,
 		}
 		result = append(result, key)
 	}

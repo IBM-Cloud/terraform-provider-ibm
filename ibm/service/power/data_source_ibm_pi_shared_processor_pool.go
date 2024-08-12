@@ -42,6 +42,11 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The available cores in the shared processor pool.",
 				Type:        schema.TypeFloat,
 			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "CRN of shared processor pool.",
+				Type:        schema.TypeString,
+			},
 			Attr_HostID: {
 				Computed:    true,
 				Description: "The host ID where the shared processor pool resides.",
@@ -124,6 +129,12 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The status details of the shared processor pool.",
 				Type:        schema.TypeString,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user specified tags.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+			},
 		},
 	}
 }
@@ -146,11 +157,13 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 	d.SetId(*response.SharedProcessorPool.ID)
 	d.Set(Attr_AllocatedCores, response.SharedProcessorPool.AllocatedCores)
 	d.Set(Attr_AvailableCores, response.SharedProcessorPool.AvailableCores)
+	d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Name, response.SharedProcessorPool.Name)
 	d.Set(Attr_ReservedCores, response.SharedProcessorPool.ReservedCores)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_StatusDetail, response.SharedProcessorPool.StatusDetail)
+	d.Set(Attr_UserTags, response.SharedProcessorPool.UserTags)
 
 	serversMap := []map[string]interface{}{}
 	if response.Servers != nil {
