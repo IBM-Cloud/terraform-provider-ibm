@@ -48,6 +48,11 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The CIDR of the network.",
 				Type:        schema.TypeString,
 			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of the network.",
+				Type:        schema.TypeString,
+			},
 			Attr_DNS: {
 				Computed:    true,
 				Description: "The DNS Servers for the network.",
@@ -91,6 +96,12 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The percentage of IP addresses used.",
 				Type:        schema.TypeFloat,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user specified tags for the network.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+			},
 			Attr_VLanID: {
 				Computed:    true,
 				Description: "The VLAN ID that the network is connected to.",
@@ -122,6 +133,7 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.Cidr != nil {
 		d.Set(Attr_CIDR, networkdata.Cidr)
 	}
+	d.Set(Attr_CRN, networkdata.Crn)
 	if len(networkdata.DNSServers) > 0 {
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
@@ -140,6 +152,7 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.IPAddressMetrics.Utilization != nil {
 		d.Set(Attr_UsedIPPercent, networkdata.IPAddressMetrics.Utilization)
 	}
+	d.Set(Attr_UserTags, networkdata.UserTags)
 	if networkdata.VlanID != nil {
 		d.Set(Attr_VLanID, networkdata.VlanID)
 	}

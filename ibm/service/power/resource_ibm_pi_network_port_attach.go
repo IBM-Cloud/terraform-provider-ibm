@@ -63,6 +63,13 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			Arg_UserTags: {
+				Description: "List of user specified tags.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ForceNew:    true,
+				Optional:    true,
+				Type:        schema.TypeList,
+			},
 
 			//Computed Attributes
 			"macaddress": {
@@ -101,7 +108,10 @@ func resourceIBMPINetworkPortAttachCreate(ctx context.Context, d *schema.Resourc
 		ipaddress := v.(string)
 		nwportBody.IPAddress = ipaddress
 	}
-
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		userTags := flex.ExpandStringList(tags.([]interface{}))
+		nwportBody.UserTags = userTags
+	}
 	nwportattachBody := &models.NetworkPortUpdate{
 		Description:   &description,
 		PvmInstanceID: &instanceID,
