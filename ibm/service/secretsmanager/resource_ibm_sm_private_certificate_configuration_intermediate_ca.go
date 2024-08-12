@@ -860,11 +860,13 @@ func resourceIbmSmPrivateCertificateConfigurationIntermediateCAMapToConfiguratio
 		model.PostalCode = postalCode
 	}
 	if _, ok := d.GetOk("crypto_key"); ok {
-		CryptoKeyModel, err := resourceIbmSmPrivateCertificateConfigurationMapToPrivateCertificateConfigurationCryptoKey(d.Get("crypto_key").([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
+		if len(d.Get("crypto_key").([]interface{})) > 0 {
+			CryptoKeyModel, err := resourceIbmSmPrivateCertificateConfigurationMapToPrivateCertificateConfigurationCryptoKey(d.Get("crypto_key").([]interface{})[0].(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.CryptoKey = CryptoKeyModel
 		}
-		model.CryptoKey = CryptoKeyModel
 	}
 	return model, nil
 }
