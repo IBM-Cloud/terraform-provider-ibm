@@ -43,6 +43,7 @@ In addition to all argument reference list, you can access the following attribu
 - `access_config` - (String) The network communication configuration option of the network (for satellite locations only).
 - `available_ip_count` - (Float) The total number of IP addresses that you have in your network.
 - `cidr` - (String) The CIDR of the network.
+- `crn` - (String) CRN of the network.
 - `dns`- (Set) The DNS Servers for the network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
@@ -51,4 +52,5 @@ In addition to all argument reference list, you can access the following attribu
 - `type` - (String) The type of network.
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.
+- `user_tags` - (List) List of user tags associated with the network.
 - `vlan_id` - (String) The VLAN ID that the network is connected to.

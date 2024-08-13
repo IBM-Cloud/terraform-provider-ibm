@@ -42,6 +42,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `networks`:
   - `access_config` - (String) The network communication configuration option of the network (for satellite locations only).
+  - `crn` - (String) CRN of the network.
   - `dhcp_managed` - (Boolean) Indicates if the network DHCP Managed.
   - `href` - (String) The hyper link of a network. 
   - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
