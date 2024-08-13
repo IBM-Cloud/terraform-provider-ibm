@@ -141,7 +141,6 @@ func DataSourceIbmSmConfigurations() *schema.Resource {
 						"crypto_key": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
-							Optional:    true,
 							Computed:    true,
 							Description: "The data that is associated with a cryptographic key.",
 							Elem: &schema.Resource{
