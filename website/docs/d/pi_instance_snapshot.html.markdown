@@ -42,6 +42,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `action` - (String) Action performed on the instance snapshot.
 - `creation_date` - (String) Date of snapshot creation.
+- `crn` - (String) CRN of the instance snapshot.
 - `description` - (String) The description of the snapshot.
 - `last_updated_date` - (String) Date of last update.
 - `name` - (String) The name of the Power Systems Virtual Machine instance snapshot.
