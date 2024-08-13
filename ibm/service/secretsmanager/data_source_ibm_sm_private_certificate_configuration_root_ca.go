@@ -498,13 +498,16 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 	if err = d.Set("expiration_date", DateTimeToRFC3339(privateCertificateConfigurationRootCA.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
-	cryptoKeyMap, err := resourceIbmSmPrivateCertificateConfigurationCryptoKeyToMap(privateCertificateConfigurationRootCA.CryptoKey)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(cryptoKeyMap) > 0 {
-		if err = d.Set("crypto_key", []map[string]interface{}{cryptoKeyMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting crypto_key: %s", err))
+
+	if privateCertificateConfigurationRootCA.CryptoKey != nil {
+		cryptoKeyMap, err := resourceIbmSmPrivateCertificateConfigurationCryptoKeyToMap(privateCertificateConfigurationRootCA.CryptoKey)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(cryptoKeyMap) > 0 {
+			if err = d.Set("crypto_key", []map[string]interface{}{cryptoKeyMap}); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting crypto_key: %s", err))
+			}
 		}
 	}
 
