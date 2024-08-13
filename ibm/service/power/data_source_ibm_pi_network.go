@@ -152,7 +152,9 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.IPAddressMetrics.Utilization != nil {
 		d.Set(Attr_UsedIPPercent, networkdata.IPAddressMetrics.Utilization)
 	}
-	d.Set(Attr_UserTags, networkdata.UserTags)
+	if len(networkdata.UserTags) > 0 {
+		d.Set(Attr_UserTags, networkdata.UserTags)
+	}
 	if networkdata.VlanID != nil {
 		d.Set(Attr_VLanID, networkdata.VlanID)
 	}
