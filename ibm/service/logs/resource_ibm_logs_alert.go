@@ -1989,56 +1989,56 @@ func resourceIbmLogsAlertDelete(context context.Context, d *schema.ResourceData,
 func ResourceIbmLogsAlertMapToAlertsV2AlertCondition(modelMap map[string]interface{}) (logsv0.AlertsV2AlertConditionIntf, error) {
 	model := &logsv0.AlertsV2AlertCondition{}
 	if modelMap["immediate"] != nil && len(modelMap["immediate"].([]interface{})) > 0 {
-		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap["immediate"].([]interface{})[0].(map[string]interface{}))
+		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap["immediate"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Immediate = ImmediateModel
 	}
 	if modelMap["less_than"] != nil && len(modelMap["less_than"].([]interface{})) > 0 {
-		LessThanModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanCondition(modelMap["less_than"].([]interface{})[0].(map[string]interface{}))
+		LessThanModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanCondition(modelMap["less_than"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.LessThan = LessThanModel
 	}
 	if modelMap["more_than"] != nil && len(modelMap["more_than"].([]interface{})) > 0 {
-		MoreThanModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanCondition(modelMap["more_than"].([]interface{})[0].(map[string]interface{}))
+		MoreThanModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanCondition(modelMap["more_than"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.MoreThan = MoreThanModel
 	}
 	if modelMap["more_than_usual"] != nil && len(modelMap["more_than_usual"].([]interface{})) > 0 {
-		MoreThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanUsualCondition(modelMap["more_than_usual"].([]interface{})[0].(map[string]interface{}))
+		MoreThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanUsualCondition(modelMap["more_than_usual"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.MoreThanUsual = MoreThanUsualModel
 	}
 	if modelMap["new_value"] != nil && len(modelMap["new_value"].([]interface{})) > 0 {
-		NewValueModel, err := ResourceIbmLogsAlertMapToAlertsV2NewValueCondition(modelMap["new_value"].([]interface{})[0].(map[string]interface{}))
+		NewValueModel, err := ResourceIbmLogsAlertMapToAlertsV2NewValueCondition(modelMap["new_value"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.NewValue = NewValueModel
 	}
 	if modelMap["flow"] != nil && len(modelMap["flow"].([]interface{})) > 0 {
-		FlowModel, err := ResourceIbmLogsAlertMapToAlertsV2FlowCondition(modelMap["flow"].([]interface{})[0].(map[string]interface{}))
+		FlowModel, err := ResourceIbmLogsAlertMapToAlertsV2FlowCondition(modelMap["flow"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Flow = FlowModel
 	}
 	if modelMap["unique_count"] != nil && len(modelMap["unique_count"].([]interface{})) > 0 {
-		UniqueCountModel, err := ResourceIbmLogsAlertMapToAlertsV2UniqueCountCondition(modelMap["unique_count"].([]interface{})[0].(map[string]interface{}))
+		UniqueCountModel, err := ResourceIbmLogsAlertMapToAlertsV2UniqueCountCondition(modelMap["unique_count"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.UniqueCount = UniqueCountModel
 	}
 	if modelMap["less_than_usual"] != nil && len(modelMap["less_than_usual"].([]interface{})) > 0 {
-		LessThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap["less_than_usual"].([]interface{})[0].(map[string]interface{}))
+		LessThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap["less_than_usual"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2047,172 +2047,208 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertCondition(modelMap map[string]interfa
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap map[string]interface{}) (*logsv0.AlertsV2ImmediateConditionEmpty, error) {
+func ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap interface{}) (*logsv0.AlertsV2ImmediateConditionEmpty, error) {
 	model := &logsv0.AlertsV2ImmediateConditionEmpty{}
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV2LessThanCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2LessThanCondition, error) {
+func ResourceIbmLogsAlertMapToAlertsV2LessThanCondition(modelMap []interface{}) (*logsv0.AlertsV2LessThanCondition, error) {
 	model := &logsv0.AlertsV2LessThanCondition{}
-	ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Parameters = ParametersModel
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap map[string]interface{}) (*logsv0.AlertsV2ConditionParameters, error) {
-	model := &logsv0.AlertsV2ConditionParameters{}
-	model.Threshold = core.Float64Ptr(modelMap["threshold"].(float64))
-	model.Timeframe = core.StringPtr(modelMap["timeframe"].(string))
-	if modelMap["group_by"] != nil {
-		groupBy := []string{}
-		for _, groupByItem := range modelMap["group_by"].([]interface{}) {
-			groupBy = append(groupBy, groupByItem.(string))
-		}
-		model.GroupBy = groupBy
-	}
-	if modelMap["metric_alert_parameters"] != nil && len(modelMap["metric_alert_parameters"].([]interface{})) > 0 {
-		MetricAlertParametersModel, err := ResourceIbmLogsAlertMapToAlertsV1MetricAlertConditionParameters(modelMap["metric_alert_parameters"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.MetricAlertParameters = MetricAlertParametersModel
-	}
-	if modelMap["metric_alert_promql_parameters"] != nil && len(modelMap["metric_alert_promql_parameters"].([]interface{})) > 0 {
-		MetricAlertPromqlParametersModel, err := ResourceIbmLogsAlertMapToAlertsV1MetricAlertPromqlConditionParameters(modelMap["metric_alert_promql_parameters"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.MetricAlertPromqlParameters = MetricAlertPromqlParametersModel
-	}
-	if modelMap["ignore_infinity"] != nil {
-		model.IgnoreInfinity = core.BoolPtr(modelMap["ignore_infinity"].(bool))
-	}
-	if modelMap["relative_timeframe"] != nil && modelMap["relative_timeframe"].(string) != "" {
-		model.RelativeTimeframe = core.StringPtr(modelMap["relative_timeframe"].(string))
-	}
-	if modelMap["cardinality_fields"] != nil {
-		cardinalityFields := []string{}
-		for _, cardinalityFieldsItem := range modelMap["cardinality_fields"].([]interface{}) {
-			cardinalityFields = append(cardinalityFields, cardinalityFieldsItem.(string))
-		}
-		model.CardinalityFields = cardinalityFields
-	}
-	if modelMap["related_extended_data"] != nil && len(modelMap["related_extended_data"].([]interface{})) > 0 {
-		RelatedExtendedDataModel, err := ResourceIbmLogsAlertMapToAlertsV1RelatedExtendedData(modelMap["related_extended_data"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.RelatedExtendedData = RelatedExtendedDataModel
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV1MetricAlertConditionParameters(modelMap map[string]interface{}) (*logsv0.AlertsV1MetricAlertConditionParameters, error) {
-	model := &logsv0.AlertsV1MetricAlertConditionParameters{}
-	model.MetricField = core.StringPtr(modelMap["metric_field"].(string))
-	model.MetricSource = core.StringPtr(modelMap["metric_source"].(string))
-	model.ArithmeticOperator = core.StringPtr(modelMap["arithmetic_operator"].(string))
-	if modelMap["arithmetic_operator_modifier"] != nil {
-		model.ArithmeticOperatorModifier = core.Int64Ptr(int64(modelMap["arithmetic_operator_modifier"].(int)))
-	}
-	if modelMap["sample_threshold_percentage"] != nil {
-		model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMap["sample_threshold_percentage"].(int)))
-	}
-	if modelMap["non_null_percentage"] != nil {
-		model.NonNullPercentage = core.Int64Ptr(int64(modelMap["non_null_percentage"].(int)))
-	}
-	if modelMap["swap_null_values"] != nil {
-		model.SwapNullValues = core.BoolPtr(modelMap["swap_null_values"].(bool))
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV1MetricAlertPromqlConditionParameters(modelMap map[string]interface{}) (*logsv0.AlertsV1MetricAlertPromqlConditionParameters, error) {
-	model := &logsv0.AlertsV1MetricAlertPromqlConditionParameters{}
-	model.PromqlText = core.StringPtr(modelMap["promql_text"].(string))
-	if modelMap["arithmetic_operator_modifier"] != nil {
-		model.ArithmeticOperatorModifier = core.Int64Ptr(int64(modelMap["arithmetic_operator_modifier"].(int)))
-	}
-	model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMap["sample_threshold_percentage"].(int)))
-	if modelMap["non_null_percentage"] != nil {
-		model.NonNullPercentage = core.Int64Ptr(int64(modelMap["non_null_percentage"].(int)))
-	}
-	if modelMap["swap_null_values"] != nil {
-		model.SwapNullValues = core.BoolPtr(modelMap["swap_null_values"].(bool))
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV1RelatedExtendedData(modelMap map[string]interface{}) (*logsv0.AlertsV1RelatedExtendedData, error) {
-	model := &logsv0.AlertsV1RelatedExtendedData{}
-	if modelMap["cleanup_deadman_duration"] != nil && modelMap["cleanup_deadman_duration"].(string) != "" {
-		model.CleanupDeadmanDuration = core.StringPtr(modelMap["cleanup_deadman_duration"].(string))
-	}
-	if modelMap["should_trigger_deadman"] != nil {
-		model.ShouldTriggerDeadman = core.BoolPtr(modelMap["should_trigger_deadman"].(bool))
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV2MoreThanCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2MoreThanCondition, error) {
-	model := &logsv0.AlertsV2MoreThanCondition{}
-	ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Parameters = ParametersModel
-	if modelMap["evaluation_window"] != nil && modelMap["evaluation_window"].(string) != "" {
-		model.EvaluationWindow = core.StringPtr(modelMap["evaluation_window"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV2MoreThanUsualCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2MoreThanUsualCondition, error) {
-	model := &logsv0.AlertsV2MoreThanUsualCondition{}
-	ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Parameters = ParametersModel
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV2NewValueCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2NewValueCondition, error) {
-	model := &logsv0.AlertsV2NewValueCondition{}
-	ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Parameters = ParametersModel
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV2FlowCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2FlowCondition, error) {
-	model := &logsv0.AlertsV2FlowCondition{}
-	if modelMap["stages"] != nil {
-		stages := []logsv0.AlertsV1FlowStage{}
-		for _, stagesItem := range modelMap["stages"].([]interface{}) {
-			stagesItemModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowStage(stagesItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			stages = append(stages, *stagesItemModel)
-		}
-		model.Stages = stages
-	}
-	if modelMap["parameters"] != nil && len(modelMap["parameters"].([]interface{})) > 0 {
-		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Parameters = ParametersModel
 	}
-	if modelMap["enforce_suppression"] != nil {
-		model.EnforceSuppression = core.BoolPtr(modelMap["enforce_suppression"].(bool))
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap []interface{}) (*logsv0.AlertsV2ConditionParameters, error) {
+	model := &logsv0.AlertsV2ConditionParameters{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		model.Threshold = core.Float64Ptr(modelMapElement["threshold"].(float64))
+		model.Timeframe = core.StringPtr(modelMapElement["timeframe"].(string))
+		if modelMapElement["group_by"] != nil {
+			groupBy := []string{}
+			for _, groupByItem := range modelMapElement["group_by"].([]interface{}) {
+				groupBy = append(groupBy, groupByItem.(string))
+			}
+			model.GroupBy = groupBy
+		}
+		if modelMapElement["metric_alert_parameters"] != nil && len(modelMapElement["metric_alert_parameters"].([]interface{})) > 0 {
+			MetricAlertParametersModel, err := ResourceIbmLogsAlertMapToAlertsV1MetricAlertConditionParameters(modelMapElement["metric_alert_parameters"].([]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.MetricAlertParameters = MetricAlertParametersModel
+		}
+		if modelMapElement["metric_alert_promql_parameters"] != nil && len(modelMapElement["metric_alert_promql_parameters"].([]interface{})) > 0 {
+			MetricAlertPromqlParametersModel, err := ResourceIbmLogsAlertMapToAlertsV1MetricAlertPromqlConditionParameters(modelMapElement["metric_alert_promql_parameters"].([]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.MetricAlertPromqlParameters = MetricAlertPromqlParametersModel
+		}
+		if modelMapElement["ignore_infinity"] != nil {
+			model.IgnoreInfinity = core.BoolPtr(modelMapElement["ignore_infinity"].(bool))
+		}
+		if modelMapElement["relative_timeframe"] != nil && modelMapElement["relative_timeframe"].(string) != "" {
+			model.RelativeTimeframe = core.StringPtr(modelMapElement["relative_timeframe"].(string))
+		}
+		if modelMapElement["cardinality_fields"] != nil {
+			cardinalityFields := []string{}
+			for _, cardinalityFieldsItem := range modelMapElement["cardinality_fields"].([]interface{}) {
+				cardinalityFields = append(cardinalityFields, cardinalityFieldsItem.(string))
+			}
+			model.CardinalityFields = cardinalityFields
+		}
+		if modelMapElement["related_extended_data"] != nil && len(modelMapElement["related_extended_data"].([]interface{})) > 0 {
+			RelatedExtendedDataModel, err := ResourceIbmLogsAlertMapToAlertsV1RelatedExtendedData(modelMapElement["related_extended_data"].([]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.RelatedExtendedData = RelatedExtendedDataModel
+		}
 	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV1MetricAlertConditionParameters(modelMap []interface{}) (*logsv0.AlertsV1MetricAlertConditionParameters, error) {
+	model := &logsv0.AlertsV1MetricAlertConditionParameters{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		model.MetricField = core.StringPtr(modelMapElement["metric_field"].(string))
+		model.MetricSource = core.StringPtr(modelMapElement["metric_source"].(string))
+		model.ArithmeticOperator = core.StringPtr(modelMapElement["arithmetic_operator"].(string))
+		if modelMapElement["arithmetic_operator_modifier"] != nil {
+			model.ArithmeticOperatorModifier = core.Int64Ptr(int64(modelMapElement["arithmetic_operator_modifier"].(int)))
+		}
+		if modelMapElement["sample_threshold_percentage"] != nil {
+			model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMapElement["sample_threshold_percentage"].(int)))
+		}
+		if modelMapElement["non_null_percentage"] != nil {
+			model.NonNullPercentage = core.Int64Ptr(int64(modelMapElement["non_null_percentage"].(int)))
+		}
+		if modelMapElement["swap_null_values"] != nil {
+			model.SwapNullValues = core.BoolPtr(modelMapElement["swap_null_values"].(bool))
+		}
+	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV1MetricAlertPromqlConditionParameters(modelMap []interface{}) (*logsv0.AlertsV1MetricAlertPromqlConditionParameters, error) {
+	model := &logsv0.AlertsV1MetricAlertPromqlConditionParameters{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		model.PromqlText = core.StringPtr(modelMapElement["promql_text"].(string))
+		if modelMapElement["arithmetic_operator_modifier"] != nil {
+			model.ArithmeticOperatorModifier = core.Int64Ptr(int64(modelMapElement["arithmetic_operator_modifier"].(int)))
+		}
+		model.SampleThresholdPercentage = core.Int64Ptr(int64(modelMapElement["sample_threshold_percentage"].(int)))
+		if modelMapElement["non_null_percentage"] != nil {
+			model.NonNullPercentage = core.Int64Ptr(int64(modelMapElement["non_null_percentage"].(int)))
+		}
+		if modelMapElement["swap_null_values"] != nil {
+			model.SwapNullValues = core.BoolPtr(modelMapElement["swap_null_values"].(bool))
+		}
+	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV1RelatedExtendedData(modelMap []interface{}) (*logsv0.AlertsV1RelatedExtendedData, error) {
+	model := &logsv0.AlertsV1RelatedExtendedData{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["cleanup_deadman_duration"] != nil && modelMapElement["cleanup_deadman_duration"].(string) != "" {
+			model.CleanupDeadmanDuration = core.StringPtr(modelMapElement["cleanup_deadman_duration"].(string))
+		}
+		if modelMapElement["should_trigger_deadman"] != nil {
+			model.ShouldTriggerDeadman = core.BoolPtr(modelMapElement["should_trigger_deadman"].(bool))
+		}
+	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV2MoreThanCondition(modelMap []interface{}) (*logsv0.AlertsV2MoreThanCondition, error) {
+	model := &logsv0.AlertsV2MoreThanCondition{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Parameters = ParametersModel
+		if modelMapElement["evaluation_window"] != nil && modelMapElement["evaluation_window"].(string) != "" {
+			model.EvaluationWindow = core.StringPtr(modelMapElement["evaluation_window"].(string))
+		}
+	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV2MoreThanUsualCondition(modelMap []interface{}) (*logsv0.AlertsV2MoreThanUsualCondition, error) {
+	model := &logsv0.AlertsV2MoreThanUsualCondition{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Parameters = ParametersModel
+	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV2NewValueCondition(modelMap []interface{}) (*logsv0.AlertsV2NewValueCondition, error) {
+	model := &logsv0.AlertsV2NewValueCondition{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Parameters = ParametersModel
+	}
+
+	return model, nil
+}
+
+func ResourceIbmLogsAlertMapToAlertsV2FlowCondition(modelMap []interface{}) (*logsv0.AlertsV2FlowCondition, error) {
+	model := &logsv0.AlertsV2FlowCondition{}
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["stages"] != nil {
+			stages := []logsv0.AlertsV1FlowStage{}
+			for _, stagesItem := range modelMapElement["stages"].([]interface{}) {
+				stagesItemModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowStage(stagesItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				stages = append(stages, *stagesItemModel)
+			}
+			model.Stages = stages
+		}
+		if modelMapElement["parameters"] != nil && len(modelMapElement["parameters"].([]interface{})) > 0 {
+			ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.Parameters = ParametersModel
+		}
+		if modelMapElement["enforce_suppression"] != nil {
+			model.EnforceSuppression = core.BoolPtr(modelMapElement["enforce_suppression"].(bool))
+		}
+	}
+
 	return model, nil
 }
 
@@ -2230,7 +2266,7 @@ func ResourceIbmLogsAlertMapToAlertsV1FlowStage(modelMap map[string]interface{})
 		model.Groups = groups
 	}
 	if modelMap["timeframe"] != nil && len(modelMap["timeframe"].([]interface{})) > 0 {
-		TimeframeModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowTimeframe(modelMap["timeframe"].([]interface{})[0].(map[string]interface{}))
+		TimeframeModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowTimeframe(modelMap["timeframe"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2242,7 +2278,7 @@ func ResourceIbmLogsAlertMapToAlertsV1FlowStage(modelMap map[string]interface{})
 func ResourceIbmLogsAlertMapToAlertsV1FlowGroup(modelMap map[string]interface{}) (*logsv0.AlertsV1FlowGroup, error) {
 	model := &logsv0.AlertsV1FlowGroup{}
 	if modelMap["alerts"] != nil && len(modelMap["alerts"].([]interface{})) > 0 {
-		AlertsModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowAlerts(modelMap["alerts"].([]interface{})[0].(map[string]interface{}))
+		AlertsModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowAlerts(modelMap["alerts"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2254,21 +2290,24 @@ func ResourceIbmLogsAlertMapToAlertsV1FlowGroup(modelMap map[string]interface{})
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV1FlowAlerts(modelMap map[string]interface{}) (*logsv0.AlertsV1FlowAlerts, error) {
+func ResourceIbmLogsAlertMapToAlertsV1FlowAlerts(modelMap []interface{}) (*logsv0.AlertsV1FlowAlerts, error) {
 	model := &logsv0.AlertsV1FlowAlerts{}
-	if modelMap["op"] != nil && modelMap["op"].(string) != "" {
-		model.Op = core.StringPtr(modelMap["op"].(string))
-	}
-	if modelMap["values"] != nil {
-		values := []logsv0.AlertsV1FlowAlert{}
-		for _, valuesItem := range modelMap["values"].([]interface{}) {
-			valuesItemModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowAlert(valuesItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			values = append(values, *valuesItemModel)
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["op"] != nil && modelMapElement["op"].(string) != "" {
+			model.Op = core.StringPtr(modelMapElement["op"].(string))
 		}
-		model.Values = values
+		if modelMapElement["values"] != nil {
+			values := []logsv0.AlertsV1FlowAlert{}
+			for _, valuesItem := range modelMapElement["values"].([]interface{}) {
+				valuesItemModel, err := ResourceIbmLogsAlertMapToAlertsV1FlowAlert(valuesItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				values = append(values, *valuesItemModel)
+			}
+			model.Values = values
+		}
 	}
 	return model, nil
 }
@@ -2284,38 +2323,50 @@ func ResourceIbmLogsAlertMapToAlertsV1FlowAlert(modelMap map[string]interface{})
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV1FlowTimeframe(modelMap map[string]interface{}) (*logsv0.AlertsV1FlowTimeframe, error) {
+func ResourceIbmLogsAlertMapToAlertsV1FlowTimeframe(modelMap []interface{}) (*logsv0.AlertsV1FlowTimeframe, error) {
 	model := &logsv0.AlertsV1FlowTimeframe{}
-	if modelMap["ms"] != nil {
-		model.Ms = core.Int64Ptr(int64(modelMap["ms"].(int)))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["ms"] != nil {
+			model.Ms = core.Int64Ptr(int64(modelMapElement["ms"].(int)))
+		}
 	}
+
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV2UniqueCountCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2UniqueCountCondition, error) {
+func ResourceIbmLogsAlertMapToAlertsV2UniqueCountCondition(modelMap []interface{}) (*logsv0.AlertsV2UniqueCountCondition, error) {
 	model := &logsv0.AlertsV2UniqueCountCondition{}
-	ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Parameters = ParametersModel
 	}
-	model.Parameters = ParametersModel
+
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap map[string]interface{}) (*logsv0.AlertsV2LessThanUsualCondition, error) {
+func ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap []interface{}) (*logsv0.AlertsV2LessThanUsualCondition, error) {
 	model := &logsv0.AlertsV2LessThanUsualCondition{}
-	ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		ParametersModel, err := ResourceIbmLogsAlertMapToAlertsV2ConditionParameters(modelMapElement["parameters"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Parameters = ParametersModel
 	}
-	model.Parameters = ParametersModel
+
 	return model, nil
 }
 
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionImmediate(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionImmediate, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionImmediate{}
 	if modelMap["immediate"] != nil && len(modelMap["immediate"].([]interface{})) > 0 {
-		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap["immediate"].([]interface{})[0].(map[string]interface{}))
+		ImmediateModel, err := ResourceIbmLogsAlertMapToAlertsV2ImmediateConditionEmpty(modelMap["immediate"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2327,7 +2378,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionImmediate(modelMap 
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionLessThan(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionLessThan, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionLessThan{}
 	if modelMap["less_than"] != nil && len(modelMap["less_than"].([]interface{})) > 0 {
-		LessThanModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanCondition(modelMap["less_than"].([]interface{})[0].(map[string]interface{}))
+		LessThanModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanCondition(modelMap["less_than"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2339,7 +2390,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionLessThan(modelMap m
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionMoreThan(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionMoreThan, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionMoreThan{}
 	if modelMap["more_than"] != nil && len(modelMap["more_than"].([]interface{})) > 0 {
-		MoreThanModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanCondition(modelMap["more_than"].([]interface{})[0].(map[string]interface{}))
+		MoreThanModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanCondition(modelMap["more_than"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2351,7 +2402,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionMoreThan(modelMap m
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionMoreThanUsual(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionMoreThanUsual, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionMoreThanUsual{}
 	if modelMap["more_than_usual"] != nil && len(modelMap["more_than_usual"].([]interface{})) > 0 {
-		MoreThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanUsualCondition(modelMap["more_than_usual"].([]interface{})[0].(map[string]interface{}))
+		MoreThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2MoreThanUsualCondition(modelMap["more_than_usual"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2363,7 +2414,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionMoreThanUsual(model
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionNewValue(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionNewValue, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionNewValue{}
 	if modelMap["new_value"] != nil && len(modelMap["new_value"].([]interface{})) > 0 {
-		NewValueModel, err := ResourceIbmLogsAlertMapToAlertsV2NewValueCondition(modelMap["new_value"].([]interface{})[0].(map[string]interface{}))
+		NewValueModel, err := ResourceIbmLogsAlertMapToAlertsV2NewValueCondition(modelMap["new_value"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2375,7 +2426,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionNewValue(modelMap m
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionFlow(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionFlow, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionFlow{}
 	if modelMap["flow"] != nil && len(modelMap["flow"].([]interface{})) > 0 {
-		FlowModel, err := ResourceIbmLogsAlertMapToAlertsV2FlowCondition(modelMap["flow"].([]interface{})[0].(map[string]interface{}))
+		FlowModel, err := ResourceIbmLogsAlertMapToAlertsV2FlowCondition(modelMap["flow"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2387,7 +2438,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionFlow(modelMap map[s
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionUniqueCount(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionUniqueCount, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionUniqueCount{}
 	if modelMap["unique_count"] != nil && len(modelMap["unique_count"].([]interface{})) > 0 {
-		UniqueCountModel, err := ResourceIbmLogsAlertMapToAlertsV2UniqueCountCondition(modelMap["unique_count"].([]interface{})[0].(map[string]interface{}))
+		UniqueCountModel, err := ResourceIbmLogsAlertMapToAlertsV2UniqueCountCondition(modelMap["unique_count"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2399,7 +2450,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionUniqueCount(modelMa
 func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionLessThanUsual(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertConditionConditionLessThanUsual, error) {
 	model := &logsv0.AlertsV2AlertConditionConditionLessThanUsual{}
 	if modelMap["less_than_usual"] != nil && len(modelMap["less_than_usual"].([]interface{})) > 0 {
-		LessThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap["less_than_usual"].([]interface{})[0].(map[string]interface{}))
+		LessThanUsualModel, err := ResourceIbmLogsAlertMapToAlertsV2LessThanUsualCondition(modelMap["less_than_usual"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2443,7 +2494,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertNotification(modelMap map[string]inte
 		model.IntegrationID = core.Int64Ptr(int64(modelMap["integration_id"].(int)))
 	}
 	if modelMap["recipients"] != nil && len(modelMap["recipients"].([]interface{})) > 0 {
-		RecipientsModel, err := ResourceIbmLogsAlertMapToAlertsV2Recipients(modelMap["recipients"].([]interface{})[0].(map[string]interface{}))
+		RecipientsModel, err := ResourceIbmLogsAlertMapToAlertsV2Recipients(modelMap["recipients"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2452,15 +2503,19 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertNotification(modelMap map[string]inte
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV2Recipients(modelMap map[string]interface{}) (*logsv0.AlertsV2Recipients, error) {
+func ResourceIbmLogsAlertMapToAlertsV2Recipients(modelMap []interface{}) (*logsv0.AlertsV2Recipients, error) {
 	model := &logsv0.AlertsV2Recipients{}
-	if modelMap["emails"] != nil {
-		emails := []string{}
-		for _, emailsItem := range modelMap["emails"].([]interface{}) {
-			emails = append(emails, emailsItem.(string))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["emails"] != nil {
+			emails := []string{}
+			for _, emailsItem := range modelMapElement["emails"].([]interface{}) {
+				emails = append(emails, emailsItem.(string))
+			}
+			model.Emails = emails
 		}
-		model.Emails = emails
 	}
+
 	return model, nil
 }
 
@@ -2487,7 +2542,7 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertNotificationIntegrationTypeRecipients
 		model.NotifyOn = core.StringPtr(modelMap["notify_on"].(string))
 	}
 	if modelMap["recipients"] != nil && len(modelMap["recipients"].([]interface{})) > 0 {
-		RecipientsModel, err := ResourceIbmLogsAlertMapToAlertsV2Recipients(modelMap["recipients"].([]interface{})[0].(map[string]interface{}))
+		RecipientsModel, err := ResourceIbmLogsAlertMapToAlertsV2Recipients(modelMap["recipients"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2506,7 +2561,7 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertFilters(modelMap map[string]interface
 		model.Severities = severities
 	}
 	if modelMap["metadata"] != nil && len(modelMap["metadata"].([]interface{})) > 0 {
-		MetadataModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFiltersMetadataFilters(modelMap["metadata"].([]interface{})[0].(map[string]interface{}))
+		MetadataModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFiltersMetadataFilters(modelMap["metadata"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -2535,21 +2590,24 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertFilters(modelMap map[string]interface
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV1AlertFiltersMetadataFilters(modelMap map[string]interface{}) (*logsv0.AlertsV1AlertFiltersMetadataFilters, error) {
+func ResourceIbmLogsAlertMapToAlertsV1AlertFiltersMetadataFilters(modelMap []interface{}) (*logsv0.AlertsV1AlertFiltersMetadataFilters, error) {
 	model := &logsv0.AlertsV1AlertFiltersMetadataFilters{}
-	if modelMap["applications"] != nil {
-		applications := []string{}
-		for _, applicationsItem := range modelMap["applications"].([]interface{}) {
-			applications = append(applications, applicationsItem.(string))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["applications"] != nil {
+			applications := []string{}
+			for _, applicationsItem := range modelMapElement["applications"].([]interface{}) {
+				applications = append(applications, applicationsItem.(string))
+			}
+			model.Applications = applications
 		}
-		model.Applications = applications
-	}
-	if modelMap["subsystems"] != nil {
-		subsystems := []string{}
-		for _, subsystemsItem := range modelMap["subsystems"].([]interface{}) {
-			subsystems = append(subsystems, subsystemsItem.(string))
+		if modelMapElement["subsystems"] != nil {
+			subsystems := []string{}
+			for _, subsystemsItem := range modelMapElement["subsystems"].([]interface{}) {
+				subsystems = append(subsystems, subsystemsItem.(string))
+			}
+			model.Subsystems = subsystems
 		}
-		model.Subsystems = subsystems
 	}
 	return model, nil
 }
@@ -2628,7 +2686,7 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertActiveTimeframe(modelMap map[string]i
 		daysOfWeek = append(daysOfWeek, daysOfWeekItem.(string))
 	}
 	model.DaysOfWeek = daysOfWeek
-	RangeModel, err := ResourceIbmLogsAlertMapToAlertsV1TimeRange(modelMap["range"].([]interface{})[0].(map[string]interface{}))
+	RangeModel, err := ResourceIbmLogsAlertMapToAlertsV1TimeRange(modelMap["range"].([]interface{}))
 	if err != nil {
 		return model, err
 	}
@@ -2636,32 +2694,40 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertActiveTimeframe(modelMap map[string]i
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV1TimeRange(modelMap map[string]interface{}) (*logsv0.AlertsV1TimeRange, error) {
+func ResourceIbmLogsAlertMapToAlertsV1TimeRange(modelMap []interface{}) (*logsv0.AlertsV1TimeRange, error) {
 	model := &logsv0.AlertsV1TimeRange{}
-	StartModel, err := ResourceIbmLogsAlertMapToAlertsV1Time(modelMap["start"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		StartModel, err := ResourceIbmLogsAlertMapToAlertsV1Time(modelMapElement["start"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Start = StartModel
+		EndModel, err := ResourceIbmLogsAlertMapToAlertsV1Time(modelMapElement["end"].([]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.End = EndModel
 	}
-	model.Start = StartModel
-	EndModel, err := ResourceIbmLogsAlertMapToAlertsV1Time(modelMap["end"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.End = EndModel
+
 	return model, nil
 }
 
-func ResourceIbmLogsAlertMapToAlertsV1Time(modelMap map[string]interface{}) (*logsv0.AlertsV1Time, error) {
+func ResourceIbmLogsAlertMapToAlertsV1Time(modelMap []interface{}) (*logsv0.AlertsV1Time, error) {
 	model := &logsv0.AlertsV1Time{}
-	if modelMap["hours"] != nil {
-		model.Hours = core.Int64Ptr(int64(modelMap["hours"].(int)))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["hours"] != nil {
+			model.Hours = core.Int64Ptr(int64(modelMapElement["hours"].(int)))
+		}
+		if modelMapElement["minutes"] != nil {
+			model.Minutes = core.Int64Ptr(int64(modelMapElement["minutes"].(int)))
+		}
+		if modelMapElement["seconds"] != nil {
+			model.Seconds = core.Int64Ptr(int64(modelMapElement["seconds"].(int)))
+		}
 	}
-	if modelMap["minutes"] != nil {
-		model.Minutes = core.Int64Ptr(int64(modelMap["minutes"].(int)))
-	}
-	if modelMap["seconds"] != nil {
-		model.Seconds = core.Int64Ptr(int64(modelMap["seconds"].(int)))
-	}
+
 	return model, nil
 }
 
