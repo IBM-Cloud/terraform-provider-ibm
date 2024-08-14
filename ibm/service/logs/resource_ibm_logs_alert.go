@@ -1269,11 +1269,13 @@ func ResourceIbmLogsAlert() *schema.Resource {
 									"retriggering_period_seconds": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
+										Computed:    true,
 										Description: "Retriggering period of the alert in seconds.",
 									},
 									"notify_on": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Notify on setting.",
 									},
 									"integration_id": &schema.Schema{
@@ -2484,7 +2486,8 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertNotificationGroups(modelMap map[strin
 
 func ResourceIbmLogsAlertMapToAlertsV2AlertNotification(modelMap map[string]interface{}) (logsv0.AlertsV2AlertNotificationIntf, error) {
 	model := &logsv0.AlertsV2AlertNotification{}
-	if modelMap["retriggering_period_seconds"] != nil {
+
+	if modelMap["retriggering_period_seconds"] != nil && modelMap["retriggering_period_seconds"] != 0 {
 		model.RetriggeringPeriodSeconds = core.Int64Ptr(int64(modelMap["retriggering_period_seconds"].(int)))
 	}
 	if modelMap["notify_on"] != nil && modelMap["notify_on"].(string) != "" {
