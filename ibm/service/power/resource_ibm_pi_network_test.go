@@ -21,6 +21,7 @@ import (
 
 func TestAccIBMPINetworkbasic(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
+	networkRes := "ibm_pi_network.power_networks"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -29,25 +30,24 @@ func TestAccIBMPINetworkbasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPINetworkConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_network_name", name),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
+					testAccCheckIBMPINetworkExists(networkRes),
+					resource.TestCheckResourceAttr(networkRes, "pi_network_name", name),
+					resource.TestCheckResourceAttrSet(networkRes, "crn"),
+					resource.TestCheckResourceAttrSet(networkRes, "id"),
+					resource.TestCheckResourceAttrSet(networkRes, "pi_gateway"),
+					resource.TestCheckResourceAttrSet(networkRes, "pi_ipaddress_range.#"),
 				),
 			},
 			{
 				Config: testAccCheckIBMPINetworkConfigUpdateDNS(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_network_name", name),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
+					testAccCheckIBMPINetworkExists(networkRes),
+					resource.TestCheckResourceAttr(networkRes, "pi_network_name", name),
+					resource.TestCheckResourceAttrSet(networkRes, "crn"),
+					resource.TestCheckResourceAttr(networkRes, "pi_dns.#", "1"),
+					resource.TestCheckResourceAttrSet(networkRes, "id"),
+					resource.TestCheckResourceAttrSet(networkRes, "pi_gateway"),
+					resource.TestCheckResourceAttrSet(networkRes, "pi_ipaddress_range.#"),
 				),
 			},
 		},
@@ -151,6 +151,27 @@ func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
 						"ibm_pi_network.power_networks", "pi_network_name", name),
 					resource.TestCheckResourceAttr(
 						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMPINetworkusertags(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
+	networkRes := "ibm_pi_network.power_networks"
+	userTagsString := `["env:dev","test_tag"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPINetworkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworkConfigUserTags(name, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists(networkRes),
+					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.#", "2"),
+					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.0", "env:test"),
+					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.1", "test_tag"),
 				),
 			},
 		},
@@ -295,4 +316,26 @@ func testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name string) string {
 			pi_dns               = ["10.1.0.69"]
 		}
 	`, acc.Pi_cloud_instance_id, name)
+}
+
+func testAccCheckIBMPINetworkConfigUserTags(name string, userTagsString string) string {
+	return fmt.Sprintf(`
+		data "ibm_pi_network" "power_networks_data" {
+			pi_cloud_instance_id = "%[1]s"
+			pi_network_name      = ibm_pi_network.power_networks.pi_network_name
+		}
+
+		resource "ibm_pi_network" "power_networks" {
+			pi_network_name      = "%[2]s"
+			pi_cloud_instance_id = "%[1]s"
+			pi_network_type      = "vlan"
+			pi_cidr              = "192.168.17.0/24"
+			pi_gateway           = "192.168.17.2"
+			pi_ipaddress_range {
+				pi_ending_ip_address   = "192.168.17.254"
+				pi_starting_ip_address = "192.168.17.3"
+			}
+			pi_user_tags 		 = %[3]s
+		}
+	`, acc.Pi_cloud_instance_id, name, userTagsString)
 }
