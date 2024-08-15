@@ -20,6 +20,7 @@ func TestAccIBMPIPISharedProcessorPoolDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMPIPISharedProcessorPoolDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_shared_processor_pool.test_pool", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_shared_processor_pool.test_pool", "crn"),
 				),
 			},
 		},
