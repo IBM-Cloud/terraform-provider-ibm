@@ -34,6 +34,7 @@ func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),
 					resource.TestCheckResourceAttr(snapshotRes, "status", power.State_Available),
 					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
+					resource.TestCheckResourceAttrSet(snapshotRes, "crn"),
 				),
 			},
 		},

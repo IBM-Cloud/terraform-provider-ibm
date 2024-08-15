@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccIBMPIInstanceSnapshotsDataSource_basic(t *testing.T) {
+	snapshotResData := "data.ibm_pi_instance_snapshots.testacc_ds_snapshots"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -20,7 +21,8 @@ func TestAccIBMPIInstanceSnapshotsDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIInstanceSnapshotsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_instance_snapshots.testacc_ds_snapshots", "id"),
+					resource.TestCheckResourceAttrSet(snapshotResData, "id"),
+					resource.TestCheckResourceAttrSet(snapshotResData, "instance_snapshots.0.crn"),
 				),
 			},
 		},
