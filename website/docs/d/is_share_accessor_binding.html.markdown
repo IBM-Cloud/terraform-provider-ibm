@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_is_share_accessor_binding"
 description: |-
   Get information about ShareAccessorBinding
-subcategory: "Virtual Private Cloud API"
+subcategory: "VPC infrastructure"
 ---
 
 # ibm_is_share_accessor_binding
