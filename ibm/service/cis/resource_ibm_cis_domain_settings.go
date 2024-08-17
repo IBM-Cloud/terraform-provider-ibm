@@ -353,7 +353,7 @@ func ResourceIBMCISSettings() *schema.Resource {
 			},
 			cisDomainSettingsOriginMaxHTTPVersion: {
 				Type:        schema.TypeString,
-				Description: "origin_max_http_version setting",
+				Description: "Max HTTP version used to connect to the origin",
 				Optional:    true,
 				Computed:    true,
 				ValidateFunc: validate.InvokeValidator(
@@ -362,7 +362,7 @@ func ResourceIBMCISSettings() *schema.Resource {
 			},
 			cisDomainSettingsOriginPostQuantumEncryption: {
 				Type:        schema.TypeString,
-				Description: "origin_post_quantum_encryption setting",
+				Description: "Enables post-quantum cryptography to connect to the origin",
 				Optional:    true,
 				Computed:    true,
 				ValidateFunc: validate.InvokeValidator(
