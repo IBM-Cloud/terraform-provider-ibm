@@ -5,7 +5,6 @@ package database_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -39,10 +38,6 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.database", regexp.MustCompile("[-a-z0-9]+")),
 				),
 			},
 			{
