@@ -182,6 +182,13 @@ func ResourceIBMIsInstanceNetworkAttachment() *schema.Resource {
 							ValidateFunc:  validate.InvokeValidator("ibm_is_virtual_network_interface", "name"),
 							Description:   "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 						},
+						"protocol_state_filtering_mode": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+							Description:  "The protocol state filtering mode used for this virtual network interface.",
+						},
 						"primary_ip": &schema.Schema{
 							Type:          schema.TypeList,
 							Optional:      true,
@@ -412,6 +419,7 @@ func resourceIBMIsInstanceNetworkAttachmentRead(context context.Context, d *sche
 	vniMap["name"] = vniDetails.Name
 	vniMap["resource_group"] = vniDetails.ResourceGroup.ID
 	vniMap["resource_type"] = vniDetails.ResourceType
+	vniMap["protocol_state_filtering_mode"] = vniDetails.ProtocolStateFilteringMode
 	primaryipId := *instanceNetworkAttachment.PrimaryIP.ID
 	if !core.IsNil(vniDetails.Ips) {
 		ips := []map[string]interface{}{}
@@ -498,6 +506,10 @@ func resourceIBMIsInstanceNetworkAttachmentUpdate(context context.Context, d *sc
 		if d.HasChange("virtual_network_interface.0.allow_ip_spoofing") {
 			allIpSpoofing := d.Get("virtual_network_interface.0.allow_ip_spoofing").(bool)
 			virtualNetworkInterfacePatch.AllowIPSpoofing = &allIpSpoofing
+		}
+		if d.HasChange("virtual_network_interface.0.protocol_state_filtering_mode") {
+			pStateFilteringMode := d.Get("virtual_network_interface.0.protocol_state_filtering_mode").(string)
+			virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &pStateFilteringMode
 		}
 		virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 		if err != nil {
@@ -719,6 +731,11 @@ func resourceIBMIsInstanceNetworkAttachmentMapToInstanceNetworkAttachmentPrototy
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
+			model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		}
 	}
 	if modelMap["primary_ip"] != nil && len(modelMap["primary_ip"].([]interface{})) > 0 {
 		PrimaryIPModel, err := resourceIBMIsInstanceNetworkAttachmentMapToVirtualNetworkInterfacePrimaryIPPrototype(modelMap["primary_ip"].([]interface{})[0].(map[string]interface{}))

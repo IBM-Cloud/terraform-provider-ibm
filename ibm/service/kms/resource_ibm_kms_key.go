@@ -256,7 +256,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	if err1 != nil {
 		registrations := d.Get("registrations").([]interface{})
 		var registrationLog error
-		if registrations != nil && len(registrations) > 0 {
+		if len(registrations) > 0 {
 			resourceCrns := make([]string, 0)
 			for _, registration := range registrations {
 				r := registration.(map[string]interface{})

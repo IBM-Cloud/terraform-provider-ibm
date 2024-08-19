@@ -94,6 +94,13 @@ func ResourceIBMResourceInstance() *schema.Resource {
 					"resource_group_id"),
 			},
 
+			// ### Modification : Adding onetime_credientails into the response scehama
+			"onetime_credentials": {
+				Description: "A boolean that dictates if the onetime_credentials is true or false.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+
 			"parameters": {
 				Type:          schema.TypeMap,
 				Optional:      true,
@@ -595,6 +602,8 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set("plan", servicePlan)
 	d.Set("guid", instance.GUID)
+	// ### Modificataion : Setting  "onetime_credentials"
+	d.Set("onetime_credentials", instance.OnetimeCredentials)
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)

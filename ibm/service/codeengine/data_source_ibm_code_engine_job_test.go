@@ -90,6 +90,12 @@ func testAccCheckIbmCodeEngineJobDataSourceConfigBasic(projectID string, jobImag
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			image_reference = "%s"
 			name = "%s"
+
+			lifecycle {
+				ignore_changes = [
+					run_env_variables
+				]
+			}
 		}
 
 		data "ibm_code_engine_job" "code_engine_job_instance" {
@@ -116,6 +122,12 @@ func testAccCheckIbmCodeEngineJobDataSourceConfig(projectID string, jobImageRefe
 			scale_max_execution_time = %s
 			scale_memory_limit = "%s"
 			scale_retry_limit = %s
+
+			lifecycle {
+				ignore_changes = [
+					run_env_variables
+				]
+			}
 		}
 
 		data "ibm_code_engine_job" "code_engine_job_instance" {
