@@ -17,6 +17,7 @@ const (
 	name                      = "name"
 	poolAlgorithm             = "algorithm"
 	href                      = "href"
+	family                    = "family"
 	poolProtocol              = "protocol"
 	poolCreatedAt             = "created_at"
 	poolProvisioningStatus    = "provisioning_status"
@@ -100,7 +101,11 @@ func DataSourceIBMISLB() *schema.Resource {
 				Computed:    true,
 				Description: "Load Balancer status",
 			},
-
+			isLbProfile: {
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "The profile to use for this load balancer",
+			},
 			isLBRouteMode: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -391,9 +396,18 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")
+			} else if *lb.IsPrivatePath {
+				d.Set(isLBType, "private_path")
 			} else {
 				d.Set(isLBType, "private")
 			}
+			lbProfile := make(map[string]interface{})
+			if lb.Profile != nil {
+				lbProfile[name] = *lb.Profile.Name
+				lbProfile[href] = *lb.Profile.Href
+				lbProfile[family] = *lb.Profile.Family
+			}
+			d.Set(isLbProfile, lbProfile)
 			d.Set(isLBStatus, *lb.ProvisioningStatus)
 			if lb.RouteMode != nil {
 				d.Set(isLBRouteMode, *lb.RouteMode)

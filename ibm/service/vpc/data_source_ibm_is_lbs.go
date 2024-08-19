@@ -366,6 +366,8 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		lbInfo[CreatedAt] = lb.CreatedAt.String()
 		if *lb.IsPublic {
 			lbInfo[isLBType] = "public"
+		} else if *lb.IsPrivatePath {
+			lbInfo[isLBType] = "private_path"
 		} else {
 			lbInfo[isLBType] = "private"
 		}
@@ -461,7 +463,7 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 			lbProfile := make(map[string]interface{})
 			lbProfile[name] = *lb.Profile.Name
 			lbProfile[href] = *lb.Profile.Href
-			lbProfile["family"] = *lb.Profile.Family
+			lbProfile[family] = *lb.Profile.Family
 			lbInfo[isLbProfile] = lbProfile
 		}
 		lbInfo[isLBResourceGroup] = *lb.ResourceGroup.ID
