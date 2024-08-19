@@ -236,7 +236,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"properties": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.",
+							Description: "Optional trigger properties are used to override or supplement the pipeline properties when triggering a pipeline run.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -320,7 +320,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Flag whether the trigger is enabled.",
+							Description: "Flag to check if the trigger is enabled.",
 						},
 						"favorite": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -352,12 +352,12 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 												"branch": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.",
+													Description: "Name of a branch from the repo. Only one of branch, pattern, or filter should be specified.",
 												},
 												"pattern": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The pattern of Git branch or tag to which to listen. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository. The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. One of branch or pattern must be specified, but only one or the other.",
+													Description: "The pattern of Git branch or tag. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags or branches in the repository.The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. Only one of branch, pattern, or filter should be specified.",
 												},
 												"blind_connection": &schema.Schema{
 													Type:        schema.TypeBool,
@@ -367,7 +367,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 												"hook_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
+													Description: "Repository webhook ID. It is generated upon trigger creation.",
 												},
 												"tool": &schema.Schema{
 													Type:        schema.TypeList,
@@ -392,25 +392,30 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"events": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
+							Description: "Either 'events' or 'filter' is required specifically for Git triggers. Stores a list of events that a Git trigger listens to. Choose one or more from 'push', 'pull_request', and 'pull_request_closed'. If SCM repositories use the 'merge request' term, they correspond to the generic term i.e. 'pull request'.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
+						"filter": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.",
+						},
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Only needed for timer triggers. Cron expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: 0 *_/2 * * * - every 2 hours.",
+							Description: "Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.",
 						},
 						"timezone": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.",
+							Description: "Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the CRON activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.",
 						},
 						"secret": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.",
+							Description: "Only needed for Generic Webhook trigger type. The secret is used to start the Generic Webhook trigger.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{
@@ -496,17 +501,17 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 			"enable_notifications": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain. If omitted, this feature is disabled by default.",
+				Description: "Flag to enable notifications for this pipeline. If enabled, the Tekton pipeline run events will be published to all the destinations specified by the Slack and Event Notifications integrations in the parent toolchain. If omitted, this feature is disabled by default.",
 			},
 			"enable_partial_cloning": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.",
+				Description: "Flag to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.",
 			},
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag whether this pipeline is enabled.",
+				Description: "Flag to check if the trigger is enabled.",
 			},
 		},
 	}
@@ -810,6 +815,9 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 		if model.Events != nil {
 			modelMap["events"] = model.Events
 		}
+		if model.Filter != nil {
+			modelMap["filter"] = model.Filter
+		}
 		if model.Cron != nil {
 			modelMap["cron"] = model.Cron
 		}
@@ -1005,6 +1013,9 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 	if model.Events != nil {
 		modelMap["events"] = model.Events
 	}
+	if model.Filter != nil {
+		modelMap["filter"] = model.Filter
+	}
 	return modelMap, nil
 }
 
@@ -1100,6 +1111,9 @@ func dataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipe
 	}
 	if model.WebhookURL != nil {
 		modelMap["webhook_url"] = model.WebhookURL
+	}
+	if model.Filter != nil {
+		modelMap["filter"] = model.Filter
 	}
 	return modelMap, nil
 }

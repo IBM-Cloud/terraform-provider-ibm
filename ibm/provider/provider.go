@@ -47,6 +47,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
@@ -959,6 +960,10 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichments":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
 			"ibm_logs_data_access_rules":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
+
+			// Logs Router Service
+			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
+			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1537,6 +1542,9 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
 			"ibm_logs_data_access_rule":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
+
+			// Logs Router Service
+			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1983,6 +1991,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
 				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
 				"ibm_logs_data_access_rule": logs.ResourceIbmLogsDataAccessRuleValidator(),
+
+				// Added for Logs Router Service
+				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
