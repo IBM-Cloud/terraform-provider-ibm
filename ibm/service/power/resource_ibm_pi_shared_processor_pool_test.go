@@ -42,6 +42,7 @@ func TestAccIBMPISPPbasic(t *testing.T) {
 func TestAccIBMPISPPusertags(t *testing.T) {
 	name := fmt.Sprintf("tfpispp%d", acctest.RandIntRange(10, 100))
 	sppRes := "ibm_pi_shared_processor_pool.power_shared_processor_pool"
+	sppResData := "data.ibm_pi_shared_processor_pool.power_shared_processor_pool_data"
 	userTags := []string{"env:test", "test_tag"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -52,9 +53,9 @@ func TestAccIBMPISPPusertags(t *testing.T) {
 				Config: testAccCheckIBMPISPPConfigUserTags(name, userTags),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPISPPExists(sppRes),
-					resource.TestCheckResourceAttr(sppRes, "pi_user_tags.#", "2"),
-					resource.TestCheckResourceAttr(sppRes, "pi_user_tags.1", "env:test"),
-					resource.TestCheckResourceAttr(sppRes, "pi_user_tags.2", "test_tag"),
+					resource.TestCheckResourceAttr(sppResData, "user_tags.#", "2"),
+					resource.TestCheckResourceAttr(sppResData, "user_tags.1", "env:test"),
+					resource.TestCheckResourceAttr(sppResData, "user_tags.2", "test_tag"),
 				),
 			},
 		},
@@ -128,6 +129,11 @@ func testAccCheckIBMPISPPConfig(name string) string {
 
 func testAccCheckIBMPISPPConfigUserTags(name string, userTags []string) string {
 	return fmt.Sprintf(`
+		data "ibm_pi_shared_processor_pool" "power_shared_processor_pool_data" {
+			pi_cloud_instance_id	= "%[2]s"
+			pi_shared_processor_pool_name = ibm_pi_shared_processor_pool.power_shared_processor_pool.pi_shared_processor_pool_name
+		}
+
 		resource "ibm_pi_shared_processor_pool" "power_shared_processor_pool" {
 			pi_cloud_instance_id	= "%[2]s"
 			pi_shared_processor_pool_host_group = "s922"

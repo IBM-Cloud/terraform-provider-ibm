@@ -311,7 +311,6 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 	d.Set(Attr_SharedProcessorPoolHostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_SharedProcessorPoolStatusDetail, response.SharedProcessorPool.StatusDetail)
-	d.Set(Arg_UserTags, response.SharedProcessorPool.UserTags)
 
 	serversMap := []map[string]interface{}{}
 	if response.Servers != nil {
