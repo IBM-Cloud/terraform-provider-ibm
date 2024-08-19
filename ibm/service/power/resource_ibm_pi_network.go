@@ -281,7 +281,6 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 	d.Set(helpers.PINetworkIPAddressRange, ipRangesMap)
-	d.Set(Arg_UserTags, networkdata.UserTags)
 
 	return nil
 }

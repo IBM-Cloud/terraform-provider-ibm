@@ -159,6 +159,7 @@ func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
 func TestAccIBMPINetworkusertags(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
 	networkRes := "ibm_pi_network.power_networks"
+	networkResData := "data.ibm_pi_network.power_networks_data"
 	userTagsString := `["env:dev","test_tag"]`
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -169,9 +170,9 @@ func TestAccIBMPINetworkusertags(t *testing.T) {
 				Config: testAccCheckIBMPINetworkConfigUserTags(name, userTagsString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPINetworkExists(networkRes),
-					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.#", "2"),
-					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.0", "env:test"),
-					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.1", "test_tag"),
+					resource.TestCheckResourceAttr(networkResData, "user_tags.#", "2"),
+					resource.TestCheckResourceAttr(networkResData, "user_tags.0", "env:test"),
+					resource.TestCheckResourceAttr(networkResData, "user_tags.1", "test_tag"),
 				),
 			},
 		},
