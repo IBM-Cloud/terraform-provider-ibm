@@ -25,6 +25,7 @@ Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
+Logs Routing
 Metrics Router
 MQ on Cloud
 Object Storage

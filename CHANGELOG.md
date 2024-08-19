@@ -1,3 +1,11 @@
+# 1.68.1 (Aug 12, 2024)
+BugFixes
+* Fix code engine job regression ([5545](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5545))
+* Update(Cloud-Databases): Added hints for region and location mismatches ([5557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5557))
+* fix(Cloud-Databases): Remove deprecated connectionstrings attribute ([5554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5554))
+* remove the return value from waitForVpcCluster ([5557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5557))
+* fix: read endpoint type from schema ([5552](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5552))
+
 # 1.68.0 (Aug 04, 2024)
 Features
 * Support CBR
