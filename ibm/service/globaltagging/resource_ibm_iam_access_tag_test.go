@@ -69,9 +69,10 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttr("ibm_iam_access_tag.tag", "id", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_tag.tag", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_access_tag.tag", "tag_type", "access"),
-					resource.TestCheckResourceAttr("ibm_is_ssh_key.key", "name", sshkeyname),
-					resource.TestCheckResourceAttrSet("ibm_is_ssh_key.key", "access_tags.#"),
-					resource.TestCheckResourceAttr("ibm_is_ssh_key.key", "access_tags.0", name),
+					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
+					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.0", name),
+					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tag_type", "access"),
 				),
 			},
 		},
@@ -136,7 +137,11 @@ func testAccCheckIamAccessTagUsage(name, sshkeyname, publicKey string) string {
 	resource "ibm_is_ssh_key" "key" {
 		name = "%s"
 		public_key = "%s"
-		access_tags = [ibm_iam_access_tag.tag.name]
+	}
+	resource "ibm_resource_tag" "tag" {
+		resource_id = ibm_is_ssh_key.key.crn
+		tags        = [ibm_iam_access_tag.tag.name]
+		tag_type	= "access"
 	}
 `, name, sshkeyname, publicKey)
 }
