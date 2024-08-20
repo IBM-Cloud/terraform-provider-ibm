@@ -123,10 +123,11 @@ func resourceIBMKmsKeyRingRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	_, err = kpAPI.GetKeyRings(context.Background())
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
-			d.SetId("")
-			return nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+				d.SetId("")
+				return nil
+			}
 		}
 		return fmt.Errorf("[ERROR] Get Key Rings failed with error: %s", err)
 	}
@@ -151,11 +152,10 @@ func resourceIBMKmsKeyRingDelete(d *schema.ResourceData, meta interface{}) error
 
 	err = kpAPI.DeleteKeyRing(context.Background(), id[0], kp.WithForce(true))
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return nil
-		} else {
-			return fmt.Errorf(" failed to Destroy key ring with error: %s", err)
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return nil
+			}
 		}
 	}
 	return nil
