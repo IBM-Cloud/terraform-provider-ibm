@@ -18,14 +18,14 @@ This service includes certain resources that do not have fully implemented CRUD 
 
 ***Create:*** A `ibm_protection_group_run_request` resource is available for creating new protection group run.
 
-***Update:*** Book updates are managed through a separate `ibm_update_protection_group_run_request` resource. Note that the `ibm_protection_group_run_request` and `ibm_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
+***Update:*** protection group run updates are managed through a separate `ibm_update_protection_group_run_request` resource. Note that the `ibm_protection_group_run_request` and `ibm_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
 
 ***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_update_protection_group_run_request or ibm_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
 
 
 #### Other resources that do not support update and delete:
 
-Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration will only remove them from the Terraform state and will not affect the actual resources in the backend.
+Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend.
 - ibm_perform_action_on_protection_group_run_request
 - ibm_recovery_download_files_folders
 - ibm_recovery_cancel

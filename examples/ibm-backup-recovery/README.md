@@ -1284,7 +1284,7 @@ This service includes certain resources that do not have fully implemented CRUD 
 
 ***Create:*** A `ibm_protection_group_run_request` resource is available for creating new protection group run.
 
-***Update:*** Book updates are managed through a separate `ibm_update_protection_group_run_request` resource. Note that the `ibm_protection_group_run_request` and `ibm_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
+***Update:*** protection group run updates are managed through a separate `ibm_update_protection_group_run_request` resource. Note that the `ibm_protection_group_run_request` and `ibm_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
 
 ***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_update_protection_group_run_request or ibm_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
 
