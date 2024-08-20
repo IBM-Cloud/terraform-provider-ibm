@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package globaltagging
@@ -15,11 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIBMResourceAccessTag() *schema.Resource {
+func ResourceIBMIamAccessTag() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMResourceAccessTagCreate,
-		Read:     resourceIBMResourceAccessTagRead,
-		Delete:   resourceIBMResourceAccessTagDelete,
+		Create:   resourceIBMIamAccessTagCreate,
+		Read:     resourceIBMIamAccessTagRead,
+		Delete:   resourceIBMIamAccessTagDelete,
 		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -28,7 +28,7 @@ func ResourceIBMResourceAccessTag() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_resource_access_tag", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_iam_access_tag", "name"),
 				Set:          flex.ResourceIBMVPCHash,
 				Description:  "Name of the access tag",
 			},
@@ -38,11 +38,10 @@ func ResourceIBMResourceAccessTag() *schema.Resource {
 				Description: "Type of the tag(access)",
 			},
 		},
-		DeprecationMessage: "ibm_resource_access_tag has been deprecated. Use ibm_iam_access_tag instead.",
 	}
 }
 
-func ResourceIBMResourceAccessTagValidator() *validate.ResourceValidator {
+func ResourceIBMIamAccessTagValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -56,11 +55,11 @@ func ResourceIBMResourceAccessTagValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmResourceAccessTagValidator := validate.ResourceValidator{ResourceName: "ibm_resource_access_tag", Schema: validateSchema}
-	return &ibmResourceAccessTagValidator
+	ibmIamAccessTagValidator := validate.ResourceValidator{ResourceName: "ibm_iam_access_tag", Schema: validateSchema}
+	return &ibmIamAccessTagValidator
 }
 
-func resourceIBMResourceAccessTagCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIamAccessTagCreate(d *schema.ResourceData, meta interface{}) error {
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
@@ -99,7 +98,7 @@ func resourceIBMResourceAccessTagCreate(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceIBMResourceAccessTagRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIamAccessTagRead(d *schema.ResourceData, meta interface{}) error {
 	tagName := d.Id()
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
@@ -128,7 +127,7 @@ func resourceIBMResourceAccessTagRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceIBMResourceAccessTagDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIamAccessTagDelete(d *schema.ResourceData, meta interface{}) error {
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
