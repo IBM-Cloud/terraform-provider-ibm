@@ -66,11 +66,13 @@ func ResourceIbmLogsOutgoingWebhook() *schema.Resource {
 						"source_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The ID of the created source in the IBM Event Notifications instance. Corresponds to the Cloud Logs instance crn. Not required when creating an Outbound Integration.",
 						},
 						"source_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The name of the created source in the IBM Event Notifications instance. Not required when creating an Outbound Integration.",
 						},
 					},
@@ -339,13 +341,13 @@ func resourceIbmLogsOutgoingWebhookDelete(context context.Context, d *schema.Res
 func ResourceIbmLogsOutgoingWebhookMapToOutgoingWebhooksV1IbmEventNotificationsConfig(modelMap map[string]interface{}) (*logsv0.OutgoingWebhooksV1IbmEventNotificationsConfig, error) {
 	model := &logsv0.OutgoingWebhooksV1IbmEventNotificationsConfig{}
 	model.EventNotificationsInstanceID = core.UUIDPtr(strfmt.UUID(modelMap["event_notifications_instance_id"].(string)))
-	model.RegionID = core.StringPtr(modelMap["region_id"].(string)) // TODO: is source_id and source_name supported by SDK?
-	// if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
-	// 	model.SourceID = core.StringPtr(modelMap["source_id"].(string))
-	// }
-	// if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
-	// 	model.SourceName = core.StringPtr(modelMap["source_name"].(string))
-	// }
+	model.RegionID = core.StringPtr(modelMap["region_id"].(string))
+	if modelMap["source_id"] != nil && modelMap["source_id"].(string) != "" {
+		model.SourceID = core.StringPtr(modelMap["source_id"].(string))
+	}
+	if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
+		model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	}
 	return model, nil
 }
 
@@ -387,11 +389,11 @@ func ResourceIbmLogsOutgoingWebhookOutgoingWebhooksV1IbmEventNotificationsConfig
 	modelMap := make(map[string]interface{})
 	modelMap["event_notifications_instance_id"] = model.EventNotificationsInstanceID.String()
 	modelMap["region_id"] = *model.RegionID
-	// if model.SourceID != nil {
-	// 	modelMap["source_id"] = *model.SourceID
-	// }
-	// if model.SourceName != nil {
-	// 	modelMap["source_name"] = *model.SourceName
-	// }
+	if model.SourceID != nil {
+		modelMap["source_id"] = *model.SourceID
+	}
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
 	return modelMap, nil
 }
