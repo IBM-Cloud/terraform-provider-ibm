@@ -97,6 +97,14 @@ Review the attribute references that you can access after you retrieve your data
           - `id` - (String) The unique identifier for this subnet.
           - `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
           - `resource_type` - (String) The resource type.
+      - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+        Nested schema for **virtual_network_interface**:
+        - `crn` - (String) The CRN for this virtual network interface.
+        - `href` - (String) The URL for this virtual network interface.
+        - `id` - (String) The unique identifier for this virtual network interface.
+        - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+        - `resource_type` - (String) The resource type.
+        
 
   - `network_interfaces` - (List) A nested block describing the additional network interface of this instance.
 
@@ -145,6 +153,14 @@ Review the attribute references that you can access after you retrieve your data
           - `id` - (String) The unique identifier for this subnet.
           - `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
           - `resource_type` - (String) The resource type.
+      - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+      Nested schema for **virtual_network_interface**:
+        - `crn` - (String) The CRN for this virtual network interface.
+        - `href` - (String) The URL for this virtual network interface.
+        - `id` - (String) The unique identifier for this virtual network interface.
+        - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+        - `resource_type` - (String) The resource type.
+          
   - `primary_network_interface` - (List) A nested block describing the primary network interface of this bare metal server.
 
       Nested scheme for `primary_network_interface`:
