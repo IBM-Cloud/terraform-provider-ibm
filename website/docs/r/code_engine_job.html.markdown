@@ -40,7 +40,7 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z0-9][a-z0-9\\-_.]+[a-z0-9][\/])?([a-z0-9][a-z0-9\\-_]+[a-z0-9][\/])?[a-z0-9][a-z0-9\\-_.\/]+[a-z0-9](:[\\w][\\w.\\-]{0,127})?(@sha256:[a-fA-F0-9]{64})?$/`.
 * `image_secret` - (Optional, String) The name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the job / job runs will be created but submitted job runs will fail, until this property is provided, too. This property must not be set on a job run, which references a job template.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-* `name` - (Required, Forces new resource, String) The name of the job. Use a name that is unique within the project.
+* `name` - (Required, Forces new resource, String) The name of the job.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
@@ -50,9 +50,9 @@ You can specify the following arguments for this resource.
   * Constraints: The default value is `0`.
 * `run_commands` - (Optional, List) Set commands for the job that are passed to start job run containers. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_env_variables` - (Optional, List) Optional references to config maps, secrets or literal values.
+* `run_env_variables` - (Optional, List) References to config maps, secrets or literal values, which are exposed as environment variables in the job run.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
-Nested scheme for **run_env_variables**:
+Nested schema for **run_env_variables**:
 	* `key` - (Optional, String) The key to reference as environment variable.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
 	* `name` - (Optional, String) The name of the environment variable.
@@ -69,19 +69,19 @@ Nested scheme for **run_env_variables**:
   * Constraints: The default value is `task`. Allowable values are: `task`, `daemon`. The minimum length is `0` characters. The value must match regular expression `/^(task|daemon)$/`.
 * `run_service_account` - (Optional, String) The name of the service account. For built-in service accounts, you can use the shortened names `manager`, `none`, `reader`, and `writer`. This property must not be set on a job run, which references a job template.
   * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The minimum length is `0` characters. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
-* `run_volume_mounts` - (Optional, List) Optional mounts of config maps or a secrets.
+* `run_volume_mounts` - (Optional, List) Optional mounts of config maps or secrets.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
-Nested scheme for **run_volume_mounts**:
+Nested schema for **run_volume_mounts**:
 	* `mount_path` - (Required, String) The path that should be mounted.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^\/([^\/\\0]+\/?)+$/`.
-	* `name` - (Optional, String) Optional name of the mount. If not set, it will be generated based on the `ref` and a random ID. In case the `ref` is longer than 58 characters, it will be cut off.
+	* `name` - (Required, String) The name of the mount.
 	  * Constraints: The maximum length is `63` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
 	* `reference` - (Required, String) The name of the referenced secret or config map.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.
 	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `secret`. The value must match regular expression `/^(config_map|secret)$/`.
-* `scale_array_spec` - (Optional, String) Define a custom set of array indices as comma-separated list containing single values and hyphen-separated ranges like `5,12-14,23,27`. Each instance can pick up its array index via environment variable `JOB_INDEX`. The number of unique array indices specified here determines the number of job instances to run.
-  * Constraints:  The default value is `0`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?(?:,(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?)*$/`.
+* `scale_array_spec` - (Optional, String) Define a custom set of array indices as a comma-separated list containing single values and hyphen-separated ranges, such as  5,12-14,23,27. Each instance gets its array index value from the environment variable JOB_INDEX. The number of unique array indices that you specify with this parameter determines the number of job instances to run.
+  * Constraints: The default value is `0`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?(?:,(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?)*$/`.
 * `scale_cpu_limit` - (Optional, String) Optional amount of CPU set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).
   * Constraints: The default value is `1`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_ephemeral_storage_limit` - (Optional, String) Optional amount of ephemeral storage to set for the instance of the job. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).
@@ -100,13 +100,17 @@ After your resource is created, you can read values from the listed arguments an
 * `id` - The unique identifier of the code_engine_job.
 * `job_id` - (String) The identifier of the resource.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+* `build` - (String) Reference to a build that is associated with the job.
+* `build_run` - (String) Reference to a build run that is associated with the job.
 * `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the job instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new job,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the job.
   * Constraints: Allowable values are: `job_v2`.
+
 * `etag` - ETag identifier for code_engine_job.
 
 ## Import
@@ -114,13 +118,13 @@ After your resource is created, you can read values from the listed arguments an
 You can import the `ibm_code_engine_job` resource by using `name`.
 The `name` property can be formed from `project_id`, and `name` in the following format:
 
-```
-<project_id>/<name>
-```
+<pre>
+&lt;project_id&gt;/&lt;name&gt;
+</pre>
 * `project_id`: A string in the format `15314cc3-85b4-4338-903f-c28cdee6d005`. The ID of the project.
-* `name`: A string in the format `my-job`. The name of your job.
+* `name`: A string in the format `my-job`. The name of the job.
 
 # Syntax
-```
-$ terraform import ibm_code_engine_job.code_engine_job <project_id>/<name>
-```
+<pre>
+$ terraform import ibm_code_engine_job.code_engine_job &lt;project_id&gt;/&lt;name&gt;
+</pre>
