@@ -42,7 +42,7 @@ resource "ibm_pi_instance" "test-instance" {
   - `zone` - `lon04`
   
 Example usage:  
-  
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -54,9 +54,9 @@ Example usage:
 
 The `ibm_pi_instance` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create** - The creation of the instance is considered failed if no response is received for 120 minutes.
-- **update** The updation of the instance is considered failed if no response is received for 60 minutes.
-- **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes.
+- **create** - (Default 120 minutes) Used for creating an instance.
+- **update** - (Default 60 minutes) Used for updating an instance.
+- **delete** - (Default 60 minutes) Used for deleting an instance.
 
 ## Argument reference
 
@@ -135,7 +135,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `health_status` - (String) The health status of the VM.
 - `ibmi_rds` - (Boolean) IBM i Rational Dev Studio.
-- `id` - (String) The unique identifier of the instance. The ID is composed of `<cloud_instance_id>/<instance_id_1>/.../<instance_id_n>`.
+- `id` - (String) The unique identifier of the instance. The ID is composed of `<pi_cloud_instance_id>/<instance_id_1>/.../<instance_id_n>`.
 - `instance_id` - (String) The unique identifier of the instance.
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
