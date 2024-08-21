@@ -124,14 +124,14 @@ func testAccCheckIamAccessTagExists(n string) resource.TestCheckFunc {
 
 func testAccCheckIamAccessTagCreate(name string) string {
 	return fmt.Sprintf(`
-	resource ibm_iam_access_tag tag {
+	resource "ibm_iam_access_tag" "tag" {
 		name = "%s"
 	  }
 `, name)
 }
 func testAccCheckIamAccessTagUsage(name, sshkeyname, publicKey string) string {
 	return fmt.Sprintf(`
-	resource ibm_iam_access_tag tag {
+	resource "ibm_iam_access_tag" "tag" {
 		name = "%s"
 	}
 	resource "ibm_is_ssh_key" "key" {
