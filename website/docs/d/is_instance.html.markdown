@@ -213,6 +213,13 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this subnet.
 		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
 		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
     
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
@@ -271,6 +278,14 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this subnet.
 		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
 		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
+    
 
 - `primary_network_interface`- (List) A list of primary network interfaces that were created for the instance. 
 
