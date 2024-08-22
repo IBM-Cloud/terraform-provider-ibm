@@ -3,9 +3,11 @@ package vpc
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -130,6 +132,9 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 
 func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan SSHKeyResourceModel
+
+	log.Printf("[INFO] UJJK type of ctx in create is %s \n", reflect.TypeOf(ctx))
+	log.Printf("[INFO] UJJK value of ctx in create is %s \n", BeautifyResponse(ctx))
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
@@ -217,7 +222,9 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	req.State.Get(ctx, &state)
 
-	sess, err := ctx.(conns.ClientSession).VpcV1API()
+	log.Printf("[INFO] UJJK type of ctx in read is %s \n", reflect.TypeOf(ctx))
+	log.Printf("[INFO] UJJK value of ctx in read is %s \n", BeautifyResponse(ctx))
+	sess, err := r.client.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating session",
@@ -269,7 +276,7 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	sess, err := ctx.(conns.ClientSession).VpcV1API()
+	sess, err := r.client.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating session",
@@ -317,7 +324,7 @@ func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	var state SSHKeyResourceModel
 	req.State.Get(ctx, &state)
 
-	sess, err := ctx.(conns.ClientSession).VpcV1API()
+	sess, err := r.client.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating session",
@@ -399,4 +406,12 @@ func parseKeySshNew(s string) (ssh.PublicKey, error) {
 		return pk, nil
 	}
 	return nil, e
+}
+
+func BeautifyResponse(response interface{}) string {
+	output, err := json.MarshalIndent(response, "", "    ")
+	if err == nil {
+		return fmt.Sprintf("%+v\n", string(output))
+	}
+	return fmt.Sprintf("Error : %#v", response)
 }
