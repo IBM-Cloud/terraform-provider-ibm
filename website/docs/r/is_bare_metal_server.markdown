@@ -141,12 +141,20 @@ Review the argument references that you can specify for your resource.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces. The specified value must match one of the bandwidth values in the bare metal server's profile.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
-- `image` - (Required, String) ID of the image.
-- `keys` - (Required, List) Comma separated IDs of ssh keys.  
+- `image` - (Required, String) ID of the image. ( On update of `image`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
+
+  -> **NOTE:**
+    To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+
+- `keys` - (Required, List) Comma separated IDs of ssh keys. ( On update of `keys`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
 
   ~> **Note:**
   **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
   **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
+
+  -> **NOTE:**
+    To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+
 - `name` - (Optional, String) The bare metal server name.
 
   -> **NOTE:**
@@ -287,7 +295,11 @@ Review the argument references that you can specify for your resource.
   
     - `mode` - (Optional, String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
       - Constraints: Allowable values are: `disabled`, `tpm_2`.
-- `user_data` - (Optional, String) User data to transfer to the server bare metal server.
+- `user_data` - (Optional, String) User data to transfer to the server bare metal server. (On update of `user_data`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
+
+  -> **NOTE:**
+    To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+
 - `vpc` - (Required, Forces new resource, String) The VPC ID of the bare metal server is to be a part of. It must match the VPC tied to the subnets of the server's network interfaces.
 - `zone` - (Required, Forces new resource, String) Name of the zone in which this bare metal server will reside in.
 

@@ -140,6 +140,9 @@ func dataSourceIBMKmsKMIPObjectList(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("[ERROR] Error setting adapter_name: %s", err)
 	}
 	objs, err := kpAPI.GetKMIPObjects(ctx, adapterNameOrID, opts)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error while retriving KMIP objects associated with adapter ID '%s': %v", adapter.ID, err)
+	}
 	objsList := objs.Objects
 	// set computed values
 	mySlice := make([]map[string]interface{}, 0, len(objsList))

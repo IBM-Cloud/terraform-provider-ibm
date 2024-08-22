@@ -167,11 +167,11 @@ func DataSourceIbmLogsOutgoingWebhookOutgoingWebhooksV1IbmEventNotificationsConf
 	modelMap := make(map[string]interface{})
 	modelMap["event_notifications_instance_id"] = model.EventNotificationsInstanceID.String()
 	modelMap["region_id"] = *model.RegionID
-	// if model.SourceID != nil {
-	// 	modelMap["source_id"] = *model.SourceID
-	// }
-	// if model.SourceName != nil {
-	// 	modelMap["source_name"] = *model.SourceName
-	// }
+	if model.SourceID != nil {
+		modelMap["source_id"] = *model.SourceID
+	}
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
 	return modelMap, nil
 }

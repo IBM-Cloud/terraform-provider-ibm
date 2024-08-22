@@ -19,10 +19,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/schematics"
+	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
@@ -31,8 +36,11 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
@@ -43,15 +51,7 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
 
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Cloud/bluemix-go/api/schematics"
-	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 const (
@@ -4436,6 +4436,15 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 	}
 
 	return hosts
+}
+
+func FlattenSatelliteCapabilities(capabilities *schema.Set) []kubernetesserviceapiv1.CapabilityManagedBySatellite {
+	result := make([]kubernetesserviceapiv1.CapabilityManagedBySatellite, capabilities.Len())
+	for i, v := range capabilities.List() {
+		result[i] = kubernetesserviceapiv1.CapabilityManagedBySatellite(v.(string))
+	}
+
+	return result
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
