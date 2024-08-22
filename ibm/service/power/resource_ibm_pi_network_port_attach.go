@@ -109,8 +109,9 @@ func resourceIBMPINetworkPortAttachCreate(ctx context.Context, d *schema.Resourc
 		nwportBody.IPAddress = ipaddress
 	}
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		userTags := flex.ExpandStringList(tags.([]interface{}))
-		nwportBody.UserTags = userTags
+		if len(tags.([]interface{})) > 0 {
+			nwportBody.UserTags = flex.ExpandStringList(tags.([]interface{}))
+		}
 	}
 	nwportattachBody := &models.NetworkPortUpdate{
 		Description:   &description,

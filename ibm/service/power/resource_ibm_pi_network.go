@@ -171,8 +171,9 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		userTags := flex.ExpandStringList(tags.([]interface{}))
-		body.UserTags = userTags
+		if len(tags.([]interface{})) > 0 {
+			body.UserTags = flex.ExpandStringList(tags.([]interface{}))
+		}
 	}
 	if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
 		body.Jumbo = v.(bool)
