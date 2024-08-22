@@ -117,7 +117,9 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 			Attr_SharedProcessorPoolID: *pool.ID,
 			Attr_Status:                pool.Status,
 			Attr_StatusDetail:          pool.StatusDetail,
-			Attr_UserTags:              pool.UserTags,
+		}
+		if len(pool.UserTags) > 0 {
+			key[Attr_UserTags] = pool.UserTags
 		}
 		result = append(result, key)
 	}
