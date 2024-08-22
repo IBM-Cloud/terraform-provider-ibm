@@ -206,7 +206,9 @@ func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.Resou
 		body.PlacementGroupID = pg.(string)
 	}
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		body.UserTags = flex.ExpandStringList(tags.([]interface{}))
+		if len(body.UserTags) > 0 {
+			body.UserTags = flex.ExpandStringList(tags.([]interface{}))
+		}
 	}
 
 	spp, err := client.Create(body)

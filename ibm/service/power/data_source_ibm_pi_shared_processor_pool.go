@@ -44,7 +44,7 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 			},
 			Attr_CRN: {
 				Computed:    true,
-				Description: "CRN of shared processor pool.",
+				Description: "CRN of the shared processor pool.",
 				Type:        schema.TypeString,
 			},
 			Attr_HostID: {

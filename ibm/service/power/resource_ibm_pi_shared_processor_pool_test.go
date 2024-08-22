@@ -20,7 +20,7 @@ import (
 )
 
 func TestAccIBMPISPPbasic(t *testing.T) {
-	name := fmt.Sprintf("tfpispp%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_pi_spp_%d", acctest.RandIntRange(10, 100))
 	sppRes := "ibm_pi_shared_processor_pool.power_shared_processor_pool"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -40,7 +40,7 @@ func TestAccIBMPISPPbasic(t *testing.T) {
 }
 
 func TestAccIBMPISPPusertags(t *testing.T) {
-	name := fmt.Sprintf("tfpispp%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_pi_spp_%d", acctest.RandIntRange(10, 100))
 	sppRes := "ibm_pi_shared_processor_pool.power_shared_processor_pool"
 	sppResData := "data.ibm_pi_shared_processor_pool.power_shared_processor_pool_data"
 	userTags := []string{"env:test", "test_tag"}
