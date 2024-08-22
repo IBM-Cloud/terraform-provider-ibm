@@ -282,7 +282,9 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 	}
 
 	d.Set(Arg_CloudInstanceID, cloudInstanceID)
-	d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
+	if response.SharedProcessorPool.Crn != "" {
+		d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
+	}
 	d.Set(Arg_SharedProcessorPoolHostGroup, response.SharedProcessorPool.HostGroup)
 
 	if response.SharedProcessorPool.Name != nil {

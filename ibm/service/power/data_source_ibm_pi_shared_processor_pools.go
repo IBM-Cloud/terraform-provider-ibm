@@ -110,13 +110,15 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 		key := map[string]interface{}{
 			Attr_AllocatedCores:        *pool.AllocatedCores,
 			Attr_AvailableCores:        *pool.AvailableCores,
-			Attr_CRN:                   pool.Crn,
 			Attr_HostID:                pool.HostID,
 			Attr_Name:                  *pool.Name,
 			Attr_ReservedCores:         *pool.ReservedCores,
 			Attr_SharedProcessorPoolID: *pool.ID,
 			Attr_Status:                pool.Status,
 			Attr_StatusDetail:          pool.StatusDetail,
+		}
+		if pool.Crn != "" {
+			key[Attr_CRN] = pool.Crn
 		}
 		if len(pool.UserTags) > 0 {
 			key[Attr_UserTags] = pool.UserTags

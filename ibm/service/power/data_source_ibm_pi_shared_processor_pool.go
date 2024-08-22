@@ -157,7 +157,9 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 	d.SetId(*response.SharedProcessorPool.ID)
 	d.Set(Attr_AllocatedCores, response.SharedProcessorPool.AllocatedCores)
 	d.Set(Attr_AvailableCores, response.SharedProcessorPool.AvailableCores)
-	d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
+	if response.SharedProcessorPool.Crn != "" {
+		d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
+	}
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Name, response.SharedProcessorPool.Name)
 	d.Set(Attr_ReservedCores, response.SharedProcessorPool.ReservedCores)
