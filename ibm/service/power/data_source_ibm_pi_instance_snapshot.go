@@ -97,7 +97,9 @@ func dataSourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.Resource
 	d.SetId(*snapshotData.SnapshotID)
 	d.Set(Attr_Action, snapshotData.Action)
 	d.Set(Attr_CreationDate, snapshotData.CreationDate.String())
-	d.Set(Attr_CRN, snapshotData.Crn)
+	if snapshotData.Crn != "" {
+		d.Set(Attr_CRN, snapshotData.Crn)
+	}
 	d.Set(Attr_Description, snapshotData.Description)
 	d.Set(Attr_LastUpdatedDate, snapshotData.LastUpdateDate.String())
 	d.Set(Attr_Name, snapshotData.Name)

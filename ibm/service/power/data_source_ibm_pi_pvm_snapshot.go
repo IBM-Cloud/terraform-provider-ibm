@@ -126,7 +126,6 @@ func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface
 		l := map[string]interface{}{
 			Attr_Action:          i.Action,
 			Attr_CreationDate:    i.CreationDate.String(),
-			Attr_CRN:             i.Crn,
 			Attr_Description:     i.Description,
 			Attr_ID:              *i.SnapshotID,
 			Attr_LastUpdatedDate: i.LastUpdateDate.String(),
@@ -134,6 +133,9 @@ func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface
 			Attr_PercentComplete: i.PercentComplete,
 			Attr_Status:          i.Status,
 			Attr_VolumeSnapshots: i.VolumeSnapshots,
+		}
+		if i.Crn != "" {
+			l[Attr_CRN] = i.Crn
 		}
 		result = append(result, l)
 	}

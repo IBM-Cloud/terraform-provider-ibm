@@ -177,7 +177,9 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.Set(Arg_SnapShotName, snapshotdata.Name)
 	d.Set(Attr_CreationDate, snapshotdata.CreationDate.String())
-	d.Set(Attr_CRN, snapshotdata.Crn)
+	if snapshotdata.Crn != "" {
+		d.Set(Attr_CRN, snapshotdata.Crn)
+	}
 	d.Set(Attr_LastUpdateDate, snapshotdata.LastUpdateDate.String())
 	d.Set(Attr_SnapshotID, *snapshotdata.SnapshotID)
 	d.Set(Attr_Status, snapshotdata.Status)
