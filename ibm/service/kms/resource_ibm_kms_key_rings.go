@@ -42,6 +42,7 @@ func ResourceIBMKmskeyRings() *schema.Resource {
 				Description: "(Deprecated) set to true to force delete this key ring. This allows key ring deletion as long as all keys inside have key state equals to 5 (destroyed). Keys are moved to the default key ring.",
 				ForceNew:    false,
 				Default:     false,
+				Deprecated:  "force_delete is now deprecated. Please remove all references to this field.",
 			},
 			"endpoint_type": {
 				Type:         schema.TypeString,
