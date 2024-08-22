@@ -258,7 +258,9 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set(Attr_CRN, networkdata.Crn)
+	if networkdata.Crn != "" {
+		d.Set(Attr_CRN, networkdata.Crn)
+	}
 	d.Set("network_id", networkdata.NetworkID)
 	d.Set(helpers.PINetworkCidr, networkdata.Cidr)
 	d.Set(helpers.PINetworkDNS, networkdata.DNSServers)

@@ -112,7 +112,6 @@ func flattenNetworks(list []*models.NetworkReference) []map[string]interface{} {
 	for _, i := range list {
 		l := map[string]interface{}{
 			Attr_AccessConfig: i.AccessConfig,
-			Attr_CRN:          i.Crn,
 			Attr_DhcpManaged:  i.DhcpManaged,
 			Attr_Href:         *i.Href,
 			Attr_MTU:          i.Mtu,
@@ -120,6 +119,10 @@ func flattenNetworks(list []*models.NetworkReference) []map[string]interface{} {
 			Attr_NetworkID:    *i.NetworkID,
 			Attr_Type:         *i.Type,
 			Attr_VLanID:       *i.VlanID,
+		}
+
+		if i.Crn != "" {
+			l[Attr_CRN] = i.Crn
 		}
 		result = append(result, l)
 	}

@@ -133,7 +133,9 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.Cidr != nil {
 		d.Set(Attr_CIDR, networkdata.Cidr)
 	}
-	d.Set(Attr_CRN, networkdata.Crn)
+	if networkdata.Crn != "" {
+		d.Set(Attr_CRN, networkdata.Crn)
+	}
 	if len(networkdata.DNSServers) > 0 {
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
