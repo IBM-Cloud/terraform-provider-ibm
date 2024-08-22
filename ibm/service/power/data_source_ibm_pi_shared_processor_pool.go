@@ -163,7 +163,9 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 	d.Set(Attr_ReservedCores, response.SharedProcessorPool.ReservedCores)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_StatusDetail, response.SharedProcessorPool.StatusDetail)
-	d.Set(Attr_UserTags, response.SharedProcessorPool.UserTags)
+	if len(response.SharedProcessorPool.UserTags) > 0 {
+		d.Set(Attr_UserTags, response.SharedProcessorPool.UserTags)
+	}
 
 	serversMap := []map[string]interface{}{}
 	if response.Servers != nil {
