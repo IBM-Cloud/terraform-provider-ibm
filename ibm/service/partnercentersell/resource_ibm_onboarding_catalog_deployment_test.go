@@ -27,7 +27,7 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	catalogPlanID := fmt.Sprintf("tf_catalog_plan_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "deployment"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
@@ -135,7 +135,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 			active = %s
 			disabled = %s
 			kind = "%s"
-			tags = "FIXME"
+			tags = ["sample"]
 			object_provider {
 				name = "name"
 				email = "email"
@@ -163,7 +163,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 					long_description = "long_description"
 				}
 			}
-			tags = "FIXME"
+			tags = ["sample"]
 			object_provider {
 				name = "name"
 				email = "email"

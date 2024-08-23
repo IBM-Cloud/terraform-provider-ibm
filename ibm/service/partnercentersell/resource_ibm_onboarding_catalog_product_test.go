@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -22,15 +21,15 @@ import (
 
 func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := "f15038e9046e4b9587db0ae76c4cbc26:o:7bd00b68-c51d-4731-ad93-d658f5c10969"
+	name := "test-name-terraform-1"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "service"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := "test-name-terraform-1"
 	activeUpdate := "false"
 	disabledUpdate := "false"
-	kindUpdate := "platform_service"
+	kindUpdate := "service"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -64,17 +63,17 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := "f15038e9046e4b9587db0ae76c4cbc26:o:ff249e67-757e-4330-8540-c2152bf47009"
+	env := "current"
+	name := "test-name-terraform-2"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "service"
-	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	envUpdate := "current"
+	nameUpdate := "test-name-terraform-2"
 	activeUpdate := "false"
 	disabledUpdate := "false"
-	kindUpdate := "platform_service"
+	kindUpdate := "service"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -105,7 +104,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_product.onboarding_catalog_product",
+				ResourceName:      "ibm_onboarding_catalog_product.onboarding_catalog_product_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -121,10 +120,13 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 			active = %s
 			disabled = %s
 			kind = "%s"
-			tags = "FIXME"
+			tags = ["tag", "support_ibm"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@emai.com"
+			}
+			metadata {
+				rc_compatible = false
 			}
 		}
 	`, productID, name, active, disabled, kind)
@@ -147,16 +149,16 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 					long_description = "long_description"
 				}
 			}
-			tags = "FIXME"
+			tags = ["tag"]
 			images {
 				image = "image"
 			}
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
 			metadata {
-				rc_compatible = true
+				rc_compatible = false
 				ui {
 					strings {
 						en {
@@ -194,7 +196,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 							locations = [ "locations" ]
 							languages = [ "languages" ]
 							process = "process"
-							process_i18n = { "key" = "inner" }
 							support_type = "community"
 							support_escalation {
 								contact = "contact"
