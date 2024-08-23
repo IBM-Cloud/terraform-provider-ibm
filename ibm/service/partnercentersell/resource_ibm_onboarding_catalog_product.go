@@ -751,6 +751,9 @@ func resourceIbmOnboardingCatalogProductUpdate(context context.Context, d *schem
 
 	updateCatalogProductOptions.SetProductID(parts[0])
 	updateCatalogProductOptions.SetCatalogProductID(parts[1])
+	if _, ok := d.GetOk("env"); ok {
+		updateCatalogProductOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
@@ -759,10 +762,6 @@ func resourceIbmOnboardingCatalogProductUpdate(context context.Context, d *schem
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "product_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_catalog_product", "update", "product_id-forces-new").GetDiag()
-	}
-	if d.HasChange("env") {
-		updateCatalogProductOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
 	}
 	if d.HasChange("active") {
 		newActive := d.Get("active").(bool)

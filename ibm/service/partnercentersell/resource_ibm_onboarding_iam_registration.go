@@ -1366,6 +1366,9 @@ func resourceIbmOnboardingIamRegistrationUpdate(context context.Context, d *sche
 
 	updateIamRegistrationOptions.SetProductID(parts[0])
 	updateIamRegistrationOptions.SetProgrammaticName(parts[1])
+	if _, ok := d.GetOk("env"); ok {
+		updateIamRegistrationOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
@@ -1374,10 +1377,6 @@ func resourceIbmOnboardingIamRegistrationUpdate(context context.Context, d *sche
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "product_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_iam_registration", "update", "product_id-forces-new").GetDiag()
-	}
-	if d.HasChange("env") {
-		updateIamRegistrationOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
 	}
 	if d.HasChange("enabled") {
 		newEnabled := d.Get("enabled").(bool)

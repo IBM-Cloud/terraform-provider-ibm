@@ -551,6 +551,9 @@ func resourceIbmOnboardingCatalogDeploymentUpdate(context context.Context, d *sc
 	updateCatalogDeploymentOptions.SetCatalogProductID(parts[1])
 	updateCatalogDeploymentOptions.SetCatalogPlanID(parts[2])
 	updateCatalogDeploymentOptions.SetCatalogDeploymentID(parts[3])
+	if _, ok := d.GetOk("env"); ok {
+		updateCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
@@ -569,10 +572,6 @@ func resourceIbmOnboardingCatalogDeploymentUpdate(context context.Context, d *sc
 		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "catalog_plan_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_catalog_deployment", "update", "catalog_plan_id-forces-new").GetDiag()
-	}
-	if d.HasChange("env") {
-		updateCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
 	}
 	if d.HasChange("active") {
 		newActive := d.Get("active").(bool)
