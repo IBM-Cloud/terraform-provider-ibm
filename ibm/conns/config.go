@@ -1733,7 +1733,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// PARTNER CENTER SELL (product lifecycle) service
-	partnerCenterSellURL := "http://localhost:5005/openapi/v1"
+	partnerCenterSellURL := "https://product-lifecycle.api.cloud.ibm.com/openapi/v1"
 	if c.Visibility == "private" {
 		session.partnerCenterSellClientErr = fmt.Errorf("partner center sell does not support private endpoints")
 	}
