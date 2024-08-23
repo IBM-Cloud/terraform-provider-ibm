@@ -123,6 +123,7 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/logs-go-sdk/logsv0"
+	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -302,6 +303,7 @@ type ClientSession interface {
 	SecurityAndComplianceCenterV3() (*scc.SecurityAndComplianceCenterApiV3, error)
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
+	PartnerCenterSellV1() (*partnercentersellv1.PartnerCenterSellV1, error)
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
 	ProjectV1() (*project.ProjectV1, error)
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
@@ -545,6 +547,9 @@ type clientSession struct {
 	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
 	catalogManagementClientErr error
 
+	partnerCenterSellClient    *partnercentersellv1.PartnerCenterSellV1
+	partnerCenterSellClientErr error
+
 	enterpriseManagementClient    *enterprisemanagementv1.EnterpriseManagementV1
 	enterpriseManagementClientErr error
 
@@ -656,6 +661,10 @@ type clientSession struct {
 // Usage Reports
 func (session clientSession) UsageReportsV4() (*usagereportsv4.UsageReportsV4, error) {
 	return session.usageReportsClient, session.usageReportsClientErr
+}
+
+func (session clientSession) PartnerCenterSellV1() (*partnercentersellv1.PartnerCenterSellV1, error) {
+	return session.partnerCenterSellClient, session.partnerCenterSellClientErr
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1299,6 +1308,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
+		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
@@ -1722,7 +1732,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.contextBasedRestrictionsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Context Based Restrictions service: %q", err)
 	}
 
-	// // Usage Reports Service Client
+	// PARTNER CENTER SELL (product lifecycle) service
+	partnerCenterSellURL := "http://localhost:5005/openapi/v1"
+	if c.Visibility == "private" {
+		session.partnerCenterSellClientErr = fmt.Errorf("partner center sell does not support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		partnerCenterSellURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PARTNER_CENTER_SELL_API_ENDPOINT", c.Region, partnerCenterSellURL)
+	}
+	partnerCenterSellClientOptions := &partnercentersellv1.PartnerCenterSellV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_PARTNER_CENTER_SELL_API_ENDPOINT"}, partnerCenterSellURL),
+		Authenticator: authenticator,
+	}
+	// Construct the service client.
+	session.partnerCenterSellClient, err = partnercentersellv1.NewPartnerCenterSellV1(partnerCenterSellClientOptions)
+	if err != nil {
+		session.partnerCenterSellClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Partner Center Sell API service: %q", err)
+	}
+	if session.partnerCenterSellClient != nil && session.partnerCenterSellClient.Service != nil {
+		// Enable retries for API calls
+		session.partnerCenterSellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.partnerCenterSellClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	//Usage Reports Service Client
 	usageReportsURL := usagereportsv4.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {

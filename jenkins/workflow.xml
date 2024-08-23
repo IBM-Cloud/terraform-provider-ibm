@@ -1,0 +1,57 @@
+<workflow name="generate-ibm-terraform-provider-pipeline" xmlns="http://cloud.ibm.com/workflow/v1">
+    <metadata>
+        <arguments>
+            <argument key="provider-version" default="missing-build-version" />
+            <argument key="build-number" default="=missing-build-number" />
+            <argument key="job_name" default="product-lifecycle-generate-terraform-provider" />
+        </arguments>
+
+        <variables>
+            <!-- SECRETS MANAGER -->
+            <variable key="sm-endpoint-url" value="https://6d57ad99-f864-4acc-8b52-5e5d8633cdaf.eu-de.secrets-manager.appdomain.cloud" />
+            <variable key="sm-api-key" value="sm-api-key" />
+            
+            <!-- COMMON PLUGIN VARIABLE(S) -->
+            <variable key="working-directory" value="/home/jenkins/agent/workspace/$(job_name)/terraform-provider-ibm" />
+            <variable key="base-url" value="https://github.ibm.com/" />
+            <variable key="owner" value="LOX" />
+            <variable key="repository" value="terraform-provider-ibm" />
+            <variable key="generate-provider-path" value="jenkins/make-bin.sh" />
+            <variable key="artifactory-push-path" value="jenkins/tag-and-push-to-artifactory.sh" />
+            <variable key="terraform-bin-file-name" value="terraform-provider-ibm" />
+            <variable key="terraform-repo-url" value="https://eu.artifactory.swg-devops.com/artifactory/wcp-lox-team-private-provider-terraform-local/pc/ibm" />
+            
+            <!-- REGISTRY CREDENTIAL(S) -->
+            <variable key="artifactory-user" value="lox.lifecycle.and.onboarding.experience@hu.ibm.com" />
+            
+            <!-- SECRETS -->
+            <variable key="ssh-private-key" value="$(secret.lox-github-ssh-private-key)" />
+            <variable key="artifactory-token" value="$(secret.artifactory-token-cpuxdev)" />
+        </variables>
+    </metadata>
+    <steps secretManagerEndpointURL="$(sm-endpoint-url)" secretManagerAPIKey="$(sm-api-key)">
+        <range key="generate-terraform-provider">
+            <step key="generate-provider" pluginId="http://cloud.ibm.com/devops/pipeline/step/shell-script/v1/run">
+                <runScript path="$(working-directory)/$(generate-provider-path)">
+                    <envVars>
+                        <env key="BUILD_NUMBER" value="$(build-number)" />
+                        <env key="WORKING_DIRECTORY" value="$(working-directory)" />
+                        <env key="SSH_PRIVATE_KEY" value="$(ssh-private-key)" />
+                    </envVars>
+                </runScript>
+            </step>
+            <step key="artifactory-push" pluginId="http://cloud.ibm.com/devops/pipeline/step/shell-script/v1/run">
+                <runScript path="$(working-directory)/$(artifactory-push-path)">
+                    <envVars>
+                        <env key="PROVIDER_VERSION" value="$(provider-version)" />
+                        <env key="WORKING_DIRECTORY" value="$(working-directory)" />
+                        <env key="ARTIFACTORY_USERNAME" value="$(artifactory-user)" />
+                        <env key="ARTIFACTORY_TOKEN" value="$(artifactory-token)" />
+                        <env key="TF_BIN_FILE_NAME" value="$(terraform-bin-file-name)" />
+                        <env key="TF_REPO_URL" value="$(terraform-repo-url)" />
+                    </envVars>
+                </runScript>
+            </step>
+        </range>
+    </steps>
+</workflow>
