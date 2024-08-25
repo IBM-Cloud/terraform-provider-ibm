@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -22,13 +21,13 @@ import (
 
 func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	catalogProductID := fmt.Sprintf("tf_catalog_product_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
+	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	name := "test-plan-name-terraform"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "plan"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := "test-plan-name-terraform"
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "plan"
@@ -67,15 +66,15 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	catalogProductID := fmt.Sprintf("tf_catalog_product_id_%d", acctest.RandIntRange(10, 100))
-	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
+	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	env := "current"
+	name := "test-plan-name-terraform"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "plan"
-	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	envUpdate := "current"
+	nameUpdate := "test-plan-name-terraform"
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "plan"
@@ -111,7 +110,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_plan.onboarding_catalog_plan",
+				ResourceName:      "ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -128,11 +127,18 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 			active = %s
 			disabled = %s
 			kind = "%s"
-			tags = "FIXME"
+			tags = ["tag"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
+			metadata {
+                rc_compatible =	 false
+                pricing {
+                    type = "Paid"
+                    origin = "pricing_catalog"
+                }
+            }
 		}
 	`, productID, catalogProductID, name, active, disabled, kind)
 }
@@ -155,13 +161,13 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 					long_description = "long_description"
 				}
 			}
-			tags = "FIXME"
+			tags = ["tag"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
 			metadata {
-				rc_compatible = true
+				rc_compatible = false
 				ui {
 					strings {
 						en {
@@ -188,7 +194,7 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 					side_by_side_index = 1.0
 				}
 				pricing {
-					type = "free"
+					type = "paid"
 					origin = "global_catalog"
 				}
 			}

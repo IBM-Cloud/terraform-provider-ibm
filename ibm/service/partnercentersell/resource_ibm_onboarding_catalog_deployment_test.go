@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -22,14 +21,14 @@ import (
 
 func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	catalogProductID := fmt.Sprintf("tf_catalog_product_id_%d", acctest.RandIntRange(10, 100))
-	catalogPlanID := fmt.Sprintf("tf_catalog_plan_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
+	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	catalogPlanID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	name := "test-deployment-name-terraform"
 	active := "true"
 	disabled := "false"
 	kind := "deployment"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := "test-deployment-name-terraform"
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "deployment"
@@ -70,16 +69,16 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	catalogProductID := fmt.Sprintf("tf_catalog_product_id_%d", acctest.RandIntRange(10, 100))
-	catalogPlanID := fmt.Sprintf("tf_catalog_plan_id_%d", acctest.RandIntRange(10, 100))
-	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
+	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	catalogPlanID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	env := "current"
+	name := "test-deployment-name-terraform"
 	active := "true"
 	disabled := "true"
 	kind := "deployment"
-	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	envUpdate := "current"
+	nameUpdate := "test-deployment-name-terraform"
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "deployment"
@@ -138,7 +137,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 			tags = ["sample"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
 		}
 	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind)
@@ -166,7 +165,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			tags = ["sample"]
 			object_provider {
 				name = "name"
-				email = "email"
+				email = "email@email.com"
 			}
 			metadata {
 				rc_compatible = true
