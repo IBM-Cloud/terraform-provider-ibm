@@ -22,7 +22,8 @@ import (
 
 func TestAccIbmOnboardingIamRegistrationBasic(t *testing.T) {
 	var conf partnercentersellv1.IamServiceRegistration
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	name := acc.PcsIamServiceRegistrationId
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
@@ -30,7 +31,7 @@ func TestAccIbmOnboardingIamRegistrationBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingIamRegistrationExists("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
@@ -42,15 +43,17 @@ func TestAccIbmOnboardingIamRegistrationBasic(t *testing.T) {
 
 func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	var conf partnercentersellv1.IamServiceRegistration
-	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
-	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	enabled := "false"
-	serviceType := "service"
-	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	env := "current"
+	name := acc.PcsIamServiceRegistrationId
+	roleDisplayName := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
+	iamRegistrationRole := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayName)
+	enabled := "true"
+	serviceType := "platform_service"
+	envUpdate := "current"
+	nameUpdate := acc.PcsIamServiceRegistrationId
 	enabledUpdate := "true"
-	serviceTypeUpdate := "platform_service"
+	serviceTypeUpdate := "service"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
@@ -58,7 +61,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, env, name, enabled, serviceType),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, env, name, enabled, serviceType, iamRegistrationRole, roleDisplayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingIamRegistrationExists("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
@@ -69,7 +72,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate, iamRegistrationRole, roleDisplayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "env", envUpdate),
@@ -79,23 +82,30 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_iam_registration.onboarding_iam_registration",
+				ResourceName:      "ibm_onboarding_iam_registration.onboarding_iam_registration_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"env", "product_id", "service_type"},
 			},
 		},
 	})
 }
 
-func testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID string) string {
+func testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
 			product_id = "%s"
+			name = "%s"
+			enabled = true
+			display_name {
+				default = "%s"
+			}
 		}
-	`, productID)
+	`, productID, name, name)
 }
 
-func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string, name string, enabled string, serviceType string) string {
+func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string, name string, enabled string, serviceType string, iamRegistrationRole string, roleDisplayName string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
@@ -106,7 +116,7 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 			service_type = "%s"
 			actions {
 				id = "id"
-				roles = [ "roles" ]
+				roles = [ "%s" ]
 				description {
 					default = "default"
 					en = "en"
@@ -137,9 +147,9 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 					hidden = true
 				}
 			}
-			additional_policy_scopes = "FIXME"
+			additional_policy_scopes = ["%s"]
 			display_name {
-				default = "default"
+				default = "%s"
 				en = "en"
 				de = "de"
 				es = "es"
@@ -151,37 +161,16 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 				zh_tw = "zh_tw"
 				zh_cn = "zh_cn"
 			}
-			parent_ids = "FIXME"
-			resource_hierarchy_attribute {
-				key = "key"
-				value = "value"
-			}
-			supported_anonymous_accesses {
-				attributes {
-					account_id = "account_id"
-					service_name = "service_name"
-				}
-				roles = [ "roles" ]
-			}
+			parent_ids = ["05ca8653-de25-49fa-a14d-aaa5d373bc21"]	
 			supported_attributes {
-				key = "key"
+				key = "testString"
 				options {
 					operators = [ "stringEquals" ]
-					hidden = true
-					supported_attributes = [ "supported_attributes" ]
+					hidden = false
 					policy_types = [ "access" ]
 					is_empty_value_supported = true
 					is_string_exists_false_value_supported = true
-					key = "key"
-					resource_hierarchy {
-						key {
-							key = "key"
-							value = "value"
-						}
-						value {
-							key = "key"
-						}
-					}
+					supported_attributes = [	]
 				}
 				display_name {
 					default = "default"
@@ -210,90 +199,64 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(productID string, env string
 					zh_cn = "zh_cn"
 				}
 				ui {
-					input_type = "input_type"
+					input_type = "selector"
 					input_details {
-						type = "type"
+						type = "gst"
 						values {
-							value = "value"
+							value = "testString"
 							display_name {
-								default = "default"
-								en = "en"
-								de = "de"
-								es = "es"
-								fr = "fr"
-								it = "it"
-								ja = "ja"
-								ko = "ko"
-								pt_br = "pt_br"
-								zh_tw = "zh_tw"
-								zh_cn = "zh_cn"
+								default = "testString"
+								en = "testString"
+								de = "testString"
+								es = "testString"
+								fr = "testString"
+								it = "testString"
+								ja = "testString"
+								ko = "testString"
+								pt_br = "testString"
+								zh_tw = "testString"
+								zh_cn = "testString"
 							}
 						}
 						gst {
 							query = "query"
-							value_property_name = "value_property_name"
-							label_property_name = "label_property_name"
-							input_option_label = "input_option_label"
-						}
-						url {
-							url_endpoint = "url_endpoint"
-							input_option_label = "input_option_label"
+							value_property_name = "teststring"
+							input_option_label = "{name} - {instance_id}"
 						}
 					}
 				}
 			}
 			supported_authorization_subjects {
 				attributes {
-					service_name = "service_name"
-					resource_type = "resource_type"
+					service_name = "testString"
+					resource_type = "testString"
 				}
-				roles = [ "roles" ]
+				roles = [ "%s" ]
 			}
 			supported_roles {
-				id = "id"
+				id = "%s"
 				description {
-					default = "default"
-					en = "en"
-					de = "de"
-					es = "es"
-					fr = "fr"
-					it = "it"
-					ja = "ja"
-					ko = "ko"
-					pt_br = "pt_br"
-					zh_tw = "zh_tw"
-					zh_cn = "zh_cn"
+					default = "desc"
 				}
 				display_name {
-					default = "default"
-					en = "en"
-					de = "de"
-					es = "es"
-					fr = "fr"
-					it = "it"
-					ja = "ja"
-					ko = "ko"
-					pt_br = "pt_br"
-					zh_tw = "zh_tw"
-					zh_cn = "zh_cn"
+					default = "%s"
 				}
 				options {
 					access_policy = { "key" = "inner" }
 					policy_type = [ "access" ]
-					account_type = "enterprise"
 				}
 			}
 			supported_network {
 				environment_attributes {
-					key = "key"
-					values = [ "values" ]
+					key = "networkType"
+					values = [ "public" ]
 					options {
-						hidden = true
+						hidden = false
 					}
 				}
 			}
 		}
-	`, productID, env, name, enabled, serviceType)
+	`, productID, env, name, enabled, serviceType, iamRegistrationRole, name, name, iamRegistrationRole, iamRegistrationRole, roleDisplayName)
 }
 
 func testAccCheckIbmOnboardingIamRegistrationExists(n string, obj partnercentersellv1.IamServiceRegistration) resource.TestCheckFunc {
