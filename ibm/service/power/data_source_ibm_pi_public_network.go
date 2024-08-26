@@ -28,7 +28,7 @@ func DataSourceIBMPIPublicNetwork() *schema.Resource {
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
-				Description: "CRN of public network.",
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_Name: {

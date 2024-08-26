@@ -50,7 +50,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_CRN: {
 				Computed:    true,
-				Description: "The CRN of the network.",
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_DNS: {
@@ -98,7 +98,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_UserTags: {
 				Computed:    true,
-				Description: "List of user specified tags for the network.",
+				Description: "The user tags associated with this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Type:        schema.TypeList,
 			},

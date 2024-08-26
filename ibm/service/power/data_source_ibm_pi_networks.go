@@ -40,7 +40,7 @@ func DataSourceIBMPINetworks() *schema.Resource {
 						},
 						Attr_CRN: {
 							Computed:    true,
-							Description: "The CRN of the network.",
+							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
 						Attr_DhcpManaged: {

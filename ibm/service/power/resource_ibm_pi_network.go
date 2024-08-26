@@ -123,7 +123,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				},
 			},
 			Arg_UserTags: {
-				Description: "List of user specified tags.",
+				Description: "The user tags associated with this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
@@ -133,7 +133,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 			//Computed Attributes
 			Attr_CRN: {
 				Computed:    true,
-				Description: "CRN of network.",
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			"network_id": {

@@ -64,7 +64,7 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 				Computed: true,
 			},
 			Arg_UserTags: {
-				Description: "List of user specified tags.",
+				Description: "The user tags associated with this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,

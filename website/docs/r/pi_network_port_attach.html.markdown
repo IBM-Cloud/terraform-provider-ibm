@@ -54,7 +54,7 @@ Review the argument references that you can specify for your resource.
 - `pi_network_name` - (Required, String) The network ID or name.
 - `pi_network_port_description` - (Optional, String) The description for the Network Port.
 - `pi_network_port_ipaddress` - (Optional, String) The requested ip address of this port.
-- `pi_user_tags` - (Optional, List) List of user tags for the port.
+- `pi_user_tags` - (Optional, List) The user tags associated with this resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
