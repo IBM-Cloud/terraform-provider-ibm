@@ -43,7 +43,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `instance_snapshots`:
   - `action` - (String) Action performed on the instance snapshot.
   - `creation_date` - (String) Date of snapshot creation.
-  - `crn` - (String) CRN of the snapshot.
+  - `crn` - (String) The CRN of this resource.
   - `description` - (String) The description of the snapshot.
   - `id` - (String) The unique identifier of the Power Systems Virtual Machine instance snapshot.
   - `last_updated_date` - (String) Date of last update.

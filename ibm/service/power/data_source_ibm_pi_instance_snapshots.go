@@ -46,7 +46,7 @@ func DataSourceIBMPIInstanceSnapshots() *schema.Resource {
 						},
 						Attr_CRN: {
 							Computed:    true,
-							Description: "CRN of the snapshot.",
+							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
 						Attr_Description: {

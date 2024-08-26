@@ -59,7 +59,7 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_UserTags: {
-				Description: "List of user tags.",
+				Description: "The user tags associated with this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
@@ -82,7 +82,7 @@ func ResourceIBMPISnapshot() *schema.Resource {
 			},
 			Attr_CRN: {
 				Computed:    true,
-				Description: "CRN of the snapshot.",
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_LastUpdateDate: {
