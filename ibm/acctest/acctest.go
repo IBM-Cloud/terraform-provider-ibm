@@ -400,9 +400,12 @@ var (
 var (
 	PcsRegistrationAccountId                         string
 	PcsOnboardingProductWithApprovedProgrammaticName string
-	PcsOnboardingProductWithCatalogProduct           string
-	PcsOnboardingCatalogProductId                    string
-	PcsIamServiceRegistrationId                      string
+	// one Onboarding product can only have one catalog product ever
+	PcsOnboardingProductWithApprovedProgrammaticName2 string
+	PcsOnboardingProductWithCatalogProduct            string
+	PcsOnboardingCatalogProductId                     string
+	PcsOnboardingCatalogPlanId                        string
+	PcsIamServiceRegistrationId                       string
 )
 
 func init() {
@@ -1877,6 +1880,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 
+	PcsOnboardingProductWithApprovedProgrammaticName2 = os.Getenv("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2")
+	if PcsOnboardingProductWithApprovedProgrammaticName2 == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2 for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
 	PcsOnboardingProductWithCatalogProduct = os.Getenv("PCS_PRODUCT_WITH_CATALOG_PRODUCT")
 	if PcsOnboardingProductWithCatalogProduct == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
@@ -1885,6 +1893,11 @@ func init() {
 	PcsOnboardingCatalogProductId = os.Getenv("PCS_CATALOG_PRODUCT")
 	if PcsOnboardingCatalogProductId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingCatalogPlanId = os.Getenv("PCS_CATALOG_PLAN")
+	if PcsIamServiceRegistrationId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PLAN for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
@@ -2202,11 +2215,17 @@ func TestAccPreCheckPartnerCenterSell(t *testing.T) {
 	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
 		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME must be set for acceptance tests")
 	}
+	if PcsOnboardingProductWithApprovedProgrammaticName2 == "" {
+		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2 must be set for acceptance tests")
+	}
 	if PcsOnboardingProductWithCatalogProduct == "" {
 		t.Fatal("PCS_PRODUCT_WITH_CATALOG_PRODUCT must be set for acceptance tests")
 	}
 	if PcsOnboardingCatalogProductId == "" {
 		t.Fatal("PCS_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsOnboardingCatalogPlanId == "" {
+		t.Fatal("PCS_CATALOG_PLAN must be set for acceptance tests")
 	}
 	if PcsIamServiceRegistrationId == "" {
 		t.Fatal("PCS_IAM_REGISTRATION_ID must be set for acceptance tests")

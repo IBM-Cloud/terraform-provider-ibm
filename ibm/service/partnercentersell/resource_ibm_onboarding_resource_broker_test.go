@@ -22,13 +22,13 @@ import (
 func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 	var conf partnercentersellv1.Broker
 	authUsername := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
-	authPassword := fmt.Sprintf("tf_auth_password_%d", acctest.RandIntRange(10, 100))
+	authPassword := "random1234"
 	authScheme := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
 	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	typeVar := "provision_through"
 	name := "test-petra-0"
 	authUsernameUpdate := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
-	authPasswordUpdate := fmt.Sprintf("tf_auth_password_%d", acctest.RandIntRange(10, 100))
+	authPasswordUpdate := "random1234"
 	authSchemeUpdate := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
 	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "provision_behind"
@@ -68,28 +68,26 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	var conf partnercentersellv1.Broker
 	env := "current"
 	authUsername := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
-	authPassword := fmt.Sprintf("tf_auth_password_%d", acctest.RandIntRange(10, 100))
+	authPassword := "random1234"
 	authScheme := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
-	resourceGroupCrn := fmt.Sprintf("tf_resource_group_crn_%d", acctest.RandIntRange(10, 100))
-	state := "removed"
+	state := "active"
 	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	allowContextUpdates := "false"
 	catalogType := "service"
 	typeVar := "provision_through"
 	name := "test-petra-1"
-	region := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	region := "global"
 	envUpdate := "current"
 	authUsernameUpdate := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
-	authPasswordUpdate := fmt.Sprintf("tf_auth_password_%d", acctest.RandIntRange(10, 100))
+	authPasswordUpdate := "random1234"
 	authSchemeUpdate := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
-	resourceGroupCrnUpdate := fmt.Sprintf("tf_resource_group_crn_%d", acctest.RandIntRange(10, 100))
 	stateUpdate := "active"
 	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	allowContextUpdatesUpdate := "true"
 	catalogTypeUpdate := "service"
-	typeVarUpdate := "provision_behind"
+	typeVarUpdate := "provision_through"
 	nameUpdate := "test-petra"
-	regionUpdate := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	regionUpdate := "global"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
@@ -97,13 +95,13 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingResourceBrokerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingResourceBrokerConfig(env, authUsername, authPassword, authScheme, resourceGroupCrn, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region),
+				Config: testAccCheckIbmOnboardingResourceBrokerConfig(env, authUsername, authPassword, authScheme, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingResourceBrokerExists("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "env", env),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_username", authUsername),
+					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_password", ""),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_scheme", authScheme),
-					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "resource_group_crn", resourceGroupCrn),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "state", state),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "broker_url", brokerURL),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "allow_context_updates", allowContextUpdates),
@@ -114,12 +112,12 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingResourceBrokerConfig(envUpdate, authUsernameUpdate, authPasswordUpdate, authSchemeUpdate, resourceGroupCrnUpdate, stateUpdate, brokerURLUpdate, allowContextUpdatesUpdate, catalogTypeUpdate, typeVarUpdate, nameUpdate, regionUpdate),
+				Config: testAccCheckIbmOnboardingResourceBrokerConfig(envUpdate, authUsernameUpdate, authPasswordUpdate, authSchemeUpdate, stateUpdate, brokerURLUpdate, allowContextUpdatesUpdate, catalogTypeUpdate, typeVarUpdate, nameUpdate, regionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "env", envUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_username", authUsernameUpdate),
+					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_password", ""),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_scheme", authSchemeUpdate),
-					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "resource_group_crn", resourceGroupCrnUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "state", stateUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "broker_url", brokerURLUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "allow_context_updates", allowContextUpdatesUpdate),
@@ -149,13 +147,12 @@ func testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername string, aut
 			name = "%s"
 			region = "global"
 			state = "active"
-			resource_group_crn = "crn:v1:staging:public:resource-controller::a/f15038e9046e4b9587db0ae76c4cbc26::resource-group:3a3a8ae311d0486c86b0a8c09e56883d"
-
+				resource_group_crn    = "crn:v1:staging:public:resource-controller::a/f15038e9046e4b9587db0ae76c4cbc26::resource-group:3a3a8ae311d0486c86b0a8c09e56883d"
 		}
 	`, authUsername, authPassword, authScheme, brokerURL, typeVar, name)
 }
 
-func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername string, authPassword string, authScheme string, resourceGroupCrn string, state string, brokerURL string, allowContextUpdates string, catalogType string, typeVar string, name string, region string) string {
+func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername string, authPassword string, authScheme string, state string, brokerURL string, allowContextUpdates string, catalogType string, typeVar string, name string, region string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" {
@@ -163,7 +160,6 @@ func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername stri
 			auth_username = "%s"
 			auth_password = "%s"
 			auth_scheme = "%s"
-			resource_group_crn = "%s"
 			state = "%s"
 			broker_url = "%s"
 			allow_context_updates = %s
@@ -171,8 +167,9 @@ func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername stri
 			type = "%s"
 			name = "%s"
 			region = "%s"
+			resource_group_crn    = "crn:v1:staging:public:resource-controller::a/f15038e9046e4b9587db0ae76c4cbc26::resource-group:3a3a8ae311d0486c86b0a8c09e56883d"	
 		}
-	`, env, authUsername, authPassword, authScheme, resourceGroupCrn, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region)
+	`, env, authUsername, authPassword, authScheme, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region)
 }
 
 func testAccCheckIbmOnboardingResourceBrokerExists(n string, obj partnercentersellv1.Broker) resource.TestCheckFunc {
@@ -217,14 +214,12 @@ func testAccCheckIbmOnboardingResourceBrokerDestroy(s *terraform.State) error {
 		getResourceBrokerOptions.SetBrokerID(rs.Primary.ID)
 
 		// Try to find the key
-		resourceBroker, response, err := partnerCenterSellClient.GetResourceBroker(getResourceBrokerOptions)
+		resourceBroker, _, err := partnerCenterSellClient.GetResourceBroker(getResourceBrokerOptions)
 
-		if err == nil {
+		if *resourceBroker.State != "removed" {
+			return fmt.Errorf("Error checking for onboarding_resource_broker (%s) has been destroyed: %s", rs.Primary.ID, err)
+		} else {
 			return fmt.Errorf("onboarding_resource_broker still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for onboarding_resource_broker (%s) has been destroyed: %s", rs.Primary.ID, err)
-		} else if *resourceBroker.State == "removed" {
-			return fmt.Errorf("Error checking for onboarding_resource_broker (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

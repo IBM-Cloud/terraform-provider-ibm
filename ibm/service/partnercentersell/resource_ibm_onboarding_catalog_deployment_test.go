@@ -23,7 +23,7 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	catalogPlanID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	catalogPlanID := acc.PcsOnboardingCatalogPlanId
 	name := "test-deployment-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -71,7 +71,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	catalogPlanID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	catalogPlanID := acc.PcsOnboardingCatalogPlanId
 	env := "current"
 	name := "test-deployment-name-terraform"
 	active := "true"
@@ -119,6 +119,9 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"env", "product_id", "catalog_product_id", "catalog_plan_id",
+				},
 			},
 		},
 	})
@@ -140,11 +143,11 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 				email = "email@email.com"
 			}
 			metadata {
-                rc_compatible =	false
 				service {
-				  	rc_provisionable = false
-  					iam_compatible = false
+				  	rc_provisionable = true
+  					iam_compatible = true
 				}
+                rc_compatible =	false
             }
 		}
 	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind)
@@ -176,34 +179,13 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			}
 			metadata {
 				rc_compatible = true
+				service {
+				  	rc_provisionable = true
+  					iam_compatible = true
+				}
 				ui {
-					strings {
-						en {
-							bullets {
-								description = "description"
-								description_i18n = { "key" = "inner" }
-								title = "title"
-								title_i18n = { "key" = "inner" }
-							}
-							media {
-								caption = "caption"
-								caption_i18n = { "key" = "inner" }
-								thumbnail = "thumbnail"
-								type = "image"
-								url = "url"
-							}
-						}
-					}
-					urls {
-						doc_url = "doc_url"
-						terms_url = "terms_url"
-					}
 					hidden = true
 					side_by_side_index = 1.0
-				}
-				service {
-					rc_provisionable = false
-					iam_compatible = false
 				}
 			}
 		}

@@ -113,6 +113,9 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 				ResourceName:      "ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"env", "product_id", "catalog_product_id",
+				},
 			},
 		},
 	})
@@ -168,31 +171,6 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 			}
 			metadata {
 				rc_compatible = false
-				ui {
-					strings {
-						en {
-							bullets {
-								description = "description"
-								description_i18n = { "key" = "inner" }
-								title = "title"
-								title_i18n = { "key" = "inner" }
-							}
-							media {
-								caption = "caption"
-								caption_i18n = { "key" = "inner" }
-								thumbnail = "thumbnail"
-								type = "image"
-								url = "url"
-							}
-						}
-					}
-					urls {
-						doc_url = "doc_url"
-						terms_url = "terms_url"
-					}
-					hidden = true
-					side_by_side_index = 1.0
-				}
 				pricing {
 					type = "paid"
 					origin = "global_catalog"

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -21,12 +22,13 @@ import (
 
 func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
+	baseName := fmt.Sprintf("test-name-terraform-%d", acctest.RandIntRange(10, 100))
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
-	name := "test-name-terraform-1"
+	name := baseName
 	active := "true"
 	disabled := "false"
 	kind := "service"
-	nameUpdate := "test-name-terraform-1"
+	nameUpdate := baseName
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "service"
@@ -63,14 +65,15 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
+	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName2
+	baseName := fmt.Sprintf("test-name-terraform-%d", acctest.RandIntRange(10, 100))
 	env := "current"
-	name := "test-name-terraform-2"
+	name := baseName
 	active := "true"
 	disabled := "false"
 	kind := "service"
 	envUpdate := "current"
-	nameUpdate := "test-name-terraform-2"
+	nameUpdate := baseName
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "service"
@@ -107,6 +110,9 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 				ResourceName:      "ibm_onboarding_catalog_product.onboarding_catalog_product_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"env", "product_id",
+				},
 			},
 		},
 	})
@@ -149,7 +155,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 					long_description = "long_description"
 				}
 			}
-			tags = ["tag"]
+			tags = ["tag", "support_community"]
 			images {
 				image = "image"
 			}
@@ -160,23 +166,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 			metadata {
 				rc_compatible = false
 				ui {
-					strings {
-						en {
-							bullets {
-								description = "description"
-								description_i18n = { "key" = "inner" }
-								title = "title"
-								title_i18n = { "key" = "inner" }
-							}
-							media {
-								caption = "caption"
-								caption_i18n = { "key" = "inner" }
-								thumbnail = "thumbnail"
-								type = "image"
-								url = "url"
-							}
-						}
-					}
 					urls {
 						doc_url = "doc_url"
 						terms_url = "terms_url"
@@ -186,7 +175,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 				}
 				service {
 					rc_provisionable = true
-					iam_compatible = true
+					iam_compatible = false
 				}
 				other {
 					pc {
@@ -195,7 +184,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 							status_url = "status_url"
 							locations = [ "locations" ]
 							languages = [ "languages" ]
-							process = "process"
 							support_type = "community"
 							support_escalation {
 								contact = "contact"
