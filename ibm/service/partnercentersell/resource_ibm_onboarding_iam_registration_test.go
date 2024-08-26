@@ -25,7 +25,7 @@ func TestAccIbmOnboardingIamRegistrationBasic(t *testing.T) {
 	productID := fmt.Sprintf("tf_product_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{
@@ -53,7 +53,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	serviceTypeUpdate := "platform_service"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingIamRegistrationDestroy,
 		Steps: []resource.TestStep{

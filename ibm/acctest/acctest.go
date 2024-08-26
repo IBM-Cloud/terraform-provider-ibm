@@ -402,7 +402,7 @@ var (
 	PcsOnboardingProductWithApprovedProgrammaticName string
 	PcsOnboardingProductWithCatalogProduct           string
 	PcsOnboardingCatalogProductId                    string
-	iamServiceRegistrationId                         string
+	PcsIamServiceRegistrationId                      string
 )
 
 func init() {
@@ -1882,18 +1882,13 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 
-	PcsOnboardingProductWithCatalogProduct = os.Getenv("PCS_ONBOARDING_PRODUCT_WITH_CATALOG_PRODUCT")
-	if PcsOnboardingProductWithCatalogProduct == "" {
-		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
-	}
-
 	PcsOnboardingCatalogProductId = os.Getenv("PCS_CATALOG_PRODUCT")
 	if PcsOnboardingCatalogProductId == "" {
-		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 
-	iamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
-	if iamServiceRegistrationId == "" {
+	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
+	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 }
@@ -2196,6 +2191,25 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 	}
 	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckPartnerCenterSell(t *testing.T) {
+	TestAccPreCheck(t)
+	if PcsRegistrationAccountId == "" {
+		t.Fatal("PCS_REGISTRATION_ACCOUNT_ID must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
+		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		t.Fatal("PCS_PRODUCT_WITH_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsOnboardingCatalogProductId == "" {
+		t.Fatal("PCS_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsIamServiceRegistrationId == "" {
+		t.Fatal("PCS_IAM_REGISTRATION_ID must be set for acceptance tests")
 	}
 }
 

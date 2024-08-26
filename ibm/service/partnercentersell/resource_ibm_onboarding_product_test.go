@@ -24,7 +24,7 @@ func TestAccIbmOnboardingProductBasic(t *testing.T) {
 	typeVarUpdate := "service"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingProductDestroy,
 		Steps: []resource.TestStep{
@@ -57,7 +57,7 @@ func TestAccIbmOnboardingProductAllArgs(t *testing.T) {
 	taxAssessmentUpdate := "PAAS"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingProductDestroy,
 		Steps: []resource.TestStep{

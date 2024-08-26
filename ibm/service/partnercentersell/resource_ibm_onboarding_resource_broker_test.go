@@ -35,7 +35,7 @@ func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 	nameUpdate := "test-petra"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingResourceBrokerDestroy,
 		Steps: []resource.TestStep{
@@ -92,7 +92,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	regionUpdate := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingResourceBrokerDestroy,
 		Steps: []resource.TestStep{
