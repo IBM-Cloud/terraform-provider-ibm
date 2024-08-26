@@ -20,9 +20,9 @@ import (
 
 func TestAccIbmOnboardingRegistrationBasic(t *testing.T) {
 	var conf partnercentersellv1.Registration
-	accountID := "3bc2c17121d041489410ef13eef601f8"
+	accountID := acc.PcsRegistrationAccountId
 	companyName := "Test_company"
-	accountIDUpdate := "3bc2c17121d041489410ef13eef601f8"
+	accountIDUpdate := acc.PcsRegistrationAccountId
 	companyNameUpdate := "Test_company_up"
 
 	resource.Test(t, resource.TestCase{
@@ -51,11 +51,11 @@ func TestAccIbmOnboardingRegistrationBasic(t *testing.T) {
 
 func TestAccIbmOnboardingRegistrationAllArgs(t *testing.T) {
 	var conf partnercentersellv1.Registration
-	accountID := "3bc2c17121d041489410ef13eef601f8"
+	accountID := acc.PcsRegistrationAccountId
 	companyName := "Test_company"
 	defaultPrivateCatalogID := "772b632e-fab4-4c41-b0b7-0a92fa40cf67"
 	providerAccessGroup := "AccessGroupId-b08e7bb5-d480-4c26-b193-d57dd9311608"
-	accountIDUpdate := "3bc2c17121d041489410ef13eef601f8"
+	accountIDUpdate := acc.PcsRegistrationAccountId
 	companyNameUpdate := "Test_company_up"
 	defaultPrivateCatalogIDUpdate := "772b632e-fab4-4c41-b0b7-0a92fa40cf67"
 	providerAccessGroupUpdate := "AccessGroupId-b08e7bb5-d480-4c26-b193-d57dd9311608"

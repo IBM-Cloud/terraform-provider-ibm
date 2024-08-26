@@ -21,8 +21,8 @@ import (
 
 func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
-	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
-	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	catalogProductID := acc.PcsOnboardingCatalogProductId
 	name := "test-plan-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -66,8 +66,8 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
-	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
-	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	catalogProductID := acc.PcsOnboardingCatalogProductId
 	env := "current"
 	name := "test-plan-name-terraform"
 	active := "true"

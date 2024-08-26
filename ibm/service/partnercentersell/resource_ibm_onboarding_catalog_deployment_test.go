@@ -21,8 +21,8 @@ import (
 
 func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
-	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
 	name := "test-deployment-name-terraform"
 	active := "true"
@@ -69,13 +69,13 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := "03e2802ae6ee4c03ad39671be3681772:o:cea256b2-c459-411a-8028-82214d7258b5"
-	catalogProductID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
+	productID := acc.PcsOnboardingProductWithCatalogProduct
+	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := "f1653106-2f00-47b5-be4f-3ccdfc09cd4d"
 	env := "current"
 	name := "test-deployment-name-terraform"
 	active := "true"
-	disabled := "true"
+	disabled := "false"
 	kind := "deployment"
 	envUpdate := "current"
 	nameUpdate := "test-deployment-name-terraform"
@@ -116,7 +116,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment",
+				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -139,6 +139,13 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 				name = "name"
 				email = "email@email.com"
 			}
+			metadata {
+                rc_compatible =	false
+				service {
+				  	rc_provisionable = false
+  					iam_compatible = false
+				}
+            }
 		}
 	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind)
 }
@@ -195,8 +202,8 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 					side_by_side_index = 1.0
 				}
 				service {
-					rc_provisionable = true
-					iam_compatible = true
+					rc_provisionable = false
+					iam_compatible = false
 				}
 			}
 		}

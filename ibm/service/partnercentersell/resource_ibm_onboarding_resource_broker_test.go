@@ -217,19 +217,13 @@ func testAccCheckIbmOnboardingResourceBrokerDestroy(s *terraform.State) error {
 		getResourceBrokerOptions.SetBrokerID(rs.Primary.ID)
 
 		// Try to find the key
-		_, response, err := partnerCenterSellClient.GetResourceBroker(getResourceBrokerOptions)
+		resourceBroker, response, err := partnerCenterSellClient.GetResourceBroker(getResourceBrokerOptions)
 
-		jsonObject, ok := response.Result.(map[string]interface{})
-		if !ok {
-			fmt.Println("Error: JSON is not an object")
-		}
-
-		fmt.Println(jsonObject)
 		if err == nil {
 			return fmt.Errorf("onboarding_resource_broker still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("Error checking for onboarding_resource_broker (%s) has been destroyed: %s", rs.Primary.ID, err)
-		} else if response.Result != 404 {
+		} else if *resourceBroker.State == "removed" {
 			return fmt.Errorf("Error checking for onboarding_resource_broker (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}

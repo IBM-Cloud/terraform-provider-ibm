@@ -396,6 +396,15 @@ var (
 	TargetAccountId string
 )
 
+// For Partner Center Sell
+var (
+	PcsRegistrationAccountId                         string
+	PcsOnboardingProductWithApprovedProgrammaticName string
+	PcsOnboardingProductWithCatalogProduct           string
+	PcsOnboardingCatalogProductId                    string
+	iamServiceRegistrationId                         string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -1856,6 +1865,36 @@ func init() {
 	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
+	}
+
+	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
+	if PcsRegistrationAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_REGISTRATION_ACCOUNT_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithApprovedProgrammaticName = os.Getenv("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME")
+	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithCatalogProduct = os.Getenv("PCS_PRODUCT_WITH_CATALOG_PRODUCT")
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithCatalogProduct = os.Getenv("PCS_ONBOARDING_PRODUCT_WITH_CATALOG_PRODUCT")
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingCatalogProductId = os.Getenv("PCS_CATALOG_PRODUCT")
+	if PcsOnboardingCatalogProductId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	iamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
+	if iamServiceRegistrationId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
 	}
 }
 
