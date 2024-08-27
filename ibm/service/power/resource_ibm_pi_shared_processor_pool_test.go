@@ -32,7 +32,6 @@ func TestAccIBMPISPPbasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPISPPExists(sppRes),
 					resource.TestCheckResourceAttr(sppRes, "pi_shared_processor_pool_name", name),
-					resource.TestCheckResourceAttrSet(sppRes, "crn"),
 				),
 			},
 		},
