@@ -7,9 +7,11 @@ description: |-
 ---
 
 # ibm_pi_storage_type_capacity
+
 Retrieve information about storages capacity for a storage type in a region. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
+
 ```terraform
 data "ibm_pi_storage_type_capacity" "type" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
@@ -17,13 +19,15 @@ data "ibm_pi_storage_type_capacity" "type" {
 }
 ```
 
-**Notes**
+### Notes
+
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
 
 Example usage:
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -32,12 +36,14 @@ Example usage:
   ```
   
 ## Argument reference
+
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_storage_type` - (Required, String) The storage type name.
+- `pi_storage_type` - (Required, String) The storage type name. To get a list of available storage types, please use the [ibm_pi_storage_types_capacity](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_storage_types_capacity) data source.
 
 ## Attribute reference
+
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `maximum_storage_allocation` - (Map) Maximum storage allocation.

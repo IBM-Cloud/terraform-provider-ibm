@@ -6,7 +6,6 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
-~> **Beta:** This resource is in Beta, and is subject to change.
 
 # ibm_logs_view_folder
 
@@ -31,7 +30,7 @@ You can specify the following arguments for this resource.
 * `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
 * `name` - (Required, String) Folder name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 
 ## Attribute Reference
 
@@ -47,7 +46,7 @@ You can import the `ibm_logs_view_folder` resource by using `id`. `id` combinati
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_view_folder.logs_view_folder <region>/<instance_id>/<view_folder_id>;
+$ terraform import ibm_logs_view_folder.logs_view_folder < region >/< instance_id >/< view_folder_id >;
 </pre>
 
 # Example

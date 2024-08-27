@@ -6,7 +6,7 @@ jobs:
   labelIssues:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4.1.7
     - name: Apply Issue Labels
       uses: github/issue-labeler@v3.4
       with:

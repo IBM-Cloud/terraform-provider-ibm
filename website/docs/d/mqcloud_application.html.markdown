@@ -10,6 +10,8 @@ subcategory: "MQ on Cloud"
 
 Provides a read-only data source to retrieve information about a mqcloud_application. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+> **Note:** The MQ on Cloud Terraform provider access is restricted to users of the reserved deployment plan.
+
 ## Example Usage
 
 ```hcl

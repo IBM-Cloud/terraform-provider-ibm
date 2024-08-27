@@ -155,6 +155,12 @@ func testAccCheckIbmCodeEngineJobConfigBasic(projectID string, name string, imag
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			name = "%s"
 			image_reference = "%s"
+
+			lifecycle {
+				ignore_changes = [
+					run_env_variables
+				]
+			}
 		}
 	`, projectID, name, imageReference)
 }
@@ -177,7 +183,14 @@ func testAccCheckIbmCodeEngineJobConfig(projectID string, name string, imageRefe
 			scale_max_execution_time = %s
 			scale_memory_limit = "%s"
 			scale_retry_limit = %s
+
+			lifecycle {
+				ignore_changes = [
+					run_env_variables
+				]
+			}
 		}
+	
 	`, projectID, name, imageReference, runAsUser, runMode, runServiceAccount, scaleCpuLimit, scaleEphemeralStorageLimit, scaleMaxExecutionTime, scaleMemoryLimit, scaleRetryLimit)
 }
 

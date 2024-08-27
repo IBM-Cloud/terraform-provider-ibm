@@ -152,6 +152,13 @@ func ResourceIBMIsVirtualNetworkInterface() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "name"),
 				Description:  "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 			},
+			"protocol_state_filtering_mode": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+				Description:  "The protocol state filtering mode used for this virtual network interface.",
+			},
 			"primary_ip": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -374,6 +381,15 @@ func ResourceIBMIsVirtualNetworkInterfaceValidator() *validate.ResourceValidator
 			MaxValueLength:             63,
 		},
 	)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "protocol_state_filtering_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "auto, enabled, disabled",
+		},
+	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_virtual_network_interface", Schema: validateSchema}
 	return &resourceValidator
@@ -410,6 +426,9 @@ func resourceIBMIsVirtualNetworkInterfaceCreate(context context.Context, d *sche
 	}
 	if _, ok := d.GetOk("name"); ok {
 		createVirtualNetworkInterfaceOptions.SetName(d.Get("name").(string))
+	}
+	if psFilteringIntf, ok := d.GetOk("protocol_state_filtering_mode"); ok {
+		createVirtualNetworkInterfaceOptions.SetProtocolStateFilteringMode(psFilteringIntf.(string))
 	}
 	if _, ok := d.GetOk("primary_ip"); ok {
 		autodelete := true
@@ -530,6 +549,9 @@ func resourceIBMIsVirtualNetworkInterfaceRead(context context.Context, d *schema
 		if err = d.Set("name", virtualNetworkInterface.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
 		}
+	}
+	if !core.IsNil(virtualNetworkInterface.ProtocolStateFilteringMode) {
+		d.Set("protocol_state_filtering_mode", virtualNetworkInterface.ProtocolStateFilteringMode)
 	}
 	if !core.IsNil(virtualNetworkInterface.PrimaryIP) {
 		autodelete := d.Get("primary_ip.0.auto_delete").(bool)
@@ -668,6 +690,12 @@ func resourceIBMIsVirtualNetworkInterfaceUpdate(context context.Context, d *sche
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
 		patchVals.Name = &newName
+		hasChange = true
+	}
+
+	if d.HasChange("protocol_state_filtering_mode") {
+		pStateFilteringMode := d.Get("protocol_state_filtering_mode").(string)
+		patchVals.ProtocolStateFilteringMode = &pStateFilteringMode
 		hasChange = true
 	}
 
@@ -897,10 +925,14 @@ func resourceIBMIsVirtualNetworkInterfaceDelete(context context.Context, d *sche
 
 	deleteVirtualNetworkInterfacesOptions.SetID(d.Id())
 
-	response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
+	vni, response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response))
+	}
+	_, err = isWaitForVirtualNetworkInterfaceDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete), vni)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")
@@ -1074,6 +1106,42 @@ func isVirtualNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, id string) resour
 			return nil, "failed", fmt.Errorf("[ERROR] Error getting vni: %s\n%s", err, response)
 		}
 		if *vni.LifecycleState == "failed" || *vni.LifecycleState == "suspended" {
+			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
+		}
+		return vni, *vni.LifecycleState, nil
+	}
+}
+func isWaitForVirtualNetworkInterfaceDeleted(client *vpcv1.VpcV1, id string, timeout time.Duration, vni *vpcv1.VirtualNetworkInterface) (interface{}, error) {
+	log.Printf("Waiting for VirtualNetworkInterface (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"", "pending", "deleting", "updating", "waiting"},
+		Target:     []string{"done", "failed", "stable", "suspended"},
+		Refresh:    isVirtualNetworkInterfaceDeleteRefreshFunc(client, vni, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVirtualNetworkInterfaceDeleteRefreshFunc(client *vpcv1.VpcV1, vnir *vpcv1.VirtualNetworkInterface, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		vnigetoptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+			ID: &id,
+		}
+		vni, response, err := client.GetVirtualNetworkInterface(vnigetoptions)
+		if err != nil {
+			if response.StatusCode == 404 {
+				return vnir, "done", nil
+			}
+			return vni, "failed", fmt.Errorf("[ERROR] Error getting vni: %s\n%s", err, response)
+		}
+		if *vni.LifecycleState == "failed" || *vni.LifecycleState == "suspended" {
+			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
+		}
+		if *vni.LifecycleState == "stable" {
 			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil

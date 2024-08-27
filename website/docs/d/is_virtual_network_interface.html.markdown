@@ -89,6 +89,7 @@ In addition to all argument references listed, you can access the following attr
 	- `id` - (String) The unique identifier for this reserved IP.
 	- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
 	- `resource_type` - (String) The resource type.
+- `protocol_state_filtering_mode` - (String) The protocol state filtering mode to use for this virtual network interface.
 - `resource_group` - (List) The resource group for this virtual network interface.
 	Nested scheme for **resource_group**:
 	- `href` - (String) The URL for this resource group.

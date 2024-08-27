@@ -117,6 +117,7 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+				rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
 
 				rulesetList = append(rulesetList, rulesetOutput)
 
@@ -143,6 +144,7 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 				rulesetOutput[CISRulesetsPhase] = *rulesetObj.Phase
 				rulesetOutput[CISRulesetsLastUpdatedAt] = *rulesetObj.LastUpdated
 				rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
+				rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
 
 				rulesetList = append(rulesetList, rulesetOutput)
 
@@ -167,7 +169,7 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsListOutput, rulesetObj)
+				d.Set(CISRulesetsEntryPointOutput, rulesetObj)
 				d.Set(cisID, crn)
 
 			} else {
@@ -181,7 +183,7 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsListOutput, rulesetObj)
+				d.Set(CISRulesetsEntryPointOutput, rulesetObj)
 				d.Set(cisID, crn)
 			}
 
@@ -198,7 +200,7 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsListOutput, rulesetObj)
+				d.Set(CISRulesetsEntryPointOutput, rulesetObj)
 				d.Set(cisID, crn)
 
 			} else {
@@ -212,11 +214,15 @@ func dataIBMCISRulesetEntrypointVersionsRead(d *schema.ResourceData, meta interf
 				rulesetObj := flattenCISRulesets(*result.Result)
 
 				d.SetId(dataSourceCISRulesetsCheckID(d))
-				d.Set(CISRulesetsListOutput, rulesetObj)
+				d.Set(CISRulesetsEntryPointOutput, rulesetObj)
 				d.Set(cisID, crn)
 			}
 		}
 	}
 
 	return nil
+}
+
+func dataSourceCISRulesetsEPCheckID(d *schema.ResourceData) string {
+	return d.Get(CISRulesetPhase).(string) + ":" + d.Get(cisDomainID).(string) + ":" + d.Get(cisID).(string)
 }
