@@ -97,6 +97,7 @@ var (
 	InstanceProfileNameUpdate       string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
+	IsBareMetalServerImage2         string
 	DNSInstanceCRN                  string
 	DNSZoneID                       string
 	DNSInstanceCRN1                 string
@@ -149,23 +150,27 @@ var (
 
 // Secrets Manager
 var (
-	SecretsManagerInstanceID                                     string
-	SecretsManagerInstanceRegion                                 string
-	SecretsManagerENInstanceCrn                                  string
-	SecretsManagerIamCredentialsConfigurationApiKey              string
-	SecretsManagerIamCredentialsSecretServiceId                  string
-	SecretsManagerIamCredentialsSecretServiceAccessGroup         string
-	SecretsManagerPublicCertificateLetsEncryptEnvironment        string
-	SecretsManagerPublicCertificateLetsEncryptPrivateKey         string
-	SecretsManagerPublicCertificateCisCrn                        string
-	SecretsManagerPublicCertificateClassicInfrastructureUsername string
-	SecretsManagerPublicCertificateClassicInfrastructurePassword string
-	SecretsManagerPublicCertificateCommonName                    string
-	SecretsManagerValidateManualDnsCisZoneId                     string
-	SecretsManagerImportedCertificatePathToCertificate           string
-	SecretsManagerServiceCredentialsCosCrn                       string
-	SecretsManagerSecretType                                     string
-	SecretsManagerSecretID                                       string
+	SecretsManagerInstanceID                                                        string
+	SecretsManagerInstanceRegion                                                    string
+	SecretsManagerENInstanceCrn                                                     string
+	SecretsManagerIamCredentialsConfigurationApiKey                                 string
+	SecretsManagerIamCredentialsSecretServiceId                                     string
+	SecretsManagerIamCredentialsSecretServiceAccessGroup                            string
+	SecretsManagerPublicCertificateLetsEncryptEnvironment                           string
+	SecretsManagerPublicCertificateLetsEncryptPrivateKey                            string
+	SecretsManagerPublicCertificateCisCrn                                           string
+	SecretsManagerPublicCertificateClassicInfrastructureUsername                    string
+	SecretsManagerPublicCertificateClassicInfrastructurePassword                    string
+	SecretsManagerPublicCertificateCommonName                                       string
+	SecretsManagerValidateManualDnsCisZoneId                                        string
+	SecretsManagerImportedCertificatePathToCertificate                              string
+	SecretsManagerServiceCredentialsCosCrn                                          string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId        string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType              string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn       string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId string
+	SecretsManagerSecretType                                                        string
+	SecretsManagerSecretID                                                          string
 )
 
 var (
@@ -352,6 +357,8 @@ var (
 	CeDomainMappingName string
 	CeTLSCert           string
 	CeTLSKey            string
+	CeTLSKeyFilePath    string
+	CeTLSCertFilePath   string
 )
 
 // Satellite tests
@@ -854,6 +861,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
 	}
 
+	IsBareMetalServerImage2 = os.Getenv("IS_BARE_METAL_SERVER_IMAGE2")
+	if IsBareMetalServerImage2 == "" {
+		IsBareMetalServerImage2 = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage2 for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+	}
+
 	DNSInstanceCRN = os.Getenv("IS_DNS_INSTANCE_CRN")
 	if DNSInstanceCRN == "" {
 		DNSInstanceCRN = "crn:v1:bluemix:public:dns-svcs:global:a/7f75c7b025e54bc5635f754b2f888665:fa78ce08-a161-4703-98e5-35ed2bfe0e7c::" // for next gen infrastructure
@@ -1352,6 +1365,26 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
 	}
 
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_IAM_SECRET_SERVICE_ID")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_IAM_SECRET_SERVICE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_TYPE")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_TYPE for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_INSTANCE_CRN")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_INSTANCE_CRN for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
 	if Tg_cross_network_account_api_key == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_API_KEY for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
@@ -1699,6 +1732,18 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY with a TLS key in base64 format")
 	}
 
+	CeTLSKeyFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH")
+	if CeTLSKeyFilePath == "" {
+		CeTLSKeyFilePath = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_KEY_PATH to point to CERT KEY file path")
+	}
+
+	CeTLSCertFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_PATH")
+	if CeTLSCertFilePath == "" {
+		CeTLSCertFilePath = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_PATH to point to CERT file path")
+	}
+
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
@@ -2007,11 +2052,11 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	if CeDomainMappingName == "" {
 		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME must be set for acceptance tests")
 	}
-	if CeTLSCert == "" {
-		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_CERT must be set for acceptance tests")
+	if CeTLSKeyFilePath == "" {
+		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH must be set for acceptance tests")
 	}
-	if CeTLSKey == "" {
-		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_TLS_KEY must be set for acceptance tests")
+	if CeTLSCertFilePath == "" {
+		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_PATH must be set for acceptance tests")
 	}
 }
 

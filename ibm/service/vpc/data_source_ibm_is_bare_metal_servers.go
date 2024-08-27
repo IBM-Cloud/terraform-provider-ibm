@@ -425,6 +425,40 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 											},
 										},
 									},
+									"virtual_network_interface": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The virtual network interface for this bare metal server network attachment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this virtual network interface.",
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this virtual network interface.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this virtual network interface.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -564,6 +598,40 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 											},
 										},
 									},
+									"virtual_network_interface": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The virtual network interface for this bare metal server network attachment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this virtual network interface.",
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this virtual network interface.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this virtual network interface.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -651,6 +719,11 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "image id",
+						},
+						isBareMetalServerFirmwareUpdateTypeAvailable: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of firmware update available",
 						},
 						isBareMetalServerProfile: {
 							Type:        schema.TypeString,
@@ -1080,6 +1153,9 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 
 		l[isBareMetalServerImage] = *initialization.Image.ID
+		if bms.Firmware != nil && bms.Firmware.Update != nil {
+			l[isBareMetalServerFirmwareUpdateTypeAvailable] = *bms.Firmware.Update
+		}
 
 		keyListList := []string{}
 		for i := 0; i < len(initialization.Keys); i++ {

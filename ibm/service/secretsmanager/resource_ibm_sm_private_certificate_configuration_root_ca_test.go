@@ -79,6 +79,30 @@ func TestAccIbmSmPrivateCertificateConfigurationRootCAllArgs(t *testing.T) {
 	})
 }
 
+func TestAccIbmSmPrivateCertificateConfigurationRootCACryptoKey(t *testing.T) {
+	resourceName := "ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmPrivateCertificateConfigurationRootCADestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: privateCertificateRootCAConfigCryptoKey(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmPrivateCertificateConfigurationRootCAExists(resourceName, 157788000, 259200, false, true, true),
+				),
+			},
+			resource.TestStep{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl", "ttl"},
+			},
+		},
+	})
+}
+
 var rootCaBasicConfigFormat = `
 		resource "ibm_sm_private_certificate_configuration_root_ca" "sm_private_cert_root_ca_basic" {
 			instance_id   = "%s"
@@ -119,6 +143,60 @@ var rootCaFullConfigFormat = `
 			street_address = ["123 Main St."]
 			postal_code = ["12345"]
 		}`
+
+func iamCredentialsSecretConfigCryptoKey() string {
+	return fmt.Sprintf(`
+		resource "ibm_sm_iam_credentials_secret" "sm_iam_credentials_secret_instance_crypto_key" {
+			instance_id   = "%s"
+			region        = "%s"
+			name = "iam-credentials-for-crypto-key-terraform-tests"
+            service_id = "%s"
+  			reuse_api_key = true
+  			ttl = "259200"
+			rotation {
+				auto_rotate = true
+				interval = 1
+				unit = "day"
+			}
+			depends_on = [
+				ibm_sm_iam_credentials_configuration.sm_iam_credentials_configuration_instance
+			]
+		}`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId)
+}
+
+func privateCertificateRootCAConfigCryptoKey() string {
+	return iamCredentialsEngineConfig() + iamCredentialsSecretConfigCryptoKey() + fmt.Sprintf(`
+		resource "ibm_sm_private_certificate_configuration_root_ca" "sm_private_cert_root_ca_crypto_key" {
+			depends_on     = [ibm_sm_iam_credentials_secret.sm_iam_credentials_secret_instance_crypto_key]
+			instance_id   = "%s"
+			region        = "%s"
+			name = "root-ca-terraform-private-cert-test"
+			max_ttl       = "43830h"
+			ttl = "2190h"
+			crl_disable = false
+			crl_expiry = "72h"
+			crl_distribution_points_encoded = true
+			issuing_certificates_urls_encoded = true
+			key_type = "rsa"
+			key_bits = 4096
+			common_name   = "ibm.com"
+			alt_names = ["ddd.com", "aaa.com"]
+			crypto_key {
+				allow_generate_key = true
+				label = "tf_test"
+				provider {
+					type = "%s"
+					instance_crn = "%s"
+					pin_iam_credentials_secret_id = ibm_sm_iam_credentials_secret.sm_iam_credentials_secret_instance_crypto_key.secret_id
+					private_keystore_id = "%s"
+				}
+			}
+		}`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId)
+}
 
 func privateCertificateRootCAConfigBasic() string {
 	return fmt.Sprintf(rootCaBasicConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)

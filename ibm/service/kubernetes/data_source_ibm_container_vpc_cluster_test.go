@@ -15,14 +15,43 @@ import (
 
 func TestAccIBMContainerVPCClusterDataSource_basic(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	masterNodeReadyClusterScript := testAccCheckIBMContainerVpcClusterBasic(name, "MasterNodeReady") + `
+	data "ibm_container_vpc_cluster" "testacc_ds_cluster" {
+		name = ibm_container_vpc_cluster.cluster.id
+	}
+	`
+	normalClusterScriptWithConfig := testAccCheckIBMContainerVpcClusterBasic(name, "MasterNodeReady") + `
+	data "ibm_container_vpc_cluster" "testacc_ds_cluster" {
+		name      = ibm_container_vpc_cluster.cluster.id
+		wait_till = "normal"
+	}
+	data "ibm_container_cluster_config" "testacc_ds_cluster" {
+		cluster_name_id = data.ibm_container_vpc_cluster.testacc_ds_cluster.name
+	}
+	`
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMContainerVPCClusterDataSource(name),
+				Config: masterNodeReadyClusterScript,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster.testacc_ds_cluster", "id"),
+					resource.TestCheckResourceAttrWith("data.ibm_container_vpc_cluster.testacc_ds_cluster", "state", func(value string) error {
+						switch value {
+						case "deploying", "deployed":
+							return nil
+						}
+						return fmt.Errorf("state is not deploying, it was %s", value)
+					}),
+				),
+			},
+			{
+				Config: normalClusterScriptWithConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster.testacc_ds_cluster", "id"),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster.testacc_ds_cluster", "state", "normal"),
 					resource.TestCheckResourceAttrSet("data.ibm_container_cluster_config.testacc_ds_cluster", "id"),
 				),
 			},
@@ -52,17 +81,6 @@ func TestAccIBMContainerVPCClusterDataSource_DedicatedHost(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckIBMContainerVPCClusterDataSource(name string) string {
-	return testAccCheckIBMContainerVpcClusterBasic(name) + `
-data "ibm_container_vpc_cluster" "testacc_ds_cluster" {
-    cluster_name_id = ibm_container_vpc_cluster.cluster.id
-}
-data "ibm_container_cluster_config" "testacc_ds_cluster" {
-	cluster_name_id = ibm_container_vpc_cluster.cluster.id
-  }
-`
 }
 
 func testAccCheckIBMContainerVPCClusterDataSourceDedicatedHost(name, vpcID, flavor, subnetID, rgroupID, hostpoolID string) string {

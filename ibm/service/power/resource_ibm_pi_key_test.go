@@ -101,5 +101,5 @@ func testAccCheckIBMPIKeyConfig(publicKey, name string) string {
 			pi_cloud_instance_id = "%s"
 			pi_key_name          = "%s"
 			pi_ssh_key           = "%s"
-		  }`, acc.Pi_cloud_instance_id, name, publicKey)
+		}`, acc.Pi_cloud_instance_id, name, publicKey)
 }
