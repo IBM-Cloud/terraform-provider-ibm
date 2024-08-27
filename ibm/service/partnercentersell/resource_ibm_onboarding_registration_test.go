@@ -85,7 +85,7 @@ func TestAccIbmOnboardingRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_registration.onboarding_registration",
+				ResourceName:      "ibm_onboarding_registration.onboarding_registration_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

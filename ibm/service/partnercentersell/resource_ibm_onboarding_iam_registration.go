@@ -1558,21 +1558,21 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationAction(model
 		}
 		model.Roles = roles
 	}
-	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 {
+	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 && modelMap["description"].([]interface{})[0] != nil {
 		DescriptionModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDescriptionObject(modelMap["description"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Description = DescriptionModel
 	}
-	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 {
+	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 && modelMap["display_name"].([]interface{})[0] != nil {
 		DisplayNameModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDisplayNameObject(modelMap["display_name"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.DisplayName = DisplayNameModel
 	}
-	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 {
+	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 && modelMap["options"].([]interface{})[0] != nil {
 		OptionsModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationActionOptions(modelMap["options"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1679,7 +1679,7 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationResourceHier
 
 func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccess(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccess, error) {
 	model := &partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccess{}
-	if modelMap["attributes"] != nil && len(modelMap["attributes"].([]interface{})) > 0 {
+	if modelMap["attributes"] != nil && len(modelMap["attributes"].([]interface{})) > 0 && modelMap["attributes"].([]interface{})[0] != nil {
 		AttributesModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(modelMap["attributes"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1712,28 +1712,28 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAtt
 	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
 		model.Key = core.StringPtr(modelMap["key"].(string))
 	}
-	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 {
+	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 && modelMap["options"].([]interface{})[0] != nil {
 		OptionsModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(modelMap["options"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Options = OptionsModel
 	}
-	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 {
+	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 && modelMap["display_name"].([]interface{})[0] != nil {
 		DisplayNameModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDisplayNameObject(modelMap["display_name"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.DisplayName = DisplayNameModel
 	}
-	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 {
+	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 && modelMap["description"].([]interface{})[0] != nil {
 		DescriptionModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDescriptionObject(modelMap["description"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Description = DescriptionModel
 	}
-	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 {
+	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 && modelMap["ui"].([]interface{})[0] != nil {
 		UiModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUi(modelMap["ui"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1778,7 +1778,7 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(modelMa
 	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
 		model.Key = core.StringPtr(modelMap["key"].(string))
 	}
-	if modelMap["resource_hierarchy"] != nil && len(modelMap["resource_hierarchy"].([]interface{})) > 0 {
+	if modelMap["resource_hierarchy"] != nil && len(modelMap["resource_hierarchy"].([]interface{})) > 0 && modelMap["resource_hierarchy"].([]interface{})[0] != nil {
 		ResourceHierarchyModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptionsResourceHierarchy(modelMap["resource_hierarchy"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1790,14 +1790,14 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(modelMa
 
 func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptionsResourceHierarchy(modelMap map[string]interface{}) (*partnercentersellv1.SupportedAttributesOptionsResourceHierarchy, error) {
 	model := &partnercentersellv1.SupportedAttributesOptionsResourceHierarchy{}
-	if modelMap["key"] != nil && len(modelMap["key"].([]interface{})) > 0 {
+	if modelMap["key"] != nil && len(modelMap["key"].([]interface{})) > 0 && modelMap["key"].([]interface{})[0] != nil {
 		KeyModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptionsResourceHierarchyKey(modelMap["key"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Key = KeyModel
 	}
-	if modelMap["value"] != nil && len(modelMap["value"].([]interface{})) > 0 {
+	if modelMap["value"] != nil && len(modelMap["value"].([]interface{})) > 0 && modelMap["value"].([]interface{})[0] != nil {
 		ValueModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptionsResourceHierarchyValue(modelMap["value"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1831,7 +1831,7 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUi(modelMap map[
 	if modelMap["input_type"] != nil && modelMap["input_type"].(string) != "" {
 		model.InputType = core.StringPtr(modelMap["input_type"].(string))
 	}
-	if modelMap["input_details"] != nil && len(modelMap["input_details"].([]interface{})) > 0 {
+	if modelMap["input_details"] != nil && len(modelMap["input_details"].([]interface{})) > 0 && modelMap["input_details"].([]interface{})[0] != nil {
 		InputDetailsModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUiInputDetails(modelMap["input_details"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1857,14 +1857,14 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUiInputDetails(m
 		}
 		model.Values = values
 	}
-	if modelMap["gst"] != nil && len(modelMap["gst"].([]interface{})) > 0 {
+	if modelMap["gst"] != nil && len(modelMap["gst"].([]interface{})) > 0 && modelMap["gst"].([]interface{})[0] != nil {
 		GstModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUiInputGst(modelMap["gst"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Gst = GstModel
 	}
-	if modelMap["url"] != nil && len(modelMap["url"].([]interface{})) > 0 {
+	if modelMap["url"] != nil && len(modelMap["url"].([]interface{})) > 0 && modelMap["url"].([]interface{})[0] != nil {
 		URLModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUiInputURL(modelMap["url"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1879,7 +1879,7 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUiInputValue(mod
 	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
-	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 {
+	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 && modelMap["display_name"].([]interface{})[0] != nil {
 		DisplayNameModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDisplayNameObject(modelMap["display_name"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1919,7 +1919,7 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributeUiInputURL(model
 
 func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAuthorizationSubject(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedAuthorizationSubject, error) {
 	model := &partnercentersellv1.IamServiceRegistrationSupportedAuthorizationSubject{}
-	if modelMap["attributes"] != nil && len(modelMap["attributes"].([]interface{})) > 0 {
+	if modelMap["attributes"] != nil && len(modelMap["attributes"].([]interface{})) > 0 && modelMap["attributes"].([]interface{})[0] != nil {
 		AttributesModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportAuthorizationSubjectAttribute(modelMap["attributes"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1952,21 +1952,21 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedRol
 	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
 		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
-	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 {
+	if modelMap["description"] != nil && len(modelMap["description"].([]interface{})) > 0 && modelMap["description"].([]interface{})[0] != nil {
 		DescriptionModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDescriptionObject(modelMap["description"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Description = DescriptionModel
 	}
-	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 {
+	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 && modelMap["display_name"].([]interface{})[0] != nil {
 		DisplayNameModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDisplayNameObject(modelMap["display_name"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.DisplayName = DisplayNameModel
 	}
-	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 {
+	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 && modelMap["options"].([]interface{})[0] != nil {
 		OptionsModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedRoleOptions(modelMap["options"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -2027,7 +2027,7 @@ func ResourceIbmOnboardingIamRegistrationMapToEnvironmentAttribute(modelMap map[
 		}
 		model.Values = values
 	}
-	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 {
+	if modelMap["options"] != nil && len(modelMap["options"].([]interface{})) > 0 && modelMap["options"].([]interface{})[0] != nil {
 		OptionsModel, err := ResourceIbmOnboardingIamRegistrationMapToEnvironmentAttributeOptions(modelMap["options"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
