@@ -371,6 +371,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_access_group_template_versions":       iamaccessgroup.DataSourceIBMIAMAccessGroupTemplateVersions(),
 			"ibm_iam_access_group_template_assignment":     iamaccessgroup.DataSourceIBMIAMAccessGroupTemplateAssignment(),
 			"ibm_iam_account_settings":                     iamidentity.DataSourceIBMIAMAccountSettings(),
+			"ibm_iam_effective_account_settings":           iamidentity.DataSourceIBMIamEffectiveAccountSettings(),
 			"ibm_iam_auth_token":                           iamidentity.DataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                         iampolicy.DataSourceIBMIAMRoleAction(),
 			"ibm_iam_users":                                iamidentity.DataSourceIBMIAMUsers(),
