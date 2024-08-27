@@ -75,6 +75,7 @@ Review the argument references that you can specify for your resource.
 - `pi_image_name` - (Required, String) The name of an image.
 - `pi_image_id` - (Optional, String) Image ID of existing source image; required for copy image.
   - Either `pi_image_id` or `pi_image_bucket_name` is required.
+  - You can retrieve this value from [pi_catalog_images](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_catalog_images#image_id) as `image_id` from the stock image you intend to use.
 - `pi_image_bucket_name` - (Optional, String) Cloud Object Storage bucket name; `bucket-name[/optional/folder]`
   - Either `pi_image_bucket_name` or `pi_image_id` is required.
 - `pi_image_access_key` - (Optional, String, Sensitive) Cloud Object Storage access key; required for buckets with private access.
