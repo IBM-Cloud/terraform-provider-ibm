@@ -39,14 +39,14 @@ resource "ibm_pi_image" "testacc_image  "{
 }
 ```
 
-## Notes
+### Notes
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 - If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   - `region` - `lon`
   - `zone` - `lon04`
   
-  Example usage:
+Example usage:
   
   ```terraform
     provider "ibm" {
@@ -57,7 +57,7 @@ resource "ibm_pi_image" "testacc_image  "{
   
 ## Timeouts
 
-The   ibm_pi_image   provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+The ibm_pi_image provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating an image.
 - **delete** - (Default 60 minutes) Used for deleting an image.
@@ -87,7 +87,7 @@ Review the argument references that you can specify for your resource.
 - `pi_image_secret_key` - (Optional, String, Sensitive) Cloud Object Storage secret key; required for buckets with private access.
   - `pi_image_secret_key` is required with `pi_image_access_key`
 - `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_affinity_policy` will be ignored. Used only when importing an image from cloud storage.
-- `pi_image_storage_type` - (Optional, String) Type of storage; If not provided the storage type will default to 'tier3'. Used only when importing an image from cloud storage.
+- `pi_image_storage_type` - (Optional, String) Type of storage; If not provided the storage type will default to 'tier3'. Used only when importing an image from cloud storage. To get a list of available storage types, please use the [ibm_pi_storage_types_capacity](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_storage_types_capacity) data source.
 
 - `pi_image_import_details` - (Optional, Forces new resource, List) Import details for SAP images
   Nested schema for **pi_image_import_details**:
@@ -106,8 +106,8 @@ In addition to all argument reference list, you can access the following attribu
 
 The `ibm_pi_image` can be imported by using `pi_cloud_instance_id` and `image_id`.
 
-**Example**
+### Example
 
-```
+```bash
 terraform import ibm_pi_image.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```
