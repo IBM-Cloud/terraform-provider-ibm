@@ -742,12 +742,14 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 				}
 			}
 		}
-		serviceEndpoints := d.Get("service_endpoints").(string)
-		if serviceEndpoints != "" {
-			endpoint := d.Get("service_endpoints").(string)
-			params["service-endpoints"] = endpoint
-		} else if _, ok := instance.Parameters["service-endpoints"]; ok {
-			params["service-endpoints"] = instance.Parameters["service-endpoints"]
+		if _, ok := params["service-endpoints"]; !ok {
+			serviceEndpoints := d.Get("service_endpoints").(string)
+			if serviceEndpoints != "" {
+				endpoint := d.Get("service_endpoints").(string)
+				params["service-endpoints"] = endpoint
+			} else if _, ok := instance.Parameters["service-endpoints"]; ok {
+				params["service-endpoints"] = instance.Parameters["service-endpoints"]
+			}
 		}
 
 	}
