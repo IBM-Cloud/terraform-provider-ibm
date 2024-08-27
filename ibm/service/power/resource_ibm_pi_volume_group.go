@@ -90,7 +90,7 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 						},
 						Attr_VolumeIDs: {
 							Computed:    true,
-							Description: "List of volume IDs, which failed to be added/removed to/from the volume group, with the given error.",
+							Description: "List of volume IDs, which failed to be added to or removed from the volume group, with the given error.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Type:        schema.TypeList,
 						},

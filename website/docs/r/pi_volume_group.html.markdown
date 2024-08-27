@@ -24,10 +24,10 @@ resource "ibm_pi_volume_group" "testacc_volume_group"{
 
 ### Notes
 
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+  - `region` - `lon`
+  - `zone` - `lon04`
 
   Example usage:
   
@@ -42,28 +42,34 @@ resource "ibm_pi_volume_group" "testacc_volume_group"{
 
 ibm_pi_volume_group provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* **create** - (Default 30 minutes) Used for creating volume group.
-* **update** - (Default 30 minutes) Used for updating volume group.
-* **delete** - (Default 10 minutes) Used for deleting volume group.
+- **create** - (Default 30 minutes) Used for creating volume group.
+- **update** - (Default 30 minutes) Used for updating volume group.
+- **delete** - (Default 10 minutes) Used for deleting volume group.
 
 ## Argument reference
 
 Review the argument references that you can specify for your resource.
 
-* `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-* `pi_consistency_group_name` - (Optional, String) The name of consistency group at storage controller level, required if `pi_volume_group_name` is not provided.
-* `pi_volume_group_name` - (Optional, String) The name of the volume group, required if `pi_consistency_group_name` is not provided.
-* `pi_volume_ids` - (Required, Set of String) List of volume IDs to add in volume group.
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_consistency_group_name` - (Optional, String) The name of consistency group at storage controller level, required if `pi_volume_group_name` is not provided.
+- `pi_volume_group_name` - (Optional, String) The name of the volume group, required if `pi_consistency_group_name` is not provided.
+- `pi_volume_ids` - (Required, Set of String) List of volume IDs to add in volume group.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-* `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
-* `id` - (String) The unique identifier of the volume group. The ID is composed of `<pi_cloud_instance_id>/<volume_group_id>`.
-* `replication_status` - (String) The replication status of volume group.
-* `volume_group_id` - (String) The unique identifier of the volume group.
-* `volume_group_status` - (String) The status of the volume group.
+- `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
+- `id` - (String) The unique identifier of the volume group. The ID is composed of `<pi_cloud_instance_id>/<volume_group_id>`.
+- `replication_status` - (String) The replication status of volume group.
+- `status_description_errors` - (Set) The status details of the volume group.
+  
+  Nested scheme for `status_description_errors`:
+  - `key` - (String) The volume group error key.
+  - `message` - (String) The failure message providing more details about the error key.
+  - `volume_id` - (List of String) List of volume IDs, which failed to be added to or removed from the volume group, with the given error.
+- `volume_group_id` - (String) The unique identifier of the volume group.
+- `volume_group_status` - (String) The status of the volume group.
 
 ## Import
 
