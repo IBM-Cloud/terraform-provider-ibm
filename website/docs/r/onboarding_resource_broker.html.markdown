@@ -76,5 +76,5 @@ You can import the `ibm_onboarding_resource_broker` resource by using `id`. The 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker &lt;id&gt;
+$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker <id>;
 </pre>

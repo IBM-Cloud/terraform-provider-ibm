@@ -59,5 +59,5 @@ You can import the `ibm_onboarding_registration` resource by using `id`. The ID 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_registration.onboarding_registration &lt;id&gt;
+$ terraform import ibm_onboarding_registration.onboarding_registration <id>;
 </pre>

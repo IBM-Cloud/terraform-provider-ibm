@@ -250,5 +250,5 @@ The `id` property can be formed from `product_id`, and `catalog_product_id` in t
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product <productid>/<catalogproductid>;
 </pre>
