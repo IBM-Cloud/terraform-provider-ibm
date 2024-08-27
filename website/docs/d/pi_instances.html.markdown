@@ -69,7 +69,8 @@ In addition to all argument reference list, you can access the following attribu
       Nested scheme for `networks`:
         - `external_ip` - (String) The external IP address of the instance.
         - `ip` - (String) The IP address of the instance.
-        - `macaddress` - (String) The MAC address of the instance.
+        - `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
+        - `mac_address` - (String) The MAC address of the instance.
         - `network_id` - (String) The network ID of the instance.
         - `network_name` - (String) The network name of the instance.
         - `type` - (String) The type of the network.

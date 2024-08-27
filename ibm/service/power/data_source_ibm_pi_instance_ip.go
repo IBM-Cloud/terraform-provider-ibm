@@ -56,7 +56,7 @@ func DataSourceIBMPIInstanceIP() *schema.Resource {
 				Description: "The IP octet of the network that is attached to this instance.",
 				Type:        schema.TypeString,
 			},
-			Attr_MacAddress: {
+			Attr_Macaddress: {
 				Computed:    true,
 				Description: "The MAC address of the network that is attached to this instance.",
 				Type:        schema.TypeString,
@@ -96,7 +96,7 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 			d.SetId(network.NetworkID)
 			d.Set(Attr_ExternalIP, network.ExternalIP)
 			d.Set(Attr_IP, network.IPAddress)
-			d.Set(Attr_MacAddress, network.MacAddress)
+			d.Set(Attr_Macaddress, network.MacAddress)
 			d.Set(Attr_NetworkID, network.NetworkID)
 			d.Set(Attr_Type, network.Type)
 

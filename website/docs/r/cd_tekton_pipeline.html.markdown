@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline
 
-Create, update, and delete cd_tekton_pipelines with this resource.
+Provides a resource for cd_tekton_pipeline. This allows cd_tekton_pipeline to be created, updated and deleted.
 
 ## Example Usage
 
@@ -23,26 +23,24 @@ resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 
 ## Argument Reference
 
-You can specify the following arguments for this resource.
+Review the argument reference that you can specify for your resource.
 
 * `pipeline_id` - (Required, String) ID of the pipeline tool in your toolchain. Can be referenced from your `ibm_cd_toolchain_tool_pipeline` resource, e.g. `pipeline_id = ibm_cd_toolchain_tool_pipeline.my_pipeline.tool_id`
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `enable_notifications` - (Optional, Boolean) Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain. If omitted, this feature is disabled by default.
-* `enable_partial_cloning` - (Optional, Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.
-* `next_build_number` - (Optional, Integer) The build number that will be used for the next pipeline run.
+* `enable_notifications` - (Optional, Boolean) Flag to enable notifications for this pipeline. If enabled, the Tekton pipeline run events will be published to all the destinations specified by the Slack and Event Notifications integrations in the parent toolchain.
+  * Constraints: The default value is `false`.
+* `enable_partial_cloning` - (Optional, Boolean) Flag to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work.
+  * Constraints: The default value is `false`.
+* `next_build_number` - (Optional, Integer) Specify the build number that will be used for the next pipeline run. Build numbers can be any positive whole number between 0 and 100000000000000.
   * Constraints: The maximum value is `99999999999999`. The minimum value is `1`.
-* `worker` - (Optional, List) Details of the worker used to run the pipeline.
+* `worker` - (Optional, List) Specify the worker that is to be used to run the trigger, indicated by a worker object with only the worker ID. If not specified or set as `worker: { id: 'public' }`, the IBM Managed shared workers are used.
 Nested schema for **worker**:
 	* `id` - (Required, String) ID of the worker.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
-	* `name` - (Computed, String) Name of the worker. Computed based on the worker ID.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.
-	* `type` - (Computed, String) Type of the worker. Computed based on the worker ID.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
 
 ## Attribute Reference
 
-After your resource is created, you can read values from the listed arguments and the following attributes.
+In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cd_tekton_pipeline.
 * `build_number` - (Integer) The latest pipeline run build number. If this property is absent, the pipeline hasn't had any pipeline runs.
@@ -73,7 +71,7 @@ Nested schema for **definitions**:
 			  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
-* `enabled` - (Boolean) Flag whether this pipeline is enabled.
+* `enabled` - (Boolean) Flag to check if the trigger is enabled.
   * Constraints: The default value is `true`.
 * `href` - (String) API URL for interacting with the pipeline.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -86,6 +84,7 @@ Nested schema for **properties**:
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 	* `href` - (String) API URL for interacting with the property.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `locked` - (Boolean) When true, this property cannot be overridden by a trigger property or at runtime. Attempting to override it will result in run requests being rejected. The default is false.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
@@ -111,16 +110,18 @@ Nested schema for **toolchain**:
 * `triggers` - (List) Tekton pipeline triggers list.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested schema for **triggers**:
-	* `cron` - (String) Only needed for timer triggers. Cron expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: 0 *_/2 * * * - every 2 hours.
+	* `cron` - (String) Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
-	* `enabled` - (Boolean) Flag whether the trigger is enabled.
+	* `enabled` - (Boolean) Flag to check if the trigger is enabled.
 	  * Constraints: The default value is `true`.
 	* `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-	* `events` - (List) Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.
+	* `events` - (List) Either 'events' or 'filter' is required specifically for Git triggers. Stores a list of events that a Git trigger listens to. Choose one or more from 'push', 'pull_request', and 'pull_request_closed'. If SCM repositories use the 'merge request' term, they correspond to the generic term i.e. 'pull request'.
 	  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The maximum length is `3` items. The minimum length is `0` items.
 	* `favorite` - (Boolean) Mark the trigger as a favorite.
 	  * Constraints: The default value is `false`.
+	* `filter` - (String) Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 	* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) The Trigger ID.
@@ -128,7 +129,7 @@ Nested schema for **triggers**:
 	* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 	* `name` - (String) Trigger name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.
-	* `properties` - (List) Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.
+	* `properties` - (List) Optional trigger properties are used to override or supplement the pipeline properties when triggering a pipeline run.
 	  * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 	Nested schema for **properties**:
 		* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
@@ -144,7 +145,7 @@ Nested schema for **triggers**:
 		  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 		* `value` - (String) Property value. Any string value is valid.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
-	* `secret` - (List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
+	* `secret` - (List) Only needed for Generic Webhook trigger type. The secret is used to start the Generic Webhook trigger.
 	Nested schema for **secret**:
 		* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
 		  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
@@ -161,11 +162,11 @@ Nested schema for **triggers**:
 		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or pattern.
 		Nested schema for **properties**:
 			* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
-			* `branch` - (String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
+			* `branch` - (String) Name of a branch from the repo. Only one of branch, pattern, or filter should be specified.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-			* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.
+			* `hook_id` - (String) Repository webhook ID. It is generated upon trigger creation.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-			* `pattern` - (String) The pattern of Git branch or tag to which to listen. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository. The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. One of branch or pattern must be specified, but only one or the other.
+			* `pattern` - (String) The pattern of Git branch or tag. You can specify a glob pattern such as '!test' or '*master' to match against multiple tags or branches in the repository.The glob pattern used must conform to Bash 4.3 specifications, see bash documentation for more info: https://www.gnu.org/software/bash/manual/bash.html#Pattern-Matching. Only one of branch, pattern, or filter should be specified.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.:@=$&^\/\\?\\!\\*\\+\\[\\]\\(\\)\\{\\}\\|\\\\]*$/`.
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
 			Nested schema for **tool**:
@@ -177,7 +178,7 @@ Nested schema for **triggers**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
 	* `tags` - (List) Optional trigger tags array.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
-	* `timezone` - (String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
+	* `timezone` - (String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the CRON activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z+_., \/]{1,253}$/`.
 	* `type` - (String) Trigger type.
 	  * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
@@ -193,55 +194,6 @@ Nested schema for **triggers**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 * `updated_at` - (String) Standard RFC 3339 Date Time String.
 
-## Provider Configuration
-
-The IBM Cloud provider offers a flexible means of providing credentials for authentication. The following methods are supported, in this order, and explained below:
-
-- Static credentials
-- Environment variables
-
-To find which credentials are required for this resource, see the service table [here](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-
-### Static credentials
-
-You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
-
-Usage:
-```
-provider "ibm" {
-    ibmcloud_api_key = ""
-    iaas_classic_username = ""
-    iaas_classic_api_key = ""
-}
-```
-
-### Environment variables
-
-You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
-
-```
-provider "ibm" {}
-```
-
-Usage:
-```
-export IC_API_KEY="ibmcloud_api_key"
-export IAAS_CLASSIC_USERNAME="iaas_classic_username"
-export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
-terraform plan
-```
-
-Note:
-
-1. Create or find your `ibmcloud_api_key` and `iaas_classic_api_key` [here](https://cloud.ibm.com/iam/apikeys).
-  - Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
-  - Select `Classic Infrastructure API Keys` option from view dropdown for `iaas_classic_api_key`
-2. For iaas_classic_username
-  - Go to [Users](https://cloud.ibm.com/iam/users)
-  - Click on user.
-  - Find user name in the `VPN password` section under `User Details` tab
-
-For more informaton, see [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#authentication).
 
 ## Import
 

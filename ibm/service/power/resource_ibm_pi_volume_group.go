@@ -165,13 +165,13 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.Set(Attr_VolumeGroupID, vg.ID)
-	d.Set(Attr_VolumeGroupStatus, vg.Status)
-	d.Set(Attr_ConsistencyGroupName, vg.ConsistencyGroupName)
-	d.Set(Attr_ReplicationStatus, vg.ReplicationStatus)
 	d.Set(Arg_VolumeGroupName, vg.Name)
 	d.Set(Arg_VolumeIDs, vg.VolumeIDs)
+	d.Set(Attr_ConsistencyGroupName, vg.ConsistencyGroupName)
+	d.Set(Attr_ReplicationStatus, vg.ReplicationStatus)
 	d.Set(Attr_StatusDescriptionErrors, flattenVolumeGroupStatusDescription(vg.StatusDescription.Errors))
+	d.Set(Attr_VolumeGroupID, vg.ID)
+	d.Set(Attr_VolumeGroupStatus, vg.Status)
 
 	return nil
 }
