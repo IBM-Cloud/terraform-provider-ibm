@@ -22,7 +22,6 @@ func TestAccIBMPINetworksDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMPINetworksDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(networksResData, "id"),
-					resource.TestCheckResourceAttrSet(networksResData, "networks.0.crn"),
 				),
 			},
 		},

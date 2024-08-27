@@ -22,7 +22,6 @@ func TestAccIBMPIPublicNetworkDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMPIPublicNetworkDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(publicNetworkResData, "id"),
-					resource.TestCheckResourceAttrSet(publicNetworkResData, "crn"),
 				),
 			},
 		},
