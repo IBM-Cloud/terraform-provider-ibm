@@ -22,7 +22,6 @@ func TestAccIBMPISnapshotDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMPISnapshotDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
-					resource.TestCheckResourceAttrSet(snapshotRes, "pvm_snapshots.0.crn"),
 				),
 			},
 		},

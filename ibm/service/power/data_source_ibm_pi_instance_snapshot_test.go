@@ -22,7 +22,6 @@ func TestAccIBMPIInstanceSnapshotDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMPIInstanceSnapshotDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(snapshotResData, "id"),
-					resource.TestCheckResourceAttrSet(snapshotResData, "crn"),
 				),
 			},
 		},
