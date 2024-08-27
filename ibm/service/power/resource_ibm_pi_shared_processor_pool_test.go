@@ -43,14 +43,14 @@ func TestAccIBMPISPPusertags(t *testing.T) {
 	name := fmt.Sprintf("tf_pi_spp_%d", acctest.RandIntRange(10, 100))
 	sppRes := "ibm_pi_shared_processor_pool.power_shared_processor_pool"
 	sppResData := "data.ibm_pi_shared_processor_pool.power_shared_processor_pool_data"
-	userTags := []string{"env:test", "test_tag"}
+	userTagsString := `["env:test","test_tag"]`
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPISPPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPISPPConfigUserTags(name, userTags),
+				Config: testAccCheckIBMPISPPConfigUserTags(name, userTagsString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPISPPExists(sppRes),
 					resource.TestCheckResourceAttr(sppResData, "user_tags.#", "2"),
@@ -127,18 +127,18 @@ func testAccCheckIBMPISPPConfig(name string) string {
 		}`, name, acc.Pi_cloud_instance_id)
 }
 
-func testAccCheckIBMPISPPConfigUserTags(name string, userTags []string) string {
+func testAccCheckIBMPISPPConfigUserTags(name string, userTagsString string) string {
 	return fmt.Sprintf(`
 		data "ibm_pi_shared_processor_pool" "power_shared_processor_pool_data" {
 			pi_cloud_instance_id	= "%[2]s"
-			pi_shared_processor_pool_name = ibm_pi_shared_processor_pool.power_shared_processor_pool.pi_shared_processor_pool_name
+			pi_shared_processor_pool_id = ibm_pi_shared_processor_pool.power_shared_processor_pool.pi_shared_processor_pool_name
 		}
 
 		resource "ibm_pi_shared_processor_pool" "power_shared_processor_pool" {
 			pi_cloud_instance_id	= "%[2]s"
 			pi_shared_processor_pool_host_group = "s922"
-			pi_shared_processor_pool_name = %[1]s
+			pi_shared_processor_pool_name = "%[1]s"
 			pi_shared_processor_pool_reserved_cores = "1"
 			pi_user_tags = %[3]s
-		}`, name, acc.Pi_cloud_instance_id, userTags)
+		}`, name, acc.Pi_cloud_instance_id, userTagsString)
 }
