@@ -282,7 +282,7 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS, helpers.PINetworkGateway, helpers.PINetworkIPAddressRange) {
-		networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+		networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 		body := &models.NetworkUpdate{
 			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
 		}
