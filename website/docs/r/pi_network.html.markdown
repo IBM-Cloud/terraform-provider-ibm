@@ -72,7 +72,7 @@ Review the argument references that you can specify for your resource.
 - `pi_network_jumbo` - (Deprecated, Optional, Bool) MTU Jumbo option of the network (for multi-zone locations only).
 - `pi_network_mtu` - (Optional, Integer) Maximum Transmission Unit option of the network, min size = 1450 & max size = 9000.
 - `pi_network_access_config` - (Optional, String) The network communication configuration option of the network (for satellite locations only).
-- `pi_user_tags` - (Optional, List) The user tags associated with this resource.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 

@@ -123,7 +123,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				},
 			},
 			Arg_UserTags: {
-				Description: "The user tags associated with this resource.",
+				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
