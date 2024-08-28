@@ -1,3 +1,116 @@
+# 1.69.0-beta0 (Aug 22, 2024)
+Features
+* Support Cloud Logs Routing
+    - **Datasources**
+        - ibm_logs_router_tenant
+    - **Resources**
+        - ibm_logs_router_tenants
+        - ibm_logs_router_targets
+* Support EN
+    - **Datasources**
+        - ibm_en_metrics
+        - ibm_en_smtp_allowed_ips
+    
+Enhancements
+* Deprecate `force_delete` attribute of ibm_kms_rings ([5503](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5503))
+* feat(tekton): Add support for CEL filtering ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* PKI HSM Addition ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* updated error messages for catalog service ([5553](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5553))
+* feat(CIS): Origin Post Quantum Encryption and Max HTTP Version ([5504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5504))
+* refactor of instance network attachment reference to use vni ([5563](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5563))
+
+
+BugFixes
+* fix(docs): doc section fix for share accessor binding data sources ([5559](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5559))
+* Fix panics on alerts resource ([5561](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5561))
+* ibm_is_lb: Total provision time too long ([5523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5523))
+
+# 1.68.1 (Aug 12, 2024)
+BugFixes
+* Fix code engine job regression ([5545](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5545))
+* Update(Cloud-Databases): Added hints for region and location mismatches ([5557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5557))
+* fix(Cloud-Databases): Remove deprecated connectionstrings attribute ([5554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5554))
+* remove the return value from waitForVpcCluster ([5557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5557))
+* fix: read endpoint type from schema ([5552](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5552))
+
+# 1.68.0 (Aug 04, 2024)
+Features
+* Support CBR
+    - **Datasources**
+        - ibm_cbr_zone_addresses
+    - **Resources**
+        - ibm_cbr_zone_addresses
+* Support CIS
+    - **Datasources**
+        - ibm_cis_origin_certificates
+    - **Resources**
+        - ibm_cis_advanced_certificate_pack_order
+        - ibm_cis_origin_certificate_order
+* Support VPC
+    - **Resources**
+        - ibm_is_bare_metal_server_initialization
+    
+Enhancements
+* Add dhcp network support for stratos ([5503](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5503))
+* IAM Policy Assignment: S2S Policy Assignments ([5499](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5499))
+* Code Engine Provider and Documentation Update ([5347](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5347))
+* move wait_till logic into function, integrate it into vpc_cluster datasource ([5476](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5346))
+* Remove hardcoded values for private and direct cos config endpoint ([5484](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5484))
+* feat(bm-dynamic-bandwidth): Support for bandwidth in bare metal ([5493](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5493))
+* Doc update for ODF ([5454](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5454))
+* feat(fs-cross-account): Support for file share cross account access ([5510](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5510))
+* feat Bm firmware update ([5519](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5519))
+* Changing the documentation for SCC ([5456](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5456))
+* feat(lb-parameterized-redirect): Update doc to specify parameterized url redirect ([5521](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5521))
+* chore(Cloud-Databases): Remove Datastax ([5511](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5511))
+* feat(ResourceController): Added onetime_credentials to ResourceInstance and ResourceKey read schemas ([5532](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5532))
+* Add PhysicalAddress and CapabilitiesManagedBySatellite to Terraform SatelliteLocation ([5530](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5530))
+* Added support for bm reinitialization ([5520](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5520))
+
+BugFixes
+* fix(CIS): updating managed ruleset documents ([5488](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5488))
+* fix(ins-keys): Make VSI keys optional ([5518](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5518))
+* fix(is-volume): Set catalogoffering computed attribute empty list ([5514](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5514))
+* add import_on_create param to ibm_container_vpc_worker_pool doc ([5506](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5506))
+* [Doc]Update Doc for E1080 Support ([5536](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5536))
+* Fix(iam-identity):trusted profile templates ([5440](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5440))
+* S2S documentation note for ibm_kms_key and minor linting fixes ([5529](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5529))
+
+# 1.68.0-beta0 (July 23, 2024)
+Features
+* Support CBR
+    - **Datasources**
+        - ibm_cbr_zone_addresses
+    - **Resources**
+        - ibm_cbr_zone_addresses
+* Support CIS
+    - **Datasources**
+        - ibm_cis_origin_certificates
+    - **Resources**
+        - ibm_cis_advanced_certificate_pack_order
+        - ibm_cis_origin_certificate_order
+    
+Enhancements
+* Add dhcp network support for stratos ([5503](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5503))
+* IAM Policy Assignment: S2S Policy Assignments ([5499](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5499))
+* Code Engine Provider and Documentation Update ([5347](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5347))
+* move wait_till logic into function, integrate it into vpc_cluster datasource ([5476](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5346))
+* Remove hardcoded values for private and direct cos config endpoint ([5484](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5484))
+* feat(bm-dynamic-bandwidth): Support for bandwidth in bare metal ([5493](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5493))
+* Doc update for ODF ([5454](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5454))
+* feat(fs-cross-account): Support for file share cross account access ([5510](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5510))
+* feat Bm firmware update ([5519](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5519))
+* Changing the documentation for SCC ([5456](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5456))
+* feat(lb-parameterized-redirect): Update doc to specify parameterized url redirect ([5521](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5521))
+
+
+BugFixes
+* fix(CIS): updating managed ruleset documents ([5488](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5488))
+* fix(ins-keys): Make VSI keys optional ([5518](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5518))
+* fix(is-volume): Set catalogoffering computed attribute empty list ([5514](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5514))
+* add import_on_create param to ibm_container_vpc_worker_pool doc ([5506](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5506))
+
+
 # 1.67.1 (July 05, 2024)
 BugFixes
 * Error: The terraform-provider-ibm_v1.67.0 plugin crashed! ([5485](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5485))

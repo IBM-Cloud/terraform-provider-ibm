@@ -104,6 +104,12 @@ func DataSourceIBMPIInstances() *schema.Resource {
 										Description: "The MAC address of the instance.",
 										Type:        schema.TypeString,
 									},
+									Attr_Macaddress: {
+										Computed:    true,
+										Deprecated:  "Deprecated, use mac_address instead",
+										Description: "The MAC address of the instance.",
+										Type:        schema.TypeString,
+									},
 									Attr_NetworkID: {
 										Computed:    true,
 										Description: "The network ID of the instance.",

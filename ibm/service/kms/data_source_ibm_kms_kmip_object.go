@@ -30,47 +30,47 @@ func dataSourceIBMKMSKMIPObjectBaseSchema(isForList bool) map[string]*schema.Sch
 			Computed:    true,
 			Description: "The state of the KMIP object",
 		},
-		"created_by": &schema.Schema{
+		"created_by": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The unique identifier that is associated with the entity that created the adapter.",
 		},
-		"created_at": &schema.Schema{
+		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date when a resource was created. The date format follows RFC 3339.",
 		},
-		"created_by_cert_id": &schema.Schema{
+		"created_by_cert_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The ID of the certificate that created the object",
 		},
-		"updated_by": &schema.Schema{
+		"updated_by": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The unique identifier that is associated with the entity that updated the adapter.",
 		},
-		"updated_at": &schema.Schema{
+		"updated_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date when a resource was updated. The date format follows RFC 3339.",
 		},
-		"updated_by_cert_id": &schema.Schema{
+		"updated_by_cert_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The ID of the certificate that updated the object",
 		},
-		"destroyed_by": &schema.Schema{
+		"destroyed_by": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The unique identifier that is associated with the entity that destroyed the adapter.",
 		},
-		"destroyed_at": &schema.Schema{
+		"destroyed_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date when a resource was destroyed. The date format follows RFC 3339.",
 		},
-		"destroyed_by_cert_id": &schema.Schema{
+		"destroyed_by_cert_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The ID of the certificate that destroyed the object",

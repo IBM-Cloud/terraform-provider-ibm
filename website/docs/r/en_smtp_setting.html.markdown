@@ -22,6 +22,8 @@ resource "ibm_en_smtp_setting" "en_smtp_setting" {
 }
 ```
 
+Note: The support for legacy allowlisting has been deprecated. The support has been enabled via Context-based-restrictions. For detailed information, please refer here: https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-smtp-configurations#en-smtp-configurations-cbr. You can get the existing IP's details using data source `ibm_en_smtp_allowed_ips`
+
 ## Argument reference
 
 Review the argument reference that you can specify for your resource.
