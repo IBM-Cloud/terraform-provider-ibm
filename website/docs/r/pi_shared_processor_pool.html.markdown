@@ -58,7 +58,7 @@ Review the argument references that you can specify for your resource.
 * `pi_shared_processor_pool_name` - (Required, String) The name of the shared processor pool.
 * `pi_shared_processor_pool_reserved_cores` - (Required, Integer) The amount of reserved cores for the shared processor pool.
 * `pi_shared_processor_pool_placement_group_id` - (Optional, String) The ID of the placement group the shared processor pool is created in.
-* `pi_user_tags` - (Optional, List) The user tags associated with this resource.
+* `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 

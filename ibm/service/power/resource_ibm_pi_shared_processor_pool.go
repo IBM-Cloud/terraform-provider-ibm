@@ -73,7 +73,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "Placement group the shared processor pool is created in",
 			},
 			Arg_UserTags: {
-				Description: "The user tags associated with this resource.",
+				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
