@@ -51,6 +51,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -1271,6 +1272,15 @@ func Provider() *schema.Provider {
 			"ibm_cdn":                                       classicinfrastructure.ResourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                  classicinfrastructure.ResourceIBMFirewallShared(),
 
+			// Partner Center Sell
+			"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistration(),
+			"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProduct(),
+			"ibm_onboarding_iam_registration":   partnercentersell.ResourceIbmOnboardingIamRegistration(),
+			"ibm_onboarding_catalog_product":    partnercentersell.ResourceIbmOnboardingCatalogProduct(),
+			"ibm_onboarding_catalog_plan":       partnercentersell.ResourceIbmOnboardingCatalogPlan(),
+			"ibm_onboarding_catalog_deployment": partnercentersell.ResourceIbmOnboardingCatalogDeployment(),
+			"ibm_onboarding_resource_broker":    partnercentersell.ResourceIbmOnboardingResourceBroker(),
+
 			// Added for Power Colo
 			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
 			"ibm_pi_cloud_connection_network_attach": power.ResourceIBMPICloudConnectionNetworkAttach(),
@@ -1876,6 +1886,15 @@ func Validator() validate.ValidatorDict {
 				"ibm_metrics_router_settings":             metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
+
+				// Partner Center Sell
+				"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistrationValidator(),
+				"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProductValidator(),
+				"ibm_onboarding_iam_registration":   partnercentersell.ResourceIbmOnboardingIamRegistrationValidator(),
+				"ibm_onboarding_catalog_product":    partnercentersell.ResourceIbmOnboardingCatalogProductValidator(),
+				"ibm_onboarding_catalog_plan":       partnercentersell.ResourceIbmOnboardingCatalogPlanValidator(),
+				"ibm_onboarding_catalog_deployment": partnercentersell.ResourceIbmOnboardingCatalogDeploymentValidator(),
+				"ibm_onboarding_resource_broker":    partnercentersell.ResourceIbmOnboardingResourceBrokerValidator(),
 
 				// Added for Context Based Restrictions
 				"ibm_cbr_zone":           contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
