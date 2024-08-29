@@ -29,6 +29,7 @@ Logs Routing
 Metrics Router
 MQ on Cloud
 Object Storage
+Onboarding
 Power Systems
 Privileged Access Gateway
 Project
