@@ -21,15 +21,15 @@ import (
 
 func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 	var conf partnercentersellv1.Broker
-	authUsername := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
+	authUsername := "apikey"
 	authPassword := "random1234"
-	authScheme := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
+	authScheme := "bearer"
 	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	typeVar := "provision_through"
 	name := "broker-petra-1"
-	authUsernameUpdate := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
+	authUsernameUpdate := "apikey"
 	authPasswordUpdate := "random1234"
-	authSchemeUpdate := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
+	authSchemeUpdate := "bearer"
 	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "provision_behind"
 	nameUpdate := "broker-petra-1"
@@ -69,26 +69,26 @@ func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	var conf partnercentersellv1.Broker
 	env := "current"
-	authUsername := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
+	authUsername := "apikey"
 	authPassword := "random1234"
-	authScheme := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
+	authScheme := "bearer"
 	state := "active"
 	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	allowContextUpdates := "false"
 	catalogType := "service"
 	typeVar := "provision_through"
-	name := "broker-petra-2"
+	name := "broker-petra-all"
 	region := "global"
 	envUpdate := "current"
-	authUsernameUpdate := fmt.Sprintf("tf_auth_username_%d", acctest.RandIntRange(10, 100))
+	authUsernameUpdate := "apikey"
 	authPasswordUpdate := "random1234"
-	authSchemeUpdate := fmt.Sprintf("tf_auth_scheme_%d", acctest.RandIntRange(10, 100))
+	authSchemeUpdate := "bearer"
 	stateUpdate := "active"
 	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	allowContextUpdatesUpdate := "true"
 	catalogTypeUpdate := "service"
 	typeVarUpdate := "provision_through"
-	nameUpdate := "broker-petra-2"
+	nameUpdate := "broker-petra-all"
 	regionUpdate := "global"
 
 	resource.Test(t, resource.TestCase{
