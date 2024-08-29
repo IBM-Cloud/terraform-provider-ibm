@@ -4,10 +4,13 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -75,7 +78,6 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The operating system of the workers in the worker pool.",
 			},
 
@@ -205,6 +207,20 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Description: "Autoscaling is enabled on the workerpool",
 			},
 		},
+		CustomizeDiff: customdiff.All(
+			customdiff.ForceNewIfChange("operating_system", func(ctx context.Context, oldValue, newValue, meta interface{}) bool {
+				if strings.HasPrefix(oldValue.(string), "UBUNTU_") && strings.HasPrefix(newValue.(string), "UBUNTU_") {
+					return false
+				}
+
+				/*if (strings.HasPrefix(oldValue.(string), "RHEL_") || strings.HasPrefix(oldValue.(string), "REDHAT_")) &&
+					strings.HasPrefix(newValue.(string), "RHEL_") || strings.HasPrefix(newValue.(string), "REDHAT_") {
+					return false
+				}*/
+
+				return true
+			}),
+		),
 	}
 }
 
@@ -429,6 +445,28 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 		}
 		if err := updateWorkerpoolTaints(d, meta, clusterNameorID, workerPoolNameorID, taints); err != nil {
 			return err
+		}
+	}
+
+	if d.HasChange("operating_system") {
+		operatingSystem := d.Get("operating_system").(string)
+		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v2.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().SetWorkerPoolOperatingSystem(v2.SetWorkerPoolOperatingSystem{
+			Cluster:         clusterNameorID,
+			WorkerPool:      workerPoolNameorID,
+			OperatingSystem: operatingSystem,
+		}, Env)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating the operating_system %s: %s", operatingSystem, err)
 		}
 	}
 
