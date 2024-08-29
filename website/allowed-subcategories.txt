@@ -29,7 +29,7 @@ Logs Routing
 Metrics Router
 MQ on Cloud
 Object Storage
-Onboarding
+Partner Center Sell
 Power Systems
 Privileged Access Gateway
 Project
