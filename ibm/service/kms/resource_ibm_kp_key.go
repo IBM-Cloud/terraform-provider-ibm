@@ -267,9 +267,10 @@ func resourceIBMKeyExists(d *schema.ResourceData, meta interface{}) (bool, error
 	// keyid := d.Id()
 	_, err = api.GetKey(context.Background(), keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
