@@ -8,7 +8,7 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_plan
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without any further notice.**
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
 
 Create, update, and delete onboarding_catalog_plans with this resource.
 
