@@ -6,7 +6,6 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
-~> **Beta:** This resource is in Beta, and is subject to change.
 
 # ibm_logs_e2ms
 

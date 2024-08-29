@@ -1,3 +1,38 @@
+# 1.69.0-beta0 (Aug 22, 2024)
+Features
+* Support Cloud Logs Routing
+    - **Datasources**
+        - ibm_logs_router_tenant
+    - **Resources**
+        - ibm_logs_router_tenants
+        - ibm_logs_router_targets
+* Support EN
+    - **Datasources**
+        - ibm_en_metrics
+        - ibm_en_smtp_allowed_ips
+    
+Enhancements
+* Deprecate `force_delete` attribute of ibm_kms_rings ([5503](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5503))
+* feat(tekton): Add support for CEL filtering ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* PKI HSM Addition ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* updated error messages for catalog service ([5553](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5553))
+* feat(CIS): Origin Post Quantum Encryption and Max HTTP Version ([5504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5504))
+* refactor of instance network attachment reference to use vni ([5563](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5563))
+
+
+BugFixes
+* fix(docs): doc section fix for share accessor binding data sources ([5559](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5559))
+* Fix panics on alerts resource ([5561](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5561))
+* ibm_is_lb: Total provision time too long ([5523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5523))
+
+# 1.68.1 (Aug 12, 2024)
+BugFixes
+* Fix code engine job regression ([5545](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5545))
+* Update(Cloud-Databases): Added hints for region and location mismatches ([5557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5557))
+* fix(Cloud-Databases): Remove deprecated connectionstrings attribute ([5554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5554))
+* remove the return value from waitForVpcCluster ([5557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5557))
+* fix: read endpoint type from schema ([5552](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5552))
+
 # 1.68.0 (Aug 04, 2024)
 Features
 * Support CBR

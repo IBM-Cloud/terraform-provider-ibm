@@ -98,13 +98,13 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The host ID where the shared processor pool resides",
 			},
 
-			Attr_SharedProcessorPoolStatus: {
+			Attr_Status: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the shared processor pool",
 			},
 
-			Attr_SharedProcessorPoolStatusDetail: {
+			Attr_StatusDetail: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status details of the shared processor pool",
@@ -153,7 +153,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 							Computed:    true,
 							Description: "The server instance name",
 						},
-						Attr_SharedProcessorPoolInstanceStatus: {
+						Attr_Status: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Status of the server",
@@ -218,7 +218,7 @@ func isWaitForPISharedProcessorPoolAvailable(ctx context.Context, d *schema.Reso
 		Target:     []string{"active", "failed", ""},
 		Refresh:    isPISharedProcessorPoolRefreshFunc(client, id, sharedProcessorPoolReadyStatus),
 		Delay:      20 * time.Second,
-		MinTimeout: activeTimeOut,
+		MinTimeout: Timeout_Active,
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 	}
 
@@ -293,7 +293,7 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 		d.Set(Attr_SharedProcessorPoolPlacementGroups, pgIDs)
 	}
 	d.Set(Attr_SharedProcessorPoolHostID, response.SharedProcessorPool.HostID)
-	d.Set(Attr_SharedProcessorPoolStatus, response.SharedProcessorPool.Status)
+	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_SharedProcessorPoolStatusDetail, response.SharedProcessorPool.StatusDetail)
 
 	serversMap := []map[string]interface{}{}
@@ -307,7 +307,7 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 					Attr_SharedProcessorPoolInstanceId:               s.ID,
 					Attr_SharedProcessorPoolInstanceMemory:           s.Memory,
 					Attr_SharedProcessorPoolInstanceName:             s.Name,
-					Attr_SharedProcessorPoolInstanceStatus:           s.Status,
+					Attr_Status:                                      s.Status,
 					Attr_SharedProcessorPoolInstanceVcpus:            s.Vcpus,
 				}
 				serversMap = append(serversMap, v)

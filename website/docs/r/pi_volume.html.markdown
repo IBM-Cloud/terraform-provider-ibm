@@ -19,7 +19,7 @@ resource "ibm_pi_volume" "testacc_volume"{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
   pi_volume_size       = 20
   pi_volume_name       = "test-volume"
-  pi_volume_type       = "ssd"
+  pi_volume_type       = "tier3"
   pi_volume_shareable  = true
 }
 ```
@@ -63,7 +63,7 @@ Review the argument references that you can specify for your resource.
 - `pi_volume_pool` - (Optional, String) Volume pool where the volume will be created; if provided then `pi_affinity_policy` values will be ignored.
 - `pi_volume_shareable` - (Required, Boolean) If set to **true**, the volume can be shared across Power Systems Virtual Server instances. If set to **false**, you can attach it only to one instance.
 - `pi_volume_size`  - (Required, Integer) The size of the volume in GB.
-- `pi_volume_type` - (Optional, String) Type of disk, if diskType is not provided the disk type will default to `tier3`.
+- `pi_volume_type` - (Optional, String) Type of volume, if this field is not provided, it will default to `tier3`. To get a list of available volume types, please use the [ibm_pi_storage_types_capacity](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_storage_types_capacity) data source.
 
 ## Attribute reference
 

@@ -434,6 +434,7 @@ func resourceIbmCodeEngineSecretUpdate(context context.Context, d *schema.Resour
 
 	replaceSecretOptions.SetProjectID(parts[0])
 	replaceSecretOptions.SetName(parts[1])
+	replaceSecretOptions.SetFormat(d.Get("format").(string))
 
 	hasChange := false
 
@@ -450,7 +451,7 @@ func resourceIbmCodeEngineSecretUpdate(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 	if d.HasChange("data") {
-		data, err := resourceIbmCodeEngineSecretMapToSecretData(d.Get("data.0").(map[string]interface{}))
+		data, err := resourceIbmCodeEngineSecretMapToSecretData(d.Get("data").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}

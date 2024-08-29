@@ -47,9 +47,11 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -888,6 +890,8 @@ func Provider() *schema.Provider {
 			"ibm_en_smtp_user":                 eventnotification.DataSourceIBMEnSMTPUser(),
 			"ibm_en_smtp_users":                eventnotification.DataSourceIBMEnSMTPUsers(),
 			"ibm_en_slack_template":            eventnotification.DataSourceIBMEnSlackTemplate(),
+			"ibm_en_metrics":                   eventnotification.DataSourceIBMEnMetrics(),
+			"ibm_en_smtp_allowed_ips":          eventnotification.DataSourceIBMEnSMTPAllowedIps(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -959,6 +963,10 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichments":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
 			"ibm_logs_data_access_rules":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
+
+			// Logs Router Service
+			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
+			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1264,6 +1272,15 @@ func Provider() *schema.Provider {
 			"ibm_cdn":                                       classicinfrastructure.ResourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                  classicinfrastructure.ResourceIBMFirewallShared(),
 
+			// Partner Center Sell
+			"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistration(),
+			"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProduct(),
+			"ibm_onboarding_iam_registration":   partnercentersell.ResourceIbmOnboardingIamRegistration(),
+			"ibm_onboarding_catalog_product":    partnercentersell.ResourceIbmOnboardingCatalogProduct(),
+			"ibm_onboarding_catalog_plan":       partnercentersell.ResourceIbmOnboardingCatalogPlan(),
+			"ibm_onboarding_catalog_deployment": partnercentersell.ResourceIbmOnboardingCatalogDeployment(),
+			"ibm_onboarding_resource_broker":    partnercentersell.ResourceIbmOnboardingResourceBroker(),
+
 			// Added for Power Colo
 			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
 			"ibm_pi_cloud_connection_network_attach": power.ResourceIBMPICloudConnectionNetworkAttach(),
@@ -1537,6 +1554,9 @@ func Provider() *schema.Provider {
 			"ibm_logs_data_usage_metrics": logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
 			"ibm_logs_enrichment":         logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
 			"ibm_logs_data_access_rule":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
+
+			// Logs Router Service
+			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1867,6 +1887,15 @@ func Validator() validate.ValidatorDict {
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
 
+				// Partner Center Sell
+				"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistrationValidator(),
+				"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProductValidator(),
+				"ibm_onboarding_iam_registration":   partnercentersell.ResourceIbmOnboardingIamRegistrationValidator(),
+				"ibm_onboarding_catalog_product":    partnercentersell.ResourceIbmOnboardingCatalogProductValidator(),
+				"ibm_onboarding_catalog_plan":       partnercentersell.ResourceIbmOnboardingCatalogPlanValidator(),
+				"ibm_onboarding_catalog_deployment": partnercentersell.ResourceIbmOnboardingCatalogDeploymentValidator(),
+				"ibm_onboarding_resource_broker":    partnercentersell.ResourceIbmOnboardingResourceBrokerValidator(),
+
 				// Added for Context Based Restrictions
 				"ibm_cbr_zone":           contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_zone_addresses": contextbasedrestrictions.ResourceIBMCbrZoneAddressesValidator(),
@@ -1983,6 +2012,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_dashboard_folder": logs.ResourceIbmLogsDashboardFolderValidator(),
 				"ibm_logs_enrichment":       logs.ResourceIbmLogsEnrichmentValidator(),
 				"ibm_logs_data_access_rule": logs.ResourceIbmLogsDataAccessRuleValidator(),
+
+				// Added for Logs Router Service
+				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),
