@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_product
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without any further notice.**
+
 Create, update, and delete onboarding_catalog_products with this resource.
 
 ## Example Usage
