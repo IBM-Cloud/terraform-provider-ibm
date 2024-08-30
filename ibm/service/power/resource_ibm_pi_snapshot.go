@@ -136,8 +136,10 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if v, ok := d.GetOk(Arg_UserTags); ok {
-		userTags := flex.ExpandStringList(v.([]interface{}))
-		snapshotBody.UserTags = userTags
+		if len(v.([]interface{})) > 0 {
+			snapshotBody.UserTags = flex.ExpandStringList(v.([]interface{}))
+		}
+
 	}
 
 	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
