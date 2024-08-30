@@ -74,7 +74,6 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "PI network gateway",
-				ForceNew:    true,
 			},
 			helpers.PINetworkJumbo: {
 				Type:          schema.TypeBool,
@@ -282,17 +281,22 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS, helpers.PINetworkIPAddressRange) {
+	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS, helpers.PINetworkGateway, helpers.PINetworkIPAddressRange) {
 		networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 		body := &models.NetworkUpdate{
 			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
 		}
 		networkType := d.Get(helpers.PINetworkType).(string)
-		if d.HasChange(helpers.PINetworkIPAddressRange) {
+		if d.HasChange(helpers.PINetworkIPAddressRange) || d.HasChange(helpers.PINetworkGateway) {
 			if networkType == Vlan {
-				body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+				if d.HasChange(helpers.PINetworkIPAddressRange) {
+					body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+				}
+				if d.HasChange(helpers.PINetworkGateway) {
+					body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
+				}
 			} else {
-				return diag.Errorf("%v type does not allow ip-address range update", networkType)
+				return diag.Errorf("%v type does not allow ip-address range or gateway update", networkType)
 			}
 		}
 
