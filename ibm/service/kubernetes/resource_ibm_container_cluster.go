@@ -700,6 +700,12 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 			return err
 		}
 	}
+
+	_, err = waitForClusterMasterAvailable(d, meta, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return err
+	}
+
 	timeoutStage := strings.ToLower(d.Get("wait_till").(string))
 	err = waitForCluster(d, timeoutStage, d.Timeout(schema.TimeoutCreate), meta)
 	if err != nil {

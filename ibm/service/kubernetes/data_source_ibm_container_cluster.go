@@ -464,11 +464,12 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(clusterFields.ID)
 
-	err = waitForCluster(d, timeoutStage, timeout, meta)
-	if err != nil {
-		return err
-	}
 	if timeoutStage != "" {
+		err = waitForCluster(d, timeoutStage, timeout, meta)
+		if err != nil {
+			return err
+		}
+
 		clusterFields, err = csAPI.Find(name, targetEnv)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error retrieving cluster after waitForCluster: %s", err)
