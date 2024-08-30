@@ -16,7 +16,7 @@ Create, update, and delete logs_alerts with this resource.
 resource "ibm_resource_instance" "logs_instance" {
   name     = "logs-instance"
   service  = "logs"
-  plan     = "experimental"
+  plan     = "standard"
   location = "eu-gb"
 }
 resource "ibm_logs_alert" "logs_alert_instance" {
