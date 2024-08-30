@@ -12,12 +12,14 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/stretchr/testify/assert"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func TestAccIbmPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
-	var conf backuprecoveryv1.ProtectionGroupRun
+	var conf backuprecoveryv1.ProtectionGroupRunsResponse
 	action := "Pause"
 
 	resource.Test(t, resource.TestCase{
@@ -49,7 +51,7 @@ func testAccCheckIbmPerformActionOnProtectionGroupRunRequestConfigBasic(action s
 	`, action)
 }
 
-func testAccCheckIbmPerformActionOnProtectionGroupRunRequestExists(n string, obj backuprecoveryv1.ProtectionGroupRun) resource.TestCheckFunc {
+func testAccCheckIbmPerformActionOnProtectionGroupRunRequestExists(n string, obj backuprecoveryv1.ProtectionGroupRunsResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -62,22 +64,16 @@ func testAccCheckIbmPerformActionOnProtectionGroupRunRequestExists(n string, obj
 			return err
 		}
 
-		getProtectionGroupRunOptions := &backuprecoveryv1.GetProtectionGroupRunOptions{}
+		getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		getProtectionGroupRunsOptions.SetID(rs.Primary.ID)
+
+		performActionOnProtectionGroupRunResponse, _, err := backupRecoveryClient.GetProtectionGroupRuns(getProtectionGroupRunsOptions)
 		if err != nil {
 			return err
 		}
-
-		getProtectionGroupRunOptions.SetID(parts[0])
-		getProtectionGroupRunOptions.SetRunID(parts[1])
-
-		performActionOnProtectionGroupRunRequest, _, err := backupRecoveryClient.GetProtectionGroupRun(getProtectionGroupRunOptions)
-		if err != nil {
-			return err
-		}
-
-		obj = *performActionOnProtectionGroupRunRequest
+		// performActionOnProtectionGroupRunResponse := backupRecoveryClient.
+		obj = *performActionOnProtectionGroupRunResponse
 		return nil
 	}
 }
@@ -92,18 +88,12 @@ func testAccCheckIbmPerformActionOnProtectionGroupRunRequestDestroy(s *terraform
 			continue
 		}
 
-		getProtectionGroupRunOptions := &backuprecoveryv1.GetProtectionGroupRunOptions{}
+		getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		getProtectionGroupRunOptions.SetID(parts[0])
-		getProtectionGroupRunOptions.SetRunID(parts[1])
+		getProtectionGroupRunsOptions.SetID(rs.Primary.ID)
 
 		// Try to find the key
-		_, response, err := backupRecoveryClient.GetProtectionGroupRun(getProtectionGroupRunOptions)
+		_, response, err := backupRecoveryClient.GetProtectionGroupRuns(getProtectionGroupRunsOptions)
 
 		if err == nil {
 			return fmt.Errorf("perform_action_on_protection_group_run_request still exists: %s", rs.Primary.ID)
@@ -113,4 +103,115 @@ func testAccCheckIbmPerformActionOnProtectionGroupRunRequestDestroy(s *terraform
 	}
 
 	return nil
+}
+
+func TestResourceIbmPerformActionOnProtectionGroupRunRequestPauseProtectionRunActionParamsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["run_id"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(backuprecoveryv1.PauseProtectionRunActionResponseParams)
+	model.RunID = core.StringPtr("testString")
+
+	result, err := backuprecovery.ResourceIbmPerformActionOnProtectionGroupRunRequestPauseProtectionRunActionParamsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmPerformActionOnProtectionGroupRunRequestResumeProtectionRunActionParamsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["run_id"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(backuprecoveryv1.ResumeProtectionRunActionResponseParams)
+	model.RunID = core.StringPtr("testString")
+
+	result, err := backuprecovery.ResourceIbmPerformActionOnProtectionGroupRunRequestResumeProtectionRunActionParamsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["run_id"] = "testString"
+		model["local_task_id"] = "testString"
+		model["object_ids"] = []int64{int64(26)}
+		model["replication_task_id"] = []string{"testString"}
+		model["archival_task_id"] = []string{"testString"}
+		model["cloud_spin_task_id"] = []string{"testString"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(backuprecoveryv1.CancelProtectionGroupRunResponseParams)
+	model.RunID = core.StringPtr("testString")
+
+	result, err := backuprecovery.ResourceIbmPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(t *testing.T) {
+	checkResult := func(result *backuprecoveryv1.PauseProtectionRunActionParams) {
+		model := new(backuprecoveryv1.PauseProtectionRunActionParams)
+		model.RunID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["run_id"] = "testString"
+
+	result, err := backuprecovery.ResourceIbmPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(t *testing.T) {
+	checkResult := func(result *backuprecoveryv1.ResumeProtectionRunActionParams) {
+		model := new(backuprecoveryv1.ResumeProtectionRunActionParams)
+		model.RunID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["run_id"] = "testString"
+
+	result, err := backuprecovery.ResourceIbmPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(t *testing.T) {
+	checkResult := func(result *backuprecoveryv1.CancelProtectionGroupRunRequest) {
+		model := new(backuprecoveryv1.CancelProtectionGroupRunRequest)
+		model.RunID = core.StringPtr("testString")
+		model.LocalTaskID = core.StringPtr("testString")
+		model.ObjectIds = []int64{int64(26)}
+		model.ReplicationTaskID = []string{"testString"}
+		model.ArchivalTaskID = []string{"testString"}
+		model.CloudSpinTaskID = []string{"testString"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["run_id"] = "testString"
+	model["local_task_id"] = "testString"
+	model["object_ids"] = []interface{}{int(26)}
+	model["replication_task_id"] = []interface{}{"testString"}
+	model["archival_task_id"] = []interface{}{"testString"}
+	model["cloud_spin_task_id"] = []interface{}{"testString"}
+
+	result, err := backuprecovery.ResourceIbmPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

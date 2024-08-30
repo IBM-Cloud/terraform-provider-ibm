@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -14,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -47,19 +52,6 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-			},
-			"tenant_ids": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "TenantIds contains ids of the tenants for which objects are to be returned.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"include_tenants": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "If true, the response will include Objects which belongs to all tenants which the current user has permission to see.",
 			},
 			"protection_group_ids": &schema.Schema{
 				Type:        schema.TypeList,
@@ -119,26 +111,10 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"region_ids": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Specifies a list of region ids. Only records from clusters having these region ids will be returned.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"cluster_identifiers": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Specifies the list of cluster identifiers. Format is clusterId:clusterIncarnationId. Only records from clusters having these identifiers will be returned.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"storage_domain_ids": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Specifies the list of storage domain ids. Format is clusterId:clusterIncarnationId:storageDomainId. Only objects having protection in these storage domains will be returned.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -186,6 +162,56 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Specifies list of snapshot tags, one or more of which might be present in the document. These are OR'ed together and the resulting criteria AND'ed with the rest of the query.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"tag_search_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Specifies the tag name to filter the tagged objects and snapshots. User can specify a wildcard character '*' as a suffix to a string where all object's tag names are matched with the prefix string.",
+			},
+			"tag_names": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies the tag names to filter the tagged objects and snapshots.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"tag_types": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies the tag names to filter the tagged objects and snapshots.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"tag_categories": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies the tag category to filter the objects and snapshots.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"tag_sub_categories": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies the tag subcategory to filter the objects and snapshots.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"include_helios_tag_info_for_objects": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "pecifies whether to include helios tags information for objects in response. Default value is false.",
+			},
+			"external_filters": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies the key-value pairs to filtering the results for the search. Each filter is of the form 'key:value'. The filter 'externalFilters:k1:v1&externalFilters:k2:v2&externalFilters:k2:v3' returns the documents where each document will match the query (k1=v1) AND (k2=v2 OR k2 = v3). Allowed keys: - vmBiosUuid - graphUuid - arn - instanceId - bucketName - azureId.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -251,10 +277,167 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 							Computed:    true,
 							Description: "Specifies the protection type of the object if any.",
 						},
+						"sharepoint_site_summary": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the common parameters for Sharepoint site objects.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"site_web_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the web url for the Sharepoint site.",
+									},
+								},
+							},
+						},
 						"os_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies the operating system type of the object.",
+						},
+						"child_objects": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies child object details.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies object id.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the name of the object.",
+									},
+									"source_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies registered source id to which object belongs.",
+									},
+									"source_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies registered source name to which object belongs.",
+									},
+									"environment": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the environment of the object.",
+									},
+									"object_hash": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the hash identifier of the object.",
+									},
+									"object_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the type of the object.",
+									},
+									"logical_size_bytes": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the logical size of object in bytes.",
+									},
+									"uuid": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the uuid which is a unique identifier of the object.",
+									},
+									"global_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the global id which is a unique identifier of the object.",
+									},
+									"protection_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the protection type of the object if any.",
+									},
+									"sharepoint_site_summary": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the common parameters for Sharepoint site objects.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"site_web_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the web url for the Sharepoint site.",
+												},
+											},
+										},
+									},
+									"os_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the operating system type of the object.",
+									},
+									"child_objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies child object details.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{},
+										},
+									},
+									"v_center_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"is_cloud_env": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+												},
+											},
+										},
+									},
+									"windows_cluster_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cluster_source_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type of cluster resource this source represents.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"v_center_summary": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"is_cloud_env": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+									},
+								},
+							},
+						},
+						"windows_cluster_summary": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cluster_source_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the type of cluster resource this source represents.",
+									},
+								},
+							},
 						},
 						"protection_stats": &schema.Schema{
 							Type:        schema.TypeList,
@@ -360,15 +543,139 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 										Description: "Specifies a tenant object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"created_at_time_msecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Epoch time when tenant was created.",
+												},
+												"deleted_at_time_msecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Epoch time when tenant was last updated.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Description about the tenant.",
+												},
+												"external_vendor_metadata": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendors who are responsible for managing tenants. This field will only applicable if tenant creation is happening for a specially provisioned clusters for external vendors.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"ibm_tenant_metadata_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendor of type 'IBM'.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"account_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unique identifier of the IBM's account ID.",
+																		},
+																		"crn": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unique CRN associated with the tenant.",
+																		},
+																		"custom_properties": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of custom properties associated with the tenant. External vendors can choose to set any properties inside following list. Note that the fields set inside the following will not be available for direct filtering. API callers should make sure that no sensitive information such as passwords is sent in these fields.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unique key for custom property.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the value for the above custom key.",
+																					},
+																				},
+																			},
+																		},
+																		"liveness_mode": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
+																		},
+																		"ownership_mode": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
+																		},
+																		"resource_group_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Resource Group ID associated with the tenant.",
+																		},
+																	},
+																},
+															},
+															"type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the external vendor. The type specific parameters must be specified the provided type.",
+															},
+														},
+													},
+												},
 												"id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The tenant id.",
 												},
+												"is_managed_on_helios": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Flag to indicate if tenant is managed on helios.",
+												},
+												"last_updated_at_time_msecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Epoch time when tenant was last updated.",
+												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Name of the Tenant.",
+												},
+												"network": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Networking information about a Tenant on a Cluster.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"connector_enabled": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Whether connector (hybrid extender) is enabled.",
+															},
+															"cluster_hostname": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The hostname for Cohesity cluster as seen by tenants and as is routable from the tenant's network. Tenant's VLAN's hostname, if available can be used instead but it is mandatory to provide this value if there's no VLAN hostname to use. Also, when set, this field would take precedence over VLAN hostname.",
+															},
+															"cluster_ips": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Set of IPs as seen from the tenant's network for the Cohesity cluster. Only one from 'clusterHostname' and 'clusterIps' is needed.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+														},
+													},
+												},
+												"status": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Current Status of the Tenant.",
 												},
 											},
 										},
@@ -376,55 +683,27 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 								},
 							},
 						},
-						"oracle_params": &schema.Schema{
+						"mssql_params": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Specifies the parameters for Oracle object.",
+							Description: "Specifies the parameters for Msssql object.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"database_entity_info": &schema.Schema{
+									"aag_info": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Object details about Oracle database entity info.",
+										Description: "Object details for Mssql.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"container_database_info": &schema.Schema{
-													Type:        schema.TypeList,
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Specifies the list of Pluggable databases within a container database.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"database_id": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the database Id of the Pluggable DB.",
-															},
-															"database_name": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the name of the Pluggable DB.",
-															},
-														},
-													},
+													Description: "Specifies the AAG name.",
 												},
-												"data_guard_info": &schema.Schema{
-													Type:        schema.TypeList,
+												"object_id": &schema.Schema{
+													Type:        schema.TypeInt,
 													Computed:    true,
-													Description: "Dataguard info about Oracle database.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"role": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the role of the Oracle DataGuard database.",
-															},
-															"standby_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the type of the standby oracle database.",
-															},
-														},
-													},
+													Description: "Specifies the AAG object Id.",
 												},
 											},
 										},
@@ -452,6 +731,11 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 												},
 											},
 										},
+									},
+									"is_encrypted": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Specifies whether the database is TDE enabled.",
 									},
 								},
 							},
@@ -502,6 +786,55 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
+									},
+								},
+							},
+						},
+						"helios_tags": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the helios tag information for the object.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"category": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies category of tag applied to the object.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies name of tag applied to the object.",
+									},
+									"sub_category": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies subCategory of tag applied to the object.",
+									},
+									"third_party_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies thirdPartyName of tag applied to the object.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the type (ex custom, thirdparty, system) of tag applied to the object.",
+									},
+									"ui_color": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the color of tag applied to the object.",
+									},
+									"updated_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies update time of tag applied to the object.",
+									},
+									"uuid": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies Uuid of tag applied to the object.",
 									},
 								},
 							},
@@ -567,10 +900,167 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the protection type of the object if any.",
 									},
+									"sharepoint_site_summary": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the common parameters for Sharepoint site objects.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"site_web_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the web url for the Sharepoint site.",
+												},
+											},
+										},
+									},
 									"os_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Specifies the operating system type of the object.",
+									},
+									"child_objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies child object details.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies object id.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the object.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies registered source id to which object belongs.",
+												},
+												"source_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies registered source name to which object belongs.",
+												},
+												"environment": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the environment of the object.",
+												},
+												"object_hash": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the hash identifier of the object.",
+												},
+												"object_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type of the object.",
+												},
+												"logical_size_bytes": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the logical size of object in bytes.",
+												},
+												"uuid": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the uuid which is a unique identifier of the object.",
+												},
+												"global_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the global id which is a unique identifier of the object.",
+												},
+												"protection_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the protection type of the object if any.",
+												},
+												"sharepoint_site_summary": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the common parameters for Sharepoint site objects.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"site_web_url": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the web url for the Sharepoint site.",
+															},
+														},
+													},
+												},
+												"os_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the operating system type of the object.",
+												},
+												"child_objects": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies child object details.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{},
+													},
+												},
+												"v_center_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"is_cloud_env": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+															},
+														},
+													},
+												},
+												"windows_cluster_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"cluster_source_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of cluster resource this source represents.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"v_center_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"is_cloud_env": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+												},
+											},
+										},
+									},
+									"windows_cluster_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cluster_source_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type of cluster resource this source represents.",
+												},
+											},
+										},
 									},
 									"protection_stats": &schema.Schema{
 										Type:        schema.TypeList,
@@ -676,15 +1166,139 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 													Description: "Specifies a tenant object.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"created_at_time_msecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Epoch time when tenant was created.",
+															},
+															"deleted_at_time_msecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Epoch time when tenant was last updated.",
+															},
+															"description": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Description about the tenant.",
+															},
+															"external_vendor_metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendors who are responsible for managing tenants. This field will only applicable if tenant creation is happening for a specially provisioned clusters for external vendors.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"ibm_tenant_metadata_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendor of type 'IBM'.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"account_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unique identifier of the IBM's account ID.",
+																					},
+																					"crn": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unique CRN associated with the tenant.",
+																					},
+																					"custom_properties": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of custom properties associated with the tenant. External vendors can choose to set any properties inside following list. Note that the fields set inside the following will not be available for direct filtering. API callers should make sure that no sensitive information such as passwords is sent in these fields.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unique key for custom property.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the value for the above custom key.",
+																								},
+																							},
+																						},
+																					},
+																					"liveness_mode": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
+																					},
+																					"ownership_mode": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
+																					},
+																					"resource_group_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Resource Group ID associated with the tenant.",
+																					},
+																				},
+																			},
+																		},
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the external vendor. The type specific parameters must be specified the provided type.",
+																		},
+																	},
+																},
+															},
 															"id": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "The tenant id.",
 															},
+															"is_managed_on_helios": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Flag to indicate if tenant is managed on helios.",
+															},
+															"last_updated_at_time_msecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Epoch time when tenant was last updated.",
+															},
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Name of the Tenant.",
+															},
+															"network": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Networking information about a Tenant on a Cluster.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"connector_enabled": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Whether connector (hybrid extender) is enabled.",
+																		},
+																		"cluster_hostname": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The hostname for Cohesity cluster as seen by tenants and as is routable from the tenant's network. Tenant's VLAN's hostname, if available can be used instead but it is mandatory to provide this value if there's no VLAN hostname to use. Also, when set, this field would take precedence over VLAN hostname.",
+																		},
+																		"cluster_ips": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Set of IPs as seen from the tenant's network for the Cohesity cluster. Only one from 'clusterHostname' and 'clusterIps' is needed.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																	},
+																},
+															},
+															"status": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Current Status of the Tenant.",
 															},
 														},
 													},
@@ -692,55 +1306,27 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 											},
 										},
 									},
-									"oracle_params": &schema.Schema{
+									"mssql_params": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Specifies the parameters for Oracle object.",
+										Description: "Specifies the parameters for Msssql object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"database_entity_info": &schema.Schema{
+												"aag_info": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "Object details about Oracle database entity info.",
+													Description: "Object details for Mssql.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"container_database_info": &schema.Schema{
-																Type:        schema.TypeList,
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "Specifies the list of Pluggable databases within a container database.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"database_id": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the database Id of the Pluggable DB.",
-																		},
-																		"database_name": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the name of the Pluggable DB.",
-																		},
-																	},
-																},
+																Description: "Specifies the AAG name.",
 															},
-															"data_guard_info": &schema.Schema{
-																Type:        schema.TypeList,
+															"object_id": &schema.Schema{
+																Type:        schema.TypeInt,
 																Computed:    true,
-																Description: "Dataguard info about Oracle database.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"role": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the role of the Oracle DataGuard database.",
-																		},
-																		"standby_type": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the type of the standby oracle database.",
-																		},
-																	},
-																},
+																Description: "Specifies the AAG object Id.",
 															},
 														},
 													},
@@ -768,6 +1354,11 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 															},
 														},
 													},
+												},
+												"is_encrypted": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies whether the database is TDE enabled.",
 												},
 											},
 										},
@@ -869,11 +1460,6 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the policy id for this group.",
 												},
-												"storage_domain_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Specifies the storage domain id of this group. Format is clusterId:clusterIncarnationId:storageDomainId.",
-												},
 												"last_backup_run_status": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -913,11 +1499,6 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the policy id for this protection.",
 												},
-												"storage_domain_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Specifies the storage domain id of this protection. Format is clusterId:clusterIncarnationId:storageDomainId.",
-												},
 												"last_backup_run_status": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -949,6 +1530,108 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 								},
 							},
 						},
+						"secondary_ids": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies secondary IDs associated to the object.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies name of the secondary ID for an object.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies value of the secondary ID for an object.",
+									},
+								},
+							},
+						},
+						"tagged_snapshots": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the helios tagged snapshots (snapshots which are tagged by user or thirdparty in control plane) for the object.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cluster_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the cluster Id of the tagged snapshot.",
+									},
+									"cluster_incarnation_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the clusterIncarnationId of the tagged snapshot.",
+									},
+									"job_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the jobId of the tagged snapshot.",
+									},
+									"object_uuid": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the object uuid of the tagged snapshot.",
+									},
+									"run_start_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the runStartTimeUsecs of the tagged snapshot.",
+									},
+									"tags": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies tag applied to the object.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"category": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies category of tag applied to the object.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of tag applied to the object.",
+												},
+												"sub_category": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies subCategory of tag applied to the object.",
+												},
+												"third_party_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies thirdPartyName of tag applied to the object.",
+												},
+												"type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type (ex custom, thirdparty, system) of tag applied to the object.",
+												},
+												"ui_color": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the color of tag applied to the object.",
+												},
+												"updated_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies update time of tag applied to the object.",
+												},
+												"uuid": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies Uuid of tag applied to the object.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -959,7 +1642,9 @@ func DataSourceIbmSearchObjects() *schema.Resource {
 func dataSourceIbmSearchObjectsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_search_objects", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	searchObjectsOptions := &backuprecoveryv1.SearchObjectsOptions{}
@@ -985,17 +1670,6 @@ func dataSourceIbmSearchObjectsRead(context context.Context, d *schema.ResourceD
 			protectionTypes = append(protectionTypes, protectionTypesItem)
 		}
 		searchObjectsOptions.SetProtectionTypes(protectionTypes)
-	}
-	if _, ok := d.GetOk("tenant_ids"); ok {
-		var tenantIds []string
-		for _, v := range d.Get("tenant_ids").([]interface{}) {
-			tenantIdsItem := v.(string)
-			tenantIds = append(tenantIds, tenantIdsItem)
-		}
-		searchObjectsOptions.SetTenantIds(tenantIds)
-	}
-	if _, ok := d.GetOk("include_tenants"); ok {
-		searchObjectsOptions.SetIncludeTenants(d.Get("include_tenants").(bool))
 	}
 	if _, ok := d.GetOk("protection_group_ids"); ok {
 		var protectionGroupIds []string
@@ -1051,14 +1725,6 @@ func dataSourceIbmSearchObjectsRead(context context.Context, d *schema.ResourceD
 		}
 		searchObjectsOptions.SetLastRunStatusList(lastRunStatusList)
 	}
-	if _, ok := d.GetOk("region_ids"); ok {
-		var regionIds []string
-		for _, v := range d.Get("region_ids").([]interface{}) {
-			regionIdsItem := v.(string)
-			regionIds = append(regionIds, regionIdsItem)
-		}
-		searchObjectsOptions.SetRegionIds(regionIds)
-	}
 	if _, ok := d.GetOk("cluster_identifiers"); ok {
 		var clusterIdentifiers []string
 		for _, v := range d.Get("cluster_identifiers").([]interface{}) {
@@ -1066,14 +1732,6 @@ func dataSourceIbmSearchObjectsRead(context context.Context, d *schema.ResourceD
 			clusterIdentifiers = append(clusterIdentifiers, clusterIdentifiersItem)
 		}
 		searchObjectsOptions.SetClusterIdentifiers(clusterIdentifiers)
-	}
-	if _, ok := d.GetOk("storage_domain_ids"); ok {
-		var storageDomainIds []string
-		for _, v := range d.Get("storage_domain_ids").([]interface{}) {
-			storageDomainIdsItem := v.(string)
-			storageDomainIds = append(storageDomainIds, storageDomainIdsItem)
-		}
-		searchObjectsOptions.SetStorageDomainIds(storageDomainIds)
 	}
 	if _, ok := d.GetOk("include_deleted_objects"); ok {
 		searchObjectsOptions.SetIncludeDeletedObjects(d.Get("include_deleted_objects").(bool))
@@ -1116,27 +1774,74 @@ func dataSourceIbmSearchObjectsRead(context context.Context, d *schema.ResourceD
 		}
 		searchObjectsOptions.SetMightHaveSnapshotTagIds(mightHaveSnapshotTagIds)
 	}
+	if _, ok := d.GetOk("tag_search_name"); ok {
+		searchObjectsOptions.SetTagSearchName(d.Get("tag_search_name").(string))
+	}
+	if _, ok := d.GetOk("tag_names"); ok {
+		var tagNames []string
+		for _, v := range d.Get("tag_names").([]interface{}) {
+			tagNamesItem := v.(string)
+			tagNames = append(tagNames, tagNamesItem)
+		}
+		searchObjectsOptions.SetTagNames(tagNames)
+	}
+	if _, ok := d.GetOk("tag_types"); ok {
+		var tagTypes []string
+		for _, v := range d.Get("tag_types").([]interface{}) {
+			tagTypesItem := v.(string)
+			tagTypes = append(tagTypes, tagTypesItem)
+		}
+		searchObjectsOptions.SetTagTypes(tagTypes)
+	}
+	if _, ok := d.GetOk("tag_categories"); ok {
+		var tagCategories []string
+		for _, v := range d.Get("tag_categories").([]interface{}) {
+			tagCategoriesItem := v.(string)
+			tagCategories = append(tagCategories, tagCategoriesItem)
+		}
+		searchObjectsOptions.SetTagCategories(tagCategories)
+	}
+	if _, ok := d.GetOk("tag_sub_categories"); ok {
+		var tagSubCategories []string
+		for _, v := range d.Get("tag_sub_categories").([]interface{}) {
+			tagSubCategoriesItem := v.(string)
+			tagSubCategories = append(tagSubCategories, tagSubCategoriesItem)
+		}
+		searchObjectsOptions.SetTagSubCategories(tagSubCategories)
+	}
+	if _, ok := d.GetOk("include_helios_tag_info_for_objects"); ok {
+		searchObjectsOptions.SetIncludeHeliosTagInfoForObjects(d.Get("include_helios_tag_info_for_objects").(bool))
+	}
+	if _, ok := d.GetOk("external_filters"); ok {
+		var externalFilters []string
+		for _, v := range d.Get("external_filters").([]interface{}) {
+			externalFiltersItem := v.(string)
+			externalFilters = append(externalFilters, externalFiltersItem)
+		}
+		searchObjectsOptions.SetExternalFilters(externalFilters)
+	}
 
-	objectsSearchResponseBody, response, err := backupRecoveryClient.SearchObjectsWithContext(context, searchObjectsOptions)
+	objectsSearchResponseBody, _, err := backupRecoveryClient.SearchObjectsWithContext(context, searchObjectsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] SearchObjectsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("SearchObjectsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SearchObjectsWithContext failed: %s", err.Error()), "(Data) ibm_search_objects", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIbmSearchObjectsID(d))
 
-	objects := []map[string]interface{}{}
-	if objectsSearchResponseBody.Objects != nil {
-		for _, modelItem := range objectsSearchResponseBody.Objects {
-			modelMap, err := dataSourceIbmSearchObjectsSearchObjectToMap(&modelItem)
+	if !core.IsNil(objectsSearchResponseBody.Objects) {
+		objects := []map[string]interface{}{}
+		for _, objectsItem := range objectsSearchResponseBody.Objects {
+			objectsItemMap, err := DataSourceIbmSearchObjectsSearchObjectToMap(&objectsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_search_objects", "read", "objects-to-map").GetDiag()
 			}
-			objects = append(objects, modelMap)
+			objects = append(objects, objectsItemMap)
 		}
-	}
-	if err = d.Set("objects", objects); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting objects %s", err))
+		if err = d.Set("objects", objects); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting objects: %s", err), "(Data) ibm_search_objects", "read", "set-objects").GetDiag()
+		}
 	}
 
 	return nil
@@ -1147,48 +1852,80 @@ func dataSourceIbmSearchObjectsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchObject) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
 	if model.SourceName != nil {
-		modelMap["source_name"] = model.SourceName
+		modelMap["source_name"] = *model.SourceName
 	}
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ObjectHash != nil {
-		modelMap["object_hash"] = model.ObjectHash
+		modelMap["object_hash"] = *model.ObjectHash
 	}
 	if model.ObjectType != nil {
-		modelMap["object_type"] = model.ObjectType
+		modelMap["object_type"] = *model.ObjectType
 	}
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
 	}
 	if model.UUID != nil {
-		modelMap["uuid"] = model.UUID
+		modelMap["uuid"] = *model.UUID
 	}
 	if model.GlobalID != nil {
-		modelMap["global_id"] = model.GlobalID
+		modelMap["global_id"] = *model.GlobalID
 	}
 	if model.ProtectionType != nil {
-		modelMap["protection_type"] = model.ProtectionType
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := DataSourceIbmSearchObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
 	}
 	if model.OsType != nil {
-		modelMap["os_type"] = model.OsType
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := DataSourceIbmSearchObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := DataSourceIbmSearchObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := DataSourceIbmSearchObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
 	}
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
-			protectionStatsItemMap, err := dataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(&protectionStatsItem)
+			protectionStatsItemMap, err := DataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1197,21 +1934,21 @@ func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchO
 		modelMap["protection_stats"] = protectionStats
 	}
 	if model.Permissions != nil {
-		permissionsMap, err := dataSourceIbmSearchObjectsPermissionInfoToMap(model.Permissions)
+		permissionsMap, err := DataSourceIbmSearchObjectsPermissionInfoToMap(model.Permissions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
-	if model.OracleParams != nil {
-		oracleParamsMap, err := dataSourceIbmSearchObjectsSearchObjectOracleParamsToMap(model.OracleParams)
+	if model.MssqlParams != nil {
+		mssqlParamsMap, err := DataSourceIbmSearchObjectsSearchObjectMssqlParamsToMap(model.MssqlParams)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["oracle_params"] = []map[string]interface{}{oracleParamsMap}
+		modelMap["mssql_params"] = []map[string]interface{}{mssqlParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := dataSourceIbmSearchObjectsSearchObjectPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmSearchObjectsSearchObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1220,7 +1957,7 @@ func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchO
 	if model.Tags != nil {
 		tags := []map[string]interface{}{}
 		for _, tagsItem := range model.Tags {
-			tagsItemMap, err := dataSourceIbmSearchObjectsTagInfoToMap(&tagsItem)
+			tagsItemMap, err := DataSourceIbmSearchObjectsTagInfoToMap(&tagsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1231,7 +1968,7 @@ func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchO
 	if model.SnapshotTags != nil {
 		snapshotTags := []map[string]interface{}{}
 		for _, snapshotTagsItem := range model.SnapshotTags {
-			snapshotTagsItemMap, err := dataSourceIbmSearchObjectsSnapshotTagInfoToMap(&snapshotTagsItem)
+			snapshotTagsItemMap, err := DataSourceIbmSearchObjectsSnapshotTagInfoToMap(&snapshotTagsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1239,8 +1976,19 @@ func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchO
 		}
 		modelMap["snapshot_tags"] = snapshotTags
 	}
+	if model.HeliosTags != nil {
+		heliosTags := []map[string]interface{}{}
+		for _, heliosTagsItem := range model.HeliosTags {
+			heliosTagsItemMap, err := DataSourceIbmSearchObjectsHeliosTagInfoToMap(&heliosTagsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			heliosTags = append(heliosTags, heliosTagsItemMap)
+		}
+		modelMap["helios_tags"] = heliosTags
+	}
 	if model.SourceInfo != nil {
-		sourceInfoMap, err := dataSourceIbmSearchObjectsSearchObjectSourceInfoToMap(model.SourceInfo)
+		sourceInfoMap, err := DataSourceIbmSearchObjectsSearchObjectSourceInfoToMap(model.SourceInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1249,7 +1997,7 @@ func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchO
 	if model.ObjectProtectionInfos != nil {
 		objectProtectionInfos := []map[string]interface{}{}
 		for _, objectProtectionInfosItem := range model.ObjectProtectionInfos {
-			objectProtectionInfosItemMap, err := dataSourceIbmSearchObjectsObjectProtectionInfoToMap(&objectProtectionInfosItem)
+			objectProtectionInfosItemMap, err := DataSourceIbmSearchObjectsObjectProtectionInfoToMap(&objectProtectionInfosItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1257,13 +2005,132 @@ func dataSourceIbmSearchObjectsSearchObjectToMap(model *backuprecoveryv1.SearchO
 		}
 		modelMap["object_protection_infos"] = objectProtectionInfos
 	}
+	if model.SecondaryIds != nil {
+		secondaryIds := []map[string]interface{}{}
+		for _, secondaryIdsItem := range model.SecondaryIds {
+			secondaryIdsItemMap, err := DataSourceIbmSearchObjectsSecondaryIDToMap(&secondaryIdsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			secondaryIds = append(secondaryIds, secondaryIdsItemMap)
+		}
+		modelMap["secondary_ids"] = secondaryIds
+	}
+	if model.TaggedSnapshots != nil {
+		taggedSnapshots := []map[string]interface{}{}
+		for _, taggedSnapshotsItem := range model.TaggedSnapshots {
+			taggedSnapshotsItemMap, err := DataSourceIbmSearchObjectsTaggedSnapshotInfoToMap(&taggedSnapshotsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			taggedSnapshots = append(taggedSnapshots, taggedSnapshotsItemMap)
+		}
+		modelMap["tagged_snapshots"] = taggedSnapshots
+	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SiteWebURL != nil {
+		modelMap["site_web_url"] = *model.SiteWebURL
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.SourceID != nil {
+		modelMap["source_id"] = flex.IntValue(model.SourceID)
+	}
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
+	if model.Environment != nil {
+		modelMap["environment"] = *model.Environment
+	}
+	if model.ObjectHash != nil {
+		modelMap["object_hash"] = *model.ObjectHash
+	}
+	if model.ObjectType != nil {
+		modelMap["object_type"] = *model.ObjectType
+	}
+	if model.LogicalSizeBytes != nil {
+		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
+	}
+	if model.UUID != nil {
+		modelMap["uuid"] = *model.UUID
+	}
+	if model.GlobalID != nil {
+		modelMap["global_id"] = *model.GlobalID
+	}
+	if model.ProtectionType != nil {
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := DataSourceIbmSearchObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
+	}
+	if model.OsType != nil {
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := DataSourceIbmSearchObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := DataSourceIbmSearchObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := DataSourceIbmSearchObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IsCloudEnv != nil {
+		modelMap["is_cloud_env"] = *model.IsCloudEnv
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ClusterSourceType != nil {
+		modelMap["cluster_source_type"] = *model.ClusterSourceType
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ProtectedCount != nil {
 		modelMap["protected_count"] = flex.IntValue(model.ProtectedCount)
@@ -1283,7 +2150,7 @@ func dataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(model *backupre
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -1291,7 +2158,7 @@ func dataSourceIbmSearchObjectsPermissionInfoToMap(model *backuprecoveryv1.Permi
 	if model.Users != nil {
 		users := []map[string]interface{}{}
 		for _, usersItem := range model.Users {
-			usersItemMap, err := dataSourceIbmSearchObjectsUserToMap(&usersItem)
+			usersItemMap, err := DataSourceIbmSearchObjectsUserToMap(&usersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1302,7 +2169,7 @@ func dataSourceIbmSearchObjectsPermissionInfoToMap(model *backuprecoveryv1.Permi
 	if model.Groups != nil {
 		groups := []map[string]interface{}{}
 		for _, groupsItem := range model.Groups {
-			groupsItemMap, err := dataSourceIbmSearchObjectsGroupToMap(&groupsItem)
+			groupsItemMap, err := DataSourceIbmSearchObjectsGroupToMap(&groupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1311,7 +2178,7 @@ func dataSourceIbmSearchObjectsPermissionInfoToMap(model *backuprecoveryv1.Permi
 		modelMap["groups"] = groups
 	}
 	if model.Tenant != nil {
-		tenantMap, err := dataSourceIbmSearchObjectsTenantToMap(model.Tenant)
+		tenantMap, err := DataSourceIbmSearchObjectsTenantToMap(model.Tenant)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1320,188 +2187,315 @@ func dataSourceIbmSearchObjectsPermissionInfoToMap(model *backuprecoveryv1.Permi
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.Sid != nil {
-		modelMap["sid"] = model.Sid
+		modelMap["sid"] = *model.Sid
 	}
 	if model.Domain != nil {
-		modelMap["domain"] = model.Domain
+		modelMap["domain"] = *model.Domain
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.Sid != nil {
-		modelMap["sid"] = model.Sid
+		modelMap["sid"] = *model.Sid
 	}
 	if model.Domain != nil {
-		modelMap["domain"] = model.Domain
+		modelMap["domain"] = *model.Domain
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+	if model.CreatedAtTimeMsecs != nil {
+		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
 	}
-	if model.Name != nil {
-		modelMap["name"] = model.Name
+	if model.DeletedAtTimeMsecs != nil {
+		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
 	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSearchObjectsSearchObjectOracleParamsToMap(model *backuprecoveryv1.SearchObjectOracleParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DatabaseEntityInfo != nil {
-		databaseEntityInfoMap, err := dataSourceIbmSearchObjectsDatabaseEntityInfoToMap(model.DatabaseEntityInfo)
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.ExternalVendorMetadata != nil {
+		externalVendorMetadataMap, err := DataSourceIbmSearchObjectsExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["database_entity_info"] = []map[string]interface{}{databaseEntityInfoMap}
+		modelMap["external_vendor_metadata"] = []map[string]interface{}{externalVendorMetadataMap}
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.IsManagedOnHelios != nil {
+		modelMap["is_managed_on_helios"] = *model.IsManagedOnHelios
+	}
+	if model.LastUpdatedAtTimeMsecs != nil {
+		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Network != nil {
+		networkMap, err := DataSourceIbmSearchObjectsTenantNetworkToMap(model.Network)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["network"] = []map[string]interface{}{networkMap}
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IbmTenantMetadataParams != nil {
+		ibmTenantMetadataParamsMap, err := DataSourceIbmSearchObjectsIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ibm_tenant_metadata_params"] = []map[string]interface{}{ibmTenantMetadataParamsMap}
+	}
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AccountID != nil {
+		modelMap["account_id"] = *model.AccountID
+	}
+	if model.Crn != nil {
+		modelMap["crn"] = *model.Crn
+	}
+	if model.CustomProperties != nil {
+		customProperties := []map[string]interface{}{}
+		for _, customPropertiesItem := range model.CustomProperties {
+			customPropertiesItemMap, err := DataSourceIbmSearchObjectsExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			customProperties = append(customProperties, customPropertiesItemMap)
+		}
+		modelMap["custom_properties"] = customProperties
+	}
+	if model.LivenessMode != nil {
+		modelMap["liveness_mode"] = *model.LivenessMode
+	}
+	if model.OwnershipMode != nil {
+		modelMap["ownership_mode"] = *model.OwnershipMode
+	}
+	if model.ResourceGroupID != nil {
+		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["connector_enabled"] = *model.ConnectorEnabled
+	if model.ClusterHostname != nil {
+		modelMap["cluster_hostname"] = *model.ClusterHostname
+	}
+	if model.ClusterIps != nil {
+		modelMap["cluster_ips"] = model.ClusterIps
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsSearchObjectMssqlParamsToMap(model *backuprecoveryv1.SearchObjectMssqlParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AagInfo != nil {
+		aagInfoMap, err := DataSourceIbmSearchObjectsAAGInfoToMap(model.AagInfo)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := dataSourceIbmSearchObjectsHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := DataSourceIbmSearchObjectsHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["host_info"] = []map[string]interface{}{hostInfoMap}
 	}
+	if model.IsEncrypted != nil {
+		modelMap["is_encrypted"] = *model.IsEncrypted
+	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsDatabaseEntityInfoToMap(model *backuprecoveryv1.DatabaseEntityInfo) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ContainerDatabaseInfo != nil {
-		containerDatabaseInfo := []map[string]interface{}{}
-		for _, containerDatabaseInfoItem := range model.ContainerDatabaseInfo {
-			containerDatabaseInfoItemMap, err := dataSourceIbmSearchObjectsPluggableDatabaseInfoToMap(&containerDatabaseInfoItem)
-			if err != nil {
-				return modelMap, err
-			}
-			containerDatabaseInfo = append(containerDatabaseInfo, containerDatabaseInfoItemMap)
-		}
-		modelMap["container_database_info"] = containerDatabaseInfo
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	if model.DataGuardInfo != nil {
-		dataGuardInfoMap, err := dataSourceIbmSearchObjectsDataGuardInfoToMap(model.DataGuardInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["data_guard_info"] = []map[string]interface{}{dataGuardInfoMap}
+	if model.ObjectID != nil {
+		modelMap["object_id"] = flex.IntValue(model.ObjectID)
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsPluggableDatabaseInfoToMap(model *backuprecoveryv1.PluggableDatabaseInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DatabaseID != nil {
-		modelMap["database_id"] = model.DatabaseID
-	}
-	if model.DatabaseName != nil {
-		modelMap["database_name"] = model.DatabaseName
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSearchObjectsDataGuardInfoToMap(model *backuprecoveryv1.DataGuardInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Role != nil {
-		modelMap["role"] = model.Role
-	}
-	if model.StandbyType != nil {
-		modelMap["standby_type"] = model.StandbyType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSearchObjectsHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsSearchObjectPhysicalParamsToMap(model *backuprecoveryv1.SearchObjectPhysicalParams) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsSearchObjectPhysicalParamsToMap(model *backuprecoveryv1.SearchObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
-		modelMap["enable_system_backup"] = model.EnableSystemBackup
+		modelMap["enable_system_backup"] = *model.EnableSystemBackup
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsTagInfoToMap(model *backuprecoveryv1.TagInfo) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsTagInfoToMap(model *backuprecoveryv1.TagInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["tag_id"] = model.TagID
+	modelMap["tag_id"] = *model.TagID
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsSnapshotTagInfoToMap(model *backuprecoveryv1.SnapshotTagInfo) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsSnapshotTagInfoToMap(model *backuprecoveryv1.SnapshotTagInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["tag_id"] = model.TagID
+	modelMap["tag_id"] = *model.TagID
 	if model.RunIds != nil {
 		modelMap["run_ids"] = model.RunIds
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsSearchObjectSourceInfoToMap(model *backuprecoveryv1.SearchObjectSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsHeliosTagInfoToMap(model *backuprecoveryv1.HeliosTagInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Category != nil {
+		modelMap["category"] = *model.Category
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.SubCategory != nil {
+		modelMap["sub_category"] = *model.SubCategory
+	}
+	if model.ThirdPartyName != nil {
+		modelMap["third_party_name"] = *model.ThirdPartyName
+	}
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.UiColor != nil {
+		modelMap["ui_color"] = *model.UiColor
+	}
+	if model.UpdatedTimeUsecs != nil {
+		modelMap["updated_time_usecs"] = flex.IntValue(model.UpdatedTimeUsecs)
+	}
+	modelMap["uuid"] = *model.UUID
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsSearchObjectSourceInfoToMap(model *backuprecoveryv1.SearchObjectSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
 	if model.SourceName != nil {
-		modelMap["source_name"] = model.SourceName
+		modelMap["source_name"] = *model.SourceName
 	}
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ObjectHash != nil {
-		modelMap["object_hash"] = model.ObjectHash
+		modelMap["object_hash"] = *model.ObjectHash
 	}
 	if model.ObjectType != nil {
-		modelMap["object_type"] = model.ObjectType
+		modelMap["object_type"] = *model.ObjectType
 	}
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
 	}
 	if model.UUID != nil {
-		modelMap["uuid"] = model.UUID
+		modelMap["uuid"] = *model.UUID
 	}
 	if model.GlobalID != nil {
-		modelMap["global_id"] = model.GlobalID
+		modelMap["global_id"] = *model.GlobalID
 	}
 	if model.ProtectionType != nil {
-		modelMap["protection_type"] = model.ProtectionType
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := DataSourceIbmSearchObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
 	}
 	if model.OsType != nil {
-		modelMap["os_type"] = model.OsType
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := DataSourceIbmSearchObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := DataSourceIbmSearchObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := DataSourceIbmSearchObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
 	}
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
-			protectionStatsItemMap, err := dataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(&protectionStatsItem)
+			protectionStatsItemMap, err := DataSourceIbmSearchObjectsObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1510,21 +2504,21 @@ func dataSourceIbmSearchObjectsSearchObjectSourceInfoToMap(model *backuprecovery
 		modelMap["protection_stats"] = protectionStats
 	}
 	if model.Permissions != nil {
-		permissionsMap, err := dataSourceIbmSearchObjectsPermissionInfoToMap(model.Permissions)
+		permissionsMap, err := DataSourceIbmSearchObjectsPermissionInfoToMap(model.Permissions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
-	if model.OracleParams != nil {
-		oracleParamsMap, err := dataSourceIbmSearchObjectsSearchObjectSourceInfoOracleParamsToMap(model.OracleParams)
+	if model.MssqlParams != nil {
+		mssqlParamsMap, err := DataSourceIbmSearchObjectsSearchObjectSourceInfoMssqlParamsToMap(model.MssqlParams)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["oracle_params"] = []map[string]interface{}{oracleParamsMap}
+		modelMap["mssql_params"] = []map[string]interface{}{mssqlParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := dataSourceIbmSearchObjectsSearchObjectSourceInfoPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmSearchObjectsSearchObjectSourceInfoPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1533,34 +2527,37 @@ func dataSourceIbmSearchObjectsSearchObjectSourceInfoToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsSearchObjectSourceInfoOracleParamsToMap(model *backuprecoveryv1.SearchObjectSourceInfoOracleParams) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsSearchObjectSourceInfoMssqlParamsToMap(model *backuprecoveryv1.SearchObjectSourceInfoMssqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.DatabaseEntityInfo != nil {
-		databaseEntityInfoMap, err := dataSourceIbmSearchObjectsDatabaseEntityInfoToMap(model.DatabaseEntityInfo)
+	if model.AagInfo != nil {
+		aagInfoMap, err := DataSourceIbmSearchObjectsAAGInfoToMap(model.AagInfo)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["database_entity_info"] = []map[string]interface{}{databaseEntityInfoMap}
+		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := dataSourceIbmSearchObjectsHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := DataSourceIbmSearchObjectsHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["host_info"] = []map[string]interface{}{hostInfoMap}
 	}
-	return modelMap, nil
-}
-
-func dataSourceIbmSearchObjectsSearchObjectSourceInfoPhysicalParamsToMap(model *backuprecoveryv1.SearchObjectSourceInfoPhysicalParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.EnableSystemBackup != nil {
-		modelMap["enable_system_backup"] = model.EnableSystemBackup
+	if model.IsEncrypted != nil {
+		modelMap["is_encrypted"] = *model.IsEncrypted
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsObjectProtectionInfoToMap(model *backuprecoveryv1.ObjectProtectionInfo) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsSearchObjectSourceInfoPhysicalParamsToMap(model *backuprecoveryv1.SearchObjectSourceInfoPhysicalParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EnableSystemBackup != nil {
+		modelMap["enable_system_backup"] = *model.EnableSystemBackup
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsObjectProtectionInfoToMap(model *backuprecoveryv1.ObjectProtectionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -1572,7 +2569,7 @@ func dataSourceIbmSearchObjectsObjectProtectionInfoToMap(model *backuprecoveryv1
 		modelMap["view_id"] = flex.IntValue(model.ViewID)
 	}
 	if model.RegionID != nil {
-		modelMap["region_id"] = model.RegionID
+		modelMap["region_id"] = *model.RegionID
 	}
 	if model.ClusterID != nil {
 		modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
@@ -1584,12 +2581,12 @@ func dataSourceIbmSearchObjectsObjectProtectionInfoToMap(model *backuprecoveryv1
 		modelMap["tenant_ids"] = model.TenantIds
 	}
 	if model.IsDeleted != nil {
-		modelMap["is_deleted"] = model.IsDeleted
+		modelMap["is_deleted"] = *model.IsDeleted
 	}
 	if model.ProtectionGroups != nil {
 		protectionGroups := []map[string]interface{}{}
 		for _, protectionGroupsItem := range model.ProtectionGroups {
-			protectionGroupsItemMap, err := dataSourceIbmSearchObjectsObjectProtectionGroupSummaryToMap(&protectionGroupsItem)
+			protectionGroupsItemMap, err := DataSourceIbmSearchObjectsObjectProtectionGroupSummaryToMap(&protectionGroupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1600,7 +2597,7 @@ func dataSourceIbmSearchObjectsObjectProtectionInfoToMap(model *backuprecoveryv1
 	if model.ObjectBackupConfiguration != nil {
 		objectBackupConfiguration := []map[string]interface{}{}
 		for _, objectBackupConfigurationItem := range model.ObjectBackupConfiguration {
-			objectBackupConfigurationItemMap, err := dataSourceIbmSearchObjectsProtectionSummaryToMap(&objectBackupConfigurationItem)
+			objectBackupConfigurationItemMap, err := DataSourceIbmSearchObjectsProtectionSummaryToMap(&objectBackupConfigurationItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1609,68 +2606,102 @@ func dataSourceIbmSearchObjectsObjectProtectionInfoToMap(model *backuprecoveryv1
 		modelMap["object_backup_configuration"] = objectBackupConfiguration
 	}
 	if model.LastRunStatus != nil {
-		modelMap["last_run_status"] = model.LastRunStatus
+		modelMap["last_run_status"] = *model.LastRunStatus
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsObjectProtectionGroupSummaryToMap(model *backuprecoveryv1.ObjectProtectionGroupSummary) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsObjectProtectionGroupSummaryToMap(model *backuprecoveryv1.ObjectProtectionGroupSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
 	}
 	if model.ProtectionEnvType != nil {
-		modelMap["protection_env_type"] = model.ProtectionEnvType
+		modelMap["protection_env_type"] = *model.ProtectionEnvType
 	}
 	if model.PolicyName != nil {
-		modelMap["policy_name"] = model.PolicyName
+		modelMap["policy_name"] = *model.PolicyName
 	}
 	if model.PolicyID != nil {
-		modelMap["policy_id"] = model.PolicyID
-	}
-	if model.StorageDomainID != nil {
-		modelMap["storage_domain_id"] = model.StorageDomainID
+		modelMap["policy_id"] = *model.PolicyID
 	}
 	if model.LastBackupRunStatus != nil {
-		modelMap["last_backup_run_status"] = model.LastBackupRunStatus
+		modelMap["last_backup_run_status"] = *model.LastBackupRunStatus
 	}
 	if model.LastArchivalRunStatus != nil {
-		modelMap["last_archival_run_status"] = model.LastArchivalRunStatus
+		modelMap["last_archival_run_status"] = *model.LastArchivalRunStatus
 	}
 	if model.LastReplicationRunStatus != nil {
-		modelMap["last_replication_run_status"] = model.LastReplicationRunStatus
+		modelMap["last_replication_run_status"] = *model.LastReplicationRunStatus
 	}
 	if model.LastRunSlaViolated != nil {
-		modelMap["last_run_sla_violated"] = model.LastRunSlaViolated
+		modelMap["last_run_sla_violated"] = *model.LastRunSlaViolated
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmSearchObjectsProtectionSummaryToMap(model *backuprecoveryv1.ProtectionSummary) (map[string]interface{}, error) {
+func DataSourceIbmSearchObjectsProtectionSummaryToMap(model *backuprecoveryv1.ProtectionSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.PolicyName != nil {
-		modelMap["policy_name"] = model.PolicyName
+		modelMap["policy_name"] = *model.PolicyName
 	}
 	if model.PolicyID != nil {
-		modelMap["policy_id"] = model.PolicyID
-	}
-	if model.StorageDomainID != nil {
-		modelMap["storage_domain_id"] = model.StorageDomainID
+		modelMap["policy_id"] = *model.PolicyID
 	}
 	if model.LastBackupRunStatus != nil {
-		modelMap["last_backup_run_status"] = model.LastBackupRunStatus
+		modelMap["last_backup_run_status"] = *model.LastBackupRunStatus
 	}
 	if model.LastArchivalRunStatus != nil {
-		modelMap["last_archival_run_status"] = model.LastArchivalRunStatus
+		modelMap["last_archival_run_status"] = *model.LastArchivalRunStatus
 	}
 	if model.LastReplicationRunStatus != nil {
-		modelMap["last_replication_run_status"] = model.LastReplicationRunStatus
+		modelMap["last_replication_run_status"] = *model.LastReplicationRunStatus
 	}
 	if model.LastRunSlaViolated != nil {
-		modelMap["last_run_sla_violated"] = model.LastRunSlaViolated
+		modelMap["last_run_sla_violated"] = *model.LastRunSlaViolated
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsSecondaryIDToMap(model *backuprecoveryv1.SecondaryID) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["name"] = *model.Name
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmSearchObjectsTaggedSnapshotInfoToMap(model *backuprecoveryv1.TaggedSnapshotInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ClusterID != nil {
+		modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
+	}
+	if model.ClusterIncarnationID != nil {
+		modelMap["cluster_incarnation_id"] = flex.IntValue(model.ClusterIncarnationID)
+	}
+	if model.JobID != nil {
+		modelMap["job_id"] = flex.IntValue(model.JobID)
+	}
+	if model.ObjectUUID != nil {
+		modelMap["object_uuid"] = *model.ObjectUUID
+	}
+	if model.RunStartTimeUsecs != nil {
+		modelMap["run_start_time_usecs"] = flex.IntValue(model.RunStartTimeUsecs)
+	}
+	if model.Tags != nil {
+		tags := []map[string]interface{}{}
+		for _, tagsItem := range model.Tags {
+			tagsItemMap, err := DataSourceIbmSearchObjectsHeliosTagInfoToMap(&tagsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			tags = append(tags, tagsItemMap)
+		}
+		modelMap["tags"] = tags
 	}
 	return modelMap, nil
 }

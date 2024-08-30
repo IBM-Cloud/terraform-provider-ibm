@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -13,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -490,10 +495,109 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 																Description: "Specifies the settings tier levels configured with each archival target. The tier settings need to be applied in specific order and default tier should always be passed as first entry in tiers array. The following example illustrates how to configure tiering input for AWS tiering. Same type of input structure applied to other cloud platforms also. <br>If user wants to achieve following tiering for backup, <br>User Desired Tiering- <br><t>1.Archive Full back up for 12 Months <br><t>2.Tier Levels <br><t><t>[1,12] [ <br><t><t><t>s3 (1 to 2 months), (default tier) <br><t><t><t>s3 Intelligent tiering (3 to 6 months), <br><t><t><t>s3 One Zone (7 to 9 months) <br><t><t><t>Glacier (10 to 12 months)] <br><t>API Input <br><t><t>1.tiers-[ <br><t><t><t>{'tierType': 'S3','moveAfterUnit':'months', <br><t><t><t>'moveAfter':2 - move from s3 to s3Inte after 2 months}, <br><t><t><t>{'tierType': 'S3Inte','moveAfterUnit':'months', <br><t><t><t>'moveAfter':4 - move from S3Inte to Glacier after 4 months}, <br><t><t><t>{'tierType': 'Glacier', 'moveAfterUnit':'months', <br><t><t><t>'moveAfter': 3 - move from Glacier to S3 One Zone after 3 months }, <br><t><t><t>{'tierType': 'S3 One Zone', 'moveAfterUnit': nil, <br><t><t><t>'moveAfter': nil - For the last record, 'moveAfter' and 'moveAfterUnit' <br><t><t><t>will be ignored since there are no further tier for data movement } <br><t><t><t>}].",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
+																		"aws_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies aws tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the AWS tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"azure_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies Azure tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the Azure tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
 																		"cloud_platform": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
 																			Description: "Specifies the cloud platform to enable tiering.",
+																		},
+																		"google_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies Google tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the Google tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
 																		},
 																		"oracle_tiering": &schema.Schema{
 																			Type:        schema.TypeList,
@@ -533,6 +637,11 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 															},
 														},
 													},
+												},
+												"use_default_backup_target": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies if the default primary backup target must be used for backups. If this is not specified or set to false, then targets specified in 'archivalTargetSettings' will be used for backups. If the value is specified as true, then default backup target is used internally. This field should only be set in the environment where tenant policy management is enabled and external targets are assigned to tenant when provisioning tenants.",
 												},
 											},
 										},
@@ -1350,6 +1459,94 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 											},
 										},
 									},
+									"aws_target_config": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the configuration for adding AWS as repilcation target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the AWS Replication target.",
+												},
+												"region": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+												},
+												"region_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the source id of the AWS protection source registered on IBM cluster.",
+												},
+											},
+										},
+									},
+									"azure_target_config": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the configuration for adding Azure as replication target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the Azure Replication target.",
+												},
+												"resource_group": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the Azure resource group used to filter regions in UI.",
+												},
+												"resource_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the Azure resource group used to filter regions in UI.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the source id of the Azure protection source registered on IBM cluster.",
+												},
+												"storage_account": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage account of Azure replication target which will contain storage container.",
+												},
+												"storage_account_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage account of Azure replication target which will contain storage container.",
+												},
+												"storage_container": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage container of Azure Replication target.",
+												},
+												"storage_container_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage container of Azure Replication target.",
+												},
+												"storage_resource_group": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage resource group of Azure Replication target.",
+												},
+												"storage_resource_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage resource group of Azure Replication target.",
+												},
+											},
+										},
+									},
 									"target_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -1552,10 +1749,109 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 										Description: "Specifies the settings tier levels configured with each archival target. The tier settings need to be applied in specific order and default tier should always be passed as first entry in tiers array. The following example illustrates how to configure tiering input for AWS tiering. Same type of input structure applied to other cloud platforms also. <br>If user wants to achieve following tiering for backup, <br>User Desired Tiering- <br><t>1.Archive Full back up for 12 Months <br><t>2.Tier Levels <br><t><t>[1,12] [ <br><t><t><t>s3 (1 to 2 months), (default tier) <br><t><t><t>s3 Intelligent tiering (3 to 6 months), <br><t><t><t>s3 One Zone (7 to 9 months) <br><t><t><t>Glacier (10 to 12 months)] <br><t>API Input <br><t><t>1.tiers-[ <br><t><t><t>{'tierType': 'S3','moveAfterUnit':'months', <br><t><t><t>'moveAfter':2 - move from s3 to s3Inte after 2 months}, <br><t><t><t>{'tierType': 'S3Inte','moveAfterUnit':'months', <br><t><t><t>'moveAfter':4 - move from S3Inte to Glacier after 4 months}, <br><t><t><t>{'tierType': 'Glacier', 'moveAfterUnit':'months', <br><t><t><t>'moveAfter': 3 - move from Glacier to S3 One Zone after 3 months }, <br><t><t><t>{'tierType': 'S3 One Zone', 'moveAfterUnit': nil, <br><t><t><t>'moveAfter': nil - For the last record, 'moveAfter' and 'moveAfterUnit' <br><t><t><t>will be ignored since there are no further tier for data movement } <br><t><t><t>}].",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"aws_tiering": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies aws tiers.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"tiers": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"move_after_unit": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																		},
+																		"move_after": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																		},
+																		"tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the AWS tier types.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"azure_tiering": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies Azure tiers.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"tiers": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"move_after_unit": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																		},
+																		"move_after": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																		},
+																		"tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Azure tier types.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"cloud_platform": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Specifies the cloud platform to enable tiering.",
+												},
+												"google_tiering": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies Google tiers.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"tiers": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"move_after_unit": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																		},
+																		"move_after": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																		},
+																		"tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Google tier types.",
+																		},
+																	},
+																},
+															},
+														},
+													},
 												},
 												"oracle_tiering": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1842,6 +2138,113 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 										Description: "Specifies the details about Cloud Spin target where backup snapshots may be converted and stored.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"aws_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies various resources when converting and deploying a VM to AWS.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"custom_tag_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies tags of various resources when converting and deploying a VM to AWS.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies key of the custom tag.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies value of the custom tag.",
+																		},
+																	},
+																},
+															},
+															"region": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the AWS region in which to deploy the VM.",
+															},
+															"subnet_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the subnet within above VPC.",
+															},
+															"vpc_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the Virtual Private Cloud to chose for the instance type.",
+															},
+														},
+													},
+												},
+												"azure_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies various resources when converting and deploying a VM to Azure.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"availability_set_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the availability set.",
+															},
+															"network_resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the resource group for the selected virtual network.",
+															},
+															"resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the Azure resource group. Its value is globally unique within Azure.",
+															},
+															"storage_account_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+															},
+															"storage_container_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage container within the above storage account.",
+															},
+															"storage_resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the resource group for the selected storage account.",
+															},
+															"temp_vm_resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the temporary Azure resource group.",
+															},
+															"temp_vm_storage_account_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the temporary VM storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+															},
+															"temp_vm_storage_container_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the temporary VM storage container within the above storage account.",
+															},
+															"temp_vm_subnet_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies Id of the temporary VM subnet within the above virtual network.",
+															},
+															"temp_vm_virtual_network_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies Id of the temporary VM Virtual Network.",
+															},
+														},
+													},
+												},
 												"id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Computed:    true,
@@ -2022,63 +2425,6 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 													Type:        schema.TypeInt,
 													Computed:    true,
 													Description: "Specifies the unique id of the onprem entity.",
-												},
-												"restore_v_mware_params": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "Specifies the parameters for a VMware recovery target.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"target_vm_folder_id": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "Specifies the folder ID where the VMs should be created.",
-															},
-															"target_data_store_id": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "Specifies the folder where the restore datastore should be created.",
-															},
-															"enable_copy_recovery": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Specifies whether to perform copy recovery or not.",
-															},
-															"resource_pool_id": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "Specifies if the restore is to alternate location.",
-															},
-															"datastore_ids": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies Datastore Ids, if the restore is to alternate location.",
-																Elem: &schema.Schema{
-																	Type: schema.TypeInt,
-																},
-															},
-															"overwrite_existing_vm": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Specifies whether to overwrite the VM at the target location.",
-															},
-															"power_off_and_rename_existing_vm": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Specifies whether to power off and mark the VM at the target location as deprecated.",
-															},
-															"attempt_differential_restore": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Specifies whether to attempt differential restore.",
-															},
-															"is_on_prem_deploy": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Specifies whether a task in on prem deploy or not.",
-															},
-														},
-													},
 												},
 											},
 										},
@@ -2432,6 +2778,94 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 														},
 													},
 												},
+												"aws_target_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the configuration for adding AWS as repilcation target.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the AWS Replication target.",
+															},
+															"region": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+															},
+															"region_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the source id of the AWS protection source registered on IBM cluster.",
+															},
+														},
+													},
+												},
+												"azure_target_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the configuration for adding Azure as replication target.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the Azure Replication target.",
+															},
+															"resource_group": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the Azure resource group used to filter regions in UI.",
+															},
+															"resource_group_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the Azure resource group used to filter regions in UI.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the source id of the Azure protection source registered on IBM cluster.",
+															},
+															"storage_account": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage account of Azure replication target which will contain storage container.",
+															},
+															"storage_account_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the storage account of Azure replication target which will contain storage container.",
+															},
+															"storage_container": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage container of Azure Replication target.",
+															},
+															"storage_container_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the storage container of Azure Replication target.",
+															},
+															"storage_resource_group": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage resource group of Azure Replication target.",
+															},
+															"storage_resource_group_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the storage resource group of Azure Replication target.",
+															},
+														},
+													},
+												},
 												"target_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -2634,10 +3068,109 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 													Description: "Specifies the settings tier levels configured with each archival target. The tier settings need to be applied in specific order and default tier should always be passed as first entry in tiers array. The following example illustrates how to configure tiering input for AWS tiering. Same type of input structure applied to other cloud platforms also. <br>If user wants to achieve following tiering for backup, <br>User Desired Tiering- <br><t>1.Archive Full back up for 12 Months <br><t>2.Tier Levels <br><t><t>[1,12] [ <br><t><t><t>s3 (1 to 2 months), (default tier) <br><t><t><t>s3 Intelligent tiering (3 to 6 months), <br><t><t><t>s3 One Zone (7 to 9 months) <br><t><t><t>Glacier (10 to 12 months)] <br><t>API Input <br><t><t>1.tiers-[ <br><t><t><t>{'tierType': 'S3','moveAfterUnit':'months', <br><t><t><t>'moveAfter':2 - move from s3 to s3Inte after 2 months}, <br><t><t><t>{'tierType': 'S3Inte','moveAfterUnit':'months', <br><t><t><t>'moveAfter':4 - move from S3Inte to Glacier after 4 months}, <br><t><t><t>{'tierType': 'Glacier', 'moveAfterUnit':'months', <br><t><t><t>'moveAfter': 3 - move from Glacier to S3 One Zone after 3 months }, <br><t><t><t>{'tierType': 'S3 One Zone', 'moveAfterUnit': nil, <br><t><t><t>'moveAfter': nil - For the last record, 'moveAfter' and 'moveAfterUnit' <br><t><t><t>will be ignored since there are no further tier for data movement } <br><t><t><t>}].",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"aws_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies aws tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the AWS tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"azure_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Azure tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Azure tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
 															"cloud_platform": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Specifies the cloud platform to enable tiering.",
+															},
+															"google_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Google tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Google tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
 															},
 															"oracle_tiering": &schema.Schema{
 																Type:        schema.TypeList,
@@ -2924,6 +3457,113 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 													Description: "Specifies the details about Cloud Spin target where backup snapshots may be converted and stored.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"aws_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies various resources when converting and deploying a VM to AWS.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"custom_tag_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies tags of various resources when converting and deploying a VM to AWS.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies key of the custom tag.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies value of the custom tag.",
+																					},
+																				},
+																			},
+																		},
+																		"region": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the AWS region in which to deploy the VM.",
+																		},
+																		"subnet_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the subnet within above VPC.",
+																		},
+																		"vpc_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the Virtual Private Cloud to chose for the instance type.",
+																		},
+																	},
+																},
+															},
+															"azure_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies various resources when converting and deploying a VM to Azure.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"availability_set_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the availability set.",
+																		},
+																		"network_resource_group_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the resource group for the selected virtual network.",
+																		},
+																		"resource_group_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the Azure resource group. Its value is globally unique within Azure.",
+																		},
+																		"storage_account_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+																		},
+																		"storage_container_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the storage container within the above storage account.",
+																		},
+																		"storage_resource_group_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the resource group for the selected storage account.",
+																		},
+																		"temp_vm_resource_group_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the temporary Azure resource group.",
+																		},
+																		"temp_vm_storage_account_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the temporary VM storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+																		},
+																		"temp_vm_storage_container_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies id of the temporary VM storage container within the above storage account.",
+																		},
+																		"temp_vm_subnet_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies Id of the temporary VM subnet within the above virtual network.",
+																		},
+																		"temp_vm_virtual_network_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies Id of the temporary VM Virtual Network.",
+																		},
+																	},
+																},
+															},
 															"id": &schema.Schema{
 																Type:        schema.TypeInt,
 																Computed:    true,
@@ -3104,63 +3744,6 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 																Type:        schema.TypeInt,
 																Computed:    true,
 																Description: "Specifies the unique id of the onprem entity.",
-															},
-															"restore_v_mware_params": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies the parameters for a VMware recovery target.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"target_vm_folder_id": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the folder ID where the VMs should be created.",
-																		},
-																		"target_data_store_id": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the folder where the restore datastore should be created.",
-																		},
-																		"enable_copy_recovery": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether to perform copy recovery or not.",
-																		},
-																		"resource_pool_id": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies if the restore is to alternate location.",
-																		},
-																		"datastore_ids": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies Datastore Ids, if the restore is to alternate location.",
-																			Elem: &schema.Schema{
-																				Type: schema.TypeInt,
-																			},
-																		},
-																		"overwrite_existing_vm": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether to overwrite the VM at the target location.",
-																		},
-																		"power_off_and_rename_existing_vm": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether to power off and mark the VM at the target location as deprecated.",
-																		},
-																		"attempt_differential_restore": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether to attempt differential restore.",
-																		},
-																		"is_on_prem_deploy": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether a task in on prem deploy or not.",
-																		},
-																	},
-																},
 															},
 														},
 													},
@@ -3417,7 +4000,9 @@ func DataSourceIbmProtectionPolicy() *schema.Resource {
 func dataSourceIbmProtectionPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
@@ -3427,169 +4012,188 @@ func dataSourceIbmProtectionPolicyRead(context context.Context, d *schema.Resour
 		getProtectionPolicyByIdOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
 	}
 
-	protectionPolicyResponse, response, err := backupRecoveryClient.GetProtectionPolicyByIDWithContext(context, getProtectionPolicyByIdOptions)
+	protectionPolicyResponse, _, err := backupRecoveryClient.GetProtectionPolicyByIDWithContext(context, getProtectionPolicyByIdOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetProtectionPolicyByIDWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProtectionPolicyByIDWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionPolicyByIDWithContext failed: %s", err.Error()), "(Data) ibm_protection_policy", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getProtectionPolicyByIdOptions.ID))
+	d.SetId(*getProtectionPolicyByIdOptions.ID)
 
 	if err = d.Set("name", protectionPolicyResponse.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_protection_policy", "read", "set-name").GetDiag()
 	}
 
 	backupPolicy := []map[string]interface{}{}
-	if protectionPolicyResponse.BackupPolicy != nil {
-		modelMap, err := dataSourceIbmProtectionPolicyBackupPolicyToMap(protectionPolicyResponse.BackupPolicy)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		backupPolicy = append(backupPolicy, modelMap)
+	backupPolicyMap, err := DataSourceIbmProtectionPolicyBackupPolicyToMap(protectionPolicyResponse.BackupPolicy)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "backup_policy-to-map").GetDiag()
 	}
+	backupPolicy = append(backupPolicy, backupPolicyMap)
 	if err = d.Set("backup_policy", backupPolicy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting backup_policy %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy: %s", err), "(Data) ibm_protection_policy", "read", "set-backup_policy").GetDiag()
 	}
 
-	if err = d.Set("description", protectionPolicyResponse.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-	}
-
-	blackoutWindow := []map[string]interface{}{}
-	if protectionPolicyResponse.BlackoutWindow != nil {
-		for _, modelItem := range protectionPolicyResponse.BlackoutWindow {
-			modelMap, err := dataSourceIbmProtectionPolicyBlackoutWindowToMap(&modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			blackoutWindow = append(blackoutWindow, modelMap)
+	if !core.IsNil(protectionPolicyResponse.Description) {
+		if err = d.Set("description", protectionPolicyResponse.Description); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_protection_policy", "read", "set-description").GetDiag()
 		}
 	}
-	if err = d.Set("blackout_window", blackoutWindow); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting blackout_window %s", err))
-	}
 
-	extendedRetention := []map[string]interface{}{}
-	if protectionPolicyResponse.ExtendedRetention != nil {
-		for _, modelItem := range protectionPolicyResponse.ExtendedRetention {
-			modelMap, err := dataSourceIbmProtectionPolicyExtendedRetentionPolicyToMap(&modelItem)
+	if !core.IsNil(protectionPolicyResponse.BlackoutWindow) {
+		blackoutWindow := []map[string]interface{}{}
+		for _, blackoutWindowItem := range protectionPolicyResponse.BlackoutWindow {
+			blackoutWindowItemMap, err := DataSourceIbmProtectionPolicyBlackoutWindowToMap(&blackoutWindowItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "blackout_window-to-map").GetDiag()
 			}
-			extendedRetention = append(extendedRetention, modelMap)
+			blackoutWindow = append(blackoutWindow, blackoutWindowItemMap)
+		}
+		if err = d.Set("blackout_window", blackoutWindow); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting blackout_window: %s", err), "(Data) ibm_protection_policy", "read", "set-blackout_window").GetDiag()
 		}
 	}
-	if err = d.Set("extended_retention", extendedRetention); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting extended_retention %s", err))
+
+	if !core.IsNil(protectionPolicyResponse.ExtendedRetention) {
+		extendedRetention := []map[string]interface{}{}
+		for _, extendedRetentionItem := range protectionPolicyResponse.ExtendedRetention {
+			extendedRetentionItemMap, err := DataSourceIbmProtectionPolicyExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "extended_retention-to-map").GetDiag()
+			}
+			extendedRetention = append(extendedRetention, extendedRetentionItemMap)
+		}
+		if err = d.Set("extended_retention", extendedRetention); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting extended_retention: %s", err), "(Data) ibm_protection_policy", "read", "set-extended_retention").GetDiag()
+		}
 	}
 
-	remoteTargetPolicy := []map[string]interface{}{}
-	if protectionPolicyResponse.RemoteTargetPolicy != nil {
-		modelMap, err := dataSourceIbmProtectionPolicyTargetsConfigurationToMap(protectionPolicyResponse.RemoteTargetPolicy)
+	if !core.IsNil(protectionPolicyResponse.RemoteTargetPolicy) {
+		remoteTargetPolicy := []map[string]interface{}{}
+		remoteTargetPolicyMap, err := DataSourceIbmProtectionPolicyTargetsConfigurationToMap(protectionPolicyResponse.RemoteTargetPolicy)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "remote_target_policy-to-map").GetDiag()
 		}
-		remoteTargetPolicy = append(remoteTargetPolicy, modelMap)
-	}
-	if err = d.Set("remote_target_policy", remoteTargetPolicy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting remote_target_policy %s", err))
+		remoteTargetPolicy = append(remoteTargetPolicy, remoteTargetPolicyMap)
+		if err = d.Set("remote_target_policy", remoteTargetPolicy); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote_target_policy: %s", err), "(Data) ibm_protection_policy", "read", "set-remote_target_policy").GetDiag()
+		}
 	}
 
-	cascadedTargetsConfig := []map[string]interface{}{}
-	if protectionPolicyResponse.CascadedTargetsConfig != nil {
-		for _, modelItem := range protectionPolicyResponse.CascadedTargetsConfig {
-			modelMap, err := dataSourceIbmProtectionPolicyCascadedTargetConfigurationToMap(&modelItem)
+	if !core.IsNil(protectionPolicyResponse.CascadedTargetsConfig) {
+		cascadedTargetsConfig := []map[string]interface{}{}
+		for _, cascadedTargetsConfigItem := range protectionPolicyResponse.CascadedTargetsConfig {
+			cascadedTargetsConfigItemMap, err := DataSourceIbmProtectionPolicyCascadedTargetConfigurationToMap(&cascadedTargetsConfigItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "cascaded_targets_config-to-map").GetDiag()
 			}
-			cascadedTargetsConfig = append(cascadedTargetsConfig, modelMap)
+			cascadedTargetsConfig = append(cascadedTargetsConfig, cascadedTargetsConfigItemMap)
+		}
+		if err = d.Set("cascaded_targets_config", cascadedTargetsConfig); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cascaded_targets_config: %s", err), "(Data) ibm_protection_policy", "read", "set-cascaded_targets_config").GetDiag()
 		}
 	}
-	if err = d.Set("cascaded_targets_config", cascadedTargetsConfig); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting cascaded_targets_config %s", err))
-	}
 
-	retryOptions := []map[string]interface{}{}
-	if protectionPolicyResponse.RetryOptions != nil {
-		modelMap, err := dataSourceIbmProtectionPolicyRetryOptionsToMap(protectionPolicyResponse.RetryOptions)
+	if !core.IsNil(protectionPolicyResponse.RetryOptions) {
+		retryOptions := []map[string]interface{}{}
+		retryOptionsMap, err := DataSourceIbmProtectionPolicyRetryOptionsToMap(protectionPolicyResponse.RetryOptions)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_policy", "read", "retry_options-to-map").GetDiag()
 		}
-		retryOptions = append(retryOptions, modelMap)
-	}
-	if err = d.Set("retry_options", retryOptions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting retry_options %s", err))
-	}
-
-	if err = d.Set("data_lock", protectionPolicyResponse.DataLock); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting data_lock: %s", err))
+		retryOptions = append(retryOptions, retryOptionsMap)
+		if err = d.Set("retry_options", retryOptions); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retry_options: %s", err), "(Data) ibm_protection_policy", "read", "set-retry_options").GetDiag()
+		}
 	}
 
-	if err = d.Set("version", flex.IntValue(protectionPolicyResponse.Version)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+	if !core.IsNil(protectionPolicyResponse.DataLock) {
+		if err = d.Set("data_lock", protectionPolicyResponse.DataLock); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting data_lock: %s", err), "(Data) ibm_protection_policy", "read", "set-data_lock").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_cbs_enabled", protectionPolicyResponse.IsCBSEnabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_cbs_enabled: %s", err))
+	if !core.IsNil(protectionPolicyResponse.Version) {
+		if err = d.Set("version", flex.IntValue(protectionPolicyResponse.Version)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting version: %s", err), "(Data) ibm_protection_policy", "read", "set-version").GetDiag()
+		}
 	}
 
-	if err = d.Set("last_modification_time_usecs", flex.IntValue(protectionPolicyResponse.LastModificationTimeUsecs)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modification_time_usecs: %s", err))
+	if !core.IsNil(protectionPolicyResponse.IsCBSEnabled) {
+		if err = d.Set("is_cbs_enabled", protectionPolicyResponse.IsCBSEnabled); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_cbs_enabled: %s", err), "(Data) ibm_protection_policy", "read", "set-is_cbs_enabled").GetDiag()
+		}
 	}
 
-	if err = d.Set("template_id", protectionPolicyResponse.TemplateID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting template_id: %s", err))
+	if !core.IsNil(protectionPolicyResponse.LastModificationTimeUsecs) {
+		if err = d.Set("last_modification_time_usecs", flex.IntValue(protectionPolicyResponse.LastModificationTimeUsecs)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modification_time_usecs: %s", err), "(Data) ibm_protection_policy", "read", "set-last_modification_time_usecs").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_usable", protectionPolicyResponse.IsUsable); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_usable: %s", err))
+	if !core.IsNil(protectionPolicyResponse.TemplateID) {
+		if err = d.Set("template_id", protectionPolicyResponse.TemplateID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting template_id: %s", err), "(Data) ibm_protection_policy", "read", "set-template_id").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_replicated", protectionPolicyResponse.IsReplicated); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_replicated: %s", err))
+	if !core.IsNil(protectionPolicyResponse.IsUsable) {
+		if err = d.Set("is_usable", protectionPolicyResponse.IsUsable); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_usable: %s", err), "(Data) ibm_protection_policy", "read", "set-is_usable").GetDiag()
+		}
 	}
 
-	if err = d.Set("num_protection_groups", flex.IntValue(protectionPolicyResponse.NumProtectionGroups)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting num_protection_groups: %s", err))
+	if !core.IsNil(protectionPolicyResponse.IsReplicated) {
+		if err = d.Set("is_replicated", protectionPolicyResponse.IsReplicated); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_replicated: %s", err), "(Data) ibm_protection_policy", "read", "set-is_replicated").GetDiag()
+		}
 	}
 
-	if err = d.Set("num_protected_objects", flex.IntValue(protectionPolicyResponse.NumProtectedObjects)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting num_protected_objects: %s", err))
+	if !core.IsNil(protectionPolicyResponse.NumProtectionGroups) {
+		if err = d.Set("num_protection_groups", flex.IntValue(protectionPolicyResponse.NumProtectionGroups)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_protection_groups: %s", err), "(Data) ibm_protection_policy", "read", "set-num_protection_groups").GetDiag()
+		}
+	}
+
+	if !core.IsNil(protectionPolicyResponse.NumProtectedObjects) {
+		if err = d.Set("num_protected_objects", flex.IntValue(protectionPolicyResponse.NumProtectedObjects)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_protected_objects: %s", err), "(Data) ibm_protection_policy", "read", "set-num_protected_objects").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-func dataSourceIbmProtectionPolicyBackupPolicyToMap(model *backuprecoveryv1.BackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyBackupPolicyToMap(model *backuprecoveryv1.BackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	regularMap, err := dataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model.Regular)
+	regularMap, err := DataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model.Regular)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["regular"] = []map[string]interface{}{regularMap}
 	if model.Log != nil {
-		logMap, err := dataSourceIbmProtectionPolicyLogBackupPolicyToMap(model.Log)
+		logMap, err := DataSourceIbmProtectionPolicyLogBackupPolicyToMap(model.Log)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log"] = []map[string]interface{}{logMap}
 	}
 	if model.Bmr != nil {
-		bmrMap, err := dataSourceIbmProtectionPolicyBmrBackupPolicyToMap(model.Bmr)
+		bmrMap, err := DataSourceIbmProtectionPolicyBmrBackupPolicyToMap(model.Bmr)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["bmr"] = []map[string]interface{}{bmrMap}
 	}
 	if model.Cdp != nil {
-		cdpMap, err := dataSourceIbmProtectionPolicyCdpBackupPolicyToMap(model.Cdp)
+		cdpMap, err := DataSourceIbmProtectionPolicyCdpBackupPolicyToMap(model.Cdp)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cdp"] = []map[string]interface{}{cdpMap}
 	}
 	if model.StorageArraySnapshot != nil {
-		storageArraySnapshotMap, err := dataSourceIbmProtectionPolicyStorageArraySnapshotBackupPolicyToMap(model.StorageArraySnapshot)
+		storageArraySnapshotMap, err := DataSourceIbmProtectionPolicyStorageArraySnapshotBackupPolicyToMap(model.StorageArraySnapshot)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3598,7 +4202,7 @@ func dataSourceIbmProtectionPolicyBackupPolicyToMap(model *backuprecoveryv1.Back
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem)
+			runTimeoutsItemMap, err := DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3609,17 +4213,17 @@ func dataSourceIbmProtectionPolicyBackupPolicyToMap(model *backuprecoveryv1.Back
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model *backuprecoveryv1.RegularBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model *backuprecoveryv1.RegularBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Incremental != nil {
-		incrementalMap, err := dataSourceIbmProtectionPolicyIncrementalBackupPolicyToMap(model.Incremental)
+		incrementalMap, err := DataSourceIbmProtectionPolicyIncrementalBackupPolicyToMap(model.Incremental)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["incremental"] = []map[string]interface{}{incrementalMap}
 	}
 	if model.Full != nil {
-		fullMap, err := dataSourceIbmProtectionPolicyFullBackupPolicyToMap(model.Full)
+		fullMap, err := DataSourceIbmProtectionPolicyFullBackupPolicyToMap(model.Full)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3628,7 +4232,7 @@ func dataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model *backuprecovery
 	if model.FullBackups != nil {
 		fullBackups := []map[string]interface{}{}
 		for _, fullBackupsItem := range model.FullBackups {
-			fullBackupsItemMap, err := dataSourceIbmProtectionPolicyFullScheduleAndRetentionToMap(&fullBackupsItem)
+			fullBackupsItemMap, err := DataSourceIbmProtectionPolicyFullScheduleAndRetentionToMap(&fullBackupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3637,14 +4241,14 @@ func dataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model *backuprecovery
 		modelMap["full_backups"] = fullBackups
 	}
 	if model.Retention != nil {
-		retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+		retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["retention"] = []map[string]interface{}{retentionMap}
 	}
 	if model.PrimaryBackupTarget != nil {
-		primaryBackupTargetMap, err := dataSourceIbmProtectionPolicyPrimaryBackupTargetToMap(model.PrimaryBackupTarget)
+		primaryBackupTargetMap, err := DataSourceIbmProtectionPolicyPrimaryBackupTargetToMap(model.PrimaryBackupTarget)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3653,9 +4257,9 @@ func dataSourceIbmProtectionPolicyRegularBackupPolicyToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyIncrementalBackupPolicyToMap(model *backuprecoveryv1.IncrementalBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyIncrementalBackupPolicyToMap(model *backuprecoveryv1.IncrementalBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyIncrementalScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyIncrementalScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
@@ -3663,46 +4267,46 @@ func dataSourceIbmProtectionPolicyIncrementalBackupPolicyToMap(model *backupreco
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyIncrementalScheduleToMap(model *backuprecoveryv1.IncrementalSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyIncrementalScheduleToMap(model *backuprecoveryv1.IncrementalSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
-		minuteScheduleMap, err := dataSourceIbmProtectionPolicyMinuteScheduleToMap(model.MinuteSchedule)
+		minuteScheduleMap, err := DataSourceIbmProtectionPolicyMinuteScheduleToMap(model.MinuteSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["minute_schedule"] = []map[string]interface{}{minuteScheduleMap}
 	}
 	if model.HourSchedule != nil {
-		hourScheduleMap, err := dataSourceIbmProtectionPolicyHourScheduleToMap(model.HourSchedule)
+		hourScheduleMap, err := DataSourceIbmProtectionPolicyHourScheduleToMap(model.HourSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["hour_schedule"] = []map[string]interface{}{hourScheduleMap}
 	}
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := dataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := dataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := dataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := dataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3711,37 +4315,37 @@ func dataSourceIbmProtectionPolicyIncrementalScheduleToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyMinuteScheduleToMap(model *backuprecoveryv1.MinuteSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyMinuteScheduleToMap(model *backuprecoveryv1.MinuteSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyHourScheduleToMap(model *backuprecoveryv1.HourSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyHourScheduleToMap(model *backuprecoveryv1.HourSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyDayScheduleToMap(model *backuprecoveryv1.DaySchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyDayScheduleToMap(model *backuprecoveryv1.DaySchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyWeekScheduleToMap(model *backuprecoveryv1.WeekSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyWeekScheduleToMap(model *backuprecoveryv1.WeekSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_week"] = model.DayOfWeek
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyMonthScheduleToMap(model *backuprecoveryv1.MonthSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyMonthScheduleToMap(model *backuprecoveryv1.MonthSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DayOfWeek != nil {
 		modelMap["day_of_week"] = model.DayOfWeek
 	}
 	if model.WeekOfMonth != nil {
-		modelMap["week_of_month"] = model.WeekOfMonth
+		modelMap["week_of_month"] = *model.WeekOfMonth
 	}
 	if model.DayOfMonth != nil {
 		modelMap["day_of_month"] = flex.IntValue(model.DayOfMonth)
@@ -3749,16 +4353,16 @@ func dataSourceIbmProtectionPolicyMonthScheduleToMap(model *backuprecoveryv1.Mon
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyYearScheduleToMap(model *backuprecoveryv1.YearSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyYearScheduleToMap(model *backuprecoveryv1.YearSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["day_of_year"] = model.DayOfYear
+	modelMap["day_of_year"] = *model.DayOfYear
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyFullBackupPolicyToMap(model *backuprecoveryv1.FullBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyFullBackupPolicyToMap(model *backuprecoveryv1.FullBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Schedule != nil {
-		scheduleMap, err := dataSourceIbmProtectionPolicyFullScheduleToMap(model.Schedule)
+		scheduleMap, err := DataSourceIbmProtectionPolicyFullScheduleToMap(model.Schedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3767,32 +4371,32 @@ func dataSourceIbmProtectionPolicyFullBackupPolicyToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyFullScheduleToMap(model *backuprecoveryv1.FullSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyFullScheduleToMap(model *backuprecoveryv1.FullSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := dataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := dataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := dataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := dataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3801,14 +4405,14 @@ func dataSourceIbmProtectionPolicyFullScheduleToMap(model *backuprecoveryv1.Full
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyFullScheduleAndRetentionToMap(model *backuprecoveryv1.FullScheduleAndRetention) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyFullScheduleAndRetentionToMap(model *backuprecoveryv1.FullScheduleAndRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyFullScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyFullScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -3816,12 +4420,12 @@ func dataSourceIbmProtectionPolicyFullScheduleAndRetentionToMap(model *backuprec
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := dataSourceIbmProtectionPolicyDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := DataSourceIbmProtectionPolicyDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3830,40 +4434,43 @@ func dataSourceIbmProtectionPolicyRetentionToMap(model *backuprecoveryv1.Retenti
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["mode"] = model.Mode
-	modelMap["unit"] = model.Unit
+	modelMap["mode"] = *model.Mode
+	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.EnableWormOnExternalTarget != nil {
-		modelMap["enable_worm_on_external_target"] = model.EnableWormOnExternalTarget
+		modelMap["enable_worm_on_external_target"] = *model.EnableWormOnExternalTarget
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyPrimaryBackupTargetToMap(model *backuprecoveryv1.PrimaryBackupTarget) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyPrimaryBackupTargetToMap(model *backuprecoveryv1.PrimaryBackupTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetType != nil {
-		modelMap["target_type"] = model.TargetType
+		modelMap["target_type"] = *model.TargetType
 	}
 	if model.ArchivalTargetSettings != nil {
-		archivalTargetSettingsMap, err := dataSourceIbmProtectionPolicyPrimaryArchivalTargetToMap(model.ArchivalTargetSettings)
+		archivalTargetSettingsMap, err := DataSourceIbmProtectionPolicyPrimaryArchivalTargetToMap(model.ArchivalTargetSettings)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["archival_target_settings"] = []map[string]interface{}{archivalTargetSettingsMap}
 	}
+	if model.UseDefaultBackupTarget != nil {
+		modelMap["use_default_backup_target"] = *model.UseDefaultBackupTarget
+	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyPrimaryArchivalTargetToMap(model *backuprecoveryv1.PrimaryArchivalTarget) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyPrimaryArchivalTargetToMap(model *backuprecoveryv1.PrimaryArchivalTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_id"] = flex.IntValue(model.TargetID)
 	if model.TargetName != nil {
-		modelMap["target_name"] = model.TargetName
+		modelMap["target_name"] = *model.TargetName
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := dataSourceIbmProtectionPolicyTierLevelSettingsToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmProtectionPolicyTierLevelSettingsToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3872,11 +4479,32 @@ func dataSourceIbmProtectionPolicyPrimaryArchivalTargetToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyTierLevelSettingsToMap(model *backuprecoveryv1.TierLevelSettings) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyTierLevelSettingsToMap(model *backuprecoveryv1.TierLevelSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["cloud_platform"] = model.CloudPlatform
+	if model.AwsTiering != nil {
+		awsTieringMap, err := DataSourceIbmProtectionPolicyAWSTiersToMap(model.AwsTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
+	}
+	if model.AzureTiering != nil {
+		azureTieringMap, err := DataSourceIbmProtectionPolicyAzureTiersToMap(model.AzureTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
+	}
+	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.GoogleTiering != nil {
+		googleTieringMap, err := DataSourceIbmProtectionPolicyGoogleTiersToMap(model.GoogleTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
+	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := dataSourceIbmProtectionPolicyOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmProtectionPolicyOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3885,11 +4513,11 @@ func dataSourceIbmProtectionPolicyTierLevelSettingsToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := dataSourceIbmProtectionPolicyOracleTierToMap(&tiersItem)
+		tiersItemMap, err := DataSourceIbmProtectionPolicyAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3899,26 +4527,106 @@ func dataSourceIbmProtectionPolicyOracleTiersToMap(model *backuprecoveryv1.Oracl
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
-		modelMap["move_after_unit"] = model.MoveAfterUnit
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
 	}
 	if model.MoveAfter != nil {
 		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
 	}
-	modelMap["tier_type"] = model.TierType
+	modelMap["tier_type"] = *model.TierType
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyLogBackupPolicyToMap(model *backuprecoveryv1.LogBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyLogScheduleToMap(model.Schedule)
+	if model.Tiers != nil {
+		tiers := []map[string]interface{}{}
+		for _, tiersItem := range model.Tiers {
+			tiersItemMap, err := DataSourceIbmProtectionPolicyAzureTierToMap(&tiersItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			tiers = append(tiers, tiersItemMap)
+		}
+		modelMap["tiers"] = tiers
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	tiers := []map[string]interface{}{}
+	for _, tiersItem := range model.Tiers {
+		tiersItemMap, err := DataSourceIbmProtectionPolicyGoogleTierToMap(&tiersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		tiers = append(tiers, tiersItemMap)
+	}
+	modelMap["tiers"] = tiers
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	tiers := []map[string]interface{}{}
+	for _, tiersItem := range model.Tiers {
+		tiersItemMap, err := DataSourceIbmProtectionPolicyOracleTierToMap(&tiersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		tiers = append(tiers, tiersItemMap)
+	}
+	modelMap["tiers"] = tiers
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyLogBackupPolicyToMap(model *backuprecoveryv1.LogBackupPolicy) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	scheduleMap, err := DataSourceIbmProtectionPolicyLogScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -3926,18 +4634,18 @@ func dataSourceIbmProtectionPolicyLogBackupPolicyToMap(model *backuprecoveryv1.L
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyLogScheduleToMap(model *backuprecoveryv1.LogSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyLogScheduleToMap(model *backuprecoveryv1.LogSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
-		minuteScheduleMap, err := dataSourceIbmProtectionPolicyMinuteScheduleToMap(model.MinuteSchedule)
+		minuteScheduleMap, err := DataSourceIbmProtectionPolicyMinuteScheduleToMap(model.MinuteSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["minute_schedule"] = []map[string]interface{}{minuteScheduleMap}
 	}
 	if model.HourSchedule != nil {
-		hourScheduleMap, err := dataSourceIbmProtectionPolicyHourScheduleToMap(model.HourSchedule)
+		hourScheduleMap, err := DataSourceIbmProtectionPolicyHourScheduleToMap(model.HourSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3946,14 +4654,14 @@ func dataSourceIbmProtectionPolicyLogScheduleToMap(model *backuprecoveryv1.LogSc
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyBmrBackupPolicyToMap(model *backuprecoveryv1.BmrBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyBmrBackupPolicyToMap(model *backuprecoveryv1.BmrBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyBmrScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyBmrScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -3961,32 +4669,32 @@ func dataSourceIbmProtectionPolicyBmrBackupPolicyToMap(model *backuprecoveryv1.B
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyBmrScheduleToMap(model *backuprecoveryv1.BmrSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyBmrScheduleToMap(model *backuprecoveryv1.BmrSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := dataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := dataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := dataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := dataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3995,9 +4703,9 @@ func dataSourceIbmProtectionPolicyBmrScheduleToMap(model *backuprecoveryv1.BmrSc
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyCdpBackupPolicyToMap(model *backuprecoveryv1.CdpBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyCdpBackupPolicyToMap(model *backuprecoveryv1.CdpBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	retentionMap, err := dataSourceIbmProtectionPolicyCdpRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyCdpRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4005,12 +4713,12 @@ func dataSourceIbmProtectionPolicyCdpBackupPolicyToMap(model *backuprecoveryv1.C
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyCdpRetentionToMap(model *backuprecoveryv1.CdpRetention) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyCdpRetentionToMap(model *backuprecoveryv1.CdpRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := dataSourceIbmProtectionPolicyDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := DataSourceIbmProtectionPolicyDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4019,14 +4727,14 @@ func dataSourceIbmProtectionPolicyCdpRetentionToMap(model *backuprecoveryv1.CdpR
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyStorageArraySnapshotBackupPolicyToMap(model *backuprecoveryv1.StorageArraySnapshotBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyStorageArraySnapshotBackupPolicyToMap(model *backuprecoveryv1.StorageArraySnapshotBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyStorageArraySnapshotScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyStorageArraySnapshotScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4034,46 +4742,46 @@ func dataSourceIbmProtectionPolicyStorageArraySnapshotBackupPolicyToMap(model *b
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyStorageArraySnapshotScheduleToMap(model *backuprecoveryv1.StorageArraySnapshotSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyStorageArraySnapshotScheduleToMap(model *backuprecoveryv1.StorageArraySnapshotSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
-		minuteScheduleMap, err := dataSourceIbmProtectionPolicyMinuteScheduleToMap(model.MinuteSchedule)
+		minuteScheduleMap, err := DataSourceIbmProtectionPolicyMinuteScheduleToMap(model.MinuteSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["minute_schedule"] = []map[string]interface{}{minuteScheduleMap}
 	}
 	if model.HourSchedule != nil {
-		hourScheduleMap, err := dataSourceIbmProtectionPolicyHourScheduleToMap(model.HourSchedule)
+		hourScheduleMap, err := DataSourceIbmProtectionPolicyHourScheduleToMap(model.HourSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["hour_schedule"] = []map[string]interface{}{hourScheduleMap}
 	}
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := dataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmProtectionPolicyDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := dataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmProtectionPolicyWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := dataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmProtectionPolicyMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := dataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmProtectionPolicyYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4082,82 +4790,82 @@ func dataSourceIbmProtectionPolicyStorageArraySnapshotScheduleToMap(model *backu
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(model *backuprecoveryv1.CancellationTimeoutParams) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(model *backuprecoveryv1.CancellationTimeoutParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TimeoutMins != nil {
 		modelMap["timeout_mins"] = flex.IntValue(model.TimeoutMins)
 	}
 	if model.BackupType != nil {
-		modelMap["backup_type"] = model.BackupType
+		modelMap["backup_type"] = *model.BackupType
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyBlackoutWindowToMap(model *backuprecoveryv1.BlackoutWindow) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyBlackoutWindowToMap(model *backuprecoveryv1.BlackoutWindow) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["day"] = model.Day
-	startTimeMap, err := dataSourceIbmProtectionPolicyTimeOfDayToMap(model.StartTime)
+	modelMap["day"] = *model.Day
+	startTimeMap, err := DataSourceIbmProtectionPolicyTimeOfDayToMap(model.StartTime)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["start_time"] = []map[string]interface{}{startTimeMap}
-	endTimeMap, err := dataSourceIbmProtectionPolicyTimeOfDayToMap(model.EndTime)
+	endTimeMap, err := DataSourceIbmProtectionPolicyTimeOfDayToMap(model.EndTime)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["end_time"] = []map[string]interface{}{endTimeMap}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyTimeOfDayToMap(model *backuprecoveryv1.TimeOfDay) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyTimeOfDayToMap(model *backuprecoveryv1.TimeOfDay) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["hour"] = flex.IntValue(model.Hour)
 	modelMap["minute"] = flex.IntValue(model.Minute)
 	if model.TimeZone != nil {
-		modelMap["time_zone"] = model.TimeZone
+		modelMap["time_zone"] = *model.TimeZone
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyExtendedRetentionPolicyToMap(model *backuprecoveryv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyExtendedRetentionPolicyToMap(model *backuprecoveryv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyExtendedRetentionScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyExtendedRetentionScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["retention"] = []map[string]interface{}{retentionMap}
 	if model.RunType != nil {
-		modelMap["run_type"] = model.RunType
+		modelMap["run_type"] = *model.RunType
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyExtendedRetentionScheduleToMap(model *backuprecoveryv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyExtendedRetentionScheduleToMap(model *backuprecoveryv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
 		modelMap["frequency"] = flex.IntValue(model.Frequency)
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecoveryv1.TargetsConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecoveryv1.TargetsConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ReplicationTargets != nil {
 		replicationTargets := []map[string]interface{}{}
 		for _, replicationTargetsItem := range model.ReplicationTargets {
-			replicationTargetsItemMap, err := dataSourceIbmProtectionPolicyReplicationTargetConfigurationToMap(&replicationTargetsItem)
+			replicationTargetsItemMap, err := DataSourceIbmProtectionPolicyReplicationTargetConfigurationToMap(&replicationTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4168,7 +4876,7 @@ func dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecover
 	if model.ArchivalTargets != nil {
 		archivalTargets := []map[string]interface{}{}
 		for _, archivalTargetsItem := range model.ArchivalTargets {
-			archivalTargetsItemMap, err := dataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(&archivalTargetsItem)
+			archivalTargetsItemMap, err := DataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(&archivalTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4179,7 +4887,7 @@ func dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecover
 	if model.CloudSpinTargets != nil {
 		cloudSpinTargets := []map[string]interface{}{}
 		for _, cloudSpinTargetsItem := range model.CloudSpinTargets {
-			cloudSpinTargetsItemMap, err := dataSourceIbmProtectionPolicyCloudSpinTargetConfigurationToMap(&cloudSpinTargetsItem)
+			cloudSpinTargetsItemMap, err := DataSourceIbmProtectionPolicyCloudSpinTargetConfigurationToMap(&cloudSpinTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4190,7 +4898,7 @@ func dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecover
 	if model.OnpremDeployTargets != nil {
 		onpremDeployTargets := []map[string]interface{}{}
 		for _, onpremDeployTargetsItem := range model.OnpremDeployTargets {
-			onpremDeployTargetsItemMap, err := dataSourceIbmProtectionPolicyOnpremDeployTargetConfigurationToMap(&onpremDeployTargetsItem)
+			onpremDeployTargetsItemMap, err := DataSourceIbmProtectionPolicyOnpremDeployTargetConfigurationToMap(&onpremDeployTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4201,7 +4909,7 @@ func dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecover
 	if model.RpaasTargets != nil {
 		rpaasTargets := []map[string]interface{}{}
 		for _, rpaasTargetsItem := range model.RpaasTargets {
-			rpaasTargetsItemMap, err := dataSourceIbmProtectionPolicyRpaasTargetConfigurationToMap(&rpaasTargetsItem)
+			rpaasTargetsItemMap, err := DataSourceIbmProtectionPolicyRpaasTargetConfigurationToMap(&rpaasTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4212,31 +4920,31 @@ func dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyReplicationTargetConfigurationToMap(model *backuprecoveryv1.ReplicationTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyReplicationTargetConfigurationToMap(model *backuprecoveryv1.ReplicationTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["retention"] = []map[string]interface{}{retentionMap}
 	if model.CopyOnRunSuccess != nil {
-		modelMap["copy_on_run_success"] = model.CopyOnRunSuccess
+		modelMap["copy_on_run_success"] = *model.CopyOnRunSuccess
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	if model.BackupRunType != nil {
-		modelMap["backup_run_type"] = model.BackupRunType
+		modelMap["backup_run_type"] = *model.BackupRunType
 	}
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem)
+			runTimeoutsItemMap, err := DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4245,15 +4953,29 @@ func dataSourceIbmProtectionPolicyReplicationTargetConfigurationToMap(model *bac
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmProtectionPolicyLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
-	modelMap["target_type"] = model.TargetType
+	if model.AwsTargetConfig != nil {
+		awsTargetConfigMap, err := DataSourceIbmProtectionPolicyAWSTargetConfigToMap(model.AwsTargetConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_target_config"] = []map[string]interface{}{awsTargetConfigMap}
+	}
+	if model.AzureTargetConfig != nil {
+		azureTargetConfigMap, err := DataSourceIbmProtectionPolicyAzureTargetConfigToMap(model.AzureTargetConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_target_config"] = []map[string]interface{}{azureTargetConfigMap}
+	}
+	modelMap["target_type"] = *model.TargetType
 	if model.RemoteTargetConfig != nil {
-		remoteTargetConfigMap, err := dataSourceIbmProtectionPolicyRemoteTargetConfigToMap(model.RemoteTargetConfig)
+		remoteTargetConfigMap, err := DataSourceIbmProtectionPolicyRemoteTargetConfigToMap(model.RemoteTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4262,49 +4984,109 @@ func dataSourceIbmProtectionPolicyReplicationTargetConfigurationToMap(model *bac
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyTargetScheduleToMap(model *backuprecoveryv1.TargetSchedule) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyTargetScheduleToMap(model *backuprecoveryv1.TargetSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
 		modelMap["frequency"] = flex.IntValue(model.Frequency)
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyRemoteTargetConfigToMap(model *backuprecoveryv1.RemoteTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyLogRetentionToMap(model *backuprecoveryv1.LogRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
-	if model.ClusterName != nil {
-		modelMap["cluster_name"] = model.ClusterName
+	modelMap["unit"] = *model.Unit
+	modelMap["duration"] = flex.IntValue(model.Duration)
+	if model.DataLockConfig != nil {
+		dataLockConfigMap, err := DataSourceIbmProtectionPolicyDataLockConfigToMap(model.DataLockConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["data_lock_config"] = []map[string]interface{}{dataLockConfigMap}
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(model *backuprecoveryv1.ArchivalTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	modelMap["region"] = flex.IntValue(model.Region)
+	if model.RegionName != nil {
+		modelMap["region_name"] = *model.RegionName
+	}
+	modelMap["source_id"] = flex.IntValue(model.SourceID)
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceGroup != nil {
+		modelMap["resource_group"] = flex.IntValue(model.ResourceGroup)
+	}
+	if model.ResourceGroupName != nil {
+		modelMap["resource_group_name"] = *model.ResourceGroupName
+	}
+	modelMap["source_id"] = flex.IntValue(model.SourceID)
+	if model.StorageAccount != nil {
+		modelMap["storage_account"] = flex.IntValue(model.StorageAccount)
+	}
+	if model.StorageAccountName != nil {
+		modelMap["storage_account_name"] = *model.StorageAccountName
+	}
+	if model.StorageContainer != nil {
+		modelMap["storage_container"] = flex.IntValue(model.StorageContainer)
+	}
+	if model.StorageContainerName != nil {
+		modelMap["storage_container_name"] = *model.StorageContainerName
+	}
+	if model.StorageResourceGroup != nil {
+		modelMap["storage_resource_group"] = flex.IntValue(model.StorageResourceGroup)
+	}
+	if model.StorageResourceGroupName != nil {
+		modelMap["storage_resource_group_name"] = *model.StorageResourceGroupName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyRemoteTargetConfigToMap(model *backuprecoveryv1.RemoteTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
+	if model.ClusterName != nil {
+		modelMap["cluster_name"] = *model.ClusterName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(model *backuprecoveryv1.ArchivalTargetConfiguration) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	scheduleMap, err := DataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["retention"] = []map[string]interface{}{retentionMap}
 	if model.CopyOnRunSuccess != nil {
-		modelMap["copy_on_run_success"] = model.CopyOnRunSuccess
+		modelMap["copy_on_run_success"] = *model.CopyOnRunSuccess
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	if model.BackupRunType != nil {
-		modelMap["backup_run_type"] = model.BackupRunType
+		modelMap["backup_run_type"] = *model.BackupRunType
 	}
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem)
+			runTimeoutsItemMap, err := DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4313,7 +5095,7 @@ func dataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(model *backup
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmProtectionPolicyLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4321,13 +5103,13 @@ func dataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(model *backup
 	}
 	modelMap["target_id"] = flex.IntValue(model.TargetID)
 	if model.TargetName != nil {
-		modelMap["target_name"] = model.TargetName
+		modelMap["target_name"] = *model.TargetName
 	}
 	if model.TargetType != nil {
-		modelMap["target_type"] = model.TargetType
+		modelMap["target_type"] = *model.TargetType
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := dataSourceIbmProtectionPolicyTierLevelSettingsToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmProtectionPolicyTierLevelSettingsToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4336,7 +5118,7 @@ func dataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(model *backup
 	if model.ExtendedRetention != nil {
 		extendedRetention := []map[string]interface{}{}
 		for _, extendedRetentionItem := range model.ExtendedRetention {
-			extendedRetentionItemMap, err := dataSourceIbmProtectionPolicyExtendedRetentionPolicyToMap(&extendedRetentionItem)
+			extendedRetentionItemMap, err := DataSourceIbmProtectionPolicyExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4347,31 +5129,31 @@ func dataSourceIbmProtectionPolicyArchivalTargetConfigurationToMap(model *backup
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyCloudSpinTargetConfigurationToMap(model *backuprecoveryv1.CloudSpinTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyCloudSpinTargetConfigurationToMap(model *backuprecoveryv1.CloudSpinTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["retention"] = []map[string]interface{}{retentionMap}
 	if model.CopyOnRunSuccess != nil {
-		modelMap["copy_on_run_success"] = model.CopyOnRunSuccess
+		modelMap["copy_on_run_success"] = *model.CopyOnRunSuccess
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	if model.BackupRunType != nil {
-		modelMap["backup_run_type"] = model.BackupRunType
+		modelMap["backup_run_type"] = *model.BackupRunType
 	}
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem)
+			runTimeoutsItemMap, err := DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4380,13 +5162,13 @@ func dataSourceIbmProtectionPolicyCloudSpinTargetConfigurationToMap(model *backu
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmProtectionPolicyLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
-	targetMap, err := dataSourceIbmProtectionPolicyCloudSpinTargetToMap(model.Target)
+	targetMap, err := DataSourceIbmProtectionPolicyCloudSpinTargetToMap(model.Target)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4394,42 +5176,124 @@ func dataSourceIbmProtectionPolicyCloudSpinTargetConfigurationToMap(model *backu
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyCloudSpinTargetToMap(model *backuprecoveryv1.CloudSpinTarget) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyCloudSpinTargetToMap(model *backuprecoveryv1.CloudSpinTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.AwsParams != nil {
+		awsParamsMap, err := DataSourceIbmProtectionPolicyAwsCloudSpinParamsToMap(model.AwsParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_params"] = []map[string]interface{}{awsParamsMap}
+	}
+	if model.AzureParams != nil {
+		azureParamsMap, err := DataSourceIbmProtectionPolicyAzureCloudSpinParamsToMap(model.AzureParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_params"] = []map[string]interface{}{azureParamsMap}
+	}
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyOnpremDeployTargetConfigurationToMap(model *backuprecoveryv1.OnpremDeployTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyAwsCloudSpinParamsToMap(model *backuprecoveryv1.AwsCloudSpinParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
+	if model.CustomTagList != nil {
+		customTagList := []map[string]interface{}{}
+		for _, customTagListItem := range model.CustomTagList {
+			customTagListItemMap, err := DataSourceIbmProtectionPolicyCustomTagParamsToMap(&customTagListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			customTagList = append(customTagList, customTagListItemMap)
+		}
+		modelMap["custom_tag_list"] = customTagList
+	}
+	modelMap["region"] = flex.IntValue(model.Region)
+	if model.SubnetID != nil {
+		modelMap["subnet_id"] = flex.IntValue(model.SubnetID)
+	}
+	if model.VpcID != nil {
+		modelMap["vpc_id"] = flex.IntValue(model.VpcID)
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyCustomTagParamsToMap(model *backuprecoveryv1.CustomTagParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["key"] = *model.Key
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyAzureCloudSpinParamsToMap(model *backuprecoveryv1.AzureCloudSpinParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AvailabilitySetID != nil {
+		modelMap["availability_set_id"] = flex.IntValue(model.AvailabilitySetID)
+	}
+	if model.NetworkResourceGroupID != nil {
+		modelMap["network_resource_group_id"] = flex.IntValue(model.NetworkResourceGroupID)
+	}
+	if model.ResourceGroupID != nil {
+		modelMap["resource_group_id"] = flex.IntValue(model.ResourceGroupID)
+	}
+	if model.StorageAccountID != nil {
+		modelMap["storage_account_id"] = flex.IntValue(model.StorageAccountID)
+	}
+	if model.StorageContainerID != nil {
+		modelMap["storage_container_id"] = flex.IntValue(model.StorageContainerID)
+	}
+	if model.StorageResourceGroupID != nil {
+		modelMap["storage_resource_group_id"] = flex.IntValue(model.StorageResourceGroupID)
+	}
+	if model.TempVmResourceGroupID != nil {
+		modelMap["temp_vm_resource_group_id"] = flex.IntValue(model.TempVmResourceGroupID)
+	}
+	if model.TempVmStorageAccountID != nil {
+		modelMap["temp_vm_storage_account_id"] = flex.IntValue(model.TempVmStorageAccountID)
+	}
+	if model.TempVmStorageContainerID != nil {
+		modelMap["temp_vm_storage_container_id"] = flex.IntValue(model.TempVmStorageContainerID)
+	}
+	if model.TempVmSubnetID != nil {
+		modelMap["temp_vm_subnet_id"] = flex.IntValue(model.TempVmSubnetID)
+	}
+	if model.TempVmVirtualNetworkID != nil {
+		modelMap["temp_vm_virtual_network_id"] = flex.IntValue(model.TempVmVirtualNetworkID)
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionPolicyOnpremDeployTargetConfigurationToMap(model *backuprecoveryv1.OnpremDeployTargetConfiguration) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	scheduleMap, err := DataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["retention"] = []map[string]interface{}{retentionMap}
 	if model.CopyOnRunSuccess != nil {
-		modelMap["copy_on_run_success"] = model.CopyOnRunSuccess
+		modelMap["copy_on_run_success"] = *model.CopyOnRunSuccess
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	if model.BackupRunType != nil {
-		modelMap["backup_run_type"] = model.BackupRunType
+		modelMap["backup_run_type"] = *model.BackupRunType
 	}
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem)
+			runTimeoutsItemMap, err := DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4438,14 +5302,14 @@ func dataSourceIbmProtectionPolicyOnpremDeployTargetConfigurationToMap(model *ba
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmProtectionPolicyLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
 	if model.Params != nil {
-		paramsMap, err := dataSourceIbmProtectionPolicyOnpremDeployParamsToMap(model.Params)
+		paramsMap, err := DataSourceIbmProtectionPolicyOnpremDeployParamsToMap(model.Params)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4454,78 +5318,39 @@ func dataSourceIbmProtectionPolicyOnpremDeployTargetConfigurationToMap(model *ba
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyOnpremDeployParamsToMap(model *backuprecoveryv1.OnpremDeployParams) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyOnpremDeployParamsToMap(model *backuprecoveryv1.OnpremDeployParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
-	if model.RestoreVMwareParams != nil {
-		restoreVMwareParamsMap, err := dataSourceIbmProtectionPolicyRestoreVMwareVMParamsToMap(model.RestoreVMwareParams)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["restore_v_mware_params"] = []map[string]interface{}{restoreVMwareParamsMap}
-	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyRestoreVMwareVMParamsToMap(model *backuprecoveryv1.RestoreVMwareVMParams) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyRpaasTargetConfigurationToMap(model *backuprecoveryv1.RpaasTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TargetVMFolderID != nil {
-		modelMap["target_vm_folder_id"] = flex.IntValue(model.TargetVMFolderID)
-	}
-	if model.TargetDataStoreID != nil {
-		modelMap["target_data_store_id"] = flex.IntValue(model.TargetDataStoreID)
-	}
-	if model.EnableCopyRecovery != nil {
-		modelMap["enable_copy_recovery"] = model.EnableCopyRecovery
-	}
-	if model.ResourcePoolID != nil {
-		modelMap["resource_pool_id"] = flex.IntValue(model.ResourcePoolID)
-	}
-	if model.DatastoreIds != nil {
-		modelMap["datastore_ids"] = model.DatastoreIds
-	}
-	if model.OverwriteExistingVm != nil {
-		modelMap["overwrite_existing_vm"] = model.OverwriteExistingVm
-	}
-	if model.PowerOffAndRenameExistingVm != nil {
-		modelMap["power_off_and_rename_existing_vm"] = model.PowerOffAndRenameExistingVm
-	}
-	if model.AttemptDifferentialRestore != nil {
-		modelMap["attempt_differential_restore"] = model.AttemptDifferentialRestore
-	}
-	if model.IsOnPremDeploy != nil {
-		modelMap["is_on_prem_deploy"] = model.IsOnPremDeploy
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmProtectionPolicyRpaasTargetConfigurationToMap(model *backuprecoveryv1.RpaasTargetConfiguration) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	scheduleMap, err := dataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmProtectionPolicyTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmProtectionPolicyRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["retention"] = []map[string]interface{}{retentionMap}
 	if model.CopyOnRunSuccess != nil {
-		modelMap["copy_on_run_success"] = model.CopyOnRunSuccess
+		modelMap["copy_on_run_success"] = *model.CopyOnRunSuccess
 	}
 	if model.ConfigID != nil {
-		modelMap["config_id"] = model.ConfigID
+		modelMap["config_id"] = *model.ConfigID
 	}
 	if model.BackupRunType != nil {
-		modelMap["backup_run_type"] = model.BackupRunType
+		modelMap["backup_run_type"] = *model.BackupRunType
 	}
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := dataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem)
+			runTimeoutsItemMap, err := DataSourceIbmProtectionPolicyCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4534,7 +5359,7 @@ func dataSourceIbmProtectionPolicyRpaasTargetConfigurationToMap(model *backuprec
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := dataSourceIbmProtectionPolicyRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmProtectionPolicyLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4542,18 +5367,18 @@ func dataSourceIbmProtectionPolicyRpaasTargetConfigurationToMap(model *backuprec
 	}
 	modelMap["target_id"] = flex.IntValue(model.TargetID)
 	if model.TargetName != nil {
-		modelMap["target_name"] = model.TargetName
+		modelMap["target_name"] = *model.TargetName
 	}
 	if model.TargetType != nil {
-		modelMap["target_type"] = model.TargetType
+		modelMap["target_type"] = *model.TargetType
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyCascadedTargetConfigurationToMap(model *backuprecoveryv1.CascadedTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyCascadedTargetConfigurationToMap(model *backuprecoveryv1.CascadedTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["source_cluster_id"] = flex.IntValue(model.SourceClusterID)
-	remoteTargetsMap, err := dataSourceIbmProtectionPolicyTargetsConfigurationToMap(model.RemoteTargets)
+	remoteTargetsMap, err := DataSourceIbmProtectionPolicyTargetsConfigurationToMap(model.RemoteTargets)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4561,7 +5386,7 @@ func dataSourceIbmProtectionPolicyCascadedTargetConfigurationToMap(model *backup
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionPolicyRetryOptionsToMap(model *backuprecoveryv1.RetryOptions) (map[string]interface{}, error) {
+func DataSourceIbmProtectionPolicyRetryOptionsToMap(model *backuprecoveryv1.RetryOptions) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Retries != nil {
 		modelMap["retries"] = flex.IntValue(model.Retries)

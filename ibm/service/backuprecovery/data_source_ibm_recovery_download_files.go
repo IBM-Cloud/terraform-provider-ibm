@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -13,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -21,7 +26,7 @@ func DataSourceIbmRecoveryDownloadFiles() *schema.Resource {
 		ReadContext: dataSourceIbmRecoveryDownloadFilesRead,
 
 		Schema: map[string]*schema.Schema{
-			"recovery_id": &schema.Schema{
+			"recovery_download_files_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Specifies the id of a Recovery.",
@@ -63,12 +68,14 @@ func DataSourceIbmRecoveryDownloadFiles() *schema.Resource {
 func dataSourceIbmRecoveryDownloadFilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery_download_files", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	downloadFilesFromRecoveryOptions := &backuprecoveryv1.DownloadFilesFromRecoveryOptions{}
 
-	downloadFilesFromRecoveryOptions.SetID(d.Get("recovery_id").(string))
+	downloadFilesFromRecoveryOptions.SetID(d.Get("recovery_download_files_id").(string))
 	if _, ok := d.GetOk("start_offset"); ok {
 		downloadFilesFromRecoveryOptions.SetStartOffset(int64(d.Get("start_offset").(int)))
 	}
@@ -88,10 +95,11 @@ func dataSourceIbmRecoveryDownloadFilesRead(context context.Context, d *schema.R
 		downloadFilesFromRecoveryOptions.SetIncludeTenants(d.Get("include_tenants").(bool))
 	}
 
-	response, err := backupRecoveryClient.DownloadFilesFromRecoveryWithContext(context, downloadFilesFromRecoveryOptions)
+	_, err = backupRecoveryClient.DownloadFilesFromRecoveryWithContext(context, downloadFilesFromRecoveryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DownloadFilesFromRecoveryWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DownloadFilesFromRecoveryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DownloadFilesFromRecoveryWithContext failed: %s", err.Error()), "(Data) ibm_recovery_download_files", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIbmRecoveryDownloadFilesID(d))

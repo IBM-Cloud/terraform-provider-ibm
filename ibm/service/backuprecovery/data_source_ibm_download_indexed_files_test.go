@@ -16,32 +16,31 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmRecoveryDownloadFilesDataSourceBasic(t *testing.T) {
+func TestAccIbmDownloadIndexedFilesDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(),
+				Config: testAccCheckIbmDownloadIndexedFilesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_recovery_download_files.recovery_download_files_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_download_indexed_files.download_indexed_files_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_download_indexed_files.download_indexed_files_instance", "snapshots_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic() string {
+func testAccCheckIbmDownloadIndexedFilesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_recovery_download_files" "recovery_download_files_instance" {
-			id = "id"
+		data "ibm_download_indexed_files" "download_indexed_files_instance" {
+			snapshotsId = "snapshotsId"
+			filePath = "filePath"
+			nvramFile = true
+			retryAttempt = 1
 			startOffset = 1
 			length = 1
-			fileType = "fileType"
-			sourceName = "sourceName"
-			startTime = "startTime"
-			includeTenants = true
 		}
 	`)
 }

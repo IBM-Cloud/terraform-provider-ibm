@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -31,23 +35,13 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 			"environment": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				//ValidateFunc: validate.InvokeValidator("ibm_source_registration", "environment"),
+				// ValidateFunc: validate.InvokeValidator("ibm_source_registration", "environment"),
 				Description: "Specifies the environment type of the Protection Source.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The user specified name for this source.",
-			},
-			"is_internal_encrypted": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Specifies if credentials are encrypted by internal key.",
-			},
-			"encryption_key": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Specifies the key that user has encrypted the credential with.",
 			},
 			"connection_id": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -75,6 +69,11 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 							Optional:    true,
 							Description: "Specifies the connector group id of connector groups.",
 						},
+						"data_source_connection_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the id of the connection in string format.",
+						},
 					},
 				},
 			},
@@ -82,6 +81,11 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "Specifies the connector group id of connector groups.",
+			},
+			"data_source_connection_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision.",
 			},
 			"advanced_configs": &schema.Schema{
 				Type:        schema.TypeList,
@@ -106,7 +110,7 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Physical Params params.",
+				Description: "Specifies parameters to register physical server.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint": &schema.Schema{
@@ -138,90 +142,6 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 					},
 				},
 			},
-			"oracle_params": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Description: "Physical Params params.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"database_entity_info": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Object details about Oracle database entity info.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"container_database_info": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "Specifies the list of Pluggable databases within a container database.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"database_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the database Id of the Pluggable DB.",
-												},
-												"database_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the name of the Pluggable DB.",
-												},
-											},
-										},
-									},
-									"data_guard_info": &schema.Schema{
-										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
-										Description: "Dataguard info about Oracle database.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"role": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the role of the Oracle DataGuard database.",
-												},
-												"standby_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the type of the standby oracle database.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-						"host_info": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Specifies the host information for a objects. This is mainly populated in case of App objects where app object is hosted by another object such as VM or physical server.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Specifies the id of the host object.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Specifies the name of the host object.",
-									},
-									"environment": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Specifies the environment of the object.",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -235,97 +155,299 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies object id.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the name of the object.",
 						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies registered source id to which object belongs.",
 						},
 						"source_name": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies registered source name to which object belongs.",
 						},
 						"environment": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the environment of the object.",
 						},
 						"object_hash": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the hash identifier of the object.",
 						},
 						"object_type": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the type of the object.",
 						},
 						"logical_size_bytes": &schema.Schema{
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the logical size of object in bytes.",
 						},
 						"uuid": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the uuid which is a unique identifier of the object.",
 						},
 						"global_id": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the global id which is a unique identifier of the object.",
 						},
 						"protection_type": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the protection type of the object if any.",
 						},
+						"sharepoint_site_summary": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "Specifies the common parameters for Sharepoint site objects.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"site_web_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the web url for the Sharepoint site.",
+									},
+								},
+							},
+						},
 						"os_type": &schema.Schema{
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the operating system type of the object.",
 						},
+						"child_objects": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "Specifies child object details.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies object id.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the name of the object.",
+									},
+									"source_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies registered source id to which object belongs.",
+									},
+									"source_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies registered source name to which object belongs.",
+									},
+									"environment": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the environment of the object.",
+									},
+									"object_hash": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the hash identifier of the object.",
+									},
+									"object_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the type of the object.",
+									},
+									"logical_size_bytes": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the logical size of object in bytes.",
+									},
+									"uuid": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the uuid which is a unique identifier of the object.",
+									},
+									"global_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the global id which is a unique identifier of the object.",
+									},
+									"protection_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the protection type of the object if any.",
+									},
+									"sharepoint_site_summary": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the common parameters for Sharepoint site objects.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"site_web_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the web url for the Sharepoint site.",
+												},
+											},
+										},
+									},
+									"os_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the operating system type of the object.",
+									},
+									"child_objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies child object details.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{},
+										},
+									},
+									"v_center_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Optional: true,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"is_cloud_env": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+												},
+											},
+										},
+									},
+									"windows_cluster_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Optional: true,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cluster_source_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the type of cluster resource this source represents.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"v_center_summary": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"is_cloud_env": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+									},
+								},
+							},
+						},
+						"windows_cluster_summary": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cluster_source_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the type of cluster resource this source represents.",
+									},
+								},
+							},
+						},
 						"protection_stats": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the count and size of protected and unprotected objects for the size.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"environment": &schema.Schema{
 										Type:        schema.TypeString,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the environment of the object.",
 									},
 									"protected_count": &schema.Schema{
 										Type:        schema.TypeInt,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the count of the protected leaf objects.",
 									},
 									"unprotected_count": &schema.Schema{
 										Type:        schema.TypeInt,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the count of the unprotected leaf objects.",
 									},
 									"deleted_protected_count": &schema.Schema{
 										Type:        schema.TypeInt,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the count of protected leaf objects which were deleted from the source after being protected.",
 									},
 									"protected_size_bytes": &schema.Schema{
 										Type:        schema.TypeInt,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the protected logical size in bytes.",
 									},
 									"unprotected_size_bytes": &schema.Schema{
 										Type:        schema.TypeInt,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the unprotected logical size in bytes.",
 									},
@@ -334,33 +456,39 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 						},
 						"permissions": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the list of users, groups and users that have permissions for a given object.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"object_id": &schema.Schema{
 										Type:        schema.TypeInt,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the id of the object.",
 									},
 									"users": &schema.Schema{
 										Type:        schema.TypeList,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the list of users which has the permissions to the object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the name of the user.",
 												},
 												"sid": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the sid of the user.",
 												},
 												"domain": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the domain of the user.",
 												},
@@ -369,22 +497,26 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 									},
 									"groups": &schema.Schema{
 										Type:        schema.TypeList,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the list of user groups which has permissions to the object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the name of the user group.",
 												},
 												"sid": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the sid of the user group.",
 												},
 												"domain": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the domain of the user group.",
 												},
@@ -393,19 +525,160 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 									},
 									"tenant": &schema.Schema{
 										Type:        schema.TypeList,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies a tenant object.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"created_at_time_msecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Epoch time when tenant was created.",
+												},
+												"deleted_at_time_msecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Epoch time when tenant was last updated.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Description about the tenant.",
+												},
+												"external_vendor_metadata": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendors who are responsible for managing tenants. This field will only applicable if tenant creation is happening for a specially provisioned clusters for external vendors.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"ibm_tenant_metadata_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendor of type 'IBM'.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"account_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the unique identifier of the IBM's account ID.",
+																		},
+																		"crn": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the unique CRN associated with the tenant.",
+																		},
+																		"custom_properties": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the list of custom properties associated with the tenant. External vendors can choose to set any properties inside following list. Note that the fields set inside the following will not be available for direct filtering. API callers should make sure that no sensitive information such as passwords is sent in these fields.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the unique key for custom property.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the value for the above custom key.",
+																					},
+																				},
+																			},
+																		},
+																		"liveness_mode": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
+																		},
+																		"ownership_mode": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
+																		},
+																		"resource_group_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the Resource Group ID associated with the tenant.",
+																		},
+																	},
+																},
+															},
+															"type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the external vendor. The type specific parameters must be specified the provided type.",
+															},
+														},
+													},
+												},
 												"id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "The tenant id.",
 												},
+												"is_managed_on_helios": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Computed:    true,
+													Description: "Flag to indicate if tenant is managed on helios.",
+												},
+												"last_updated_at_time_msecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Epoch time when tenant was last updated.",
+												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Name of the Tenant.",
+												},
+												"network": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Networking information about a Tenant on a Cluster.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"connector_enabled": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Whether connector (hybrid extender) is enabled.",
+															},
+															"cluster_hostname": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "The hostname for Cohesity cluster as seen by tenants and as is routable from the tenant's network. Tenant's VLAN's hostname, if available can be used instead but it is mandatory to provide this value if there's no VLAN hostname to use. Also, when set, this field would take precedence over VLAN hostname.",
+															},
+															"cluster_ips": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Set of IPs as seen from the tenant's network for the Cohesity cluster. Only one from 'clusterHostname' and 'clusterIps' is needed.",
+																Elem:        &schema.Schema{Type: schema.TypeString},
+															},
+														},
+													},
+												},
+												"status": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Current Status of the Tenant.",
 												},
 											},
 										},
@@ -413,94 +686,82 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 								},
 							},
 						},
-						"oracle_params": &schema.Schema{
+						"mssql_params": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
-							Description: "Specifies the parameters for Oracle object.",
+							Description: "Specifies the parameters for Msssql object.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"database_entity_info": &schema.Schema{
+									"aag_info": &schema.Schema{
 										Type:        schema.TypeList,
+										Optional:    true,
 										Computed:    true,
-										Description: "Object details about Oracle database entity info.",
+										Description: "Object details for Mssql.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"container_database_info": &schema.Schema{
-													Type:        schema.TypeList,
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
-													Description: "Specifies the list of Pluggable databases within a container database.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"database_id": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the database Id of the Pluggable DB.",
-															},
-															"database_name": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the name of the Pluggable DB.",
-															},
-														},
-													},
+													Description: "Specifies the AAG name.",
 												},
-												"data_guard_info": &schema.Schema{
-													Type:        schema.TypeList,
+												"object_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
 													Computed:    true,
-													Description: "Dataguard info about Oracle database.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"role": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the role of the Oracle DataGuard database.",
-															},
-															"standby_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Computed:    true,
-																Description: "Specifies the type of the standby oracle database.",
-															},
-														},
-													},
+													Description: "Specifies the AAG object Id.",
 												},
 											},
 										},
 									},
 									"host_info": &schema.Schema{
 										Type:        schema.TypeList,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the host information for a objects. This is mainly populated in case of App objects where app object is hosted by another object such as VM or physical server.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the id of the host object.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the name of the host object.",
 												},
 												"environment": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the environment of the object.",
 												},
 											},
 										},
 									},
+									"is_encrypted": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies whether the database is TDE enabled.",
+									},
 								},
 							},
 						},
 						"physical_params": &schema.Schema{
 							Type:        schema.TypeList,
+							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the parameters for Physical object.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"enable_system_backup": &schema.Schema{
 										Type:        schema.TypeBool,
+										Optional:    true,
 										Computed:    true,
 										Description: "Specifies if system backup was enabled for the source in a particular run.",
 									},
@@ -525,6 +786,173 @@ func ResourceIbmSourceRegistration() *schema.Resource {
 				Computed:    true,
 				Description: "Specifies the time when the source was last refreshed in milliseconds.",
 			},
+			"external_metadata": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Specifies the External metadata of an entity.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"maintenance_mode_config": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "Specifies the entity metadata for maintenance mode.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"activation_time_intervals": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the absolute intervals where the maintenance schedule is valid, i.e. maintenance_shedule is considered only for these time ranges. (For example, if there is one time range with [now_usecs, now_usecs + 10 days], the action will be done during the maintenance_schedule for the next 10 days.)The start time must be specified. The end time can be -1 which would denote an indefinite maintenance mode.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"end_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the end time of this time range.",
+												},
+												"start_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the start time of this time range.",
+												},
+											},
+										},
+									},
+									"maintenance_schedule": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies a schedule for actions to be taken.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"periodic_time_windows": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the time range within the days of the week.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"day_of_the_week": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the week day.",
+															},
+															"end_time": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the time in hours and minutes.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"hour": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the hour of this time.",
+																		},
+																		"minute": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the minute of this time.",
+																		},
+																	},
+																},
+															},
+															"start_time": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the time in hours and minutes.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"hour": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the hour of this time.",
+																		},
+																		"minute": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the minute of this time.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"schedule_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the type of schedule for this ScheduleProto.",
+												},
+												"time_ranges": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the time ranges in usecs.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"end_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the end time of this time range.",
+															},
+															"start_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the start time of this time range.",
+															},
+														},
+													},
+												},
+												"timezone": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the timezone of the user of this ScheduleProto. The timezones have unique names of the form 'Area/Location'.",
+												},
+											},
+										},
+									},
+									"user_message": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "User provided message associated with this maintenance mode.",
+									},
+									"workflow_intervention_spec_list": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "Specifies the type of intervention for different workflows when the source goes into maintenance mode.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"intervention": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the intervention type for ongoing tasks.",
+												},
+												"workflow_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the workflow type for which an intervention would be needed when maintenance mode begins.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -537,7 +965,7 @@ func ResourceIbmSourceRegistrationValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "kOracle, kPhysical, kSQL",
+			AllowedValues:              "kPhysical, kSQL",
 		},
 	)
 
@@ -548,7 +976,9 @@ func ResourceIbmSourceRegistrationValidator() *validate.ResourceValidator {
 func resourceIbmSourceRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	registerProtectionSourceOptions := &backuprecoveryv1.RegisterProtectionSourceOptions{}
@@ -570,9 +1000,9 @@ func resourceIbmSourceRegistrationCreate(context context.Context, d *schema.Reso
 		var connections []backuprecoveryv1.ConnectionConfig
 		for _, v := range d.Get("connections").([]interface{}) {
 			value := v.(map[string]interface{})
-			connectionsItem, err := resourceIbmSourceRegistrationMapToConnectionConfig(value)
+			connectionsItem, err := ResourceIbmSourceRegistrationMapToConnectionConfig(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "create", "parse-connections").GetDiag()
 			}
 			connections = append(connections, *connectionsItem)
 		}
@@ -585,33 +1015,30 @@ func resourceIbmSourceRegistrationCreate(context context.Context, d *schema.Reso
 		var advancedConfigs []backuprecoveryv1.KeyValuePair
 		for _, v := range d.Get("advanced_configs").([]interface{}) {
 			value := v.(map[string]interface{})
-			advancedConfigsItem, err := resourceIbmSourceRegistrationMapToKeyValuePair(value)
+			advancedConfigsItem, err := ResourceIbmSourceRegistrationMapToKeyValuePair(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "create", "parse-advanced_configs").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
 		}
 		registerProtectionSourceOptions.SetAdvancedConfigs(advancedConfigs)
 	}
+	if _, ok := d.GetOk("data_source_connection_id"); ok {
+		registerProtectionSourceOptions.SetDataSourceConnectionID(d.Get("data_source_connection_id").(string))
+	}
 	if _, ok := d.GetOk("physical_params"); ok {
-		physicalParamsModel, err := resourceIbmSourceRegistrationMapToPhysicalParams(d.Get("physical_params.0").(map[string]interface{}))
+		physicalParamsModel, err := ResourceIbmSourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "create", "parse-physical_params").GetDiag()
 		}
 		registerProtectionSourceOptions.SetPhysicalParams(physicalParamsModel)
 	}
-	if _, ok := d.GetOk("oracle_params"); ok {
-		oracleParamsModel, err := resourceIbmSourceRegistrationMapToOracleParams(d.Get("oracle_params.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		registerProtectionSourceOptions.SetOracleParams(oracleParamsModel)
-	}
 
-	sourceRegistrationReponseParams, response, err := backupRecoveryClient.RegisterProtectionSourceWithContext(context, registerProtectionSourceOptions)
+	sourceRegistrationReponseParams, _, err := backupRecoveryClient.RegisterProtectionSourceWithContext(context, registerProtectionSourceOptions)
 	if err != nil {
-		log.Printf("[DEBUG] RegisterProtectionSourceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("RegisterProtectionSourceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_source_registration", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
@@ -622,12 +1049,12 @@ func resourceIbmSourceRegistrationCreate(context context.Context, d *schema.Reso
 func resourceIbmSourceRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
-
-	//getProtectionSourceRegistrationOptions.SetID(d.Id())
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -642,100 +1069,119 @@ func resourceIbmSourceRegistrationRead(context context.Context, d *schema.Resour
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetProtectionSourceRegistrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProtectionSourceRegistrationWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("environment", sourceRegistrationReponseParams.Environment); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting environment: %s", err))
+		err = fmt.Errorf("Error setting environment: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-environment").GetDiag()
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.Name) {
 		if err = d.Set("name", sourceRegistrationReponseParams.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-name").GetDiag()
 		}
 	}
-
 	if !core.IsNil(sourceRegistrationReponseParams.ConnectionID) {
 		if err = d.Set("connection_id", flex.IntValue(sourceRegistrationReponseParams.ConnectionID)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting connection_id: %s", err))
+			err = fmt.Errorf("Error setting connection_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-connection_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.Connections) {
 		connections := []map[string]interface{}{}
 		for _, connectionsItem := range sourceRegistrationReponseParams.Connections {
-			connectionsItemMap, err := resourceIbmSourceRegistrationConnectionConfigToMap(&connectionsItem)
+			connectionsItemMap, err := ResourceIbmSourceRegistrationConnectionConfigToMap(&connectionsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "connections-to-map").GetDiag()
 			}
 			connections = append(connections, connectionsItemMap)
 		}
 		if err = d.Set("connections", connections); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting connections: %s", err))
+			err = fmt.Errorf("Error setting connections: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-connections").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ConnectorGroupID) {
 		if err = d.Set("connector_group_id", flex.IntValue(sourceRegistrationReponseParams.ConnectorGroupID)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting connector_group_id: %s", err))
+			err = fmt.Errorf("Error setting connector_group_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-connector_group_id").GetDiag()
+		}
+	}
+	if !core.IsNil(sourceRegistrationReponseParams.DataSourceConnectionID) {
+		if err = d.Set("data_source_connection_id", sourceRegistrationReponseParams.DataSourceConnectionID); err != nil {
+			err = fmt.Errorf("Error setting data_source_connection_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-data_source_connection_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.AdvancedConfigs) {
 		advancedConfigs := []map[string]interface{}{}
 		for _, advancedConfigsItem := range sourceRegistrationReponseParams.AdvancedConfigs {
-			advancedConfigsItemMap, err := resourceIbmSourceRegistrationKeyValuePairToMap(&advancedConfigsItem)
+			advancedConfigsItemMap, err := ResourceIbmSourceRegistrationKeyValuePairToMap(&advancedConfigsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "advanced_configs-to-map").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, advancedConfigsItemMap)
 		}
 		if err = d.Set("advanced_configs", advancedConfigs); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting advanced_configs: %s", err))
+			err = fmt.Errorf("Error setting advanced_configs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-advanced_configs").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.PhysicalParams) {
-		physicalParamsMap, err := resourceIbmSourceRegistrationPhysicalParamsToMap(sourceRegistrationReponseParams.PhysicalParams)
+		physicalParamsMap, err := ResourceIbmSourceRegistrationPhysicalSourceRegistrationParamsToMap(sourceRegistrationReponseParams.PhysicalParams)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "physical_params-to-map").GetDiag()
 		}
 		if err = d.Set("physical_params", []map[string]interface{}{physicalParamsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting physical_params: %s", err))
-		}
-	}
-	if !core.IsNil(sourceRegistrationReponseParams.OracleParams) {
-		oracleParamsMap, err := resourceIbmSourceRegistrationOracleParamsToMap(sourceRegistrationReponseParams.OracleParams)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("oracle_params", []map[string]interface{}{oracleParamsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting oracle_params: %s", err))
+			err = fmt.Errorf("Error setting physical_params: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-physical_params").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.SourceID) {
 		if err = d.Set("source_id", flex.IntValue(sourceRegistrationReponseParams.SourceID)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_id: %s", err))
+			err = fmt.Errorf("Error setting source_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-source_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.SourceInfo) {
-		sourceInfoMap, err := resourceIbmSourceRegistrationObjectToMap(sourceRegistrationReponseParams.SourceInfo)
+		sourceInfoMap, err := ResourceIbmSourceRegistrationObjectToMap(sourceRegistrationReponseParams.SourceInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "source_info-to-map").GetDiag()
 		}
 		if err = d.Set("source_info", []map[string]interface{}{sourceInfoMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_info: %s", err))
+			err = fmt.Errorf("Error setting source_info: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-source_info").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.AuthenticationStatus) {
 		if err = d.Set("authentication_status", sourceRegistrationReponseParams.AuthenticationStatus); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting authentication_status: %s", err))
+			err = fmt.Errorf("Error setting authentication_status: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-authentication_status").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.RegistrationTimeMsecs) {
 		if err = d.Set("registration_time_msecs", flex.IntValue(sourceRegistrationReponseParams.RegistrationTimeMsecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting registration_time_msecs: %s", err))
+			err = fmt.Errorf("Error setting registration_time_msecs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-registration_time_msecs").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.LastRefreshedTimeMsecs) {
 		if err = d.Set("last_refreshed_time_msecs", flex.IntValue(sourceRegistrationReponseParams.LastRefreshedTimeMsecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last_refreshed_time_msecs: %s", err))
+			err = fmt.Errorf("Error setting last_refreshed_time_msecs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-last_refreshed_time_msecs").GetDiag()
+		}
+	}
+	if !core.IsNil(sourceRegistrationReponseParams.ExternalMetadata) {
+		externalMetadataMap, err := ResourceIbmSourceRegistrationEntityExternalMetadataToMap(sourceRegistrationReponseParams.ExternalMetadata)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "external_metadata-to-map").GetDiag()
+		}
+		if err = d.Set("external_metadata", []map[string]interface{}{externalMetadataMap}); err != nil {
+			err = fmt.Errorf("Error setting external_metadata: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "read", "set-external_metadata").GetDiag()
 		}
 	}
 
@@ -745,9 +1191,12 @@ func resourceIbmSourceRegistrationRead(context context.Context, d *schema.Resour
 func resourceIbmSourceRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
+	patchProtectionSourceRegistrationOptions := &backuprecoveryv1.PatchProtectionSourceRegistrationOptions{}
 	updateProtectionSourceRegistrationOptions := &backuprecoveryv1.UpdateProtectionSourceRegistrationOptions{}
 
 	id, err := strconv.Atoi(d.Id())
@@ -755,70 +1204,123 @@ func resourceIbmSourceRegistrationUpdate(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 	updateProtectionSourceRegistrationOptions.SetID(int64(id))
+	patchProtectionSourceRegistrationOptions.SetID(int64(id))
 
-	updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
+	patchData := false
+	putData := false
 
-	// if _, ok := d.GetOk("id"); ok {
-	// 	updateProtectionSourceRegistrationOptions.SetID(d.Get("id").(string))
-	// }
-	if _, ok := d.GetOk("name"); ok {
-		updateProtectionSourceRegistrationOptions.SetName(d.Get("name").(string))
+	if d.HasChange("environment") {
+		patchProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
+		updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
+		patchData = true
 	}
-	if _, ok := d.GetOk("is_internal_encrypted"); ok {
-		updateProtectionSourceRegistrationOptions.SetIsInternalEncrypted(d.Get("is_internal_encrypted").(bool))
+
+	if d.HasChange("name") {
+		if _, ok := d.GetOk("name"); ok {
+			updateProtectionSourceRegistrationOptions.SetName(d.Get("name").(string))
+			putData = true
+		}
 	}
-	if _, ok := d.GetOk("encryption_key"); ok {
-		updateProtectionSourceRegistrationOptions.SetEncryptionKey(d.Get("encryption_key").(string))
+
+	if d.HasChange("is_internal_encrypted") {
+		if _, ok := d.GetOk("is_internal_encrypted"); ok {
+			updateProtectionSourceRegistrationOptions.SetIsInternalEncrypted(d.Get("is_internal_encrypted").(bool))
+			putData = true
+		}
 	}
-	if _, ok := d.GetOk("connection_id"); ok {
-		updateProtectionSourceRegistrationOptions.SetConnectionID(int64(d.Get("connection_id").(int)))
+
+	if d.HasChange("encryption_key") {
+		if _, ok := d.GetOk("encryption_key"); ok {
+			updateProtectionSourceRegistrationOptions.SetEncryptionKey(d.Get("encryption_key").(string))
+			putData = true
+		}
 	}
-	if _, ok := d.GetOk("connections"); ok {
-		var newConnections []backuprecoveryv1.ConnectionConfig
-		for _, v := range d.Get("connections").([]interface{}) {
-			value := v.(map[string]interface{})
-			newConnectionsItem, err := resourceIbmSourceRegistrationMapToConnectionConfig(value)
-			if err != nil {
-				return diag.FromErr(err)
+
+	if d.HasChange("connection_id") {
+		if _, ok := d.GetOk("connection_id"); ok {
+			updateProtectionSourceRegistrationOptions.SetConnectionID(int64(d.Get("connection_id").(int)))
+			putData = true
+		}
+	}
+
+	if d.HasChange("connections") {
+		if _, ok := d.GetOk("connections"); ok {
+			var connections []backuprecoveryv1.ConnectionConfig
+			for _, v := range d.Get("connections").([]interface{}) {
+				value := v.(map[string]interface{})
+				connectionsItem, err := ResourceIbmSourceRegistrationMapToConnectionConfig(value)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-connections").GetDiag()
+				}
+				connections = append(connections, *connectionsItem)
 			}
-			newConnections = append(newConnections, *newConnectionsItem)
+			updateProtectionSourceRegistrationOptions.SetConnections(connections)
+			putData = true
 		}
-		updateProtectionSourceRegistrationOptions.SetConnections(newConnections)
-	}
-	if _, ok := d.GetOk("connector_group_id"); ok {
-		updateProtectionSourceRegistrationOptions.SetConnectorGroupID(int64(d.Get("connector_group_id").(int)))
-	}
-	if _, ok := d.GetOk("advanced_configs"); ok {
-		var newAdvancedConfigs []backuprecoveryv1.KeyValuePair
-		for _, v := range d.Get("advanced_configs").([]interface{}) {
-			value := v.(map[string]interface{})
-			newAdvancedConfigsItem, err := resourceIbmSourceRegistrationMapToKeyValuePair(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			newAdvancedConfigs = append(newAdvancedConfigs, *newAdvancedConfigsItem)
-		}
-		updateProtectionSourceRegistrationOptions.SetAdvancedConfigs(newAdvancedConfigs)
-	}
-	if _, ok := d.GetOk("physical_params"); ok {
-		newPhysicalParams, err := resourceIbmSourceRegistrationMapToPhysicalParams(d.Get("physical_params.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateProtectionSourceRegistrationOptions.SetPhysicalParams(newPhysicalParams)
-	}
-	if _, ok := d.GetOk("oracle_params"); ok {
-		newOracleParams, err := resourceIbmSourceRegistrationMapToOracleParams(d.Get("oracle_params.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateProtectionSourceRegistrationOptions.SetOracleParams(newOracleParams)
 	}
 
-	_, response, err := backupRecoveryClient.UpdateProtectionSourceRegistrationWithContext(context, updateProtectionSourceRegistrationOptions)
-	if err != nil {
-		log.Printf("[DEBUG] UpdateProtectionSourceRegistrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("UpdateProtectionSourceRegistrationWithContext failed %s\n%s", err, response))
+	if d.HasChange("connector_group_id") {
+		if _, ok := d.GetOk("connector_group_id"); ok {
+			updateProtectionSourceRegistrationOptions.SetConnectorGroupID(int64(d.Get("connector_group_id").(int)))
+			putData = true
+		}
+	}
+
+	if d.HasChange("advanced_configs") {
+		if _, ok := d.GetOk("advanced_configs"); ok {
+			var advancedConfigs []backuprecoveryv1.KeyValuePair
+			for _, v := range d.Get("advanced_configs").([]interface{}) {
+				value := v.(map[string]interface{})
+				advancedConfigsItem, err := ResourceIbmSourceRegistrationMapToKeyValuePair(value)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-advanced_configs").GetDiag()
+				}
+				advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
+			}
+			updateProtectionSourceRegistrationOptions.SetAdvancedConfigs(advancedConfigs)
+			putData = true
+		}
+	}
+
+	if d.HasChange("data_source_connection_id") {
+		if _, ok := d.GetOk("data_source_connection_id"); ok {
+			updateProtectionSourceRegistrationOptions.SetDataSourceConnectionID(d.Get("data_source_connection_id").(string))
+			putData = true
+		}
+	}
+
+	if d.HasChange("last_modified_timestamp_usecs") {
+		if _, ok := d.GetOk("last_modified_timestamp_usecs"); ok {
+			updateProtectionSourceRegistrationOptions.SetLastModifiedTimestampUsecs(int64(d.Get("last_modified_timestamp_usecs").(int)))
+			putData = true
+		}
+	}
+
+	if d.HasChange("physical_params") {
+		if _, ok := d.GetOk("physical_params"); ok {
+			physicalParams, err := ResourceIbmSourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-physical_params").GetDiag()
+			}
+			updateProtectionSourceRegistrationOptions.SetPhysicalParams(physicalParams)
+			putData = true
+		}
+	}
+
+	if patchData && !putData {
+		_, _, err = backupRecoveryClient.PatchProtectionSourceRegistrationWithContext(context, patchProtectionSourceRegistrationOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "patch")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	} else {
+		_, _, err = backupRecoveryClient.UpdateProtectionSourceRegistrationWithContext(context, updateProtectionSourceRegistrationOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
 	return resourceIbmSourceRegistrationRead(context, d, meta)
@@ -827,7 +1329,9 @@ func resourceIbmSourceRegistrationUpdate(context context.Context, d *schema.Reso
 func resourceIbmSourceRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv1.DeleteProtectionSourceRegistrationOptions{}
@@ -841,10 +1345,11 @@ func resourceIbmSourceRegistrationDelete(context context.Context, d *schema.Reso
 
 	deleteProtectionSourceRegistrationOptions.SetID(int64(id))
 
-	response, err := backupRecoveryClient.DeleteProtectionSourceRegistrationWithContext(context, deleteProtectionSourceRegistrationOptions)
+	_, err = backupRecoveryClient.DeleteProtectionSourceRegistrationWithContext(context, deleteProtectionSourceRegistrationOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteProtectionSourceRegistrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteProtectionSourceRegistrationWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -852,7 +1357,7 @@ func resourceIbmSourceRegistrationDelete(context context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceIbmSourceRegistrationMapToConnectionConfig(modelMap map[string]interface{}) (*backuprecoveryv1.ConnectionConfig, error) {
+func ResourceIbmSourceRegistrationMapToConnectionConfig(modelMap map[string]interface{}) (*backuprecoveryv1.ConnectionConfig, error) {
 	model := &backuprecoveryv1.ConnectionConfig{}
 	if modelMap["connection_id"] != nil {
 		model.ConnectionID = core.Int64Ptr(int64(modelMap["connection_id"].(int)))
@@ -863,18 +1368,21 @@ func resourceIbmSourceRegistrationMapToConnectionConfig(modelMap map[string]inte
 	if modelMap["connector_group_id"] != nil {
 		model.ConnectorGroupID = core.Int64Ptr(int64(modelMap["connector_group_id"].(int)))
 	}
+	if modelMap["data_source_connection_id"] != nil && modelMap["data_source_connection_id"].(string) != "" {
+		model.DataSourceConnectionID = core.StringPtr(modelMap["data_source_connection_id"].(string))
+	}
 	return model, nil
 }
 
-func resourceIbmSourceRegistrationMapToKeyValuePair(modelMap map[string]interface{}) (*backuprecoveryv1.KeyValuePair, error) {
+func ResourceIbmSourceRegistrationMapToKeyValuePair(modelMap map[string]interface{}) (*backuprecoveryv1.KeyValuePair, error) {
 	model := &backuprecoveryv1.KeyValuePair{}
 	model.Key = core.StringPtr(modelMap["key"].(string))
 	model.Value = core.StringPtr(modelMap["value"].(string))
 	return model, nil
 }
 
-func resourceIbmSourceRegistrationMapToPhysicalParams(modelMap map[string]interface{}) (*backuprecoveryv1.PhysicalParams, error) {
-	model := &backuprecoveryv1.PhysicalParams{}
+func ResourceIbmSourceRegistrationMapToPhysicalSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.PhysicalSourceRegistrationParams, error) {
+	model := &backuprecoveryv1.PhysicalSourceRegistrationParams{}
 	model.Endpoint = core.StringPtr(modelMap["endpoint"].(string))
 	if modelMap["force_register"] != nil {
 		model.ForceRegister = core.BoolPtr(modelMap["force_register"].(bool))
@@ -895,85 +1403,7 @@ func resourceIbmSourceRegistrationMapToPhysicalParams(modelMap map[string]interf
 	return model, nil
 }
 
-func resourceIbmSourceRegistrationMapToOracleParams(modelMap map[string]interface{}) (*backuprecoveryv1.OracleParams, error) {
-	model := &backuprecoveryv1.OracleParams{}
-	if modelMap["database_entity_info"] != nil && len(modelMap["database_entity_info"].([]interface{})) > 0 {
-		DatabaseEntityInfoModel, err := resourceIbmSourceRegistrationMapToDatabaseEntityInfo(modelMap["database_entity_info"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.DatabaseEntityInfo = DatabaseEntityInfoModel
-	}
-	if modelMap["host_info"] != nil && len(modelMap["host_info"].([]interface{})) > 0 {
-		HostInfoModel, err := resourceIbmSourceRegistrationMapToHostInformation(modelMap["host_info"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.HostInfo = HostInfoModel
-	}
-	return model, nil
-}
-
-func resourceIbmSourceRegistrationMapToDatabaseEntityInfo(modelMap map[string]interface{}) (*backuprecoveryv1.DatabaseEntityInfo, error) {
-	model := &backuprecoveryv1.DatabaseEntityInfo{}
-	if modelMap["container_database_info"] != nil {
-		containerDatabaseInfo := []backuprecoveryv1.PluggableDatabaseInfo{}
-		for _, containerDatabaseInfoItem := range modelMap["container_database_info"].([]interface{}) {
-			containerDatabaseInfoItemModel, err := resourceIbmSourceRegistrationMapToPluggableDatabaseInfo(containerDatabaseInfoItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			containerDatabaseInfo = append(containerDatabaseInfo, *containerDatabaseInfoItemModel)
-		}
-		model.ContainerDatabaseInfo = containerDatabaseInfo
-	}
-	if modelMap["data_guard_info"] != nil && len(modelMap["data_guard_info"].([]interface{})) > 0 {
-		DataGuardInfoModel, err := resourceIbmSourceRegistrationMapToDataGuardInfo(modelMap["data_guard_info"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.DataGuardInfo = DataGuardInfoModel
-	}
-	return model, nil
-}
-
-func resourceIbmSourceRegistrationMapToPluggableDatabaseInfo(modelMap map[string]interface{}) (*backuprecoveryv1.PluggableDatabaseInfo, error) {
-	model := &backuprecoveryv1.PluggableDatabaseInfo{}
-	if modelMap["database_id"] != nil && modelMap["database_id"].(string) != "" {
-		model.DatabaseID = core.StringPtr(modelMap["database_id"].(string))
-	}
-	if modelMap["database_name"] != nil && modelMap["database_name"].(string) != "" {
-		model.DatabaseName = core.StringPtr(modelMap["database_name"].(string))
-	}
-	return model, nil
-}
-
-func resourceIbmSourceRegistrationMapToDataGuardInfo(modelMap map[string]interface{}) (*backuprecoveryv1.DataGuardInfo, error) {
-	model := &backuprecoveryv1.DataGuardInfo{}
-	if modelMap["role"] != nil && modelMap["role"].(string) != "" {
-		model.Role = core.StringPtr(modelMap["role"].(string))
-	}
-	if modelMap["standby_type"] != nil && modelMap["standby_type"].(string) != "" {
-		model.StandbyType = core.StringPtr(modelMap["standby_type"].(string))
-	}
-	return model, nil
-}
-
-func resourceIbmSourceRegistrationMapToHostInformation(modelMap map[string]interface{}) (*backuprecoveryv1.HostInformation, error) {
-	model := &backuprecoveryv1.HostInformation{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["environment"] != nil && modelMap["environment"].(string) != "" {
-		model.Environment = core.StringPtr(modelMap["environment"].(string))
-	}
-	return model, nil
-}
-
-func resourceIbmSourceRegistrationConnectionConfigToMap(model *backuprecoveryv1.ConnectionConfig) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationConnectionConfigToMap(model *backuprecoveryv1.ConnectionConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ConnectionID != nil {
 		modelMap["connection_id"] = flex.IntValue(model.ConnectionID)
@@ -984,27 +1414,30 @@ func resourceIbmSourceRegistrationConnectionConfigToMap(model *backuprecoveryv1.
 	if model.ConnectorGroupID != nil {
 		modelMap["connector_group_id"] = flex.IntValue(model.ConnectorGroupID)
 	}
+	if model.DataSourceConnectionID != nil {
+		modelMap["data_source_connection_id"] = *model.DataSourceConnectionID
+	}
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationKeyValuePairToMap(model *backuprecoveryv1.KeyValuePair) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationKeyValuePairToMap(model *backuprecoveryv1.KeyValuePair) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["value"] = model.Value
+	modelMap["key"] = *model.Key
+	modelMap["value"] = *model.Value
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationPhysicalParamsToMap(model *backuprecoveryv1.PhysicalParams) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationPhysicalSourceRegistrationParamsToMap(model *backuprecoveryv1.PhysicalSourceRegistrationParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["endpoint"] = model.Endpoint
+	modelMap["endpoint"] = *model.Endpoint
 	if model.ForceRegister != nil {
-		modelMap["force_register"] = model.ForceRegister
+		modelMap["force_register"] = *model.ForceRegister
 	}
 	if model.HostType != nil {
-		modelMap["host_type"] = model.HostType
+		modelMap["host_type"] = *model.HostType
 	}
 	if model.PhysicalType != nil {
-		modelMap["physical_type"] = model.PhysicalType
+		modelMap["physical_type"] = *model.PhysicalType
 	}
 	if model.Applications != nil {
 		modelMap["applications"] = model.Applications
@@ -1012,126 +1445,80 @@ func resourceIbmSourceRegistrationPhysicalParamsToMap(model *backuprecoveryv1.Ph
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationOracleParamsToMap(model *backuprecoveryv1.OracleParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DatabaseEntityInfo != nil {
-		databaseEntityInfoMap, err := resourceIbmSourceRegistrationDatabaseEntityInfoToMap(model.DatabaseEntityInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["database_entity_info"] = []map[string]interface{}{databaseEntityInfoMap}
-	}
-	if model.HostInfo != nil {
-		hostInfoMap, err := resourceIbmSourceRegistrationHostInformationToMap(model.HostInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["host_info"] = []map[string]interface{}{hostInfoMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIbmSourceRegistrationDatabaseEntityInfoToMap(model *backuprecoveryv1.DatabaseEntityInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ContainerDatabaseInfo != nil {
-		containerDatabaseInfo := []map[string]interface{}{}
-		for _, containerDatabaseInfoItem := range model.ContainerDatabaseInfo {
-			containerDatabaseInfoItemMap, err := resourceIbmSourceRegistrationPluggableDatabaseInfoToMap(&containerDatabaseInfoItem)
-			if err != nil {
-				return modelMap, err
-			}
-			containerDatabaseInfo = append(containerDatabaseInfo, containerDatabaseInfoItemMap)
-		}
-		modelMap["container_database_info"] = containerDatabaseInfo
-	}
-	if model.DataGuardInfo != nil {
-		dataGuardInfoMap, err := resourceIbmSourceRegistrationDataGuardInfoToMap(model.DataGuardInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["data_guard_info"] = []map[string]interface{}{dataGuardInfoMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIbmSourceRegistrationPluggableDatabaseInfoToMap(model *backuprecoveryv1.PluggableDatabaseInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DatabaseID != nil {
-		modelMap["database_id"] = model.DatabaseID
-	}
-	if model.DatabaseName != nil {
-		modelMap["database_name"] = model.DatabaseName
-	}
-	return modelMap, nil
-}
-
-func resourceIbmSourceRegistrationDataGuardInfoToMap(model *backuprecoveryv1.DataGuardInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Role != nil {
-		modelMap["role"] = model.Role
-	}
-	if model.StandbyType != nil {
-		modelMap["standby_type"] = model.StandbyType
-	}
-	return modelMap, nil
-}
-
-func resourceIbmSourceRegistrationHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = model.Name
-	}
-	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
-	}
-	return modelMap, nil
-}
-
-func resourceIbmSourceRegistrationObjectToMap(model *backuprecoveryv1.Object) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationObjectToMap(model *backuprecoveryv1.Object) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
 	if model.SourceName != nil {
-		modelMap["source_name"] = model.SourceName
+		modelMap["source_name"] = *model.SourceName
 	}
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ObjectHash != nil {
-		modelMap["object_hash"] = model.ObjectHash
+		modelMap["object_hash"] = *model.ObjectHash
 	}
 	if model.ObjectType != nil {
-		modelMap["object_type"] = model.ObjectType
+		modelMap["object_type"] = *model.ObjectType
 	}
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
 	}
 	if model.UUID != nil {
-		modelMap["uuid"] = model.UUID
+		modelMap["uuid"] = *model.UUID
 	}
 	if model.GlobalID != nil {
-		modelMap["global_id"] = model.GlobalID
+		modelMap["global_id"] = *model.GlobalID
 	}
 	if model.ProtectionType != nil {
-		modelMap["protection_type"] = model.ProtectionType
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := ResourceIbmSourceRegistrationSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
 	}
 	if model.OsType != nil {
-		modelMap["os_type"] = model.OsType
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := ResourceIbmSourceRegistrationObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := ResourceIbmSourceRegistrationObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := ResourceIbmSourceRegistrationObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
 	}
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
-			protectionStatsItemMap, err := resourceIbmSourceRegistrationObjectProtectionStatsSummaryToMap(&protectionStatsItem)
+			protectionStatsItemMap, err := ResourceIbmSourceRegistrationObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1140,21 +1527,21 @@ func resourceIbmSourceRegistrationObjectToMap(model *backuprecoveryv1.Object) (m
 		modelMap["protection_stats"] = protectionStats
 	}
 	if model.Permissions != nil {
-		permissionsMap, err := resourceIbmSourceRegistrationPermissionInfoToMap(model.Permissions)
+		permissionsMap, err := ResourceIbmSourceRegistrationPermissionInfoToMap(model.Permissions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
-	if model.OracleParams != nil {
-		oracleParamsMap, err := resourceIbmSourceRegistrationObjectOracleParamsToMap(model.OracleParams)
+	if model.MssqlParams != nil {
+		mssqlParamsMap, err := ResourceIbmSourceRegistrationObjectMssqlParamsToMap(model.MssqlParams)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["oracle_params"] = []map[string]interface{}{oracleParamsMap}
+		modelMap["mssql_params"] = []map[string]interface{}{mssqlParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := resourceIbmSourceRegistrationObjectPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := ResourceIbmSourceRegistrationObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1163,10 +1550,107 @@ func resourceIbmSourceRegistrationObjectToMap(model *backuprecoveryv1.Object) (m
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SiteWebURL != nil {
+		modelMap["site_web_url"] = *model.SiteWebURL
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.SourceID != nil {
+		modelMap["source_id"] = flex.IntValue(model.SourceID)
+	}
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
+	if model.Environment != nil {
+		modelMap["environment"] = *model.Environment
+	}
+	if model.ObjectHash != nil {
+		modelMap["object_hash"] = *model.ObjectHash
+	}
+	if model.ObjectType != nil {
+		modelMap["object_type"] = *model.ObjectType
+	}
+	if model.LogicalSizeBytes != nil {
+		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
+	}
+	if model.UUID != nil {
+		modelMap["uuid"] = *model.UUID
+	}
+	if model.GlobalID != nil {
+		modelMap["global_id"] = *model.GlobalID
+	}
+	if model.ProtectionType != nil {
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := ResourceIbmSourceRegistrationSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
+	}
+	if model.OsType != nil {
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := ResourceIbmSourceRegistrationObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := ResourceIbmSourceRegistrationObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := ResourceIbmSourceRegistrationObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IsCloudEnv != nil {
+		modelMap["is_cloud_env"] = *model.IsCloudEnv
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ClusterSourceType != nil {
+		modelMap["cluster_source_type"] = *model.ClusterSourceType
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ProtectedCount != nil {
 		modelMap["protected_count"] = flex.IntValue(model.ProtectedCount)
@@ -1186,7 +1670,7 @@ func resourceIbmSourceRegistrationObjectProtectionStatsSummaryToMap(model *backu
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -1194,7 +1678,7 @@ func resourceIbmSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.Pe
 	if model.Users != nil {
 		users := []map[string]interface{}{}
 		for _, usersItem := range model.Users {
-			usersItemMap, err := resourceIbmSourceRegistrationUserToMap(&usersItem)
+			usersItemMap, err := ResourceIbmSourceRegistrationUserToMap(&usersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1205,7 +1689,7 @@ func resourceIbmSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.Pe
 	if model.Groups != nil {
 		groups := []map[string]interface{}{}
 		for _, groupsItem := range model.Groups {
-			groupsItemMap, err := resourceIbmSourceRegistrationGroupToMap(&groupsItem)
+			groupsItemMap, err := ResourceIbmSourceRegistrationGroupToMap(&groupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1214,7 +1698,7 @@ func resourceIbmSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.Pe
 		modelMap["groups"] = groups
 	}
 	if model.Tenant != nil {
-		tenantMap, err := resourceIbmSourceRegistrationTenantToMap(model.Tenant)
+		tenantMap, err := ResourceIbmSourceRegistrationTenantToMap(model.Tenant)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1223,68 +1707,324 @@ func resourceIbmSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.Pe
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.Sid != nil {
-		modelMap["sid"] = model.Sid
+		modelMap["sid"] = *model.Sid
 	}
 	if model.Domain != nil {
-		modelMap["domain"] = model.Domain
+		modelMap["domain"] = *model.Domain
 	}
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.Sid != nil {
-		modelMap["sid"] = model.Sid
+		modelMap["sid"] = *model.Sid
 	}
 	if model.Domain != nil {
-		modelMap["domain"] = model.Domain
+		modelMap["domain"] = *model.Domain
 	}
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+	if model.CreatedAtTimeMsecs != nil {
+		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
 	}
-	if model.Name != nil {
-		modelMap["name"] = model.Name
+	if model.DeletedAtTimeMsecs != nil {
+		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
 	}
-	return modelMap, nil
-}
-
-func resourceIbmSourceRegistrationObjectOracleParamsToMap(model *backuprecoveryv1.ObjectOracleParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DatabaseEntityInfo != nil {
-		databaseEntityInfoMap, err := resourceIbmSourceRegistrationDatabaseEntityInfoToMap(model.DatabaseEntityInfo)
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.ExternalVendorMetadata != nil {
+		externalVendorMetadataMap, err := ResourceIbmSourceRegistrationExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["database_entity_info"] = []map[string]interface{}{databaseEntityInfoMap}
+		modelMap["external_vendor_metadata"] = []map[string]interface{}{externalVendorMetadataMap}
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.IsManagedOnHelios != nil {
+		modelMap["is_managed_on_helios"] = *model.IsManagedOnHelios
+	}
+	if model.LastUpdatedAtTimeMsecs != nil {
+		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Network != nil {
+		networkMap, err := ResourceIbmSourceRegistrationTenantNetworkToMap(model.Network)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["network"] = []map[string]interface{}{networkMap}
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IbmTenantMetadataParams != nil {
+		ibmTenantMetadataParamsMap, err := ResourceIbmSourceRegistrationIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ibm_tenant_metadata_params"] = []map[string]interface{}{ibmTenantMetadataParamsMap}
+	}
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AccountID != nil {
+		modelMap["account_id"] = *model.AccountID
+	}
+	if model.Crn != nil {
+		modelMap["crn"] = *model.Crn
+	}
+	if model.CustomProperties != nil {
+		customProperties := []map[string]interface{}{}
+		for _, customPropertiesItem := range model.CustomProperties {
+			customPropertiesItemMap, err := ResourceIbmSourceRegistrationExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			customProperties = append(customProperties, customPropertiesItemMap)
+		}
+		modelMap["custom_properties"] = customProperties
+	}
+	if model.LivenessMode != nil {
+		modelMap["liveness_mode"] = *model.LivenessMode
+	}
+	if model.OwnershipMode != nil {
+		modelMap["ownership_mode"] = *model.OwnershipMode
+	}
+	if model.ResourceGroupID != nil {
+		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["connector_enabled"] = *model.ConnectorEnabled
+	if model.ClusterHostname != nil {
+		modelMap["cluster_hostname"] = *model.ClusterHostname
+	}
+	if model.ClusterIps != nil {
+		modelMap["cluster_ips"] = model.ClusterIps
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationObjectMssqlParamsToMap(model *backuprecoveryv1.ObjectMssqlParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AagInfo != nil {
+		aagInfoMap, err := ResourceIbmSourceRegistrationAAGInfoToMap(model.AagInfo)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := resourceIbmSourceRegistrationHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := ResourceIbmSourceRegistrationHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["host_info"] = []map[string]interface{}{hostInfoMap}
 	}
+	if model.IsEncrypted != nil {
+		modelMap["is_encrypted"] = *model.IsEncrypted
+	}
 	return modelMap, nil
 }
 
-func resourceIbmSourceRegistrationObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
+func ResourceIbmSourceRegistrationAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ObjectID != nil {
+		modelMap["object_id"] = flex.IntValue(model.ObjectID)
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Environment != nil {
+		modelMap["environment"] = *model.Environment
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
-		modelMap["enable_system_backup"] = model.EnableSystemBackup
+		modelMap["enable_system_backup"] = *model.EnableSystemBackup
 	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationEntityExternalMetadataToMap(model *backuprecoveryv1.EntityExternalMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MaintenanceModeConfig != nil {
+		maintenanceModeConfigMap, err := ResourceIbmSourceRegistrationMaintenanceModeConfigToMap(model.MaintenanceModeConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["maintenance_mode_config"] = []map[string]interface{}{maintenanceModeConfigMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationMaintenanceModeConfigToMap(model *backuprecoveryv1.MaintenanceModeConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ActivationTimeIntervals != nil {
+		activationTimeIntervals := []map[string]interface{}{}
+		for _, activationTimeIntervalsItem := range model.ActivationTimeIntervals {
+			activationTimeIntervalsItemMap, err := ResourceIbmSourceRegistrationTimeRangeUsecsToMap(&activationTimeIntervalsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			activationTimeIntervals = append(activationTimeIntervals, activationTimeIntervalsItemMap)
+		}
+		modelMap["activation_time_intervals"] = activationTimeIntervals
+	}
+	if model.MaintenanceSchedule != nil {
+		maintenanceScheduleMap, err := ResourceIbmSourceRegistrationScheduleToMap(model.MaintenanceSchedule)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["maintenance_schedule"] = []map[string]interface{}{maintenanceScheduleMap}
+	}
+	if model.UserMessage != nil {
+		modelMap["user_message"] = *model.UserMessage
+	}
+	if model.WorkflowInterventionSpecList != nil {
+		workflowInterventionSpecList := []map[string]interface{}{}
+		for _, workflowInterventionSpecListItem := range model.WorkflowInterventionSpecList {
+			workflowInterventionSpecListItemMap, err := ResourceIbmSourceRegistrationWorkflowInterventionSpecToMap(&workflowInterventionSpecListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			workflowInterventionSpecList = append(workflowInterventionSpecList, workflowInterventionSpecListItemMap)
+		}
+		modelMap["workflow_intervention_spec_list"] = workflowInterventionSpecList
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationTimeRangeUsecsToMap(model *backuprecoveryv1.TimeRangeUsecs) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
+	modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationScheduleToMap(model *backuprecoveryv1.Schedule) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PeriodicTimeWindows != nil {
+		periodicTimeWindows := []map[string]interface{}{}
+		for _, periodicTimeWindowsItem := range model.PeriodicTimeWindows {
+			periodicTimeWindowsItemMap, err := ResourceIbmSourceRegistrationTimeWindowToMap(&periodicTimeWindowsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			periodicTimeWindows = append(periodicTimeWindows, periodicTimeWindowsItemMap)
+		}
+		modelMap["periodic_time_windows"] = periodicTimeWindows
+	}
+	if model.ScheduleType != nil {
+		modelMap["schedule_type"] = *model.ScheduleType
+	}
+	if model.TimeRanges != nil {
+		timeRanges := []map[string]interface{}{}
+		for _, timeRangesItem := range model.TimeRanges {
+			timeRangesItemMap, err := ResourceIbmSourceRegistrationTimeRangeUsecsToMap(&timeRangesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			timeRanges = append(timeRanges, timeRangesItemMap)
+		}
+		modelMap["time_ranges"] = timeRanges
+	}
+	if model.Timezone != nil {
+		modelMap["timezone"] = *model.Timezone
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationTimeWindowToMap(model *backuprecoveryv1.TimeWindow) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DayOfTheWeek != nil {
+		modelMap["day_of_the_week"] = *model.DayOfTheWeek
+	}
+	if model.EndTime != nil {
+		endTimeMap, err := ResourceIbmSourceRegistrationTimeToMap(model.EndTime)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["end_time"] = []map[string]interface{}{endTimeMap}
+	}
+	if model.StartTime != nil {
+		startTimeMap, err := ResourceIbmSourceRegistrationTimeToMap(model.StartTime)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["start_time"] = []map[string]interface{}{startTimeMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationTimeToMap(model *backuprecoveryv1.Time) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Hour != nil {
+		modelMap["hour"] = flex.IntValue(model.Hour)
+	}
+	if model.Minute != nil {
+		modelMap["minute"] = flex.IntValue(model.Minute)
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmSourceRegistrationWorkflowInterventionSpecToMap(model *backuprecoveryv1.WorkflowInterventionSpec) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["intervention"] = *model.Intervention
+	modelMap["workflow_type"] = *model.WorkflowType
 	return modelMap, nil
 }

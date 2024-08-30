@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -13,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -21,7 +26,7 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 		ReadContext: dataSourceIbmProtectionGroupRunRead,
 
 		Schema: map[string]*schema.Schema{
-			"protection_group_run_id": &schema.Schema{
+			"protection_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Specifies a unique id of the Protection Group.",
@@ -36,38 +41,112 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 				Optional:    true,
 				Description: "Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests.",
 			},
-			"tenant_ids": &schema.Schema{
+			"start_time_usecs": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Start time for time range filter. Specify the start time as a Unix epoch Timestamp (in microseconds), only runs executing after this time will be returned. By default it is endTimeUsecs minus an hour.",
+			},
+			"end_time_usecs": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "End time for time range filter. Specify the end time as a Unix epoch Timestamp (in microseconds), only runs executing before this time will be returned. By default it is current time.",
+			},
+			"run_types": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "TenantIds contains ids of the tenants for which the run is to be returned.",
+				Description: "Filter by run type. Only protection run matching the specified types will be returned.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"include_tenants": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "If true, the response will include Protection Group Runs which were created by all tenants which the current user has permission to see. If false, then only Protection Groups created by the current user will be returned. If it's not specified, it is true by default.",
-			},
 			"include_object_details": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Specifies if the result includes the object details for a protection run. If set to true, details of the protected object will be returned. If set to false or not specified, details will not be returned.",
+				Description: "Specifies if the result includes the object details for each protection run. If set to true, details of the protected object will be returned. If set to false or not specified, details will not be returned.",
+			},
+			"local_backup_run_status": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies a list of local backup status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"replication_run_status": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies a list of replication status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"archival_run_status": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies a list of archival status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"cloud_spin_run_status": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies a list of cloud spin status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"num_runs": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Specifies the max number of runs. If not specified, at most 100 runs will be returned.",
+			},
+			"exclude_non_restorable_runs": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Specifies whether to exclude non restorable runs. Run is treated restorable only if there is atleast one object snapshot (which may be either a local or an archival snapshot) which is not deleted or expired. Default value is false.",
+			},
+			"run_tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies a list of tags for protection runs. If this is specified, only the runs which match these tags will be returned.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"use_cached_data": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Specifies whether we can serve the GET request from the read replica cache. There is a lag of 15 seconds between the read replica and primary data source.",
 			},
+			"filter_by_end_time": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, the runs with backup end time within the specified time range will be returned. Otherwise, the runs with start time in the time range are returned.",
+			},
+			"snapshot_target_types": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies the snapshot's target type which should be filtered.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"only_return_successful_copy_run": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "only successful copyruns are returned.",
+			},
+			"filter_by_copy_task_end_time": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If true, then the details of the runs for which any copyTask completed in the given timerange will be returned. Only one of filterByEndTime and filterByCopyTaskEndTime can be set.",
+			},
 			"protection_group_instance_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Protection Group instance Id. This field will be removed later.",
-			},
-			"protection_group_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ProtectionGroupId to which this run belongs.",
 			},
 			"is_replication_run": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -180,10 +259,58 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the protection type of the object if any.",
 									},
+									"sharepoint_site_summary": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the common parameters for Sharepoint site objects.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"site_web_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the web url for the Sharepoint site.",
+												},
+											},
+										},
+									},
 									"os_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Specifies the operating system type of the object.",
+									},
+									"child_objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies child object details.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{},
+										},
+									},
+									"v_center_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"is_cloud_env": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+												},
+											},
+										},
+									},
+									"windows_cluster_summary": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cluster_source_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type of cluster resource this source represents.",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -402,7 +529,7 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 												"progress_task_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Progress monitor task for an object..",
+													Description: "Progress monitor task for an object.",
 												},
 												"message": &schema.Schema{
 													Type:        schema.TypeString,
@@ -629,7 +756,7 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 												"progress_task_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Progress monitor task for an object..",
+													Description: "Progress monitor task for an object.",
 												},
 												"message": &schema.Schema{
 													Type:        schema.TypeString,
@@ -668,6 +795,94 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Specifies the name of the cluster.",
+												},
+												"aws_target_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the configuration for adding AWS as repilcation target.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the AWS Replication target.",
+															},
+															"region": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+															},
+															"region_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the source id of the AWS protection source registered on IBM cluster.",
+															},
+														},
+													},
+												},
+												"azure_target_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the configuration for adding Azure as replication target.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the Azure Replication target.",
+															},
+															"resource_group": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the Azure resource group used to filter regions in UI.",
+															},
+															"resource_group_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the Azure resource group used to filter regions in UI.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the source id of the Azure protection source registered on IBM cluster.",
+															},
+															"storage_account": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage account of Azure replication target which will contain storage container.",
+															},
+															"storage_account_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the storage account of Azure replication target which will contain storage container.",
+															},
+															"storage_container": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage container of Azure Replication target.",
+															},
+															"storage_container_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the storage container of Azure Replication target.",
+															},
+															"storage_resource_group": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage resource group of Azure Replication target.",
+															},
+															"storage_resource_group_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of the storage resource group of Azure Replication target.",
+															},
+														},
+													},
 												},
 												"start_time_usecs": &schema.Schema{
 													Type:        schema.TypeInt,
@@ -831,10 +1046,109 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 													Description: "Specifies the tier info for archival.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"aws_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies aws tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the AWS tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"azure_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Azure tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Azure tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
 															"cloud_platform": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Specifies the cloud platform to enable tiering.",
+															},
+															"google_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Google tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Google tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
 															},
 															"oracle_tiering": &schema.Schema{
 																Type:        schema.TypeList,
@@ -1102,6 +1416,113 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 										Description: "Cloud Spin result for a target.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"aws_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies various resources when converting and deploying a VM to AWS.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"custom_tag_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies tags of various resources when converting and deploying a VM to AWS.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies key of the custom tag.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies value of the custom tag.",
+																		},
+																	},
+																},
+															},
+															"region": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the AWS region in which to deploy the VM.",
+															},
+															"subnet_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the subnet within above VPC.",
+															},
+															"vpc_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the Virtual Private Cloud to chose for the instance type.",
+															},
+														},
+													},
+												},
+												"azure_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies various resources when converting and deploying a VM to Azure.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"availability_set_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the availability set.",
+															},
+															"network_resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the resource group for the selected virtual network.",
+															},
+															"resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the Azure resource group. Its value is globally unique within Azure.",
+															},
+															"storage_account_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+															},
+															"storage_container_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the storage container within the above storage account.",
+															},
+															"storage_resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the resource group for the selected storage account.",
+															},
+															"temp_vm_resource_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the temporary Azure resource group.",
+															},
+															"temp_vm_storage_account_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the temporary VM storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+															},
+															"temp_vm_storage_container_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies id of the temporary VM storage container within the above storage account.",
+															},
+															"temp_vm_subnet_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies Id of the temporary VM subnet within the above virtual network.",
+															},
+															"temp_vm_virtual_network_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies Id of the temporary VM Virtual Network.",
+															},
+														},
+													},
+												},
 												"id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Computed:    true,
@@ -1248,6 +1669,11 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 							Computed:    true,
 							Description: "Specifies the count of objects for which backup was successful.",
 						},
+						"skipped_objects_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the count of objects for which backup was skipped.",
+						},
 						"failed_objects_count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -1388,6 +1814,11 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 							Computed:    true,
 							Description: "Specifies the count of objects for which backup was successful.",
 						},
+						"skipped_objects_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the count of objects for which backup was skipped.",
+						},
 						"failed_objects_count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -1510,6 +1941,94 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Specifies the name of the cluster.",
+									},
+									"aws_target_config": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the configuration for adding AWS as repilcation target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the AWS Replication target.",
+												},
+												"region": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+												},
+												"region_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the source id of the AWS protection source registered on IBM cluster.",
+												},
+											},
+										},
+									},
+									"azure_target_config": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the configuration for adding Azure as replication target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the Azure Replication target.",
+												},
+												"resource_group": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the Azure resource group used to filter regions in UI.",
+												},
+												"resource_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the Azure resource group used to filter regions in UI.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the source id of the Azure protection source registered on IBM cluster.",
+												},
+												"storage_account": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage account of Azure replication target which will contain storage container.",
+												},
+												"storage_account_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage account of Azure replication target which will contain storage container.",
+												},
+												"storage_container": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage container of Azure Replication target.",
+												},
+												"storage_container_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage container of Azure Replication target.",
+												},
+												"storage_resource_group": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage resource group of Azure Replication target.",
+												},
+												"storage_resource_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage resource group of Azure Replication target.",
+												},
+											},
+										},
 									},
 									"start_time_usecs": &schema.Schema{
 										Type:        schema.TypeInt,
@@ -1673,10 +2192,109 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 										Description: "Specifies the tier info for archival.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
+												"aws_tiering": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies aws tiers.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"tiers": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"move_after_unit": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																		},
+																		"move_after": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																		},
+																		"tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the AWS tier types.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"azure_tiering": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies Azure tiers.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"tiers": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"move_after_unit": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																		},
+																		"move_after": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																		},
+																		"tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Azure tier types.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"cloud_platform": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Specifies the cloud platform to enable tiering.",
+												},
+												"google_tiering": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies Google tiers.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"tiers": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"move_after_unit": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																		},
+																		"move_after": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																		},
+																		"tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Google tier types.",
+																		},
+																	},
+																},
+															},
+														},
+													},
 												},
 												"oracle_tiering": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1944,6 +2562,113 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 							Description: "Cloud Spin results for each Cloud Spin target.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"aws_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies various resources when converting and deploying a VM to AWS.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"custom_tag_list": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies tags of various resources when converting and deploying a VM to AWS.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies key of the custom tag.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies value of the custom tag.",
+															},
+														},
+													},
+												},
+												"region": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the AWS region in which to deploy the VM.",
+												},
+												"subnet_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the subnet within above VPC.",
+												},
+												"vpc_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the Virtual Private Cloud to chose for the instance type.",
+												},
+											},
+										},
+									},
+									"azure_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies various resources when converting and deploying a VM to Azure.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"availability_set_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the availability set.",
+												},
+												"network_resource_group_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the resource group for the selected virtual network.",
+												},
+												"resource_group_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the Azure resource group. Its value is globally unique within Azure.",
+												},
+												"storage_account_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+												},
+												"storage_container_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage container within the above storage account.",
+												},
+												"storage_resource_group_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the resource group for the selected storage account.",
+												},
+												"temp_vm_resource_group_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the temporary Azure resource group.",
+												},
+												"temp_vm_storage_account_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the temporary VM storage account that will contain the storage container within which we will create the blob that will become the VHD disk for the cloned VM.",
+												},
+												"temp_vm_storage_container_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the temporary VM storage container within the above storage account.",
+												},
+												"temp_vm_subnet_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies Id of the temporary VM subnet within the above virtual network.",
+												},
+												"temp_vm_virtual_network_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies Id of the temporary VM Virtual Network.",
+												},
+											},
+										},
+									},
 									"id": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
@@ -2049,15 +2774,139 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 				Description: "Specifies the list of tenants that have permissions for this protection group run.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"created_at_time_msecs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Epoch time when tenant was created.",
+						},
+						"deleted_at_time_msecs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Epoch time when tenant was last updated.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Description about the tenant.",
+						},
+						"external_vendor_metadata": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendors who are responsible for managing tenants. This field will only applicable if tenant creation is happening for a specially provisioned clusters for external vendors.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ibm_tenant_metadata_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendor of type 'IBM'.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"account_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the unique identifier of the IBM's account ID.",
+												},
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the unique CRN associated with the tenant.",
+												},
+												"custom_properties": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the list of custom properties associated with the tenant. External vendors can choose to set any properties inside following list. Note that the fields set inside the following will not be available for direct filtering. API callers should make sure that no sensitive information such as passwords is sent in these fields.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the unique key for custom property.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the value for the above custom key.",
+															},
+														},
+													},
+												},
+												"liveness_mode": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
+												},
+												"ownership_mode": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
+												},
+												"resource_group_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the Resource Group ID associated with the tenant.",
+												},
+											},
+										},
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the type of the external vendor. The type specific parameters must be specified the provided type.",
+									},
+								},
+							},
+						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The tenant id.",
 						},
+						"is_managed_on_helios": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Flag to indicate if tenant is managed on helios.",
+						},
+						"last_updated_at_time_msecs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Epoch time when tenant was last updated.",
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Name of the Tenant.",
+						},
+						"network": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Networking information about a Tenant on a Cluster.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"connector_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Whether connector (hybrid extender) is enabled.",
+									},
+									"cluster_hostname": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The hostname for Cohesity cluster as seen by tenants and as is routable from the tenant's network. Tenant's VLAN's hostname, if available can be used instead but it is mandatory to provide this value if there's no VLAN hostname to use. Also, when set, this field would take precedence over VLAN hostname.",
+									},
+									"cluster_ips": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Set of IPs as seen from the tenant's network for the Cohesity cluster. Only one from 'clusterHostname' and 'clusterIps' is needed.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Current Status of the Tenant.",
 						},
 					},
 				},
@@ -2089,190 +2938,283 @@ func DataSourceIbmProtectionGroupRun() *schema.Resource {
 func dataSourceIbmProtectionGroupRunRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	getProtectionGroupRunOptions := &backuprecoveryv1.GetProtectionGroupRunOptions{}
+	getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
 
-	getProtectionGroupRunOptions.SetID(d.Get("protection_group_run_id").(string))
-	getProtectionGroupRunOptions.SetRunID(d.Get("run_id").(string))
+	getProtectionGroupRunsOptions.SetID(d.Get("protection_group_id").(string))
 	if _, ok := d.GetOk("request_initiator_type"); ok {
-		getProtectionGroupRunOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
+		getProtectionGroupRunsOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
 	}
-	if _, ok := d.GetOk("tenant_ids"); ok {
-		var tenantIds []string
-		for _, v := range d.Get("tenant_ids").([]interface{}) {
-			tenantIdsItem := v.(string)
-			tenantIds = append(tenantIds, tenantIdsItem)
+	if _, ok := d.GetOk("run_id"); ok {
+		getProtectionGroupRunsOptions.SetRunID(d.Get("run_id").(string))
+	}
+	if _, ok := d.GetOk("start_time_usecs"); ok {
+		getProtectionGroupRunsOptions.SetStartTimeUsecs(int64(d.Get("start_time_usecs").(int)))
+	}
+	if _, ok := d.GetOk("end_time_usecs"); ok {
+		getProtectionGroupRunsOptions.SetEndTimeUsecs(int64(d.Get("end_time_usecs").(int)))
+	}
+	if _, ok := d.GetOk("run_types"); ok {
+		var runTypes []string
+		for _, v := range d.Get("run_types").([]interface{}) {
+			runTypesItem := v.(string)
+			runTypes = append(runTypes, runTypesItem)
 		}
-		getProtectionGroupRunOptions.SetTenantIds(tenantIds)
-	}
-	if _, ok := d.GetOk("include_tenants"); ok {
-		getProtectionGroupRunOptions.SetIncludeTenants(d.Get("include_tenants").(bool))
+		getProtectionGroupRunsOptions.SetRunTypes(runTypes)
 	}
 	if _, ok := d.GetOk("include_object_details"); ok {
-		getProtectionGroupRunOptions.SetIncludeObjectDetails(d.Get("include_object_details").(bool))
+		getProtectionGroupRunsOptions.SetIncludeObjectDetails(d.Get("include_object_details").(bool))
+	}
+	if _, ok := d.GetOk("local_backup_run_status"); ok {
+		var localBackupRunStatus []string
+		for _, v := range d.Get("local_backup_run_status").([]interface{}) {
+			localBackupRunStatusItem := v.(string)
+			localBackupRunStatus = append(localBackupRunStatus, localBackupRunStatusItem)
+		}
+		getProtectionGroupRunsOptions.SetLocalBackupRunStatus(localBackupRunStatus)
+	}
+	if _, ok := d.GetOk("replication_run_status"); ok {
+		var replicationRunStatus []string
+		for _, v := range d.Get("replication_run_status").([]interface{}) {
+			replicationRunStatusItem := v.(string)
+			replicationRunStatus = append(replicationRunStatus, replicationRunStatusItem)
+		}
+		getProtectionGroupRunsOptions.SetReplicationRunStatus(replicationRunStatus)
+	}
+	if _, ok := d.GetOk("archival_run_status"); ok {
+		var archivalRunStatus []string
+		for _, v := range d.Get("archival_run_status").([]interface{}) {
+			archivalRunStatusItem := v.(string)
+			archivalRunStatus = append(archivalRunStatus, archivalRunStatusItem)
+		}
+		getProtectionGroupRunsOptions.SetArchivalRunStatus(archivalRunStatus)
+	}
+	if _, ok := d.GetOk("cloud_spin_run_status"); ok {
+		var cloudSpinRunStatus []string
+		for _, v := range d.Get("cloud_spin_run_status").([]interface{}) {
+			cloudSpinRunStatusItem := v.(string)
+			cloudSpinRunStatus = append(cloudSpinRunStatus, cloudSpinRunStatusItem)
+		}
+		getProtectionGroupRunsOptions.SetCloudSpinRunStatus(cloudSpinRunStatus)
+	}
+	if _, ok := d.GetOk("num_runs"); ok {
+		getProtectionGroupRunsOptions.SetNumRuns(int64(d.Get("num_runs").(int)))
+	}
+	if _, ok := d.GetOk("exclude_non_restorable_runs"); ok {
+		getProtectionGroupRunsOptions.SetExcludeNonRestorableRuns(d.Get("exclude_non_restorable_runs").(bool))
+	}
+	if _, ok := d.GetOk("run_tags"); ok {
+		var runTags []string
+		for _, v := range d.Get("run_tags").([]interface{}) {
+			runTagsItem := v.(string)
+			runTags = append(runTags, runTagsItem)
+		}
+		getProtectionGroupRunsOptions.SetRunTags(runTags)
 	}
 	if _, ok := d.GetOk("use_cached_data"); ok {
-		getProtectionGroupRunOptions.SetUseCachedData(d.Get("use_cached_data").(bool))
+		getProtectionGroupRunsOptions.SetUseCachedData(d.Get("use_cached_data").(bool))
+	}
+	if _, ok := d.GetOk("filter_by_end_time"); ok {
+		getProtectionGroupRunsOptions.SetFilterByEndTime(d.Get("filter_by_end_time").(bool))
+	}
+	if _, ok := d.GetOk("snapshot_target_types"); ok {
+		var snapshotTargetTypes []string
+		for _, v := range d.Get("snapshot_target_types").([]interface{}) {
+			snapshotTargetTypesItem := v.(string)
+			snapshotTargetTypes = append(snapshotTargetTypes, snapshotTargetTypesItem)
+		}
+		getProtectionGroupRunsOptions.SetSnapshotTargetTypes(snapshotTargetTypes)
+	}
+	if _, ok := d.GetOk("only_return_successful_copy_run"); ok {
+		getProtectionGroupRunsOptions.SetOnlyReturnSuccessfulCopyRun(d.Get("only_return_successful_copy_run").(bool))
+	}
+	if _, ok := d.GetOk("filter_by_copy_task_end_time"); ok {
+		getProtectionGroupRunsOptions.SetFilterByCopyTaskEndTime(d.Get("filter_by_copy_task_end_time").(bool))
 	}
 
-	protectionGroupRun, response, err := backupRecoveryClient.GetProtectionGroupRunWithContext(context, getProtectionGroupRunOptions)
+	protectionGroupRuns, _, err := backupRecoveryClient.GetProtectionGroupRunsWithContext(context, getProtectionGroupRunsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetProtectionGroupRunWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProtectionGroupRunWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupRunsWithContext failed: %s", err.Error()), "(Data) ibm_protection_group_run", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(*protectionGroupRun.ID)
+	d.SetId(*protectionGroupRuns.Runs[0].ID)
 
-	if err = d.Set("protection_group_instance_id", flex.IntValue(protectionGroupRun.ProtectionGroupInstanceID)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protection_group_instance_id: %s", err))
-	}
-
-	if err = d.Set("protection_group_id", protectionGroupRun.ProtectionGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protection_group_id: %s", err))
-	}
-
-	if err = d.Set("is_replication_run", protectionGroupRun.IsReplicationRun); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_replication_run: %s", err))
-	}
-
-	originClusterIdentifier := []map[string]interface{}{}
-	if protectionGroupRun.OriginClusterIdentifier != nil {
-		modelMap, err := dataSourceIbmProtectionGroupRunClusterIdentifierToMap(protectionGroupRun.OriginClusterIdentifier)
-		if err != nil {
-			return diag.FromErr(err)
+	if !core.IsNil(protectionGroupRuns.Runs[0].ProtectionGroupInstanceID) {
+		if err = d.Set("protection_group_instance_id", flex.IntValue(protectionGroupRuns.Runs[0].ProtectionGroupInstanceID)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_group_instance_id: %s", err), "(Data) ibm_protection_group_run", "read", "set-protection_group_instance_id").GetDiag()
 		}
-		originClusterIdentifier = append(originClusterIdentifier, modelMap)
-	}
-	if err = d.Set("origin_cluster_identifier", originClusterIdentifier); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting origin_cluster_identifier %s", err))
 	}
 
-	if err = d.Set("origin_protection_group_id", protectionGroupRun.OriginProtectionGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting origin_protection_group_id: %s", err))
+	if !core.IsNil(protectionGroupRuns.Runs[0].ProtectionGroupID) {
+		if err = d.Set("protection_group_id", protectionGroupRuns.Runs[0].ProtectionGroupID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_group_id: %s", err), "(Data) ibm_protection_group_run", "read", "set-protection_group_id").GetDiag()
+		}
 	}
 
-	if err = d.Set("protection_group_name", protectionGroupRun.ProtectionGroupName); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting protection_group_name: %s", err))
+	if !core.IsNil(protectionGroupRuns.Runs[0].IsReplicationRun) {
+		if err = d.Set("is_replication_run", protectionGroupRuns.Runs[0].IsReplicationRun); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_replication_run: %s", err), "(Data) ibm_protection_group_run", "read", "set-is_replication_run").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_local_snapshots_deleted", protectionGroupRun.IsLocalSnapshotsDeleted); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_local_snapshots_deleted: %s", err))
+	if !core.IsNil(protectionGroupRuns.Runs[0].OriginClusterIdentifier) {
+		originClusterIdentifier := []map[string]interface{}{}
+		originClusterIdentifierMap, err := DataSourceIbmProtectionGroupRunClusterIdentifierToMap(protectionGroupRuns.Runs[0].OriginClusterIdentifier)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "origin_cluster_identifier-to-map").GetDiag()
+		}
+		originClusterIdentifier = append(originClusterIdentifier, originClusterIdentifierMap)
+		if err = d.Set("origin_cluster_identifier", originClusterIdentifier); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting origin_cluster_identifier: %s", err), "(Data) ibm_protection_group_run", "read", "set-origin_cluster_identifier").GetDiag()
+		}
 	}
 
-	objects := []map[string]interface{}{}
-	if protectionGroupRun.Objects != nil {
-		for _, modelItem := range protectionGroupRun.Objects {
-			modelMap, err := dataSourceIbmProtectionGroupRunObjectRunResultToMap(&modelItem)
+	if !core.IsNil(protectionGroupRuns.Runs[0].OriginProtectionGroupID) {
+		if err = d.Set("origin_protection_group_id", protectionGroupRuns.Runs[0].OriginProtectionGroupID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting origin_protection_group_id: %s", err), "(Data) ibm_protection_group_run", "read", "set-origin_protection_group_id").GetDiag()
+		}
+	}
+
+	if !core.IsNil(protectionGroupRuns.Runs[0].ProtectionGroupName) {
+		if err = d.Set("protection_group_name", protectionGroupRuns.Runs[0].ProtectionGroupName); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_group_name: %s", err), "(Data) ibm_protection_group_run", "read", "set-protection_group_name").GetDiag()
+		}
+	}
+
+	if !core.IsNil(protectionGroupRuns.Runs[0].IsLocalSnapshotsDeleted) {
+		if err = d.Set("is_local_snapshots_deleted", protectionGroupRuns.Runs[0].IsLocalSnapshotsDeleted); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_local_snapshots_deleted: %s", err), "(Data) ibm_protection_group_run", "read", "set-is_local_snapshots_deleted").GetDiag()
+		}
+	}
+
+	if !core.IsNil(protectionGroupRuns.Runs[0].Objects) {
+		objects := []map[string]interface{}{}
+		for _, objectsItem := range protectionGroupRuns.Runs[0].Objects {
+			objectsItemMap, err := DataSourceIbmProtectionGroupRunObjectRunResultToMap(&objectsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "objects-to-map").GetDiag()
 			}
-			objects = append(objects, modelMap)
+			objects = append(objects, objectsItemMap)
+		}
+		if err = d.Set("objects", objects); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting objects: %s", err), "(Data) ibm_protection_group_run", "read", "set-objects").GetDiag()
 		}
 	}
-	if err = d.Set("objects", objects); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting objects %s", err))
-	}
 
-	localBackupInfo := []map[string]interface{}{}
-	if protectionGroupRun.LocalBackupInfo != nil {
-		modelMap, err := dataSourceIbmProtectionGroupRunBackupRunSummaryToMap(protectionGroupRun.LocalBackupInfo)
+	if !core.IsNil(protectionGroupRuns.Runs[0].LocalBackupInfo) {
+		localBackupInfo := []map[string]interface{}{}
+		localBackupInfoMap, err := DataSourceIbmProtectionGroupRunBackupRunSummaryToMap(protectionGroupRuns.Runs[0].LocalBackupInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "local_backup_info-to-map").GetDiag()
 		}
-		localBackupInfo = append(localBackupInfo, modelMap)
-	}
-	if err = d.Set("local_backup_info", localBackupInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting local_backup_info %s", err))
+		localBackupInfo = append(localBackupInfo, localBackupInfoMap)
+		if err = d.Set("local_backup_info", localBackupInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting local_backup_info: %s", err), "(Data) ibm_protection_group_run", "read", "set-local_backup_info").GetDiag()
+		}
 	}
 
-	originalBackupInfo := []map[string]interface{}{}
-	if protectionGroupRun.OriginalBackupInfo != nil {
-		modelMap, err := dataSourceIbmProtectionGroupRunBackupRunSummaryToMap(protectionGroupRun.OriginalBackupInfo)
+	if !core.IsNil(protectionGroupRuns.Runs[0].OriginalBackupInfo) {
+		originalBackupInfo := []map[string]interface{}{}
+		originalBackupInfoMap, err := DataSourceIbmProtectionGroupRunBackupRunSummaryToMap(protectionGroupRuns.Runs[0].OriginalBackupInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "original_backup_info-to-map").GetDiag()
 		}
-		originalBackupInfo = append(originalBackupInfo, modelMap)
-	}
-	if err = d.Set("original_backup_info", originalBackupInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting original_backup_info %s", err))
+		originalBackupInfo = append(originalBackupInfo, originalBackupInfoMap)
+		if err = d.Set("original_backup_info", originalBackupInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting original_backup_info: %s", err), "(Data) ibm_protection_group_run", "read", "set-original_backup_info").GetDiag()
+		}
 	}
 
-	replicationInfo := []map[string]interface{}{}
-	if protectionGroupRun.ReplicationInfo != nil {
-		modelMap, err := dataSourceIbmProtectionGroupRunReplicationRunSummaryToMap(protectionGroupRun.ReplicationInfo)
+	if !core.IsNil(protectionGroupRuns.Runs[0].ReplicationInfo) {
+		replicationInfo := []map[string]interface{}{}
+		replicationInfoMap, err := DataSourceIbmProtectionGroupRunReplicationRunSummaryToMap(protectionGroupRuns.Runs[0].ReplicationInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "replication_info-to-map").GetDiag()
 		}
-		replicationInfo = append(replicationInfo, modelMap)
-	}
-	if err = d.Set("replication_info", replicationInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting replication_info %s", err))
+		replicationInfo = append(replicationInfo, replicationInfoMap)
+		if err = d.Set("replication_info", replicationInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting replication_info: %s", err), "(Data) ibm_protection_group_run", "read", "set-replication_info").GetDiag()
+		}
 	}
 
-	archivalInfo := []map[string]interface{}{}
-	if protectionGroupRun.ArchivalInfo != nil {
-		modelMap, err := dataSourceIbmProtectionGroupRunArchivalRunSummaryToMap(protectionGroupRun.ArchivalInfo)
+	if !core.IsNil(protectionGroupRuns.Runs[0].ArchivalInfo) {
+		archivalInfo := []map[string]interface{}{}
+		archivalInfoMap, err := DataSourceIbmProtectionGroupRunArchivalRunSummaryToMap(protectionGroupRuns.Runs[0].ArchivalInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "archival_info-to-map").GetDiag()
 		}
-		archivalInfo = append(archivalInfo, modelMap)
-	}
-	if err = d.Set("archival_info", archivalInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting archival_info %s", err))
+		archivalInfo = append(archivalInfo, archivalInfoMap)
+		if err = d.Set("archival_info", archivalInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting archival_info: %s", err), "(Data) ibm_protection_group_run", "read", "set-archival_info").GetDiag()
+		}
 	}
 
-	cloudSpinInfo := []map[string]interface{}{}
-	if protectionGroupRun.CloudSpinInfo != nil {
-		modelMap, err := dataSourceIbmProtectionGroupRunCloudSpinRunSummaryToMap(protectionGroupRun.CloudSpinInfo)
+	if !core.IsNil(protectionGroupRuns.Runs[0].CloudSpinInfo) {
+		cloudSpinInfo := []map[string]interface{}{}
+		cloudSpinInfoMap, err := DataSourceIbmProtectionGroupRunCloudSpinRunSummaryToMap(protectionGroupRuns.Runs[0].CloudSpinInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "cloud_spin_info-to-map").GetDiag()
 		}
-		cloudSpinInfo = append(cloudSpinInfo, modelMap)
-	}
-	if err = d.Set("cloud_spin_info", cloudSpinInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting cloud_spin_info %s", err))
-	}
-
-	if err = d.Set("on_legal_hold", protectionGroupRun.OnLegalHold); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting on_legal_hold: %s", err))
+		cloudSpinInfo = append(cloudSpinInfo, cloudSpinInfoMap)
+		if err = d.Set("cloud_spin_info", cloudSpinInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cloud_spin_info: %s", err), "(Data) ibm_protection_group_run", "read", "set-cloud_spin_info").GetDiag()
+		}
 	}
 
-	permissions := []map[string]interface{}{}
-	if protectionGroupRun.Permissions != nil {
-		for _, modelItem := range protectionGroupRun.Permissions {
-			modelMap, err := dataSourceIbmProtectionGroupRunTenantToMap(&modelItem)
+	if !core.IsNil(protectionGroupRuns.Runs[0].OnLegalHold) {
+		if err = d.Set("on_legal_hold", protectionGroupRuns.Runs[0].OnLegalHold); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting on_legal_hold: %s", err), "(Data) ibm_protection_group_run", "read", "set-on_legal_hold").GetDiag()
+		}
+	}
+
+	if !core.IsNil(protectionGroupRuns.Runs[0].Permissions) {
+		permissions := []map[string]interface{}{}
+		for _, permissionsItem := range protectionGroupRuns.Runs[0].Permissions {
+			permissionsItemMap, err := DataSourceIbmProtectionGroupRunTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_protection_group_run", "read", "permissions-to-map").GetDiag()
 			}
-			permissions = append(permissions, modelMap)
+			permissions = append(permissions, permissionsItemMap)
+		}
+		if err = d.Set("permissions", permissions); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting permissions: %s", err), "(Data) ibm_protection_group_run", "read", "set-permissions").GetDiag()
 		}
 	}
-	if err = d.Set("permissions", permissions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting permissions %s", err))
+
+	if !core.IsNil(protectionGroupRuns.Runs[0].IsCloudArchivalDirect) {
+		if err = d.Set("is_cloud_archival_direct", protectionGroupRuns.Runs[0].IsCloudArchivalDirect); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_cloud_archival_direct: %s", err), "(Data) ibm_protection_group_run", "read", "set-is_cloud_archival_direct").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_cloud_archival_direct", protectionGroupRun.IsCloudArchivalDirect); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_cloud_archival_direct: %s", err))
+	if !core.IsNil(protectionGroupRuns.Runs[0].HasLocalSnapshot) {
+		if err = d.Set("has_local_snapshot", protectionGroupRuns.Runs[0].HasLocalSnapshot); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting has_local_snapshot: %s", err), "(Data) ibm_protection_group_run", "read", "set-has_local_snapshot").GetDiag()
+		}
 	}
 
-	if err = d.Set("has_local_snapshot", protectionGroupRun.HasLocalSnapshot); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting has_local_snapshot: %s", err))
+	if !core.IsNil(protectionGroupRuns.Runs[0].Environment) {
+		if err = d.Set("environment", protectionGroupRuns.Runs[0].Environment); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting environment: %s", err), "(Data) ibm_protection_group_run", "read", "set-environment").GetDiag()
+		}
 	}
 
-	if err = d.Set("environment", protectionGroupRun.Environment); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting environment: %s", err))
-	}
-
-	if err = d.Set("externally_triggered_backup_tag", protectionGroupRun.ExternallyTriggeredBackupTag); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting externally_triggered_backup_tag: %s", err))
+	if !core.IsNil(protectionGroupRuns.Runs[0].ExternallyTriggeredBackupTag) {
+		if err = d.Set("externally_triggered_backup_tag", protectionGroupRuns.Runs[0].ExternallyTriggeredBackupTag); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting externally_triggered_backup_tag: %s", err), "(Data) ibm_protection_group_run", "read", "set-externally_triggered_backup_tag").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-func dataSourceIbmProtectionGroupRunClusterIdentifierToMap(model *backuprecoveryv1.ClusterIdentifier) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunClusterIdentifierToMap(model *backuprecoveryv1.ClusterIdentifier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterID != nil {
 		modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
@@ -2281,106 +3223,162 @@ func dataSourceIbmProtectionGroupRunClusterIdentifierToMap(model *backuprecovery
 		modelMap["cluster_incarnation_id"] = flex.IntValue(model.ClusterIncarnationID)
 	}
 	if model.ClusterName != nil {
-		modelMap["cluster_name"] = model.ClusterName
+		modelMap["cluster_name"] = *model.ClusterName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunObjectRunResultToMap(model *backuprecoveryv1.ObjectRunResult) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunObjectRunResultToMap(model *backuprecoveryv1.ObjectRunResult) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Object != nil {
-		objectMap, err := dataSourceIbmProtectionGroupRunObjectSummaryToMap(model.Object)
+		objectMap, err := DataSourceIbmProtectionGroupRunObjectSummaryToMap(model.Object)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["object"] = []map[string]interface{}{objectMap}
 	}
 	if model.LocalSnapshotInfo != nil {
-		localSnapshotInfoMap, err := dataSourceIbmProtectionGroupRunBackupRunToMap(model.LocalSnapshotInfo)
+		localSnapshotInfoMap, err := DataSourceIbmProtectionGroupRunBackupRunToMap(model.LocalSnapshotInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["local_snapshot_info"] = []map[string]interface{}{localSnapshotInfoMap}
 	}
 	if model.OriginalBackupInfo != nil {
-		originalBackupInfoMap, err := dataSourceIbmProtectionGroupRunBackupRunToMap(model.OriginalBackupInfo)
+		originalBackupInfoMap, err := DataSourceIbmProtectionGroupRunBackupRunToMap(model.OriginalBackupInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["original_backup_info"] = []map[string]interface{}{originalBackupInfoMap}
 	}
 	if model.ReplicationInfo != nil {
-		replicationInfoMap, err := dataSourceIbmProtectionGroupRunReplicationRunToMap(model.ReplicationInfo)
+		replicationInfoMap, err := DataSourceIbmProtectionGroupRunReplicationRunToMap(model.ReplicationInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["replication_info"] = []map[string]interface{}{replicationInfoMap}
 	}
 	if model.ArchivalInfo != nil {
-		archivalInfoMap, err := dataSourceIbmProtectionGroupRunArchivalRunToMap(model.ArchivalInfo)
+		archivalInfoMap, err := DataSourceIbmProtectionGroupRunArchivalRunToMap(model.ArchivalInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["archival_info"] = []map[string]interface{}{archivalInfoMap}
 	}
 	if model.CloudSpinInfo != nil {
-		cloudSpinInfoMap, err := dataSourceIbmProtectionGroupRunCloudSpinRunToMap(model.CloudSpinInfo)
+		cloudSpinInfoMap, err := DataSourceIbmProtectionGroupRunCloudSpinRunToMap(model.CloudSpinInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cloud_spin_info"] = []map[string]interface{}{cloudSpinInfoMap}
 	}
 	if model.OnLegalHold != nil {
-		modelMap["on_legal_hold"] = model.OnLegalHold
+		modelMap["on_legal_hold"] = *model.OnLegalHold
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
 	if model.SourceName != nil {
-		modelMap["source_name"] = model.SourceName
+		modelMap["source_name"] = *model.SourceName
 	}
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ObjectHash != nil {
-		modelMap["object_hash"] = model.ObjectHash
+		modelMap["object_hash"] = *model.ObjectHash
 	}
 	if model.ObjectType != nil {
-		modelMap["object_type"] = model.ObjectType
+		modelMap["object_type"] = *model.ObjectType
 	}
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
 	}
 	if model.UUID != nil {
-		modelMap["uuid"] = model.UUID
+		modelMap["uuid"] = *model.UUID
 	}
 	if model.GlobalID != nil {
-		modelMap["global_id"] = model.GlobalID
+		modelMap["global_id"] = *model.GlobalID
 	}
 	if model.ProtectionType != nil {
-		modelMap["protection_type"] = model.ProtectionType
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := DataSourceIbmProtectionGroupRunSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
 	}
 	if model.OsType != nil {
-		modelMap["os_type"] = model.OsType
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := DataSourceIbmProtectionGroupRunObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := DataSourceIbmProtectionGroupRunObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := DataSourceIbmProtectionGroupRunObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunBackupRunToMap(model *backuprecoveryv1.BackupRun) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SiteWebURL != nil {
+		modelMap["site_web_url"] = *model.SiteWebURL
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IsCloudEnv != nil {
+		modelMap["is_cloud_env"] = *model.IsCloudEnv
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ClusterSourceType != nil {
+		modelMap["cluster_source_type"] = *model.ClusterSourceType
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunBackupRunToMap(model *backuprecoveryv1.BackupRun) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SnapshotInfo != nil {
-		snapshotInfoMap, err := dataSourceIbmProtectionGroupRunSnapshotInfoToMap(model.SnapshotInfo)
+		snapshotInfoMap, err := DataSourceIbmProtectionGroupRunSnapshotInfoToMap(model.SnapshotInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2389,7 +3387,7 @@ func dataSourceIbmProtectionGroupRunBackupRunToMap(model *backuprecoveryv1.Backu
 	if model.FailedAttempts != nil {
 		failedAttempts := []map[string]interface{}{}
 		for _, failedAttemptsItem := range model.FailedAttempts {
-			failedAttemptsItemMap, err := dataSourceIbmProtectionGroupRunBackupAttemptToMap(&failedAttemptsItem)
+			failedAttemptsItemMap, err := DataSourceIbmProtectionGroupRunBackupAttemptToMap(&failedAttemptsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2400,16 +3398,16 @@ func dataSourceIbmProtectionGroupRunBackupRunToMap(model *backuprecoveryv1.Backu
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunSnapshotInfoToMap(model *backuprecoveryv1.SnapshotInfo) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunSnapshotInfoToMap(model *backuprecoveryv1.SnapshotInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SnapshotID != nil {
-		modelMap["snapshot_id"] = model.SnapshotID
+		modelMap["snapshot_id"] = *model.SnapshotID
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.StatusMessage != nil {
-		modelMap["status_message"] = model.StatusMessage
+		modelMap["status_message"] = *model.StatusMessage
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2430,26 +3428,26 @@ func dataSourceIbmProtectionGroupRunSnapshotInfoToMap(model *backuprecoveryv1.Sn
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.Stats != nil {
-		statsMap, err := dataSourceIbmProtectionGroupRunBackupDataStatsToMap(model.Stats)
+		statsMap, err := DataSourceIbmProtectionGroupRunBackupDataStatsToMap(model.Stats)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["stats"] = []map[string]interface{}{statsMap}
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.IndexingTaskID != nil {
-		modelMap["indexing_task_id"] = model.IndexingTaskID
+		modelMap["indexing_task_id"] = *model.IndexingTaskID
 	}
 	if model.StatsTaskID != nil {
-		modelMap["stats_task_id"] = model.StatsTaskID
+		modelMap["stats_task_id"] = *model.StatsTaskID
 	}
 	if model.Warnings != nil {
 		modelMap["warnings"] = model.Warnings
 	}
 	if model.IsManuallyDeleted != nil {
-		modelMap["is_manually_deleted"] = model.IsManuallyDeleted
+		modelMap["is_manually_deleted"] = *model.IsManuallyDeleted
 	}
 	if model.ExpiryTimeUsecs != nil {
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
@@ -2461,7 +3459,7 @@ func dataSourceIbmProtectionGroupRunSnapshotInfoToMap(model *backuprecoveryv1.Sn
 		modelMap["backup_file_count"] = flex.IntValue(model.BackupFileCount)
 	}
 	if model.DataLockConstraints != nil {
-		dataLockConstraintsMap, err := dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
+		dataLockConstraintsMap, err := DataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2470,7 +3468,7 @@ func dataSourceIbmProtectionGroupRunSnapshotInfoToMap(model *backuprecoveryv1.Sn
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunBackupDataStatsToMap(model *backuprecoveryv1.BackupDataStats) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunBackupDataStatsToMap(model *backuprecoveryv1.BackupDataStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
@@ -2484,10 +3482,10 @@ func dataSourceIbmProtectionGroupRunBackupDataStatsToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model *backuprecoveryv1.DataLockConstraints) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model *backuprecoveryv1.DataLockConstraints) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Mode != nil {
-		modelMap["mode"] = model.Mode
+		modelMap["mode"] = *model.Mode
 	}
 	if model.ExpiryTimeUsecs != nil {
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
@@ -2495,7 +3493,7 @@ func dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunBackupAttemptToMap(model *backuprecoveryv1.BackupAttempt) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunBackupAttemptToMap(model *backuprecoveryv1.BackupAttempt) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2516,30 +3514,30 @@ func dataSourceIbmProtectionGroupRunBackupAttemptToMap(model *backuprecoveryv1.B
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.Stats != nil {
-		statsMap, err := dataSourceIbmProtectionGroupRunBackupDataStatsToMap(model.Stats)
+		statsMap, err := DataSourceIbmProtectionGroupRunBackupDataStatsToMap(model.Stats)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["stats"] = []map[string]interface{}{statsMap}
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.Message != nil {
-		modelMap["message"] = model.Message
+		modelMap["message"] = *model.Message
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunReplicationRunToMap(model *backuprecoveryv1.ReplicationRun) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunReplicationRunToMap(model *backuprecoveryv1.ReplicationRun) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ReplicationTargetResults != nil {
 		replicationTargetResults := []map[string]interface{}{}
 		for _, replicationTargetResultsItem := range model.ReplicationTargetResults {
-			replicationTargetResultsItemMap, err := dataSourceIbmProtectionGroupRunReplicationTargetResultToMap(&replicationTargetResultsItem)
+			replicationTargetResultsItemMap, err := DataSourceIbmProtectionGroupRunReplicationTargetResultToMap(&replicationTargetResultsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2550,7 +3548,7 @@ func dataSourceIbmProtectionGroupRunReplicationRunToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunReplicationTargetResultToMap(model *backuprecoveryv1.ReplicationTargetResult) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunReplicationTargetResultToMap(model *backuprecoveryv1.ReplicationTargetResult) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterID != nil {
 		modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
@@ -2559,7 +3557,21 @@ func dataSourceIbmProtectionGroupRunReplicationTargetResultToMap(model *backupre
 		modelMap["cluster_incarnation_id"] = flex.IntValue(model.ClusterIncarnationID)
 	}
 	if model.ClusterName != nil {
-		modelMap["cluster_name"] = model.ClusterName
+		modelMap["cluster_name"] = *model.ClusterName
+	}
+	if model.AwsTargetConfig != nil {
+		awsTargetConfigMap, err := DataSourceIbmProtectionGroupRunAWSTargetConfigToMap(model.AwsTargetConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_target_config"] = []map[string]interface{}{awsTargetConfigMap}
+	}
+	if model.AzureTargetConfig != nil {
+		azureTargetConfigMap, err := DataSourceIbmProtectionGroupRunAzureTargetConfigToMap(model.AzureTargetConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_target_config"] = []map[string]interface{}{azureTargetConfigMap}
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2571,53 +3583,99 @@ func dataSourceIbmProtectionGroupRunReplicationTargetResultToMap(model *backupre
 		modelMap["queued_time_usecs"] = flex.IntValue(model.QueuedTimeUsecs)
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.Message != nil {
-		modelMap["message"] = model.Message
+		modelMap["message"] = *model.Message
 	}
 	if model.PercentageCompleted != nil {
 		modelMap["percentage_completed"] = flex.IntValue(model.PercentageCompleted)
 	}
 	if model.Stats != nil {
-		statsMap, err := dataSourceIbmProtectionGroupRunReplicationDataStatsToMap(model.Stats)
+		statsMap, err := DataSourceIbmProtectionGroupRunReplicationDataStatsToMap(model.Stats)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["stats"] = []map[string]interface{}{statsMap}
 	}
 	if model.IsManuallyDeleted != nil {
-		modelMap["is_manually_deleted"] = model.IsManuallyDeleted
+		modelMap["is_manually_deleted"] = *model.IsManuallyDeleted
 	}
 	if model.ExpiryTimeUsecs != nil {
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
 	}
 	if model.ReplicationTaskID != nil {
-		modelMap["replication_task_id"] = model.ReplicationTaskID
+		modelMap["replication_task_id"] = *model.ReplicationTaskID
 	}
 	if model.EntriesChanged != nil {
 		modelMap["entries_changed"] = flex.IntValue(model.EntriesChanged)
 	}
 	if model.IsInBound != nil {
-		modelMap["is_in_bound"] = model.IsInBound
+		modelMap["is_in_bound"] = *model.IsInBound
 	}
 	if model.DataLockConstraints != nil {
-		dataLockConstraintsMap, err := dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
+		dataLockConstraintsMap, err := DataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["data_lock_constraints"] = []map[string]interface{}{dataLockConstraintsMap}
 	}
 	if model.OnLegalHold != nil {
-		modelMap["on_legal_hold"] = model.OnLegalHold
+		modelMap["on_legal_hold"] = *model.OnLegalHold
 	}
 	if model.MultiObjectReplication != nil {
-		modelMap["multi_object_replication"] = model.MultiObjectReplication
+		modelMap["multi_object_replication"] = *model.MultiObjectReplication
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunReplicationDataStatsToMap(model *backuprecoveryv1.ReplicationDataStats) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	modelMap["region"] = flex.IntValue(model.Region)
+	if model.RegionName != nil {
+		modelMap["region_name"] = *model.RegionName
+	}
+	modelMap["source_id"] = flex.IntValue(model.SourceID)
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceGroup != nil {
+		modelMap["resource_group"] = flex.IntValue(model.ResourceGroup)
+	}
+	if model.ResourceGroupName != nil {
+		modelMap["resource_group_name"] = *model.ResourceGroupName
+	}
+	modelMap["source_id"] = flex.IntValue(model.SourceID)
+	if model.StorageAccount != nil {
+		modelMap["storage_account"] = flex.IntValue(model.StorageAccount)
+	}
+	if model.StorageAccountName != nil {
+		modelMap["storage_account_name"] = *model.StorageAccountName
+	}
+	if model.StorageContainer != nil {
+		modelMap["storage_container"] = flex.IntValue(model.StorageContainer)
+	}
+	if model.StorageContainerName != nil {
+		modelMap["storage_container_name"] = *model.StorageContainerName
+	}
+	if model.StorageResourceGroup != nil {
+		modelMap["storage_resource_group"] = flex.IntValue(model.StorageResourceGroup)
+	}
+	if model.StorageResourceGroupName != nil {
+		modelMap["storage_resource_group_name"] = *model.StorageResourceGroupName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunReplicationDataStatsToMap(model *backuprecoveryv1.ReplicationDataStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
@@ -2631,12 +3689,12 @@ func dataSourceIbmProtectionGroupRunReplicationDataStatsToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunArchivalRunToMap(model *backuprecoveryv1.ArchivalRun) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunArchivalRunToMap(model *backuprecoveryv1.ArchivalRun) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ArchivalTargetResults != nil {
 		archivalTargetResults := []map[string]interface{}{}
 		for _, archivalTargetResultsItem := range model.ArchivalTargetResults {
-			archivalTargetResultsItemMap, err := dataSourceIbmProtectionGroupRunArchivalTargetResultToMap(&archivalTargetResultsItem)
+			archivalTargetResultsItemMap, err := DataSourceIbmProtectionGroupRunArchivalTargetResultToMap(&archivalTargetResultsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2647,41 +3705,41 @@ func dataSourceIbmProtectionGroupRunArchivalRunToMap(model *backuprecoveryv1.Arc
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunArchivalTargetResultToMap(model *backuprecoveryv1.ArchivalTargetResult) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunArchivalTargetResultToMap(model *backuprecoveryv1.ArchivalTargetResult) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
 	}
 	if model.ArchivalTaskID != nil {
-		modelMap["archival_task_id"] = model.ArchivalTaskID
+		modelMap["archival_task_id"] = *model.ArchivalTaskID
 	}
 	if model.TargetName != nil {
-		modelMap["target_name"] = model.TargetName
+		modelMap["target_name"] = *model.TargetName
 	}
 	if model.TargetType != nil {
-		modelMap["target_type"] = model.TargetType
+		modelMap["target_type"] = *model.TargetType
 	}
 	if model.UsageType != nil {
-		modelMap["usage_type"] = model.UsageType
+		modelMap["usage_type"] = *model.UsageType
 	}
 	if model.OwnershipContext != nil {
-		modelMap["ownership_context"] = model.OwnershipContext
+		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := dataSourceIbmProtectionGroupRunArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmProtectionGroupRunArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["tier_settings"] = []map[string]interface{}{tierSettingsMap}
 	}
 	if model.RunType != nil {
-		modelMap["run_type"] = model.RunType
+		modelMap["run_type"] = *model.RunType
 	}
 	if model.IsSlaViolated != nil {
-		modelMap["is_sla_violated"] = model.IsSlaViolated
+		modelMap["is_sla_violated"] = *model.IsSlaViolated
 	}
 	if model.SnapshotID != nil {
-		modelMap["snapshot_id"] = model.SnapshotID
+		modelMap["snapshot_id"] = *model.SnapshotID
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2693,28 +3751,28 @@ func dataSourceIbmProtectionGroupRunArchivalTargetResultToMap(model *backuprecov
 		modelMap["queued_time_usecs"] = flex.IntValue(model.QueuedTimeUsecs)
 	}
 	if model.IsIncremental != nil {
-		modelMap["is_incremental"] = model.IsIncremental
+		modelMap["is_incremental"] = *model.IsIncremental
 	}
 	if model.IsForeverIncremental != nil {
-		modelMap["is_forever_incremental"] = model.IsForeverIncremental
+		modelMap["is_forever_incremental"] = *model.IsForeverIncremental
 	}
 	if model.IsCadArchive != nil {
-		modelMap["is_cad_archive"] = model.IsCadArchive
+		modelMap["is_cad_archive"] = *model.IsCadArchive
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.Message != nil {
-		modelMap["message"] = model.Message
+		modelMap["message"] = *model.Message
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.StatsTaskID != nil {
-		modelMap["stats_task_id"] = model.StatsTaskID
+		modelMap["stats_task_id"] = *model.StatsTaskID
 	}
 	if model.IndexingTaskID != nil {
-		modelMap["indexing_task_id"] = model.IndexingTaskID
+		modelMap["indexing_task_id"] = *model.IndexingTaskID
 	}
 	if model.SuccessfulObjectsCount != nil {
 		modelMap["successful_objects_count"] = flex.IntValue(model.SuccessfulObjectsCount)
@@ -2735,30 +3793,30 @@ func dataSourceIbmProtectionGroupRunArchivalTargetResultToMap(model *backuprecov
 		modelMap["cancelled_app_objects_count"] = flex.IntValue(model.CancelledAppObjectsCount)
 	}
 	if model.Stats != nil {
-		statsMap, err := dataSourceIbmProtectionGroupRunArchivalDataStatsToMap(model.Stats)
+		statsMap, err := DataSourceIbmProtectionGroupRunArchivalDataStatsToMap(model.Stats)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["stats"] = []map[string]interface{}{statsMap}
 	}
 	if model.IsManuallyDeleted != nil {
-		modelMap["is_manually_deleted"] = model.IsManuallyDeleted
+		modelMap["is_manually_deleted"] = *model.IsManuallyDeleted
 	}
 	if model.ExpiryTimeUsecs != nil {
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
 	}
 	if model.DataLockConstraints != nil {
-		dataLockConstraintsMap, err := dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
+		dataLockConstraintsMap, err := DataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["data_lock_constraints"] = []map[string]interface{}{dataLockConstraintsMap}
 	}
 	if model.OnLegalHold != nil {
-		modelMap["on_legal_hold"] = model.OnLegalHold
+		modelMap["on_legal_hold"] = *model.OnLegalHold
 	}
 	if model.WormProperties != nil {
-		wormPropertiesMap, err := dataSourceIbmProtectionGroupRunWormPropertiesToMap(model.WormProperties)
+		wormPropertiesMap, err := DataSourceIbmProtectionGroupRunWormPropertiesToMap(model.WormProperties)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2767,27 +3825,48 @@ func dataSourceIbmProtectionGroupRunArchivalTargetResultToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["cloud_platform"] = model.CloudPlatform
+	if model.AwsTiering != nil {
+		awsTieringMap, err := DataSourceIbmProtectionGroupRunAWSTiersToMap(model.AwsTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
+	}
+	if model.AzureTiering != nil {
+		azureTieringMap, err := DataSourceIbmProtectionGroupRunAzureTiersToMap(model.AzureTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
+	}
+	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.GoogleTiering != nil {
+		googleTieringMap, err := DataSourceIbmProtectionGroupRunGoogleTiersToMap(model.GoogleTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
+	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := dataSourceIbmProtectionGroupRunOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmProtectionGroupRunOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["oracle_tiering"] = []map[string]interface{}{oracleTieringMap}
 	}
 	if model.CurrentTierType != nil {
-		modelMap["current_tier_type"] = model.CurrentTierType
+		modelMap["current_tier_type"] = *model.CurrentTierType
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := dataSourceIbmProtectionGroupRunOracleTierToMap(&tiersItem)
+		tiersItemMap, err := DataSourceIbmProtectionGroupRunAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2797,19 +3876,99 @@ func dataSourceIbmProtectionGroupRunOracleTiersToMap(model *backuprecoveryv1.Ora
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
-		modelMap["move_after_unit"] = model.MoveAfterUnit
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
 	}
 	if model.MoveAfter != nil {
 		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
 	}
-	modelMap["tier_type"] = model.TierType
+	modelMap["tier_type"] = *model.TierType
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunArchivalDataStatsToMap(model *backuprecoveryv1.ArchivalDataStats) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Tiers != nil {
+		tiers := []map[string]interface{}{}
+		for _, tiersItem := range model.Tiers {
+			tiersItemMap, err := DataSourceIbmProtectionGroupRunAzureTierToMap(&tiersItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			tiers = append(tiers, tiersItemMap)
+		}
+		modelMap["tiers"] = tiers
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	tiers := []map[string]interface{}{}
+	for _, tiersItem := range model.Tiers {
+		tiersItemMap, err := DataSourceIbmProtectionGroupRunGoogleTierToMap(&tiersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		tiers = append(tiers, tiersItemMap)
+	}
+	modelMap["tiers"] = tiers
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	tiers := []map[string]interface{}{}
+	for _, tiersItem := range model.Tiers {
+		tiersItemMap, err := DataSourceIbmProtectionGroupRunOracleTierToMap(&tiersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		tiers = append(tiers, tiersItemMap)
+	}
+	modelMap["tiers"] = tiers
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunArchivalDataStatsToMap(model *backuprecoveryv1.ArchivalDataStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
@@ -2827,7 +3986,7 @@ func dataSourceIbmProtectionGroupRunArchivalDataStatsToMap(model *backuprecovery
 		modelMap["avg_logical_transfer_rate_bps"] = flex.IntValue(model.AvgLogicalTransferRateBps)
 	}
 	if model.FileWalkDone != nil {
-		modelMap["file_walk_done"] = model.FileWalkDone
+		modelMap["file_walk_done"] = *model.FileWalkDone
 	}
 	if model.TotalFileCount != nil {
 		modelMap["total_file_count"] = flex.IntValue(model.TotalFileCount)
@@ -2838,13 +3997,13 @@ func dataSourceIbmProtectionGroupRunArchivalDataStatsToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunWormPropertiesToMap(model *backuprecoveryv1.WormProperties) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunWormPropertiesToMap(model *backuprecoveryv1.WormProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsArchiveWormCompliant != nil {
-		modelMap["is_archive_worm_compliant"] = model.IsArchiveWormCompliant
+		modelMap["is_archive_worm_compliant"] = *model.IsArchiveWormCompliant
 	}
 	if model.WormNonComplianceReason != nil {
-		modelMap["worm_non_compliance_reason"] = model.WormNonComplianceReason
+		modelMap["worm_non_compliance_reason"] = *model.WormNonComplianceReason
 	}
 	if model.WormExpiryTimeUsecs != nil {
 		modelMap["worm_expiry_time_usecs"] = flex.IntValue(model.WormExpiryTimeUsecs)
@@ -2852,12 +4011,12 @@ func dataSourceIbmProtectionGroupRunWormPropertiesToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunCloudSpinRunToMap(model *backuprecoveryv1.CloudSpinRun) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunCloudSpinRunToMap(model *backuprecoveryv1.CloudSpinRun) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CloudSpinTargetResults != nil {
 		cloudSpinTargetResults := []map[string]interface{}{}
 		for _, cloudSpinTargetResultsItem := range model.CloudSpinTargetResults {
-			cloudSpinTargetResultsItemMap, err := dataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(&cloudSpinTargetResultsItem)
+			cloudSpinTargetResultsItemMap, err := DataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(&cloudSpinTargetResultsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2868,13 +4027,27 @@ func dataSourceIbmProtectionGroupRunCloudSpinRunToMap(model *backuprecoveryv1.Cl
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(model *backuprecoveryv1.CloudSpinTargetResult) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(model *backuprecoveryv1.CloudSpinTargetResult) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.AwsParams != nil {
+		awsParamsMap, err := DataSourceIbmProtectionGroupRunAwsCloudSpinParamsToMap(model.AwsParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_params"] = []map[string]interface{}{awsParamsMap}
+	}
+	if model.AzureParams != nil {
+		azureParamsMap, err := DataSourceIbmProtectionGroupRunAzureCloudSpinParamsToMap(model.AzureParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_params"] = []map[string]interface{}{azureParamsMap}
+	}
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2883,44 +4056,112 @@ func dataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(model *backupreco
 		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.Message != nil {
-		modelMap["message"] = model.Message
+		modelMap["message"] = *model.Message
 	}
 	if model.Stats != nil {
-		statsMap, err := dataSourceIbmProtectionGroupRunCloudSpinDataStatsToMap(model.Stats)
+		statsMap, err := DataSourceIbmProtectionGroupRunCloudSpinDataStatsToMap(model.Stats)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["stats"] = []map[string]interface{}{statsMap}
 	}
 	if model.IsManuallyDeleted != nil {
-		modelMap["is_manually_deleted"] = model.IsManuallyDeleted
+		modelMap["is_manually_deleted"] = *model.IsManuallyDeleted
 	}
 	if model.ExpiryTimeUsecs != nil {
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
 	}
 	if model.CloudspinTaskID != nil {
-		modelMap["cloudspin_task_id"] = model.CloudspinTaskID
+		modelMap["cloudspin_task_id"] = *model.CloudspinTaskID
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.DataLockConstraints != nil {
-		dataLockConstraintsMap, err := dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
+		dataLockConstraintsMap, err := DataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["data_lock_constraints"] = []map[string]interface{}{dataLockConstraintsMap}
 	}
 	if model.OnLegalHold != nil {
-		modelMap["on_legal_hold"] = model.OnLegalHold
+		modelMap["on_legal_hold"] = *model.OnLegalHold
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunCloudSpinDataStatsToMap(model *backuprecoveryv1.CloudSpinDataStats) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunAwsCloudSpinParamsToMap(model *backuprecoveryv1.AwsCloudSpinParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CustomTagList != nil {
+		customTagList := []map[string]interface{}{}
+		for _, customTagListItem := range model.CustomTagList {
+			customTagListItemMap, err := DataSourceIbmProtectionGroupRunCustomTagParamsToMap(&customTagListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			customTagList = append(customTagList, customTagListItemMap)
+		}
+		modelMap["custom_tag_list"] = customTagList
+	}
+	modelMap["region"] = flex.IntValue(model.Region)
+	if model.SubnetID != nil {
+		modelMap["subnet_id"] = flex.IntValue(model.SubnetID)
+	}
+	if model.VpcID != nil {
+		modelMap["vpc_id"] = flex.IntValue(model.VpcID)
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunCustomTagParamsToMap(model *backuprecoveryv1.CustomTagParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["key"] = *model.Key
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunAzureCloudSpinParamsToMap(model *backuprecoveryv1.AzureCloudSpinParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AvailabilitySetID != nil {
+		modelMap["availability_set_id"] = flex.IntValue(model.AvailabilitySetID)
+	}
+	if model.NetworkResourceGroupID != nil {
+		modelMap["network_resource_group_id"] = flex.IntValue(model.NetworkResourceGroupID)
+	}
+	if model.ResourceGroupID != nil {
+		modelMap["resource_group_id"] = flex.IntValue(model.ResourceGroupID)
+	}
+	if model.StorageAccountID != nil {
+		modelMap["storage_account_id"] = flex.IntValue(model.StorageAccountID)
+	}
+	if model.StorageContainerID != nil {
+		modelMap["storage_container_id"] = flex.IntValue(model.StorageContainerID)
+	}
+	if model.StorageResourceGroupID != nil {
+		modelMap["storage_resource_group_id"] = flex.IntValue(model.StorageResourceGroupID)
+	}
+	if model.TempVmResourceGroupID != nil {
+		modelMap["temp_vm_resource_group_id"] = flex.IntValue(model.TempVmResourceGroupID)
+	}
+	if model.TempVmStorageAccountID != nil {
+		modelMap["temp_vm_storage_account_id"] = flex.IntValue(model.TempVmStorageAccountID)
+	}
+	if model.TempVmStorageContainerID != nil {
+		modelMap["temp_vm_storage_container_id"] = flex.IntValue(model.TempVmStorageContainerID)
+	}
+	if model.TempVmSubnetID != nil {
+		modelMap["temp_vm_subnet_id"] = flex.IntValue(model.TempVmSubnetID)
+	}
+	if model.TempVmVirtualNetworkID != nil {
+		modelMap["temp_vm_virtual_network_id"] = flex.IntValue(model.TempVmVirtualNetworkID)
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunCloudSpinDataStatsToMap(model *backuprecoveryv1.CloudSpinDataStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.PhysicalBytesTransferred != nil {
 		modelMap["physical_bytes_transferred"] = flex.IntValue(model.PhysicalBytesTransferred)
@@ -2928,13 +4169,13 @@ func dataSourceIbmProtectionGroupRunCloudSpinDataStatsToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunBackupRunSummaryToMap(model *backuprecoveryv1.BackupRunSummary) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunBackupRunSummaryToMap(model *backuprecoveryv1.BackupRunSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RunType != nil {
-		modelMap["run_type"] = model.RunType
+		modelMap["run_type"] = *model.RunType
 	}
 	if model.IsSlaViolated != nil {
-		modelMap["is_sla_violated"] = model.IsSlaViolated
+		modelMap["is_sla_violated"] = *model.IsSlaViolated
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2943,13 +4184,16 @@ func dataSourceIbmProtectionGroupRunBackupRunSummaryToMap(model *backuprecoveryv
 		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.Messages != nil {
 		modelMap["messages"] = model.Messages
 	}
 	if model.SuccessfulObjectsCount != nil {
 		modelMap["successful_objects_count"] = flex.IntValue(model.SuccessfulObjectsCount)
+	}
+	if model.SkippedObjectsCount != nil {
+		modelMap["skipped_objects_count"] = flex.IntValue(model.SkippedObjectsCount)
 	}
 	if model.FailedObjectsCount != nil {
 		modelMap["failed_objects_count"] = flex.IntValue(model.FailedObjectsCount)
@@ -2967,29 +4211,29 @@ func dataSourceIbmProtectionGroupRunBackupRunSummaryToMap(model *backuprecoveryv
 		modelMap["cancelled_app_objects_count"] = flex.IntValue(model.CancelledAppObjectsCount)
 	}
 	if model.LocalSnapshotStats != nil {
-		localSnapshotStatsMap, err := dataSourceIbmProtectionGroupRunBackupDataStatsToMap(model.LocalSnapshotStats)
+		localSnapshotStatsMap, err := DataSourceIbmProtectionGroupRunBackupDataStatsToMap(model.LocalSnapshotStats)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["local_snapshot_stats"] = []map[string]interface{}{localSnapshotStatsMap}
 	}
 	if model.IndexingTaskID != nil {
-		modelMap["indexing_task_id"] = model.IndexingTaskID
+		modelMap["indexing_task_id"] = *model.IndexingTaskID
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.StatsTaskID != nil {
-		modelMap["stats_task_id"] = model.StatsTaskID
+		modelMap["stats_task_id"] = *model.StatsTaskID
 	}
 	if model.DataLock != nil {
-		modelMap["data_lock"] = model.DataLock
+		modelMap["data_lock"] = *model.DataLock
 	}
 	if model.LocalTaskID != nil {
-		modelMap["local_task_id"] = model.LocalTaskID
+		modelMap["local_task_id"] = *model.LocalTaskID
 	}
 	if model.DataLockConstraints != nil {
-		dataLockConstraintsMap, err := dataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
+		dataLockConstraintsMap, err := DataSourceIbmProtectionGroupRunDataLockConstraintsToMap(model.DataLockConstraints)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2998,12 +4242,12 @@ func dataSourceIbmProtectionGroupRunBackupRunSummaryToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunReplicationRunSummaryToMap(model *backuprecoveryv1.ReplicationRunSummary) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunReplicationRunSummaryToMap(model *backuprecoveryv1.ReplicationRunSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ReplicationTargetResults != nil {
 		replicationTargetResults := []map[string]interface{}{}
 		for _, replicationTargetResultsItem := range model.ReplicationTargetResults {
-			replicationTargetResultsItemMap, err := dataSourceIbmProtectionGroupRunReplicationTargetResultToMap(&replicationTargetResultsItem)
+			replicationTargetResultsItemMap, err := DataSourceIbmProtectionGroupRunReplicationTargetResultToMap(&replicationTargetResultsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3014,12 +4258,12 @@ func dataSourceIbmProtectionGroupRunReplicationRunSummaryToMap(model *backupreco
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunArchivalRunSummaryToMap(model *backuprecoveryv1.ArchivalRunSummary) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunArchivalRunSummaryToMap(model *backuprecoveryv1.ArchivalRunSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ArchivalTargetResults != nil {
 		archivalTargetResults := []map[string]interface{}{}
 		for _, archivalTargetResultsItem := range model.ArchivalTargetResults {
-			archivalTargetResultsItemMap, err := dataSourceIbmProtectionGroupRunArchivalTargetResultToMap(&archivalTargetResultsItem)
+			archivalTargetResultsItemMap, err := DataSourceIbmProtectionGroupRunArchivalTargetResultToMap(&archivalTargetResultsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3030,12 +4274,12 @@ func dataSourceIbmProtectionGroupRunArchivalRunSummaryToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunCloudSpinRunSummaryToMap(model *backuprecoveryv1.CloudSpinRunSummary) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunCloudSpinRunSummaryToMap(model *backuprecoveryv1.CloudSpinRunSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CloudSpinTargetResults != nil {
 		cloudSpinTargetResults := []map[string]interface{}{}
 		for _, cloudSpinTargetResultsItem := range model.CloudSpinTargetResults {
-			cloudSpinTargetResultsItemMap, err := dataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(&cloudSpinTargetResultsItem)
+			cloudSpinTargetResultsItemMap, err := DataSourceIbmProtectionGroupRunCloudSpinTargetResultToMap(&cloudSpinTargetResultsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3046,13 +4290,112 @@ func dataSourceIbmProtectionGroupRunCloudSpinRunSummaryToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func dataSourceIbmProtectionGroupRunTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func DataSourceIbmProtectionGroupRunTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.CreatedAtTimeMsecs != nil {
+		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
+	}
+	if model.DeletedAtTimeMsecs != nil {
+		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.ExternalVendorMetadata != nil {
+		externalVendorMetadataMap, err := DataSourceIbmProtectionGroupRunExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["external_vendor_metadata"] = []map[string]interface{}{externalVendorMetadataMap}
+	}
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
+	}
+	if model.IsManagedOnHelios != nil {
+		modelMap["is_managed_on_helios"] = *model.IsManagedOnHelios
+	}
+	if model.LastUpdatedAtTimeMsecs != nil {
+		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
+	}
+	if model.Network != nil {
+		networkMap, err := DataSourceIbmProtectionGroupRunTenantNetworkToMap(model.Network)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["network"] = []map[string]interface{}{networkMap}
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IbmTenantMetadataParams != nil {
+		ibmTenantMetadataParamsMap, err := DataSourceIbmProtectionGroupRunIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ibm_tenant_metadata_params"] = []map[string]interface{}{ibmTenantMetadataParamsMap}
+	}
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AccountID != nil {
+		modelMap["account_id"] = *model.AccountID
+	}
+	if model.Crn != nil {
+		modelMap["crn"] = *model.Crn
+	}
+	if model.CustomProperties != nil {
+		customProperties := []map[string]interface{}{}
+		for _, customPropertiesItem := range model.CustomProperties {
+			customPropertiesItemMap, err := DataSourceIbmProtectionGroupRunExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			customProperties = append(customProperties, customPropertiesItemMap)
+		}
+		modelMap["custom_properties"] = customProperties
+	}
+	if model.LivenessMode != nil {
+		modelMap["liveness_mode"] = *model.LivenessMode
+	}
+	if model.OwnershipMode != nil {
+		modelMap["ownership_mode"] = *model.OwnershipMode
+	}
+	if model.ResourceGroupID != nil {
+		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmProtectionGroupRunTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["connector_enabled"] = *model.ConnectorEnabled
+	if model.ClusterHostname != nil {
+		modelMap["cluster_hostname"] = *model.ClusterHostname
+	}
+	if model.ClusterIps != nil {
+		modelMap["cluster_ips"] = model.ClusterIps
 	}
 	return modelMap, nil
 }

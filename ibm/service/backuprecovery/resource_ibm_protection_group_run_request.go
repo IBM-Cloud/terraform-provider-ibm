@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -33,39 +37,39 @@ func ResourceIbmProtectionGroupRunRequest() *schema.Resource {
 				// ValidateFunc: validate.InvokeValidator("ibm_create_protection_group_run_request", "run_type"),
 				Description: "Protection group id",
 			},
-			"run_type": {
+			"run_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				//ForceNew: true,
-				//ValidateFunc: validate.InvokeValidator("ibm_protection_group_run_request", "run_type"),
+				// ForceNew: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_protection_group_run_request", "run_type"),
 				Description: "Type of protection run. 'kRegular' indicates an incremental (CBT) backup. Incremental backups utilizing CBT (if supported) are captured of the target protection objects. The first run of a kRegular schedule captures all the blocks. 'kFull' indicates a full (no CBT) backup. A complete backup (all blocks) of the target protection objects are always captured and Change Block Tracking (CBT) is not utilized. 'kLog' indicates a Database Log backup. Capture the database transaction logs to allow rolling back to a specific point in time. 'kSystem' indicates system volume backup. It produces an image for bare metal recovery.",
 			},
-			"objects": {
+			"objects": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
-				//ForceNew:    true,
+				// ForceNew:    true,
 				Description: "Specifies the list of objects to be protected by this Protection Group run. These can be leaf objects or non-leaf objects in the protection hierarchy. This must be specified only if a subset of objects from the Protection Groups needs to be protected.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Required:    true,
 							Description: "Specifies the id of object.",
 						},
-						"app_ids": {
+						"app_ids": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Specifies a list of ids of applications.",
 							Elem:        &schema.Schema{Type: schema.TypeInt},
 						},
-						"physical_params": {
+						"physical_params": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Specifies physical parameters for this run.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"metadata_file_path": {
+									"metadata_file_path": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Specifies metadata file path during run-now requests for physical file based backups for some specific source. If specified, it will override any default metadata/directive file path set at the object level for the source. Also note that if the job default does not specify a metadata/directive file path for the source, then specifying this field for that source during run-now request will be rejected.",
@@ -76,71 +80,71 @@ func ResourceIbmProtectionGroupRunRequest() *schema.Resource {
 					},
 				},
 			},
-			"targets_config": {
+			"targets_config": &schema.Schema{
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
-				//ForceNew:    true,
+				// ForceNew:    true,
 				Description: "Specifies the replication and archival targets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"use_policy_defaults": {
+						"use_policy_defaults": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
 							Description: "Specifies whether to use default policy settings or not. If specified as true then 'replications' and 'arcihvals' should not be specified. In case of true value, replicatioan targets congfigured in the policy will be added internally.",
 						},
-						"replications": {
+						"replications": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Specifies a list of replication targets configurations.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeInt,
 										Required:    true,
 										Description: "Specifies id of Remote Cluster to copy the Snapshots to.",
 									},
-									"retention": {
+									"retention": &schema.Schema{
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
 										Description: "Specifies the retention of a backup.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"unit": {
+												"unit": &schema.Schema{
 													Type:        schema.TypeString,
 													Required:    true,
 													Description: "Specificies the Retention Unit of a backup measured in days, months or years. <br> If unit is 'Months', then number specified in duration is multiplied to 30. <br> Example: If duration is 4 and unit is 'Months' then number of retention days will be 30 * 4 = 120 days. <br> If unit is 'Years', then number specified in duration is multiplied to 365. <br> If duration is 2 and unit is 'Years' then number of retention days will be 365 * 2 = 730 days.",
 												},
-												"duration": {
+												"duration": &schema.Schema{
 													Type:        schema.TypeInt,
 													Required:    true,
 													Description: "Specifies the duration for a backup retention. <br> Example. If duration is 7 and unit is Months, the retention of a backup is 7 * 30 = 210 days.",
 												},
-												"data_lock_config": {
+												"data_lock_config": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
 													Description: "Specifies WORM retention type for the snapshots. When a WORM retention type is specified, the snapshots of the Protection Groups using this policy will be kept for the last N days as specified in the duration of the datalock. During that time, the snapshots cannot be deleted.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"mode": {
+															"mode": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Specifies the type of WORM retention type. 'Compliance' implies WORM retention is set for compliance reason. 'Administrative' implies WORM retention is set for administrative purposes.",
 															},
-															"unit": {
+															"unit": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Specificies the Retention Unit of a dataLock measured in days, months or years. <br> If unit is 'Months', then number specified in duration is multiplied to 30. <br> Example: If duration is 4 and unit is 'Months' then number of retention days will be 30 * 4 = 120 days. <br> If unit is 'Years', then number specified in duration is multiplied to 365. <br> If duration is 2 and unit is 'Months' then number of retention days will be 365 * 2 = 730 days.",
 															},
-															"duration": {
+															"duration": &schema.Schema{
 																Type:        schema.TypeInt,
 																Required:    true,
 																Description: "Specifies the duration for a dataLock. <br> Example. If duration is 7 and unit is Months, the dataLock is enabled for last 7 * 30 = 210 days of the backup.",
 															},
-															"enable_worm_on_external_target": {
+															"enable_worm_on_external_target": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Specifies whether objects in the external target associated with this policy need to be made immutable.",
@@ -154,62 +158,62 @@ func ResourceIbmProtectionGroupRunRequest() *schema.Resource {
 								},
 							},
 						},
-						"archivals": {
+						"archivals": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Specifies a list of archival targets configurations.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeInt,
 										Required:    true,
 										Description: "Specifies the Archival target to copy the Snapshots to.",
 									},
-									"archival_target_type": {
+									"archival_target_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "Specifies the snapshot's archival target type from which recovery has been performed.",
 									},
-									"retention": {
+									"retention": &schema.Schema{
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
 										Description: "Specifies the retention of a backup.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"unit": {
+												"unit": &schema.Schema{
 													Type:        schema.TypeString,
 													Required:    true,
 													Description: "Specificies the Retention Unit of a backup measured in days, months or years. <br> If unit is 'Months', then number specified in duration is multiplied to 30. <br> Example: If duration is 4 and unit is 'Months' then number of retention days will be 30 * 4 = 120 days. <br> If unit is 'Years', then number specified in duration is multiplied to 365. <br> If duration is 2 and unit is 'Years' then number of retention days will be 365 * 2 = 730 days.",
 												},
-												"duration": {
+												"duration": &schema.Schema{
 													Type:        schema.TypeInt,
 													Required:    true,
 													Description: "Specifies the duration for a backup retention. <br> Example. If duration is 7 and unit is Months, the retention of a backup is 7 * 30 = 210 days.",
 												},
-												"data_lock_config": {
+												"data_lock_config": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
 													Description: "Specifies WORM retention type for the snapshots. When a WORM retention type is specified, the snapshots of the Protection Groups using this policy will be kept for the last N days as specified in the duration of the datalock. During that time, the snapshots cannot be deleted.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"mode": {
+															"mode": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Specifies the type of WORM retention type. 'Compliance' implies WORM retention is set for compliance reason. 'Administrative' implies WORM retention is set for administrative purposes.",
 															},
-															"unit": {
+															"unit": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Specificies the Retention Unit of a dataLock measured in days, months or years. <br> If unit is 'Months', then number specified in duration is multiplied to 30. <br> Example: If duration is 4 and unit is 'Months' then number of retention days will be 30 * 4 = 120 days. <br> If unit is 'Years', then number specified in duration is multiplied to 365. <br> If duration is 2 and unit is 'Months' then number of retention days will be 365 * 2 = 730 days.",
 															},
-															"duration": {
+															"duration": &schema.Schema{
 																Type:        schema.TypeInt,
 																Required:    true,
 																Description: "Specifies the duration for a dataLock. <br> Example. If duration is 7 and unit is Months, the dataLock is enabled for last 7 * 30 = 210 days of the backup.",
 															},
-															"enable_worm_on_external_target": {
+															"enable_worm_on_external_target": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Specifies whether objects in the external target associated with this policy need to be made immutable.",
@@ -220,7 +224,7 @@ func ResourceIbmProtectionGroupRunRequest() *schema.Resource {
 											},
 										},
 									},
-									"copy_only_fully_successful": {
+									"copy_only_fully_successful": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Specifies if Snapshots are copied from a fully successful Protection Group Run or a partially successful Protection Group Run. If false, Snapshots are copied the Protection Group Run, even if the Run was not fully successful i.e. Snapshots were not captured for all Objects in the Protection Group. If true, Snapshots are copied only when the run is fully successful.",
@@ -228,57 +232,147 @@ func ResourceIbmProtectionGroupRunRequest() *schema.Resource {
 								},
 							},
 						},
-						"cloud_replications": {
+						"cloud_replications": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Specifies a list of cloud replication targets configurations.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"target_type": {
+									"aws_target": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies the configuration for adding AWS as repilcation target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the AWS Replication target.",
+												},
+												"region": &schema.Schema{
+													Type:        schema.TypeInt,
+													Required:    true,
+													Description: "Specifies id of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+												},
+												"region_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the AWS region in which to replicate the Snapshot to. Applicable if replication target is AWS target.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Required:    true,
+													Description: "Specifies the source id of the AWS protection source registered on IBM cluster.",
+												},
+											},
+										},
+									},
+									"azure_target": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies the configuration for adding Azure as replication target.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the Azure Replication target.",
+												},
+												"resource_group": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "Specifies id of the Azure resource group used to filter regions in UI.",
+												},
+												"resource_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the Azure resource group used to filter regions in UI.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Required:    true,
+													Description: "Specifies the source id of the Azure protection source registered on IBM cluster.",
+												},
+												"storage_account": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage account of Azure replication target which will contain storage container.",
+												},
+												"storage_account_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage account of Azure replication target which will contain storage container.",
+												},
+												"storage_container": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage container of Azure Replication target.",
+												},
+												"storage_container_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage container of Azure Replication target.",
+												},
+												"storage_resource_group": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies id of the storage resource group of Azure Replication target.",
+												},
+												"storage_resource_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies name of the storage resource group of Azure Replication target.",
+												},
+											},
+										},
+									},
+									"target_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "Specifies the type of target to which replication need to be performed.",
 									},
-									"retention": {
+									"retention": &schema.Schema{
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
 										Description: "Specifies the retention of a backup.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"unit": {
+												"unit": &schema.Schema{
 													Type:        schema.TypeString,
 													Required:    true,
 													Description: "Specificies the Retention Unit of a backup measured in days, months or years. <br> If unit is 'Months', then number specified in duration is multiplied to 30. <br> Example: If duration is 4 and unit is 'Months' then number of retention days will be 30 * 4 = 120 days. <br> If unit is 'Years', then number specified in duration is multiplied to 365. <br> If duration is 2 and unit is 'Years' then number of retention days will be 365 * 2 = 730 days.",
 												},
-												"duration": {
+												"duration": &schema.Schema{
 													Type:        schema.TypeInt,
 													Required:    true,
 													Description: "Specifies the duration for a backup retention. <br> Example. If duration is 7 and unit is Months, the retention of a backup is 7 * 30 = 210 days.",
 												},
-												"data_lock_config": {
+												"data_lock_config": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
 													Description: "Specifies WORM retention type for the snapshots. When a WORM retention type is specified, the snapshots of the Protection Groups using this policy will be kept for the last N days as specified in the duration of the datalock. During that time, the snapshots cannot be deleted.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"mode": {
+															"mode": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Specifies the type of WORM retention type. 'Compliance' implies WORM retention is set for compliance reason. 'Administrative' implies WORM retention is set for administrative purposes.",
 															},
-															"unit": {
+															"unit": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Specificies the Retention Unit of a dataLock measured in days, months or years. <br> If unit is 'Months', then number specified in duration is multiplied to 30. <br> Example: If duration is 4 and unit is 'Months' then number of retention days will be 30 * 4 = 120 days. <br> If unit is 'Years', then number specified in duration is multiplied to 365. <br> If duration is 2 and unit is 'Months' then number of retention days will be 365 * 2 = 730 days.",
 															},
-															"duration": {
+															"duration": &schema.Schema{
 																Type:        schema.TypeInt,
 																Required:    true,
 																Description: "Specifies the duration for a dataLock. <br> Example. If duration is 7 and unit is Months, the dataLock is enabled for last 7 * 30 = 210 days of the backup.",
 															},
-															"enable_worm_on_external_target": {
+															"enable_worm_on_external_target": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Specifies whether objects in the external target associated with this policy need to be made immutable.",
@@ -294,57 +388,6 @@ func ResourceIbmProtectionGroupRunRequest() *schema.Resource {
 						},
 					},
 				},
-			},
-			"uda_params": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				//ForceNew:    true,
-				Description: "Specifies the parameters for Universal Data Adapter protection run.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"externally_triggered_run_params": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Specifies the parameters for an externally triggered run.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"control_node": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Specifies the IP or FQDN of the source host where this backup will run.",
-									},
-									"backup_args": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "Specifies a map of custom arguments to be supplied to the plugin.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"key": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "key.",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "value.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			"run_id": {
-				Type: schema.TypeString,
-				// Computed:    true,
-				Optional:    true,
-				Description: "The unique ID.",
 			},
 		},
 	}
@@ -395,7 +438,9 @@ func ResourceIbmProtectionGroupRunRequestValidator() *validate.ResourceValidator
 func resourceIbmProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_protection_group_run_request", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createProtectionGroupRunOptions := &backuprecoveryv1.CreateProtectionGroupRunOptions{}
@@ -407,76 +452,34 @@ func resourceIbmProtectionGroupRunRequestCreate(context context.Context, d *sche
 		var newObjects []backuprecoveryv1.RunObject
 		for _, v := range d.Get("objects").([]interface{}) {
 			value := v.(map[string]interface{})
-			newObjectsItem, err := resourceIbmProtectionGroupRunRequestMapToRunObject(value)
+			newObjectsItem, err := ResourceIbmProtectionGroupRunRequestMapToRunObject(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_protection_group_run_request", "create", "parse-objects").GetDiag()
 			}
 			newObjects = append(newObjects, *newObjectsItem)
 		}
 		createProtectionGroupRunOptions.SetObjects(newObjects)
 	}
 	if _, ok := d.GetOk("targets_config"); ok {
-		newTargetsConfigModel, err := resourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(d.Get("targets_config.0").(map[string]interface{}))
+		newTargetsConfigModel, err := ResourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(d.Get("targets_config.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_protection_group_run_request", "create", "parse-targets_config").GetDiag()
 		}
 		createProtectionGroupRunOptions.SetTargetsConfig(newTargetsConfigModel)
 	}
-	if _, ok := d.GetOk("uda_params"); ok {
-		newUdaParamsModel, err := resourceIbmProtectionGroupRunRequestMapToUdaProtectionRunParams(d.Get("uda_params.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createProtectionGroupRunOptions.SetUdaParams(newUdaParamsModel)
-	}
 
-	createProtectionGroupRunResponseBody, response, err := backupRecoveryClient.CreateProtectionGroupRunWithContext(context, createProtectionGroupRunOptions)
+	createProtectionGroupRunResponse, _, err := backupRecoveryClient.CreateProtectionGroupRunWithContext(context, createProtectionGroupRunOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateProtectionGroupRunWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateProtectionGroupRunWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProtectionGroupRunWithContext failed: %s", err.Error()), "ibm_protection_group_run_request", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(*createProtectionGroupRunResponseBody.ProtectionGroupID)
-
-	if !core.IsNil(createProtectionGroupRunResponseBody.UdaParams) {
-		udaParamsMap, err := resourceIbmProtectionGroupRunRequestUdaProtectionRunParamsToMap(createProtectionGroupRunResponseBody.UdaParams)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("uda_params", []map[string]interface{}{udaParamsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting uda_params: %s", err))
-		}
+	d.SetId(*createProtectionGroupRunResponse.ProtectionGroupID)
+	if err = d.Set("group_id", *createProtectionGroupRunResponse.ProtectionGroupID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting group_id: %s", err))
 	}
-
 	return nil
-	// return resourceIbmCreateProtectionGroupRunsRequestRead(context, d, meta)
-}
-
-func resourceIbmProtectionGroupRunRequestUdaProtectionRunParamsToMap(model *backuprecoveryv1.UdaCreateRunResponseParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ExternallyTriggeredRunID != nil {
-		modelMap["externally_triggered_run_id"] = model.ExternallyTriggeredRunID
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProtectionGroupRunRequestUdaExternallyTriggeredRunParamsToMap(model *backuprecoveryv1.UdaExternallyTriggeredRunParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ControlNode != nil {
-		modelMap["control_node"] = model.ControlNode
-	}
-	if model.BackupArgs != nil {
-		backupArgs := []map[string]interface{}{}
-		for _, backupArgsItem := range model.BackupArgs {
-			backupArgsItemMap, err := resourceIbmProtectionGroupRunRequestKeyValuePairToMap(&backupArgsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			backupArgs = append(backupArgs, backupArgsItemMap)
-		}
-		modelMap["backup_args"] = backupArgs
-	}
-	return modelMap, nil
 }
 
 func resourceIbmProtectionGroupRunRequestRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -511,7 +514,7 @@ func resourceIbmProtectionGroupRunRequestUpdate(context context.Context, d *sche
 	return diags
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRunObject(modelMap map[string]interface{}) (*backuprecoveryv1.RunObject, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRunObject(modelMap map[string]interface{}) (*backuprecoveryv1.RunObject, error) {
 	model := &backuprecoveryv1.RunObject{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	if modelMap["app_ids"] != nil {
@@ -522,7 +525,7 @@ func resourceIbmProtectionGroupRunRequestMapToRunObject(modelMap map[string]inte
 		model.AppIds = appIds
 	}
 	if modelMap["physical_params"] != nil && len(modelMap["physical_params"].([]interface{})) > 0 {
-		PhysicalParamsModel, err := resourceIbmProtectionGroupRunRequestMapToRunObjectPhysicalParams(modelMap["physical_params"].([]interface{})[0].(map[string]interface{}))
+		PhysicalParamsModel, err := ResourceIbmProtectionGroupRunRequestMapToRunObjectPhysicalParams(modelMap["physical_params"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -531,7 +534,7 @@ func resourceIbmProtectionGroupRunRequestMapToRunObject(modelMap map[string]inte
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRunObjectPhysicalParams(modelMap map[string]interface{}) (*backuprecoveryv1.RunObjectPhysicalParams, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRunObjectPhysicalParams(modelMap map[string]interface{}) (*backuprecoveryv1.RunObjectPhysicalParams, error) {
 	model := &backuprecoveryv1.RunObjectPhysicalParams{}
 	if modelMap["metadata_file_path"] != nil && modelMap["metadata_file_path"].(string) != "" {
 		model.MetadataFilePath = core.StringPtr(modelMap["metadata_file_path"].(string))
@@ -539,7 +542,7 @@ func resourceIbmProtectionGroupRunRequestMapToRunObjectPhysicalParams(modelMap m
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(modelMap map[string]interface{}) (*backuprecoveryv1.RunTargetsConfiguration, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(modelMap map[string]interface{}) (*backuprecoveryv1.RunTargetsConfiguration, error) {
 	model := &backuprecoveryv1.RunTargetsConfiguration{}
 	if modelMap["use_policy_defaults"] != nil {
 		model.UsePolicyDefaults = core.BoolPtr(modelMap["use_policy_defaults"].(bool))
@@ -547,7 +550,7 @@ func resourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(modelMap m
 	if modelMap["replications"] != nil {
 		replications := []backuprecoveryv1.RunReplicationConfig{}
 		for _, replicationsItem := range modelMap["replications"].([]interface{}) {
-			replicationsItemModel, err := resourceIbmProtectionGroupRunRequestMapToRunReplicationConfig(replicationsItem.(map[string]interface{}))
+			replicationsItemModel, err := ResourceIbmProtectionGroupRunRequestMapToRunReplicationConfig(replicationsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -558,7 +561,7 @@ func resourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(modelMap m
 	if modelMap["archivals"] != nil {
 		archivals := []backuprecoveryv1.RunArchivalConfig{}
 		for _, archivalsItem := range modelMap["archivals"].([]interface{}) {
-			archivalsItemModel, err := resourceIbmProtectionGroupRunRequestMapToRunArchivalConfig(archivalsItem.(map[string]interface{}))
+			archivalsItemModel, err := ResourceIbmProtectionGroupRunRequestMapToRunArchivalConfig(archivalsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -569,7 +572,7 @@ func resourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(modelMap m
 	if modelMap["cloud_replications"] != nil {
 		cloudReplications := []backuprecoveryv1.RunCloudReplicationConfig{}
 		for _, cloudReplicationsItem := range modelMap["cloud_replications"].([]interface{}) {
-			cloudReplicationsItemModel, err := resourceIbmProtectionGroupRunRequestMapToRunCloudReplicationConfig(cloudReplicationsItem.(map[string]interface{}))
+			cloudReplicationsItemModel, err := ResourceIbmProtectionGroupRunRequestMapToRunCloudReplicationConfig(cloudReplicationsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -580,11 +583,11 @@ func resourceIbmProtectionGroupRunRequestMapToRunTargetsConfiguration(modelMap m
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRunReplicationConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunReplicationConfig, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRunReplicationConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunReplicationConfig, error) {
 	model := &backuprecoveryv1.RunReplicationConfig{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	if modelMap["retention"] != nil && len(modelMap["retention"].([]interface{})) > 0 {
-		RetentionModel, err := resourceIbmProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
+		RetentionModel, err := ResourceIbmProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -593,12 +596,12 @@ func resourceIbmProtectionGroupRunRequestMapToRunReplicationConfig(modelMap map[
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRetention(modelMap map[string]interface{}) (*backuprecoveryv1.Retention, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRetention(modelMap map[string]interface{}) (*backuprecoveryv1.Retention, error) {
 	model := &backuprecoveryv1.Retention{}
 	model.Unit = core.StringPtr(modelMap["unit"].(string))
 	model.Duration = core.Int64Ptr(int64(modelMap["duration"].(int)))
 	if modelMap["data_lock_config"] != nil && len(modelMap["data_lock_config"].([]interface{})) > 0 {
-		DataLockConfigModel, err := resourceIbmProtectionGroupRunRequestMapToDataLockConfig(modelMap["data_lock_config"].([]interface{})[0].(map[string]interface{}))
+		DataLockConfigModel, err := ResourceIbmProtectionGroupRunRequestMapToDataLockConfig(modelMap["data_lock_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -607,7 +610,7 @@ func resourceIbmProtectionGroupRunRequestMapToRetention(modelMap map[string]inte
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToDataLockConfig(modelMap map[string]interface{}) (*backuprecoveryv1.DataLockConfig, error) {
+func ResourceIbmProtectionGroupRunRequestMapToDataLockConfig(modelMap map[string]interface{}) (*backuprecoveryv1.DataLockConfig, error) {
 	model := &backuprecoveryv1.DataLockConfig{}
 	model.Mode = core.StringPtr(modelMap["mode"].(string))
 	model.Unit = core.StringPtr(modelMap["unit"].(string))
@@ -618,12 +621,12 @@ func resourceIbmProtectionGroupRunRequestMapToDataLockConfig(modelMap map[string
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRunArchivalConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunArchivalConfig, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRunArchivalConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunArchivalConfig, error) {
 	model := &backuprecoveryv1.RunArchivalConfig{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	model.ArchivalTargetType = core.StringPtr(modelMap["archival_target_type"].(string))
 	if modelMap["retention"] != nil && len(modelMap["retention"].([]interface{})) > 0 {
-		RetentionModel, err := resourceIbmProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
+		RetentionModel, err := ResourceIbmProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -635,11 +638,25 @@ func resourceIbmProtectionGroupRunRequestMapToRunArchivalConfig(modelMap map[str
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToRunCloudReplicationConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunCloudReplicationConfig, error) {
+func ResourceIbmProtectionGroupRunRequestMapToRunCloudReplicationConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunCloudReplicationConfig, error) {
 	model := &backuprecoveryv1.RunCloudReplicationConfig{}
+	if modelMap["aws_target"] != nil && len(modelMap["aws_target"].([]interface{})) > 0 {
+		AwsTargetModel, err := ResourceIbmProtectionGroupRunRequestMapToAWSTargetConfig(modelMap["aws_target"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.AwsTarget = AwsTargetModel
+	}
+	if modelMap["azure_target"] != nil && len(modelMap["azure_target"].([]interface{})) > 0 {
+		AzureTargetModel, err := ResourceIbmProtectionGroupRunRequestMapToAzureTargetConfig(modelMap["azure_target"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.AzureTarget = AzureTargetModel
+	}
 	model.TargetType = core.StringPtr(modelMap["target_type"].(string))
 	if modelMap["retention"] != nil && len(modelMap["retention"].([]interface{})) > 0 {
-		RetentionModel, err := resourceIbmProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
+		RetentionModel, err := ResourceIbmProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -648,67 +665,60 @@ func resourceIbmProtectionGroupRunRequestMapToRunCloudReplicationConfig(modelMap
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToUdaProtectionRunParams(modelMap map[string]interface{}) (*backuprecoveryv1.UdaProtectionRunParams, error) {
-	model := &backuprecoveryv1.UdaProtectionRunParams{}
-	if modelMap["externally_triggered_run_params"] != nil && len(modelMap["externally_triggered_run_params"].([]interface{})) > 0 {
-		ExternallyTriggeredRunParamsModel, err := resourceIbmProtectionGroupRunRequestMapToUdaExternallyTriggeredRunParams(modelMap["externally_triggered_run_params"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ExternallyTriggeredRunParams = ExternallyTriggeredRunParamsModel
+func ResourceIbmProtectionGroupRunRequestMapToAWSTargetConfig(modelMap map[string]interface{}) (*backuprecoveryv1.AWSTargetConfig, error) {
+	model := &backuprecoveryv1.AWSTargetConfig{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	model.Region = core.Int64Ptr(int64(modelMap["region"].(int)))
+	if modelMap["region_name"] != nil && modelMap["region_name"].(string) != "" {
+		model.RegionName = core.StringPtr(modelMap["region_name"].(string))
+	}
+	model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
+	return model, nil
+}
+
+func ResourceIbmProtectionGroupRunRequestMapToAzureTargetConfig(modelMap map[string]interface{}) (*backuprecoveryv1.AzureTargetConfig, error) {
+	model := &backuprecoveryv1.AzureTargetConfig{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["resource_group"] != nil {
+		model.ResourceGroup = core.Int64Ptr(int64(modelMap["resource_group"].(int)))
+	}
+	if modelMap["resource_group_name"] != nil && modelMap["resource_group_name"].(string) != "" {
+		model.ResourceGroupName = core.StringPtr(modelMap["resource_group_name"].(string))
+	}
+	model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
+	if modelMap["storage_account"] != nil {
+		model.StorageAccount = core.Int64Ptr(int64(modelMap["storage_account"].(int)))
+	}
+	if modelMap["storage_account_name"] != nil && modelMap["storage_account_name"].(string) != "" {
+		model.StorageAccountName = core.StringPtr(modelMap["storage_account_name"].(string))
+	}
+	if modelMap["storage_container"] != nil {
+		model.StorageContainer = core.Int64Ptr(int64(modelMap["storage_container"].(int)))
+	}
+	if modelMap["storage_container_name"] != nil && modelMap["storage_container_name"].(string) != "" {
+		model.StorageContainerName = core.StringPtr(modelMap["storage_container_name"].(string))
+	}
+	if modelMap["storage_resource_group"] != nil {
+		model.StorageResourceGroup = core.Int64Ptr(int64(modelMap["storage_resource_group"].(int)))
+	}
+	if modelMap["storage_resource_group_name"] != nil && modelMap["storage_resource_group_name"].(string) != "" {
+		model.StorageResourceGroupName = core.StringPtr(modelMap["storage_resource_group_name"].(string))
 	}
 	return model, nil
 }
 
-func resourceIbmProtectionGroupRunRequestMapToUdaExternallyTriggeredRunParams(modelMap map[string]interface{}) (*backuprecoveryv1.UdaExternallyTriggeredRunParams, error) {
-	model := &backuprecoveryv1.UdaExternallyTriggeredRunParams{}
-	if modelMap["control_node"] != nil && modelMap["control_node"].(string) != "" {
-		model.ControlNode = core.StringPtr(modelMap["control_node"].(string))
-	}
-	if modelMap["backup_args"] != nil {
-		backupArgs := []backuprecoveryv1.KeyValuePair{}
-		for _, backupArgsItem := range modelMap["backup_args"].([]interface{}) {
-			backupArgsItemModel, err := resourceIbmProtectionGroupRunRequestMapToKeyValuePair(backupArgsItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			backupArgs = append(backupArgs, *backupArgsItemModel)
-		}
-		model.BackupArgs = backupArgs
-	}
-	return model, nil
-}
-
-func resourceIbmProtectionGroupRunRequestMapToKeyValuePair(modelMap map[string]interface{}) (*backuprecoveryv1.KeyValuePair, error) {
-	model := &backuprecoveryv1.KeyValuePair{}
-	model.Key = core.StringPtr(modelMap["key"].(string))
-	model.Value = core.StringPtr(modelMap["value"].(string))
-	return model, nil
-}
-
-//--
-
-func resourceIbmProtectionGroupRunRequestRunCloudReplicationConfigToMap(model *backuprecoveryv1.RunCloudReplicationConfig) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["target_type"] = model.TargetType
-	if model.Retention != nil {
-		retentionMap, err := resourceIbmProtectionGroupRunRequestRetentionToMap(model.Retention)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["retention"] = []map[string]interface{}{retentionMap}
-	}
-	return modelMap, nil
-}
-
-func resourceIbmProtectionGroupRunRequestRunObjectToMap(model *backuprecoveryv1.RunObject) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRunObjectToMap(model *backuprecoveryv1.RunObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.AppIds != nil {
 		modelMap["app_ids"] = model.AppIds
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := resourceIbmProtectionGroupRunRequestRunObjectPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := ResourceIbmProtectionGroupRunRequestRunObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -717,23 +727,23 @@ func resourceIbmProtectionGroupRunRequestRunObjectToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestRunObjectPhysicalParamsToMap(model *backuprecoveryv1.RunObjectPhysicalParams) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRunObjectPhysicalParamsToMap(model *backuprecoveryv1.RunObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MetadataFilePath != nil {
-		modelMap["metadata_file_path"] = model.MetadataFilePath
+		modelMap["metadata_file_path"] = *model.MetadataFilePath
 	}
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestRunTargetsConfigurationToMap(model *backuprecoveryv1.RunTargetsConfiguration) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRunTargetsConfigurationToMap(model *backuprecoveryv1.RunTargetsConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UsePolicyDefaults != nil {
-		modelMap["use_policy_defaults"] = model.UsePolicyDefaults
+		modelMap["use_policy_defaults"] = *model.UsePolicyDefaults
 	}
 	if model.Replications != nil {
 		replications := []map[string]interface{}{}
 		for _, replicationsItem := range model.Replications {
-			replicationsItemMap, err := resourceIbmProtectionGroupRunRequestRunReplicationConfigToMap(&replicationsItem)
+			replicationsItemMap, err := ResourceIbmProtectionGroupRunRequestRunReplicationConfigToMap(&replicationsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -744,7 +754,7 @@ func resourceIbmProtectionGroupRunRequestRunTargetsConfigurationToMap(model *bac
 	if model.Archivals != nil {
 		archivals := []map[string]interface{}{}
 		for _, archivalsItem := range model.Archivals {
-			archivalsItemMap, err := resourceIbmProtectionGroupRunRequestRunArchivalConfigToMap(&archivalsItem)
+			archivalsItemMap, err := ResourceIbmProtectionGroupRunRequestRunArchivalConfigToMap(&archivalsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -755,7 +765,7 @@ func resourceIbmProtectionGroupRunRequestRunTargetsConfigurationToMap(model *bac
 	if model.CloudReplications != nil {
 		cloudReplications := []map[string]interface{}{}
 		for _, cloudReplicationsItem := range model.CloudReplications {
-			cloudReplicationsItemMap, err := resourceIbmProtectionGroupRunRequestRunCloudReplicationConfigToMap(&cloudReplicationsItem)
+			cloudReplicationsItemMap, err := ResourceIbmProtectionGroupRunRequestRunCloudReplicationConfigToMap(&cloudReplicationsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -766,11 +776,11 @@ func resourceIbmProtectionGroupRunRequestRunTargetsConfigurationToMap(model *bac
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestRunReplicationConfigToMap(model *backuprecoveryv1.RunReplicationConfig) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRunReplicationConfigToMap(model *backuprecoveryv1.RunReplicationConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Retention != nil {
-		retentionMap, err := resourceIbmProtectionGroupRunRequestRetentionToMap(model.Retention)
+		retentionMap, err := ResourceIbmProtectionGroupRunRequestRetentionToMap(model.Retention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -779,12 +789,12 @@ func resourceIbmProtectionGroupRunRequestRunReplicationConfigToMap(model *backup
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["unit"] = model.Unit
+	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := resourceIbmProtectionGroupRunRequestDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := ResourceIbmProtectionGroupRunRequestDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -793,37 +803,103 @@ func resourceIbmProtectionGroupRunRequestRetentionToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["mode"] = model.Mode
-	modelMap["unit"] = model.Unit
+	modelMap["mode"] = *model.Mode
+	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.EnableWormOnExternalTarget != nil {
-		modelMap["enable_worm_on_external_target"] = model.EnableWormOnExternalTarget
+		modelMap["enable_worm_on_external_target"] = *model.EnableWormOnExternalTarget
 	}
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestRunArchivalConfigToMap(model *backuprecoveryv1.RunArchivalConfig) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRunArchivalConfigToMap(model *backuprecoveryv1.RunArchivalConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
-	modelMap["archival_target_type"] = model.ArchivalTargetType
+	modelMap["archival_target_type"] = *model.ArchivalTargetType
 	if model.Retention != nil {
-		retentionMap, err := resourceIbmProtectionGroupRunRequestRetentionToMap(model.Retention)
+		retentionMap, err := ResourceIbmProtectionGroupRunRequestRetentionToMap(model.Retention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["retention"] = []map[string]interface{}{retentionMap}
 	}
 	if model.CopyOnlyFullySuccessful != nil {
-		modelMap["copy_only_fully_successful"] = model.CopyOnlyFullySuccessful
+		modelMap["copy_only_fully_successful"] = *model.CopyOnlyFullySuccessful
 	}
 	return modelMap, nil
 }
 
-func resourceIbmProtectionGroupRunRequestKeyValuePairToMap(model *backuprecoveryv1.KeyValuePair) (map[string]interface{}, error) {
+func ResourceIbmProtectionGroupRunRequestRunCloudReplicationConfigToMap(model *backuprecoveryv1.RunCloudReplicationConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["value"] = model.Value
+	if model.AwsTarget != nil {
+		awsTargetMap, err := ResourceIbmProtectionGroupRunRequestAWSTargetConfigToMap(model.AwsTarget)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_target"] = []map[string]interface{}{awsTargetMap}
+	}
+	if model.AzureTarget != nil {
+		azureTargetMap, err := ResourceIbmProtectionGroupRunRequestAzureTargetConfigToMap(model.AzureTarget)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_target"] = []map[string]interface{}{azureTargetMap}
+	}
+	modelMap["target_type"] = *model.TargetType
+	if model.Retention != nil {
+		retentionMap, err := ResourceIbmProtectionGroupRunRequestRetentionToMap(model.Retention)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["retention"] = []map[string]interface{}{retentionMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmProtectionGroupRunRequestAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	modelMap["region"] = flex.IntValue(model.Region)
+	if model.RegionName != nil {
+		modelMap["region_name"] = *model.RegionName
+	}
+	modelMap["source_id"] = flex.IntValue(model.SourceID)
+	return modelMap, nil
+}
+
+func ResourceIbmProtectionGroupRunRequestAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceGroup != nil {
+		modelMap["resource_group"] = flex.IntValue(model.ResourceGroup)
+	}
+	if model.ResourceGroupName != nil {
+		modelMap["resource_group_name"] = *model.ResourceGroupName
+	}
+	modelMap["source_id"] = flex.IntValue(model.SourceID)
+	if model.StorageAccount != nil {
+		modelMap["storage_account"] = flex.IntValue(model.StorageAccount)
+	}
+	if model.StorageAccountName != nil {
+		modelMap["storage_account_name"] = *model.StorageAccountName
+	}
+	if model.StorageContainer != nil {
+		modelMap["storage_container"] = flex.IntValue(model.StorageContainer)
+	}
+	if model.StorageContainerName != nil {
+		modelMap["storage_container_name"] = *model.StorageContainerName
+	}
+	if model.StorageResourceGroup != nil {
+		modelMap["storage_resource_group"] = flex.IntValue(model.StorageResourceGroup)
+	}
+	if model.StorageResourceGroupName != nil {
+		modelMap["storage_resource_group_name"] = *model.StorageResourceGroupName
+	}
 	return modelMap, nil
 }

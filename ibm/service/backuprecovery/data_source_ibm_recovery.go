@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.94.0-fa797aec-20240814-142622
+ */
+
 package backuprecovery
 
 import (
@@ -13,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -25,11 +30,6 @@ func DataSourceIbmRecovery() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Specifies the id of a Recovery.",
-			},
-			"include_tenants": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -72,15 +72,139 @@ func DataSourceIbmRecovery() *schema.Resource {
 				Description: "Specifies the list of tenants that have permissions for this recovery.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"created_at_time_msecs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Epoch time when tenant was created.",
+						},
+						"deleted_at_time_msecs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Epoch time when tenant was last updated.",
+						},
+						"description": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Description about the tenant.",
+						},
+						"external_vendor_metadata": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendors who are responsible for managing tenants. This field will only applicable if tenant creation is happening for a specially provisioned clusters for external vendors.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ibm_tenant_metadata_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the additional metadata for the tenant that is specifically set by the external vendor of type 'IBM'.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"account_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the unique identifier of the IBM's account ID.",
+												},
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the unique CRN associated with the tenant.",
+												},
+												"custom_properties": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the list of custom properties associated with the tenant. External vendors can choose to set any properties inside following list. Note that the fields set inside the following will not be available for direct filtering. API callers should make sure that no sensitive information such as passwords is sent in these fields.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the unique key for custom property.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the value for the above custom key.",
+															},
+														},
+													},
+												},
+												"liveness_mode": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
+												},
+												"ownership_mode": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
+												},
+												"resource_group_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the Resource Group ID associated with the tenant.",
+												},
+											},
+										},
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the type of the external vendor. The type specific parameters must be specified the provided type.",
+									},
+								},
+							},
+						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The tenant id.",
 						},
+						"is_managed_on_helios": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Flag to indicate if tenant is managed on helios.",
+						},
+						"last_updated_at_time_msecs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Epoch time when tenant was last updated.",
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Name of the Tenant.",
+						},
+						"network": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Networking information about a Tenant on a Cluster.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"connector_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Whether connector (hybrid extender) is enabled.",
+									},
+									"cluster_hostname": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The hostname for Cohesity cluster as seen by tenants and as is routable from the tenant's network. Tenant's VLAN's hostname, if available can be used instead but it is mandatory to provide this value if there's no VLAN hostname to use. Also, when set, this field would take precedence over VLAN hostname.",
+									},
+									"cluster_ips": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Set of IPs as seen from the tenant's network for the Cohesity cluster. Only one from 'clusterHostname' and 'clusterIps' is needed.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Current Status of the Tenant.",
 						},
 					},
 				},
@@ -257,10 +381,167 @@ func DataSourceIbmRecovery() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the protection type of the object if any.",
 												},
+												"sharepoint_site_summary": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the common parameters for Sharepoint site objects.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"site_web_url": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the web url for the Sharepoint site.",
+															},
+														},
+													},
+												},
 												"os_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Specifies the operating system type of the object.",
+												},
+												"child_objects": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies child object details.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies object id.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the object.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies registered source id to which object belongs.",
+															},
+															"source_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies registered source name to which object belongs.",
+															},
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the environment of the object.",
+															},
+															"object_hash": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the hash identifier of the object.",
+															},
+															"object_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the object.",
+															},
+															"logical_size_bytes": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the logical size of object in bytes.",
+															},
+															"uuid": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the uuid which is a unique identifier of the object.",
+															},
+															"global_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the global id which is a unique identifier of the object.",
+															},
+															"protection_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the protection type of the object if any.",
+															},
+															"sharepoint_site_summary": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the common parameters for Sharepoint site objects.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"site_web_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the web url for the Sharepoint site.",
+																		},
+																	},
+																},
+															},
+															"os_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the operating system type of the object.",
+															},
+															"child_objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies child object details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{},
+																},
+															},
+															"v_center_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"is_cloud_env": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																		},
+																	},
+																},
+															},
+															"windows_cluster_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"cluster_source_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of cluster resource this source represents.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"v_center_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"is_cloud_env": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+															},
+														},
+													},
+												},
+												"windows_cluster_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"cluster_source_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of cluster resource this source represents.",
+															},
+														},
+													},
 												},
 											},
 										},
@@ -317,10 +598,109 @@ func DataSourceIbmRecovery() *schema.Resource {
 													Description: "Specifies the tier info for archival.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"aws_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies aws tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the AWS tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"azure_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Azure tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Azure tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
 															"cloud_platform": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Specifies the cloud platform to enable tiering.",
+															},
+															"google_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Google tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Google tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
 															},
 															"oracle_tiering": &schema.Schema{
 																Type:        schema.TypeList,
@@ -845,6 +1225,11 @@ func DataSourceIbmRecovery() *schema.Resource {
 							Description: "Specifies the parameters to download files and folders.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"expiry_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the time upto which the download link is available.",
+									},
 									"files_and_folders": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -912,16 +1297,16 @@ func DataSourceIbmRecovery() *schema.Resource {
 					},
 				},
 			},
-			"oracle_params": &schema.Schema{
+			"mssql_params": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Specifies the recovery options specific to oracle environment.",
+				Description: "Specifies the recovery options specific to Sql environment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"objects": &schema.Schema{
+						"recover_app_params": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Specifies the list of parameters for list of objects to be recovered.",
+							Description: "Specifies the parameters to recover Sql databases.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"snapshot_id": &schema.Schema{
@@ -1010,10 +1395,167 @@ func DataSourceIbmRecovery() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the protection type of the object if any.",
 												},
+												"sharepoint_site_summary": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the common parameters for Sharepoint site objects.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"site_web_url": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the web url for the Sharepoint site.",
+															},
+														},
+													},
+												},
 												"os_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Specifies the operating system type of the object.",
+												},
+												"child_objects": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies child object details.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies object id.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the object.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies registered source id to which object belongs.",
+															},
+															"source_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies registered source name to which object belongs.",
+															},
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the environment of the object.",
+															},
+															"object_hash": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the hash identifier of the object.",
+															},
+															"object_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the object.",
+															},
+															"logical_size_bytes": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the logical size of object in bytes.",
+															},
+															"uuid": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the uuid which is a unique identifier of the object.",
+															},
+															"global_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the global id which is a unique identifier of the object.",
+															},
+															"protection_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the protection type of the object if any.",
+															},
+															"sharepoint_site_summary": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the common parameters for Sharepoint site objects.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"site_web_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the web url for the Sharepoint site.",
+																		},
+																	},
+																},
+															},
+															"os_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the operating system type of the object.",
+															},
+															"child_objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies child object details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{},
+																},
+															},
+															"v_center_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"is_cloud_env": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																		},
+																	},
+																},
+															},
+															"windows_cluster_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"cluster_source_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of cluster resource this source represents.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"v_center_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"is_cloud_env": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+															},
+														},
+													},
+												},
+												"windows_cluster_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"cluster_source_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of cluster resource this source represents.",
+															},
+														},
+													},
 												},
 											},
 										},
@@ -1070,10 +1612,109 @@ func DataSourceIbmRecovery() *schema.Resource {
 													Description: "Specifies the tier info for archival.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"aws_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies aws tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the AWS tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"azure_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Azure tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Azure tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
 															"cloud_platform": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Specifies the cloud platform to enable tiering.",
+															},
+															"google_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies Google tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Google tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
 															},
 															"oracle_tiering": &schema.Schema{
 																Type:        schema.TypeList,
@@ -1157,71 +1798,149 @@ func DataSourceIbmRecovery() *schema.Resource {
 										Computed:    true,
 										Description: "Specify the total bytes restored.",
 									},
-									"instant_recovery_info": &schema.Schema{
+									"aag_info": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Specifies the info about instant recovery. This is only applicable for RecoverOracle.",
+										Description: "Object details for Mssql.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"progress_task_id": &schema.Schema{
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Specifies the progress monitor id.",
+													Description: "Specifies the AAG name.",
 												},
-												"status": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Specifies the status of the recovery.",
-												},
-												"start_time_usecs": &schema.Schema{
+												"object_id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Computed:    true,
-													Description: "Specifies the start time in Unix timestamp epoch in microseconds.",
-												},
-												"end_time_usecs": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
-													Description: "Specifies the end time in Unix timestamp epoch in microseconds.",
+													Description: "Specifies the AAG object Id.",
 												},
 											},
 										},
 									},
-								},
-							},
-						},
-						"recovery_action": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Specifies the type of recover action to be performed.",
-						},
-						"recover_app_params": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Specifies the parameters to recover Oracle databases.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"target_environment": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the environment of the recovery target. The corresponding params below must be filled out.",
-									},
-									"oracle_target_params": &schema.Schema{
+									"host_info": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Specifies the params for recovering to a oracle host. Provided oracle backup should be recovered to same type of target host. For Example: If you have oracle backup taken from a physical host then that should be recovered to physical host only.",
+										Description: "Specifies the host information for a objects. This is mainly populated in case of App objects where app object is hosted by another object such as VM or physical server.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"recover_to_new_source": &schema.Schema{
-													Type:        schema.TypeBool,
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Specifies the parameter whether the recovery should be performed to a new source or an original Source Target.",
+													Description: "Specifies the id of the host object.",
 												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the name of the host object.",
+												},
+												"environment": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the environment of the object.",
+												},
+											},
+										},
+									},
+									"is_encrypted": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Specifies whether the database is TDE enabled.",
+									},
+									"sql_target_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the params for recovering to a sql host. Specifiy seperate settings for each db object that need to be recovered. Provided sql backup should be recovered to same type of target host. For Example: If you have sql backup taken from a physical host then that should be recovered to physical host only.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
 												"new_source_config": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
 													Description: "Specifies the destination Source configuration parameters where the databases will be recovered. This is mandatory if recoverToNewSource is set to true.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"keep_cdc": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to keep CDC (Change Data Capture) on recovered databases or not. If not passed, this is assumed to be true. If withNoRecovery is passed as true, then this field must not be set to true. Passing this field as true in this scenario will be a invalid request.",
+															},
+															"multi_stage_restore_options": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the parameters related to multi stage Sql restore.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"enable_auto_sync": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Set this to true if you want to enable auto sync for multi stage restore.",
+																		},
+																		"enable_multi_stage_restore": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Set this to true if you are creating a multi-stage Sql restore task needed for features such as Hot-Standby.",
+																		},
+																	},
+																},
+															},
+															"native_log_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the WITH clause to be used in native sql log restore command. This is only applicable for native log restore.",
+															},
+															"native_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "'with_clause' contains 'with clause' to be used in native sql restore command. This is only applicable for database restore of native sql backup. Here user can specify multiple restore options. Example: 'WITH BUFFERCOUNT = 575, MAXTRANSFERSIZE = 2097152'.",
+															},
+															"overwriting_policy": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies a policy to be used while recovering existing databases.",
+															},
+															"replay_entire_last_log": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies the option to set replay last log bit while creating the sql restore task and doing restore to latest point-in-time. If this is set to true, we will replay the entire last log without STOPAT.",
+															},
+															"restore_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the time in the past to which the Sql database needs to be restored. This allows for granular recovery of Sql databases. If this is not set, the Sql database will be restored from the full/incremental snapshot.",
+															},
+															"secondary_data_files_dir_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the secondary data filename pattern and corresponding direcories of the DB. Secondary data files are optional and are user defined. The recommended file extention for secondary files is \".ndf\". If this option is specified and the destination folders do not exist they will be automatically created.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"directory": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the directory where to keep the files matching the pattern.",
+																		},
+																		"filename_pattern": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a pattern to be matched with filenames. This can be a regex expression.",
+																		},
+																	},
+																},
+															},
+															"with_no_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies the flag to bring DBs online or not after successful recovery. If this is passed as true, then it means DBs won't be brought online.",
+															},
+															"data_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the directory where to put the database data files. Missing directory will be automatically created.",
+															},
+															"database_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
+															},
 															"host": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
@@ -1241,870 +1960,15 @@ func DataSourceIbmRecovery() *schema.Resource {
 																	},
 																},
 															},
-															"recovery_target": &schema.Schema{
+															"instance_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "Specifies if recovery target is a database or a view.",
+																Description: "Specifies an instance name of the Sql Server that should be used for restoring databases to.",
 															},
-															"recover_database_params": &schema.Schema{
-																Type:        schema.TypeList,
+															"log_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "Specifies recovery parameters when recovering to a database.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"restore_time_usecs": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the time in the past to which the Oracle db needs to be restored. This allows for granular recovery of Oracle databases. If this is not set, the Oracle db will be restored from the full/incremental snapshot.",
-																		},
-																		"db_channels": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies the Oracle database node channels info. If not specified, the default values assigned by the server are applied to all the databases.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"archive_log_retention_days": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the number of days archive log should be stored. For keeping the archived log forever, set this to -1. For deleting the archived log immediately, set this to 0. For deleting the archived log after n days, set this to n.",
-																					},
-																					"archive_log_retention_hours": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the number of hours archive log should be stored. For keeping the archived log forever, set this to -1. For deleting the archived log immediately, set this to 0. For deleting the archived log after k hours, set this to k.",
-																					},
-																					"credentials": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies the object to hold username and password.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"username": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the username to access target entity.",
-																								},
-																								"password": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the password to access target entity.",
-																								},
-																							},
-																						},
-																					},
-																					"database_unique_name": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the unique Name of the database.",
-																					},
-																					"database_uuid": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the database unique id. This is an internal field and is filled by magneto master based on corresponding app entity id.",
-																					},
-																					"default_channel_count": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the default number of channels to use per node per database. This value is used on all Oracle Database Nodes unless databaseNodeList item's channelCount is specified for the node. Default value for the number of channels will be calculated as the minimum of number of nodes in Cohesity cluster and 2 * number of CPU on the host. If the number of channels is unspecified here and unspecified within databaseNodeList, the above formula will be used to determine the same.",
-																					},
-																					"database_node_list": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies the Node info from where we are allowed to take the backup/restore.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"host_id": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the id of the database host from which backup is allowed.",
-																								},
-																								"channel_count": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies the number of channels to be created for this host. Default value for the number of channels will be calculated as the minimum of number of nodes in Cohesity cluster and 2 * number of CPU on the host.",
-																								},
-																								"port": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies the port where the Database is listening.",
-																								},
-																								"sbt_host_params": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies details about capturing Oracle SBT host info.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"sbt_library_path": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies the path of sbt library.",
-																											},
-																											"view_fs_path": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies the Cohesity view path.",
-																											},
-																											"vip_list": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Specifies the list of Cohesity primary VIPs.",
-																												Elem: &schema.Schema{
-																													Type: schema.TypeString,
-																												},
-																											},
-																											"vlan_info_list": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Specifies the Vlan information for Cohesity cluster.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"ip_list": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Specifies the list of Ips in this VLAN.",
-																															Elem: &schema.Schema{
-																																Type: schema.TypeString,
-																															},
-																														},
-																														"gateway": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Specifies the gateway of this VLAN.",
-																														},
-																														"id": &schema.Schema{
-																															Type:        schema.TypeInt,
-																															Computed:    true,
-																															Description: "Specifies the Id of this VLAN.",
-																														},
-																														"subnet_ip": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Specifies the subnet Ip for this VLAN.",
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
-																							},
-																						},
-																					},
-																					"max_host_count": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the maximum number of hosts from which backup/restore is allowed in parallel. This will be less than or equal to the number of databaseNode specified within databaseNodeList.",
-																					},
-																					"enable_dg_primary_backup": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether the database having the Primary role within Data Guard configuration is to be backed up.",
-																					},
-																					"rman_backup_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the type of Oracle RMAN backup requested.",
-																					},
-																				},
-																			},
-																		},
-																		"recovery_mode": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies if database should be left in recovery mode.",
-																		},
-																		"shell_evironment_vars": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies key value pairs of shell variables which defines the restore shell environment.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"key": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "key.",
-																					},
-																					"value": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "value.",
-																					},
-																				},
-																			},
-																		},
-																		"granular_restore_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies information about list of objects (PDBs) to restore.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"granularity_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies type of granular restore.",
-																					},
-																					"pdb_restore_params": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies information about the list of pdbs to be restored.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"drop_duplicate_pdb": &schema.Schema{
-																									Type:        schema.TypeBool,
-																									Computed:    true,
-																									Description: "Specifies if the PDB should be ignored if a PDB already exists with same name.",
-																								},
-																								"pdb_objects": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies list of PDB objects to restore.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"db_id": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies pluggable database id.",
-																											},
-																											"db_name": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies name of the DB.",
-																											},
-																										},
-																									},
-																								},
-																								"restore_to_existing_cdb": &schema.Schema{
-																									Type:        schema.TypeBool,
-																									Computed:    true,
-																									Description: "Specifies if pdbs should be restored to an existing CDB.",
-																								},
-																								"rename_pdb_map": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies the new PDB name mapping to existing PDBs.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"key": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "key.",
-																											},
-																											"value": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "value.",
-																											},
-																										},
-																									},
-																								},
-																								"include_in_restore": &schema.Schema{
-																									Type:        schema.TypeBool,
-																									Computed:    true,
-																									Description: "Specifies whether to restore or skip the provided PDBs list.",
-																								},
-																							},
-																						},
-																					},
-																				},
-																			},
-																		},
-																		"oracle_archive_log_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies Range in Time, Scn or Sequence to restore archive logs of a DB.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"range_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the type of range.",
-																					},
-																					"range_info_vec": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies an array of oracle restore ranges.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"start_of_range": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies starting value of the range in time (usecs), SCN or sequence no.",
-																								},
-																								"end_of_range": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies ending value of the range in time (usecs), SCN or sequence no.",
-																								},
-																								"protection_group_id": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies id of the Protection Group corresponding to this oracle range.",
-																								},
-																								"reset_log_id": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies resetlogs identifier associated with the oracle range. Only applicable for ranges of type SCN and sequence no.",
-																								},
-																								"incarnation_id": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies incarnation id associated with the oracle db for which the restore range belongs. Only applicable for ranges of type SCN and sequence no.",
-																								},
-																								"thread_id": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies thread id associated with the oracle db for which the restore range belongs. Only applicable for ranges of type sequence no.",
-																								},
-																							},
-																						},
-																					},
-																					"archive_log_restore_dest": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies destination where archive logs are to be restored.",
-																					},
-																				},
-																			},
-																		},
-																		"oracle_recovery_validation_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies parameters related to Oracle Recovery Validation.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"create_dummy_instance": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether we will be creating a dummy oracle instance to run the validations. Generally if source and target location are different we create a dummy oracle instance else we use the source db.",
-																					},
-																				},
-																			},
-																		},
-																		"restore_spfile_or_pfile_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies parameters related to spfile/pfile restore.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"should_restore_spfile_or_pfile": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether to restore spfile/pfile or skip it.",
-																					},
-																					"file_location": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the location where spfile/file will be restored. If this is empty and shouldRestoreSpfileOrPfile is true we restore at default location: $ORACLE_HOME/dbs.",
-																					},
-																				},
-																			},
-																		},
-																		"use_scn_for_restore": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether database recovery performed should use scn value or not.",
-																		},
-																		"database_name": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
-																		},
-																		"oracle_base_folder": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the oracle base folder at selected host.",
-																		},
-																		"oracle_home_folder": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the oracle home folder at selected host.",
-																		},
-																		"db_files_destination": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the location to restore database files.",
-																		},
-																		"db_config_file_path": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the config file path on selected host which configures the restored database.",
-																		},
-																		"enable_archive_log_mode": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies archive log mode for oracle restore.",
-																		},
-																		"pfile_parameter_map": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies a key value pair for pfile parameters.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"key": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "key.",
-																					},
-																					"value": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "value.",
-																					},
-																				},
-																			},
-																		},
-																		"bct_file_path": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies BCT file path.",
-																		},
-																		"num_tempfiles": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies no. of tempfiles to be used for the recovered database.",
-																		},
-																		"redo_log_config": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies redo log config.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"num_groups": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies no. of redo log groups.",
-																					},
-																					"member_prefix": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies Log member name prefix.",
-																					},
-																					"size_m_bytes": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies Size of the member in MB.",
-																					},
-																					"group_members": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies list of members of this redo log group.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																				},
-																			},
-																		},
-																		"is_multi_stage_restore": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether this task is a multistage restore task. If set, we migrate the DB after clone completes.",
-																		},
-																		"oracle_update_restore_options": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies the parameters that are needed for updating oracle restore options.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"delay_secs": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies when the migration of the oracle instance should be started after successful recovery.",
-																					},
-																					"target_path_vec": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies the target paths to be used for DB migration.",
-																						Elem: &schema.Schema{
-																							Type: schema.TypeString,
-																						},
-																					},
-																				},
-																			},
-																		},
-																		"skip_clone_nid": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Whether or not to skip the nid step in Oracle Clone workflow. Applicable to both smart and old clone workflow.",
-																		},
-																		"no_filename_check": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether to validate filenames or not in Oracle alternate restore workflow.",
-																		},
-																		"new_name_clause": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies newname clause for db files which allows user to have full control on how their database files can be renamed during the oracle alternate restore workflow.",
-																		},
-																	},
-																},
-															},
-															"recover_view_params": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies recovery parameters when recovering to a view.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"restore_time_usecs": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the time in the past to which the Oracle db needs to be restored. This allows for granular recovery of Oracle databases. If this is not set, the Oracle db will be restored from the full/incremental snapshot.",
-																		},
-																		"db_channels": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies the Oracle database node channels info. If not specified, the default values assigned by the server are applied to all the databases.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"archive_log_retention_days": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the number of days archive log should be stored. For keeping the archived log forever, set this to -1. For deleting the archived log immediately, set this to 0. For deleting the archived log after n days, set this to n.",
-																					},
-																					"archive_log_retention_hours": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the number of hours archive log should be stored. For keeping the archived log forever, set this to -1. For deleting the archived log immediately, set this to 0. For deleting the archived log after k hours, set this to k.",
-																					},
-																					"credentials": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies the object to hold username and password.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"username": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the username to access target entity.",
-																								},
-																								"password": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the password to access target entity.",
-																								},
-																							},
-																						},
-																					},
-																					"database_unique_name": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the unique Name of the database.",
-																					},
-																					"database_uuid": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the database unique id. This is an internal field and is filled by magneto master based on corresponding app entity id.",
-																					},
-																					"default_channel_count": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the default number of channels to use per node per database. This value is used on all Oracle Database Nodes unless databaseNodeList item's channelCount is specified for the node. Default value for the number of channels will be calculated as the minimum of number of nodes in Cohesity cluster and 2 * number of CPU on the host. If the number of channels is unspecified here and unspecified within databaseNodeList, the above formula will be used to determine the same.",
-																					},
-																					"database_node_list": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies the Node info from where we are allowed to take the backup/restore.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"host_id": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the id of the database host from which backup is allowed.",
-																								},
-																								"channel_count": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies the number of channels to be created for this host. Default value for the number of channels will be calculated as the minimum of number of nodes in Cohesity cluster and 2 * number of CPU on the host.",
-																								},
-																								"port": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies the port where the Database is listening.",
-																								},
-																								"sbt_host_params": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies details about capturing Oracle SBT host info.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"sbt_library_path": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies the path of sbt library.",
-																											},
-																											"view_fs_path": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies the Cohesity view path.",
-																											},
-																											"vip_list": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Specifies the list of Cohesity primary VIPs.",
-																												Elem: &schema.Schema{
-																													Type: schema.TypeString,
-																												},
-																											},
-																											"vlan_info_list": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Specifies the Vlan information for Cohesity cluster.",
-																												Elem: &schema.Resource{
-																													Schema: map[string]*schema.Schema{
-																														"ip_list": &schema.Schema{
-																															Type:        schema.TypeList,
-																															Computed:    true,
-																															Description: "Specifies the list of Ips in this VLAN.",
-																															Elem: &schema.Schema{
-																																Type: schema.TypeString,
-																															},
-																														},
-																														"gateway": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Specifies the gateway of this VLAN.",
-																														},
-																														"id": &schema.Schema{
-																															Type:        schema.TypeInt,
-																															Computed:    true,
-																															Description: "Specifies the Id of this VLAN.",
-																														},
-																														"subnet_ip": &schema.Schema{
-																															Type:        schema.TypeString,
-																															Computed:    true,
-																															Description: "Specifies the subnet Ip for this VLAN.",
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
-																							},
-																						},
-																					},
-																					"max_host_count": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the maximum number of hosts from which backup/restore is allowed in parallel. This will be less than or equal to the number of databaseNode specified within databaseNodeList.",
-																					},
-																					"enable_dg_primary_backup": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether the database having the Primary role within Data Guard configuration is to be backed up.",
-																					},
-																					"rman_backup_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the type of Oracle RMAN backup requested.",
-																					},
-																				},
-																			},
-																		},
-																		"recovery_mode": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies if database should be left in recovery mode.",
-																		},
-																		"shell_evironment_vars": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies key value pairs of shell variables which defines the restore shell environment.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"key": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "key.",
-																					},
-																					"value": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "value.",
-																					},
-																				},
-																			},
-																		},
-																		"granular_restore_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies information about list of objects (PDBs) to restore.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"granularity_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies type of granular restore.",
-																					},
-																					"pdb_restore_params": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies information about the list of pdbs to be restored.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"drop_duplicate_pdb": &schema.Schema{
-																									Type:        schema.TypeBool,
-																									Computed:    true,
-																									Description: "Specifies if the PDB should be ignored if a PDB already exists with same name.",
-																								},
-																								"pdb_objects": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies list of PDB objects to restore.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"db_id": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies pluggable database id.",
-																											},
-																											"db_name": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies name of the DB.",
-																											},
-																										},
-																									},
-																								},
-																								"restore_to_existing_cdb": &schema.Schema{
-																									Type:        schema.TypeBool,
-																									Computed:    true,
-																									Description: "Specifies if pdbs should be restored to an existing CDB.",
-																								},
-																								"rename_pdb_map": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies the new PDB name mapping to existing PDBs.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"key": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "key.",
-																											},
-																											"value": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "value.",
-																											},
-																										},
-																									},
-																								},
-																								"include_in_restore": &schema.Schema{
-																									Type:        schema.TypeBool,
-																									Computed:    true,
-																									Description: "Specifies whether to restore or skip the provided PDBs list.",
-																								},
-																							},
-																						},
-																					},
-																				},
-																			},
-																		},
-																		"oracle_archive_log_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies Range in Time, Scn or Sequence to restore archive logs of a DB.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"range_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the type of range.",
-																					},
-																					"range_info_vec": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies an array of oracle restore ranges.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"start_of_range": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies starting value of the range in time (usecs), SCN or sequence no.",
-																								},
-																								"end_of_range": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies ending value of the range in time (usecs), SCN or sequence no.",
-																								},
-																								"protection_group_id": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies id of the Protection Group corresponding to this oracle range.",
-																								},
-																								"reset_log_id": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies resetlogs identifier associated with the oracle range. Only applicable for ranges of type SCN and sequence no.",
-																								},
-																								"incarnation_id": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies incarnation id associated with the oracle db for which the restore range belongs. Only applicable for ranges of type SCN and sequence no.",
-																								},
-																								"thread_id": &schema.Schema{
-																									Type:        schema.TypeInt,
-																									Computed:    true,
-																									Description: "Specifies thread id associated with the oracle db for which the restore range belongs. Only applicable for ranges of type sequence no.",
-																								},
-																							},
-																						},
-																					},
-																					"archive_log_restore_dest": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies destination where archive logs are to be restored.",
-																					},
-																				},
-																			},
-																		},
-																		"oracle_recovery_validation_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies parameters related to Oracle Recovery Validation.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"create_dummy_instance": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether we will be creating a dummy oracle instance to run the validations. Generally if source and target location are different we create a dummy oracle instance else we use the source db.",
-																					},
-																				},
-																			},
-																		},
-																		"restore_spfile_or_pfile_info": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies parameters related to spfile/pfile restore.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"should_restore_spfile_or_pfile": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether to restore spfile/pfile or skip it.",
-																					},
-																					"file_location": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the location where spfile/file will be restored. If this is empty and shouldRestoreSpfileOrPfile is true we restore at default location: $ORACLE_HOME/dbs.",
-																					},
-																				},
-																			},
-																		},
-																		"use_scn_for_restore": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether database recovery performed should use scn value or not.",
-																		},
-																		"view_mount_path": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the directory where cohesity view for app recovery will be mounted.",
-																		},
-																	},
-																},
+																Description: "Specifies the directory where to put the database log files. Missing directory will be automatically created.",
 															},
 														},
 													},
@@ -2115,410 +1979,143 @@ func DataSourceIbmRecovery() *schema.Resource {
 													Description: "Specifies the Source configuration if databases are being recovered to Original Source. If not specified, all the configuration parameters will be retained.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
+															"keep_cdc": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to keep CDC (Change Data Capture) on recovered databases or not. If not passed, this is assumed to be true. If withNoRecovery is passed as true, then this field must not be set to true. Passing this field as true in this scenario will be a invalid request.",
+															},
+															"multi_stage_restore_options": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the parameters related to multi stage Sql restore.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"enable_auto_sync": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Set this to true if you want to enable auto sync for multi stage restore.",
+																		},
+																		"enable_multi_stage_restore": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Set this to true if you are creating a multi-stage Sql restore task needed for features such as Hot-Standby.",
+																		},
+																	},
+																},
+															},
+															"native_log_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the WITH clause to be used in native sql log restore command. This is only applicable for native log restore.",
+															},
+															"native_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "'with_clause' contains 'with clause' to be used in native sql restore command. This is only applicable for database restore of native sql backup. Here user can specify multiple restore options. Example: 'WITH BUFFERCOUNT = 575, MAXTRANSFERSIZE = 2097152'.",
+															},
+															"overwriting_policy": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies a policy to be used while recovering existing databases.",
+															},
+															"replay_entire_last_log": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies the option to set replay last log bit while creating the sql restore task and doing restore to latest point-in-time. If this is set to true, we will replay the entire last log without STOPAT.",
+															},
 															"restore_time_usecs": &schema.Schema{
 																Type:        schema.TypeInt,
 																Computed:    true,
-																Description: "Specifies the time in the past to which the Oracle db needs to be restored. This allows for granular recovery of Oracle databases. If this is not set, the Oracle db will be restored from the full/incremental snapshot.",
+																Description: "Specifies the time in the past to which the Sql database needs to be restored. This allows for granular recovery of Sql databases. If this is not set, the Sql database will be restored from the full/incremental snapshot.",
 															},
-															"db_channels": &schema.Schema{
+															"secondary_data_files_dir_list": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
-																Description: "Specifies the Oracle database node channels info. If not specified, the default values assigned by the server are applied to all the databases.",
+																Description: "Specifies the secondary data filename pattern and corresponding direcories of the DB. Secondary data files are optional and are user defined. The recommended file extention for secondary files is \".ndf\". If this option is specified and the destination folders do not exist they will be automatically created.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"archive_log_retention_days": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the number of days archive log should be stored. For keeping the archived log forever, set this to -1. For deleting the archived log immediately, set this to 0. For deleting the archived log after n days, set this to n.",
-																		},
-																		"archive_log_retention_hours": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the number of hours archive log should be stored. For keeping the archived log forever, set this to -1. For deleting the archived log immediately, set this to 0. For deleting the archived log after k hours, set this to k.",
-																		},
-																		"credentials": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies the object to hold username and password.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"username": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the username to access target entity.",
-																					},
-																					"password": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the password to access target entity.",
-																					},
-																				},
-																			},
-																		},
-																		"database_unique_name": &schema.Schema{
+																		"directory": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "Specifies the unique Name of the database.",
+																			Description: "Specifies the directory where to keep the files matching the pattern.",
 																		},
-																		"database_uuid": &schema.Schema{
+																		"filename_pattern": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "Specifies the database unique id. This is an internal field and is filled by magneto master based on corresponding app entity id.",
-																		},
-																		"default_channel_count": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the default number of channels to use per node per database. This value is used on all Oracle Database Nodes unless databaseNodeList item's channelCount is specified for the node. Default value for the number of channels will be calculated as the minimum of number of nodes in Cohesity cluster and 2 * number of CPU on the host. If the number of channels is unspecified here and unspecified within databaseNodeList, the above formula will be used to determine the same.",
-																		},
-																		"database_node_list": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies the Node info from where we are allowed to take the backup/restore.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"host_id": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the id of the database host from which backup is allowed.",
-																					},
-																					"channel_count": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the number of channels to be created for this host. Default value for the number of channels will be calculated as the minimum of number of nodes in Cohesity cluster and 2 * number of CPU on the host.",
-																					},
-																					"port": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies the port where the Database is listening.",
-																					},
-																					"sbt_host_params": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies details about capturing Oracle SBT host info.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"sbt_library_path": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the path of sbt library.",
-																								},
-																								"view_fs_path": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies the Cohesity view path.",
-																								},
-																								"vip_list": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies the list of Cohesity primary VIPs.",
-																									Elem: &schema.Schema{
-																										Type: schema.TypeString,
-																									},
-																								},
-																								"vlan_info_list": &schema.Schema{
-																									Type:        schema.TypeList,
-																									Computed:    true,
-																									Description: "Specifies the Vlan information for Cohesity cluster.",
-																									Elem: &schema.Resource{
-																										Schema: map[string]*schema.Schema{
-																											"ip_list": &schema.Schema{
-																												Type:        schema.TypeList,
-																												Computed:    true,
-																												Description: "Specifies the list of Ips in this VLAN.",
-																												Elem: &schema.Schema{
-																													Type: schema.TypeString,
-																												},
-																											},
-																											"gateway": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies the gateway of this VLAN.",
-																											},
-																											"id": &schema.Schema{
-																												Type:        schema.TypeInt,
-																												Computed:    true,
-																												Description: "Specifies the Id of this VLAN.",
-																											},
-																											"subnet_ip": &schema.Schema{
-																												Type:        schema.TypeString,
-																												Computed:    true,
-																												Description: "Specifies the subnet Ip for this VLAN.",
-																											},
-																										},
-																									},
-																								},
-																							},
-																						},
-																					},
-																				},
-																			},
-																		},
-																		"max_host_count": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Computed:    true,
-																			Description: "Specifies the maximum number of hosts from which backup/restore is allowed in parallel. This will be less than or equal to the number of databaseNode specified within databaseNodeList.",
-																		},
-																		"enable_dg_primary_backup": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether the database having the Primary role within Data Guard configuration is to be backed up.",
-																		},
-																		"rman_backup_type": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the type of Oracle RMAN backup requested.",
+																			Description: "Specifies a pattern to be matched with filenames. This can be a regex expression.",
 																		},
 																	},
 																},
 															},
-															"recovery_mode": &schema.Schema{
+															"with_no_recovery": &schema.Schema{
 																Type:        schema.TypeBool,
 																Computed:    true,
-																Description: "Specifies if database should be left in recovery mode.",
+																Description: "Specifies the flag to bring DBs online or not after successful recovery. If this is passed as true, then it means DBs won't be brought online.",
 															},
-															"shell_evironment_vars": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies key value pairs of shell variables which defines the restore shell environment.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"key": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "key.",
-																		},
-																		"value": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "value.",
-																		},
-																	},
-																},
-															},
-															"granular_restore_info": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies information about list of objects (PDBs) to restore.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"granularity_type": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies type of granular restore.",
-																		},
-																		"pdb_restore_params": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies information about the list of pdbs to be restored.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"drop_duplicate_pdb": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies if the PDB should be ignored if a PDB already exists with same name.",
-																					},
-																					"pdb_objects": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies list of PDB objects to restore.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"db_id": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies pluggable database id.",
-																								},
-																								"db_name": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "Specifies name of the DB.",
-																								},
-																							},
-																						},
-																					},
-																					"restore_to_existing_cdb": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies if pdbs should be restored to an existing CDB.",
-																					},
-																					"rename_pdb_map": &schema.Schema{
-																						Type:        schema.TypeList,
-																						Computed:    true,
-																						Description: "Specifies the new PDB name mapping to existing PDBs.",
-																						Elem: &schema.Resource{
-																							Schema: map[string]*schema.Schema{
-																								"key": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "key.",
-																								},
-																								"value": &schema.Schema{
-																									Type:        schema.TypeString,
-																									Computed:    true,
-																									Description: "value.",
-																								},
-																							},
-																						},
-																					},
-																					"include_in_restore": &schema.Schema{
-																						Type:        schema.TypeBool,
-																						Computed:    true,
-																						Description: "Specifies whether to restore or skip the provided PDBs list.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"oracle_archive_log_info": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies Range in Time, Scn or Sequence to restore archive logs of a DB.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"range_type": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the type of range.",
-																		},
-																		"range_info_vec": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Computed:    true,
-																			Description: "Specifies an array of oracle restore ranges.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"start_of_range": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies starting value of the range in time (usecs), SCN or sequence no.",
-																					},
-																					"end_of_range": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies ending value of the range in time (usecs), SCN or sequence no.",
-																					},
-																					"protection_group_id": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies id of the Protection Group corresponding to this oracle range.",
-																					},
-																					"reset_log_id": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies resetlogs identifier associated with the oracle range. Only applicable for ranges of type SCN and sequence no.",
-																					},
-																					"incarnation_id": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies incarnation id associated with the oracle db for which the restore range belongs. Only applicable for ranges of type SCN and sequence no.",
-																					},
-																					"thread_id": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Computed:    true,
-																						Description: "Specifies thread id associated with the oracle db for which the restore range belongs. Only applicable for ranges of type sequence no.",
-																					},
-																				},
-																			},
-																		},
-																		"archive_log_restore_dest": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies destination where archive logs are to be restored.",
-																		},
-																	},
-																},
-															},
-															"oracle_recovery_validation_info": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies parameters related to Oracle Recovery Validation.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"create_dummy_instance": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether we will be creating a dummy oracle instance to run the validations. Generally if source and target location are different we create a dummy oracle instance else we use the source db.",
-																		},
-																	},
-																},
-															},
-															"restore_spfile_or_pfile_info": &schema.Schema{
-																Type:        schema.TypeList,
-																Computed:    true,
-																Description: "Specifies parameters related to spfile/pfile restore.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"should_restore_spfile_or_pfile": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Computed:    true,
-																			Description: "Specifies whether to restore spfile/pfile or skip it.",
-																		},
-																		"file_location": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the location where spfile/file will be restored. If this is empty and shouldRestoreSpfileOrPfile is true we restore at default location: $ORACLE_HOME/dbs.",
-																		},
-																	},
-																},
-															},
-															"use_scn_for_restore": &schema.Schema{
+															"capture_tail_logs": &schema.Schema{
 																Type:        schema.TypeBool,
 																Computed:    true,
-																Description: "Specifies whether database recovery performed should use scn value or not.",
+																Description: "Set this to true if tail logs are to be captured before the recovery operation. This is only applicable if database is not being renamed.",
 															},
-															"roll_forward_log_path_vec": &schema.Schema{
-																Type:        schema.TypeList,
+															"data_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "List of archive logs to apply on Database after overwrite restore.",
-																Elem: &schema.Schema{
-																	Type: schema.TypeString,
-																},
+																Description: "Specifies the directory where to put the database data files. Missing directory will be automatically created. If you are overwriting the existing database then this field will be ignored.",
 															},
-															"attempt_complete_recovery": &schema.Schema{
-																Type:        schema.TypeBool,
+															"log_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "Whether or not this is a complete recovery attempt.",
+																Description: "Specifies the directory where to put the database log files. Missing directory will be automatically created. If you are overwriting the existing database then this field will be ignored.",
 															},
-															"roll_forward_time_msecs": &schema.Schema{
-																Type:        schema.TypeInt,
+															"new_database_name": &schema.Schema{
+																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "UTC time in msecs till which we have to roll-forward the database.",
-															},
-															"stop_active_passive": &schema.Schema{
-																Type:        schema.TypeBool,
-																Computed:    true,
-																Description: "Specifies whether allowed to automatically stop active passive resource.",
+																Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
 															},
 														},
 													},
 												},
+												"recover_to_new_source": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies the parameter whether the recovery should be performed to a new sources or an original Source Target.",
+												},
 											},
 										},
 									},
-									"vlan_config": &schema.Schema{
-										Type:        schema.TypeList,
+									"target_environment": &schema.Schema{
+										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Specifies VLAN Params associated with the recovered. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on Cohesity, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on Cohesity, then the partition hostname or VIPs will be used for Recovery.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
-													Description: "If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.",
-												},
-												"disable_vlan": &schema.Schema{
-													Type:        schema.TypeBool,
-													Computed:    true,
-													Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.",
-												},
-												"interface_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Interface group to use for Recovery.",
-												},
-											},
-										},
+										Description: "Specifies the environment of the recovery target. The corresponding params below must be filled out.",
+									},
+								},
+							},
+						},
+						"recovery_action": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the type of recover action to be performed.",
+						},
+						"vlan_config": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies VLAN Params associated with the recovered. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on IBM, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on IBM, then the partition hostname or VIPs will be used for Recovery.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.",
+									},
+									"disable_vlan": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.",
+									},
+									"interface_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Interface group to use for Recovery.",
 									},
 								},
 							},
@@ -2533,166 +2130,301 @@ func DataSourceIbmRecovery() *schema.Resource {
 func dataSourceIbmRecoveryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
 
 	getRecoveryByIdOptions.SetID(d.Get("recovery_id").(string))
-	if _, ok := d.GetOk("include_tenants"); ok {
-		getRecoveryByIdOptions.SetIncludeTenants(d.Get("include_tenants").(bool))
-	}
 
-	recovery, response, err := backupRecoveryClient.GetRecoveryByIDWithContext(context, getRecoveryByIdOptions)
+	recovery, _, err := backupRecoveryClient.GetRecoveryByIDWithContext(context, getRecoveryByIdOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetRecoveryByIDWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetRecoveryByIDWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveryByIDWithContext failed: %s", err.Error()), "(Data) ibm_recovery", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s", *getRecoveryByIdOptions.ID))
+	d.SetId(*getRecoveryByIdOptions.ID)
 
-	if err = d.Set("name", recovery.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	if !core.IsNil(recovery.Name) {
+		if err = d.Set("name", recovery.Name); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_recovery", "read", "set-name").GetDiag()
+		}
 	}
 
-	if err = d.Set("start_time_usecs", flex.IntValue(recovery.StartTimeUsecs)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting start_time_usecs: %s", err))
+	if !core.IsNil(recovery.StartTimeUsecs) {
+		if err = d.Set("start_time_usecs", flex.IntValue(recovery.StartTimeUsecs)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting start_time_usecs: %s", err), "(Data) ibm_recovery", "read", "set-start_time_usecs").GetDiag()
+		}
 	}
 
-	if err = d.Set("end_time_usecs", flex.IntValue(recovery.EndTimeUsecs)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting end_time_usecs: %s", err))
+	if !core.IsNil(recovery.EndTimeUsecs) {
+		if err = d.Set("end_time_usecs", flex.IntValue(recovery.EndTimeUsecs)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting end_time_usecs: %s", err), "(Data) ibm_recovery", "read", "set-end_time_usecs").GetDiag()
+		}
 	}
 
-	if err = d.Set("status", recovery.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+	if !core.IsNil(recovery.Status) {
+		if err = d.Set("status", recovery.Status); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_recovery", "read", "set-status").GetDiag()
+		}
 	}
 
-	if err = d.Set("progress_task_id", recovery.ProgressTaskID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting progress_task_id: %s", err))
+	if !core.IsNil(recovery.ProgressTaskID) {
+		if err = d.Set("progress_task_id", recovery.ProgressTaskID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting progress_task_id: %s", err), "(Data) ibm_recovery", "read", "set-progress_task_id").GetDiag()
+		}
 	}
 
-	if err = d.Set("snapshot_environment", recovery.SnapshotEnvironment); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting snapshot_environment: %s", err))
+	if !core.IsNil(recovery.SnapshotEnvironment) {
+		if err = d.Set("snapshot_environment", recovery.SnapshotEnvironment); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_environment: %s", err), "(Data) ibm_recovery", "read", "set-snapshot_environment").GetDiag()
+		}
 	}
 
-	if err = d.Set("recovery_action", recovery.RecoveryAction); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting recovery_action: %s", err))
+	if !core.IsNil(recovery.RecoveryAction) {
+		if err = d.Set("recovery_action", recovery.RecoveryAction); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting recovery_action: %s", err), "(Data) ibm_recovery", "read", "set-recovery_action").GetDiag()
+		}
 	}
 
-	permissions := []map[string]interface{}{}
-	if recovery.Permissions != nil {
-		for _, modelItem := range recovery.Permissions {
-			modelMap, err := dataSourceIbmRecoveryTenantToMap(&modelItem)
+	if !core.IsNil(recovery.Permissions) {
+		permissions := []map[string]interface{}{}
+		for _, permissionsItem := range recovery.Permissions {
+			permissionsItemMap, err := DataSourceIbmRecoveryTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "permissions-to-map").GetDiag()
 			}
-			permissions = append(permissions, modelMap)
+			permissions = append(permissions, permissionsItemMap)
+		}
+		if err = d.Set("permissions", permissions); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting permissions: %s", err), "(Data) ibm_recovery", "read", "set-permissions").GetDiag()
 		}
 	}
-	if err = d.Set("permissions", permissions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting permissions %s", err))
-	}
 
-	creationInfo := []map[string]interface{}{}
-	if recovery.CreationInfo != nil {
-		modelMap, err := dataSourceIbmRecoveryCreationInfoToMap(recovery.CreationInfo)
+	if !core.IsNil(recovery.CreationInfo) {
+		creationInfo := []map[string]interface{}{}
+		creationInfoMap, err := DataSourceIbmRecoveryCreationInfoToMap(recovery.CreationInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "creation_info-to-map").GetDiag()
 		}
-		creationInfo = append(creationInfo, modelMap)
-	}
-	if err = d.Set("creation_info", creationInfo); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting creation_info %s", err))
-	}
-
-	if err = d.Set("can_tear_down", recovery.CanTearDown); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting can_tear_down: %s", err))
+		creationInfo = append(creationInfo, creationInfoMap)
+		if err = d.Set("creation_info", creationInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting creation_info: %s", err), "(Data) ibm_recovery", "read", "set-creation_info").GetDiag()
+		}
 	}
 
-	if err = d.Set("tear_down_status", recovery.TearDownStatus); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tear_down_status: %s", err))
+	if !core.IsNil(recovery.CanTearDown) {
+		if err = d.Set("can_tear_down", recovery.CanTearDown); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting can_tear_down: %s", err), "(Data) ibm_recovery", "read", "set-can_tear_down").GetDiag()
+		}
 	}
 
-	if err = d.Set("tear_down_message", recovery.TearDownMessage); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tear_down_message: %s", err))
+	if !core.IsNil(recovery.TearDownStatus) {
+		if err = d.Set("tear_down_status", recovery.TearDownStatus); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tear_down_status: %s", err), "(Data) ibm_recovery", "read", "set-tear_down_status").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_parent_recovery", recovery.IsParentRecovery); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_parent_recovery: %s", err))
+	if !core.IsNil(recovery.TearDownMessage) {
+		if err = d.Set("tear_down_message", recovery.TearDownMessage); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tear_down_message: %s", err), "(Data) ibm_recovery", "read", "set-tear_down_message").GetDiag()
+		}
 	}
 
-	if err = d.Set("parent_recovery_id", recovery.ParentRecoveryID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting parent_recovery_id: %s", err))
+	if !core.IsNil(recovery.Messages) {
+		messages := []interface{}{}
+		for _, messagesItem := range recovery.Messages {
+			messages = append(messages, messagesItem)
+		}
+		if err = d.Set("messages", messages); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting messages: %s", err), "(Data) ibm_recovery", "read", "set-messages").GetDiag()
+		}
 	}
 
-	retrieveArchiveTasks := []map[string]interface{}{}
-	if recovery.RetrieveArchiveTasks != nil {
-		for _, modelItem := range recovery.RetrieveArchiveTasks {
-			modelMap, err := dataSourceIbmRecoveryRetrieveArchiveTaskToMap(&modelItem)
+	if !core.IsNil(recovery.IsParentRecovery) {
+		if err = d.Set("is_parent_recovery", recovery.IsParentRecovery); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_parent_recovery: %s", err), "(Data) ibm_recovery", "read", "set-is_parent_recovery").GetDiag()
+		}
+	}
+
+	if !core.IsNil(recovery.ParentRecoveryID) {
+		if err = d.Set("parent_recovery_id", recovery.ParentRecoveryID); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting parent_recovery_id: %s", err), "(Data) ibm_recovery", "read", "set-parent_recovery_id").GetDiag()
+		}
+	}
+
+	if !core.IsNil(recovery.RetrieveArchiveTasks) {
+		retrieveArchiveTasks := []map[string]interface{}{}
+		for _, retrieveArchiveTasksItem := range recovery.RetrieveArchiveTasks {
+			retrieveArchiveTasksItemMap, err := DataSourceIbmRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "retrieve_archive_tasks-to-map").GetDiag()
 			}
-			retrieveArchiveTasks = append(retrieveArchiveTasks, modelMap)
+			retrieveArchiveTasks = append(retrieveArchiveTasks, retrieveArchiveTasksItemMap)
+		}
+		if err = d.Set("retrieve_archive_tasks", retrieveArchiveTasks); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retrieve_archive_tasks: %s", err), "(Data) ibm_recovery", "read", "set-retrieve_archive_tasks").GetDiag()
 		}
 	}
-	if err = d.Set("retrieve_archive_tasks", retrieveArchiveTasks); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting retrieve_archive_tasks %s", err))
+
+	if !core.IsNil(recovery.IsMultiStageRestore) {
+		if err = d.Set("is_multi_stage_restore", recovery.IsMultiStageRestore); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_multi_stage_restore: %s", err), "(Data) ibm_recovery", "read", "set-is_multi_stage_restore").GetDiag()
+		}
 	}
 
-	if err = d.Set("is_multi_stage_restore", recovery.IsMultiStageRestore); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_multi_stage_restore: %s", err))
-	}
-
-	physicalParams := []map[string]interface{}{}
-	if recovery.PhysicalParams != nil {
-		modelMap, err := dataSourceIbmRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
+	if !core.IsNil(recovery.PhysicalParams) {
+		physicalParams := []map[string]interface{}{}
+		physicalParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "physical_params-to-map").GetDiag()
 		}
-		physicalParams = append(physicalParams, modelMap)
-	}
-	if err = d.Set("physical_params", physicalParams); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting physical_params %s", err))
+		physicalParams = append(physicalParams, physicalParamsMap)
+		if err = d.Set("physical_params", physicalParams); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting physical_params: %s", err), "(Data) ibm_recovery", "read", "set-physical_params").GetDiag()
+		}
 	}
 
-	oracleParams := []map[string]interface{}{}
-	if recovery.OracleParams != nil {
-		modelMap, err := dataSourceIbmRecoveryRecoverOracleParamsToMap(recovery.OracleParams)
+	if !core.IsNil(recovery.MssqlParams) {
+		mssqlParams := []map[string]interface{}{}
+		mssqlParamsMap, err := DataSourceIbmRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "mssql_params-to-map").GetDiag()
 		}
-		oracleParams = append(oracleParams, modelMap)
-	}
-	if err = d.Set("oracle_params", oracleParams); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting oracle_params %s", err))
+		mssqlParams = append(mssqlParams, mssqlParamsMap)
+		if err = d.Set("mssql_params", mssqlParams); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mssql_params: %s", err), "(Data) ibm_recovery", "read", "set-mssql_params").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-func dataSourceIbmRecoveryTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.CreatedAtTimeMsecs != nil {
+		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
+	}
+	if model.DeletedAtTimeMsecs != nil {
+		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.ExternalVendorMetadata != nil {
+		externalVendorMetadataMap, err := DataSourceIbmRecoveryExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["external_vendor_metadata"] = []map[string]interface{}{externalVendorMetadataMap}
+	}
 	if model.ID != nil {
-		modelMap["id"] = model.ID
+		modelMap["id"] = *model.ID
+	}
+	if model.IsManagedOnHelios != nil {
+		modelMap["is_managed_on_helios"] = *model.IsManagedOnHelios
+	}
+	if model.LastUpdatedAtTimeMsecs != nil {
+		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
+	}
+	if model.Network != nil {
+		networkMap, err := DataSourceIbmRecoveryTenantNetworkToMap(model.Network)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["network"] = []map[string]interface{}{networkMap}
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryCreationInfoToMap(model *backuprecoveryv1.CreationInfo) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IbmTenantMetadataParams != nil {
+		ibmTenantMetadataParamsMap, err := DataSourceIbmRecoveryIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["ibm_tenant_metadata_params"] = []map[string]interface{}{ibmTenantMetadataParamsMap}
+	}
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AccountID != nil {
+		modelMap["account_id"] = *model.AccountID
+	}
+	if model.Crn != nil {
+		modelMap["crn"] = *model.Crn
+	}
+	if model.CustomProperties != nil {
+		customProperties := []map[string]interface{}{}
+		for _, customPropertiesItem := range model.CustomProperties {
+			customPropertiesItemMap, err := DataSourceIbmRecoveryExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			customProperties = append(customProperties, customPropertiesItemMap)
+		}
+		modelMap["custom_properties"] = customProperties
+	}
+	if model.LivenessMode != nil {
+		modelMap["liveness_mode"] = *model.LivenessMode
+	}
+	if model.OwnershipMode != nil {
+		modelMap["ownership_mode"] = *model.OwnershipMode
+	}
+	if model.ResourceGroupID != nil {
+		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["connector_enabled"] = *model.ConnectorEnabled
+	if model.ClusterHostname != nil {
+		modelMap["cluster_hostname"] = *model.ClusterHostname
+	}
+	if model.ClusterIps != nil {
+		modelMap["cluster_ips"] = model.ClusterIps
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryCreationInfoToMap(model *backuprecoveryv1.CreationInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UserName != nil {
-		modelMap["user_name"] = model.UserName
+		modelMap["user_name"] = *model.UserName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRetrieveArchiveTaskToMap(model *backuprecoveryv1.RetrieveArchiveTask) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRetrieveArchiveTaskToMap(model *backuprecoveryv1.RetrieveArchiveTask) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TaskUid != nil {
-		modelMap["task_uid"] = model.TaskUid
+		modelMap["task_uid"] = *model.TaskUid
 	}
 	if model.UptierExpiryTimes != nil {
 		modelMap["uptier_expiry_times"] = model.UptierExpiryTimes
@@ -2700,48 +2432,48 @@ func dataSourceIbmRecoveryRetrieveArchiveTaskToMap(model *backuprecoveryv1.Retri
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalParamsToMap(model *backuprecoveryv1.RecoverPhysicalParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalParamsToMap(model *backuprecoveryv1.RecoverPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	objects := []map[string]interface{}{}
 	for _, objectsItem := range model.Objects {
-		objectsItemMap, err := dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsToMap(&objectsItem)
+		objectsItemMap, err := DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsToMap(&objectsItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
 		objects = append(objects, objectsItemMap)
 	}
 	modelMap["objects"] = objects
-	modelMap["recovery_action"] = model.RecoveryAction
+	modelMap["recovery_action"] = *model.RecoveryAction
 	if model.RecoverVolumeParams != nil {
-		recoverVolumeParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model.RecoverVolumeParams)
+		recoverVolumeParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model.RecoverVolumeParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["recover_volume_params"] = []map[string]interface{}{recoverVolumeParamsMap}
 	}
 	if model.MountVolumeParams != nil {
-		mountVolumeParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model.MountVolumeParams)
+		mountVolumeParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model.MountVolumeParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["mount_volume_params"] = []map[string]interface{}{mountVolumeParamsMap}
 	}
 	if model.RecoverFileAndFolderParams != nil {
-		recoverFileAndFolderParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model.RecoverFileAndFolderParams)
+		recoverFileAndFolderParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model.RecoverFileAndFolderParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["recover_file_and_folder_params"] = []map[string]interface{}{recoverFileAndFolderParamsMap}
 	}
 	if model.DownloadFileAndFolderParams != nil {
-		downloadFileAndFolderParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model.DownloadFileAndFolderParams)
+		downloadFileAndFolderParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model.DownloadFileAndFolderParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["download_file_and_folder_params"] = []map[string]interface{}{downloadFileAndFolderParamsMap}
 	}
 	if model.SystemRecoveryParams != nil {
-		systemRecoveryParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model.SystemRecoveryParams)
+		systemRecoveryParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model.SystemRecoveryParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2750,49 +2482,49 @@ func dataSourceIbmRecoveryRecoverPhysicalParamsToMap(model *backuprecoveryv1.Rec
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["snapshot_id"] = model.SnapshotID
+	modelMap["snapshot_id"] = *model.SnapshotID
 	if model.PointInTimeUsecs != nil {
 		modelMap["point_in_time_usecs"] = flex.IntValue(model.PointInTimeUsecs)
 	}
 	if model.ProtectionGroupID != nil {
-		modelMap["protection_group_id"] = model.ProtectionGroupID
+		modelMap["protection_group_id"] = *model.ProtectionGroupID
 	}
 	if model.ProtectionGroupName != nil {
-		modelMap["protection_group_name"] = model.ProtectionGroupName
+		modelMap["protection_group_name"] = *model.ProtectionGroupName
 	}
 	if model.SnapshotCreationTimeUsecs != nil {
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.ObjectInfo != nil {
-		objectInfoMap, err := dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
+		objectInfoMap, err := DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["object_info"] = []map[string]interface{}{objectInfoMap}
 	}
 	if model.SnapshotTargetType != nil {
-		modelMap["snapshot_target_type"] = model.SnapshotTargetType
+		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
 	if model.StorageDomainID != nil {
 		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
 	}
 	if model.ArchivalTargetInfo != nil {
-		archivalTargetInfoMap, err := dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
+		archivalTargetInfoMap, err := DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["archival_target_info"] = []map[string]interface{}{archivalTargetInfoMap}
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.RecoverFromStandby != nil {
-		modelMap["recover_from_standby"] = model.RecoverFromStandby
+		modelMap["recover_from_standby"] = *model.RecoverFromStandby
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -2809,69 +2541,198 @@ func dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsToMap(model *backupre
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
 	if model.SourceName != nil {
-		modelMap["source_name"] = model.SourceName
+		modelMap["source_name"] = *model.SourceName
 	}
 	if model.Environment != nil {
-		modelMap["environment"] = model.Environment
+		modelMap["environment"] = *model.Environment
 	}
 	if model.ObjectHash != nil {
-		modelMap["object_hash"] = model.ObjectHash
+		modelMap["object_hash"] = *model.ObjectHash
 	}
 	if model.ObjectType != nil {
-		modelMap["object_type"] = model.ObjectType
+		modelMap["object_type"] = *model.ObjectType
 	}
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
 	}
 	if model.UUID != nil {
-		modelMap["uuid"] = model.UUID
+		modelMap["uuid"] = *model.UUID
 	}
 	if model.GlobalID != nil {
-		modelMap["global_id"] = model.GlobalID
+		modelMap["global_id"] = *model.GlobalID
 	}
 	if model.ProtectionType != nil {
-		modelMap["protection_type"] = model.ProtectionType
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := DataSourceIbmRecoverySharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
 	}
 	if model.OsType != nil {
-		modelMap["os_type"] = model.OsType
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := DataSourceIbmRecoveryObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := DataSourceIbmRecoveryObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := DataSourceIbmRecoveryObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo) (map[string]interface{}, error) {
+func DataSourceIbmRecoverySharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SiteWebURL != nil {
+		modelMap["site_web_url"] = *model.SiteWebURL
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.SourceID != nil {
+		modelMap["source_id"] = flex.IntValue(model.SourceID)
+	}
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
+	if model.Environment != nil {
+		modelMap["environment"] = *model.Environment
+	}
+	if model.ObjectHash != nil {
+		modelMap["object_hash"] = *model.ObjectHash
+	}
+	if model.ObjectType != nil {
+		modelMap["object_type"] = *model.ObjectType
+	}
+	if model.LogicalSizeBytes != nil {
+		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
+	}
+	if model.UUID != nil {
+		modelMap["uuid"] = *model.UUID
+	}
+	if model.GlobalID != nil {
+		modelMap["global_id"] = *model.GlobalID
+	}
+	if model.ProtectionType != nil {
+		modelMap["protection_type"] = *model.ProtectionType
+	}
+	if model.SharepointSiteSummary != nil {
+		sharepointSiteSummaryMap, err := DataSourceIbmRecoverySharepointObjectParamsToMap(model.SharepointSiteSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sharepoint_site_summary"] = []map[string]interface{}{sharepointSiteSummaryMap}
+	}
+	if model.OsType != nil {
+		modelMap["os_type"] = *model.OsType
+	}
+	if model.ChildObjects != nil {
+		childObjects := []map[string]interface{}{}
+		for _, childObjectsItem := range model.ChildObjects {
+			childObjectsItemMap, err := DataSourceIbmRecoveryObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			childObjects = append(childObjects, childObjectsItemMap)
+		}
+		modelMap["child_objects"] = childObjects
+	}
+	if model.VCenterSummary != nil {
+		vCenterSummaryMap, err := DataSourceIbmRecoveryObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
+	}
+	if model.WindowsClusterSummary != nil {
+		windowsClusterSummaryMap, err := DataSourceIbmRecoveryObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["windows_cluster_summary"] = []map[string]interface{}{windowsClusterSummaryMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IsCloudEnv != nil {
+		modelMap["is_cloud_env"] = *model.IsCloudEnv
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ClusterSourceType != nil {
+		modelMap["cluster_source_type"] = *model.ClusterSourceType
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
 	}
 	if model.ArchivalTaskID != nil {
-		modelMap["archival_task_id"] = model.ArchivalTaskID
+		modelMap["archival_task_id"] = *model.ArchivalTaskID
 	}
 	if model.TargetName != nil {
-		modelMap["target_name"] = model.TargetName
+		modelMap["target_name"] = *model.TargetName
 	}
 	if model.TargetType != nil {
-		modelMap["target_type"] = model.TargetType
+		modelMap["target_type"] = *model.TargetType
 	}
 	if model.UsageType != nil {
-		modelMap["usage_type"] = model.UsageType
+		modelMap["usage_type"] = *model.UsageType
 	}
 	if model.OwnershipContext != nil {
-		modelMap["ownership_context"] = model.OwnershipContext
+		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := dataSourceIbmRecoveryArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmRecoveryArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2880,27 +2741,48 @@ func dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToM
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["cloud_platform"] = model.CloudPlatform
+	if model.AwsTiering != nil {
+		awsTieringMap, err := DataSourceIbmRecoveryAWSTiersToMap(model.AwsTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
+	}
+	if model.AzureTiering != nil {
+		azureTieringMap, err := DataSourceIbmRecoveryAzureTiersToMap(model.AzureTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
+	}
+	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.GoogleTiering != nil {
+		googleTieringMap, err := DataSourceIbmRecoveryGoogleTiersToMap(model.GoogleTiering)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
+	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := dataSourceIbmRecoveryOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmRecoveryOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["oracle_tiering"] = []map[string]interface{}{oracleTieringMap}
 	}
 	if model.CurrentTierType != nil {
-		modelMap["current_tier_type"] = model.CurrentTierType
+		modelMap["current_tier_type"] = *model.CurrentTierType
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := dataSourceIbmRecoveryOracleTierToMap(&tiersItem)
+		tiersItemMap, err := DataSourceIbmRecoveryAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2910,23 +2792,103 @@ func dataSourceIbmRecoveryOracleTiersToMap(model *backuprecoveryv1.OracleTiers) 
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
-		modelMap["move_after_unit"] = model.MoveAfterUnit
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
 	}
 	if model.MoveAfter != nil {
 		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
 	}
-	modelMap["tier_type"] = model.TierType
+	modelMap["tier_type"] = *model.TierType
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverVolumeParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_environment"] = model.TargetEnvironment
+	if model.Tiers != nil {
+		tiers := []map[string]interface{}{}
+		for _, tiersItem := range model.Tiers {
+			tiersItemMap, err := DataSourceIbmRecoveryAzureTierToMap(&tiersItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			tiers = append(tiers, tiersItemMap)
+		}
+		modelMap["tiers"] = tiers
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	tiers := []map[string]interface{}{}
+	for _, tiersItem := range model.Tiers {
+		tiersItemMap, err := DataSourceIbmRecoveryGoogleTierToMap(&tiersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		tiers = append(tiers, tiersItemMap)
+	}
+	modelMap["tiers"] = tiers
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	tiers := []map[string]interface{}{}
+	for _, tiersItem := range model.Tiers {
+		tiersItemMap, err := DataSourceIbmRecoveryOracleTierToMap(&tiersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		tiers = append(tiers, tiersItemMap)
+	}
+	modelMap["tiers"] = tiers
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.MoveAfterUnit != nil {
+		modelMap["move_after_unit"] = *model.MoveAfterUnit
+	}
+	if model.MoveAfter != nil {
+		modelMap["move_after"] = flex.IntValue(model.MoveAfter)
+	}
+	modelMap["tier_type"] = *model.TierType
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverVolumeParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["target_environment"] = *model.TargetEnvironment
 	if model.PhysicalTargetParams != nil {
-		physicalTargetParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
+		physicalTargetParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2935,16 +2897,16 @@ func dataSourceIbmRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model *b
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	mountTargetMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model.MountTarget)
+	mountTargetMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model.MountTarget)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["mount_target"] = []map[string]interface{}{mountTargetMap}
 	volumeMapping := []map[string]interface{}{}
 	for _, volumeMappingItem := range model.VolumeMapping {
-		volumeMappingItemMap, err := dataSourceIbmRecoveryRecoverVolumeMappingToMap(&volumeMappingItem)
+		volumeMappingItemMap, err := DataSourceIbmRecoveryRecoverVolumeMappingToMap(&volumeMappingItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2952,10 +2914,10 @@ func dataSourceIbmRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(m
 	}
 	modelMap["volume_mapping"] = volumeMapping
 	if model.ForceUnmountVolume != nil {
-		modelMap["force_unmount_volume"] = model.ForceUnmountVolume
+		modelMap["force_unmount_volume"] = *model.ForceUnmountVolume
 	}
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2964,41 +2926,41 @@ func dataSourceIbmRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(m
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeMountTarget) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeMountTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverVolumeMappingToMap(model *backuprecoveryv1.RecoverVolumeMapping) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverVolumeMappingToMap(model *backuprecoveryv1.RecoverVolumeMapping) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["source_volume_guid"] = model.SourceVolumeGuid
-	modelMap["destination_volume_guid"] = model.DestinationVolumeGuid
+	modelMap["source_volume_guid"] = *model.SourceVolumeGuid
+	modelMap["destination_volume_guid"] = *model.DestinationVolumeGuid
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.DisableVlan != nil {
-		modelMap["disable_vlan"] = model.DisableVlan
+		modelMap["disable_vlan"] = *model.DisableVlan
 	}
 	if model.InterfaceName != nil {
-		modelMap["interface_name"] = model.InterfaceName
+		modelMap["interface_name"] = *model.InterfaceName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsMountVolumeParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsMountVolumeParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_environment"] = model.TargetEnvironment
+	modelMap["target_environment"] = *model.TargetEnvironment
 	if model.PhysicalTargetParams != nil {
-		physicalTargetParamsMap, err := dataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
+		physicalTargetParamsMap, err := DataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3007,25 +2969,25 @@ func dataSourceIbmRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model *bac
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.MountPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.MountPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["mount_to_original_target"] = model.MountToOriginalTarget
+	modelMap["mount_to_original_target"] = *model.MountToOriginalTarget
 	if model.OriginalTargetConfig != nil {
-		originalTargetConfigMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model.OriginalTargetConfig)
+		originalTargetConfigMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model.OriginalTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["original_target_config"] = []map[string]interface{}{originalTargetConfigMap}
 	}
 	if model.NewTargetConfig != nil {
-		newTargetConfigMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model.NewTargetConfig)
+		newTargetConfigMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model.NewTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["new_target_config"] = []map[string]interface{}{newTargetConfigMap}
 	}
 	if model.ReadOnlyMount != nil {
-		modelMap["read_only_mount"] = model.ReadOnlyMount
+		modelMap["read_only_mount"] = *model.ReadOnlyMount
 	}
 	if model.VolumeNames != nil {
 		modelMap["volume_names"] = model.VolumeNames
@@ -3033,7 +2995,7 @@ func dataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(mod
 	if model.MountedVolumeMapping != nil {
 		mountedVolumeMapping := []map[string]interface{}{}
 		for _, mountedVolumeMappingItem := range model.MountedVolumeMapping {
-			mountedVolumeMappingItemMap, err := dataSourceIbmRecoveryMountedVolumeMappingToMap(&mountedVolumeMappingItem)
+			mountedVolumeMappingItemMap, err := DataSourceIbmRecoveryMountedVolumeMappingToMap(&mountedVolumeMappingItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3042,7 +3004,7 @@ func dataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(mod
 		modelMap["mounted_volume_mapping"] = mountedVolumeMapping
 	}
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3051,10 +3013,10 @@ func dataSourceIbmRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(mod
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeOriginalTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeOriginalTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ServerCredentials != nil {
-		serverCredentialsMap, err := dataSourceIbmRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model.ServerCredentials)
+		serverCredentialsMap, err := DataSourceIbmRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model.ServerCredentials)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3063,22 +3025,22 @@ func dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfig
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesOriginalTargetConfigServerCredentials) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesOriginalTargetConfigServerCredentials) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["username"] = model.Username
-	modelMap["password"] = model.Password
+	modelMap["username"] = *model.Username
+	modelMap["password"] = *model.Password
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeNewTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeNewTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	mountTargetMap, err := dataSourceIbmRecoveryRecoverTargetToMap(model.MountTarget)
+	mountTargetMap, err := DataSourceIbmRecoveryRecoverTargetToMap(model.MountTarget)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["mount_target"] = []map[string]interface{}{mountTargetMap}
 	if model.ServerCredentials != nil {
-		serverCredentialsMap, err := dataSourceIbmRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model.ServerCredentials)
+		serverCredentialsMap, err := DataSourceIbmRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model.ServerCredentials)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3087,70 +3049,70 @@ func dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverTargetToMap(model *backuprecoveryv1.RecoverTarget) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverTargetToMap(model *backuprecoveryv1.RecoverTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.ParentSourceID != nil {
 		modelMap["parent_source_id"] = flex.IntValue(model.ParentSourceID)
 	}
 	if model.ParentSourceName != nil {
-		modelMap["parent_source_name"] = model.ParentSourceName
+		modelMap["parent_source_name"] = *model.ParentSourceName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesNewTargetConfigServerCredentials) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesNewTargetConfigServerCredentials) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["username"] = model.Username
-	modelMap["password"] = model.Password
+	modelMap["username"] = *model.Username
+	modelMap["password"] = *model.Password
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryMountedVolumeMappingToMap(model *backuprecoveryv1.MountedVolumeMapping) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryMountedVolumeMappingToMap(model *backuprecoveryv1.MountedVolumeMapping) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.OriginalVolume != nil {
-		modelMap["original_volume"] = model.OriginalVolume
+		modelMap["original_volume"] = *model.OriginalVolume
 	}
 	if model.MountedVolume != nil {
-		modelMap["mounted_volume"] = model.MountedVolume
+		modelMap["mounted_volume"] = *model.MountedVolume
 	}
 	if model.FileSystemType != nil {
-		modelMap["file_system_type"] = model.FileSystemType
+		modelMap["file_system_type"] = *model.FileSystemType
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.DisableVlan != nil {
-		modelMap["disable_vlan"] = model.DisableVlan
+		modelMap["disable_vlan"] = *model.DisableVlan
 	}
 	if model.InterfaceName != nil {
-		modelMap["interface_name"] = model.InterfaceName
+		modelMap["interface_name"] = *model.InterfaceName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverFileAndFolderParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverFileAndFolderParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	filesAndFolders := []map[string]interface{}{}
 	for _, filesAndFoldersItem := range model.FilesAndFolders {
-		filesAndFoldersItemMap, err := dataSourceIbmRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem)
+		filesAndFoldersItemMap, err := DataSourceIbmRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
 		filesAndFolders = append(filesAndFolders, filesAndFoldersItemMap)
 	}
 	modelMap["files_and_folders"] = filesAndFolders
-	modelMap["target_environment"] = model.TargetEnvironment
+	modelMap["target_environment"] = *model.TargetEnvironment
 	if model.PhysicalTargetParams != nil {
-		physicalTargetParamsMap, err := dataSourceIbmRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
+		physicalTargetParamsMap, err := DataSourceIbmRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3159,106 +3121,109 @@ func dataSourceIbmRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(m
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryCommonRecoverFileAndFolderInfoToMap(model *backuprecoveryv1.CommonRecoverFileAndFolderInfo) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryCommonRecoverFileAndFolderInfoToMap(model *backuprecoveryv1.CommonRecoverFileAndFolderInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["absolute_path"] = model.AbsolutePath
+	modelMap["absolute_path"] = *model.AbsolutePath
 	if model.DestinationDir != nil {
-		modelMap["destination_dir"] = model.DestinationDir
+		modelMap["destination_dir"] = *model.DestinationDir
 	}
 	if model.IsDirectory != nil {
-		modelMap["is_directory"] = model.IsDirectory
+		modelMap["is_directory"] = *model.IsDirectory
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.Messages != nil {
 		modelMap["messages"] = model.Messages
 	}
 	if model.IsViewFileRecovery != nil {
-		modelMap["is_view_file_recovery"] = model.IsViewFileRecovery
+		modelMap["is_view_file_recovery"] = *model.IsViewFileRecovery
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalFileAndFolderParamsPhysicalTargetParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalFileAndFolderParamsPhysicalTargetParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	recoverTargetMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model.RecoverTarget)
+	recoverTargetMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model.RecoverTarget)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["recover_target"] = []map[string]interface{}{recoverTargetMap}
 	if model.RestoreToOriginalPaths != nil {
-		modelMap["restore_to_original_paths"] = model.RestoreToOriginalPaths
+		modelMap["restore_to_original_paths"] = *model.RestoreToOriginalPaths
 	}
 	if model.OverwriteExisting != nil {
-		modelMap["overwrite_existing"] = model.OverwriteExisting
+		modelMap["overwrite_existing"] = *model.OverwriteExisting
 	}
 	if model.AlternateRestoreDirectory != nil {
-		modelMap["alternate_restore_directory"] = model.AlternateRestoreDirectory
+		modelMap["alternate_restore_directory"] = *model.AlternateRestoreDirectory
 	}
 	if model.PreserveAttributes != nil {
-		modelMap["preserve_attributes"] = model.PreserveAttributes
+		modelMap["preserve_attributes"] = *model.PreserveAttributes
 	}
 	if model.PreserveTimestamps != nil {
-		modelMap["preserve_timestamps"] = model.PreserveTimestamps
+		modelMap["preserve_timestamps"] = *model.PreserveTimestamps
 	}
 	if model.PreserveAcls != nil {
-		modelMap["preserve_acls"] = model.PreserveAcls
+		modelMap["preserve_acls"] = *model.PreserveAcls
 	}
 	if model.ContinueOnError != nil {
-		modelMap["continue_on_error"] = model.ContinueOnError
+		modelMap["continue_on_error"] = *model.ContinueOnError
 	}
 	if model.SaveSuccessFiles != nil {
-		modelMap["save_success_files"] = model.SaveSuccessFiles
+		modelMap["save_success_files"] = *model.SaveSuccessFiles
 	}
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := dataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["vlan_config"] = []map[string]interface{}{vlanConfigMap}
 	}
 	if model.RestoreEntityType != nil {
-		modelMap["restore_entity_type"] = model.RestoreEntityType
+		modelMap["restore_entity_type"] = *model.RestoreEntityType
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderRecoverTarget) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderRecoverTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	if model.ParentSourceID != nil {
 		modelMap["parent_source_id"] = flex.IntValue(model.ParentSourceID)
 	}
 	if model.ParentSourceName != nil {
-		modelMap["parent_source_name"] = model.ParentSourceName
+		modelMap["parent_source_name"] = *model.ParentSourceName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.DisableVlan != nil {
-		modelMap["disable_vlan"] = model.DisableVlan
+		modelMap["disable_vlan"] = *model.DisableVlan
 	}
 	if model.InterfaceName != nil {
-		modelMap["interface_name"] = model.InterfaceName
+		modelMap["interface_name"] = *model.InterfaceName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsDownloadFileAndFolderParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsDownloadFileAndFolderParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.ExpiryTimeUsecs != nil {
+		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
+	}
 	if model.FilesAndFolders != nil {
 		filesAndFolders := []map[string]interface{}{}
 		for _, filesAndFoldersItem := range model.FilesAndFolders {
-			filesAndFoldersItemMap, err := dataSourceIbmRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem)
+			filesAndFoldersItemMap, err := DataSourceIbmRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3267,84 +3232,86 @@ func dataSourceIbmRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(
 		modelMap["files_and_folders"] = filesAndFolders
 	}
 	if model.DownloadFilePath != nil {
-		modelMap["download_file_path"] = model.DownloadFilePath
+		modelMap["download_file_path"] = *model.DownloadFilePath
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsSystemRecoveryParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsSystemRecoveryParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.FullNasPath != nil {
-		modelMap["full_nas_path"] = model.FullNasPath
+		modelMap["full_nas_path"] = *model.FullNasPath
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverOracleParamsToMap(model *backuprecoveryv1.RecoverOracleParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverSqlParamsToMap(model *backuprecoveryv1.RecoverSqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	objects := []map[string]interface{}{}
-	for _, objectsItem := range model.Objects {
-		objectsItemMap, err := dataSourceIbmRecoveryRecoverOracleDbSnapshotParamsToMap(&objectsItem)
-		if err != nil {
-			return modelMap, err
-		}
-		objects = append(objects, objectsItemMap)
-	}
-	modelMap["objects"] = objects
-	modelMap["recovery_action"] = model.RecoveryAction
 	if model.RecoverAppParams != nil {
-		recoverAppParamsMap, err := dataSourceIbmRecoveryRecoverOracleParamsRecoverAppParamsToMap(model.RecoverAppParams)
+		recoverAppParams := []map[string]interface{}{}
+		for _, recoverAppParamsItem := range model.RecoverAppParams {
+			recoverAppParamsItemMap, err := DataSourceIbmRecoveryRecoverSqlAppParamsToMap(&recoverAppParamsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			recoverAppParams = append(recoverAppParams, recoverAppParamsItemMap)
+		}
+		modelMap["recover_app_params"] = recoverAppParams
+	}
+	modelMap["recovery_action"] = *model.RecoveryAction
+	if model.VlanConfig != nil {
+		vlanConfigMap, err := DataSourceIbmRecoveryRecoveryVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["recover_app_params"] = []map[string]interface{}{recoverAppParamsMap}
+		modelMap["vlan_config"] = []map[string]interface{}{vlanConfigMap}
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverOracleDbSnapshotParamsToMap(model *backuprecoveryv1.RecoverOracleDbSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverSqlAppParamsToMap(model *backuprecoveryv1.RecoverSqlAppParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["snapshot_id"] = model.SnapshotID
+	modelMap["snapshot_id"] = *model.SnapshotID
 	if model.PointInTimeUsecs != nil {
 		modelMap["point_in_time_usecs"] = flex.IntValue(model.PointInTimeUsecs)
 	}
 	if model.ProtectionGroupID != nil {
-		modelMap["protection_group_id"] = model.ProtectionGroupID
+		modelMap["protection_group_id"] = *model.ProtectionGroupID
 	}
 	if model.ProtectionGroupName != nil {
-		modelMap["protection_group_name"] = model.ProtectionGroupName
+		modelMap["protection_group_name"] = *model.ProtectionGroupName
 	}
 	if model.SnapshotCreationTimeUsecs != nil {
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.ObjectInfo != nil {
-		objectInfoMap, err := dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
+		objectInfoMap, err := DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["object_info"] = []map[string]interface{}{objectInfoMap}
 	}
 	if model.SnapshotTargetType != nil {
-		modelMap["snapshot_target_type"] = model.SnapshotTargetType
+		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
 	if model.StorageDomainID != nil {
 		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
 	}
 	if model.ArchivalTargetInfo != nil {
-		archivalTargetInfoMap, err := dataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
+		archivalTargetInfoMap, err := DataSourceIbmRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["archival_target_info"] = []map[string]interface{}{archivalTargetInfoMap}
 	}
 	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+		modelMap["progress_task_id"] = *model.ProgressTaskID
 	}
 	if model.RecoverFromStandby != nil {
-		modelMap["recover_from_standby"] = model.RecoverFromStandby
+		modelMap["recover_from_standby"] = *model.RecoverFromStandby
 	}
 	if model.Status != nil {
-		modelMap["status"] = model.Status
+		modelMap["status"] = *model.Status
 	}
 	if model.StartTimeUsecs != nil {
 		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
@@ -3358,661 +3325,231 @@ func dataSourceIbmRecoveryRecoverOracleDbSnapshotParamsToMap(model *backuprecove
 	if model.BytesRestored != nil {
 		modelMap["bytes_restored"] = flex.IntValue(model.BytesRestored)
 	}
-	if model.InstantRecoveryInfo != nil {
-		instantRecoveryInfoMap, err := dataSourceIbmRecoveryRecoverOracleDbSnapshotParamsInstantRecoveryInfoToMap(model.InstantRecoveryInfo)
+	if model.AagInfo != nil {
+		aagInfoMap, err := DataSourceIbmRecoveryAAGInfoToMap(model.AagInfo)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["instant_recovery_info"] = []map[string]interface{}{instantRecoveryInfoMap}
+		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
+	}
+	if model.HostInfo != nil {
+		hostInfoMap, err := DataSourceIbmRecoveryHostInformationToMap(model.HostInfo)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["host_info"] = []map[string]interface{}{hostInfoMap}
+	}
+	if model.IsEncrypted != nil {
+		modelMap["is_encrypted"] = *model.IsEncrypted
+	}
+	if model.SqlTargetParams != nil {
+		sqlTargetParamsMap, err := DataSourceIbmRecoverySqlTargetParamsForRecoverSqlAppToMap(model.SqlTargetParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["sql_target_params"] = []map[string]interface{}{sqlTargetParamsMap}
+	}
+	modelMap["target_environment"] = *model.TargetEnvironment
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ObjectID != nil {
+		modelMap["object_id"] = flex.IntValue(model.ObjectID)
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverOracleDbSnapshotParamsInstantRecoveryInfoToMap(model *backuprecoveryv1.RecoverOracleDbSnapshotParamsInstantRecoveryInfo) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ProgressTaskID != nil {
-		modelMap["progress_task_id"] = model.ProgressTaskID
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
-	if model.Status != nil {
-		modelMap["status"] = model.Status
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	if model.StartTimeUsecs != nil {
-		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
-	}
-	if model.EndTimeUsecs != nil {
-		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
+	if model.Environment != nil {
+		modelMap["environment"] = *model.Environment
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverOracleParamsRecoverAppParamsToMap(model *backuprecoveryv1.RecoverOracleParamsRecoverAppParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoverySqlTargetParamsForRecoverSqlAppToMap(model *backuprecoveryv1.SqlTargetParamsForRecoverSqlApp) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["target_environment"] = model.TargetEnvironment
-	if model.OracleTargetParams != nil {
-		oracleTargetParamsMap, err := dataSourceIbmRecoveryRecoverOracleAppParamsOracleTargetParamsToMap(model.OracleTargetParams)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_target_params"] = []map[string]interface{}{oracleTargetParamsMap}
-	}
-	if model.VlanConfig != nil {
-		vlanConfigMap, err := dataSourceIbmRecoveryRecoverOracleAppParamsVlanConfigToMap(model.VlanConfig)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["vlan_config"] = []map[string]interface{}{vlanConfigMap}
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryRecoverOracleAppParamsOracleTargetParamsToMap(model *backuprecoveryv1.RecoverOracleAppParamsOracleTargetParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["recover_to_new_source"] = model.RecoverToNewSource
 	if model.NewSourceConfig != nil {
-		newSourceConfigMap, err := dataSourceIbmRecoveryCommonRecoverOracleAppTargetParamsNewSourceConfigToMap(model.NewSourceConfig)
+		newSourceConfigMap, err := DataSourceIbmRecoveryRecoverSqlAppNewSourceConfigToMap(model.NewSourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["new_source_config"] = []map[string]interface{}{newSourceConfigMap}
 	}
 	if model.OriginalSourceConfig != nil {
-		originalSourceConfigMap, err := dataSourceIbmRecoveryCommonRecoverOracleAppTargetParamsOriginalSourceConfigToMap(model.OriginalSourceConfig)
+		originalSourceConfigMap, err := DataSourceIbmRecoveryRecoverSqlAppOriginalSourceConfigToMap(model.OriginalSourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["original_source_config"] = []map[string]interface{}{originalSourceConfigMap}
 	}
+	modelMap["recover_to_new_source"] = *model.RecoverToNewSource
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryCommonRecoverOracleAppTargetParamsNewSourceConfigToMap(model *backuprecoveryv1.CommonRecoverOracleAppTargetParamsNewSourceConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverSqlAppNewSourceConfigToMap(model *backuprecoveryv1.RecoverSqlAppNewSourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	hostMap, err := dataSourceIbmRecoveryRecoverOracleAppNewSourceConfigHostToMap(model.Host)
+	if model.KeepCdc != nil {
+		modelMap["keep_cdc"] = *model.KeepCdc
+	}
+	if model.MultiStageRestoreOptions != nil {
+		multiStageRestoreOptionsMap, err := DataSourceIbmRecoveryMultiStageRestoreOptionsToMap(model.MultiStageRestoreOptions)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["multi_stage_restore_options"] = []map[string]interface{}{multiStageRestoreOptionsMap}
+	}
+	if model.NativeLogRecoveryWithClause != nil {
+		modelMap["native_log_recovery_with_clause"] = *model.NativeLogRecoveryWithClause
+	}
+	if model.NativeRecoveryWithClause != nil {
+		modelMap["native_recovery_with_clause"] = *model.NativeRecoveryWithClause
+	}
+	if model.OverwritingPolicy != nil {
+		modelMap["overwriting_policy"] = *model.OverwritingPolicy
+	}
+	if model.ReplayEntireLastLog != nil {
+		modelMap["replay_entire_last_log"] = *model.ReplayEntireLastLog
+	}
+	if model.RestoreTimeUsecs != nil {
+		modelMap["restore_time_usecs"] = flex.IntValue(model.RestoreTimeUsecs)
+	}
+	if model.SecondaryDataFilesDirList != nil {
+		secondaryDataFilesDirList := []map[string]interface{}{}
+		for _, secondaryDataFilesDirListItem := range model.SecondaryDataFilesDirList {
+			secondaryDataFilesDirListItemMap, err := DataSourceIbmRecoveryFilenamePatternToDirectoryToMap(&secondaryDataFilesDirListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			secondaryDataFilesDirList = append(secondaryDataFilesDirList, secondaryDataFilesDirListItemMap)
+		}
+		modelMap["secondary_data_files_dir_list"] = secondaryDataFilesDirList
+	}
+	if model.WithNoRecovery != nil {
+		modelMap["with_no_recovery"] = *model.WithNoRecovery
+	}
+	modelMap["data_file_directory_location"] = *model.DataFileDirectoryLocation
+	if model.DatabaseName != nil {
+		modelMap["database_name"] = *model.DatabaseName
+	}
+	hostMap, err := DataSourceIbmRecoveryRecoveryObjectIdentifierToMap(model.Host)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["host"] = []map[string]interface{}{hostMap}
-	if model.RecoveryTarget != nil {
-		modelMap["recovery_target"] = model.RecoveryTarget
+	modelMap["instance_name"] = *model.InstanceName
+	modelMap["log_file_directory_location"] = *model.LogFileDirectoryLocation
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryMultiStageRestoreOptionsToMap(model *backuprecoveryv1.MultiStageRestoreOptions) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EnableAutoSync != nil {
+		modelMap["enable_auto_sync"] = *model.EnableAutoSync
 	}
-	if model.RecoverDatabaseParams != nil {
-		recoverDatabaseParamsMap, err := dataSourceIbmRecoveryRecoverOracleAppNewSourceConfigRecoverDatabaseParamsToMap(model.RecoverDatabaseParams)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["recover_database_params"] = []map[string]interface{}{recoverDatabaseParamsMap}
-	}
-	if model.RecoverViewParams != nil {
-		recoverViewParamsMap, err := dataSourceIbmRecoveryRecoverOracleAppNewSourceConfigRecoverViewParamsToMap(model.RecoverViewParams)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["recover_view_params"] = []map[string]interface{}{recoverViewParamsMap}
+	if model.EnableMultiStageRestore != nil {
+		modelMap["enable_multi_stage_restore"] = *model.EnableMultiStageRestore
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverOracleAppNewSourceConfigHostToMap(model *backuprecoveryv1.RecoverOracleAppNewSourceConfigHost) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryFilenamePatternToDirectoryToMap(model *backuprecoveryv1.FilenamePatternToDirectory) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Directory != nil {
+		modelMap["directory"] = *model.Directory
+	}
+	if model.FilenamePattern != nil {
+		modelMap["filename_pattern"] = *model.FilenamePattern
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmRecoveryRecoveryObjectIdentifierToMap(model *backuprecoveryv1.RecoveryObjectIdentifier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
-		modelMap["name"] = model.Name
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryRecoverOracleAppNewSourceConfigRecoverDatabaseParamsToMap(model *backuprecoveryv1.RecoverOracleAppNewSourceConfigRecoverDatabaseParams) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoverSqlAppOriginalSourceConfigToMap(model *backuprecoveryv1.RecoverSqlAppOriginalSourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.KeepCdc != nil {
+		modelMap["keep_cdc"] = *model.KeepCdc
+	}
+	if model.MultiStageRestoreOptions != nil {
+		multiStageRestoreOptionsMap, err := DataSourceIbmRecoveryMultiStageRestoreOptionsToMap(model.MultiStageRestoreOptions)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["multi_stage_restore_options"] = []map[string]interface{}{multiStageRestoreOptionsMap}
+	}
+	if model.NativeLogRecoveryWithClause != nil {
+		modelMap["native_log_recovery_with_clause"] = *model.NativeLogRecoveryWithClause
+	}
+	if model.NativeRecoveryWithClause != nil {
+		modelMap["native_recovery_with_clause"] = *model.NativeRecoveryWithClause
+	}
+	if model.OverwritingPolicy != nil {
+		modelMap["overwriting_policy"] = *model.OverwritingPolicy
+	}
+	if model.ReplayEntireLastLog != nil {
+		modelMap["replay_entire_last_log"] = *model.ReplayEntireLastLog
+	}
 	if model.RestoreTimeUsecs != nil {
 		modelMap["restore_time_usecs"] = flex.IntValue(model.RestoreTimeUsecs)
 	}
-	if model.DbChannels != nil {
-		dbChannels := []map[string]interface{}{}
-		for _, dbChannelsItem := range model.DbChannels {
-			dbChannelsItemMap, err := dataSourceIbmRecoveryOracleDbChannelToMap(&dbChannelsItem)
+	if model.SecondaryDataFilesDirList != nil {
+		secondaryDataFilesDirList := []map[string]interface{}{}
+		for _, secondaryDataFilesDirListItem := range model.SecondaryDataFilesDirList {
+			secondaryDataFilesDirListItemMap, err := DataSourceIbmRecoveryFilenamePatternToDirectoryToMap(&secondaryDataFilesDirListItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
-			dbChannels = append(dbChannels, dbChannelsItemMap)
+			secondaryDataFilesDirList = append(secondaryDataFilesDirList, secondaryDataFilesDirListItemMap)
 		}
-		modelMap["db_channels"] = dbChannels
+		modelMap["secondary_data_files_dir_list"] = secondaryDataFilesDirList
 	}
-	if model.RecoveryMode != nil {
-		modelMap["recovery_mode"] = model.RecoveryMode
+	if model.WithNoRecovery != nil {
+		modelMap["with_no_recovery"] = *model.WithNoRecovery
 	}
-	if model.ShellEvironmentVars != nil {
-		shellEvironmentVars := []map[string]interface{}{}
-		for _, shellEvironmentVarsItem := range model.ShellEvironmentVars {
-			shellEvironmentVarsItemMap, err := dataSourceIbmRecoveryKeyValuePairToMap(&shellEvironmentVarsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			shellEvironmentVars = append(shellEvironmentVars, shellEvironmentVarsItemMap)
-		}
-		modelMap["shell_evironment_vars"] = shellEvironmentVars
+	if model.CaptureTailLogs != nil {
+		modelMap["capture_tail_logs"] = *model.CaptureTailLogs
 	}
-	if model.GranularRestoreInfo != nil {
-		granularRestoreInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigGranularRestoreInfoToMap(model.GranularRestoreInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["granular_restore_info"] = []map[string]interface{}{granularRestoreInfoMap}
+	if model.DataFileDirectoryLocation != nil {
+		modelMap["data_file_directory_location"] = *model.DataFileDirectoryLocation
 	}
-	if model.OracleArchiveLogInfo != nil {
-		oracleArchiveLogInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleArchiveLogInfoToMap(model.OracleArchiveLogInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_archive_log_info"] = []map[string]interface{}{oracleArchiveLogInfoMap}
+	if model.LogFileDirectoryLocation != nil {
+		modelMap["log_file_directory_location"] = *model.LogFileDirectoryLocation
 	}
-	if model.OracleRecoveryValidationInfo != nil {
-		oracleRecoveryValidationInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleRecoveryValidationInfoToMap(model.OracleRecoveryValidationInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_recovery_validation_info"] = []map[string]interface{}{oracleRecoveryValidationInfoMap}
-	}
-	if model.RestoreSpfileOrPfileInfo != nil {
-		restoreSpfileOrPfileInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigRestoreSpfileOrPfileInfoToMap(model.RestoreSpfileOrPfileInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["restore_spfile_or_pfile_info"] = []map[string]interface{}{restoreSpfileOrPfileInfoMap}
-	}
-	if model.UseScnForRestore != nil {
-		modelMap["use_scn_for_restore"] = model.UseScnForRestore
-	}
-	if model.DatabaseName != nil {
-		modelMap["database_name"] = model.DatabaseName
-	}
-	if model.OracleBaseFolder != nil {
-		modelMap["oracle_base_folder"] = model.OracleBaseFolder
-	}
-	if model.OracleHomeFolder != nil {
-		modelMap["oracle_home_folder"] = model.OracleHomeFolder
-	}
-	if model.DbFilesDestination != nil {
-		modelMap["db_files_destination"] = model.DbFilesDestination
-	}
-	if model.DbConfigFilePath != nil {
-		modelMap["db_config_file_path"] = model.DbConfigFilePath
-	}
-	if model.EnableArchiveLogMode != nil {
-		modelMap["enable_archive_log_mode"] = model.EnableArchiveLogMode
-	}
-	if model.PfileParameterMap != nil {
-		pfileParameterMap := []map[string]interface{}{}
-		for _, pfileParameterMapItem := range model.PfileParameterMap {
-			pfileParameterMapItemMap, err := dataSourceIbmRecoveryKeyValuePairToMap(&pfileParameterMapItem)
-			if err != nil {
-				return modelMap, err
-			}
-			pfileParameterMap = append(pfileParameterMap, pfileParameterMapItemMap)
-		}
-		modelMap["pfile_parameter_map"] = pfileParameterMap
-	}
-	if model.BctFilePath != nil {
-		modelMap["bct_file_path"] = model.BctFilePath
-	}
-	if model.NumTempfiles != nil {
-		modelMap["num_tempfiles"] = flex.IntValue(model.NumTempfiles)
-	}
-	if model.RedoLogConfig != nil {
-		redoLogConfigMap, err := dataSourceIbmRecoveryRecoverOracleNewTargetDatabaseConfigRedoLogConfigToMap(model.RedoLogConfig)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["redo_log_config"] = []map[string]interface{}{redoLogConfigMap}
-	}
-	if model.IsMultiStageRestore != nil {
-		modelMap["is_multi_stage_restore"] = model.IsMultiStageRestore
-	}
-	if model.OracleUpdateRestoreOptions != nil {
-		oracleUpdateRestoreOptionsMap, err := dataSourceIbmRecoveryRecoverOracleNewTargetDatabaseConfigOracleUpdateRestoreOptionsToMap(model.OracleUpdateRestoreOptions)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_update_restore_options"] = []map[string]interface{}{oracleUpdateRestoreOptionsMap}
-	}
-	if model.SkipCloneNid != nil {
-		modelMap["skip_clone_nid"] = model.SkipCloneNid
-	}
-	if model.NoFilenameCheck != nil {
-		modelMap["no_filename_check"] = model.NoFilenameCheck
-	}
-	if model.NewNameClause != nil {
-		modelMap["new_name_clause"] = model.NewNameClause
+	if model.NewDatabaseName != nil {
+		modelMap["new_database_name"] = *model.NewDatabaseName
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmRecoveryOracleDbChannelToMap(model *backuprecoveryv1.OracleDbChannel) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ArchiveLogRetentionDays != nil {
-		modelMap["archive_log_retention_days"] = flex.IntValue(model.ArchiveLogRetentionDays)
-	}
-	if model.ArchiveLogRetentionHours != nil {
-		modelMap["archive_log_retention_hours"] = flex.IntValue(model.ArchiveLogRetentionHours)
-	}
-	if model.Credentials != nil {
-		credentialsMap, err := dataSourceIbmRecoveryCredentialsToMap(model.Credentials)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["credentials"] = []map[string]interface{}{credentialsMap}
-	}
-	if model.DatabaseUniqueName != nil {
-		modelMap["database_unique_name"] = model.DatabaseUniqueName
-	}
-	if model.DatabaseUUID != nil {
-		modelMap["database_uuid"] = model.DatabaseUUID
-	}
-	if model.DefaultChannelCount != nil {
-		modelMap["default_channel_count"] = flex.IntValue(model.DefaultChannelCount)
-	}
-	if model.DatabaseNodeList != nil {
-		databaseNodeList := []map[string]interface{}{}
-		for _, databaseNodeListItem := range model.DatabaseNodeList {
-			databaseNodeListItemMap, err := dataSourceIbmRecoveryOracleDatabaseHostToMap(&databaseNodeListItem)
-			if err != nil {
-				return modelMap, err
-			}
-			databaseNodeList = append(databaseNodeList, databaseNodeListItemMap)
-		}
-		modelMap["database_node_list"] = databaseNodeList
-	}
-	if model.MaxHostCount != nil {
-		modelMap["max_host_count"] = flex.IntValue(model.MaxHostCount)
-	}
-	if model.EnableDgPrimaryBackup != nil {
-		modelMap["enable_dg_primary_backup"] = model.EnableDgPrimaryBackup
-	}
-	if model.RmanBackupType != nil {
-		modelMap["rman_backup_type"] = model.RmanBackupType
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryCredentialsToMap(model *backuprecoveryv1.Credentials) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["username"] = model.Username
-	modelMap["password"] = model.Password
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryOracleDatabaseHostToMap(model *backuprecoveryv1.OracleDatabaseHost) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.HostID != nil {
-		modelMap["host_id"] = model.HostID
-	}
-	if model.ChannelCount != nil {
-		modelMap["channel_count"] = flex.IntValue(model.ChannelCount)
-	}
-	if model.Port != nil {
-		modelMap["port"] = flex.IntValue(model.Port)
-	}
-	if model.SbtHostParams != nil {
-		sbtHostParamsMap, err := dataSourceIbmRecoveryOracleSbtHostParamsToMap(model.SbtHostParams)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["sbt_host_params"] = []map[string]interface{}{sbtHostParamsMap}
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryOracleSbtHostParamsToMap(model *backuprecoveryv1.OracleSbtHostParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.SbtLibraryPath != nil {
-		modelMap["sbt_library_path"] = model.SbtLibraryPath
-	}
-	if model.ViewFsPath != nil {
-		modelMap["view_fs_path"] = model.ViewFsPath
-	}
-	if model.VipList != nil {
-		modelMap["vip_list"] = model.VipList
-	}
-	if model.VlanInfoList != nil {
-		vlanInfoList := []map[string]interface{}{}
-		for _, vlanInfoListItem := range model.VlanInfoList {
-			vlanInfoListItemMap, err := dataSourceIbmRecoveryOracleVlanInfoToMap(&vlanInfoListItem)
-			if err != nil {
-				return modelMap, err
-			}
-			vlanInfoList = append(vlanInfoList, vlanInfoListItemMap)
-		}
-		modelMap["vlan_info_list"] = vlanInfoList
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryOracleVlanInfoToMap(model *backuprecoveryv1.OracleVlanInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.IpList != nil {
-		modelMap["ip_list"] = model.IpList
-	}
-	if model.Gateway != nil {
-		modelMap["gateway"] = model.Gateway
-	}
-	if model.ID != nil {
-		modelMap["id"] = flex.IntValue(model.ID)
-	}
-	if model.SubnetIp != nil {
-		modelMap["subnet_ip"] = model.SubnetIp
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryKeyValuePairToMap(model *backuprecoveryv1.KeyValuePair) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["key"] = model.Key
-	modelMap["value"] = model.Value
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryCommonOracleAppSourceConfigGranularRestoreInfoToMap(model *backuprecoveryv1.CommonOracleAppSourceConfigGranularRestoreInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.GranularityType != nil {
-		modelMap["granularity_type"] = model.GranularityType
-	}
-	if model.PdbRestoreParams != nil {
-		pdbRestoreParamsMap, err := dataSourceIbmRecoveryRecoverOracleGranularRestoreInfoPdbRestoreParamsToMap(model.PdbRestoreParams)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["pdb_restore_params"] = []map[string]interface{}{pdbRestoreParamsMap}
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryRecoverOracleGranularRestoreInfoPdbRestoreParamsToMap(model *backuprecoveryv1.RecoverOracleGranularRestoreInfoPdbRestoreParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DropDuplicatePDB != nil {
-		modelMap["drop_duplicate_pdb"] = model.DropDuplicatePDB
-	}
-	if model.PdbObjects != nil {
-		pdbObjects := []map[string]interface{}{}
-		for _, pdbObjectsItem := range model.PdbObjects {
-			pdbObjectsItemMap, err := dataSourceIbmRecoveryOraclePdbObjectInfoToMap(&pdbObjectsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			pdbObjects = append(pdbObjects, pdbObjectsItemMap)
-		}
-		modelMap["pdb_objects"] = pdbObjects
-	}
-	if model.RestoreToExistingCdb != nil {
-		modelMap["restore_to_existing_cdb"] = model.RestoreToExistingCdb
-	}
-	if model.RenamePdbMap != nil {
-		renamePdbMap := []map[string]interface{}{}
-		for _, renamePdbMapItem := range model.RenamePdbMap {
-			renamePdbMapItemMap, err := dataSourceIbmRecoveryKeyValuePairToMap(&renamePdbMapItem)
-			if err != nil {
-				return modelMap, err
-			}
-			renamePdbMap = append(renamePdbMap, renamePdbMapItemMap)
-		}
-		modelMap["rename_pdb_map"] = renamePdbMap
-	}
-	if model.IncludeInRestore != nil {
-		modelMap["include_in_restore"] = model.IncludeInRestore
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryOraclePdbObjectInfoToMap(model *backuprecoveryv1.OraclePdbObjectInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["db_id"] = model.DbID
-	modelMap["db_name"] = model.DbName
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleArchiveLogInfoToMap(model *backuprecoveryv1.CommonOracleAppSourceConfigOracleArchiveLogInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.RangeType != nil {
-		modelMap["range_type"] = model.RangeType
-	}
-	if model.RangeInfoVec != nil {
-		rangeInfoVec := []map[string]interface{}{}
-		for _, rangeInfoVecItem := range model.RangeInfoVec {
-			rangeInfoVecItemMap, err := dataSourceIbmRecoveryOracleRangeMetaInfoToMap(&rangeInfoVecItem)
-			if err != nil {
-				return modelMap, err
-			}
-			rangeInfoVec = append(rangeInfoVec, rangeInfoVecItemMap)
-		}
-		modelMap["range_info_vec"] = rangeInfoVec
-	}
-	if model.ArchiveLogRestoreDest != nil {
-		modelMap["archive_log_restore_dest"] = model.ArchiveLogRestoreDest
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryOracleRangeMetaInfoToMap(model *backuprecoveryv1.OracleRangeMetaInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.StartOfRange != nil {
-		modelMap["start_of_range"] = flex.IntValue(model.StartOfRange)
-	}
-	if model.EndOfRange != nil {
-		modelMap["end_of_range"] = flex.IntValue(model.EndOfRange)
-	}
-	if model.ProtectionGroupID != nil {
-		modelMap["protection_group_id"] = model.ProtectionGroupID
-	}
-	if model.ResetLogID != nil {
-		modelMap["reset_log_id"] = flex.IntValue(model.ResetLogID)
-	}
-	if model.IncarnationID != nil {
-		modelMap["incarnation_id"] = flex.IntValue(model.IncarnationID)
-	}
-	if model.ThreadID != nil {
-		modelMap["thread_id"] = flex.IntValue(model.ThreadID)
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleRecoveryValidationInfoToMap(model *backuprecoveryv1.CommonOracleAppSourceConfigOracleRecoveryValidationInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.CreateDummyInstance != nil {
-		modelMap["create_dummy_instance"] = model.CreateDummyInstance
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryCommonOracleAppSourceConfigRestoreSpfileOrPfileInfoToMap(model *backuprecoveryv1.CommonOracleAppSourceConfigRestoreSpfileOrPfileInfo) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ShouldRestoreSpfileOrPfile != nil {
-		modelMap["should_restore_spfile_or_pfile"] = model.ShouldRestoreSpfileOrPfile
-	}
-	if model.FileLocation != nil {
-		modelMap["file_location"] = model.FileLocation
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryRecoverOracleNewTargetDatabaseConfigRedoLogConfigToMap(model *backuprecoveryv1.RecoverOracleNewTargetDatabaseConfigRedoLogConfig) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.NumGroups != nil {
-		modelMap["num_groups"] = flex.IntValue(model.NumGroups)
-	}
-	if model.MemberPrefix != nil {
-		modelMap["member_prefix"] = model.MemberPrefix
-	}
-	if model.SizeMBytes != nil {
-		modelMap["size_m_bytes"] = flex.IntValue(model.SizeMBytes)
-	}
-	if model.GroupMembers != nil {
-		modelMap["group_members"] = model.GroupMembers
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryRecoverOracleNewTargetDatabaseConfigOracleUpdateRestoreOptionsToMap(model *backuprecoveryv1.RecoverOracleNewTargetDatabaseConfigOracleUpdateRestoreOptions) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.DelaySecs != nil {
-		modelMap["delay_secs"] = flex.IntValue(model.DelaySecs)
-	}
-	if model.TargetPathVec != nil {
-		modelMap["target_path_vec"] = model.TargetPathVec
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryRecoverOracleAppNewSourceConfigRecoverViewParamsToMap(model *backuprecoveryv1.RecoverOracleAppNewSourceConfigRecoverViewParams) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.RestoreTimeUsecs != nil {
-		modelMap["restore_time_usecs"] = flex.IntValue(model.RestoreTimeUsecs)
-	}
-	if model.DbChannels != nil {
-		dbChannels := []map[string]interface{}{}
-		for _, dbChannelsItem := range model.DbChannels {
-			dbChannelsItemMap, err := dataSourceIbmRecoveryOracleDbChannelToMap(&dbChannelsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			dbChannels = append(dbChannels, dbChannelsItemMap)
-		}
-		modelMap["db_channels"] = dbChannels
-	}
-	if model.RecoveryMode != nil {
-		modelMap["recovery_mode"] = model.RecoveryMode
-	}
-	if model.ShellEvironmentVars != nil {
-		shellEvironmentVars := []map[string]interface{}{}
-		for _, shellEvironmentVarsItem := range model.ShellEvironmentVars {
-			shellEvironmentVarsItemMap, err := dataSourceIbmRecoveryKeyValuePairToMap(&shellEvironmentVarsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			shellEvironmentVars = append(shellEvironmentVars, shellEvironmentVarsItemMap)
-		}
-		modelMap["shell_evironment_vars"] = shellEvironmentVars
-	}
-	if model.GranularRestoreInfo != nil {
-		granularRestoreInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigGranularRestoreInfoToMap(model.GranularRestoreInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["granular_restore_info"] = []map[string]interface{}{granularRestoreInfoMap}
-	}
-	if model.OracleArchiveLogInfo != nil {
-		oracleArchiveLogInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleArchiveLogInfoToMap(model.OracleArchiveLogInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_archive_log_info"] = []map[string]interface{}{oracleArchiveLogInfoMap}
-	}
-	if model.OracleRecoveryValidationInfo != nil {
-		oracleRecoveryValidationInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleRecoveryValidationInfoToMap(model.OracleRecoveryValidationInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_recovery_validation_info"] = []map[string]interface{}{oracleRecoveryValidationInfoMap}
-	}
-	if model.RestoreSpfileOrPfileInfo != nil {
-		restoreSpfileOrPfileInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigRestoreSpfileOrPfileInfoToMap(model.RestoreSpfileOrPfileInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["restore_spfile_or_pfile_info"] = []map[string]interface{}{restoreSpfileOrPfileInfoMap}
-	}
-	if model.UseScnForRestore != nil {
-		modelMap["use_scn_for_restore"] = model.UseScnForRestore
-	}
-	if model.ViewMountPath != nil {
-		modelMap["view_mount_path"] = model.ViewMountPath
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryCommonRecoverOracleAppTargetParamsOriginalSourceConfigToMap(model *backuprecoveryv1.CommonRecoverOracleAppTargetParamsOriginalSourceConfig) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.RestoreTimeUsecs != nil {
-		modelMap["restore_time_usecs"] = flex.IntValue(model.RestoreTimeUsecs)
-	}
-	if model.DbChannels != nil {
-		dbChannels := []map[string]interface{}{}
-		for _, dbChannelsItem := range model.DbChannels {
-			dbChannelsItemMap, err := dataSourceIbmRecoveryOracleDbChannelToMap(&dbChannelsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			dbChannels = append(dbChannels, dbChannelsItemMap)
-		}
-		modelMap["db_channels"] = dbChannels
-	}
-	if model.RecoveryMode != nil {
-		modelMap["recovery_mode"] = model.RecoveryMode
-	}
-	if model.ShellEvironmentVars != nil {
-		shellEvironmentVars := []map[string]interface{}{}
-		for _, shellEvironmentVarsItem := range model.ShellEvironmentVars {
-			shellEvironmentVarsItemMap, err := dataSourceIbmRecoveryKeyValuePairToMap(&shellEvironmentVarsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			shellEvironmentVars = append(shellEvironmentVars, shellEvironmentVarsItemMap)
-		}
-		modelMap["shell_evironment_vars"] = shellEvironmentVars
-	}
-	if model.GranularRestoreInfo != nil {
-		granularRestoreInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigGranularRestoreInfoToMap(model.GranularRestoreInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["granular_restore_info"] = []map[string]interface{}{granularRestoreInfoMap}
-	}
-	if model.OracleArchiveLogInfo != nil {
-		oracleArchiveLogInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleArchiveLogInfoToMap(model.OracleArchiveLogInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_archive_log_info"] = []map[string]interface{}{oracleArchiveLogInfoMap}
-	}
-	if model.OracleRecoveryValidationInfo != nil {
-		oracleRecoveryValidationInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigOracleRecoveryValidationInfoToMap(model.OracleRecoveryValidationInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["oracle_recovery_validation_info"] = []map[string]interface{}{oracleRecoveryValidationInfoMap}
-	}
-	if model.RestoreSpfileOrPfileInfo != nil {
-		restoreSpfileOrPfileInfoMap, err := dataSourceIbmRecoveryCommonOracleAppSourceConfigRestoreSpfileOrPfileInfoToMap(model.RestoreSpfileOrPfileInfo)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["restore_spfile_or_pfile_info"] = []map[string]interface{}{restoreSpfileOrPfileInfoMap}
-	}
-	if model.UseScnForRestore != nil {
-		modelMap["use_scn_for_restore"] = model.UseScnForRestore
-	}
-	if model.RollForwardLogPathVec != nil {
-		modelMap["roll_forward_log_path_vec"] = model.RollForwardLogPathVec
-	}
-	if model.AttemptCompleteRecovery != nil {
-		modelMap["attempt_complete_recovery"] = model.AttemptCompleteRecovery
-	}
-	if model.RollForwardTimeMsecs != nil {
-		modelMap["roll_forward_time_msecs"] = flex.IntValue(model.RollForwardTimeMsecs)
-	}
-	if model.StopActivePassive != nil {
-		modelMap["stop_active_passive"] = model.StopActivePassive
-	}
-	return modelMap, nil
-}
-
-func dataSourceIbmRecoveryRecoverOracleAppParamsVlanConfigToMap(model *backuprecoveryv1.RecoverOracleAppParamsVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmRecoveryRecoveryVlanConfigToMap(model *backuprecoveryv1.RecoveryVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.DisableVlan != nil {
-		modelMap["disable_vlan"] = model.DisableVlan
+		modelMap["disable_vlan"] = *model.DisableVlan
 	}
 	if model.InterfaceName != nil {
-		modelMap["interface_name"] = model.InterfaceName
+		modelMap["interface_name"] = *model.InterfaceName
 	}
 	return modelMap, nil
 }

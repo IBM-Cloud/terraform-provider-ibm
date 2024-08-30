@@ -89,6 +89,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
+	"github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
@@ -1378,21 +1379,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
-		// err := RefreshToken(sess.BluemixSession)
-		// if err != nil {
-		// 	for count := c.RetryCount; count >= 0; count-- {
-		// 		if err == nil || !isRetryable(err) {
-		// 			break
-		// 		}
-		// 		time.Sleep(c.RetryDelay)
-		// 		log.Printf("Retrying refresh token %d", count)
-		// 		err = RefreshToken(sess.BluemixSession)
-		// 	}
-		// 	if err != nil {
-		// 		return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
-		// 	}
-		// }
-
+		err := RefreshToken(sess.BluemixSession)
+		if err != nil {
+			for count := c.RetryCount; count >= 0; count-- {
+				if err == nil || !isRetryable(err) {
+					break
+				}
+				time.Sleep(c.RetryDelay)
+				log.Printf("Retrying refresh token %d", count)
+				err = RefreshToken(sess.BluemixSession)
+			}
+			if err != nil {
+				return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
+			}
+		}
 	}
 	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
@@ -3537,46 +3537,46 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 }
 
 func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
-	// config := sess.Config
+	config := sess.Config
 	user := UserConfig{}
-	// var bluemixToken string
+	var bluemixToken string
 
-	// if strings.HasPrefix(config.IAMAccessToken, "Bearer") {
-	// 	bluemixToken = config.IAMAccessToken[7:len(config.IAMAccessToken)]
-	// } else {
-	// 	bluemixToken = config.IAMAccessToken
-	// }
+	if strings.HasPrefix(config.IAMAccessToken, "Bearer") {
+		bluemixToken = config.IAMAccessToken[7:len(config.IAMAccessToken)]
+	} else {
+		bluemixToken = config.IAMAccessToken
+	}
 
-	// token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
-	// 	return "", nil
-	// })
-	// // TODO validate with key
-	// if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
-	// 	if retries > 0 {
-	// 		if config.BluemixAPIKey != "" {
-	// 			time.Sleep(retryDelay)
-	// 			log.Printf("Retrying authentication for user details %d", retries)
-	// 			_ = authenticateAPIKey(sess)
-	// 			return fetchUserDetails(sess, retries-1, retryDelay)
-	// 		}
-	// 	}
-	// 	return &user, err
-	// }
-	// claims := token.Claims.(jwt.MapClaims)
-	// if email, ok := claims["email"]; ok {
-	// 	user.UserEmail = email.(string)
-	// }
-	// user.UserID = claims["id"].(string)
-	// user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)
-	// iss := claims["iss"].(string)
-	// if strings.Contains(iss, "https://iam.cloud.ibm.com") {
-	// 	user.CloudName = "bluemix"
-	// } else {
-	// 	user.CloudName = "staging"
-	// }
-	// user.cloudType = "public"
+	token, err := jwt.Parse(bluemixToken, func(token *jwt.Token) (interface{}, error) {
+		return "", nil
+	})
+	// TODO validate with key
+	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
+		if retries > 0 {
+			if config.BluemixAPIKey != "" {
+				time.Sleep(retryDelay)
+				log.Printf("Retrying authentication for user details %d", retries)
+				_ = authenticateAPIKey(sess)
+				return fetchUserDetails(sess, retries-1, retryDelay)
+			}
+		}
+		return &user, err
+	}
+	claims := token.Claims.(jwt.MapClaims)
+	if email, ok := claims["email"]; ok {
+		user.UserEmail = email.(string)
+	}
+	user.UserID = claims["id"].(string)
+	user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)
+	iss := claims["iss"].(string)
+	if strings.Contains(iss, "https://iam.cloud.ibm.com") {
+		user.CloudName = "bluemix"
+	} else {
+		user.CloudName = "staging"
+	}
+	user.cloudType = "public"
 
-	// user.generation = 2
+	user.generation = 2
 	return &user, nil
 }
 
