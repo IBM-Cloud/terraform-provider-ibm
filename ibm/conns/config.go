@@ -89,7 +89,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
