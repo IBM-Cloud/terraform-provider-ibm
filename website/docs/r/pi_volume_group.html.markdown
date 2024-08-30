@@ -67,7 +67,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_description_errors`:
   - `key` - (String) The volume group error key.
   - `message` - (String) The failure message providing more details about the error key.
-  - `volume_id` - (List of String) List of volume IDs, which failed to be added to or removed from the volume group, with the given error.
+  - `volume_ids` - (List of String) List of volume IDs, which failed to be added to or removed from the volume group, with the given error.
 - `volume_group_id` - (String) The unique identifier of the volume group.
 - `volume_group_status` - (String) The status of the volume group.
 
