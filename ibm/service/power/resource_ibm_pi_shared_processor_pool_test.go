@@ -38,6 +38,7 @@ func TestAccIBMPISPPbasic(t *testing.T) {
 	})
 }
 
+// Not currently used. GET requests do not yet return UserTags.
 func TestAccIBMPISPPusertags(t *testing.T) {
 	name := fmt.Sprintf("tf_pi_spp_%d", acctest.RandIntRange(10, 100))
 	sppRes := "ibm_pi_shared_processor_pool.power_shared_processor_pool"
