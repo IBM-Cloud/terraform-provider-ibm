@@ -3465,7 +3465,7 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if c.IAMTrustedProfileID == "" && (c.IAMToken == "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
+	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
 	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
@@ -3476,8 +3476,8 @@ func newSession(c *Config) (*Session, error) {
 		log.Println("Configuring IBM Cloud Session with token")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
-			IAMAccessToken: c.IAMToken,
-			// IAMRefreshToken: c.IAMRefreshToken,
+			IAMAccessToken:  c.IAMToken,
+			IAMRefreshToken: c.IAMRefreshToken,
 			// Comment out debug mode for v0.12
 			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
