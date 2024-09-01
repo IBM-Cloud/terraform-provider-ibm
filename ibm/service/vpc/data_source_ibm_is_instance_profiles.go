@@ -36,6 +36,59 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "The product family this virtual server instance profile belongs to.",
 						},
+						"confidential_compute_modes": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default confidential compute mode for this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The supported confidential compute modes.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+
+						"secure_boot_modes": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The default secure boot mode for this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The supported `enable_secure_boot` values for an instance using this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeBool,
+										},
+									},
+								},
+							},
+						},
 						"architecture": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -752,6 +805,26 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 		if profile.Href != nil {
 			l["href"] = profile.Href
 		}
+		confidentialComputeModes := []map[string]interface{}{}
+		if profile.ConfidentialComputeModes != nil {
+			modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedConfidentialComputeModesToMap(profile.ConfidentialComputeModes)
+			if err != nil {
+				return (err)
+			}
+			confidentialComputeModes = append(confidentialComputeModes, modelMap)
+		}
+		l["confidential_compute_modes"] = confidentialComputeModes
+
+		secureBootModes := []map[string]interface{}{}
+		if profile.SecureBootModes != nil {
+			modelMap, err := dataSourceIBMIsInstanceProfileInstanceProfileSupportedSecureBootModesToMap(profile.SecureBootModes)
+			if err != nil {
+				return err
+			}
+			secureBootModes = append(secureBootModes, modelMap)
+		}
+		l["secure_boot_modes"] = secureBootModes
+
 		if profile.Memory != nil {
 			memoryList := []map[string]interface{}{}
 			memoryMap := dataSourceInstanceProfileMemoryToMap(*profile.Memory.(*vpcv1.InstanceProfileMemory))

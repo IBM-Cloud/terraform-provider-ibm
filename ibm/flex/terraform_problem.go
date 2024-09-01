@@ -3,6 +3,7 @@ package flex
 import (
 	"errors"
 	"fmt"
+
 	v "github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,11 +67,22 @@ func (e *TerraformProblem) GetDiag() diag.Diagnostics {
 	return diag.Errorf("%s", e.GetConsoleMessage())
 }
 
-// TerraformErrorf creates and returns a new instance
-// of `TerraformProblem` with "error" level severity.
+// TerraformErrorf creates and returns a new instance of `TerraformProblem`
+// with "error" level severity and a blank discriminator - the "caused by"
+// error is used to ensure uniqueness. This is a convenience function to
+// use when creating a new TerraformProblem instance from an error that
+// came from the SDK.
 func TerraformErrorf(err error, summary, resource, operation string) *TerraformProblem {
+	return DiscriminatedTerraformErrorf(err, summary, resource, operation, "")
+}
+
+// DiscriminatedTerraformErrorf creates and returns a new instance
+// of `TerraformProblem` with "error" level severity that contains
+// a discriminator used to make the instance unique relative to
+// other problem scenarios in the same resource/operation.
+func DiscriminatedTerraformErrorf(err error, summary, resource, operation, discriminator string) *TerraformProblem {
 	return &TerraformProblem{
-		IBMProblem: core.IBMErrorf(err, getComponentInfo(), summary, ""),
+		IBMProblem: core.IBMErrorf(err, getComponentInfo(), summary, discriminator),
 		Resource:   resource,
 		Operation:  operation,
 	}
@@ -81,13 +93,14 @@ func getComponentInfo() *core.ProblemComponent {
 }
 
 // FmtErrorf wraps `fmt.Errorf(format string, a ...interface{}) error`
-// and checks for the instance of a "Problem" type. If it finds one,
-// the Problem instance needs to be returned instead of wrapped by
-// `fmt.Errorf`.
+// and attempts to return a TerraformProblem instance instead of a
+// plain error instance, if an error object is found among the arguments
 func FmtErrorf(format string, a ...interface{}) error {
+	intendedError := fmt.Errorf(format, a...)
+
+	var err error
 	for _, arg := range a {
 		// Look for an error instance among the arguments.
-		var err error
 
 		if errArg, ok := arg.(error); ok {
 			err = errArg
@@ -98,12 +111,15 @@ func FmtErrorf(format string, a ...interface{}) error {
 		}
 
 		if err != nil {
-			var problem core.Problem
-			if errors.As(err, &problem) {
-				return problem
+			var tfError *TerraformProblem
+			if !errors.As(err, &tfError) {
+				tfError = TerraformErrorf(err, err.Error(), "", "")
 			}
+
+			tfError.Summary = intendedError.Error()
+			return tfError
 		}
 	}
 
-	return fmt.Errorf(format, a...)
+	return intendedError
 }

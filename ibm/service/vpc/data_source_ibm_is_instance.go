@@ -62,7 +62,16 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Required:    true,
 				Description: "Instance name",
 			},
-
+			"confidential_compute_mode": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.",
+			},
+			"enable_secure_boot": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
+			},
 			isInstanceMetadataServiceEnabled: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -271,6 +280,25 @@ func DataSourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Identifies a version of a catalog offering by a unique CRN property",
+						},
+						isInstanceCatalogOfferingPlanCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this catalog offering version's billing plan",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -522,6 +550,40 @@ func DataSourceIBMISInstance() *schema.Resource {
 								},
 							},
 						},
+						"virtual_network_interface": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The virtual network interface for this instance network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this virtual network interface.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this virtual network interface.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this virtual network interface.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -723,6 +785,40 @@ func DataSourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"virtual_network_interface": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The virtual network interface for this instance network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this virtual network interface.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this virtual network interface.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this virtual network interface.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -1097,6 +1193,14 @@ func DataSourceIBMISInstance() *schema.Resource {
 	}
 }
 
+func resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(catalogOfferingVersionPlanReferenceDeleted vpcv1.CatalogOfferingVersionPlanReferenceDeleted) map[string]interface{} {
+	catalogOfferingVersionPlanReferenceDeletedMap := map[string]interface{}{}
+
+	catalogOfferingVersionPlanReferenceDeletedMap["more_info"] = catalogOfferingVersionPlanReferenceDeleted.MoreInfo
+
+	return catalogOfferingVersionPlanReferenceDeletedMap
+}
+
 func dataSourceIBMISInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	name := d.Get(isInstanceName).(string)
@@ -1136,6 +1240,15 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		catalogList := make([]map[string]interface{}, 0)
 		catalogMap := map[string]interface{}{}
 		catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+		if instance.CatalogOffering.Plan != nil {
+			if instance.CatalogOffering.Plan.CRN != nil && *instance.CatalogOffering.Plan.CRN != "" {
+				catalogMap[isInstanceCatalogOfferingPlanCrn] = *instance.CatalogOffering.Plan.CRN
+			}
+			if instance.CatalogOffering.Plan.Deleted != nil {
+				deletedMap := resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(*instance.CatalogOffering.Plan.Deleted)
+				catalogMap["deleted"] = []map[string]interface{}{deletedMap}
+			}
+		}
 		catalogList = append(catalogList, catalogMap)
 		d.Set(isInstanceCatalogOffering, catalogList)
 	}
@@ -1262,6 +1375,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		primaryNicList = append(primaryNicList, currentPrimNic)
 		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
+	if err = d.Set("confidential_compute_mode", instance.ConfidentialComputeMode); err != nil {
+		return fmt.Errorf("Error setting confidential_compute_mode: %s", err)
+	}
 	primaryNetworkAttachment := []map[string]interface{}{}
 	if instance.PrimaryNetworkAttachment != nil {
 		modelMap, err := dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(instance.PrimaryNetworkAttachment)
@@ -1274,6 +1390,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		return fmt.Errorf("Error setting primary_network_attachment %s", err)
 	}
 
+	if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
+		return fmt.Errorf("Error setting enable_secure_boot: %s", err)
+	}
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
 		for _, intfc := range instance.NetworkInterfaces {
@@ -1696,6 +1815,21 @@ func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1
 		return modelMap, err
 	}
 	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	virtualNetworkInterfaceMap, err := dataSourceIBMIsInstanceVirtualNetworkInterfaceReferenceAttachmentContextToMap(model.VirtualNetworkInterface)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["virtual_network_interface"] = []map[string]interface{}{virtualNetworkInterfaceMap}
+	return modelMap, nil
+}
+
+func dataSourceIBMIsInstanceVirtualNetworkInterfaceReferenceAttachmentContextToMap(model *vpcv1.VirtualNetworkInterfaceReferenceAttachmentContext) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["crn"] = model.CRN
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	modelMap["resource_type"] = model.ResourceType
 	return modelMap, nil
 }
 func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model *vpcv1.InstanceNetworkAttachmentReferenceDeleted) (map[string]interface{}, error) {

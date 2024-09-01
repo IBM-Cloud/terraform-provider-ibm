@@ -172,6 +172,13 @@ func ResourceIBMIsBareMetalServerNetworkAttachment() *schema.Resource {
 							ValidateFunc:  validate.InvokeValidator("ibm_is_virtual_network_interface", "vni_name"),
 							Description:   "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 						},
+						"protocol_state_filtering_mode": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_virtual_network_interface", "protocol_state_filtering_mode"),
+							Description:  "The protocol state filtering mode used for this virtual network interface.",
+						},
 						"primary_ip": &schema.Schema{
 							Type:          schema.TypeList,
 							Optional:      true,
@@ -933,6 +940,10 @@ func resourceIBMIsBareMetalServerNetworkAttachmentUpdate(context context.Context
 				return diag.FromErr(fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response))
 			}
 		}
+		if d.HasChange("virtual_network_interface.0.protocol_state_filtering_mode") {
+			psfMode := d.Get("virtual_network_interface.0.protocol_state_filtering_mode").(string)
+			virtualNetworkInterfacePatch.ProtocolStateFilteringMode = &psfMode
+		}
 		if d.HasChange("virtual_network_interface.0.security_groups") {
 			ovs, nvs := d.GetChange("virtual_network_interface.0.security_groups")
 			ov := ovs.(*schema.Set)
@@ -1081,6 +1092,11 @@ func resourceIBMIsBareMetalServerNetworkAttachmentMapToBareMetalServerNetworkAtt
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
+	if modelMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
+			model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		}
+	}
 	if modelMap["primary_ip"] != nil && len(modelMap["primary_ip"].([]interface{})) > 0 {
 		PrimaryIPModel, err := resourceIBMIsBareMetalServerNetworkAttachmentMapToVirtualNetworkInterfacePrimaryIPPrototype(modelMap["primary_ip"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -1188,6 +1204,7 @@ func resourceIBMIsBareMetalServerNetworkAttachmentVirtualNetworkInterfaceReferen
 	modelMap["auto_delete"] = vniDetails.AutoDelete
 	modelMap["enable_infrastructure_nat"] = vniDetails.EnableInfrastructureNat
 	modelMap["resource_group"] = vniDetails.ResourceGroup.ID
+	modelMap["protocol_state_filtering_mode"] = vniDetails.ProtocolStateFilteringMode
 	primaryipId := *vniDetails.PrimaryIP.ID
 	if !core.IsNil(vniDetails.Ips) {
 		ips := []map[string]interface{}{}

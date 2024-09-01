@@ -1,4 +1,4 @@
-Activity Tracker
+Activity Tracker Event Routing
 API Gateway
 App ID Management
 App Configuration
@@ -25,9 +25,11 @@ Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
+Logs Routing
 Metrics Router
 MQ on Cloud
 Object Storage
+Partner Center Sell
 Power Systems
 Privileged Access Gateway
 Project

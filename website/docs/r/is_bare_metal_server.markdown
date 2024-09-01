@@ -7,7 +7,7 @@ description: |-
   Manages IBM bare metal sever.
 ---
 
-# ibm\_is_bare_metal_server
+# ibm_is_bare_metal_server
 
 Create, update, or delete a Bare Metal Server for VPC. For more information, about managing VPC Bare Metal Server, see [About Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-bare-metal-servers).
 
@@ -98,6 +98,27 @@ resource "ibm_is_bare_metal_server" "bms" {
 
 ```
 
+### Create bare metal server with bandwidth
+```terraform
+resource "ibm_is_bare_metal_server" "bms" {
+  bandwidth = 25000
+  profile = "bx3-metal-48x256"
+  name    = "example-bms"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.example.id]
+  primary_network_attachment {
+    name = "test-vni-100-102"
+    virtual_network_interface { 
+      id = ibm_is_virtual_network_interface.testacc_vni.id
+    }
+    allowed_vlans = [100, 102]
+  }
+  vpc   = ibm_is_vpc.example.id
+}
+
+```
+
 ## Timeouts
 
 ibm_is_bare-metal_server provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
@@ -117,14 +138,23 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces. The specified value must match one of the bandwidth values in the bare metal server's profile.
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
-- `image` - (Required, String) ID of the image.
-- `keys` - (Required, List) Comma separated IDs of ssh keys.  
+- `image` - (Required, String) ID of the image. ( On update of `image`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
+
+  -> **NOTE:**
+    To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+
+- `keys` - (Required, List) Comma separated IDs of ssh keys. ( On update of `keys`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
 
   ~> **Note:**
   **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
   **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
+
+  -> **NOTE:**
+    To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+
 - `name` - (Optional, String) The bare metal server name.
 
   -> **NOTE:**
@@ -161,6 +191,12 @@ Review the argument references that you can specify for your resource.
       - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
       - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
       - `resource_type` - (Computed, String) The resource type.
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
     - `resource_group` - (Optional, List) The resource group id for this virtual network interface.
     - `security_groups` - (Optional, Array of string) The security group ids list for this virtual network interface.
     - `subnet` - (Optional, List) The associated subnet id.
@@ -217,6 +253,12 @@ Review the argument references that you can specify for your resource.
       - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
       - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
       - `resource_type` - (Computed, String) The resource type.
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
+
+        ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+            **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+            **&#x2022;** instance_network_attachment: enabled </br>
+            **&#x2022;** share_mount_target: enabled </br>
     - `resource_group` - (Optional, List) The resource group id for this virtual network interface.
     - `security_groups` - (Optional, Array of string) The security group ids list for this virtual network interface.
     - `subnet` - (Optional, List) The associated subnet id.
@@ -253,7 +295,11 @@ Review the argument references that you can specify for your resource.
   
     - `mode` - (Optional, String) The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes. Updating trusted_platform_module mode would require the server to be stopped then started again.
       - Constraints: Allowable values are: `disabled`, `tpm_2`.
-- `user_data` - (Optional, String) User data to transfer to the server bare metal server.
+- `user_data` - (Optional, String) User data to transfer to the server bare metal server. (On update of `user_data`, server will be [reinitialized](https://cloud.ibm.com/apidocs/vpc/latest#replace-bare-metal-server-initialization) if server is in stopped state, else server will be stopped and restarted during update )
+
+  -> **NOTE:**
+    To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+
 - `vpc` - (Required, Forces new resource, String) The VPC ID of the bare metal server is to be a part of. It must match the VPC tied to the subnets of the server's network interfaces.
 - `zone` - (Required, Forces new resource, String) Name of the zone in which this bare metal server will reside in.
 
@@ -294,6 +340,8 @@ In addition to all argument reference list, you can access the following attribu
     - `vlan` -  (Integer) Indicates the 802.1Q VLAN ID tag that must be used for all traffic on this interface. [ conflicts with `allowed_vlans`]
 
 - `resource_type` - (String) The type of resource.
+- `firmware_update_type_available` - (String) The firmware update type available for the bare metal server.
+  -> **Supported firmware update types** </br>&#x2022; none </br>&#x2022; optional </br>&#x2022; required
 - `status` - (String) The status of the bare metal server.
 
   -> **Supported Status** &#x2022; failed </br>&#x2022; pending </br>&#x2022; restarting </br>&#x2022; running </br>&#x2022; starting </br>&#x2022; stopped </br>&#x2022; stopping

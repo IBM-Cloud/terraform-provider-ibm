@@ -37,6 +37,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The custom deployment type.",
 				Type:        schema.TypeString,
 			},
+			Attr_Fault: {
+				Computed:    true,
+				Description: "Fault information.",
+				Type:        schema.TypeMap,
+			},
 			Attr_HealthStatus: {
 				Computed:    true,
 				Description: "The health of the instance.",
@@ -64,6 +69,7 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value.",
 				Type:        schema.TypeInt,
 			},
@@ -119,6 +125,12 @@ func DataSourceIBMPIInstance() *schema.Resource {
 						},
 						Attr_MacAddress: {
 							Computed:    true,
+							Description: "The MAC address of the instance.",
+							Type:        schema.TypeString,
+						},
+						Attr_Macaddress: {
+							Computed:    true,
+							Deprecated:  "Deprecated, use mac_address instead",
 							Description: "The MAC address of the instance.",
 							Type:        schema.TypeString,
 						},
@@ -267,6 +279,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		} else {
 			d.Set(Attr_IBMiRDSUsers, 0)
 		}
+	}
+	if powervmdata.Fault != nil {
+		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
 	}
 
 	return nil

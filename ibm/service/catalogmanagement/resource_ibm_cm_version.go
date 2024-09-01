@@ -827,6 +827,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"required_resources": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "Resource requirments for installation.",
 				Elem: &schema.Resource{
@@ -1730,7 +1731,9 @@ func ResourceIBMCmVersion() *schema.Resource {
 func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	importOfferingVersionOptions := &catalogmanagementv1.ImportOfferingVersionOptions{}
@@ -1767,14 +1770,18 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("flavor"); ok {
 		flavorModel, err := resourceIBMCmVersionMapToFlavor(d.Get("flavor.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		importOfferingVersionOptions.SetFlavor(flavorModel)
 	}
 	if _, ok := d.GetOk("import_metadata"); ok {
 		metadataModel, err := resourceIBMCmVersionMapToImportOfferingBodyMetadata(d.Get("import_metadata.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		importOfferingVersionOptions.SetMetadata(metadataModel)
 	}
@@ -1814,20 +1821,23 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetOfferingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetOfferingWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	offering, response, err := catalogManagementClient.ImportOfferingVersionWithContext(context, importOfferingVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ImportOfferingVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ImportOfferingVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ImportOfferingVersionWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	activeVersion, err := getVersionFromOffering(oldOffering, offering)
 	if err != nil {
-		log.Printf("[DEBUG] getVersionFromOffering failed %s\n", err)
-		return diag.FromErr(fmt.Errorf("getVersionFromOffering failed %s\n", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getVersionFromOffering failed %s\n%s", err, response), "ibm_cm_version", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *offering.CatalogID, *activeVersion.ID))
@@ -1886,7 +1896,9 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/configuration", pathToVersion)
 		configurations, err := configurationToProperFormat(d.Get("configuration").([]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version create \"configuration\" %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -1908,6 +1920,22 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Op:    &method,
 			Path:  &path,
 			Value: d.Get("iam_permissions"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("required_resources"); ok {
+		var method string
+		if activeVersion.RequiredResources == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/required_resources", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("required_resources"),
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -1970,7 +1998,9 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
 		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version create \"solution_info\" %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -2016,8 +2046,9 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	if hasChange {
 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -2027,7 +2058,9 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getVersionOptions := &catalogmanagementv1.GetVersionOptions{}
@@ -2040,33 +2073,46 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVersionWithContext failed %s\n%s", err, response), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	version := offering.Kinds[0].Versions[0]
 
 	if err = d.Set("offering_identifier", version.OfferingID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting offering_identifier: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting offering_identifier: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if version.Tags != nil {
 		if err = d.Set("tags", version.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("sha", version.Sha); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting sha: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting sha: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("version", version.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting version: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if version.Flavor != nil {
 		flavorMap, err := resourceIBMCmVersionFlavorToMap(version.Flavor)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if err = d.Set("flavor", []map[string]interface{}{flavorMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting flavor: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting flavor: %s", err), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	metadata := []map[string]interface{}{}
@@ -2075,7 +2121,9 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 		if version.Metadata["vsi_vpc"] != nil {
 			modelMapVSI, err = dataSourceIBMCmVersionMetadataVSIToMap(version.Metadata["vsi_vpc"].(map[string]interface{}))
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		convertedMap := make(map[string]interface{}, len(version.Metadata))
@@ -2089,81 +2137,117 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 		metadata = append(metadata, convertedMap)
 	}
 	if err = d.Set("metadata", metadata); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting metadata %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting metadata: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("rev", version.Rev); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting rev: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("crn", version.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("created", flex.DateTimeToString(version.Created)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated", flex.DateTimeToString(version.Updated)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("catalog_id", version.CatalogID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting catalog_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting catalog_id: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("kind_id", version.KindID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting kind_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting kind_id: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("repo_url", version.RepoURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting repo_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting repo_url: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("source_url", version.SourceURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting source_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting source_url: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("tgz_url", version.TgzURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tgz_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting tgz_url: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	configuration := []map[string]interface{}{}
 	if version.Configuration != nil {
 		for _, configurationItem := range version.Configuration {
 			configurationItemMap, err := resourceIBMCmVersionConfigurationToMap(&configurationItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			configuration = append(configuration, configurationItemMap)
 		}
 	}
 	if err = d.Set("configuration", configuration); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting configuration: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting configuration: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	outputs := []map[string]interface{}{}
 	if version.Outputs != nil {
 		for _, outputsItem := range version.Outputs {
 			outputsItemMap, err := resourceIBMCmVersionOutputToMap(&outputsItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			outputs = append(outputs, outputsItemMap)
 		}
 	}
 	if err = d.Set("outputs", outputs); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting outputs: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting outputs: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	iamPermissions := []map[string]interface{}{}
 	if version.IamPermissions != nil {
 		for _, iamPermissionsItem := range version.IamPermissions {
 			iamPermissionsItemMap, err := resourceIBMCmVersionIamPermissionToMap(&iamPermissionsItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			iamPermissions = append(iamPermissions, iamPermissionsItemMap)
 		}
 	}
 	if err = d.Set("iam_permissions", iamPermissions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting iam_permissions: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting iam_permissions: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if version.Validation != nil {
 		validationMap, err := resourceIBMCmVersionValidationToMap(version.Validation)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if err = d.Set("validation", []map[string]interface{}{validationMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting validation: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting validation: %s", err), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	requiredResources := []map[string]interface{}{}
@@ -2171,47 +2255,65 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 		for _, requiredResourcesItem := range version.RequiredResources {
 			requiredResourcesItemMap, err := resourceIBMCmVersionResourceToMap(&requiredResourcesItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			requiredResources = append(requiredResources, requiredResourcesItemMap)
 		}
 	}
 	if err = d.Set("required_resources", requiredResources); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting required_resources: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting required_resources: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("single_instance", version.SingleInstance); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting single_instance: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting single_instance: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	installMap := make(map[string]interface{})
 	if version.Install != nil {
 		installMap, err = resourceIBMCmVersionScriptToMap(version.Install)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("install", []map[string]interface{}{installMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting install: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting install: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	preInstall := []map[string]interface{}{}
 	if version.PreInstall != nil {
 		for _, preInstallItem := range version.PreInstall {
 			preInstallItemMap, err := resourceIBMCmVersionScriptToMap(&preInstallItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			preInstall = append(preInstall, preInstallItemMap)
 		}
 	}
 	if err = d.Set("pre_install", preInstall); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting pre_install: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting pre_install: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if version.Entitlement != nil {
 		entitlementMap, err := resourceIBMCmVersionVersionEntitlementToMap(version.Entitlement)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if err = d.Set("entitlement", []map[string]interface{}{entitlementMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting entitlement: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting entitlement: %s", err), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	licenses := []map[string]interface{}{}
@@ -2219,68 +2321,102 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 		for _, licensesItem := range version.Licenses {
 			licensesItemMap, err := resourceIBMCmVersionLicenseToMap(&licensesItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			licenses = append(licenses, licensesItemMap)
 		}
 	}
 	if err = d.Set("licenses", licenses); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting licenses: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting licenses: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("image_manifest_url", version.ImageManifestURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting image_manifest_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting image_manifest_url: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("deprecated", version.Deprecated); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting deprecated: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deprecated: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("package_version", version.PackageVersion); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting package_version: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting package_version: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if version.State != nil {
 		stateMap, err := resourceIBMCmVersionStateToMap(version.State)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if err = d.Set("state", []map[string]interface{}{stateMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state: %s", err), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("version_locator", version.VersionLocator); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version_locator: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting version_locator: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("long_description", version.LongDescription); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting long_description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting long_description: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("long_description_i18n", version.LongDescriptionI18n); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting long_description_i18n: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting long_description_i18n: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("image_pull_key_name", version.ImagePullKeyName); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting image_pull_key_name: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting image_pull_key_name: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	deprecatePendingMap := make(map[string]interface{})
 	if version.DeprecatePending != nil {
 		deprecatePendingMap, err = resourceIBMCmVersionDeprecatePendingToMap(version.DeprecatePending)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("deprecate_pending", []map[string]interface{}{deprecatePendingMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting deprecate_pending: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deprecate_pending: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if version.SolutionInfo != nil {
 		solutionInfoMap, err := resourceIBMCmVersionSolutionInfoToMap(version.SolutionInfo)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if err = d.Set("solution_info", []map[string]interface{}{solutionInfoMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting solution_info: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting solution_info: %s", err), "ibm_cm_version", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("is_consumable", version.IsConsumable); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_consumable: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting is_consumable: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("version_id", version.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting version_id: %s", err), "ibm_cm_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
@@ -2289,7 +2425,9 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	mk := fmt.Sprintf("%s.%s", d.Get("catalog_id").(string), d.Get("offering_id").(string))
@@ -2305,8 +2443,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVersionWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	activeVersion := partialOffering.Kinds[0].Versions[0]
 
@@ -2320,8 +2459,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetOfferingWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetOfferingWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
@@ -2394,7 +2534,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/configuration", pathToVersion)
 		configurations, err := configurationToProperFormat(d.Get("configuration").([]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version create \"configuration\" %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -2416,6 +2558,22 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Op:    &method,
 			Path:  &path,
 			Value: d.Get("iam_permissions"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("required_resources") {
+		var method string
+		if activeVersion.RequiredResources == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/required_resources", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("required_resources"),
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
@@ -2478,7 +2636,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 		path := fmt.Sprintf("%s/solution_info", pathToVersion)
 		solutionInfoMap, err := solutionInfoToProperFormatMap(d.Get("solution_info.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update solution_info %s\n", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		update := catalogmanagementv1.JSONPatchOperation{
 			Op:    &method,
@@ -2508,8 +2668,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 	if hasChange {
 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed in ibm_cm_version update %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -2520,8 +2681,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 
 		response, err := catalogManagementClient.SetDeprecateVersionWithContext(context, setDeprecateVersionOptions)
 		if err != nil {
-			log.Printf("[DEBUG] SetDeprecateVersionWithContext failed in ibm_cm_version  %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("SetDeprecateVersionWithContext failed trying to deprecate version - %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetDeprecateVersionWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -2531,7 +2693,9 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 func resourceIBMCmVersionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_version", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	mk := fmt.Sprintf("%s.%s", d.Get("catalog_id").(string), d.Get("offering_id").(string))
@@ -2544,8 +2708,9 @@ func resourceIBMCmVersionDelete(context context.Context, d *schema.ResourceData,
 
 	response, err := catalogManagementClient.DeleteVersionWithContext(context, deleteVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteVersionWithContext failed %s\n%s", err, response), "ibm_cm_version", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -2804,7 +2969,7 @@ func resourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configura
 	if model.DefaultValue != nil {
 		defaultValueJson, err := json.Marshal(model.DefaultValue)
 		if err != nil {
-			return nil, fmt.Errorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
+			return nil, flex.FmtErrorf("[ERROR] Error marshalling the version configuration default_value: %s", err)
 		}
 		defaultValueString, _ := strconv.Unquote(string(defaultValueJson))
 		modelMap["default_value"] = defaultValueString
@@ -3402,5 +3567,5 @@ func getVersionFromOffering(oldOffering *catalogmanagementv1.Offering, newOfferi
 			return &newVer, nil
 		}
 	}
-	return nil, fmt.Errorf("error finding imported version")
+	return nil, flex.FmtErrorf("error finding imported version")
 }

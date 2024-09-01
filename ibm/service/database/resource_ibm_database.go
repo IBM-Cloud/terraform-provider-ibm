@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -348,88 +347,6 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
-			"connectionstrings": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Description: "User name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"composed": {
-							Description: "Connection string",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"scheme": {
-							Description: "DB scheme",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"certname": {
-							Description: "Certificate Name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"certbase64": {
-							Description: "Certificate in base64 encoding",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"bundlename": {
-							Description: "Cassandra Bundle Name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"bundlebase64": {
-							Description: "Cassandra base64 encoding",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"password": {
-							Description: "Password",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"queryoptions": {
-							Description: "DB query options",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"database": {
-							Description: "DB name",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"path": {
-							Description: "DB path",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"hosts": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"hostname": {
-										Description: "DB host name",
-										Type:        schema.TypeString,
-										Computed:    true,
-									},
-									"port": {
-										Description: "DB port",
-										Type:        schema.TypeString,
-										Computed:    true,
-									},
-								},
-							},
-						},
-					},
-				},
-				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
-			},
 			"allowlist": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -544,6 +461,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									"id": {
 										Type:     schema.TypeString,
 										Required: true,
+										ValidateFunc: validation.StringInSlice([]string{
+											"multitenant",
+											"b3c.4x16.encrypted",
+											"b3c.8x32.encrypted",
+											"m3c.8x64.encrypted",
+											"b3c.16x64.encrypted",
+											"b3c.32x128.encrypted",
+											"m3c.30x240.encrypted"}, false),
 									},
 								},
 							},
@@ -947,7 +872,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -968,7 +893,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "group_id",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "member, analytics, bi_connector, search",
+			AllowedValues:              "member, analytics, bi_connector",
 			Required:                   true})
 
 	ibmICDResourceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
@@ -1033,10 +958,6 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 
 	service := match[1]
 
-	if service == "cassandra" {
-		service = "datastax_enterprise_full"
-	}
-
 	if service == "mongodb" && _plan == "enterprise" {
 		service = "mongodbee"
 	}
@@ -1054,8 +975,11 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 		getDefaultScalingGroupsOptions.SetHostFlavor(_hostFlavor)
 	}
 
-	getDefaultScalingGroupsResponse, _, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
+	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
 	if err != nil {
+		if response.StatusCode == 422 {
+			return groups, fmt.Errorf("%s is not available on multitenant", service)
+		}
 		return groups, err
 	}
 
@@ -1632,7 +1556,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 
 	instanceID := d.Id()
-	connectionEndpoint := "public"
 	rsInst := rc.GetResourceInstanceOptions{
 		ID: &instanceID,
 	}
@@ -1671,9 +1594,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 
 	if instance.Parameters != nil {
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
-			if endpoint == "private" {
-				connectionEndpoint = "private"
-			}
 			d.Set("service_endpoints", endpoint)
 		}
 
@@ -1758,7 +1678,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 
 	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s\n Hint: Check if there is a mismatch between your database location and IBMCLOUD_REGION", err))
 	}
 	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
@@ -1774,7 +1694,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
-	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
 	tfusers := d.Get("users").(*schema.Set)
 	users := flex.ExpandUsers(tfusers)
@@ -1782,15 +1701,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		UserName: deployment.AdminUsernames["database"],
 	}
 	users = append(users, user)
-	for _, user := range users {
-		userName := user.UserName
-		csEntry, err := getConnectionString(d, userName, connectionEndpoint, meta)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting user connection string for user (%s): %s", userName, err))
-		}
-		connectionStrings = append(connectionStrings, csEntry)
-	}
-	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
 
 	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
 		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
@@ -1806,7 +1716,14 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting the database configuration schema: %s", err))
 		}
 	}
+
+	// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
+	if groupList.Groups[0].HostFlavor == nil && (groupList.Groups[0].CPU != nil && *groupList.Groups[0].CPU.AllocationCount == 0) {
+		return appendSwitchoverWarning()
+	}
+
 	return nil
+
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2214,85 +2131,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
-}
-
-func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (flex.CsEntry, error) {
-	csEntry := flex.CsEntry{}
-	icdClient, err := meta.(conns.ClientSession).ICDAPI()
-	if err != nil {
-		return csEntry, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
-	icdId := d.Id()
-	connection, err := icdClient.Connections().GetConnection(icdId, userName, connectionEndpoint)
-	if err != nil {
-		return csEntry, fmt.Errorf("[ERROR] Error getting database user connection string via ICD API: %s", err)
-	}
-
-	service := d.Get("service")
-	dbConnection := icdv4.Uri{}
-	var cassandraConnection icdv4.CassandraUri
-
-	switch service {
-	case "databases-for-postgresql":
-		dbConnection = connection.Postgres
-	case "databases-for-redis":
-		dbConnection = connection.Rediss
-	case "databases-for-mongodb":
-		dbConnection = connection.Mongo
-	case "databases-for-mysql":
-		dbConnection = connection.Mysql
-	case "databases-for-elasticsearch":
-		dbConnection = connection.Https
-	case "databases-for-cassandra":
-		cassandraConnection = connection.Secure
-	case "databases-for-etcd":
-		dbConnection = connection.Grpc
-	case "messages-for-rabbitmq":
-		dbConnection = connection.Amqps
-	case "databases-for-enterprisedb":
-		dbConnection = connection.Postgres
-	default:
-		return csEntry, fmt.Errorf("[ERROR] Unrecognised database type during connection string lookup: %s", service)
-	}
-
-	if !reflect.DeepEqual(cassandraConnection, icdv4.CassandraUri{}) {
-		csEntry = flex.CsEntry{
-			Name:         userName,
-			Hosts:        cassandraConnection.Hosts,
-			BundleName:   cassandraConnection.Bundle.Name,
-			BundleBase64: cassandraConnection.Bundle.BundleBase64,
-		}
-	} else {
-		csEntry = flex.CsEntry{
-			Name:     userName,
-			Password: "",
-			// Populate only first 'composed' connection string as an example
-			Composed:     dbConnection.Composed[0],
-			CertName:     dbConnection.Certificate.Name,
-			CertBase64:   dbConnection.Certificate.CertificateBase64,
-			Hosts:        dbConnection.Hosts,
-			Scheme:       dbConnection.Scheme,
-			Path:         dbConnection.Path,
-			QueryOptions: dbConnection.QueryOptions.(map[string]interface{}),
-		}
-
-		// Postgres DB name is of type string, Redis is json.Number, others are nil
-		if dbConnection.Database != nil {
-			switch v := dbConnection.Database.(type) {
-			default:
-				return csEntry, fmt.Errorf("Unexpected data type: %T", v)
-			case json.Number:
-				csEntry.Database = dbConnection.Database.(json.Number).String()
-			case string:
-				csEntry.Database = dbConnection.Database.(string)
-			}
-		} else {
-			csEntry.Database = ""
-		}
-	}
-
-	return csEntry, nil
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2886,8 +2724,22 @@ func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnfo
 	if group.CPU.Allocation >= cpuEnforcementRatioCeilingTemp/cpuEnforcementRatioMb {
 		return nil
 	} else {
-		return fmt.Errorf("The current cpu alloaction of %d is not valid for your current configuration.", group.CPU.Allocation)
+		return fmt.Errorf("The current cpu allocation of %d is not valid for your current configuration.", group.CPU.Allocation)
 	}
+}
+
+// This can be removed any time after August once all old multitenant instances are switched over to the new multitenant
+func appendSwitchoverWarning() diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models",
+	}
+
+	diags = append(diags, warning)
+
+	return diags
 }
 
 func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
@@ -2926,10 +2778,14 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 
 		tfGroups := expandGroups(group.(*schema.Set).List())
 
-		err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := getCpuEnforcementRatios(service, plan, meta, group)
+		cpuEnforcementRatioCeiling, cpuEnforcementRatioMb := 0, 0
 
-		if err != nil {
-			return err
+		if memberGroup.HostFlavor != nil && memberGroup.HostFlavor.ID == "multitenant" {
+			err, cpuEnforcementRatioCeiling, cpuEnforcementRatioMb = getCpuEnforcementRatios(service, plan, memberGroup.HostFlavor.ID, meta, group)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		// validate group_ids are unique
@@ -3010,9 +2866,9 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	return nil
 }
 
-func getCpuEnforcementRatios(service string, plan string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
+func getCpuEnforcementRatios(service string, plan string, hostFlavor string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
 	var currentGroups []Group
-	defaultList, err := getDefaultScalingGroups(service, plan, "multitenant", meta)
+	defaultList, err := getDefaultScalingGroups(service, plan, hostFlavor, meta)
 
 	if err != nil {
 		return err, 0, 0

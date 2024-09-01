@@ -40,7 +40,7 @@ func TestAccIBMCmCatalogDataSourceSimpleArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCmCatalogDataSourceConfig(catalogLabel, catalogShortDescription),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "catalog_identifier"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "label"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_catalog.cm_catalog", "short_description"),
 				),
@@ -71,7 +71,7 @@ func testAccCheckIBMCmCatalogDataSourceConfig(catalogLabel string, catalogShortD
 		}
 
 		data "ibm_cm_catalog" "cm_catalog" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			label = ibm_cm_catalog.cm_catalog.label
 		}
 	`, catalogLabel, catalogShortDescription)
 }

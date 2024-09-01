@@ -19,10 +19,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/schematics"
+	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
@@ -31,8 +36,11 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
@@ -41,15 +49,7 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
 
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Cloud/bluemix-go/api/schematics"
-	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 const (
@@ -689,6 +689,9 @@ func FlattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interf
 		}
 		if in.WriteDataEvents != nil {
 			att["write_data_events"] = *in.WriteDataEvents
+		}
+		if in.ManagementEvents != nil {
+			att["management_events"] = *in.ManagementEvents
 		}
 		if in.ActivityTrackerCrn != nil {
 			att["activity_tracker_crn"] = *in.ActivityTrackerCrn
@@ -3157,12 +3160,25 @@ func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []ma
 			metricsMap = append(metricsMap, policyInstance)
 		}
 		if policy.PolicyType == "keyCreateImportAccess" {
-			policyInstance["enabled"] = policy.PolicyData.Enabled
-			policyInstance["create_root_key"] = policy.PolicyData.Attributes.CreateRootKey
-			policyInstance["create_standard_key"] = policy.PolicyData.Attributes.CreateStandardKey
-			policyInstance["import_root_key"] = policy.PolicyData.Attributes.ImportRootKey
-			policyInstance["import_standard_key"] = policy.PolicyData.Attributes.ImportStandardKey
-			policyInstance["enforce_token"] = policy.PolicyData.Attributes.EnforceToken
+			if policy.PolicyData.Enabled != nil {
+				policyInstance["enabled"] = *policy.PolicyData.Enabled
+			}
+			if policy.PolicyData.Attributes.CreateRootKey != nil {
+				policyInstance["create_root_key"] = *policy.PolicyData.Attributes.CreateRootKey
+			}
+			if policy.PolicyData.Attributes.CreateStandardKey != nil {
+				policyInstance["create_standard_key"] = *policy.PolicyData.Attributes.CreateStandardKey
+			}
+			if policy.PolicyData.Attributes.ImportRootKey != nil {
+				policyInstance["import_root_key"] = *policy.PolicyData.Attributes.ImportRootKey
+			}
+			if policy.PolicyData.Attributes.ImportStandardKey != nil {
+				policyInstance["import_standard_key"] = *policy.PolicyData.Attributes.ImportStandardKey
+			}
+			if policy.PolicyData.Attributes.EnforceToken != nil {
+				policyInstance["enforce_token"] = *policy.PolicyData.Attributes.EnforceToken
+			}
+
 			keyCreateImportAccessMap = append(keyCreateImportAccessMap, policyInstance)
 		}
 	}
@@ -3418,6 +3434,14 @@ func FindRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (
 			}
 		}
 	}
+	if name == "NONE" {
+		name := "NONE"
+		r := iampolicymanagementv1.PolicyRole{
+			DisplayName: &name,
+			RoleID:      &name,
+		}
+		return r, nil
+	}
 	supportedRoles := getSupportedRolesStr(supported)
 	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
 		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
@@ -3440,7 +3464,7 @@ func FindRoleByCRN(supported []iampolicymanagementv1.PolicyRole, crn string) (ia
 }
 
 func getSupportedRolesStr(supported []iampolicymanagementv1.PolicyRole) string {
-	rolesStr := ""
+	rolesStr := "NONE, "
 	for index, role := range supported {
 		if index != 0 {
 			rolesStr += ", "
@@ -4213,6 +4237,15 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 	}
 
 	return hosts
+}
+
+func FlattenSatelliteCapabilities(capabilities *schema.Set) []kubernetesserviceapiv1.CapabilityManagedBySatellite {
+	result := make([]kubernetesserviceapiv1.CapabilityManagedBySatellite, capabilities.Len())
+	for i, v := range capabilities.List() {
+		result[i] = kubernetesserviceapiv1.CapabilityManagedBySatellite(v.(string))
+	}
+
+	return result
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {

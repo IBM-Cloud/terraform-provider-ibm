@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
@@ -33,6 +34,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 				Description: "List of power virtual server instances for the respective cloud instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_Fault: {
+							Computed:    true,
+							Description: "Fault information.",
+							Type:        schema.TypeMap,
+						},
 						Attr_HealthStatus: {
 							Computed:    true,
 							Description: "The health of the instance.",
@@ -40,6 +46,7 @@ func DataSourceIBMPIInstances() *schema.Resource {
 						},
 						Attr_LicenseRepositoryCapacity: {
 							Computed:    true,
+							Deprecated:  "This field is deprecated.",
 							Description: "The VTL license repository capacity TB value.",
 							Type:        schema.TypeInt,
 						},
@@ -94,6 +101,12 @@ func DataSourceIBMPIInstances() *schema.Resource {
 									},
 									Attr_MacAddress: {
 										Computed:    true,
+										Description: "The MAC address of the instance.",
+										Type:        schema.TypeString,
+									},
+									Attr_Macaddress: {
+										Computed:    true,
+										Deprecated:  "Deprecated, use mac_address instead",
 										Description: "The MAC address of the instance.",
 										Type:        schema.TypeString,
 									},
@@ -244,6 +257,10 @@ func flattenPvmInstances(list []*models.PVMInstanceReference) []map[string]inter
 			l[Attr_HealthStatus] = i.Health.Status
 		}
 
+		if i.Fault != nil {
+			l[Attr_Fault] = flattenPvmInstanceFault(i.Fault)
+		}
+
 		result = append(result, l)
 	}
 	return result
@@ -265,4 +282,19 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 		return networks
 	}
 	return
+}
+
+func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]interface{} {
+	faultMap := make(map[string]interface{})
+	faultMap[Attr_Code] = strconv.FormatFloat(fault.Code, 'f', -1, 64)
+	if !fault.Created.IsZero() {
+		faultMap[Attr_Created] = fault.Created.String()
+	}
+	if fault.Details != "" {
+		faultMap[Attr_Details] = fault.Details
+	}
+	if fault.Message != "" {
+		faultMap[Attr_Message] = fault.Message
+	}
+	return faultMap
 }

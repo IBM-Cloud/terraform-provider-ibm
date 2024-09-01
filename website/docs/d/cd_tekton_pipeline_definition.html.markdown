@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline_definition
 
-Provides a read-only data source to retrieve information about a cd_tekton_pipeline_definition. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Provides a read-only data source for cd_tekton_pipeline_definition. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -21,7 +21,7 @@ data "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
 
 ## Argument Reference
 
-You can specify the following arguments for this data source.
+Review the argument reference that you can specify for your data source.
 
 * `definition_id` - (Required, Forces new resource, String) The definition ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
@@ -30,12 +30,11 @@ You can specify the following arguments for this data source.
 
 ## Attribute Reference
 
-After your data source is created, you can read values from the following attributes.
+In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_definition.
 * `href` - (String) API URL for interacting with the definition.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
 * `source` - (List) Source repository containing the Tekton pipeline definition.
 Nested schema for **source**:
 	* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.

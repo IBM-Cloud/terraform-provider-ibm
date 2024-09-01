@@ -44,7 +44,7 @@ You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folde
 To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd addon
+$ cd addon/4.14.0
 ```
 
 ```bash
@@ -93,6 +93,7 @@ ocsUpgrade = "false"
 osdDevicePaths = null
 osdSize = "512Gi"
 osdStorageClassName = "ibmc-vpc-block-metro-10iops-tier"
+workerPools = null
 workerNodes = null
 encryptionInTransit = false
 taintNodes = false
@@ -108,6 +109,7 @@ The following variables in the `schematics.tfvars` file can be edited
 
 * numOfOsd - To scale your storage
 * workerNodes - To increase the number of Worker Nodes with ODF
+* workerPools -  To increase the number of Storage Nodes by adding more nodes using workerpool
 
 ```hcl
 # For CRD Management
@@ -172,6 +174,7 @@ ocsUpgrade = "false" -> "true"
 | ignoreNoobaa | Set to true if you do not want MultiCloudGateway | `bool` | no | false
 | ocsUpgrade | Set to true to upgrade Ocscluster | `string` | no | false
 | osdDevicePaths | IDs of the disks to be used for OSD pods if using local disks or standard classic cluster | `string` | no | null
+| workerPools | A list of the worker pools names where you want to deploy ODF. Either specify workerpool or workernodes to deploy ODF, if not specified ODF will deploy on all nodes | `string` | no | null
 | workerNodes | Provide the names of the worker nodes on which to install ODF. Leave blank to install ODF on all worker nodes | `string` | no | null
 | encryptionInTransit |To enable in-transit encryption. Enabling in-transit encryption does not affect the existing mapped or mounted volumes. After a volume is mapped/mounted, it retains the encryption settings that were used when it was initially mounted. To change the encryption settings for existing volumes, they must be remounted again one-by-one. | `bool` | no | false
 | taintNodes | Specify true to taint the selected worker nodes so that only OpenShift Data Foundation pods can run on those nodes. Use this option only if you limit ODF to a subset of nodes in your cluster. | `bool` | no | false

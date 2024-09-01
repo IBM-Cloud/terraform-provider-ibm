@@ -198,6 +198,11 @@ Review the argument references that you can specify for your resource.
   ~> **NOTE**
         **&#x2022;** one of `capacity` or `snapshot` must be present for volume creation.</br>
         **&#x2022;** If `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_capacity` is taken as the volume capacity.</br>
+- `snapshot_crn` - (Optional, String) The CRN for this snapshot from which to clone the new volume. 
+
+  ~> **NOTE**
+        **&#x2022;** one of `capacity` or `snapshot` must be present for volume creation.</br>
+        **&#x2022;** If `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_capacity` is taken as the volume capacity.</br>
 - `volume` - (Optional, String) The unique identifier for the existing volume
 - `volume_name` - (Optional, String) The unique user-defined name for this new volume.
 - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)

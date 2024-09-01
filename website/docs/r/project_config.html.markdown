@@ -43,7 +43,7 @@ Nested schema for **definition**:
 		* `method` - (Optional, String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (Optional, String) The trusted profile ID.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		  * Constraints: The maximum length is `512` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `compliance_profile` - (Optional, List) The profile that is required for compliance.
 	Nested schema for **compliance_profile**:
 		* `attachment_id` - (Optional, String) A unique ID for the attachment to a compliance profile.
@@ -53,7 +53,7 @@ Nested schema for **definition**:
 		* `instance_id` - (Optional, String) A unique ID for the instance of a compliance profile.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 		* `instance_location` - (Optional, String) The location of the compliance instance.
-		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
+		  * Constraints: Allowable values are: `us-south`, `us-east`, `eu-gb`, `eu-de`, `ca-tor`.
 		* `profile_name` - (Optional, String) The name of the compliance profile.
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 	* `description` - (Optional, String) A project configuration description.
@@ -63,6 +63,13 @@ Nested schema for **definition**:
 	* `inputs` - (Optional, Map) The input variables that are used for configuration definition and environment.
 	* `locator_id` - (Optional, Forces new resource, String) A unique concatenation of the catalog ID and the version ID that identify the deployable architecture in the catalog. I you're importing from an existing Schematics workspace that is not backed by cart, a `locator_id` is required. If you're using a Schematics workspace that is backed by cart, a `locator_id` is not necessary because the Schematics workspace has one.> There are 3 scenarios:> 1. If only a `locator_id` is specified, a new Schematics workspace is instantiated with that `locator_id`.> 2. If only a schematics `workspace_crn` is specified, a `400` is returned if a `locator_id` is not found in the existing schematics workspace.> 3. If both a Schematics `workspace_crn` and a `locator_id` are specified, a `400` message is returned if the specified `locator_id` does not agree with the `locator_id` in the existing Schematics workspace.> For more information of creating a Schematics workspace, see [Creating workspaces and importing your Terraform template](/docs/schematics?topic=schematics-sch-create-wks).
 	  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[\\.0-9a-z-A-Z_-]+$/`.
+	* `members` - (Optional, List) The member deployabe architectures that are included in your stack.
+	  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+	Nested schema for **members**:
+		* `config_id` - (Required, String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `name` - (Required, String) The name matching the alias in the stack definition.
+		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `name` - (Optional, String) The configuration name. It's unique within the account across projects and regions.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `resource_crns` - (Optional, List) The CRNs of the resources that are associated with this configuration.
@@ -140,6 +147,8 @@ Nested schema for **approved_version**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `state` - (String) The state of the configuration.
 	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+	* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+	  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 	* `version` - (Integer) The version number of the configuration.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 * `deployed_version` - (List) A summary of a project configuration version.
@@ -154,11 +163,33 @@ Nested schema for **deployed_version**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 	* `state` - (String) The state of the configuration.
 	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+	* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+	  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 	* `version` - (Integer) The version number of the configuration.
+* `deployment_model` - (String) The configuration type.
+  * Constraints: Allowable values are: `project_deployed`, `user_deployed`, `stack`.
 * `href` - (String) A URL.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
 * `is_draft` - (Boolean) The flag that indicates whether the version of the configuration is draft, or active.
 * `last_saved_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
+* `member_of` - (List) The stack config parent of which this configuration is a member of.
+Nested schema for **member_of**:
+	* `definition` - (List) The definition summary of the stack configuration.
+	Nested schema for **definition**:
+		* `members` - (List) The member deployabe architectures that are included in your stack.
+		  * Constraints: The default value is `[]`. The maximum length is `100` items. The minimum length is `0` items.
+		Nested schema for **members**:
+			* `config_id` - (String) The unique ID.
+			  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+			* `name` - (String) The name matching the alias in the stack definition.
+			  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
+		* `name` - (String) The configuration name. It's unique within the account across projects and regions.
+		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
+	* `href` - (String) A URL.
+	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(http(s)?:\/\/)[a-zA-Z0-9\\$\\-_\\.+!\\*'\\(\\),=&?\/]+$/`.
+	* `id` - (String) The unique ID.
+	  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+	* `version` - (Integer) The version of the stack configuration.
 * `modified_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 * `needs_attention_state` - (List) The needs attention state of a configuration.
   * Constraints: The default value is `[]`. The maximum length is `50` items. The minimum length is `0` items.
@@ -195,6 +226,10 @@ Nested schema for **project**:
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `state` - (String) The state of the configuration.
   * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+* `state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
+* `template_id` - (String) The stack definition identifier.
+  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `update_available` - (Boolean) The flag that indicates whether a configuration update is available.
 * `version` - (Integer) The version of the configuration.
 

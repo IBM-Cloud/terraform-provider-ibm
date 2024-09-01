@@ -24,6 +24,10 @@ func suppressKMSInstanceIDDiff(k, old, new string, d *schema.ResourceData) bool 
 	return old == getInstanceIDFromCRN(new)
 }
 
+func getInstanceIDFromResourceData(d *schema.ResourceData, key string) string {
+	return getInstanceIDFromCRN(d.Get(key).(string))
+}
+
 // Get Instance ID from CRN
 func getInstanceIDFromCRN(crn string) string {
 	crnSegments := strings.Split(crn, ":")
@@ -252,7 +256,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	if err1 != nil {
 		registrations := d.Get("registrations").([]interface{})
 		var registrationLog error
-		if registrations != nil && len(registrations) > 0 {
+		if len(registrations) > 0 {
 			resourceCrns := make([]string, 0)
 			for _, registration := range registrations {
 				r := registration.(map[string]interface{})
@@ -277,9 +281,10 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
@@ -451,10 +456,11 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 	ctx := context.Background()
 	key, err := kpAPI.GetKey(ctx, keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
-			d.SetId("")
-			return nil, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+				d.SetId("")
+				return nil, nil
+			}
 		}
 		return nil, fmt.Errorf("[ERROR] Get Key failed with error while reading Key: %s", err)
 	} else if key.State == 5 { //Refers to Deleted state of the Key

@@ -39,7 +39,7 @@ Nested schema for **definition**:
 		* `method` - (Optional, String) The authorization method. You can authorize by using a trusted profile or an API key in Secrets Manager.
 		  * Constraints: Allowable values are: `api_key`, `trusted_profile`.
 		* `trusted_profile_id` - (Optional, String) The trusted profile ID.
-		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		  * Constraints: The maximum length is `512` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `compliance_profile` - (Optional, List) The profile that is required for compliance.
 	Nested schema for **compliance_profile**:
 		* `attachment_id` - (Optional, String) A unique ID for the attachment to a compliance profile.
@@ -49,7 +49,7 @@ Nested schema for **definition**:
 		* `instance_id` - (Optional, String) A unique ID for the instance of a compliance profile.
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 		* `instance_location` - (Optional, String) The location of the compliance instance.
-		  * Constraints: The maximum length is `12` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(us-south|us-east|eu-gb|eu-de)$/`.
+		  * Constraints: Allowable values are: `us-south`, `us-east`, `eu-gb`, `eu-de`, `ca-tor`.
 		* `profile_name` - (Optional, String) The name of the compliance profile.
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^(?!\\s)(?!.*\\s$)[^<>\\x00-\\x1F]*$/`.
 	* `description` - (Required, String) The description of the environment.

@@ -14,9 +14,10 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -47,7 +48,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 			helpers.PINetworkType: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vlan", "pub-vlan"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{DHCPVlan, PubVlan, Vlan}),
 				Description:  "PI network type",
 			},
 			helpers.PINetworkName: {
@@ -146,7 +147,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	networkname := d.Get(helpers.PINetworkName).(string)
 	networktype := d.Get(helpers.PINetworkType).(string)
 
-	client := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	var body = &models.NetworkCreate{
 		Type: &networktype,
 		Name: networkname,
@@ -169,7 +170,7 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.AccessConfig = models.AccessConfig(v.(string))
 	}
 
-	if networktype == "vlan" {
+	if networktype == DHCPVlan || networktype == Vlan {
 		var networkcidr string
 		var ipBodyRanges []*models.IPAddressRange
 		if v, ok := d.GetOk(helpers.PINetworkCidr); ok {
@@ -197,7 +198,17 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		body.Gateway = gateway
 		body.Cidr = networkcidr
 	}
-
+	wsclient := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
+	wsData, err := wsclient.Get(cloudInstanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if wsData.Capabilities[PER] {
+		_, err = waitForPERWorkspaceActive(ctx, wsclient, cloudInstanceID, d.Timeout(schema.TimeoutRead))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	networkResponse, err := client.Create(body)
 	if err != nil {
 		return diag.FromErr(err)
@@ -226,7 +237,7 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.Get(networkID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -257,7 +268,6 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(helpers.PINetworkIPAddressRange, ipRangesMap)
 
 	return nil
-
 }
 
 func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -272,13 +282,22 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS, helpers.PINetworkGateway, helpers.PINetworkIPAddressRange) {
-		networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+		networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 		body := &models.NetworkUpdate{
 			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
 		}
-		if d.Get(helpers.PINetworkType).(string) == "vlan" {
-			body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
-			body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+		networkType := d.Get(helpers.PINetworkType).(string)
+		if d.HasChange(helpers.PINetworkIPAddressRange) || d.HasChange(helpers.PINetworkGateway) {
+			if networkType == Vlan {
+				if d.HasChange(helpers.PINetworkIPAddressRange) {
+					body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+				}
+				if d.HasChange(helpers.PINetworkGateway) {
+					body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
+				}
+			} else {
+				return diag.Errorf("%v type does not allow ip-address range or gateway update", networkType)
+			}
 		}
 
 		if d.HasChange(helpers.PINetworkName) {
@@ -307,17 +326,22 @@ func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	err = networkC.Delete(networkID)
-
+	client := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	err = client.Delete(networkID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	_, err = isWaitForIBMPINetworkDeleted(ctx, client, networkID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId("")
 	return nil
 }
 
-func isWaitForIBMPINetworkAvailable(ctx context.Context, client *st.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForIBMPINetworkAvailable(ctx context.Context, client *instance.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
 		Target:     []string{"NETWORK_READY"},
@@ -330,7 +354,7 @@ func isWaitForIBMPINetworkAvailable(ctx context.Context, client *st.IBMPINetwork
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id string) resource.StateRefreshFunc {
+func isIBMPINetworkRefreshFunc(client *instance.IBMPINetworkClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		network, err := client.Get(id)
 		if err != nil {
@@ -342,6 +366,29 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id string) resourc
 		}
 
 		return network, helpers.PINetworkProvisioning, nil
+	}
+}
+
+func isWaitForIBMPINetworkDeleted(ctx context.Context, client *instance.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Found},
+		Target:     []string{State_NotFound},
+		Refresh:    isIBMPINetworkRefreshDeleteFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isIBMPINetworkRefreshDeleteFunc(client *instance.IBMPINetworkClient, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		network, err := client.Get(id)
+		if err != nil {
+			return network, State_NotFound, nil
+		}
+		return network, State_Found, nil
 	}
 }
 
@@ -404,4 +451,40 @@ func getIPAddressRanges(ipAddressRanges []interface{}) []*models.IPAddressRange 
 		}
 	}
 	return ipRanges
+}
+func waitForPERWorkspaceActive(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Inactive, State_Configuring},
+		Target:     []string{State_Active},
+		Refresh:    isPERWorkspaceRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPERWorkspaceRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		ws, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		// Check for backward compatibility for legacy workspace.
+		if ws.Details.PowerEdgeRouter == nil {
+			return ws, State_Active, nil
+		}
+		if *(ws.Details.PowerEdgeRouter.State) == State_Active {
+			return ws, State_Active, nil
+		}
+		if *(ws.Details.PowerEdgeRouter.State) == State_Inactive {
+			return ws, State_Inactive, nil
+		}
+		if *(ws.Details.PowerEdgeRouter.State) == State_Error {
+			return ws, *ws.Details.PowerEdgeRouter.State, fmt.Errorf("[ERROR] workspace PER configuration failed to initialize. Please try again later")
+		}
+
+		return ws, State_Configuring, nil
+	}
 }

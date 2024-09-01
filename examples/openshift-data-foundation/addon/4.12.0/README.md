@@ -44,7 +44,7 @@ You do not have to change anything in the `ibm-odf-addon` and `ocscluster` folde
 To run this example on your Terminal, first download this directory i.e `examples/openshift-data-foundation/`
 
 ```bash
-$ cd addon
+$ cd addon/4.12.0
 ```
 
 ```bash

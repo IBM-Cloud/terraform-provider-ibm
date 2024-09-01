@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package conns
@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -29,6 +30,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/logs-router-go-sdk/ibmcloudlogsroutingv0"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
@@ -53,6 +55,7 @@ import (
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
+	cisrulesetsv1 "github.com/IBM/networking-go-sdk/rulesetsv1"
 	cissslv1 "github.com/IBM/networking-go-sdk/sslcertificateapiv1"
 	tg "github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	cisuarulev1 "github.com/IBM/networking-go-sdk/useragentblockingrulesv1"
@@ -82,6 +85,7 @@ import (
 	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -118,6 +122,8 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
+	"github.com/IBM/logs-go-sdk/logsv0"
+	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 )
@@ -228,6 +234,7 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
+	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -249,6 +256,7 @@ type ClientSession interface {
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
+	CisRulesetsSession() (*cisrulesetsv1.RulesetsV1, error)
 	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
@@ -295,10 +303,13 @@ type ClientSession interface {
 	SecurityAndComplianceCenterV3() (*scc.SecurityAndComplianceCenterApiV3, error)
 	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
 	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
+	PartnerCenterSellV1() (*partnercentersellv1.PartnerCenterSellV1, error)
 	CodeEngineV2() (*codeengine.CodeEngineV2, error)
 	ProjectV1() (*project.ProjectV1, error)
 	UsageReportsV4() (*usagereportsv4.UsageReportsV4, error)
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
+	VmwareV1() (*vmwarev1.VmwareV1, error)
+	LogsV0() (*logsv0.LogsV0, error)
 }
 
 type clientSession struct {
@@ -429,6 +440,10 @@ type clientSession struct {
 	cisAlertsClient *cisalertsv1.AlertsV1
 	cisAlertsErr    error
 
+	// CIS Rulesets
+	cisRulesetsClient *cisrulesetsv1.RulesetsV1
+	cisRulesetsErr    error
+
 	// CIS Authenticated Origin Pull
 	cisOriginAuthClient  *cisoriginpull.AuthenticatedOriginPullApiV1
 	cisOriginAuthPullErr error
@@ -532,6 +547,9 @@ type clientSession struct {
 	catalogManagementClient    *catalogmanagementv1.CatalogManagementV1
 	catalogManagementClientErr error
 
+	partnerCenterSellClient    *partnercentersellv1.PartnerCenterSellV1
+	partnerCenterSellClientErr error
+
 	enterpriseManagementClient    *enterprisemanagementv1.EnterpriseManagementV1
 	enterpriseManagementClientErr error
 
@@ -626,11 +644,27 @@ type clientSession struct {
 
 	mqcloudClient    *mqcloudv1.MqcloudV1
 	mqcloudClientErr error
+
+	// VMware as a Service
+	vmwareClient    *vmwarev1.VmwareV1
+	vmwareClientErr error
+
+	// Cloud Logs
+	logsClient    *logsv0.LogsV0
+	logsClientErr error
+
+	// Logs Routing
+	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
+	ibmCloudLogsRoutingClientErr error
 }
 
 // Usage Reports
 func (session clientSession) UsageReportsV4() (*usagereportsv4.UsageReportsV4, error) {
 	return session.usageReportsClient, session.usageReportsClientErr
+}
+
+func (session clientSession) PartnerCenterSellV1() (*partnercentersellv1.PartnerCenterSellV1, error) {
+	return session.partnerCenterSellClient, session.partnerCenterSellClientErr
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -984,6 +1018,14 @@ func (sess clientSession) CisAlertsSession() (*cisalertsv1.AlertsV1, error) {
 	return sess.cisAlertsClient.Clone(), nil
 }
 
+// CIS Rulesets
+func (sess clientSession) CisRulesetsSession() (*cisrulesetsv1.RulesetsV1, error) {
+	if sess.cisRulesetsErr != nil {
+		return sess.cisRulesetsClient, sess.cisRulesetsErr
+	}
+	return sess.cisRulesetsClient.Clone(), nil
+}
+
 // CIS Routing
 func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, error) {
 	if sess.cisRoutingErr != nil {
@@ -1210,6 +1252,21 @@ func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	return session.mqcloudClient.Clone(), nil
 }
 
+// VMware as a Service API
+func (session clientSession) VmwareV1() (*vmwarev1.VmwareV1, error) {
+	return session.vmwareClient, session.vmwareClientErr
+}
+
+// Cloud Logs
+func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
+	return session.logsClient, session.logsClientErr
+}
+
+// IBM Cloud Logs Routing
+func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error) {
+	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1251,6 +1308,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
+		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
@@ -1304,6 +1362,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.codeEngineClientErr = errEmptyBluemixCredentials
 		session.projectClientErr = errEmptyBluemixCredentials
 		session.mqcloudClientErr = errEmptyBluemixCredentials
+		session.logsClientErr = errEmptyBluemixCredentials
+		session.ibmCloudLogsRoutingClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1540,6 +1600,67 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the service client.
+	logsEndpoint := ContructEndpoint(fmt.Sprintf("api.%s.logs", c.Region), cloudEndpoint)
+
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_API_ENDPOINT", c.Region, logsEndpoint)
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsEndpoint = ContructEndpoint(fmt.Sprintf("api.private.%s.logs", c.Region), cloudEndpoint)
+	}
+
+	logsClientOptions := &logsv0.LogsV0Options{
+		Authenticator: authenticator,
+		URL:           logsEndpoint,
+	}
+
+	// Construct the service client.
+	session.logsClient, err = logsv0.NewLogsV0(logsClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.logsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.logsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.logsClientErr = fmt.Errorf("Error occurred while configuring Cloud Logs API service: %q", err)
+	}
+
+	// LOGS ROUTER Version 0
+	var logsrouterClientURL string
+	var logsrouterURLErr error
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		logsrouterClientURL, logsrouterURLErr = ibmcloudlogsroutingv0.GetServiceURLForRegion(c.Region)
+	}
+	if logsrouterURLErr != nil {
+		logsrouterClientURL = ibmcloudlogsroutingv0.DefaultServiceURL
+	}
+	ibmCloudLogsRoutingClientOptions := &ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0Options{
+		Authenticator: authenticator,
+		URL:           logsrouterClientURL,
+	}
+
+	// Construct the service client.
+	session.ibmCloudLogsRoutingClient, err = ibmcloudlogsroutingv0.NewIBMCloudLogsRoutingV0(ibmCloudLogsRoutingClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ibmCloudLogsRoutingClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ibmCloudLogsRoutingClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ibmCloudLogsRoutingClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Logs Routing service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client.
 	ukoClientOptions := &ukov4.UkoV4Options{
 		Authenticator: authenticator,
 	}
@@ -1611,7 +1732,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.contextBasedRestrictionsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Context Based Restrictions service: %q", err)
 	}
 
-	// // Usage Reports Service Client
+	// PARTNER CENTER SELL (product lifecycle) service
+	partnerCenterSellURL := "https://product-lifecycle.api.cloud.ibm.com/openapi/v1"
+	if c.Visibility == "private" {
+		session.partnerCenterSellClientErr = fmt.Errorf("partner center sell does not support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		partnerCenterSellURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PARTNER_CENTER_SELL_API_ENDPOINT", c.Region, partnerCenterSellURL)
+	}
+	partnerCenterSellClientOptions := &partnercentersellv1.PartnerCenterSellV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_PARTNER_CENTER_SELL_API_ENDPOINT"}, partnerCenterSellURL),
+		Authenticator: authenticator,
+	}
+	// Construct the service client.
+	session.partnerCenterSellClient, err = partnercentersellv1.NewPartnerCenterSellV1(partnerCenterSellClientOptions)
+	if err != nil {
+		session.partnerCenterSellClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Partner Center Sell API service: %q", err)
+	}
+	if session.partnerCenterSellClient != nil && session.partnerCenterSellClient.Service != nil {
+		// Enable retries for API calls
+		session.partnerCenterSellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.partnerCenterSellClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	//Usage Reports Service Client
 	usageReportsURL := usagereportsv4.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2435,6 +2582,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	// IBM Network CIS Rulesets
+	cisRulesetsOpt := &cisrulesetsv1.RulesetsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisRulesetsClient, session.cisRulesetsErr = cisrulesetsv1.NewRulesetsV1(cisRulesetsOpt)
+	if session.cisRulesetsErr != nil {
+		session.cisRulesetsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS Rulesets : %s",
+			session.cisRulesetsErr)
+	}
+	if session.cisRulesetsClient != nil && session.cisRulesetsClient.Service != nil {
+		session.cisRulesetsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRulesetsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// IBM Network CIS Page Rules
 	cisPageRuleOpt := &cispagerulev1.PageRuleApiV1Options{
 		URL:           cisEndPoint,
@@ -3170,7 +3336,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
 	}
 	if err != nil {
-		cdToolchainClientURL = cdtoolchainv2.DefaultServiceURL
+		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
@@ -3252,6 +3418,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.mqcloudClientErr = fmt.Errorf("Error occurred while configuring MQ on Cloud service: %q", err)
+	}
+
+	// VMware as a Service
+	// Construct the service options.
+	vmwareURL := ContructEndpoint(fmt.Sprintf("api.%s.vmware", c.Region), cloudEndpoint+"/v1")
+	vmwareClientOptions := &vmwarev1.VmwareV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"VMWARE_URL"}, vmwareURL),
+	}
+
+	// Construct the service client.
+	session.vmwareClient, err = vmwarev1.NewVmwareV1(vmwareClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.vmwareClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.vmwareClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.vmwareClientErr = fmt.Errorf("Error occurred while configuring VMware as a Service API service: %q", err)
 	}
 
 	// Construct the service options.
@@ -3460,6 +3647,27 @@ func EnvFallBack(envs []string, defaultValue string) string {
 		}
 	}
 	return defaultValue
+}
+
+func FileFallBack(endpointsFile, visibility, key, region, defaultValue string) string {
+	var fileMap map[string]interface{}
+	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, endpointsFile); f != "" {
+		jsonFile, err := os.Open(f)
+		if err != nil {
+			log.Fatalf("Unable to open Endpoints File %s", err)
+		}
+		defer jsonFile.Close()
+		bytes, err := io.ReadAll(jsonFile)
+		if err != nil {
+			log.Fatalf("Unable to read Endpoints File %s", err)
+		}
+		err = json.Unmarshal([]byte(bytes), &fileMap)
+		if err != nil {
+			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
+		}
+	}
+
+	return fileFallBack(fileMap, visibility, key, region, defaultValue)
 }
 
 func fileFallBack(fileMap map[string]interface{}, visibility, key, region, defaultValue string) string {

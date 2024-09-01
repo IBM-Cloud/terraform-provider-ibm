@@ -83,6 +83,7 @@ provider "ibm" {
 |Transit Gateway|IBMCLOUD_TG_API_ENDPOINT|
 |UAA|IBMCLOUD_UAA_ENDPOINT|
 |User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
+|Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
 
 ## File structure for endpoints file
 
@@ -134,6 +135,42 @@ To use public and private regional endpoints for a service, you must add these e
     }
 }
 ```
+**Note:** 
+
+The endpoints file accepts "public", "private" and "public-and-private" as visibility while COS resources support "public", "private" and "direct as endpoint-types. 
+Since endpoints file schema does not supprt "direct", users must define the url for "direct" endpoint-type under exisiting visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+The user cannot define urls for both private and direct endpoint-type simultaneously in the endpoints file under "private" field. 
+
+**Example**:
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.direct.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
+OR 
+
+```json
+{
+    "IBMCLOUD_COS_CONFIG_ENDPOINT":{
+        "public":{
+            "us-south":"https://config.cloud-object-storage.cloud.ibm.com/v1"
+        },
+        "private":{
+            "us-south":"https://config.private.cloud-object-storage.cloud.ibm.com/v1"
+        }
+    }
+}
+```
+
 
 ## Prioritisation of endpoints
 
