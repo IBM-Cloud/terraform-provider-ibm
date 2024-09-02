@@ -403,7 +403,7 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			lbProfile := make(map[string]interface{})
 			if lb.Profile != nil {
-				lbProfile[name] = *lb.Profile.Name
+				lbProfile[isLBName] = *lb.Profile.Name
 				lbProfile[href] = *lb.Profile.Href
 				lbProfile[family] = *lb.Profile.Family
 			}
