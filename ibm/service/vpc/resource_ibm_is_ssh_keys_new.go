@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"reflect"
 	"regexp"
 	"strings"
 
@@ -20,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -54,6 +55,9 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				MarkdownDescription: "The name for this key. The name must not be used by another key in the region. If unspecified, the name will be a hyphenated list of randomly-selected words",
 				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"public_key": schema.StringAttribute{
 				MarkdownDescription: "A unique public SSH key to import, in OpenSSH format (consisting of three space-separated fields: the algorithm name, base64-encoded key, and a comment). The algorithm and comment fields may be omitted, as only the key field is imported. Keys of type rsa may be 2048 or 4096 bits in length, however 4096 is recommended. Keys of type ed25519 are 256 bits in length.",
@@ -78,45 +82,74 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Validators: []validator.List{
 					listvalidator.SizeAtLeast(1),
 				},
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"type": schema.StringAttribute{
 				MarkdownDescription: "The crypto-system used by this key",
 				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"fingerprint": schema.StringAttribute{
 				MarkdownDescription: "SSH key Fingerprint info",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"length": schema.Int64Attribute{
 				MarkdownDescription: "SSH key Length",
 				Computed:            true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_group": schema.StringAttribute{
 				MarkdownDescription: "The resource group to use. If unspecified, the account's default resource group will be used.",
 				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_controller_url": schema.StringAttribute{
 				MarkdownDescription: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance",
-				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_name": schema.StringAttribute{
 				MarkdownDescription: "The name of the resource",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_crn": schema.StringAttribute{
 				MarkdownDescription: "The crn of the resource",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"crn": schema.StringAttribute{
 				MarkdownDescription: "The crn of the resource",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_group_name": schema.StringAttribute{
 				MarkdownDescription: "The resource group name in which resource is provisioned",
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 
 			"id": schema.StringAttribute{
@@ -133,8 +166,6 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan SSHKeyResourceModel
 
-	log.Printf("[INFO] UJJK type of ctx in create is %s \n", reflect.TypeOf(ctx))
-	log.Printf("[INFO] UJJK value of ctx in create is %s \n", BeautifyResponse(ctx))
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if resp.Diagnostics.HasError() {
@@ -214,16 +245,14 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 				"Error on create of vpc SSH Key (%s) access tags: %s", plan.Id.ValueString(), err)
 		}
 	}
-	resp.State.Set(ctx, plan)
+	// resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state SSHKeyResourceModel
 
-	req.State.Get(ctx, &state)
-
-	log.Printf("[INFO] UJJK type of ctx in read is %s \n", reflect.TypeOf(ctx))
-	log.Printf("[INFO] UJJK value of ctx in read is %s \n", BeautifyResponse(ctx))
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	sess, err := r.client.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -269,10 +298,13 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	state.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
 	tags, _ := flex.GetGlobalTagsElementsUsingCRN(r.client, *key.CRN, "", isKeyUserTagType)
 	access, _ := flex.GetGlobalTagsElementsUsingCRN(r.client, *key.CRN, "", isKeyAccessTagType)
-	state.Tags, _ = basetypes.NewListValue(convertStringSliceToListValue(tags))
-	state.AccessTags, _ = basetypes.NewListValue(convertStringSliceToListValue(access))
-
-	resp.State.Set(ctx, state)
+	if len(tags) > 0 {
+		state.Tags, _ = basetypes.NewListValue(convertStringSliceToListValue(tags))
+	}
+	if len(access) > 0 {
+		state.AccessTags, _ = basetypes.NewListValue(convertStringSliceToListValue(access))
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -293,7 +325,8 @@ func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	if !plan.Name.Equal(state.Name) {
 		input := &vpcv1.UpdateKeyOptions{}
-
+		id := state.Id.ValueString()
+		input.ID = &id
 		keyPatchModel := &vpcv1.KeyPatch{}
 		keyPatchModel.Name = core.StringPtr(plan.Name.ValueString())
 		keyPatchAsPatch, err := keyPatchModel.AsPatch()
@@ -315,7 +348,7 @@ func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 			)
 			return
 		}
-		resp.State.Set(ctx, plan)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	}
 	return
 }
