@@ -24,7 +24,7 @@ func TestAccIBMIsPrivatePathServiceGatewaysDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.default_access_policy"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.endpoint_gateways_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.endpoint_gateway_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_private_path_service_gateways.is_private_path_service_gateways", "private_path_service_gateways.0.lifecycle_state"),

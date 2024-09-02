@@ -48,10 +48,20 @@ func DataSourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 				Computed:    true,
 				Description: "The policy to use for bindings from accounts without an explicit account policy.",
 			},
-			"endpoint_gateways_count": {
+			"endpoint_gateway_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of endpoint gateways using this private path service gateway.",
+			},
+			"endpoint_gateway_binding_auto_delete": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether endpoint gateway bindings will be automatically deleted after endpoint_gateway_binding_auto_delete_timeout hours have passed.",
+			},
+			"endpoint_gateway_binding_auto_delete_timeout": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "If endpoint_gateway_binding_auto_delete is true, the hours after which endpoint gateway bindings will be automatically deleted.",
 			},
 			"href": {
 				Type:        schema.TypeString,
@@ -285,10 +295,15 @@ func dataSourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sc
 		return diag.FromErr(fmt.Errorf("Error setting default_access_policy: %s", err))
 	}
 
-	if err = d.Set("endpoint_gateways_count", flex.IntValue(privatePathServiceGateway.EndpointGatewayCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateways_count: %s", err))
+	if err = d.Set("endpoint_gateway_count", flex.IntValue(privatePathServiceGateway.EndpointGatewayCount)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateway_count: %s", err))
 	}
-
+	if err = d.Set("endpoint_gateway_binding_auto_delete", privatePathServiceGateway.EndpointGatewayBindingAutoDelete); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateway_binding_auto_delete: %s", err))
+	}
+	if err = d.Set("endpoint_gateway_binding_auto_delete_timeout", privatePathServiceGateway.EndpointGatewayBindingAutoDeleteTimeout); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateway_binding_auto_delete_timeout: %s", err))
+	}
 	if err = d.Set("href", privatePathServiceGateway.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}

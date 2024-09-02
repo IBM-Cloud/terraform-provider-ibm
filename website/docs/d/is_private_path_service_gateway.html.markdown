@@ -56,7 +56,9 @@ In addition to all argument references listed, you can access the following attr
 - `created_at` - (String) The date and time that the private path service gateway was created.
 - `crn` - (String) The CRN for this private path service gateway.
 - `default_access_policy` - (String) The policy to use for bindings from accounts without an explicit account policy.
-- `endpoint_gateways_count` - (Integer) The number of endpoint gateways using this private path service gateway.
+- `endpoint_gateway_count` - (Integer) The number of endpoint gateways using this private path service gateway.
+- `endpoint_gateway_binding_auto_delete` - (Boolean) Indicates whether endpoint gateway bindings will be automatically deleted after endpoint_gateway_binding_auto_delete_timeout hours have passed. At present, this is always true, but may be modifiable in the future.
+- `endpoint_gateway_binding_auto_delete_timeout` - (Integer) If endpoint_gateway_binding_auto_delete is true, the hours after which endpoint gateway bindings will be automatically deleted. If the value is 0, abandoned endpoint gateway bindings will be deleted immediately. At present, this is always set to 0. This value may be modifiable in the future.
 - `href` - (String) The URL for this private path service gateway.
 - `lifecycle_state` - (String) The lifecycle state of the private path service gateway.
 - `load_balancer` - (List) The load balancer for this private path service gateway.
