@@ -10,8 +10,7 @@ description: |-
 # ibm_container_bind_service
 
 > [!CAUTION]
-> This resource is not reliable and will be deprecated.
-It is highly recommended to bind your services according to [this guide](I'm unsure how to link to the newly written guide)
+> This resource will be deprecated, please check [this guide](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/binding-services) on how to bind services.
 
 Bind an IBM Cloud service to an IBM Cloud Kubernetes Service cluster. Service binding is a quick way to create service credentials for an IBM Cloud service by using its public service endpoint and storing these credentials in a Kubernetes secret in your cluster. The Kubernetes secret is automatically encrypted in etcd to protect your data.
 
