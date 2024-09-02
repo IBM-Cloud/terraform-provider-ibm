@@ -269,9 +269,6 @@ func (p *IbmCloudProvider) Resources(_ context.Context) []func() resource.Resour
 		func() resource.Resource {
 			return vpc.NewSSHKeyResource(p.clientSession)
 		},
-		func() resource.Resource {
-			return vpc.NewMigrationNewResource(p.clientSession)
-		},
 	}
 
 }
