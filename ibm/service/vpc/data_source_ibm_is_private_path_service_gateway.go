@@ -318,13 +318,13 @@ func dataSourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sc
 	}
 
 	region := []map[string]interface{}{}
-	if privatePathServiceGateway.Remote != nil && privatePathServiceGateway.Remote.Region != nil {
-		modelMap, err := dataSourceIBMIsPrivatePathServiceGatewayRegionReferenceToMap(privatePathServiceGateway.Remote.Region)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		region = append(region, modelMap)
-	}
+	// if privatePathServiceGateway.Remote != nil && privatePathServiceGateway.Remote.Region != nil {
+	// 	modelMap, err := dataSourceIBMIsPrivatePathServiceGatewayRegionReferenceToMap(privatePathServiceGateway.Remote.Region)
+	// 	if err != nil {
+	// 		return diag.FromErr(err)
+	// 	}
+	// 	region = append(region, modelMap)
+	// }
 	if err = d.Set("region", region); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting region %s", err))
 	}
@@ -391,7 +391,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayLoadBalancerReferenceToMap(model *v
 	return modelMap, nil
 }
 
-func dataSourceIBMIsPrivatePathServiceGatewayLoadBalancerReferenceDeletedToMap(model *vpcv1.LoadBalancerReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsPrivatePathServiceGatewayLoadBalancerReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
@@ -451,7 +451,7 @@ func dataSourceIBMIsPrivatePathServiceGatewayVPCReferenceToMap(model *vpcv1.VPCR
 	return modelMap, nil
 }
 
-func dataSourceIBMIsPrivatePathServiceGatewayVPCReferenceDeletedToMap(model *vpcv1.VPCReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsPrivatePathServiceGatewayVPCReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo

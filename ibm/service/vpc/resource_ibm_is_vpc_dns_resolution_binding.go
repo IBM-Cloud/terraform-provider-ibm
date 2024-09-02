@@ -282,17 +282,17 @@ func resourceIBMIsVPCDnsResolutionBindingCreate(context context.Context, d *sche
 		createVPCDnsResolutionBindingOptions.SetName(d.Get("name").(string))
 	}
 	if vpchref != "" {
-		vPCIdentityIntf := &vpcv1.VPCIdentityVPCIdentityByHref{
+		vPCIdentityIntf := &vpcv1.VPCIdentityByHref{
 			Href: &vpchref,
 		}
 		createVPCDnsResolutionBindingOptions.SetVPC(vPCIdentityIntf)
 	} else if vpcid != "" {
-		vPCIdentityIntf := &vpcv1.VPCIdentityVPCIdentityByID{
+		vPCIdentityIntf := &vpcv1.VPCIdentityByID{
 			ID: &vpcid,
 		}
 		createVPCDnsResolutionBindingOptions.SetVPC(vPCIdentityIntf)
 	} else {
-		vPCIdentityIntf := &vpcv1.VPCIdentityVPCIdentityByCRN{
+		vPCIdentityIntf := &vpcv1.VPCIdentityByCRN{
 			CRN: &vpccrn,
 		}
 		createVPCDnsResolutionBindingOptions.SetVPC(vPCIdentityIntf)
