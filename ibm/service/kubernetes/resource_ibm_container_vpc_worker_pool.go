@@ -4,12 +4,12 @@
 package kubernetes
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
+	kubernetesutils "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes/utils"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -232,18 +232,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 			},
 		},
 		CustomizeDiff: customdiff.All(
-			customdiff.ForceNewIfChange("operating_system", func(ctx context.Context, oldValue, newValue, meta interface{}) bool {
-				if strings.HasPrefix(oldValue.(string), "UBUNTU_") && strings.HasPrefix(newValue.(string), "UBUNTU_") {
-					return false
-				}
-
-				/*if (strings.HasPrefix(oldValue.(string), "RHEL_") || strings.HasPrefix(oldValue.(string), "REDHAT_")) &&
-					strings.HasPrefix(newValue.(string), "RHEL_") || strings.HasPrefix(newValue.(string), "REDHAT_") {
-					return false
-				}*/
-
-				return true
-			}),
+			kubernetesutils.InplaceOSUpdate,
 		),
 	}
 }
