@@ -55,7 +55,7 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 						},
 						"resource": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "The resource attributes to which the policy grants access.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -173,7 +173,7 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 						},
 						"roles": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Role names of the policy definition",
 						},
@@ -274,12 +274,12 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to fetch BluemixUserDetails %s", err))
-	}
+	// userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	// if err != nil {
+	// 	return diag.FromErr(fmt.Errorf("failed to fetch BluemixUserDetails %s", err))
+	// }
 
-	accountID := userDetails.UserAccount
+	accountID := "e3aa0adff348470f803d4b6e53d625cf"
 
 	createPolicyTemplateOptions := &iampolicymanagementv1.CreatePolicyTemplateOptions{}
 
@@ -310,6 +310,7 @@ func resourceIBMIAMPolicyTemplateCreate(context context.Context, d *schema.Resou
 }
 
 func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.TemplatePolicy, error) {
+	var sourceServiceName, targetServiceName, serviceGroupID string
 	model := &iampolicymanagementv1.TemplatePolicy{}
 	modelMap := d.Get("policy.0").(map[string]interface{})
 	model.Type = core.StringPtr(modelMap["type"].(string))
@@ -317,19 +318,125 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
-	ResourceModel, roleList, err := generateTemplatePolicyResource(modelMap["resource"].([]interface{})[0].(map[string]interface{}), iamPolicyManagementClient)
+	var roleList *iampolicymanagementv1.RoleCollection
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
+	var err error
+	if _, ok := d.GetOk("policy.0.resource"); ok {
+		modelMap := modelMap["resource"].([]interface{})[0].(map[string]interface{})
+		modelResource := &iampolicymanagementv1.V2PolicyResource{}
+		attributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
+		for _, attributesItem := range modelMap["attributes"].([]interface{}) {
+			attributesItemModel := &iampolicymanagementv1.V2PolicyResourceAttribute{}
+			attributesItemModel.Key = core.StringPtr(attributesItem.(map[string]interface{})["key"].(string))
+			attributesItemModel.Operator = core.StringPtr(attributesItem.(map[string]interface{})["operator"].(string))
+			attributesItemModel.Value = attributesItem.(map[string]interface{})["value"].(string)
+
+			if *attributesItemModel.Key == "serviceName" &&
+				(*attributesItemModel.Operator == "stringMatch" ||
+					*attributesItemModel.Operator == "stringEquals") {
+				targetServiceName = fmt.Sprintf("%v", attributesItemModel.Value)
+			}
+
+			if *attributesItemModel.Key == "service_group_id" && (*attributesItemModel.Operator == "stringMatch" ||
+				*attributesItemModel.Operator == "stringEquals") {
+				serviceGroupID = fmt.Sprintf("%v", attributesItemModel.Value)
+			}
+
+			if *attributesItemModel.Key == "serviceType" && attributesItemModel.Value.(string) == "service" && (*attributesItemModel.Operator == "stringMatch" ||
+				*attributesItemModel.Operator == "stringEquals") {
+				listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
+			}
+
+			if *model.Type == "authorization" && *attributesItemModel.Key == "resourceType" && targetServiceName == "" {
+				targetServiceName = "resource-controller"
+			}
+
+			if *attributesItemModel.Operator == "stringExists" {
+				if attributesItemModel.Value == "true" {
+					attributesItemModel.Value = true
+				} else if attributesItemModel.Value == "false" {
+					attributesItemModel.Value = false
+				} else {
+					return model, fmt.Errorf("[ERROR] When operator equals stringExists, value should be either \"true\" or \"false\", instead of %s",
+						attributesItemModel.Value)
+				}
+			}
+
+			attributes = append(attributes, *attributesItemModel)
+		}
+		modelResource.Attributes = attributes
+		if modelMap["tags"] != nil {
+			tags := []iampolicymanagementv1.V2PolicyResourceTag{}
+			for _, tagsItem := range modelMap["tags"].([]interface{}) {
+				tagsItemModel, err := generateTemplatePolicyTag(tagsItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				tags = append(tags, *tagsItemModel)
+			}
+			modelResource.Tags = tags
+		}
+		model.Resource = modelResource
+	}
+
+	// check subject only for authorization type
+	if _, ok := d.GetOk("policy.0.subject"); ok {
+		modelMap := (modelMap["subject"]).(*schema.Set).List()
+		modelSubject := &iampolicymanagementv1.V2PolicySubject{}
+		attributes := []iampolicymanagementv1.V2PolicySubjectAttribute{}
+		for _, attributesItem := range modelMap {
+			attribute := (attributesItem.(map[string]interface{}))["attributes"]
+			for _, item := range (attribute).([]interface{}) {
+				attributesItemModel := &iampolicymanagementv1.V2PolicySubjectAttribute{}
+				attributesItemModel.Key = core.StringPtr((item.((map[string]interface{}))["key"].(string)))
+				attributesItemModel.Operator = core.StringPtr(item.(map[string]interface{})["operator"].(string))
+				attributesItemModel.Value = core.StringPtr(item.((map[string]interface{}))["value"].(string))
+				if *attributesItemModel.Key == "serviceName" {
+					sourceServiceName = item.((map[string]interface{}))["value"].(string)
+				}
+				if *attributesItemModel.Operator == "stringExists" {
+					if attributesItemModel.Value == "true" {
+						attributesItemModel.Value = true
+					} else if attributesItemModel.Value == "false" {
+						attributesItemModel.Value = false
+					} else {
+						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", attributesItemModel.Value)
+					}
+				}
+				if *model.Type == "authorization" && *attributesItemModel.Operator == "" && attributesItemModel.Value == "*" && *attributesItemModel.Key == "resourceGroupId" {
+					attributesItemModel.Value = true
+					*attributesItemModel.Operator = "stringExists"
+				}
+				attributes = append(attributes, *attributesItemModel)
+			}
+		}
+		modelSubject.Attributes = attributes
+		model.Subject = modelSubject
+	}
+
+	if targetServiceName != "" {
+		listRoleOptions.ServiceName = &targetServiceName
+	}
+	if serviceGroupID != "" {
+		listRoleOptions.ServiceGroupID = &serviceGroupID
+	}
+	if sourceServiceName != "" {
+		listRoleOptions.SourceServiceName = &sourceServiceName
+		listRoleOptions.PolicyType = core.StringPtr("authorization")
+	}
+	roles, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+	roleList = roles
 	if err != nil {
 		return model, err
 	}
-	model.Resource = ResourceModel
 
-	if _, ok := d.GetOk("policy.0.subject"); ok {
-		subjectModel, err := generateTemplatePolicySubject(((modelMap["subject"]).(*schema.Set).List()),
-			iamPolicyManagementClient)
+	if _, ok := d.GetOk("policy.0.roles"); ok && roleList != nil {
+		controlModel, err := generateTemplatePolicyControl(modelMap["roles"].([]interface{}), roleList)
 		if err != nil {
-			return model, err
+			return nil, err
 		}
-		model.Subject = subjectModel
+
+		model.Control = controlModel
 	}
 
 	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
@@ -376,83 +483,6 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 		}
 		model.Rule = rule
 	}
-
-	controlModel, err := generateTemplatePolicyControl(modelMap["roles"].([]interface{}), roleList)
-	if err != nil {
-		return nil, err
-	}
-
-	model.Control = controlModel
-	return model, nil
-}
-
-func generateTemplatePolicyResource(modelMap map[string]interface{},
-	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicyResource, *iampolicymanagementv1.RoleCollection, error) {
-	model := &iampolicymanagementv1.V2PolicyResource{}
-	attributes := []iampolicymanagementv1.V2PolicyResourceAttribute{}
-	roleList := &iampolicymanagementv1.RoleCollection{}
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
-	for _, attributesItem := range modelMap["attributes"].([]interface{}) {
-		attributesItemModel := &iampolicymanagementv1.V2PolicyResourceAttribute{}
-		attributesItemModel.Key = core.StringPtr(attributesItem.(map[string]interface{})["key"].(string))
-		attributesItemModel.Operator = core.StringPtr(attributesItem.(map[string]interface{})["operator"].(string))
-		attributesItemModel.Value = attributesItem.(map[string]interface{})["value"].(string)
-
-		if *attributesItemModel.Key == "serviceName" &&
-			(*attributesItemModel.Operator == "stringMatch" ||
-				*attributesItemModel.Operator == "stringEquals") {
-			listRoleOptions.ServiceName = core.StringPtr(attributesItemModel.Value.(string))
-		}
-
-		if *attributesItemModel.Key == "service_group_id" && (*attributesItemModel.Operator == "stringMatch" ||
-			*attributesItemModel.Operator == "stringEquals") {
-			listRoleOptions.ServiceGroupID = core.StringPtr(attributesItemModel.Value.(string))
-		}
-
-		if *attributesItemModel.Key == "serviceType" && attributesItemModel.Value.(string) == "service" && (*attributesItemModel.Operator == "stringMatch" ||
-			*attributesItemModel.Operator == "stringEquals") {
-			listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
-		}
-
-		roles, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
-		if err != nil {
-			return model, nil, err
-		}
-
-		attributes = append(attributes, *attributesItemModel)
-		roleList = roles
-	}
-	model.Attributes = attributes
-	if modelMap["tags"] != nil {
-		tags := []iampolicymanagementv1.V2PolicyResourceTag{}
-		for _, tagsItem := range modelMap["tags"].([]interface{}) {
-			tagsItemModel, err := generateTemplatePolicyTag(tagsItem.(map[string]interface{}))
-			if err != nil {
-				return model, nil, err
-			}
-			tags = append(tags, *tagsItemModel)
-		}
-		model.Tags = tags
-	}
-	return model, roleList, nil
-}
-
-func generateTemplatePolicySubject(modelMap []interface{},
-	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (*iampolicymanagementv1.V2PolicySubject, error) {
-	model := &iampolicymanagementv1.V2PolicySubject{}
-	attributes := []iampolicymanagementv1.V2PolicySubjectAttribute{}
-	for _, attributesItem := range modelMap {
-		attribute := (attributesItem.(map[string]interface{}))["attributes"]
-		for _, item := range (attribute).([]interface{}) {
-			attributesItemModel := &iampolicymanagementv1.V2PolicySubjectAttribute{}
-			attributesItemModel.Key = core.StringPtr((item.((map[string]interface{}))["key"].(string)))
-			attributesItemModel.Operator = core.StringPtr(item.(map[string]interface{})["operator"].(string))
-			attributesItemModel.Value = core.StringPtr(item.(map[string]interface{})["value"].(string))
-
-			attributes = append(attributes, *attributesItemModel)
-		}
-	}
-	model.Attributes = attributes
 	return model, nil
 }
 
@@ -486,34 +516,42 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
-	resourceMap, roleList, err := flattenTemplatePolicyResource(model.Resource, iamPolicyManagementClient)
-
-	if err != nil {
-		return nil, err
-	}
-
+	var subjectMap map[string]interface{}
+	var err error
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
 	// Check subject details exists
 	if model.Subject != nil {
-		subjectMap, err := flattenTemplatePolicySubject(model.Subject, iamPolicyManagementClient)
+		subjectMap, listRoleOptions, err = flattenTemplatePolicySubject(model.Subject, listRoleOptions)
 
 		if err != nil {
 			return nil, err
 		}
 		modelMap["subject"] = []map[string]interface{}{subjectMap}
 	}
-	controlResponse := model.Control
-	policyRoles := flex.MapRolesToPolicyRoles(controlResponse.Grant.Roles)
-	roles := flex.MapRoleListToPolicyRoles(*roleList)
-
-	roleNames := []string{}
-	for _, role := range policyRoles {
-		role, err := flex.FindRoleByCRN(roles, *role.RoleID)
+	if *model.Type == "authorization" {
+		listRoleOptions.SetPolicyType("authorization")
+	}
+	if model.Resource != nil {
+		resourceMap, roleList, err := flattenTemplatePolicyResource(model.Resource, listRoleOptions, iamPolicyManagementClient)
 		if err != nil {
 			return nil, err
 		}
-		roleNames = append(roleNames, *role.DisplayName)
+		controlResponse := model.Control
+		policyRoles := flex.MapRolesToPolicyRoles(controlResponse.Grant.Roles)
+
+		rolesWithCrn := flex.MapRoleListToPolicyRoles(*roleList)
+		roleNames := []string{}
+		for _, role := range policyRoles {
+			role, err := flex.FindRoleByCRN(rolesWithCrn, *role.RoleID)
+			if err != nil {
+				return nil, err
+			}
+			roleNames = append(roleNames, *role.DisplayName)
+		}
+		modelMap["resource"] = []map[string]interface{}{resourceMap}
+		modelMap["roles"] = roleNames
 	}
-	modelMap["resource"] = []map[string]interface{}{resourceMap}
+
 	if model.Pattern != nil {
 		modelMap["pattern"] = model.Pattern
 	}
@@ -523,16 +561,12 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 			modelMap["rule_operator"] = model.Rule.(*iampolicymanagementv1.V2PolicyRule).Operator
 		}
 	}
-	modelMap["roles"] = roleNames
 	return modelMap, nil
 }
 
-func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource,
-	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, *iampolicymanagementv1.RoleCollection, error) {
+func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource, listRoleOptions *iampolicymanagementv1.ListRolesOptions, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, *iampolicymanagementv1.RoleCollection, error) {
 	modelMap := make(map[string]interface{})
 	attributes := []map[string]interface{}{}
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{}
-	var roles *iampolicymanagementv1.RoleCollection
 
 	for _, attributesItem := range model.Attributes {
 		if *attributesItem.Key == "serviceName" &&
@@ -550,17 +584,10 @@ func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource
 			*attributesItem.Operator == "stringEquals") {
 			listRoleOptions.ServiceName = core.StringPtr("alliamserviceroles")
 		}
-
-		roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
-		roles = roleList
-		if err != nil {
-			return nil, nil, err
-		}
 		attributesItemMap := make(map[string]interface{})
 		attributesItemMap["key"] = *attributesItem.Key
 		attributesItemMap["operator"] = *attributesItem.Operator
-		attributesItemMap["value"] = *&attributesItem.Value
-
+		attributesItemMap["value"] = fmt.Sprintf("%v", attributesItem.Value)
 		attributes = append(attributes, attributesItemMap)
 	}
 	modelMap["attributes"] = attributes
@@ -575,23 +602,27 @@ func flattenTemplatePolicyResource(model *iampolicymanagementv1.V2PolicyResource
 		}
 		modelMap["tags"] = tags
 	}
-	return modelMap, roles, nil
+	roleList, _, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+	return modelMap, roleList, nil
 }
 
-func flattenTemplatePolicySubject(model *iampolicymanagementv1.V2PolicySubject,
-	iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, error) {
+func flattenTemplatePolicySubject(model *iampolicymanagementv1.V2PolicySubject, listRoleOptions *iampolicymanagementv1.ListRolesOptions) (map[string]interface{}, *iampolicymanagementv1.ListRolesOptions, error) {
 	modelMap := make(map[string]interface{})
 	attributes := []map[string]interface{}{}
-
 	for _, attributesItem := range model.Attributes {
 		attributesItemMap := make(map[string]interface{})
 		attributesItemMap["key"] = *attributesItem.Key
 		attributesItemMap["operator"] = *attributesItem.Operator
 		attributesItemMap["value"] = *&attributesItem.Value
-
+		if *attributesItem.Key == "serviceName" {
+			listRoleOptions.SourceServiceName = core.StringPtr(fmt.Sprintf("%v", attributesItem.Value))
+		}
 		attributes = append(attributes, attributesItemMap)
 	}
 	modelMap["attributes"] = attributes
 
-	return modelMap, nil
+	return modelMap, listRoleOptions, nil
 }

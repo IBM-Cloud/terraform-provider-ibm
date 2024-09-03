@@ -26,7 +26,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPolicyAssignmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPolicyAssignmentConfigBasic(name, acc.TargetAccountId),
+				Config: testAccCheckIBMPolicyAssignmentConfigBasic(name, "562c2a1307534d648e9865f421e454d0"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "name", name),
@@ -35,11 +35,35 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPolicyAssignmentConfigUpdate(name, acc.TargetAccountId),
+				Config: testAccCheckIBMPolicyAssignmentConfigUpdate(name, "562c2a1307534d648e9865f421e454d0"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "policy.0.subject.0.attributes.0.value", "compliance"),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "policy.0.resource.0.attributes.0.value", updatedResourceServiceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
+	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
+	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyAssignmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyAssignmentS2SConfigBasic(name, acc.TargetAccountId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyAssignmentExists("ibm_iam_policy_assignment.policy_assignment", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.resource.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.resource.0.attributes.1.value", "true"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.subject.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_s2s_template", "policy.0.subject.0.attributes.1.value", "backup-policy"),
 				),
 			},
 		},
@@ -74,15 +98,8 @@ func testAccCheckIBMPolicyAssignmentConfigBasic(name string, targetId string) st
 		resource "ibm_iam_policy_assignment" "policy_assignment" {
 			version = "1.0"
 			target  ={
-				type = "Account"
+				type = "Enterprise"
 				id = "%s"
-			}
-
-			options {
-				root { 
-					requester_id = "orchestrator"
-					assignment_id =  "test"
-				}
 			}
 			templates{
 				id = ibm_iam_policy_template.policy_s2s_template.template_id 
@@ -139,26 +156,69 @@ func testAccCheckIBMPolicyAssignmentConfigUpdate(name string, targetId string) s
 			}
 			committed=true
 		}
-	
+
+		resource "ibm_iam_policy_assignment" "policy_assignment" {
+			version = "1.0"
+			target  ={
+				type = "Enterprise"
+				id = "%s"
+			}
+
+			templates{
+				id = ibm_iam_policy_template_version.template_version.template_id
+				version = ibm_iam_policy_template_version.template_version.version
+			}
+		}`, name, targetId)
+}
+
+func testAccCheckIBMPolicyAssignmentS2SConfigBasic(name string, targetId string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_policy_template" "policy_s2s_template" {
+			name = "%s"
+			policy {
+				type = "authorization"
+				description = "Test terraform enterprise S2S"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "is"
+					}
+					attributes {
+						key = "volumeId"
+						operator = "stringExists"
+						value = "true"
+					}
+				}
+				subject {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "is"
+					}
+					attributes {
+						key = "resourceType"
+						operator = "stringEquals"
+						value = "backup-policy"
+					}
+				}
+				roles = ["Operator"]
+			}
+			committed=true
+		}
 		resource "ibm_iam_policy_assignment" "policy_assignment" {
 			version = "1.0"
 			target  ={
 				type = "Account"
 				id = "%s"
 			}
-
-			options {
-				root { 
-					requester_id = "orchestrator"
-					assignment_id =  "test"
-				}
-			}
 			templates{
 				id = ibm_iam_policy_template.policy_s2s_template.template_id 
 				version = ibm_iam_policy_template.policy_s2s_template.version
 			}
-			template_version=ibm_iam_policy_template_version.template_version.version
-		}`, name, targetId)
+		}
+		
+	`, name, targetId)
 }
 
 func testAccCheckIBMPolicyAssignmentExists(n string, obj iampolicymanagementv1.GetPolicyAssignmentResponse) resource.TestCheckFunc {
