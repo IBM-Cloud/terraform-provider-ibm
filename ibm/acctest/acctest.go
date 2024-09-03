@@ -97,6 +97,7 @@ var (
 	InstanceProfileNameUpdate       string
 	IsBareMetalServerProfileName    string
 	IsBareMetalServerImage          string
+	IsBareMetalServerImage2         string
 	DNSInstanceCRN                  string
 	DNSZoneID                       string
 	DNSInstanceCRN1                 string
@@ -149,23 +150,27 @@ var (
 
 // Secrets Manager
 var (
-	SecretsManagerInstanceID                                     string
-	SecretsManagerInstanceRegion                                 string
-	SecretsManagerENInstanceCrn                                  string
-	SecretsManagerIamCredentialsConfigurationApiKey              string
-	SecretsManagerIamCredentialsSecretServiceId                  string
-	SecretsManagerIamCredentialsSecretServiceAccessGroup         string
-	SecretsManagerPublicCertificateLetsEncryptEnvironment        string
-	SecretsManagerPublicCertificateLetsEncryptPrivateKey         string
-	SecretsManagerPublicCertificateCisCrn                        string
-	SecretsManagerPublicCertificateClassicInfrastructureUsername string
-	SecretsManagerPublicCertificateClassicInfrastructurePassword string
-	SecretsManagerPublicCertificateCommonName                    string
-	SecretsManagerValidateManualDnsCisZoneId                     string
-	SecretsManagerImportedCertificatePathToCertificate           string
-	SecretsManagerServiceCredentialsCosCrn                       string
-	SecretsManagerSecretType                                     string
-	SecretsManagerSecretID                                       string
+	SecretsManagerInstanceID                                                        string
+	SecretsManagerInstanceRegion                                                    string
+	SecretsManagerENInstanceCrn                                                     string
+	SecretsManagerIamCredentialsConfigurationApiKey                                 string
+	SecretsManagerIamCredentialsSecretServiceId                                     string
+	SecretsManagerIamCredentialsSecretServiceAccessGroup                            string
+	SecretsManagerPublicCertificateLetsEncryptEnvironment                           string
+	SecretsManagerPublicCertificateLetsEncryptPrivateKey                            string
+	SecretsManagerPublicCertificateCisCrn                                           string
+	SecretsManagerPublicCertificateClassicInfrastructureUsername                    string
+	SecretsManagerPublicCertificateClassicInfrastructurePassword                    string
+	SecretsManagerPublicCertificateCommonName                                       string
+	SecretsManagerValidateManualDnsCisZoneId                                        string
+	SecretsManagerImportedCertificatePathToCertificate                              string
+	SecretsManagerServiceCredentialsCosCrn                                          string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId        string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType              string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn       string
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId string
+	SecretsManagerSecretType                                                        string
+	SecretsManagerSecretID                                                          string
 )
 
 var (
@@ -389,6 +394,18 @@ var (
 // For IAM Access Management
 var (
 	TargetAccountId string
+)
+
+// For Partner Center Sell
+var (
+	PcsRegistrationAccountId                         string
+	PcsOnboardingProductWithApprovedProgrammaticName string
+	// one Onboarding product can only have one catalog product ever
+	PcsOnboardingProductWithApprovedProgrammaticName2 string
+	PcsOnboardingProductWithCatalogProduct            string
+	PcsOnboardingCatalogProductId                     string
+	PcsOnboardingCatalogPlanId                        string
+	PcsIamServiceRegistrationId                       string
 )
 
 func init() {
@@ -854,6 +871,12 @@ func init() {
 	if IsBareMetalServerImage == "" {
 		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+	}
+
+	IsBareMetalServerImage2 = os.Getenv("IS_BARE_METAL_SERVER_IMAGE2")
+	if IsBareMetalServerImage2 == "" {
+		IsBareMetalServerImage2 = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage2 for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
 	}
 
 	DNSInstanceCRN = os.Getenv("IS_DNS_INSTANCE_CRN")
@@ -1354,6 +1377,26 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_CREDENTIALS_COS_CRN for testing service credentials' tests, else tests fail if not set correctly")
 	}
 
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_IAM_SECRET_SERVICE_ID")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyIAMSecretServiceId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_IAM_SECRET_SERVICE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_TYPE")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_TYPE for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_INSTANCE_CRN")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_INSTANCE_CRN for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
+	SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId = os.Getenv("SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID")
+	if SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_PRIVATE_CERTIFICATE_CONFIGURATION_CRYPTO_KEY_PROVIDER_PRIVATE_KEYSTORE_ID for testing private certificate's configuration with crypto key tests, else tests fail if not set correctly")
+	}
+
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
 	if Tg_cross_network_account_api_key == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_API_KEY for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
@@ -1826,6 +1869,41 @@ func init() {
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
 	}
+
+	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
+	if PcsRegistrationAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_REGISTRATION_ACCOUNT_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithApprovedProgrammaticName = os.Getenv("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME")
+	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithApprovedProgrammaticName2 = os.Getenv("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2")
+	if PcsOnboardingProductWithApprovedProgrammaticName2 == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2 for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingProductWithCatalogProduct = os.Getenv("PCS_PRODUCT_WITH_CATALOG_PRODUCT")
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_PRODUCT_WITH_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingCatalogProductId = os.Getenv("PCS_CATALOG_PRODUCT")
+	if PcsOnboardingCatalogProductId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PRODUCT for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsOnboardingCatalogPlanId = os.Getenv("PCS_CATALOG_PLAN")
+	if PcsIamServiceRegistrationId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_CATALOG_PLAN for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
+	if PcsIamServiceRegistrationId == "" {
+		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
 }
 
 var (
@@ -2126,6 +2204,31 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 	}
 	if Vmaas_Directorsite_pvdc_id == "" {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckPartnerCenterSell(t *testing.T) {
+	TestAccPreCheck(t)
+	if PcsRegistrationAccountId == "" {
+		t.Fatal("PCS_REGISTRATION_ACCOUNT_ID must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithApprovedProgrammaticName == "" {
+		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithApprovedProgrammaticName2 == "" {
+		t.Fatal("PCS_PRODUCT_WITH_APPROVED_PROGRAMMATIC_NAME_2 must be set for acceptance tests")
+	}
+	if PcsOnboardingProductWithCatalogProduct == "" {
+		t.Fatal("PCS_PRODUCT_WITH_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsOnboardingCatalogProductId == "" {
+		t.Fatal("PCS_CATALOG_PRODUCT must be set for acceptance tests")
+	}
+	if PcsOnboardingCatalogPlanId == "" {
+		t.Fatal("PCS_CATALOG_PLAN must be set for acceptance tests")
+	}
+	if PcsIamServiceRegistrationId == "" {
+		t.Fatal("PCS_IAM_REGISTRATION_ID must be set for acceptance tests")
 	}
 }
 

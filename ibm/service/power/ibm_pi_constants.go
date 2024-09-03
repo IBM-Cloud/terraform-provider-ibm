@@ -14,6 +14,7 @@ const (
 	Arg_CloudConnectionID                   = "pi_cloud_connection_id"
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
+	Arg_ConsistencyGroupName                = "pi_consistency_group_name"
 	Arg_Datacenter                          = "pi_datacenter"
 	Arg_DatacenterZone                      = "pi_datacenter_zone"
 	Arg_DeploymentTarget                    = "pi_deployment_target"
@@ -45,7 +46,6 @@ const (
 	Arg_Name                                = "pi_name"
 	Arg_Network                             = "pi_network"
 	Arg_NetworkName                         = "pi_network_name"
-	Arg_PIInstanceSharedProcessorPool       = "pi_shared_processor_pool"
 	Arg_PinPolicy                           = "pi_pin_policy"
 	Arg_PlacementGroupID                    = "pi_placement_group_id"
 	Arg_PlacementGroupName                  = "pi_placement_group_name"
@@ -90,6 +90,7 @@ const (
 	Arg_VolumeCloneName                     = "pi_volume_clone_name"
 	Arg_VolumeCloneTaskID                   = "pi_volume_clone_task_id"
 	Arg_VolumeGroupID                       = "pi_volume_group_id"
+	Arg_VolumeGroupName                     = "pi_volume_group_name"
 	Arg_VolumeID                            = "pi_volume_id"
 	Arg_VolumeIDs                           = "pi_volume_ids"
 	Arg_VolumeName                          = "pi_volume_name"
@@ -99,6 +100,10 @@ const (
 	Arg_VolumeSize                          = "pi_volume_size"
 	Arg_VolumeType                          = "pi_volume_type"
 	Arg_VTL                                 = "vtl"
+
+	// Duplicate Arguments, will be removed as refactoring take course.
+	PIVolumeGroupID      = "pi_volume_group_id"
+	PIVolumeOnboardingID = "pi_volume_onboarding_id"
 
 	// Attributes
 	Attr_Access                                      = "access"
@@ -198,6 +203,7 @@ const (
 	Attr_Images                                      = "images"
 	Attr_ImageType                                   = "image_type"
 	Attr_InputVolumes                                = "input_volumes"
+	Attr_InstanceID                                  = "instance_id"
 	Attr_InstanceIP                                  = "instance_ip"
 	Attr_InstanceMac                                 = "instance_mac"
 	Attr_Instances                                   = "instances"
@@ -205,7 +211,8 @@ const (
 	Attr_InstanceVolumes                             = "instance_volumes"
 	Attr_IOThrottleRate                              = "io_throttle_rate"
 	Attr_IP                                          = "ip"
-	Attr_IPAddress                                   = "ipaddress"
+	Attr_IPAddress                                   = "ip_address"
+	Attr_IPaddress                                   = "ipaddress"
 	Attr_IPOctet                                     = "ipoctet"
 	Attr_IsActive                                    = "is_active"
 	Attr_Jumbo                                       = "jumbo"
@@ -220,7 +227,8 @@ const (
 	Attr_LicenseRepositoryCapacity                   = "license_repository_capacity"
 	Attr_LicenseType                                 = "license_type"
 	Attr_Location                                    = "location"
-	Attr_MacAddress                                  = "macaddress"
+	Attr_MacAddress                                  = "mac_address"
+	Attr_Macaddress                                  = "macaddress"
 	Attr_MasterChangedVolumeName                     = "master_changed_volume_name"
 	Attr_MasterVolumeName                            = "master_volume_name"
 	Attr_Max                                         = "max"
@@ -255,9 +263,8 @@ const (
 	Attr_NumberOfVolumes                             = "number_of_volumes"
 	Attr_Onboardings                                 = "onboardings"
 	Attr_OperatingSystem                             = "operating_system"
+	Attr_OSType                                      = "os_type"
 	Attr_PercentComplete                             = "percent_complete"
-	Attr_PIInstanceSharedProcessorPool               = "shared_processor_pool"
-	Attr_PIInstanceSharedProcessorPoolID             = "shared_processor_pool_id"
 	Attr_PinPolicy                                   = "pin_policy"
 	Attr_PlacementGroupID                            = "placement_group_id"
 	Attr_PlacementGroups                             = "placement_groups"
@@ -309,14 +316,12 @@ const (
 	Attr_SharedProcessorPoolInstanceMemory           = "memory"
 	Attr_SharedProcessorPoolInstanceName             = "name"
 	Attr_SharedProcessorPoolInstances                = "instances"
-	Attr_SharedProcessorPoolInstanceStatus           = "status"
 	Attr_SharedProcessorPoolInstanceUncapped         = "uncapped"
 	Attr_SharedProcessorPoolInstanceVcpus            = "vcpus"
 	Attr_SharedProcessorPoolName                     = "name"
 	Attr_SharedProcessorPoolPlacementGroups          = "spp_placement_groups"
 	Attr_SharedProcessorPoolReservedCores            = "reserved_cores"
 	Attr_SharedProcessorPools                        = "shared_processor_pools"
-	Attr_SharedProcessorPoolStatus                   = "status"
 	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
 	Attr_Size                                        = "size"
 	Attr_SnapshotID                                  = "snapshot_id"
@@ -371,8 +376,10 @@ const (
 	Attr_Vendor                                      = "vendor"
 	Attr_VirtualCoresAssigned                        = "virtual_cores_assigned"
 	Attr_VLanID                                      = "vlan_id"
+	Attr_VolumeGroupID                               = "volume_group_id"
 	Attr_VolumeGroupName                             = "volume_group_name"
 	Attr_VolumeGroups                                = "volume_groups"
+	Attr_VolumeGroupStatus                           = "volume_group_status"
 	Attr_VolumeID                                    = "volume_id"
 	Attr_VolumeIDs                                   = "volume_ids"
 	Attr_VolumePool                                  = "volume_pool"
@@ -392,6 +399,18 @@ const (
 	Attr_WorkspaceStatus                             = "pi_workspace_status"
 	Attr_WorkspaceType                               = "pi_workspace_type"
 	Attr_WWN                                         = "wwn"
+
+	// Duplicate Attributes, will be removed as refactoring take course.
+	PICloudConnectionClassicGreSource      = "gre_source_address"
+	PICloudConnectionConnectionMode        = "connection_mode"
+	PICloudConnectionIBMIPAddress          = "ibm_ip_address"
+	PICloudConnectionId                    = "cloud_connection_id"
+	PICloudConnectionPort                  = "port"
+	PICloudConnectionUserIPAddress         = "user_ip_address"
+	PIDRLocation                           = "location"
+	PIPlacementGroupID                     = "placement_group_id"
+	PIPlacementGroupMembers                = "members"
+	PIVPNConnectionDeadPeerDetectionAction = "action"
 
 	// OS Type
 	OS_IBMI  = "ibmi"
@@ -416,6 +435,7 @@ const (
 	Netweaver                 = "Netweaver"
 	None                      = "none"
 	OK                        = "OK"
+	PER                       = "power-edge-router"
 	Prefix                    = "prefix"
 	Private                   = "private"
 	Public                    = "public"
@@ -443,13 +463,13 @@ const (
 	State_Added              = "added"
 	State_Adding             = "adding"
 	State_Available          = "available"
-	State_BUILD              = "BUILD"
+	State_Build              = "build"
 	State_Building           = "building"
 	State_Completed          = "completed"
+	State_Configuring        = "configuring"
 	State_Creating           = "creating"
 	State_Deleted            = "deleted"
 	State_Deleting           = "deleting"
-	State_DELETING           = "DELETING"
 	State_Down               = "down"
 	State_Error              = "error"
 	State_ERROR              = "ERROR"
@@ -458,68 +478,36 @@ const (
 	State_Inactive           = "inactive"
 	State_InProgress         = "in progress"
 	State_InUse              = "in-use"
-	State_NotFound           = "Not Found"
+	State_NotFound           = "not found"
 	State_Pending            = "pending"
 	State_PENDING            = "PENDING"
 	State_PendingReclamation = "pending_reclamation"
 	State_Provisioning       = "provisioning"
 	State_Removed            = "removed"
+	State_Resize             = "resize"
 	State_RESIZE             = "RESIZE"
 	State_Retry              = "retry"
 	State_Shutoff            = "shutoff"
+	State_Stopping           = "stopping"
 	State_SHUTOFF            = "SHUTOFF"
 	State_Up                 = "up"
+	State_Updating           = "updating"
+	State_VerifyResize       = "verify_resize"
+	Status_Active            = "ACTIVE"
+	Status_Deleting          = "deleting"
 	Status_Error             = "ERROR"
 	Status_Pending           = "PENDING"
 	Status_Shutoff           = "SHUTOFF"
 
+	// Timeout values
+	Timeout_Active  = 2 * time.Minute
+	Timeout_Delay   = 60 * time.Second
+	Timeout_Warning = 60 * time.Second
+
 	// TODO: Second Half Cleanup, remove extra variables
 
-	// SAP Profile
-	PISAPProfiles         = "profiles"
-	PISAPProfileCertified = "certified"
-	PISAPProfileCores     = "cores"
-	PISAPProfileMemory    = "memory"
-	PISAPProfileID        = "profile_id"
-	PISAPProfileType      = "type"
-
-	//Added timeout values for warning  and active status
-	warningTimeOut = 60 * time.Second
-	activeTimeOut  = 2 * time.Minute
-
-	PIConsoleLanguageCode             = "pi_language_code"
-	PICloudConnectionId               = "cloud_connection_id"
-	PICloudConnectionStatus           = "status"
-	PICloudConnectionIBMIPAddress     = "ibm_ip_address"
-	PICloudConnectionUserIPAddress    = "user_ip_address"
-	PICloudConnectionPort             = "port"
-	PICloudConnectionClassicGreSource = "gre_source_address"
-	PICloudConnectionConnectionMode   = "connection_mode"
-	PIInstanceDeploymentType          = "pi_deployment_type"
-	PIInstanceMigratable              = "pi_migratable"
-	PIInstanceNetwork                 = "pi_network"
-	PIInstanceStoragePool             = "pi_storage_pool"
-	PIInstanceStorageType             = "pi_storage_type"
-	PISAPInstanceProfileID            = "pi_sap_profile_id"
-	PISAPInstanceDeploymentType       = "pi_sap_deployment_type"
-	PIInstanceSharedProcessorPool     = "pi_shared_processor_pool"
-	PIInstanceStorageConnection       = "pi_storage_connection"
-	PIInstanceStoragePoolAffinity     = "pi_storage_pool_affinity"
-
-	PIInstanceUserData  = "pi_user_data"
-	PIInstanceVolumeIds = "pi_volume_ids"
-
-	// Placement Group
-	PIPlacementGroupID      = "placement_group_id"
-	PIPlacementGroupMembers = "members"
-
-	// Volume
-	PIVolumeIds             = "pi_volume_ids"
-	PIAffinityPolicy        = "pi_affinity_policy"
-	PIAffinityVolume        = "pi_affinity_volume"
-	PIAffinityInstance      = "pi_affinity_instance"
-	PIAntiAffinityInstances = "pi_anti_affinity_instances"
-	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
+	PIConsoleLanguageCode = "pi_language_code"
+	PIInstanceMigratable  = "pi_migratable"
 
 	// Volume Clone
 	PIVolumeCloneName   = "pi_volume_clone_name"
@@ -529,18 +517,12 @@ const (
 	// IBM PI Volume Group
 	PIVolumeGroupName                 = "pi_volume_group_name"
 	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
-	PIVolumeGroupID                   = "pi_volume_group_id"
 	PIVolumeGroupAction               = "pi_volume_group_action"
-	PIVolumeOnboardingID              = "pi_volume_onboarding_id"
-
-	// Disaster Recovery Location
-	PIDRLocation = "location"
 
 	// VPN
 	PIVPNConnectionId                         = "connection_id"
 	PIVPNConnectionStatus                     = "connection_status"
 	PIVPNConnectionDeadPeerDetection          = "dead_peer_detections"
-	PIVPNConnectionDeadPeerDetectionAction    = "action"
 	PIVPNConnectionDeadPeerDetectionInterval  = "interval"
 	PIVPNConnectionDeadPeerDetectionThreshold = "threshold"
 	PIVPNConnectionLocalGatewayAddress        = "local_gateway_address"
@@ -554,5 +536,4 @@ const (
 	PIWorkspaceDatacenter    = "pi_datacenter"
 	PIWorkspaceResourceGroup = "pi_resource_group_id"
 	PIWorkspacePlan          = "pi_plan"
-	PIVirtualOpticalDevice   = "pi_virtual_optical_device"
 )
