@@ -36,7 +36,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_iam_access_tag` resource can be imported by using the resource CRN.
+The `ibm_iam_access_tag` resource can be imported by using the name.
 
 **Syntax**
 
@@ -45,11 +45,6 @@ $ terraform import ibm_iam_access_tag.tag tag_name
 ```
 
 **Example**
-
-```
-$ terraform import ibm_iam_access_tag.tag crn:v1:bluemix:public:satellite:us-east:a/ab3ed67929c2a81285fbb5f9eb22800a:c1ga7h9w0angomd44654::
-
-```
 
 Example for importing access tags.
 
