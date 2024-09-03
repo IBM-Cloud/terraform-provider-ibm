@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 )
@@ -129,27 +130,27 @@ func dataSourceIbmSccProfilesRead(context context.Context, d *schema.ResourceDat
 	pager, err := securityandcompliancecenterapiClient.NewProfilesPager(listProfilesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListProfilesWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("ListProfilesWithContext failed %s", err))
+		return diag.FromErr(flex.FmtErrorf("ListProfilesWithContext failed %s", err))
 	}
 	profileList, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] ListProfilesWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("ListProfilesWithContext failed %s", err))
+		return diag.FromErr(flex.FmtErrorf("ListProfilesWithContext failed %s", err))
 	}
 	d.SetId(fmt.Sprintf("%s/profiles", d.Get("instance_id").(string)))
 	if err = d.Set("instance_id", d.Get("instance_id")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_id %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting instance_id %s", err))
 	}
 	profiles := []map[string]interface{}{}
 	for _, profile := range profileList {
 		modelMap, err := dataSourceIbmSccProfileToMap(&profile)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profile:%v\n%s", profile, err))
+			return diag.FromErr(flex.FmtErrorf("Error setting profile:%v\n%s", profile, err))
 		}
 		profiles = append(profiles, modelMap)
 	}
 	if err = d.Set("profiles", profiles); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting profiles: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting profiles: %s", err))
 	}
 	return nil
 }

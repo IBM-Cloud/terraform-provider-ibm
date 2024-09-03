@@ -29,6 +29,14 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `shares` - Collection of file shares. Nested `shares` blocks have the following structure:
+	- `access_control_mode` - (Boolean) The access control mode for the share.
+	- `accessor_binding_role` - (String) The accessor binding role of this file share:- `none`: This file share is not participating in access with another file share- `origin`: This file share is the origin for one or more file shares  (which may be in other accounts)- `accessor`: This file share is providing access to another file share  (which may be in another account).
+	- `accessor_bindings` - (List) The accessor bindings for this file share. Each accessor binding identifies a resource (possibly in another account) with access to this file share's data.
+		Nested schema for **accessor_bindings**:
+		- `href` - (String) The URL for this share accessor binding.
+		- `id` - (String) The unique identifier for this share accessor binding.
+		- `resource_type` - (String) The resource type.
+	- `allowed_transit_encryption_modes` - (List of string) The transit encryption modes allowed for this share.
 	- `created_at` - The date and time that the file share is created.
 	- `crn` - The CRN for this share.
 	- `encryption` - The type of encryption used for this file share.
@@ -75,6 +83,26 @@ The following attributes are exported:
     	- `id` - The unique identifier for this share target.
     	- `name` - The user-defined name for this share target.
     	- `resource_type` - The type of resource referenced.
+	- `origin_share` - (Optional, List) The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.
+		Nested schema for **origin_share**:
+		- `crn` - (Computed, String) The CRN for this file share.
+		- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (Computed, String) Link to documentation about deleted resources.
+		- `href` - (Computed, String) The URL for this file share.
+		- `id` - (Computed, String) The unique identifier for this file share.
+		- `name` - (Computed, String) The name for this share. The name is unique across all shares in the region.
+		- `remote` - (Optional, List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
+			Nested schema for **remote**:
+			- `account` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisaccount, and identifies the owning account.
+				Nested schema for **account**:
+				- `id` - (Computed, String) The unique identifier for this account.
+				- `resource_type` - (Computed, String) The resource type.
+			- `region` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisregion, and identifies the native region.
+				Nested schema for **region**:
+				- `href` - (Computed, String) The URL for this region.
+				- `name` - (Computed, String) The globally unique name for this region.
+		- `resource_type` - (Computed, String) The resource type.
 	- `zone` - The name of the zone this file share will reside in.
 	- `access_tags`  - (String) Access management tags associated to the share.
 	- `tags`  - (String) User tags associated for to the share.

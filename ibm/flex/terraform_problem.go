@@ -3,6 +3,7 @@ package flex
 import (
 	"errors"
 	"fmt"
+
 	v "github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

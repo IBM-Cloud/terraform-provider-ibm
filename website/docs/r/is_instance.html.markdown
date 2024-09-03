@@ -567,8 +567,11 @@ Review the argument references that you can specify for your resource.
   
   ~> **Note:**
   `image` conflicts with `boot_volume.0.snapshot` and `catalog_offering`, not required when creating instance using `instance_template` or `catalog_offering`
-- `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `keys` - (Optional, List) A comma-separated list of SSH keys that you want to add to your instance. The public SSH keys for the administrative user of the virtual server instance. Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images, these keys will also be added as SSH authorized keys for the administrative user.
 
+  ~> **Note:**
+  For Windows images, the keys of type rsa must be specified, and one will be selected to encrypt the administrator password. Keys are optional for other images, but if no keys are specified, the instance will be inaccessible unless the specified image provides another means of access.
+  
   ~> **Note:**
   **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
   **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>

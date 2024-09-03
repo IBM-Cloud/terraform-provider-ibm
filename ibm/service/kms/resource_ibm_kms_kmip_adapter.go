@@ -72,22 +72,22 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 				ForceNew:    true,
 				Description: "The description of the KMIP adapter",
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier that is associated with the entity that created the adapter.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when a resource was created. The date format follows RFC 3339.",
 			},
-			"updated_by": &schema.Schema{
+			"updated_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier that is associated with the entity that updated the adapter.",
 			},
-			"updated_at": &schema.Schema{
+			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when a resource was updated. The date format follows RFC 3339.",
@@ -131,7 +131,6 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) error {
-	instanceID := d.Get("instance_id").(string)
 	instanceID, adapterID, err := splitAdapterID(d.Id())
 	if err != nil {
 		return err
@@ -165,9 +164,19 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 	}
 	ctx := context.Background()
 	objects, err := kpAPI.GetKMIPObjects(ctx, adapterID, nil)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Failed to fetch KMIP objects associated with adapter '%s' for deletion: %v", adapterID, err)
+	}
+
 	for _, object := range objects.Objects {
-		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID)
+		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID, kp.WithForce(true))
 		if err != nil {
+			if kpError, ok := err.(*kp.Error); ok {
+				if kpError.StatusCode == 404 || kpError.StatusCode == 410 {
+					// if the kmip object is already deleted, do not error out
+					continue
+				}
+			}
 			return fmt.Errorf("[ERROR] Failed to delete KMIP object associated with adapter (%s): %s",
 				adapterID,
 				err,
@@ -180,7 +189,6 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	instanceID := d.Get("instance_id").(string)
 	instanceID, adapterID, err := splitAdapterID(d.Id())
 	if err != nil {
 		return false, err
@@ -192,9 +200,10 @@ func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (
 	ctx := context.Background()
 	_, err = kpAPI.GetKMIPAdapter(ctx, adapterID)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, wrapError(err, "Error checking adapter existence")
 	}

@@ -102,7 +102,7 @@ func testAccCheckIbmSccProviderTypeInstanceExists(n string, obj securityandcompl
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		securityAndComplianceCenterApIsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecurityAndComplianceCenterV3()
@@ -156,9 +156,9 @@ func testAccCheckIbmSccProviderTypeInstanceDestroy(s *terraform.State) error {
 		_, response, err := securityAndComplianceCenterApIsClient.GetProviderTypeInstance(getProviderTypeInstanceOptions)
 
 		if err == nil {
-			return fmt.Errorf("scc_provider_type_instance still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("scc_provider_type_instance still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for scc_provider_type_instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for scc_provider_type_instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
