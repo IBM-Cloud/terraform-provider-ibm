@@ -38,30 +38,6 @@ func TestAccIBMPISPPbasic(t *testing.T) {
 	})
 }
 
-// Not currently used. GET requests do not yet return UserTags.
-func TestAccIBMPISPPusertags(t *testing.T) {
-	name := fmt.Sprintf("tf_pi_spp_%d", acctest.RandIntRange(10, 100))
-	sppRes := "ibm_pi_shared_processor_pool.power_shared_processor_pool"
-	sppResData := "data.ibm_pi_shared_processor_pool.power_shared_processor_pool_data"
-	userTagsString := `["env:test","test_tag"]`
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPISPPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPISPPConfigUserTags(name, userTagsString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPISPPExists(sppRes),
-					resource.TestCheckResourceAttr(sppResData, "user_tags.#", "2"),
-					resource.TestCheckResourceAttr(sppResData, "user_tags.1", "env:test"),
-					resource.TestCheckResourceAttr(sppResData, "user_tags.2", "test_tag"),
-				),
-			},
-		},
-	})
-}
-
 func testAccCheckIBMPISPPDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -125,20 +101,4 @@ func testAccCheckIBMPISPPConfig(name string) string {
 			pi_shared_processor_pool_name = "%[1]s"
 			pi_shared_processor_pool_reserved_cores = "1"
 		}`, name, acc.Pi_cloud_instance_id)
-}
-
-func testAccCheckIBMPISPPConfigUserTags(name string, userTagsString string) string {
-	return fmt.Sprintf(`
-		data "ibm_pi_shared_processor_pool" "power_shared_processor_pool_data" {
-			pi_cloud_instance_id	= "%[2]s"
-			pi_shared_processor_pool_id = ibm_pi_shared_processor_pool.power_shared_processor_pool.pi_shared_processor_pool_name
-		}
-
-		resource "ibm_pi_shared_processor_pool" "power_shared_processor_pool" {
-			pi_cloud_instance_id	= "%[2]s"
-			pi_shared_processor_pool_host_group = "s922"
-			pi_shared_processor_pool_name = "%[1]s"
-			pi_shared_processor_pool_reserved_cores = "1"
-			pi_user_tags = %[3]s
-		}`, name, acc.Pi_cloud_instance_id, userTagsString)
 }
