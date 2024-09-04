@@ -19,29 +19,31 @@ import (
 func TestAccIBMISSubnetReservedIPPatchResource_basic(t *testing.T) {
 	var reservedIPID string
 	vpcName := fmt.Sprintf("tfresip-vpc-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tfresip-vni-%d", acctest.RandIntRange(10, 100))
 	subnetName := fmt.Sprintf("tfresip-subnet-%d", acctest.RandIntRange(10, 100))
 	reservedIPName := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
-	reservedIPName2 := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
-	terraformTag := "ibm_is_subnet_reserved_ip_patch.resIP1"
+	reservedIPName3 := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
+	terraformTag1 := "ibm_is_subnet_reserved_ip_patch.resIP1"
+	terraformTag2 := "ibm_is_subnet_reserved_ip_patch.resIP2"
+	terraformTag3 := "ibm_is_subnet_reserved_ip_patch.resIP3"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				// Tests create
-				Config: testAccCheckISSubnetReservedIPPatchConfigBasic(vpcName, subnetName, reservedIPName),
+				Config: testAccCheckISSubnetReservedIPPatchConfigBasic(vpcName, subnetName, vniName, reservedIPName, reservedIPName3),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckISSubnetReservedIPPatchExists(terraformTag, &reservedIPID),
-					resource.TestCheckResourceAttrSet(terraformTag, "name"),
-					resource.TestCheckResourceAttr(terraformTag, "name", reservedIPName),
-				),
-			},
-			{
-				// Tests Update
-				Config: testAccCheckISSubnetReservedIPPatchConfigBasic(vpcName, subnetName, reservedIPName2),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckISSubnetReservedIPExists(terraformTag, &reservedIPID),
-					resource.TestCheckResourceAttr(terraformTag, "name", reservedIPName2),
+					testAccCheckISSubnetReservedIPPatchExists(terraformTag1, &reservedIPID),
+					testAccCheckISSubnetReservedIPPatchExists(terraformTag2, &reservedIPID),
+					testAccCheckISSubnetReservedIPPatchExists(terraformTag3, &reservedIPID),
+					resource.TestCheckResourceAttrSet(terraformTag1, "name"),
+					resource.TestCheckResourceAttrSet(terraformTag2, "name"),
+					resource.TestCheckResourceAttrSet(terraformTag3, "name"),
+					resource.TestCheckResourceAttr(terraformTag1, "name", reservedIPName),
+					resource.TestCheckResourceAttr(terraformTag1, "auto_delete", "true"),
+					resource.TestCheckResourceAttr(terraformTag2, "auto_delete", "false"),
+					resource.TestCheckResourceAttr(terraformTag3, "name", reservedIPName3),
 				),
 			},
 		},
@@ -77,7 +79,7 @@ func testAccCheckISSubnetReservedIPPatchExists(resIPName string, reservedIPID *s
 	}
 }
 
-func testAccCheckISSubnetReservedIPPatchConfigBasic(vpcName, subnetName, resIPName string) string {
+func testAccCheckISSubnetReservedIPPatchConfigBasic(vpcName, subnetName, vniname, resIPName1, resIPName2 string) string {
 	return fmt.Sprintf(`
 	  resource "ibm_is_vpc" "vpc1" {
 		name = "%s"
@@ -98,16 +100,39 @@ func testAccCheckISSubnetReservedIPPatchConfigBasic(vpcName, subnetName, resIPNa
 		}
 		vpc = ibm_is_vpc.vpc1.id
 	  }
-
+	  resource "ibm_is_virtual_network_interface" "testacc_vni"{
+	  	name = "%s"
+	  	subnet = ibm_is_subnet.subnet1.id
+	  }
 	  resource "ibm_is_subnet_reserved_ip" "resIP1" {
 		subnet = ibm_is_subnet.subnet1.id
 		target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
 	  }
-
-	resource "ibm_is_subnet_reserved_ip_patch" "resIP1" {
+	  resource "ibm_is_subnet_reserved_ip" "resIP2" {
 		subnet = ibm_is_subnet.subnet1.id
-		name = "%s"
-		reserved_ip = ibm_is_subnet_reserved_ip.resIP1.reserved_ip
 	  }
-	`, vpcName, subnetName, resIPName)
+	  resource "ibm_is_virtual_network_interface_ip" "testacc_vni_reservedip" {
+	  	virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
+	  	reserved_ip = ibm_is_subnet_reserved_ip.resIP2.reserved_ip
+	  }
+	  resource "ibm_is_subnet_reserved_ip" "resIP3" {
+		subnet = ibm_is_subnet.subnet1.id
+	  }
+	resource "ibm_is_subnet_reserved_ip_patch" "resIP1" {
+		subnet 		= ibm_is_subnet.subnet1.id
+		name 		= "%s"
+		auto_delete = true
+		reserved_ip = ibm_is_subnet_reserved_ip.resIP1.reserved_ip
+	}
+	resource "ibm_is_subnet_reserved_ip_patch" "resIP2" {
+		subnet 		= ibm_is_subnet.subnet1.id
+		auto_delete = false
+		reserved_ip = ibm_is_subnet_reserved_ip.resIP2.reserved_ip
+	}
+	resource "ibm_is_subnet_reserved_ip_patch" "resIP3" {
+		subnet 			= ibm_is_subnet.subnet1.id
+		name 			= "%s"
+		reserved_ip 	= ibm_is_subnet_reserved_ip.resIP3.reserved_ip
+	}
+	`, vpcName, subnetName, vniname, resIPName1, resIPName2)
 }

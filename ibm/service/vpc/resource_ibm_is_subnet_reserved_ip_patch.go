@@ -40,15 +40,18 @@ func ResourceIBMISReservedIPPatch() *schema.Resource {
 				Description: "The subnet identifier.",
 			},
 			isReservedIPAutoDelete: {
-				Type:        schema.TypeBool,
-				Default:     nil,
-				Computed:    true,
-				Optional:    true,
-				Description: "If set to true, this reserved IP will be automatically deleted",
+				Type:         schema.TypeBool,
+				Default:      nil,
+				AtLeastOneOf: []string{isReservedIPAutoDelete, isReservedIPName},
+				Computed:     true,
+				Optional:     true,
+				Description:  "If set to true, this reserved IP will be automatically deleted",
 			},
 			isReservedIPName: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				AtLeastOneOf: []string{isReservedIPAutoDelete, isReservedIPName},
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_subnet_reserved_ip", isReservedIPName),
 				Description:  "The user-defined or system-provided name for this reserved IP.",
 			},
@@ -115,8 +118,9 @@ func resourceIBMISReservedIPPatchCreate(d *schema.ResourceData, meta interface{}
 	subnetID := d.Get(isSubNetID).(string)
 	reservedIPID := d.Get(isReservedIP).(string)
 	name := d.Get(isReservedIPName).(string)
-	reservedIPPatchModel := &vpcv1.ReservedIPPatch{
-		Name: &name,
+	reservedIPPatchModel := &vpcv1.ReservedIPPatch{}
+	if name != "" {
+		reservedIPPatchModel.Name = &name
 	}
 	if autoDeleteBoolOk, ok := d.GetOkExists(isReservedIPAutoDelete); ok {
 		autoDeleteBool := autoDeleteBoolOk.(bool)
