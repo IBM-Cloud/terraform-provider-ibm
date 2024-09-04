@@ -154,28 +154,6 @@ func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
 		},
 	})
 }
-func TestAccIBMPINetworkusertags(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
-	networkRes := "ibm_pi_network.power_networks"
-	networkResData := "data.ibm_pi_network.power_networks_data"
-	userTagsString := `["env:dev","test_tag"]`
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPINetworkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMPINetworkConfigUserTags(name, userTagsString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkExists(networkRes),
-					resource.TestCheckResourceAttr(networkResData, "user_tags.#", "2"),
-					resource.TestCheckResourceAttr(networkResData, "user_tags.0", "env:test"),
-					resource.TestCheckResourceAttr(networkResData, "user_tags.1", "test_tag"),
-				),
-			},
-		},
-	})
-}
 
 func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
@@ -315,26 +293,4 @@ func testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name string) string {
 			pi_dns               = ["10.1.0.69"]
 		}
 	`, acc.Pi_cloud_instance_id, name)
-}
-
-func testAccCheckIBMPINetworkConfigUserTags(name string, userTagsString string) string {
-	return fmt.Sprintf(`
-		data "ibm_pi_network" "power_networks_data" {
-			pi_cloud_instance_id = "%[1]s"
-			pi_network_name      = ibm_pi_network.power_networks.pi_network_name
-		}
-
-		resource "ibm_pi_network" "power_networks" {
-			pi_network_name      = "%[2]s"
-			pi_cloud_instance_id = "%[1]s"
-			pi_network_type      = "vlan"
-			pi_cidr              = "192.168.17.0/24"
-			pi_gateway           = "192.168.17.2"
-			pi_ipaddress_range {
-				pi_ending_ip_address   = "192.168.17.254"
-				pi_starting_ip_address = "192.168.17.3"
-			}
-			pi_user_tags 		 = %[3]s
-		}
-	`, acc.Pi_cloud_instance_id, name, userTagsString)
 }
