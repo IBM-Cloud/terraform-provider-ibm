@@ -1562,13 +1562,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct the service options.
-	backupRecoveryURL := "https://141.125.105.149/v2"
+	backupRecoveryURL := "https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 	}
 
+	baasAuthenticator := backuprecoveryv1.NewIAMAuthenticator(c.BluemixAPIKey, EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL))
+
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
-		Authenticator: authenticator,
+		Authenticator: &baasAuthenticator,
 		URL:           backupRecoveryURL,
 	}
 	// Construct the service client.
