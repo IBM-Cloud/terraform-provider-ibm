@@ -22,7 +22,6 @@ import (
 )
 
 const (
-	envAGAssignmentTimeoutDurationKey = "IAM_ACCESS_GROUP_ASSIGNMENT_STATE_REFRESH_TIMEOUT_IN_SECONDS"
 	InProgress                        = "in_progress"
 	complete                          = "complete"
 	failed                            = "failed"
@@ -676,3 +675,4 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
+
