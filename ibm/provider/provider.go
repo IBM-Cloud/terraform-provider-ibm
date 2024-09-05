@@ -1094,6 +1094,7 @@ func Provider() *schema.Provider {
 			"ibm_cos_bucket_object":                        cos.ResourceIBMCOSBucketObject(),
 			"ibm_cos_bucket_object_lock_configuration":     cos.ResourceIBMCOSBucketObjectlock(),
 			"ibm_cos_bucket_website_configuration":         cos.ResourceIBMCOSBucketWebsiteConfiguration(),
+			"ibm_cos_bucket_lifecycle_configuration":       cos.ResourceIBMCOSBucketLifecycleConfiguration(),
 			"ibm_dns_domain":                               classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":      classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                            classicinfrastructure.ResourceIBMDNSSecondary(),
