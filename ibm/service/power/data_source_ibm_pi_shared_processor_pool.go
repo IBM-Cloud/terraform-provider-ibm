@@ -129,12 +129,6 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The status details of the shared processor pool.",
 				Type:        schema.TypeString,
 			},
-			Attr_UserTags: {
-				Computed:    true,
-				Description: "The user tags attached to this resource.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Type:        schema.TypeList,
-			},
 		},
 	}
 }
@@ -165,9 +159,6 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 	d.Set(Attr_ReservedCores, response.SharedProcessorPool.ReservedCores)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)
 	d.Set(Attr_StatusDetail, response.SharedProcessorPool.StatusDetail)
-	if len(response.SharedProcessorPool.UserTags) > 0 {
-		d.Set(Attr_UserTags, response.SharedProcessorPool.UserTags)
-	}
 
 	serversMap := []map[string]interface{}{}
 	if response.Servers != nil {
