@@ -16,7 +16,7 @@ require (
 	github.com/IBM/code-engine-go-sdk v0.0.0-20240126185534-a6e054aa01ed
 	github.com/IBM/container-registry-go-sdk v1.1.0
 	github.com/IBM/continuous-delivery-go-sdk v1.6.0
-	github.com/IBM/event-notifications-go-admin-sdk v0.8.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.9.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v3 v3.2.4
