@@ -12,6 +12,8 @@ Create, update, or delete a Slack destination by using IBM Cloud™ Event Notifi
 
 ## Example usage
 
+Destination example for Slack destination type `incoming_webhook`
+
 ```terraform
 resource "ibm_en_destination_slack" "slack_en_destination" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
@@ -21,12 +23,29 @@ resource "ibm_en_destination_slack" "slack_en_destination" {
   description           = "Destination slack for event notification"
   config {
     params {
+      type = "incoming_webhook"
       url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
   }
 }
 }
 ```
+Destination example for Slack destination type `direct_message`
 
+```terraform
+resource "ibm_en_destination_slack" "slack_en_destination" {
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "My Slack Destination"
+  type                  = "slack"
+  collect_failed_events = false
+  description           = "Destination slack for event notification"
+  config {
+    params {
+      type = "direct_message"
+      url  = "dveufewldfwefewlfdweckewweldewfdewd"
+  }
+}
+}
+```
 ## Argument reference
 
 Review the argument reference that you can specify for your resource.
@@ -49,7 +68,10 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `url` - (Required, String) Slack Webhook url.
+  - `type` - (Required, String) The Slack destination type. The supported type are incoming_webhook and direct_message
+  - `url` - (Optional, String) Slack Webhook url.
+  - `token` - (Optional, String) Token of slack application.
+
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
