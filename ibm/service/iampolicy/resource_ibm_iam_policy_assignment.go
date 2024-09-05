@@ -279,12 +279,6 @@ func resourceIBMPolicyAssignmentCreate(context context.Context, d *schema.Resour
 	if _, ok := d.GetOk("accept_language"); ok {
 		createPolicyTemplateAssignmentOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	jsonData, err := json.MarshalIndent(createPolicyTemplateAssignmentOptions, "", "  ")
-	if err != nil {
-		fmt.Println("Error marshalling to JSON:", err)
-	} else {
-		fmt.Println("testing", string(jsonData))
-	}
 	policyAssignmentV1Collection, _, err := iamPolicyManagementClient.CreatePolicyTemplateAssignmentWithContext(context, createPolicyTemplateAssignmentOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreatePolicyTemplateAssignmentWithContext failed: %s", err.Error()), "ibm_policy_assignment", "create")
@@ -478,13 +472,6 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	jsonData, err := json.MarshalIndent(deletePolicyAssignmentOptions, "", "  ")
-	if err != nil {
-		fmt.Println("Error marshalling to JSON:", err)
-	} else {
-		fmt.Println("testing deletePolicyAssignmentOptions", string(jsonData))
-	}
-
 	response, err := iamPolicyManagementClient.DeletePolicyAssignmentWithContext(context, deletePolicyAssignmentOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -585,12 +572,6 @@ func isAccessPolicyAssigned(id string, meta interface{}) resource.StateRefreshFu
 		}
 
 		assignment, ok := assignmentDetails.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
-		jsonDataassignment, err := json.MarshalIndent(assignment, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshalling to JSON:", err)
-		} else {
-			fmt.Println("assignment data is ========== getAssignmentPolicyOptions assignment create", string(jsonDataassignment))
-		}
 
 		if !ok {
 			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
@@ -644,12 +625,6 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
 		}
 
-		jsonDataassignment, err := json.MarshalIndent(assignment, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshalling to JSON:", err)
-		} else {
-			fmt.Println("assignment data is ========== getAssignmentPolicyOptions assignment create", string(jsonDataassignment))
-		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
