@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -288,6 +289,7 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	d.Set("kafka_http_url", adminURL)
 	log.Printf("[INFO] createSaramaAdminClient kafka_http_url is set to %s", adminURL)
 	brokerAddress := flex.ExpandStringList(instance.Extensions["kafka_brokers_sasl"].([]interface{}))
+	slices.Sort(brokerAddress)
 	d.Set("kafka_brokers_sasl", brokerAddress)
 	log.Printf("[INFO] createSaramaAdminClient kafka_brokers_sasl is set to %s", brokerAddress)
 	tenantID := strings.TrimPrefix(strings.Split(adminURL, ".")[0], "https://")
