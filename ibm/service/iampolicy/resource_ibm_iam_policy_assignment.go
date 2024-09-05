@@ -5,7 +5,6 @@ package iampolicy
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
