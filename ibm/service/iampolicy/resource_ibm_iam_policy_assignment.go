@@ -295,10 +295,8 @@ func resourceIBMPolicyAssignmentCreate(context context.Context, d *schema.Resour
 	d.SetId(*policyAssignmentV1Collection.Assignments[0].ID)
 
 	if targetModel.Type != nil && (*targetModel.Type == "Account") {
-		fmt.Printf("testing in if testing : %s", *targetModel.Type)
 		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 	} else {
-		fmt.Println("testing in else create")
 		_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssigned)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error assigning: %s", err))
@@ -449,10 +447,8 @@ func resourceIBMPolicyAssignmentUpdate(context context.Context, d *schema.Resour
 		}
 
 		if targetModel.Type != nil && (*targetModel.Type == "Account") {
-			fmt.Printf("testing in if testing : %s", *targetModel.Type)
 			log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 		} else {
-			fmt.Println("testing in else in update")
 			_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssigned)
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error assigning: %s", err))
@@ -501,10 +497,8 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 	}
 
 	if targetModel.Type != nil && (*targetModel.Type == "Account") {
-		fmt.Printf("testing in if testing : %s", *targetModel.Type)
 		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 	} else {
-		fmt.Println("testing in else delete")
 		_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssignedDeleted)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
