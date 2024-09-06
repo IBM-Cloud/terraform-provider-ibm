@@ -96,12 +96,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The percentage of IP addresses used.",
 				Type:        schema.TypeFloat,
 			},
-			Attr_UserTags: {
-				Computed:    true,
-				Description: "The user tags attached to this resource.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Type:        schema.TypeList,
-			},
 			Attr_VLanID: {
 				Computed:    true,
 				Description: "The VLAN ID that the network is connected to.",
@@ -153,9 +147,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 	if networkdata.IPAddressMetrics.Utilization != nil {
 		d.Set(Attr_UsedIPPercent, networkdata.IPAddressMetrics.Utilization)
-	}
-	if len(networkdata.UserTags) > 0 {
-		d.Set(Attr_UserTags, networkdata.UserTags)
 	}
 	if networkdata.VlanID != nil {
 		d.Set(Attr_VLanID, networkdata.VlanID)
