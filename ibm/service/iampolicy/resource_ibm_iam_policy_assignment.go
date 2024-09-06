@@ -7,14 +7,23 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+)
+
+const (
+	InProgress                        = "in_progress"
+	complete                          = "complete"
+	failed                            = "failed"
 )
 
 func ResourceIBMIAMPolicyAssignment() *schema.Resource {
@@ -278,6 +287,14 @@ func resourceIBMPolicyAssignmentCreate(context context.Context, d *schema.Resour
 
 	d.SetId(*policyAssignmentV1Collection.Assignments[0].ID)
 
+	if targetModel.Type != nil && (*targetModel.Type == "Account") {
+		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
+	} else {
+		_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssigned)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error assigning: %s", err))
+		}
+	}
 	return resourceIBMPolicyAssignmentRead(context, d, meta)
 }
 
@@ -384,6 +401,11 @@ func resourceIBMPolicyAssignmentUpdate(context context.Context, d *schema.Resour
 	updatePolicyAssignmentOptions := &iampolicymanagementv1.UpdatePolicyAssignmentOptions{}
 
 	updatePolicyAssignmentOptions.SetAssignmentID(d.Id())
+	targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	hasChange := false
 
@@ -416,6 +438,16 @@ func resourceIBMPolicyAssignmentUpdate(context context.Context, d *schema.Resour
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
+
+		if targetModel.Type != nil && (*targetModel.Type == "Account") {
+			log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
+		} else {
+			_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssigned)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error assigning: %s", err))
+			}
+		}
+
 	}
 
 	return resourceIBMPolicyAssignmentRead(context, d, meta)
@@ -433,11 +465,34 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 
 	deletePolicyAssignmentOptions.SetAssignmentID(d.Id())
 
-	_, err = iamPolicyManagementClient.DeletePolicyAssignmentWithContext(context, deletePolicyAssignmentOptions)
+	targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
+
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeletePolicyAssignmentWithContext failed: %s", err.Error()), "ibm_policy_assignment", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
+	}
+
+	response, err := iamPolicyManagementClient.DeletePolicyAssignmentWithContext(context, deletePolicyAssignmentOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			log.Printf("[DEBUG] Policy assignment not found during delete, assuming it's already deleted: %s", d.Id())
+		} else {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeletePolicyAssignmentWithContext failed: %s", err.Error()), "ibm_policy_assignment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
+	if targetModel.Type != nil && (*targetModel.Type == "Account") {
+		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
+	} else {
+		_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssignedDeleted)
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") {
+				log.Printf("[DEBUG] Policy assignment already deleted, skipping wait: %s", d.Id())
+			} else {
+				return diag.FromErr(fmt.Errorf("error assigning: %s", err))
+			}
+		}
 	}
 
 	d.SetId("")
@@ -476,4 +531,115 @@ func ResourceIBMPolicyAssignmentAssignmentTemplateDetailsToMap(model *iampolicym
 		modelMap["version"] = *model.Version
 	}
 	return modelMap, nil
+}
+
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
+
+	stateConf := &resource.StateChangeConf{
+		Pending:      []string{InProgress},
+		Target:       []string{complete},
+		Refresh:      refreshFn(d.Id(), meta),
+		Delay:        30 * time.Second,
+		PollInterval: time.Minute,
+		Timeout:      timeout,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isAccessPolicyAssigned(id string, meta interface{}) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
+		if err != nil {
+			return nil, failed, err
+		}
+
+		getAssignmentPolicyOptions := &iampolicymanagementv1.GetPolicyAssignmentOptions{
+			AssignmentID: core.StringPtr(id),
+			Version:      core.StringPtr("1.0"),
+		}
+
+		getAssignmentPolicyOptions.SetAssignmentID(id)
+
+		assignmentDetails, response, err := iamPolicyManagementClient.GetPolicyAssignment(getAssignmentPolicyOptions)
+
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil, failed, err
+			}
+			return nil, failed, err
+		}
+
+		assignment, ok := assignmentDetails.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
+
+		if !ok {
+			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
+		}
+
+		if assignment != nil {
+			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
+				log.Printf("Assignment still in progress\n")
+				return assignment, InProgress, nil
+			}
+
+			if *assignment.Status == "succeeded" {
+				return assignment, complete, nil
+			}
+
+			if *assignment.Status == "failed" {
+				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+			}
+		}
+
+		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+	}
+}
+
+func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
+		if err != nil {
+			return nil, failed, err
+		}
+
+		getAssignmentPolicyOptions := &iampolicymanagementv1.GetPolicyAssignmentOptions{
+			AssignmentID: core.StringPtr(id),
+			Version:      core.StringPtr("1.0"),
+		}
+
+		getAssignmentPolicyOptions.SetAssignmentID(id)
+
+		assignmentDetails, response, err := iamPolicyManagementClient.GetPolicyAssignment(getAssignmentPolicyOptions)
+
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil, failed, err
+			}
+			return nil, failed, err
+		}
+
+		assignment, ok := assignmentDetails.(*iampolicymanagementv1.GetPolicyAssignmentResponse)
+
+		if !ok {
+			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
+		}
+
+
+		if assignment != nil {
+			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
+				log.Printf("Assignment still in progress\n")
+				return assignment, InProgress, nil
+			}
+
+			if *assignment.Status == "succeeded" {
+				return assignment, complete, nil
+			}
+
+			if *assignment.Status == "failed" {
+				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did not complete successfully and has a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+			}
+		}
+
+		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+	}
 }
