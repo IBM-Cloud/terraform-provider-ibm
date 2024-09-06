@@ -29,10 +29,10 @@ const (
 	pdnsCRFRCreatedOn    = "created_on"
 	pdnsCRFRModifiedOn   = "modified_on"
 	pdnsCRFRViews        = "views"
-	pdnsCRFRVName        = "view_name"
-	pdnsCRFRVDescription = "view_description"
-	pdnsCRFRVExpression  = "view_expression"
-	pdnsCRFRVForwardTo   = "view_forward_to"
+	pdnsCRFRVName        = "name"
+	pdnsCRFRVDescription = "description"
+	pdnsCRFRVExpression  = "expression"
+	pdnsCRFRVForwardTo   = "forward_to"
 )
 
 func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
