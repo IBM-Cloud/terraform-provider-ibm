@@ -63,7 +63,6 @@ resource "ibm_iam_policy_assignment" "policy_assignment" {
 		type = "Account"
 		id = "%s"
 	}
-
 	templates{
 		id = ibm_iam_policy_template.policy_s2s_template.template_id 
 		version = ibm_iam_policy_template.policy_s2s_template.version

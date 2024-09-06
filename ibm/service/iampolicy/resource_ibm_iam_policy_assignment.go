@@ -643,4 +643,3 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
-
