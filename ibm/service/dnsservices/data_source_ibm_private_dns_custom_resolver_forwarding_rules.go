@@ -125,13 +125,13 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 
 		forwardRules = append(forwardRules, forwardRule)
 	}
-	d.SetId(dataSourceIBMPrivateDNSForwardrulesID(d))
+	d.SetId(dataSourceIBMPrivateDNSForwardrulesID())
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCRFRResolverID, resolverID)
 	d.Set(pdnsCRForwardRules, forwardRules)
 	return nil
 }
 
-func dataSourceIBMPrivateDNSForwardrulesID(d *schema.ResourceData) string {
+func dataSourceIBMPrivateDNSForwardrulesID() string {
 	return time.Now().UTC().String()
 }

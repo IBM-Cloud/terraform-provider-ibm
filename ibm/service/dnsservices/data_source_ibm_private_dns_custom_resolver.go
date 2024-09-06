@@ -127,13 +127,13 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 
 		customResolvers = append(customResolvers, customResolver)
 	}
-	d.SetId(dataSourceIBMPrivateDNSCustomResolverID(d))
+	d.SetId(dataSourceIBMPrivateDNSCustomResolverID())
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCustomResolvers, customResolvers)
 	return nil
 }
 
 // dataSourceIBMPrivateDNSCustomResolverID returns a reasonable ID for dns  custom resolver list.
-func dataSourceIBMPrivateDNSCustomResolverID(d *schema.ResourceData) string {
+func dataSourceIBMPrivateDNSCustomResolverID() string {
 	return time.Now().UTC().String()
 }
