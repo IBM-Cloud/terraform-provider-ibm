@@ -372,7 +372,6 @@ const (
 	Attr_UsedIPPercent                               = "used_ip_percent"
 	Attr_UsedMemory                                  = "used_memory"
 	Attr_UserIPAddress                               = "user_ip_address"
-	Attr_UserTags                                    = "user_tags"
 	Attr_VCPUs                                       = "vcpus"
 	Attr_Vendor                                      = "vendor"
 	Attr_VirtualCoresAssigned                        = "virtual_cores_assigned"
