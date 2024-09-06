@@ -13,6 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/networking-go-sdk/dnssvcsv1"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -135,10 +136,11 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 				},
 			},
 			pdnsCRProfile: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "essential",
-				Description: "The profile name of the custom resolver.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "essential",
+				Description:  "The profile name of the custom resolver.",
+				ValidateFunc: validate.InvokeValidator(ibmDNSCustomResolver, pdnsCRProfile),
 			},
 			pdnsCRAllowDisruptiveUpdates: {
 				Type:        schema.TypeBool,
@@ -225,6 +227,21 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceIBMPrivateDNSCustomResolverValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 pdnsCRProfile,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "essential, advanced, premier",
+		},
+	)
+	resourceValidator := validate.ResourceValidator{ResourceName: ibmDNSCustomResolver, Schema: validateSchema}
+	return &resourceValidator
 }
 
 type location struct {
