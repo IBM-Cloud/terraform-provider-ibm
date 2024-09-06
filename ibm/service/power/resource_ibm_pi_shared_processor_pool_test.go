@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -55,7 +54,6 @@ func testAccCheckIBMPISPPDestroy(s *terraform.State) error {
 		sppC := instance.NewIBMPISharedProcessorPoolClient(context.Background(), sess, cloudInstanceID)
 		spp, err := sppC.Get(sppID)
 		if err == nil {
-			log.Println("shared processor pool*****")
 			return fmt.Errorf("PI SPP still exists: %s", *spp.SharedProcessorPool.ID)
 		}
 	}
