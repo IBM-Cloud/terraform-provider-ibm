@@ -61,6 +61,36 @@ func DataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						pdnsCRFRViews: {
+							Type:        schema.TypeSet,
+							Description: "An array of views used by forwarding rules",
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									pdnsCRFRVName: {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Unique name of the view.",
+									},
+									pdnsCRFRVDescription: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Description of the view.",
+									},
+									pdnsCRFRVExpression: {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Expression of the view.",
+									},
+									pdnsCRFRVForwardTo: {
+										Type:        schema.TypeList,
+										Required:    true,
+										Description: "The upstream DNS servers will be forwarded to.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -91,6 +121,7 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 		forwardRule[pdnsCRFRType] = *instance.Type
 		forwardRule[pdnsCRFRMatch] = *instance.Match
 		forwardRule[pdnsCRFRForwardTo] = instance.ForwardTo
+		forwardRule[pdnsCRFRViews] = flattenPDNSFRViews(instance.Views)
 
 		forwardRules = append(forwardRules, forwardRule)
 	}

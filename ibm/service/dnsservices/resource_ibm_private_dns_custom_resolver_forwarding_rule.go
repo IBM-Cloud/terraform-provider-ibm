@@ -11,21 +11,28 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
+	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	pdnsCRForwardRule   = "ibm_dns_custom_resolver_forwarding_rule"
-	pdnsCRForwardRules  = "rules"
-	pdnsCRFRResolverID  = "resolver_id"
-	pdnsCRFRDesctiption = "description"
-	pdnsCRFRType        = "type"
-	pdnsCRFRMatch       = "match"
-	pdnsCRFRForwardTo   = "forward_to"
-	pdnsCRFRRuleID      = "rule_id"
-	pdnsCRFRCreatedOn   = "created_on"
-	pdnsCRFRModifiedOn  = "modified_on"
+	pdnsCRForwardRule    = "ibm_dns_custom_resolver_forwarding_rule"
+	pdnsCRForwardRules   = "rules"
+	pdnsCRFRResolverID   = "resolver_id"
+	pdnsCRFRDesctiption  = "description"
+	pdnsCRFRType         = "type"
+	pdnsCRFRMatch        = "match"
+	pdnsCRFRForwardTo    = "forward_to"
+	pdnsCRFRRuleID       = "rule_id"
+	pdnsCRFRCreatedOn    = "created_on"
+	pdnsCRFRModifiedOn   = "modified_on"
+	pdnsCRFRViews        = "views"
+	pdnsCRFRVName        = "view_name"
+	pdnsCRFRVDescription = "view_description"
+	pdnsCRFRVExpression  = "view_expression"
+	pdnsCRFRVForwardTo   = "view_forward_to"
 )
 
 func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
@@ -75,6 +82,36 @@ func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
 				Computed:    true,
 				Description: "the time when a forwarding rule ID is created, RFC3339 format.",
 			},
+			pdnsCRFRViews: {
+				Type:        schema.TypeSet,
+				Description: "An array of views used by forwarding rules",
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						pdnsCRFRVName: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Unique name of the view.",
+						},
+						pdnsCRFRVDescription: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Description of the view.",
+						},
+						pdnsCRFRVExpression: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Expression of the view.",
+						},
+						pdnsCRFRVForwardTo: {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "The upstream DNS servers will be forwarded to.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -102,20 +139,28 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 	resolverID := d.Get(pdnsCRFRResolverID).(string)
-	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID)
 
-	if des, ok := d.GetOk(pdnsCRFRDesctiption); ok {
-		opt.SetDescription(des.(string))
+	ruleType := d.Get(pdnsCRFRType).(string)
+	ruleMatch := d.Get(pdnsCRFRMatch).(string)
+
+	views := d.Get(pdnsCRFRViews).(*schema.Set)
+
+	var forwardingRuleInp dns.ForwardingRuleInputIntf
+
+	if forward, ok := d.GetOk(pdnsCRFRForwardTo); ok {
+		if _, ok := d.GetOk(pdnsCRFRViews); ok {
+			forwardingRuleInp = new(dns.ForwardingRuleInputForwardingRuleBoth)
+			forwardingRuleInp, _ = dnsSvcsClient.NewForwardingRuleInputForwardingRuleBoth(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})), expandPDNSFRViews(views))
+		} else {
+			forwardingRuleInp, _ = dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyForward(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})))
+		}
+
+	} else {
+		forwardingRuleInp, _ = dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyView(ruleType, ruleMatch, expandPDNSFRViews(views))
 	}
-	if t, ok := d.GetOk(pdnsCRFRType); ok {
-		opt.SetType(t.(string))
-	}
-	if m, ok := d.GetOk(pdnsCRFRMatch); ok {
-		opt.SetMatch(m.(string))
-	}
-	if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
-		opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
-	}
+
+	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID, forwardingRuleInp)
+
 	result, resp, err := dnsSvcsClient.CreateForwardingRuleWithContext(context, opt)
 
 	if err != nil || result == nil {
@@ -149,6 +194,7 @@ func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.Resou
 	d.Set(pdnsCRFRType, *result.Type)
 	d.Set(pdnsCRFRMatch, *result.Match)
 	d.Set(pdnsCRFRForwardTo, result.ForwardTo)
+	d.Set(pdnsCRFRViews, flattenPDNSFRViews(result.Views))
 	return nil
 
 }
@@ -166,7 +212,8 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 
 	if d.HasChange(pdnsCRFRDesctiption) ||
 		d.HasChange(pdnsCRFRMatch) ||
-		d.HasChange(pdnsCRFRForwardTo) {
+		d.HasChange(pdnsCRFRForwardTo) ||
+		d.HasChange(pdnsCRFRViews) {
 		if des, ok := d.GetOk(pdnsCRFRDesctiption); ok {
 			frdesc := des.(string)
 			opt.SetDescription(frdesc)
@@ -182,6 +229,9 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 					opt.SetMatch(frmatch)
 				}
 			}
+		}
+		if view, ok := d.GetOk(pdnsCRFRViews); ok {
+			opt.SetViews(expandPDNSFRViews(view.(*schema.Set)))
 		}
 		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
@@ -208,4 +258,32 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 	}
 	d.SetId("")
 	return nil
+}
+
+func expandPDNSFRViews(viewsList *schema.Set) (views []dns.ViewConfig) {
+	for _, viewElem := range viewsList.List() {
+		viewItem := viewElem.(map[string]interface{})
+		view := dns.ViewConfig{
+			Name:        core.StringPtr(viewItem[pdnsCRFRVName].(string)),
+			Description: core.StringPtr(viewItem[pdnsCRFRVDescription].(string)),
+			Expression:  core.StringPtr(viewItem[pdnsCRFRVExpression].(string)),
+			ForwardTo:   flex.ExpandStringList(viewItem[pdnsCRFRVForwardTo].([]interface{})),
+		}
+		views = append(views, view)
+	}
+	return
+}
+
+func flattenPDNSFRViews(list []dns.ViewConfig) []map[string]interface{} {
+	views := []map[string]interface{}{}
+	for _, view := range list {
+		l := map[string]interface{}{
+			pdnsCRFRVName:        *view.Name,
+			pdnsCRFRVExpression:  *view.Expression,
+			pdnsCRFRVDescription: *view.Description,
+			pdnsCRFRVForwardTo:   view.ForwardTo,
+		}
+		views = append(views, l)
+	}
+	return views
 }

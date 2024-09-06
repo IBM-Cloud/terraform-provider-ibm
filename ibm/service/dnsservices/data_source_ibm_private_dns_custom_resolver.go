@@ -51,6 +51,18 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						pdnsCRProfile: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "essential",
+							Description: "The profile name of the custom resolver.",
+						},
+						pdnsCRAllowDisruptiveUpdates: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Whether disruptive update is allowed for the custom resolver",
+						},
 						pdnsCustomResolverLocations: {
 							Type:        schema.TypeList,
 							Description: "Locations on which the custom resolver will be running",
@@ -109,6 +121,8 @@ func dataSourceIBMDNSCustomResolverRead(context context.Context, d *schema.Resou
 		customResolver[pdnsCRDescription] = *instance.Description
 		customResolver[pdnsCRHealth] = *instance.Health
 		customResolver[pdnsCREnabled] = *instance.Enabled
+		customResolver[pdnsCRProfile] = *instance.Profile
+		customResolver[pdnsCRAllowDisruptiveUpdates] = *instance.AllowDisruptiveUpdates
 		customResolver[pdnsCustomResolverLocations] = flattenPdnsCRLocations(instance.Locations)
 
 		customResolvers = append(customResolvers, customResolver)
