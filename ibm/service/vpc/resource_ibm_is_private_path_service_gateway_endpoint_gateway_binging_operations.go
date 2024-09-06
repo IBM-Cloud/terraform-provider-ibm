@@ -93,6 +93,40 @@ func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsRead(
 }
 
 func resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	ppsgId := d.Get("private_path_service_gateway").(string)
+	egwbindingId := d.Get("endpoint_gateway_binding").(string)
+	if d.HasChange("access_policy") {
+		_, newAccessPolicy := d.GetChange("access_policy")
+		accessPolicy := newAccessPolicy.(string)
+		if accessPolicy == AccessPolicyEnumPermit {
+			permitPrivatePathServiceGatewayEndpointGatewayBindingOptions := &vpcv1.PermitPrivatePathServiceGatewayEndpointGatewayBindingOptions{}
+
+			permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetPrivatePathServiceGatewayID(ppsgId)
+			permitPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetID(egwbindingId)
+
+			response, err := vpcClient.PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, permitPrivatePathServiceGatewayEndpointGatewayBindingOptions)
+			if err != nil {
+				log.Printf("[DEBUG] PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("PermitPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+			}
+		} else {
+			denyPrivatePathServiceGatewayEndpointGatewayBindingOptions := &vpcv1.DenyPrivatePathServiceGatewayEndpointGatewayBindingOptions{}
+
+			denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetPrivatePathServiceGatewayID(ppsgId)
+			denyPrivatePathServiceGatewayEndpointGatewayBindingOptions.SetID(egwbindingId)
+
+			response, err := vpcClient.DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext(context, denyPrivatePathServiceGatewayEndpointGatewayBindingOptions)
+			if err != nil {
+				log.Printf("[DEBUG] DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("DenyPrivatePathServiceGatewayEndpointGatewayBindingWithContext failed %s\n%s", err, response))
+			}
+		}
+
+	}
 
 	return resourceIBMIsPrivatePathServiceGatewayEndpointGatewayBindingOperationsRead(context, d, meta)
 }

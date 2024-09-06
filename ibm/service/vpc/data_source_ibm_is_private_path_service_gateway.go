@@ -359,7 +359,9 @@ func dataSourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sc
 	if err = d.Set("resource_type", privatePathServiceGateway.ResourceType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
-
+	if err = d.Set("service_endpoints", privatePathServiceGateway.ServiceEndpoints); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting service_endpoints: %s", err))
+	}
 	vpc := []map[string]interface{}{}
 	if privatePathServiceGateway.VPC != nil {
 		modelMap, err := dataSourceIBMIsPrivatePathServiceGatewayVPCReferenceToMap(privatePathServiceGateway.VPC)
