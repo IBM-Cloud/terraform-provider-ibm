@@ -241,10 +241,10 @@ resource "ibm_dns_custom_resolver_forwarding_rule" "test" {
   match = "test.example.com"
   forward_to = ["168.20.22.122"]
   views   {
-    view_name = "view-example-name"
-    view_description = "view description"
-    view_expression = "ipInRange(source.ip, '10.240.0.0/24') || ipInRange(source.ip, '10.240.1.0/24')"
-    view_forward_to = ["10.240.2.6","10.240.2.7"]
+    name = "view-example-name"
+    description = "view description"
+    expression = "ipInRange(source.ip, '10.240.0.0/24') || ipInRange(source.ip, '10.240.1.0/24')"
+    forward_to = ["10.240.2.6","10.240.2.7"]
   }
 }
 
