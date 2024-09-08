@@ -686,6 +686,7 @@ Review the argument reference that you can specify for your resource.
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`. If you leave `service_endpoints` empty, the default value will be set based on the compliance standard in the region where the instance is being created. Generally, if the region is enabled with FS Cloud/ENS High compliance, then the default would be `private`. Otherwise, the default would be `public`. During any update, if you leave `service_endpoints` empty, it will maintain the previously selected value.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance.
 - `version` - (Optional, Forces new resource, String) The version of the database to be provisioned. If omitted, the database is created with the most recent major and minor version.
+- `deletion_protection` - (Optional, Boolean) If the DB instance should have deletion protection enabled. The database can't be deleted when this value is set to `true`. The default is `false`. 
 - `users` - (Optional, List of Objects) A list of users that you want to create on the database. Multiple blocks are allowed.
 
   Nested scheme for `users`:

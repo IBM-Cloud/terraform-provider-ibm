@@ -1638,6 +1638,26 @@ func wrapFunction(
 ) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
 	if function != nil {
 		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+			// only allow deletion if the resource is not marked as protected
+			if operationName == "delete" && schema.Get("deletion_protection") != nil {
+				// we check the value in state, not current config. Current config will always be null for a delete
+
+				if schema.Get("deletion_protection") == true {
+					log.Printf("[DEBUG] Resource has deletion protection turned on %s", resourceName)
+					var diags diag.Diagnostics
+					summary := fmt.Sprintf("Deletion protection is enabled for resource %s to prevent accidential deletion", schema.Get("name"))
+					return append(
+						diags,
+						diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  summary,
+							Detail:   "Set deletion_protection to false, apply and then destroy if deletion should proceed",
+						},
+					)
+				}
+			}
+
 			return function(context, schema, meta)
 		}
 	} else if fallback != nil {

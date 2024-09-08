@@ -808,6 +808,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			flex.DeletionProtection: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether Terraform will be prevented from destroying the instance",
+			},
+
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
