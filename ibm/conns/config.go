@@ -1567,10 +1567,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 	}
 
-	baasAuthenticator := backuprecoveryv1.NewIAMAuthenticator(c.BluemixAPIKey, EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL))
+	// baasAuthenticator := backuprecoveryv1.NewIAMAuthenticator(c.BluemixAPIKey, EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL))
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
-		Authenticator: &baasAuthenticator,
+		Authenticator: authenticator,
 		URL:           backupRecoveryURL,
 	}
 	// Construct the service client.

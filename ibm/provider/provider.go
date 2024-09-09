@@ -231,6 +231,11 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+
+			"ibm_baas_agent_upgrade_tasks":      backuprecovery.DataSourceIbmBaasAgentUpgradeTasks(),
+			"ibm_baas_connector_status":         backuprecovery.DataSourceIbmBaasConnectorStatus(),
+			"ibm_baas_connector_logs":           backuprecovery.DataSourceIbmBaasConnectorLogs(),
+			"ibm_baas_object_snapshots":         backuprecovery.DataSourceIbmBaasObjectSnapshots(),
 			"ibm_baas_connectors_metadata":      backuprecovery.DataSourceIbmBaasConnectorsMetadata(),
 			"ibm_baas_data_source_connections":  backuprecovery.DataSourceIbmBaasDataSourceConnections(),
 			"ibm_baas_data_source_connectors":   backuprecovery.DataSourceIbmBaasDataSourceConnectors(),
@@ -976,7 +981,9 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-
+			"ibm_baas_agent_upgrade_task":                             backuprecovery.ResourceIbmBaasAgentUpgradeTask(),
+			"ibm_baas_data_source_connector_registration":             backuprecovery.ResourceIbmBaasDataSourceConnectorRegistration(),
+			"ibm_baas_download_agent":                                 backuprecovery.ResourceIbmBaasDownloadAgent(),
 			"ibm_baas_connection_registration_token":                  backuprecovery.ResourceIbmBaasConnectionRegistrationToken(),
 			"ibm_baas_protection_group_run_request":                   backuprecovery.ResourceIbmBaasProtectionGroupRunRequest(),
 			"ibm_baas_data_source_connection":                         backuprecovery.ResourceIbmBaasDataSourceConnection(),
