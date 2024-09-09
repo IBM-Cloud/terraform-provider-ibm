@@ -94,6 +94,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this reserved IP.
 		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
 		- `resource_type` - (String) The resource type.
+
 	- `resource_type` - (String) The resource type.
 	- `subnet` - (List) The subnet of the virtual network interface for the network attachment.
 	  Nested schema for **subnet**:
@@ -105,6 +106,14 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this subnet.
 		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
 		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
+    
 - `network_interfaces` - (List) A nested block describing the additional network interface of this instance.
   Nested scheme for `network_interfaces`:
     - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
@@ -151,6 +160,13 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this subnet.
 		- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
 		- `resource_type` - (String) The resource type.
+  - `virtual_network_interface` - (List) The virtual network interface for this bare metal server network attachment.
+  Nested schema for **virtual_network_interface**:
+    - `crn` - (String) The CRN for this virtual network interface.
+    - `href` - (String) The URL for this virtual network interface.
+    - `id` - (String) The unique identifier for this virtual network interface.
+    - `name` - (String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
+    - `resource_type` - (String) The resource type.
 - `primary_network_interface` - (List) A nested block describing the primary network interface of this bare metal server.
   Nested scheme for `primary_network_interface`:
     - `allow_ip_spoofing` - (Bool) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.

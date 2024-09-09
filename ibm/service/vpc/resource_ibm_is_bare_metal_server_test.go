@@ -622,6 +622,12 @@ func testAccCheckIBMISBareMetalServerVNIConfig(vpcname, subnetname, sshname, pub
 			enable_infrastructure_nat = true
 			allow_ip_spoofing = true
 		}
+		resource "ibm_is_virtual_network_interface" "testacc_vni2"{
+			name = "%s-1"
+			subnet = ibm_is_subnet.testacc_subnet.id
+			enable_infrastructure_nat = true
+			allow_ip_spoofing = true
+		}
 		resource "ibm_is_bare_metal_server" "testacc_bms" {
 			profile 			= "%s"
 			name 				= "%s"
@@ -635,9 +641,16 @@ func testAccCheckIBMISBareMetalServerVNIConfig(vpcname, subnetname, sshname, pub
 				}
 				allowed_vlans = [100, 102]
 			}
+			network_attachments {
+				name = "test-vni-200-202"
+				virtual_network_interface { 
+					id = ibm_is_virtual_network_interface.testacc_vni2.id
+				}
+				allowed_vlans = [200, 202]
+			}
 			vpc 				= ibm_is_vpc.testacc_vpc.id
 		}
-`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, vniname, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
+`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, vniname, vniname, acc.IsBareMetalServerProfileName, name, acc.IsBareMetalServerImage, acc.ISZoneName)
 }
 
 func testAccCheckIBMISBareMetalServerVNIPSFMConfig(vpcname, subnetname, sshname, publicKey, vniname1, vniname2, psfm1, psfm2, name string) string {

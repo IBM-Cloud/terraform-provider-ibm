@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMContainerCluster() *schema.Resource {
@@ -34,6 +36,23 @@ func DataSourceIBMContainerCluster() *schema.Resource {
 				ValidateFunc: validate.InvokeDataSourceValidator(
 					"ibm_container_cluster",
 					"name"),
+			},
+			"wait_till": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{oneWorkerNodeReady, clusterNormal}, true),
+				Description:  "wait_till can be configured for Master Ready, One worker Ready, Ingress Ready or Normal",
+			},
+			"wait_till_timeout": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      "20",
+				Description:  "timeout for wait_till in minutes",
+				RequiredWith: []string{"wait_till"},
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"worker_count": {
 				Description: "Number of workers",
@@ -390,6 +409,16 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOk("name"); ok {
 		name = v.(string)
 	}
+
+	// timeoutStage will define the timeout stage
+	var timeoutStage string
+	var timeout time.Duration = 20 * time.Minute
+	if v, ok := d.GetOk("wait_till"); ok {
+		timeoutStage = strings.ToLower(v.(string))
+		timeoutInt := d.Get("wait_till_timeout").(int)
+		timeout = time.Duration(timeoutInt) * time.Minute
+	}
+
 	clusterFields, err := csAPI.Find(name, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
@@ -434,6 +463,20 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	filteredAlbs := flex.FlattenAlbs(albs, filterType)
 
 	d.SetId(clusterFields.ID)
+
+	if timeoutStage != "" {
+		err = waitForCluster(d, timeoutStage, timeout, meta)
+		if err != nil {
+			return err
+		}
+
+		clusterFields, err = csAPI.Find(name, targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving cluster after waitForCluster: %s", err)
+		}
+	}
+
+	d.Set("state", clusterFields.State)
 	d.Set("worker_count", clusterFields.WorkerCount)
 	d.Set("workers", workers)
 	d.Set("region", clusterFields.Region)

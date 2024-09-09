@@ -92,7 +92,7 @@ func DataSourceIBMKMSKMIPObject() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Computed:     true,
-		Description:  "The id of the KMIP adapter that contains the cert",
+		Description:  "The id of the KMIP adapter that contains the kmip object",
 		ForceNew:     true,
 		ExactlyOneOf: []string{"adapter_id", "adapter_name"},
 	}
@@ -100,7 +100,7 @@ func DataSourceIBMKMSKMIPObject() *schema.Resource {
 		Type:         schema.TypeString,
 		Optional:     true,
 		Computed:     true,
-		Description:  "The name of the KMIP adapter that contains the cert",
+		Description:  "The name of the KMIP adapter that contains the kmip object",
 		ForceNew:     true,
 		ExactlyOneOf: []string{"adapter_id", "adapter_name"},
 	}
