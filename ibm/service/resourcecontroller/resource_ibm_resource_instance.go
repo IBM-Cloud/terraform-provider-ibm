@@ -901,7 +901,7 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.LastOperation.Async {
+			if instance.LastOperation != nil && instance.LastOperation.Async != nil && *instance.LastOperation.Async {
 				if *instance.LastOperation.State == RsInstanceFailStatus {
 					return instance, *instance.LastOperation.State, fmt.Errorf("[ERROR] The resource instance '%s' update failed: %v", d.Id(), err)
 				}
