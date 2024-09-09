@@ -8,6 +8,8 @@ description: |-
 
 # ibm_is_subnet_reserved_ip_patch
 Update name and/or auto_delete of an existing reserved ip. For more information, about associated reserved IP subnet, see [reserved IP subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-troubleshoot-reserved-ip).
+  
+~> NOTE: Use this resource with caution, conflicts with `ibm_is_subnet_reserved_ip` resource if it has `name` attribute, using both will show changes on either of the resources alternatively on each apply.
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
