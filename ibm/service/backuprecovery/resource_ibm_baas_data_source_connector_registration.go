@@ -202,7 +202,7 @@ func resourceIbmBaasDataSourceConnectorRegistrationDelete(context context.Contex
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Delete Not Supported",
-		Detail:   "Delete operation is not supported for this resource. The resource will be removed from the terraform file but will continue to exist in the backend.",
+		Detail:   "Delete operation is not supported for this resource. The resource will be removed from the terraform state file but will continue to exist in the backend.",
 	}
 	diags = append(diags, warning)
 	d.SetId("")

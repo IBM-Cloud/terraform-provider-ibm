@@ -1565,7 +1565,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	backupRecoveryURL := "https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2"
 	backupRecoveryConnectorURL := "Default value"
 
-	if c.Visibility != "private" || c.Visibility != "public-and-private" {
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 		backupRecoveryConnectorURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_CONNECTOR_ENDPOINT", c.Region, backupRecoveryConnectorURL)
 	}
