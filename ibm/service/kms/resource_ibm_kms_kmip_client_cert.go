@@ -158,9 +158,10 @@ func resourceIBMKmsKMIPClientCertExists(d *schema.ResourceData, meta interface{}
 	ctx := context.Background()
 	_, err = kpAPI.GetKMIPClientCertificate(ctx, adapterID, certID)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, wrapError(err, "Error checking KMIP Client Certificate existence")
 	}
