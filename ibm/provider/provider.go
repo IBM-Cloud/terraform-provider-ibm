@@ -1407,6 +1407,9 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
 			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
 
+			// Added for Iam Access Tag
+			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
+
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
@@ -1875,6 +1878,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
 				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
+				"ibm_iam_access_tag":                      globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
