@@ -30,7 +30,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.3
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/networking-go-sdk v0.49.0
-	github.com/IBM/platform-services-go-sdk v0.67.0
+	github.com/IBM/platform-services-go-sdk v0.68.1
 	github.com/IBM/project-go-sdk v0.3.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.41.2
