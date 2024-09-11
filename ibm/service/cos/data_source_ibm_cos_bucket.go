@@ -17,6 +17,7 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
@@ -556,6 +557,100 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"lifecycle_rule": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"abort_incomplete_multipart_upload": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"days_after_initiation": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"expiration": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"expired_object_delete_marker": {
+										Type:     schema.TypeBool,
+										Computed: true, // API returns false; conflicts with date and days
+									},
+								},
+							},
+						},
+						"filter": {
+							Type:     schema.TypeList,
+							Computed: true,
+							// IBM has filter a required parameter
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"prefix": {
+										Type:     schema.TypeString, // check if prefix empty is eccepted and if filter empty is accepted
+										Computed: true,
+									},
+								},
+							},
+						},
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true, // check with team if we have any validation function
+						},
+						"noncurrent_version_expiration": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"noncurrent_days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"transition": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:     schema.TypeString,
+										Computed: true,
+										// ValidateFunc: verify.ValidUTCTimestamp,
+									},
+									"days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"storag_class": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -795,6 +890,52 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			}
 		}
 	}
+
+	//lifecycle configuration new resource read
+	const (
+		lifecycleConfigurationRulesSteadyTimeout = 2 * time.Minute
+	)
+	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	var outputLifecycleConfig *s3.GetBucketLifecycleConfigurationOutput
+
+	// Adding a retry to overcome the
+	err = resource.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *resource.RetryError {
+		var err error
+		outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
+
+		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
+
+			return resource.RetryableError(err)
+
+		}
+
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+	if conns.IsResourceTimeoutError(err) {
+		outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
+	}
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting Lifecycle Configuration for the bucket %s", bucketName)
+	}
+
+	var outputLifecycleConfigptr *s3.LifecycleConfiguration
+	outputLifecycleConfigptr = (*s3.LifecycleConfiguration)(outputLifecycleConfig)
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+	if outputLifecycleConfigptr.Rules != nil {
+		lifecycleConfiguration := flex.LifecylceRuleGet(outputLifecycleConfigptr.Rules)
+		if len(lifecycleConfiguration) > 0 {
+			d.Set("lifecycle_rule", lifecycleConfiguration)
+		}
+	}
+	//Reading new resoucr end here
 
 	// Read the retention policy
 	retentionInput := &s3.GetBucketProtectionConfigurationInput{
