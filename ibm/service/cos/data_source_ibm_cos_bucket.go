@@ -17,7 +17,6 @@ import (
 	token "github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam/token"
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
@@ -892,41 +891,14 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	//lifecycle configuration new resource read
-	const (
-		lifecycleConfigurationRulesSteadyTimeout = 2 * time.Minute
-	)
 	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
 	}
 	var outputLifecycleConfig *s3.GetBucketLifecycleConfigurationOutput
-
-	// Adding a retry to overcome the
-	err = resource.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *resource.RetryError {
-		var err error
-		outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
-
-		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
-
-			return resource.RetryableError(err)
-
-		}
-
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-	if conns.IsResourceTimeoutError(err) {
-		outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
-	}
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting Lifecycle Configuration for the bucket %s", bucketName)
-	}
-
+	outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
 	var outputLifecycleConfigptr *s3.LifecycleConfiguration
 	outputLifecycleConfigptr = (*s3.LifecycleConfiguration)(outputLifecycleConfig)
-	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
 		return err
 	}
 	if outputLifecycleConfigptr.Rules != nil {
@@ -935,7 +907,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("lifecycle_rule", lifecycleConfiguration)
 		}
 	}
-	//Reading new resoucr end here
+	//Reading new resource end here
 
 	// Read the retention policy
 	retentionInput := &s3.GetBucketProtectionConfigurationInput{
