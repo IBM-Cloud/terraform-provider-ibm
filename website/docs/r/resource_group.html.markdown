@@ -20,6 +20,12 @@ resource "ibm_resource_group" "resourceGroup" {
 
 ```
 
+## Timeouts
+
+The `ibm_resource_group` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **delete** - (Default 20 minutes) Used for deleting resource group.
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

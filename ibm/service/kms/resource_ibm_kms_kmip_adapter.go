@@ -169,8 +169,14 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 	}
 
 	for _, object := range objects.Objects {
-		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID)
+		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID, kp.WithForce(true))
 		if err != nil {
+			if kpError, ok := err.(*kp.Error); ok {
+				if kpError.StatusCode == 404 || kpError.StatusCode == 410 {
+					// if the kmip object is already deleted, do not error out
+					continue
+				}
+			}
 			return fmt.Errorf("[ERROR] Failed to delete KMIP object associated with adapter (%s): %s",
 				adapterID,
 				err,
@@ -194,9 +200,10 @@ func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (
 	ctx := context.Background()
 	_, err = kpAPI.GetKMIPAdapter(ctx, adapterID)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, wrapError(err, "Error checking adapter existence")
 	}
