@@ -302,3 +302,23 @@ Review the argument references that you can specify for your resource.
  Nested scheme for `abort_incomplete_multipart_upload`:
   - `days_after_initiation` - Number of days after which incomplete multipart uploads are aborted.
  
+
+ ## Import IBM COS lifecycle configuration
+The lifecycle configurations rules for a bucket can be imported into an `ibm_cos_bucket_lifecycle_configuration` resource for a particular bucket using the bucket id.
+
+id = `$CRN:meta:$buckettype:$bucketlocation`
+
+**Syntax**
+
+```
+$ terraform import ibm_cos_bucket_lifecycle_configuration.lifecycle `$CRN:meta:$buckettype:$bucketlocation`
+
+```
+
+**Example**
+
+```
+
+$ terraform import ibm_cos_bucket_lifecycle_configuration.lifecycle crn:v1:bluemix:public:cloud-object-storage:global:a/4ea1882a2d3401ed1e459979941966ea:31fa970d-51d0-4b05-893e-251cba75a7b3:bucket:mybucketname:meta:crl:eu:public
+
+```
