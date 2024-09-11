@@ -52,7 +52,7 @@ In addition to all argument reference list, you can access the following attribu
 	Nested schema for **local**:
 	- `ike_identities` - (List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
 		Nested schema for **ike_identities**:
-		- `type` - (String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `type` - (String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
 		- `value` - (String) The IKE identity FQDN value.
 - `local_cidrs` - (String) The VPN gateway connection local CIDRs.
 - `mode` - (String) The mode of the VPN gateway.
@@ -63,7 +63,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `fqdn` - (String) The FQDN of the peer VPN gateway for this connection.
 	- `ike_identity` - (List) The peer IKE identity.
 		Nested schema for **ike_identity**:
-		- `type` - (String) The IKE identity type.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+		- `type` - (String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
 		- `value` - (String) The IKE identity FQDN value.
 	- `type` - (String) Indicates whether `peer.address` or `peer.fqdn` is used.
 

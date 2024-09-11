@@ -302,7 +302,7 @@ func createEventStreamsTopicResourceWithConfig(createInstance bool, topicName st
 }
 
 func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
-	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerAPI()
+	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return err
 	}
@@ -311,16 +311,17 @@ func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
 			continue
 		}
 		instanceID := rs.Primary.ID
-		instance, err := rsContClient.ResourceServiceInstance().GetInstance(instanceID)
+		instance, err := rsContClient.ResourceServiceInstanceV2().GetInstance(instanceID)
+		if err != nil {
+			if strings.Contains(err.Error(), "404") {
+				return nil
+			}
+			return fmt.Errorf("[ERROR] Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+		}
 
-		if err == nil {
-			if !reflect.DeepEqual(instance, models.ServiceInstance{}) && instance.State == "active" {
-				return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
-			}
-		} else {
-			if !strings.Contains(err.Error(), "404") {
-				return fmt.Errorf("[ERROR] Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
-			}
+		if !reflect.DeepEqual(instance, models.ServiceInstanceV2{}) &&
+			instance.State != "removed" && instance.State != "pending_reclamation" {
+			return fmt.Errorf("[ERROR] Instance (%s) is not removed", rs.Primary.ID)
 		}
 	}
 	return nil

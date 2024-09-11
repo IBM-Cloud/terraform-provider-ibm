@@ -33,6 +33,24 @@ resource "ibm_resource_instance" "resource_instance" {
   }
 }
 ```
+
+## Example to provision a Cloud Logs instance
+```
+resource "ibm_resource_instance" "logs_instance" {
+  name     = "logs-instance"
+  service  = "logs"
+  plan     = "standard"
+  location = "eu-de"
+  parameters = {
+    retention_period        = "14"
+    logs_bucket_crn         = "crn:v1:bluemix:public:cloud-object-storage:global:a/4448261269a14562b839e0a3019ed980:f8b3176e-af8e-4e14-a2f9-7f82634e7f0b:bucket:logs-bucket"
+    logs_bucket_endpoint    = "s3.direct.eu-de.cloud-object-storage.appdomain.cloud"
+    metrics_bucket_crn      = "crn:v1:bluemix:public:cloud-object-storage:global:a/4448261269a14562b839e0a3019ed980:f8b3176e-af8e-4e14-a2f9-7f82634e7f0b:bucket:metrics-bucket"
+    metrics_bucket_endpoint = "s3.direct.eu-de.cloud-object-storage.appdomain.cloud"
+  }
+}
+```
+
 ### Example to provision a Hyper Protect DBaaS service instance
 The following example enables you to create a service instance of IBM Cloud Hyper Protect DBaaS for MongoDB. For detailed argument reference, see the tables in the [Hyper Protect DBaaS for MongoDB documentation](https://cloud.ibm.com/docs/hyper-protect-dbaas-for-mongodb?topic=hyper-protect-dbaas-for-mongodb-create-service&interface=cli#cli-create-service), or the [Hyper Protect DBaaS for PostgreSQL documentation](https://cloud.ibm.com/docs/hyper-protect-dbaas-for-postgresql?topic=hyper-protect-dbaas-for-postgresql-create-service&interface=cli#cli-create-service) to create PostgreSQL service instances.
 

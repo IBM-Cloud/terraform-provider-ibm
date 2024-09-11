@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -62,17 +62,19 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 	eventListener := "listener"
 	maxConcurrentRuns := fmt.Sprintf("%d", acctest.RandIntRange(3, 4))
 	enabled := "false"
-	favorite := "false"
 	cron := fmt.Sprintf("*/5 10 10 %d *", acctest.RandIntRange(1, 12))
 	timezone := "Europe/London"
+	filter := "test"
+	favorite := "false"
 	typeVarUpdate := "generic"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	eventListenerUpdate := fmt.Sprintf("tf_event_listener_%d", acctest.RandIntRange(10, 100))
 	maxConcurrentRunsUpdate := fmt.Sprintf("%d", acctest.RandIntRange(1, 2))
 	enabledUpdate := "true"
-	favoriteUpdate := "true"
 	cronUpdate := fmt.Sprintf("*/10 %d 10 10 *", acctest.RandIntRange(1, 23))
 	timezoneUpdate := "America/New_York"
+	filterUpdate := "true"
+	favoriteUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -80,7 +82,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineTriggerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVar, name, eventListener, maxConcurrentRuns, enabled, favorite, cron, timezone),
+				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVar, name, eventListener, maxConcurrentRuns, enabled, cron, timezone, filter, favorite),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", conf),
 					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", conf),
@@ -88,9 +90,9 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", name),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "max_concurrent_runs", maxConcurrentRuns),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "enabled", enabled),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "favorite", favorite),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", "cron", cron),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", "timezone", timezone),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "favorite", favorite),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "trigger_id"),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", "pipeline_id"),
@@ -106,14 +108,14 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVarUpdate, nameUpdate, eventListenerUpdate, maxConcurrentRunsUpdate, enabledUpdate, favoriteUpdate, cronUpdate, timezoneUpdate),
+				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVarUpdate, nameUpdate, eventListenerUpdate, maxConcurrentRunsUpdate, enabledUpdate, cronUpdate, timezoneUpdate, filterUpdate, favoriteUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "max_concurrent_runs", maxConcurrentRunsUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "enabled", enabledUpdate),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "favorite", favoriteUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", "cron", cronUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", "timezone", timezoneUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "favorite", favoriteUpdate),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "trigger_id"),
 					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2", "pipeline_id"),
@@ -199,7 +201,7 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVa
 	`, rgName, tcName, typeVar, name, eventListener)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, favorite string, cron string, timezone string) string {
+func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, cron string, timezone string, filter string, favorite string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`

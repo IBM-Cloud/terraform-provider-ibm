@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -272,7 +273,7 @@ func waitForIBMPIDhcpStatus(ctx context.Context, client *instance.IBMPIDhcpClien
 				log.Printf("[DEBUG] get DHCP failed %v", err)
 				return nil, "", err
 			}
-			if *dhcpServer.Status != State_Active {
+			if strings.ToLower(*dhcpServer.Status) != State_Active {
 				return dhcpServer, State_Building, nil
 			}
 			return dhcpServer, State_Active, nil
