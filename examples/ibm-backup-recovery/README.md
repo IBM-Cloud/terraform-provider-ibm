@@ -3,42 +3,44 @@
 These examples illustrate how to use the resources and data sources associated with IBM Backup recovery API.
 
 The following resources are supported:
-* ibm_protection_group_run_request
-* ibm_recovery_download_files_folders
-* ibm_perform_action_on_protection_group_run_request
-* ibm_protection_group
-* ibm_protection_policy
-* ibm_recovery
-* ibm_search_indexed_object
-* ibm_source_registration
-* ibm_update_protection_group_run_request
-* ibm_protection_group_state
+* ibm_baas_connection_registration_token
+* ibm_baas_agent_upgrade_task
+* ibm_baas_connectors_metadata
+* ibm_baas_protection_group_run_request
+* ibm_baas_data_source_connection
+* ibm_baas_data_source_connector_registration
+* ibm_baas_download_agent
+* ibm_baas_recovery_download_files_folders
+* ibm_baas_restore_points
+* ibm_baas_perform_action_on_protection_group_run_request
+* ibm_baas_protection_group
+* ibm_baas_protection_policy
+* ibm_baas_recovery
+* ibm_baas_search_indexed_object
+* ibm_baas_source_registration
+* ibm_baas_update_protection_group_run_request
 
 The following data sources are supported:
-* ibm_run_debug_logs
-* ibm_object_run_debug_logs
-* ibm_run_error_report
-* ibm_runs_report
-* ibm_recovery_debug_logs
-* ibm_recovery_download_messages
-* ibm_recovery_download_files
-* ibm_recovery_fetch_uptier_data
-* ibm_protection_run_progress
-* ibm_protection_run_stat
-* ibm_search_objects
-* ibm_search_protected_objects
-* ibm_protection_group
-* ibm_protection_groups
-* ibm_protection_group_run
-* ibm_protection_group_runs
-* ibm_protection_policies
-* ibm_protection_policy
-* ibm_protection_run_summary
-* ibm_protection_sources
-* ibm_recovery
-* ibm_recoveries
-* ibm_source_registrations
-* ibm_source_registration
+* ibm_baas_agent_upgrade_tasks
+* ibm_baas_connectors_metadata
+* ibm_baas_data_source_connections
+* ibm_baas_data_source_connectors
+* ibm_baas_connector_status
+* ibm_baas_connector_logs
+* ibm_baas_object_snapshots
+* ibm_baas_search_objects
+* ibm_baas_search_protected_objects
+* ibm_baas_protection_group
+* ibm_baas_protection_groups
+* ibm_baas_protection_group_run
+* ibm_baas_protection_group_runs
+* ibm_baas_protection_policies
+* ibm_baas_protection_policy
+* ibm_baas_recovery
+* ibm_baas_recoveries
+* ibm_baas_source_registrations
+* ibm_baas_source_registration
+* ibm_baas_download_indexed_files
 
 ## Usage
 
@@ -54,14 +56,12 @@ Run `terraform destroy` when you don't need these resources.
 
 ## IBM Backup recovery API resources
 
-### Resource: ibm_protection_group_run_request
+### Resource: ibm_baas_connection_registration_token
 
 ```hcl
-resource "ibm_protection_group_run_request" "protection_group_run_request_instance" {
-  run_type = var.protection_group_run_request_run_type
-  objects = var.protection_group_run_request_objects
-  targets_config = var.protection_group_run_request_targets_config
-  uda_params = var.protection_group_run_request_uda_params
+resource "ibm_baas_connection_registration_token" "baas_connection_registration_token_instance" {
+  connection_id = var.baas_connection_registration_token_connection_id
+  x_ibm_tenant_id = var.baas_connection_registration_token_x_ibm_tenant_id
 }
 ```
 
@@ -70,26 +70,25 @@ resource "ibm_protection_group_run_request" "protection_group_run_request_instan
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| run_type | Type of protection run. 'kRegular' indicates an incremental (CBT) backup. Incremental backups utilizing CBT (if supported) are captured of the target protection objects. The first run of a kRegular schedule captures all the blocks. 'kFull' indicates a full (no CBT) backup. A complete backup (all blocks) of the target protection objects are always captured and Change Block Tracking (CBT) is not utilized. 'kLog' indicates a Database Log backup. Capture the database transaction logs to allow rolling back to a specific point in time. 'kSystem' indicates system volume backup. It produces an image for bare metal recovery. | `string` | true |
-| objects | Specifies the list of objects to be protected by this Protection Group run. These can be leaf objects or non-leaf objects in the protection hierarchy. This must be specified only if a subset of objects from the Protection Groups needs to be protected. | `list()` | false |
-| targets_config | Specifies the replication and archival targets. | `` | false |
-| uda_params | Specifies the parameters for Universal Data Adapter protection run. | `` | false |
+| connection_id | Specifies the ID of the connection, connectors belonging to which are to be fetched. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| run_id | The unique ID. |
+| registration_token |  |
 
-### Resource: ibm_recovery_download_files_folders
+### Resource: ibm_baas_agent_upgrade_task
 
 ```hcl
-resource "ibm_recovery_download_files_folders" "recovery_download_files_folders_instance" {
-  name = var.recovery_download_files_folders_name
-  object = var.recovery_download_files_folders_object
-  parent_recovery_id = var.recovery_download_files_folders_parent_recovery_id
-  files_and_folders = var.recovery_download_files_folders_files_and_folders
-  glacier_retrieval_type = var.recovery_download_files_folders_glacier_retrieval_type
+resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
+  x_ibm_tenant_id = var.baas_agent_upgrade_task_x_ibm_tenant_id
+  agent_i_ds = var.baas_agent_upgrade_task_agent_i_ds
+  description = var.baas_agent_upgrade_task_description
+  name = var.baas_agent_upgrade_task_name
+  schedule_end_time_usecs = var.baas_agent_upgrade_task_schedule_end_time_usecs
+  schedule_time_usecs = var.baas_agent_upgrade_task_schedule_time_usecs
 }
 ```
 
@@ -98,20 +97,168 @@ resource "ibm_recovery_download_files_folders" "recovery_download_files_folders_
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| agent_i_ds | Specifies the agents upgraded in the task. | `list(number)` | false |
+| description | Specifies the description of the task. | `string` | false |
+| name | Specifies the name of the task. | `string` | false |
+| schedule_end_time_usecs | Specifies the time before which the upgrade task should start execution as a Unix epoch Timestamp (in microseconds). If this is not specified the task will start anytime after scheduleTimeUsecs. | `number` | false |
+| schedule_time_usecs | Specifies the time when the task should start execution as a Unix epoch Timestamp (in microseconds). If no schedule is specified, the task will start immediately. | `number` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| agents | Specifies the upgrade information for each agent. |
+| cluster_version | Specifies the version to which agents are upgraded. |
+| end_time_usecs | Specifies the time when the upgrade task completed execution as a Unix epoch Timestamp (in microseconds). |
+| error | Object that holds the error object. |
+| is_retryable | Specifies if a task can be retried. |
+| retried_task_id | Specifies ID of a task which was retried if type is 'Retry'. |
+| start_time_usecs | Specifies the time, as a Unix epoch timestamp in microseconds, when the task started execution. |
+| status | Specifies the status of the task.<br> 'Scheduled' indicates that the upgrade task is yet to start.<br> 'Running' indicates that the upgrade task has started execution.<br> 'Succeeded' indicates that the upgrade task completed without an error.<br> 'Failed' indicates that upgrade has failed for all agents. 'PartiallyFailed' indicates that upgrade has failed for some agents. |
+| type | Specifes the type of task.<br> 'Auto' indicates an auto agent upgrade task which is started after a cluster upgrade.<br> 'Manual' indicates a schedule based agent upgrade task.<br> 'Retry' indicates an agent upgrade task which was retried. |
+
+### Resource: ibm_baas_connectors_metadata
+
+```hcl
+resource "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connector_image_metadata | Specifies information about the connector images for various platforms. |
+
+### Resource: ibm_baas_protection_group_run_request
+
+```hcl
+resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_request_instance" {
+  x_ibm_tenant_id = var.baas_protection_group_run_request_x_ibm_tenant_id
+  run_type = var.baas_protection_group_run_request_run_type
+  objects = var.baas_protection_group_run_request_objects
+  targets_config = var.baas_protection_group_run_request_targets_config
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| run_type | Type of protection run. 'kRegular' indicates an incremental (CBT) backup. Incremental backups utilizing CBT (if supported) are captured of the target protection objects. The first run of a kRegular schedule captures all the blocks. 'kFull' indicates a full (no CBT) backup. A complete backup (all blocks) of the target protection objects are always captured and Change Block Tracking (CBT) is not utilized. 'kLog' indicates a Database Log backup. Capture the database transaction logs to allow rolling back to a specific point in time. 'kSystem' indicates system volume backup. It produces an image for bare metal recovery. | `string` | true |
+| objects | Specifies the list of objects to be protected by this Protection Group run. These can be leaf objects or non-leaf objects in the protection hierarchy. This must be specified only if a subset of objects from the Protection Groups needs to be protected. | `list()` | false |
+| targets_config | Specifies the replication and archival targets. | `` | false |
+
+### Resource: ibm_baas_data_source_connection
+
+```hcl
+resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
+  x_ibm_tenant_id = var.baas_data_source_connection_x_ibm_tenant_id
+  connection_name = var.baas_data_source_connection_connection_name
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Id of the tenant accessing the cluster. | `string` | false |
+| connection_name | Specifies the name of the connection. For a given tenant, different connections can't have the same name. However, two (or more) different tenants can each have a connection with the same name. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connector_ids | Specifies the IDs of the connectors in this connection. |
+| network_settings | Specifies the common network settings for the connectors associated with this connection. |
+| registration_token | Specifies a token that can be used to register a connector against this connection. |
+
+### Resource: ibm_baas_data_source_connector_registration
+
+```hcl
+resource "ibm_baas_data_source_connector_registration" "baas_data_source_connector_registration_instance" {
+  x_ibm_tenant_id = var.baas_data_source_connector_registration_x_ibm_tenant_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| cluster_side_ip | Specifies the IP of the connector's NIC facing the cluster. |
+| connection_id | Specifies the ID of the connection to which this connector belongs. |
+| connector_name | Specifies the name of the connector. The name of a connector need not be unique within a tenant or across tenants. The name of the connector can be updated as needed. |
+| connector_status | Specifies status information for the data-source connector. For example if it's currently connected to the cluster, when it last connected to the cluster successfully, etc. |
+| software_version | Specifies the connector's software version. |
+| tenant_side_ip | Specifies the IP of the connector's NIC facing the sources of the tenant to which the connector belongs. |
+
+### Resource: ibm_baas_download_agent
+
+```hcl
+resource "ibm_baas_download_agent" "baas_download_agent_instance" {
+  x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
+  linux_params = var.baas_download_agent_linux_params
+  platform = var.baas_download_agent_platform
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| linux_params | Linux agent parameters. | `` | false |
+| platform | Specifies the platform for which agent needs to be downloaded. | `string` | true |
+
+### Resource: ibm_baas_recovery_download_files_folders
+
+```hcl
+resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+  x_ibm_tenant_id = var.baas_recovery_download_files_folders_x_ibm_tenant_id
+  documents = var.baas_recovery_download_files_folders_documents
+  name = var.baas_recovery_download_files_folders_name
+  object = var.baas_recovery_download_files_folders_object
+  parent_recovery_id = var.baas_recovery_download_files_folders_parent_recovery_id
+  files_and_folders = var.baas_recovery_download_files_folders_files_and_folders
+  glacier_retrieval_type = var.baas_recovery_download_files_folders_glacier_retrieval_type
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| documents | Specifies the list of documents to download using item ids. Only one of filesAndFolders or documents should be used. Currently only files are supported by documents. | `list()` | false |
 | name | Specifies the name of the recovery task. This field must be set and must be a unique name. | `string` | true |
 | object | Specifies the common snapshot parameters for a protected object. | `` | true |
 | parent_recovery_id | If current recovery is child task triggered through another parent recovery operation, then this field will specify the id of the parent recovery. | `string` | false |
 | files_and_folders | Specifies the list of files and folders to download. | `list()` | true |
 | glacier_retrieval_type | Specifies the glacier retrieval type when restoring or downloding files or folders from a Glacier-based cloud snapshot. | `string` | false |
 
-### Resource: ibm_perform_action_on_protection_group_run_request
+### Resource: ibm_baas_restore_points
 
 ```hcl
-resource "ibm_perform_action_on_protection_group_run_request" "perform_action_on_protection_group_run_request_instance" {
-  action = var.perform_action_on_protection_group_run_request_action
-  pause_params = var.perform_action_on_protection_group_run_request_pause_params
-  resume_params = var.perform_action_on_protection_group_run_request_resume_params
-  cancel_params = var.perform_action_on_protection_group_run_request_cancel_params
+resource "ibm_baas_restore_points" "baas_restore_points_instance" {
+  x_ibm_tenant_id = var.baas_restore_points_x_ibm_tenant_id
+  end_time_usecs = var.baas_restore_points_end_time_usecs
+  environment = var.baas_restore_points_environment
+  protection_group_ids = var.baas_restore_points_protection_group_ids
+  source_id = var.baas_restore_points_source_id
+  start_time_usecs = var.baas_restore_points_start_time_usecs
 }
 ```
 
@@ -120,39 +267,58 @@ resource "ibm_perform_action_on_protection_group_run_request" "perform_action_on
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| end_time_usecs | Specifies the end time specified as a Unix epoch Timestamp in microseconds. | `number` | true |
+| environment | Specifies the protection source environment type. | `string` | false |
+| protection_group_ids | Specifies the jobs for which to get the full snapshot information. | `list(string)` | true |
+| source_id | Specifies the id of the Protection Source which is to be restored. | `number` | false |
+| start_time_usecs | Specifies the start time specified as a Unix epoch Timestamp in microseconds. | `number` | true |
+
+### Resource: ibm_baas_perform_action_on_protection_group_run_request
+
+```hcl
+resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
+  x_ibm_tenant_id = var.baas_perform_action_on_protection_group_run_request_x_ibm_tenant_id
+  action = var.baas_perform_action_on_protection_group_run_request_action
+  pause_params = var.baas_perform_action_on_protection_group_run_request_pause_params
+  resume_params = var.baas_perform_action_on_protection_group_run_request_resume_params
+  cancel_params = var.baas_perform_action_on_protection_group_run_request_cancel_params
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | action | Specifies the type of the action which will be performed on protection runs. | `string` | true |
 | pause_params | Specifies the pause action params for a protection run. | `list()` | false |
 | resume_params | Specifies the resume action params for a protection run. | `list()` | false |
 | cancel_params | Specifies the cancel action params for a protection run. | `list()` | false |
 
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| run_id | The unique ID. |
-
-### Resource: ibm_protection_group
+### Resource: ibm_baas_protection_group
 
 ```hcl
-resource "ibm_protection_group" "protection_group_instance" {
-  name = var.protection_group_name
-  policy_id = var.protection_group_policy_id
-  priority = var.protection_group_priority
-  storage_domain_id = var.protection_group_storage_domain_id
-  description = var.protection_group_description
-  start_time = var.protection_group_start_time
-  end_time_usecs = var.protection_group_end_time_usecs
-  last_modified_timestamp_usecs = var.protection_group_last_modified_timestamp_usecs
-  alert_policy = var.protection_group_alert_policy
-  sla = var.protection_group_sla
-  qos_policy = var.protection_group_qos_policy
-  abort_in_blackouts = var.protection_group_abort_in_blackouts
-  pause_in_blackouts = var.protection_group_pause_in_blackouts
-  is_paused = var.protection_group_is_paused
-  environment = var.protection_group_environment
-  advanced_configs = var.protection_group_advanced_configs
-  physical_params = var.protection_group_physical_params
-  oracle_params = var.protection_group_oracle_params
+resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+  x_ibm_tenant_id = var.baas_protection_group_x_ibm_tenant_id
+  name = var.baas_protection_group_name
+  policy_id = var.baas_protection_group_policy_id
+  priority = var.baas_protection_group_priority
+  description = var.baas_protection_group_description
+  start_time = var.baas_protection_group_start_time
+  end_time_usecs = var.baas_protection_group_end_time_usecs
+  last_modified_timestamp_usecs = var.baas_protection_group_last_modified_timestamp_usecs
+  alert_policy = var.baas_protection_group_alert_policy
+  sla = var.baas_protection_group_sla
+  qos_policy = var.baas_protection_group_qos_policy
+  abort_in_blackouts = var.baas_protection_group_abort_in_blackouts
+  pause_in_blackouts = var.baas_protection_group_pause_in_blackouts
+  is_paused = var.baas_protection_group_is_paused
+  environment = var.baas_protection_group_environment
+  advanced_configs = var.baas_protection_group_advanced_configs
+  physical_params = var.baas_protection_group_physical_params
+  mssql_params = var.baas_protection_group_mssql_params
 }
 ```
 
@@ -161,10 +327,10 @@ resource "ibm_protection_group" "protection_group_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | name | Specifies the name of the Protection Group. | `string` | true |
 | policy_id | Specifies the unique id of the Protection Policy associated with the Protection Group. The Policy provides retry settings Protection Schedules, Priority, SLA, etc. | `string` | true |
 | priority | Specifies the priority of the Protection Group. | `string` | false |
-| storage_domain_id | Specifies the Storage Domain (View Box) ID where this Protection Group writes data. | `number` | false |
 | description | Specifies a description of the Protection Group. | `string` | false |
 | start_time | Specifies the time of day. Used for scheduling purposes. | `` | false |
 | end_time_usecs | Specifies the end time in micro seconds for this Protection Group. If this is not specified, the Protection Group won't be ended. | `number` | false |
@@ -178,7 +344,7 @@ resource "ibm_protection_group" "protection_group_instance" {
 | environment | Specifies the environment of the Protection Group. | `string` | true |
 | advanced_configs | Specifies the advanced configuration for a protection job. | `list()` | false |
 | physical_params |  | `` | false |
-| oracle_params | Specifies the parameters to create Oracle Protection Group. | `` | false |
+| mssql_params | Specifies the parameters specific to MSSQL Protection Group. | `` | false |
 
 #### Outputs
 
@@ -195,23 +361,24 @@ resource "ibm_protection_group" "protection_group_instance" {
 | invalid_entities | Specifies the Information about invalid entities. An entity will be considered invalid if it is part of an active protection group but has lost compatibility for the given backup type. |
 | num_protected_objects | Specifies the number of protected objects of the Protection Group. |
 
-### Resource: ibm_protection_policy
+### Resource: ibm_baas_protection_policy
 
 ```hcl
-resource "ibm_protection_policy" "protection_policy_instance" {
-  name = var.protection_policy_name
-  backup_policy = var.protection_policy_backup_policy
-  description = var.protection_policy_description
-  blackout_window = var.protection_policy_blackout_window
-  extended_retention = var.protection_policy_extended_retention
-  remote_target_policy = var.protection_policy_remote_target_policy
-  cascaded_targets_config = var.protection_policy_cascaded_targets_config
-  retry_options = var.protection_policy_retry_options
-  data_lock = var.protection_policy_data_lock
-  version = var.protection_policy_version
-  is_cbs_enabled = var.protection_policy_is_cbs_enabled
-  last_modification_time_usecs = var.protection_policy_last_modification_time_usecs
-  template_id = var.protection_policy_template_id
+resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+  x_ibm_tenant_id = var.baas_protection_policy_x_ibm_tenant_id
+  name = var.baas_protection_policy_name
+  backup_policy = var.baas_protection_policy_backup_policy
+  description = var.baas_protection_policy_description
+  blackout_window = var.baas_protection_policy_blackout_window
+  extended_retention = var.baas_protection_policy_extended_retention
+  remote_target_policy = var.baas_protection_policy_remote_target_policy
+  cascaded_targets_config = var.baas_protection_policy_cascaded_targets_config
+  retry_options = var.baas_protection_policy_retry_options
+  data_lock = var.baas_protection_policy_data_lock
+  version = var.baas_protection_policy_version
+  is_cbs_enabled = var.baas_protection_policy_is_cbs_enabled
+  last_modification_time_usecs = var.baas_protection_policy_last_modification_time_usecs
+  template_id = var.baas_protection_policy_template_id
 }
 ```
 
@@ -220,6 +387,7 @@ resource "ibm_protection_policy" "protection_policy_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | name | Specifies the name of the Protection Policy. | `string` | true |
 | backup_policy | Specifies the backup schedule and retentions of a Protection Policy. | `` | true |
 | description | Specifies the description of the Protection Policy. | `string` | false |
@@ -243,15 +411,16 @@ resource "ibm_protection_policy" "protection_policy_instance" {
 | num_protection_groups | Specifies the number of protection groups using the protection policy. |
 | num_protected_objects | Specifies the number of protected objects using the protection policy. |
 
-### Resource: ibm_recovery
+### Resource: ibm_baas_recovery
 
 ```hcl
-resource "ibm_recovery" "recovery_instance" {
-  request_initiator_type = var.recovery_request_initiator_type
-  name = var.recovery_name
-  snapshot_environment = var.recovery_snapshot_environment
-  physical_params = var.recovery_physical_params
-  oracle_params = var.recovery_oracle_params
+resource "ibm_baas_recovery" "baas_recovery_instance" {
+  x_ibm_tenant_id = var.baas_recovery_x_ibm_tenant_id
+  request_initiator_type = var.baas_recovery_request_initiator_type
+  name = var.baas_recovery_name
+  snapshot_environment = var.baas_recovery_snapshot_environment
+  physical_params = var.baas_recovery_physical_params
+  mssql_params = var.baas_recovery_mssql_params
 }
 ```
 
@@ -260,11 +429,12 @@ resource "ibm_recovery" "recovery_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | name | Specifies the name of the Recovery. | `string` | true |
 | snapshot_environment | Specifies the type of snapshot environment for which the Recovery was performed. | `string` | true |
 | physical_params | Specifies the recovery options specific to Physical environment. | `` | false |
-| oracle_params | Specifies the recovery options specific to oracle environment. | `` | false |
+| mssql_params | Specifies the recovery options specific to Sql environment. | `` | false |
 
 #### Outputs
 
@@ -286,26 +456,41 @@ resource "ibm_recovery" "recovery_instance" {
 | retrieve_archive_tasks | Specifies the list of persistent state of a retrieve of an archive task. |
 | is_multi_stage_restore | Specifies whether the current recovery operation is a multi-stage restore operation. This is currently used by VMware recoveres for the migration/hot-standby use case. |
 
-### Resource: ibm_search_indexed_object
+### Resource: ibm_baas_search_indexed_object
 
 ```hcl
-resource "ibm_search_indexed_object" "search_indexed_object_instance" {
-  protection_group_ids = var.search_indexed_object_protection_group_ids
-  storage_domain_ids = var.search_indexed_object_storage_domain_ids
-  tenant_id = var.search_indexed_object_tenant_id
-  include_tenants = var.search_indexed_object_include_tenants
-  tags = var.search_indexed_object_tags
-  snapshot_tags = var.search_indexed_object_snapshot_tags
-  must_have_tag_ids = var.search_indexed_object_must_have_tag_ids
-  might_have_tag_ids = var.search_indexed_object_might_have_tag_ids
-  must_have_snapshot_tag_ids = var.search_indexed_object_must_have_snapshot_tag_ids
-  might_have_snapshot_tag_ids = var.search_indexed_object_might_have_snapshot_tag_ids
-  pagination_cookie = var.search_indexed_object_pagination_cookie
-  count = var.search_indexed_object_count
-  object_type = var.search_indexed_object_object_type
-  use_cached_data = var.search_indexed_object_use_cached_data
-  files = var.search_indexed_object_files
-  public_folders = var.search_indexed_object_public_folders
+resource "ibm_baas_search_indexed_object" "baas_search_indexed_object_instance" {
+  x_ibm_tenant_id = var.baas_search_indexed_object_x_ibm_tenant_id
+  protection_group_ids = var.baas_search_indexed_object_protection_group_ids
+  storage_domain_ids = var.baas_search_indexed_object_storage_domain_ids
+  tenant_id = var.baas_search_indexed_object_tenant_id
+  include_tenants = var.baas_search_indexed_object_include_tenants
+  tags = var.baas_search_indexed_object_tags
+  snapshot_tags = var.baas_search_indexed_object_snapshot_tags
+  must_have_tag_ids = var.baas_search_indexed_object_must_have_tag_ids
+  might_have_tag_ids = var.baas_search_indexed_object_might_have_tag_ids
+  must_have_snapshot_tag_ids = var.baas_search_indexed_object_must_have_snapshot_tag_ids
+  might_have_snapshot_tag_ids = var.baas_search_indexed_object_might_have_snapshot_tag_ids
+  pagination_cookie = var.baas_search_indexed_object_pagination_cookie
+  count = var.baas_search_indexed_object_count
+  object_type = var.baas_search_indexed_object_object_type
+  use_cached_data = var.baas_search_indexed_object_use_cached_data
+  cassandra_params = var.baas_search_indexed_object_cassandra_params
+  couchbase_params = var.baas_search_indexed_object_couchbase_params
+  email_params = var.baas_search_indexed_object_email_params
+  exchange_params = var.baas_search_indexed_object_exchange_params
+  file_params = var.baas_search_indexed_object_file_params
+  hbase_params = var.baas_search_indexed_object_hbase_params
+  hdfs_params = var.baas_search_indexed_object_hdfs_params
+  hive_params = var.baas_search_indexed_object_hive_params
+  mongodb_params = var.baas_search_indexed_object_mongodb_params
+  ms_groups_params = var.baas_search_indexed_object_ms_groups_params
+  ms_teams_params = var.baas_search_indexed_object_ms_teams_params
+  one_drive_params = var.baas_search_indexed_object_one_drive_params
+  public_folder_params = var.baas_search_indexed_object_public_folder_params
+  sfdc_params = var.baas_search_indexed_object_sfdc_params
+  sharepoint_params = var.baas_search_indexed_object_sharepoint_params
+  uda_params = var.baas_search_indexed_object_uda_params
 }
 ```
 
@@ -314,6 +499,7 @@ resource "ibm_search_indexed_object" "search_indexed_object_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | protection_group_ids | Specifies a list of Protection Group ids to filter the indexed objects. If specified, the objects indexed by specified Protection Group ids will be returned. | `list(string)` | false |
 | storage_domain_ids | Specifies the Storage Domain ids to filter indexed objects for which Protection Groups are writing data to Cohesity Views on the specified Storage Domains. | `list(number)` | false |
 | tenant_id | TenantId contains id of the tenant for which objects are to be returned. | `string` | false |
@@ -328,21 +514,36 @@ resource "ibm_search_indexed_object" "search_indexed_object_instance" {
 | count | Specifies the number of indexed objects to be fetched for the specified pagination cookie. | `number` | false |
 | object_type | Specifies the object type to be searched for. | `string` | true |
 | use_cached_data | Specifies whether we can serve the GET request from the read replica cache. There is a lag of 15 seconds between the read replica and primary data source. | `bool` | false |
-| files | Specifies the request parameters to search for files and file folders. | `` | false |
-| public_folders | Specifies the request parameters to search for Public Folder items. | `` | false |
+| cassandra_params | Parameters required to search Cassandra on a cluster. | `` | false |
+| couchbase_params | Parameters required to search CouchBase on a cluster. | `` | false |
+| email_params | Specifies the request parameters to search for emails and email folders. | `` | false |
+| exchange_params | Specifies the parameters which are specific for searching Exchange mailboxes. | `` | false |
+| file_params | Specifies the request parameters to search for files and file folders. | `` | false |
+| hbase_params | Parameters required to search Hbase on a cluster. | `` | false |
+| hdfs_params | Parameters required to search HDFS on a cluster. | `` | false |
+| hive_params | Parameters required to search Hive on a cluster. | `` | false |
+| mongodb_params | Parameters required to search Mongo DB on a cluster. | `` | false |
+| ms_groups_params | Specifies the request params to search for Groups items. | `` | false |
+| ms_teams_params | Specifies the request params to search for Teams items. | `` | false |
+| one_drive_params | Specifies the request parameters to search for files/folders in document libraries. | `` | false |
+| public_folder_params | Specifies the request parameters to search for Public Folder items. | `` | false |
+| sfdc_params | Specifies the parameters which are specific for searching Salesforce records. | `` | false |
+| sharepoint_params | Specifies the request parameters to search for files/folders in document libraries. | `` | false |
+| uda_params | Parameters required to search Universal Data Adapter objects. | `` | false |
 
-### Resource: ibm_source_registration
+### Resource: ibm_baas_source_registration
 
 ```hcl
-resource "ibm_source_registration" "source_registration_instance" {
-  environment = var.source_registration_environment
-  name = var.source_registration_name
-  connection_id = var.source_registration_connection_id
-  connections = var.source_registration_connections
-  connector_group_id = var.source_registration_connector_group_id
-  advanced_configs = var.source_registration_advanced_configs
-  physical_params = var.source_registration_physical_params
-  oracle_params = var.source_registration_oracle_params
+resource "ibm_baas_source_registration" "baas_source_registration_instance" {
+  x_ibm_tenant_id = var.baas_source_registration_x_ibm_tenant_id
+  environment = var.baas_source_registration_environment
+  name = var.baas_source_registration_name
+  connection_id = var.baas_source_registration_connection_id
+  connections = var.baas_source_registration_connections
+  connector_group_id = var.baas_source_registration_connector_group_id
+  data_source_connection_id = var.baas_source_registration_data_source_connection_id
+  advanced_configs = var.baas_source_registration_advanced_configs
+  physical_params = var.baas_source_registration_physical_params
 }
 ```
 
@@ -351,14 +552,15 @@ resource "ibm_source_registration" "source_registration_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | environment | Specifies the environment type of the Protection Source. | `string` | true |
 | name | The user specified name for this source. | `string` | false |
 | connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. This field will be depricated in future. Use connections field. | `number` | false |
 | connections | Specfies the list of connections for the source. | `list()` | false |
 | connector_group_id | Specifies the connector group id of connector groups. | `number` | false |
+| data_source_connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision. | `string` | false |
 | advanced_configs | Specifies the advanced configuration for a protection source. | `list()` | false |
-| physical_params | Physical Params params. | `` | false |
-| oracle_params | Physical Params params. | `` | false |
+| physical_params | Specifies parameters to register physical server. | `` | false |
 
 #### Outputs
 
@@ -369,12 +571,14 @@ resource "ibm_source_registration" "source_registration_instance" {
 | authentication_status | Specifies the status of the authentication during the registration of a Protection Source. 'Pending' indicates the authentication is in progress. 'Scheduled' indicates the authentication is scheduled. 'Finished' indicates the authentication is completed. 'RefreshInProgress' indicates the refresh is in progress. |
 | registration_time_msecs | Specifies the time when the source was registered in milliseconds. |
 | last_refreshed_time_msecs | Specifies the time when the source was last refreshed in milliseconds. |
+| external_metadata | Specifies the External metadata of an entity. |
 
-### Resource: ibm_update_protection_group_run_request
+### Resource: ibm_baas_update_protection_group_run_request
 
 ```hcl
-resource "ibm_update_protection_group_run_request" "update_protection_group_run_request_instance" {
-  update_protection_group_run_params = var.update_protection_group_run_request_update_protection_group_run_params
+resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
+  x_ibm_tenant_id = var.baas_update_protection_group_run_request_x_ibm_tenant_id
+  update_protection_group_run_params = var.baas_update_protection_group_run_request_update_protection_group_run_params
 }
 ```
 
@@ -383,40 +587,17 @@ resource "ibm_update_protection_group_run_request" "update_protection_group_run_
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | update_protection_group_run_params |  | `list()` | true |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| run_id | The unique ID. |
-
-### Resource: ibm_protection_group_state
-
-```hcl
-resource "ibm_protection_group_state" "protection_group_state_instance" {
-  action = var.protection_group_state_action
-  ids = var.protection_group_state_ids
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| action | Specifies the action to be performed on all the specfied Protection Groups. 'kActivate' specifies that Protection Group should be activated. 'kDeactivate' sepcifies that Protection Group should be deactivated. 'kPause' specifies that Protection Group should be paused. 'kResume' specifies that Protection Group should be resumed. | `string` | true |
-| ids | Specifies a list of Protection Group ids for which the state should change. | `list(string)` | true |
 
 ## IBM Backup recovery API data sources
 
-### Data source: ibm_run_debug_logs
+### Data source: ibm_baas_agent_upgrade_tasks
 
 ```hcl
-data "ibm_run_debug_logs" "run_debug_logs_instance" {
-  run_debug_logs_id = var.run_debug_logs_run_debug_logs_id
-  run_id = var.run_debug_logs_run_id
-  object_id = var.run_debug_logs_object_id
+data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
+  x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
+  ids = var.baas_agent_upgrade_tasks_ids
 }
 ```
 
@@ -424,159 +605,20 @@ data "ibm_run_debug_logs" "run_debug_logs_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| run_debug_logs_id | Specifies a unique id of the Protection Group. | `string` | true |
-| run_id | Specifies a unique run id of the Protection Group run. | `string` | true |
-| object_id | Specifies the id of the object for which debug logs are to be returned. | `string` | false |
-
-### Data source: ibm_object_run_debug_logs
-
-```hcl
-data "ibm_object_run_debug_logs" "object_run_debug_logs_instance" {
-  object_run_debug_logs_id = var.object_run_debug_logs_object_run_debug_logs_id
-  run_id = var.object_run_debug_logs_run_id
-  object_id = var.object_run_debug_logs_object_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| object_run_debug_logs_id | Specifies a unique id of the Protection Group. | `string` | true |
-| run_id | Specifies a unique run id of the Protection Group run. | `string` | true |
-| object_id | Specifies the id of the object for which debug logs are to be returned. | `string` | true |
-
-### Data source: ibm_run_error_report
-
-```hcl
-data "ibm_run_error_report" "run_error_report_instance" {
-  run_error_report_id = var.run_error_report_run_error_report_id
-  run_id = var.run_error_report_run_id
-  object_id = var.run_error_report_object_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| run_error_report_id | Specifies a unique id of the Protection Group. | `string` | true |
-| run_id | Specifies a unique run id of the Protection Group run. | `string` | true |
-| object_id | Specifies the id of the object for which errors/warnings are to be returned. | `string` | true |
-
-### Data source: ibm_runs_report
-
-```hcl
-data "ibm_runs_report" "runs_report_instance" {
-  runs_report_id = var.runs_report_runs_report_id
-  run_id = var.runs_report_run_id
-  object_id = var.runs_report_object_id
-  file_type = var.runs_report_file_type
-  name = var.runs_report_name
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| runs_report_id | Specifies a unique id of the Protection Group. | `string` | true |
-| run_id | Specifies a unique run id of the Protection Group run. | `string` | true |
-| object_id | Specifies the id of the object for which errors/warnings are to be returned. | `string` | true |
-| file_type | Specifies the downloaded type, i.e: success_files_list, default: success_files_list. | `string` | false |
-| name | Specifies the name of the source being backed up. | `string` | false |
-
-### Data source: ibm_recovery_debug_logs
-
-```hcl
-data "ibm_recovery_debug_logs" "recovery_debug_logs_instance" {
-  recovery_debug_logs_id = var.recovery_debug_logs_recovery_debug_logs_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| recovery_debug_logs_id | Specifies the id of a Recovery job. | `string` | true |
-
-### Data source: ibm_recovery_download_messages
-
-```hcl
-data "ibm_recovery_download_messages" "recovery_download_messages_instance" {
-  recovery_download_messages_id = var.recovery_download_messages_recovery_download_messages_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| recovery_download_messages_id | Specifies a unique ID of a Recovery. | `string` | true |
-
-### Data source: ibm_recovery_download_files
-
-```hcl
-data "ibm_recovery_download_files" "recovery_download_files_instance" {
-  recovery_download_files_id = var.recovery_download_files_recovery_download_files_id
-  start_offset = var.recovery_download_files_start_offset
-  length = var.recovery_download_files_length
-  file_type = var.recovery_download_files_file_type
-  source_name = var.recovery_download_files_source_name
-  start_time = var.recovery_download_files_start_time
-  include_tenants = var.recovery_download_files_include_tenants
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| recovery_download_files_id | Specifies the id of a Recovery. | `string` | true |
-| start_offset | Specifies the start offset of file chunk to be downloaded. | `number` | false |
-| length | Specifies the length of bytes to download. This can not be greater than 8MB (8388608 byets). | `number` | false |
-| file_type | Specifies the downloaded type, i.e: error, success_files_list. | `string` | false |
-| source_name | Specifies the name of the source on which restore is done. | `string` | false |
-| start_time | Specifies the start time of restore task. | `string` | false |
-| include_tenants | Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned. | `bool` | false |
-
-### Data source: ibm_recovery_fetch_uptier_data
-
-```hcl
-data "ibm_recovery_fetch_uptier_data" "recovery_fetch_uptier_data_instance" {
-  archive_u_id = var.recovery_fetch_uptier_data_archive_u_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| archive_u_id | Archive UID of the current restore. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| ids | Specifies IDs of tasks to be fetched. | `list(number)` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| data_size | Specifies the amount of data in bytes estimated to be uptiered as part of the current restore job. |
+| tasks | Specifies the list of agent upgrade tasks. |
 
-### Data source: ibm_protection_run_progress
+### Data source: ibm_baas_connectors_metadata
 
 ```hcl
-data "ibm_protection_run_progress" "protection_run_progress_instance" {
-  run_id = var.protection_run_progress_run_id
-  objects = var.protection_run_progress_objects
-  tenant_ids = var.protection_run_progress_tenant_ids
-  include_tenants = var.protection_run_progress_include_tenants
-  include_finished_tasks = var.protection_run_progress_include_finished_tasks
-  start_time_usecs = var.protection_run_progress_start_time_usecs
-  end_time_usecs = var.protection_run_progress_end_time_usecs
-  max_tasks_num = var.protection_run_progress_max_tasks_num
-  exclude_object_details = var.protection_run_progress_exclude_object_details
-  include_event_logs = var.protection_run_progress_include_event_logs
-  max_log_level = var.protection_run_progress_max_log_level
-  run_task_path = var.protection_run_progress_run_task_path
-  object_task_paths = var.protection_run_progress_object_task_paths
+data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
+  x_ibm_tenant_id = var.data_baas_connectors_metadata_x_ibm_tenant_id
 }
 ```
 
@@ -584,43 +626,21 @@ data "ibm_protection_run_progress" "protection_run_progress_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| run_id | Specifies a unique run id of the Protection Run. | `string` | true |
-| objects | Specifies the objects whose progress will be returned. This only applies to protection group runs and will be ignored for object runs. If the objects are specified, the run progress will not be returned and only the progress of the specified objects will be returned. | `list(number)` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which the run is to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Protection Group Runs which were created by all tenants which the current user has permission to see. If false, then only Protection Groups created by the current user will be returned. If it's not specified, it is true by default. | `bool` | false |
-| include_finished_tasks | Specifies whether to return finished tasks. By default only active tasks are returned. | `bool` | false |
-| start_time_usecs | Specifies the time after which the progress task starts in Unix epoch Timestamp(in microseconds). | `number` | false |
-| end_time_usecs | Specifies the time before which the progress task ends in Unix epoch Timestamp(in microseconds). | `number` | false |
-| max_tasks_num | Specifies the maximum number of tasks to return. | `number` | false |
-| exclude_object_details | Specifies whether to return objects. By default all the task tree are returned. | `bool` | false |
-| include_event_logs | Specifies whether to include event logs. | `bool` | false |
-| max_log_level | Specifies the number of levels till which to fetch the event logs. This is applicable only when includeEventLogs is true. | `number` | false |
-| run_task_path | Specifies the task path of the run or object run. This is applicable only if progress of a protection group with one or more object is required.If provided this will be used to fetch progress details directly without looking actual task path of the object. Objects field is stil expected else it changes the response format. | `string` | false |
-| object_task_paths | Specifies the object level task path. This relates to the objectID. If provided this will take precedence over the objects, and will be used to fetch progress details directly without looking actuall task path of the object. | `list(string)` | false |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| local_run | Specifies the progress of a local backup run. |
-| archival_run | Progress for the archival run. |
-| replication_run | Progress for the replication run. |
+| connector_image_metadata | Specifies information about the connector images for various platforms. |
 
-### Data source: ibm_protection_run_stat
+### Data source: ibm_baas_data_source_connections
 
 ```hcl
-data "ibm_protection_run_stat" "protection_run_stat_instance" {
-  run_id = var.protection_run_stat_run_id
-  objects = var.protection_run_stat_objects
-  tenant_ids = var.protection_run_stat_tenant_ids
-  include_tenants = var.protection_run_stat_include_tenants
-  include_finished_tasks = var.protection_run_stat_include_finished_tasks
-  start_time_usecs = var.protection_run_stat_start_time_usecs
-  end_time_usecs = var.protection_run_stat_end_time_usecs
-  max_tasks_num = var.protection_run_stat_max_tasks_num
-  exclude_object_details = var.protection_run_stat_exclude_object_details
-  run_task_path = var.protection_run_stat_run_task_path
-  object_task_paths = var.protection_run_stat_object_task_paths
+data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
+  x_ibm_tenant_id = var.baas_data_source_connections_x_ibm_tenant_id
+  connection_ids = var.baas_data_source_connections_connection_ids
+  connection_names = var.baas_data_source_connections_connection_names
 }
 ```
 
@@ -628,53 +648,24 @@ data "ibm_protection_run_stat" "protection_run_stat_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| run_id | Specifies a unique run id of the Protection Run. | `string` | true |
-| objects | Specifies the objects whose stats will be returned. This only applies to protection group runs and will be ignored for object runs. If the objects are specified, the run stats will not be returned and only the stats of the specified objects will be returned. | `list(number)` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which the run is to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Protection Group Runs which were created by all tenants which the current user has permission to see. If false, then only Protection Groups created by the current user will be returned. If it's not specified, it is true by default. | `bool` | false |
-| include_finished_tasks | Specifies whether to return finished tasks. By default only active tasks are returned. | `bool` | false |
-| start_time_usecs | Specifies the time after which the stats task starts in Unix epoch Timestamp(in microseconds). | `number` | false |
-| end_time_usecs | Specifies the time before which the stats task ends in Unix epoch Timestamp(in microseconds). | `number` | false |
-| max_tasks_num | Specifies the maximum number of tasks to return. | `number` | false |
-| exclude_object_details | Specifies whether to return objects. By default all the task tree are returned. | `bool` | false |
-| run_task_path | Specifies the task path of the run or object run. This is applicable only if stats of a protection group with one or more object is required. If provided this will be used to fetch stats details directly without looking actual task path of the object. Objects field is stil expected else it changes the response format. | `string` | false |
-| object_task_paths | Specifies the object level task path. This relates to the objectID. If provided this will take precedence over the objects, and will be used to fetch stats details directly without looking actuall task path of the object. | `list(string)` | false |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| connection_ids | Specifies the unique IDs of the connections which are to be fetched. | `list(string)` | false |
+| connection_names | Specifies the names of the connections which are to be fetched. | `list(string)` | false |
 
 #### Outputs
 
 | Name | Description |
 |------|-------------|
-| local_run | Specifies the stats of a local backup run. |
-| archival_run | Stats for the archival run. |
+| connections |  |
 
-### Data source: ibm_search_objects
+### Data source: ibm_baas_data_source_connectors
 
 ```hcl
-data "ibm_search_objects" "search_objects_instance" {
-  request_initiator_type = var.search_objects_request_initiator_type
-  search_string = var.search_objects_search_string
-  environments = var.search_objects_environments
-  protection_types = var.search_objects_protection_types
-  tenant_ids = var.search_objects_tenant_ids
-  include_tenants = var.search_objects_include_tenants
-  protection_group_ids = var.search_objects_protection_group_ids
-  object_ids = var.search_objects_object_ids
-  os_types = var.search_objects_os_types
-  source_ids = var.search_objects_source_ids
-  source_uuids = var.search_objects_source_uuids
-  is_protected = var.search_objects_is_protected
-  is_deleted = var.search_objects_is_deleted
-  last_run_status_list = var.search_objects_last_run_status_list
-  region_ids = var.search_objects_region_ids
-  cluster_identifiers = var.search_objects_cluster_identifiers
-  storage_domain_ids = var.search_objects_storage_domain_ids
-  include_deleted_objects = var.search_objects_include_deleted_objects
-  pagination_cookie = var.search_objects_pagination_cookie
-  count = var.search_objects_count
-  must_have_tag_ids = var.search_objects_must_have_tag_ids
-  might_have_tag_ids = var.search_objects_might_have_tag_ids
-  must_have_snapshot_tag_ids = var.search_objects_must_have_snapshot_tag_ids
-  might_have_snapshot_tag_ids = var.search_objects_might_have_snapshot_tag_ids
+data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
+  x_ibm_tenant_id = var.baas_data_source_connectors_x_ibm_tenant_id
+  connector_ids = var.baas_data_source_connectors_connector_ids
+  connector_names = var.baas_data_source_connectors_connector_names
+  connection_id = var.baas_data_source_connectors_connection_id
 }
 ```
 
@@ -682,12 +673,145 @@ data "ibm_search_objects" "search_objects_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| connector_ids | Specifies the unique IDs of the connectors which are to be fetched. | `list(string)` | false |
+| connector_names | Specifies the names of the connectors which are to be fetched. | `list(string)` | false |
+| connection_id | Specifies the ID of the connection, connectors belonging to which are to be fetched. | `string` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connectors |  |
+
+### Data source: ibm_baas_connector_status
+
+```hcl
+data "ibm_baas_connector_status" "baas_connector_status_instance" {
+  x_ibm_tenant_id = var.baas_connector_status_x_ibm_tenant_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| cluster_connection_status | Specifies the data-source connector-cluster connectivity status. |
+| is_certificate_valid | Flag to indicate if connector certificate is valid. |
+| registration_status | Specifies the data-source connector registration status. |
+
+### Data source: ibm_baas_connector_logs
+
+```hcl
+data "ibm_baas_connector_logs" "baas_connector_logs_instance" {
+  x_ibm_tenant_id = var.baas_connector_logs_x_ibm_tenant_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connector_logs | Specifies the data-source connector logs. |
+
+### Data source: ibm_baas_object_snapshots
+
+```hcl
+data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+  baas_object_snapshots_id = var.baas_object_snapshots_baas_object_snapshots_id
+  x_ibm_tenant_id = var.baas_object_snapshots_x_ibm_tenant_id
+  from_time_usecs = var.baas_object_snapshots_from_time_usecs
+  to_time_usecs = var.baas_object_snapshots_to_time_usecs
+  run_start_from_time_usecs = var.baas_object_snapshots_run_start_from_time_usecs
+  run_start_to_time_usecs = var.baas_object_snapshots_run_start_to_time_usecs
+  snapshot_actions = var.baas_object_snapshots_snapshot_actions
+  run_types = var.baas_object_snapshots_run_types
+  protection_group_ids = var.baas_object_snapshots_protection_group_ids
+  run_instance_ids = var.baas_object_snapshots_run_instance_ids
+  region_ids = var.baas_object_snapshots_region_ids
+  object_action_keys = var.baas_object_snapshots_object_action_keys
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| baas_object_snapshots_id | Specifies the id of the Object. | `number` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| from_time_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter Object's snapshots which were taken after this value. | `number` | false |
+| to_time_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter Object's snapshots which were taken before this value. | `number` | false |
+| run_start_from_time_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter Object's snapshots which were run after this value. | `number` | false |
+| run_start_to_time_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter Object's snapshots which were run before this value. | `number` | false |
+| snapshot_actions | Specifies a list of recovery actions. Only snapshots that apply to these actions will be returned. | `list(string)` | false |
+| run_types | Filter by run type. Only protection runs matching the specified types will be returned. By default, CDP hydration snapshots are not included unless explicitly queried using this field. | `list(string)` | false |
+| protection_group_ids | If specified, this returns only the snapshots of the specified object ID, which belong to the provided protection group IDs. | `list(string)` | false |
+| run_instance_ids | Filter by a list of run instance IDs. If specified, only snapshots created by these protection runs will be returned. | `list(number)` | false |
+| region_ids | Filter by a list of region IDs. | `list(string)` | false |
+| object_action_keys | Filter by ObjectActionKey, which uniquely represents the protection of an object. An object can be protected in multiple ways but at most once for a given combination of ObjectActionKey. When specified, only snapshots matching the given action keys are returned for the corresponding object. | `list(string)` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| snapshots | Specifies the list of snapshots. |
+
+### Data source: ibm_baas_search_objects
+
+```hcl
+data "ibm_baas_search_objects" "baas_search_objects_instance" {
+  x_ibm_tenant_id = var.baas_search_objects_x_ibm_tenant_id
+  request_initiator_type = var.baas_search_objects_request_initiator_type
+  search_string = var.baas_search_objects_search_string
+  environments = var.baas_search_objects_environments
+  protection_types = var.baas_search_objects_protection_types
+  protection_group_ids = var.baas_search_objects_protection_group_ids
+  object_ids = var.baas_search_objects_object_ids
+  os_types = var.baas_search_objects_os_types
+  source_ids = var.baas_search_objects_source_ids
+  source_uuids = var.baas_search_objects_source_uuids
+  is_protected = var.baas_search_objects_is_protected
+  is_deleted = var.baas_search_objects_is_deleted
+  last_run_status_list = var.baas_search_objects_last_run_status_list
+  cluster_identifiers = var.baas_search_objects_cluster_identifiers
+  include_deleted_objects = var.baas_search_objects_include_deleted_objects
+  pagination_cookie = var.baas_search_objects_pagination_cookie
+  count = var.baas_search_objects_count
+  must_have_tag_ids = var.baas_search_objects_must_have_tag_ids
+  might_have_tag_ids = var.baas_search_objects_might_have_tag_ids
+  must_have_snapshot_tag_ids = var.baas_search_objects_must_have_snapshot_tag_ids
+  might_have_snapshot_tag_ids = var.baas_search_objects_might_have_snapshot_tag_ids
+  tag_search_name = var.baas_search_objects_tag_search_name
+  tag_names = var.baas_search_objects_tag_names
+  tag_types = var.baas_search_objects_tag_types
+  tag_categories = var.baas_search_objects_tag_categories
+  tag_sub_categories = var.baas_search_objects_tag_sub_categories
+  include_helios_tag_info_for_objects = var.baas_search_objects_include_helios_tag_info_for_objects
+  external_filters = var.baas_search_objects_external_filters
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | search_string | Specifies the search string to filter the objects. This search string will be applicable for objectnames. User can specify a wildcard character '*' as a suffix to a string where all object names are matched with the prefix string. For example, if vm1 and vm2 are the names of objects, user can specify vm* to list the objects. If not specified, then all the objects will be returned which will match other filtering criteria. | `string` | false |
 | environments | Specifies the environment type to filter objects. | `list(string)` | false |
 | protection_types | Specifies the protection type to filter objects. | `list(string)` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which objects are to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Objects which belongs to all tenants which the current user has permission to see. | `bool` | false |
 | protection_group_ids | Specifies a list of Protection Group ids to filter the objects. If specified, the objects protected by specified Protection Group ids will be returned. | `list(string)` | false |
 | object_ids | Specifies a list of Object ids to filter. | `list(number)` | false |
 | os_types | Specifies the operating system types to filter objects on. | `list(string)` | false |
@@ -696,9 +820,7 @@ data "ibm_search_objects" "search_objects_instance" {
 | is_protected | Specifies the protection status of objects. If set to true, only protected objects will be returned. If set to false, only unprotected objects will be returned. If not specified, all objects will be returned. | `bool` | false |
 | is_deleted | If set to true, then objects which are deleted on atleast one cluster will be returned. If not set or set to false then objects which are registered on atleast one cluster are returned. | `bool` | false |
 | last_run_status_list | Specifies a list of status of the object's last protection run. Only objects with last run status of these will be returned. | `list(string)` | false |
-| region_ids | Specifies a list of region ids. Only records from clusters having these region ids will be returned. | `list(string)` | false |
 | cluster_identifiers | Specifies the list of cluster identifiers. Format is clusterId:clusterIncarnationId. Only records from clusters having these identifiers will be returned. | `list(string)` | false |
-| storage_domain_ids | Specifies the list of storage domain ids. Format is clusterId:clusterIncarnationId:storageDomainId. Only objects having protection in these storage domains will be returned. | `list(string)` | false |
 | include_deleted_objects | Specifies whether to include deleted objects in response. These objects can't be protected but can be recovered. This field is deprecated. | `bool` | false |
 | pagination_cookie | Specifies the pagination cookie with which subsequent parts of the response can be fetched. | `string` | false |
 | count | Specifies the number of objects to be fetched for the specified pagination cookie. | `number` | false |
@@ -706,6 +828,13 @@ data "ibm_search_objects" "search_objects_instance" {
 | might_have_tag_ids | Specifies list of tags, one or more of which might be present in the document. These are OR'ed together and the resulting criteria AND'ed with the rest of the query. | `list(string)` | false |
 | must_have_snapshot_tag_ids | Specifies snapshot tags which must be all present in the document. | `list(string)` | false |
 | might_have_snapshot_tag_ids | Specifies list of snapshot tags, one or more of which might be present in the document. These are OR'ed together and the resulting criteria AND'ed with the rest of the query. | `list(string)` | false |
+| tag_search_name | Specifies the tag name to filter the tagged objects and snapshots. User can specify a wildcard character '*' as a suffix to a string where all object's tag names are matched with the prefix string. | `string` | false |
+| tag_names | Specifies the tag names to filter the tagged objects and snapshots. | `list(string)` | false |
+| tag_types | Specifies the tag names to filter the tagged objects and snapshots. | `list(string)` | false |
+| tag_categories | Specifies the tag category to filter the objects and snapshots. | `list(string)` | false |
+| tag_sub_categories | Specifies the tag subcategory to filter the objects and snapshots. | `list(string)` | false |
+| include_helios_tag_info_for_objects | pecifies whether to include helios tags information for objects in response. Default value is false. | `bool` | false |
+| external_filters | Specifies the key-value pairs to filtering the results for the search. Each filter is of the form 'key:value'. The filter 'externalFilters:k1:v1&externalFilters:k2:v2&externalFilters:k2:v3' returns the documents where each document will match the query (k1=v1) AND (k2=v2 OR k2 = v3). Allowed keys: - vmBiosUuid - graphUuid - arn - instanceId - bucketName - azureId. | `list(string)` | false |
 
 #### Outputs
 
@@ -713,29 +842,26 @@ data "ibm_search_objects" "search_objects_instance" {
 |------|-------------|
 | objects | Specifies the list of Objects. |
 
-### Data source: ibm_search_protected_objects
+### Data source: ibm_baas_search_protected_objects
 
 ```hcl
-data "ibm_search_protected_objects" "search_protected_objects_instance" {
-  request_initiator_type = var.search_protected_objects_request_initiator_type
-  search_string = var.search_protected_objects_search_string
-  environments = var.search_protected_objects_environments
-  snapshot_actions = var.search_protected_objects_snapshot_actions
-  object_action_key = var.search_protected_objects_object_action_key
-  tenant_ids = var.search_protected_objects_tenant_ids
-  include_tenants = var.search_protected_objects_include_tenants
-  protection_group_ids = var.search_protected_objects_protection_group_ids
-  object_ids = var.search_protected_objects_object_ids
-  storage_domain_ids = var.search_protected_objects_storage_domain_ids
-  sub_result_size = var.search_protected_objects_sub_result_size
-  filter_snapshot_from_usecs = var.search_protected_objects_filter_snapshot_from_usecs
-  filter_snapshot_to_usecs = var.search_protected_objects_filter_snapshot_to_usecs
-  os_types = var.search_protected_objects_os_types
-  source_ids = var.search_protected_objects_source_ids
-  run_instance_ids = var.search_protected_objects_run_instance_ids
-  cdp_protected_only = var.search_protected_objects_cdp_protected_only
-  region_ids = var.search_protected_objects_region_ids
-  use_cached_data = var.search_protected_objects_use_cached_data
+data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance" {
+  x_ibm_tenant_id = var.baas_search_protected_objects_x_ibm_tenant_id
+  request_initiator_type = var.baas_search_protected_objects_request_initiator_type
+  search_string = var.baas_search_protected_objects_search_string
+  environments = var.baas_search_protected_objects_environments
+  snapshot_actions = var.baas_search_protected_objects_snapshot_actions
+  object_action_key = var.baas_search_protected_objects_object_action_key
+  protection_group_ids = var.baas_search_protected_objects_protection_group_ids
+  object_ids = var.baas_search_protected_objects_object_ids
+  sub_result_size = var.baas_search_protected_objects_sub_result_size
+  filter_snapshot_from_usecs = var.baas_search_protected_objects_filter_snapshot_from_usecs
+  filter_snapshot_to_usecs = var.baas_search_protected_objects_filter_snapshot_to_usecs
+  os_types = var.baas_search_protected_objects_os_types
+  source_ids = var.baas_search_protected_objects_source_ids
+  run_instance_ids = var.baas_search_protected_objects_run_instance_ids
+  cdp_protected_only = var.baas_search_protected_objects_cdp_protected_only
+  use_cached_data = var.baas_search_protected_objects_use_cached_data
 }
 ```
 
@@ -743,16 +869,14 @@ data "ibm_search_protected_objects" "search_protected_objects_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | search_string | Specifies the search string to filter the objects. This search string will be applicable for objectnames and Protection Group names. User can specify a wildcard character '*' as a suffix to a string where all object and their Protection Group names are matched with the prefix string. For example, if vm1 and vm2 are the names of objects, user can specify vm* to list the objects. If not specified, then all the objects with Protection Groups will be returned which will match other filtering criteria. | `string` | false |
 | environments | Specifies the environment type to filter objects. | `list(string)` | false |
 | snapshot_actions | Specifies a list of recovery actions. Only snapshots that applies to these actions will be returned. | `list(string)` | false |
 | object_action_key | Filter by ObjectActionKey, which uniquely represents protection of an object. An object can be protected in multiple ways but atmost once for a given combination of ObjectActionKey. When specified, latest snapshot info matching the objectActionKey is for corresponding object. | `string` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which objects are to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Objects which belongs to all tenants which the current user has permission to see. | `bool` | false |
 | protection_group_ids | Specifies a list of Protection Group ids to filter the objects. If specified, the objects protected by specified Protection Group ids will be returned. | `list(string)` | false |
 | object_ids | Specifies a list of Object ids to filter. | `list(number)` | false |
-| storage_domain_ids | Specifies the Storage Domain ids to filter objects for which Protection Groups are writing data to Cohesity Views on the specified Storage Domains. | `list(number)` | false |
 | sub_result_size | Specifies the size of objects to be fetched for a single subresult. | `number` | false |
 | filter_snapshot_from_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter the objects if the Object has a successful snapshot after this value. | `number` | false |
 | filter_snapshot_to_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter the objects if the Object has a successful snapshot before this value. | `number` | false |
@@ -760,7 +884,6 @@ data "ibm_search_protected_objects" "search_protected_objects_instance" {
 | source_ids | Specifies a list of Protection Source object ids to filter the objects. If specified, the object which are present in those Sources will be returned. | `list(number)` | false |
 | run_instance_ids | Specifies a list of run instance ids. If specified only objects belonging to the provided run id will be retunrned. | `list(number)` | false |
 | cdp_protected_only | Specifies whether to only return the CDP protected objects. | `bool` | false |
-| region_ids | Specifies a list of region ids. Only records from clusters having these region ids will be returned. | `list(string)` | false |
 | use_cached_data | Specifies whether we can serve the GET request to the read replica cache cache. There is a lag of 15 seconds between the read replica and primary data source. | `bool` | false |
 
 #### Outputs
@@ -771,15 +894,16 @@ data "ibm_search_protected_objects" "search_protected_objects_instance" {
 | metadata | Specifies the metadata information about the Protection Groups, Protection Policy etc., for search result. |
 | num_results | Specifies the total number of search results which matches the search criteria. |
 
-### Data source: ibm_protection_group
+### Data source: ibm_baas_protection_group
 
 ```hcl
-data "ibm_protection_group" "protection_group_instance" {
-  protection_group_id = var.data_protection_group_protection_group_id
-  request_initiator_type = var.data_protection_group_request_initiator_type
-  include_last_run_info = var.data_protection_group_include_last_run_info
-  prune_excluded_source_ids = var.data_protection_group_prune_excluded_source_ids
-  prune_source_ids = var.data_protection_group_prune_source_ids
+data "ibm_baas_protection_group" "baas_protection_group_instance" {
+  baas_protection_group_id = var.data_baas_protection_group_baas_protection_group_id
+  x_ibm_tenant_id = var.data_baas_protection_group_x_ibm_tenant_id
+  request_initiator_type = var.data_baas_protection_group_request_initiator_type
+  include_last_run_info = var.data_baas_protection_group_include_last_run_info
+  prune_excluded_source_ids = var.data_baas_protection_group_prune_excluded_source_ids
+  prune_source_ids = var.data_baas_protection_group_prune_source_ids
 }
 ```
 
@@ -787,7 +911,8 @@ data "ibm_protection_group" "protection_group_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| protection_group_id | Specifies a unique id of the Protection Group. | `string` | true |
+| baas_protection_group_id | Specifies a unique id of the Protection Group. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | include_last_run_info | If true, the response will include last run info. If it is false or not specified, the last run info won't be returned. | `bool` | false |
 | prune_excluded_source_ids | If true, the response will not include the list of excluded source IDs in groups that contain this field. This can be set to true in order to improve performance if excluded source IDs are not needed by the user. | `bool` | false |
@@ -802,7 +927,6 @@ data "ibm_protection_group" "protection_group_instance" {
 | region_id | Specifies the region ID. |
 | policy_id | Specifies the unique id of the Protection Policy associated with the Protection Group. The Policy provides retry settings Protection Schedules, Priority, SLA, etc. |
 | priority | Specifies the priority of the Protection Group. |
-| storage_domain_id | Specifies the Storage Domain (View Box) ID where this Protection Group writes data. |
 | description | Specifies a description of the Protection Group. |
 | start_time | Specifies the time of day. Used for scheduling purposes. |
 | end_time_usecs | Specifies the end time in micro seconds for this Protection Group. If this is not specified, the Protection Group won't be ended. |
@@ -824,34 +948,33 @@ data "ibm_protection_group" "protection_group_instance" {
 | num_protected_objects | Specifies the number of protected objects of the Protection Group. |
 | advanced_configs | Specifies the advanced configuration for a protection job. |
 | physical_params |  |
-| oracle_params | Specifies the parameters to create Oracle Protection Group. |
+| mssql_params | Specifies the parameters specific to MSSQL Protection Group. |
 
-### Data source: ibm_protection_groups
+### Data source: ibm_baas_protection_groups
 
 ```hcl
-data "ibm_protection_groups" "protection_groups_instance" {
-  request_initiator_type = var.protection_groups_request_initiator_type
-  ids = var.protection_groups_ids
-  names = var.protection_groups_names
-  policy_ids = var.protection_groups_policy_ids
-  storage_domain_id = var.protection_groups_storage_domain_id
-  include_groups_with_datalock_only = var.protection_groups_include_groups_with_datalock_only
-  environments = var.protection_groups_environments
-  is_active = var.protection_groups_is_active
-  is_deleted = var.protection_groups_is_deleted
-  is_paused = var.protection_groups_is_paused
-  last_run_local_backup_status = var.protection_groups_last_run_local_backup_status
-  last_run_replication_status = var.protection_groups_last_run_replication_status
-  last_run_archival_status = var.protection_groups_last_run_archival_status
-  last_run_cloud_spin_status = var.protection_groups_last_run_cloud_spin_status
-  last_run_any_status = var.protection_groups_last_run_any_status
-  is_last_run_sla_violated = var.protection_groups_is_last_run_sla_violated
-  tenant_ids = var.protection_groups_tenant_ids
-  include_tenants = var.protection_groups_include_tenants
-  include_last_run_info = var.protection_groups_include_last_run_info
-  prune_excluded_source_ids = var.protection_groups_prune_excluded_source_ids
-  prune_source_ids = var.protection_groups_prune_source_ids
-  use_cached_data = var.protection_groups_use_cached_data
+data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
+  x_ibm_tenant_id = var.baas_protection_groups_x_ibm_tenant_id
+  request_initiator_type = var.baas_protection_groups_request_initiator_type
+  ids = var.baas_protection_groups_ids
+  names = var.baas_protection_groups_names
+  policy_ids = var.baas_protection_groups_policy_ids
+  include_groups_with_datalock_only = var.baas_protection_groups_include_groups_with_datalock_only
+  environments = var.baas_protection_groups_environments
+  is_active = var.baas_protection_groups_is_active
+  is_deleted = var.baas_protection_groups_is_deleted
+  is_paused = var.baas_protection_groups_is_paused
+  last_run_local_backup_status = var.baas_protection_groups_last_run_local_backup_status
+  last_run_replication_status = var.baas_protection_groups_last_run_replication_status
+  last_run_archival_status = var.baas_protection_groups_last_run_archival_status
+  last_run_cloud_spin_status = var.baas_protection_groups_last_run_cloud_spin_status
+  last_run_any_status = var.baas_protection_groups_last_run_any_status
+  is_last_run_sla_violated = var.baas_protection_groups_is_last_run_sla_violated
+  include_last_run_info = var.baas_protection_groups_include_last_run_info
+  prune_excluded_source_ids = var.baas_protection_groups_prune_excluded_source_ids
+  prune_source_ids = var.baas_protection_groups_prune_source_ids
+  use_cached_data = var.baas_protection_groups_use_cached_data
+  source_ids = var.baas_protection_groups_source_ids
 }
 ```
 
@@ -859,11 +982,11 @@ data "ibm_protection_groups" "protection_groups_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | ids | Filter by a list of Protection Group ids. | `list(string)` | false |
 | names | Filter by a list of Protection Group names. | `list(string)` | false |
 | policy_ids | Filter by Policy ids that are associated with Protection Groups. Only Protection Groups associated with the specified Policy ids, are returned. | `list(string)` | false |
-| storage_domain_id | Filter by Storage Domain id. Only Protection Groups writing data to this Storage Domain will be returned. | `number` | false |
 | include_groups_with_datalock_only | Whether to only return Protection Groups with a datalock. | `bool` | false |
 | environments | Filter by environment types such as 'kVMware', 'kView', etc. Only Protection Groups protecting the specified environment types are returned. | `list(string)` | false |
 | is_active | Filter by Inactive or Active Protection Groups. If not set, all Inactive and Active Protection Groups are returned. If true, only Active Protection Groups are returned. If false, only Inactive Protection Groups are returned. When you create a Protection Group on a Primary Cluster with a replication schedule, the Cluster creates an Inactive copy of the Protection Group on the Remote Cluster. In addition, when an Active and running Protection Group is deactivated, the Protection Group becomes Inactive. | `bool` | false |
@@ -875,12 +998,11 @@ data "ibm_protection_groups" "protection_groups_instance" {
 | last_run_cloud_spin_status | Filter by last cloud spin run status.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
 | last_run_any_status | Filter by last any run status.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
 | is_last_run_sla_violated | If true, return Protection Groups for which last run SLA was violated. | `bool` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which objects are to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Protection Groups which were created by all tenants which the current user has permission to see. If false, then only Protection Groups created by the current user will be returned. | `bool` | false |
 | include_last_run_info | If true, the response will include last run info. If it is false or not specified, the last run info won't be returned. | `bool` | false |
 | prune_excluded_source_ids | If true, the response will not include the list of excluded source IDs in groups that contain this field. This can be set to true in order to improve performance if excluded source IDs are not needed by the user. | `bool` | false |
 | prune_source_ids | If true, the response will exclude the list of source IDs within the group specified. | `bool` | false |
 | use_cached_data | Specifies whether we can serve the GET request from the read replica cache. There is a lag of 15 seconds between the read replica and primary data source. | `bool` | false |
+| source_ids | Filter by Source ids that are associated with Protection Groups. Only Protection Groups associated with the specified Source ids, are returned. | `list(number)` | false |
 
 #### Outputs
 
@@ -888,17 +1010,30 @@ data "ibm_protection_groups" "protection_groups_instance" {
 |------|-------------|
 | protection_groups | Specifies the list of Protection Groups which were returned by the request. |
 
-### Data source: ibm_protection_group_run
+### Data source: ibm_baas_protection_group_run
 
 ```hcl
-data "ibm_protection_group_run" "protection_group_run_instance" {
-  protection_group_run_id = var.protection_group_run_protection_group_run_id
-  run_id = var.protection_group_run_run_id
-  request_initiator_type = var.protection_group_run_request_initiator_type
-  tenant_ids = var.protection_group_run_tenant_ids
-  include_tenants = var.protection_group_run_include_tenants
-  include_object_details = var.protection_group_run_include_object_details
-  use_cached_data = var.protection_group_run_use_cached_data
+data "ibm_baas_protection_group_run" "baas_protection_group_run_instance" {
+  baas_protection_group_run_id = var.baas_protection_group_run_baas_protection_group_run_id
+  x_ibm_tenant_id = var.baas_protection_group_run_x_ibm_tenant_id
+  request_initiator_type = var.baas_protection_group_run_request_initiator_type
+  run_id = var.baas_protection_group_run_run_id
+  start_time_usecs = var.baas_protection_group_run_start_time_usecs
+  end_time_usecs = var.baas_protection_group_run_end_time_usecs
+  run_types = var.baas_protection_group_run_run_types
+  include_object_details = var.baas_protection_group_run_include_object_details
+  local_backup_run_status = var.baas_protection_group_run_local_backup_run_status
+  replication_run_status = var.baas_protection_group_run_replication_run_status
+  archival_run_status = var.baas_protection_group_run_archival_run_status
+  cloud_spin_run_status = var.baas_protection_group_run_cloud_spin_run_status
+  num_runs = var.baas_protection_group_run_num_runs
+  exclude_non_restorable_runs = var.baas_protection_group_run_exclude_non_restorable_runs
+  run_tags = var.baas_protection_group_run_run_tags
+  use_cached_data = var.baas_protection_group_run_use_cached_data
+  filter_by_end_time = var.baas_protection_group_run_filter_by_end_time
+  snapshot_target_types = var.baas_protection_group_run_snapshot_target_types
+  only_return_successful_copy_run = var.baas_protection_group_run_only_return_successful_copy_run
+  filter_by_copy_task_end_time = var.baas_protection_group_run_filter_by_copy_task_end_time
 }
 ```
 
@@ -906,13 +1041,26 @@ data "ibm_protection_group_run" "protection_group_run_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| protection_group_run_id | Specifies a unique id of the Protection Group. | `string` | true |
-| run_id | Specifies a unique run id of the Protection Group run. | `string` | true |
+| baas_protection_group_run_id | Specifies a unique id of the Protection Group. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which the run is to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Protection Group Runs which were created by all tenants which the current user has permission to see. If false, then only Protection Groups created by the current user will be returned. If it's not specified, it is true by default. | `bool` | false |
-| include_object_details | Specifies if the result includes the object details for a protection run. If set to true, details of the protected object will be returned. If set to false or not specified, details will not be returned. | `bool` | false |
+| run_id | Specifies the protection run id. | `string` | false |
+| start_time_usecs | Start time for time range filter. Specify the start time as a Unix epoch Timestamp (in microseconds), only runs executing after this time will be returned. By default it is endTimeUsecs minus an hour. | `number` | false |
+| end_time_usecs | End time for time range filter. Specify the end time as a Unix epoch Timestamp (in microseconds), only runs executing before this time will be returned. By default it is current time. | `number` | false |
+| run_types | Filter by run type. Only protection run matching the specified types will be returned. | `list(string)` | false |
+| include_object_details | Specifies if the result includes the object details for each protection run. If set to true, details of the protected object will be returned. If set to false or not specified, details will not be returned. | `bool` | false |
+| local_backup_run_status | Specifies a list of local backup status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
+| replication_run_status | Specifies a list of replication status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
+| archival_run_status | Specifies a list of archival status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
+| cloud_spin_run_status | Specifies a list of cloud spin status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
+| num_runs | Specifies the max number of runs. If not specified, at most 100 runs will be returned. | `number` | false |
+| exclude_non_restorable_runs | Specifies whether to exclude non restorable runs. Run is treated restorable only if there is atleast one object snapshot (which may be either a local or an archival snapshot) which is not deleted or expired. Default value is false. | `bool` | false |
+| run_tags | Specifies a list of tags for protection runs. If this is specified, only the runs which match these tags will be returned. | `list(string)` | false |
 | use_cached_data | Specifies whether we can serve the GET request from the read replica cache. There is a lag of 15 seconds between the read replica and primary data source. | `bool` | false |
+| filter_by_end_time | If true, the runs with backup end time within the specified time range will be returned. Otherwise, the runs with start time in the time range are returned. | `bool` | false |
+| snapshot_target_types | Specifies the snapshot's target type which should be filtered. | `list(string)` | false |
+| only_return_successful_copy_run | only successful copyruns are returned. | `bool` | false |
+| filter_by_copy_task_end_time | If true, then the details of the runs for which any copyTask completed in the given timerange will be returned. Only one of filterByEndTime and filterByCopyTaskEndTime can be set. | `bool` | false |
 
 #### Outputs
 
@@ -938,31 +1086,30 @@ data "ibm_protection_group_run" "protection_group_run_instance" {
 | environment | Specifies the environment of the Protection Group. |
 | externally_triggered_backup_tag | The tag of externally triggered backup job. |
 
-### Data source: ibm_protection_group_runs
+### Data source: ibm_baas_protection_group_runs
 
 ```hcl
-data "ibm_protection_group_runs" "protection_group_runs_instance" {
-  protection_group_runs_id = var.protection_group_runs_protection_group_runs_id
-  request_initiator_type = var.protection_group_runs_request_initiator_type
-  run_id = var.protection_group_runs_run_id
-  start_time_usecs = var.protection_group_runs_start_time_usecs
-  end_time_usecs = var.protection_group_runs_end_time_usecs
-  tenant_ids = var.protection_group_runs_tenant_ids
-  include_tenants = var.protection_group_runs_include_tenants
-  run_types = var.protection_group_runs_run_types
-  include_object_details = var.protection_group_runs_include_object_details
-  local_backup_run_status = var.protection_group_runs_local_backup_run_status
-  replication_run_status = var.protection_group_runs_replication_run_status
-  archival_run_status = var.protection_group_runs_archival_run_status
-  cloud_spin_run_status = var.protection_group_runs_cloud_spin_run_status
-  num_runs = var.protection_group_runs_num_runs
-  exclude_non_restorable_runs = var.protection_group_runs_exclude_non_restorable_runs
-  run_tags = var.protection_group_runs_run_tags
-  use_cached_data = var.protection_group_runs_use_cached_data
-  filter_by_end_time = var.protection_group_runs_filter_by_end_time
-  snapshot_target_types = var.protection_group_runs_snapshot_target_types
-  only_return_successful_copy_run = var.protection_group_runs_only_return_successful_copy_run
-  filter_by_copy_task_end_time = var.protection_group_runs_filter_by_copy_task_end_time
+data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
+  baas_protection_group_runs_id = var.baas_protection_group_runs_baas_protection_group_runs_id
+  x_ibm_tenant_id = var.baas_protection_group_runs_x_ibm_tenant_id
+  request_initiator_type = var.baas_protection_group_runs_request_initiator_type
+  run_id = var.baas_protection_group_runs_run_id
+  start_time_usecs = var.baas_protection_group_runs_start_time_usecs
+  end_time_usecs = var.baas_protection_group_runs_end_time_usecs
+  run_types = var.baas_protection_group_runs_run_types
+  include_object_details = var.baas_protection_group_runs_include_object_details
+  local_backup_run_status = var.baas_protection_group_runs_local_backup_run_status
+  replication_run_status = var.baas_protection_group_runs_replication_run_status
+  archival_run_status = var.baas_protection_group_runs_archival_run_status
+  cloud_spin_run_status = var.baas_protection_group_runs_cloud_spin_run_status
+  num_runs = var.baas_protection_group_runs_num_runs
+  exclude_non_restorable_runs = var.baas_protection_group_runs_exclude_non_restorable_runs
+  run_tags = var.baas_protection_group_runs_run_tags
+  use_cached_data = var.baas_protection_group_runs_use_cached_data
+  filter_by_end_time = var.baas_protection_group_runs_filter_by_end_time
+  snapshot_target_types = var.baas_protection_group_runs_snapshot_target_types
+  only_return_successful_copy_run = var.baas_protection_group_runs_only_return_successful_copy_run
+  filter_by_copy_task_end_time = var.baas_protection_group_runs_filter_by_copy_task_end_time
 }
 ```
 
@@ -970,13 +1117,12 @@ data "ibm_protection_group_runs" "protection_group_runs_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| protection_group_runs_id | Specifies a unique id of the Protection Group. | `string` | true |
+| baas_protection_group_runs_id | Specifies a unique id of the Protection Group. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | run_id | Specifies the protection run id. | `string` | false |
 | start_time_usecs | Start time for time range filter. Specify the start time as a Unix epoch Timestamp (in microseconds), only runs executing after this time will be returned. By default it is endTimeUsecs minus an hour. | `number` | false |
 | end_time_usecs | End time for time range filter. Specify the end time as a Unix epoch Timestamp (in microseconds), only runs executing before this time will be returned. By default it is current time. | `number` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which objects are to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Protection Group Runs which were created by all tenants which the current user has permission to see. If false, then only Protection Group Runs created by the current user will be returned. | `bool` | false |
 | run_types | Filter by run type. Only protection run matching the specified types will be returned. | `list(string)` | false |
 | include_object_details | Specifies if the result includes the object details for each protection run. If set to true, details of the protected object will be returned. If set to false or not specified, details will not be returned. | `bool` | false |
 | local_backup_run_status | Specifies a list of local backup status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Paused' indicates that the ongoing run has been paused.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
@@ -999,19 +1145,18 @@ data "ibm_protection_group_runs" "protection_group_runs_instance" {
 | runs | Specifies the list of Protection Group runs. |
 | total_runs | Specifies the count of total runs exist for the given set of filters. The number of runs in single API call are limited and this count can be used to estimate query filter values to get next set of remaining runs. Please note that this field will only be populated if startTimeUsecs or endTimeUsecs or both are specified in query parameters. |
 
-### Data source: ibm_protection_policies
+### Data source: ibm_baas_protection_policies
 
 ```hcl
-data "ibm_protection_policies" "protection_policies_instance" {
-  request_initiator_type = var.protection_policies_request_initiator_type
-  ids = var.protection_policies_ids
-  policy_names = var.protection_policies_policy_names
-  tenant_ids = var.protection_policies_tenant_ids
-  include_tenants = var.protection_policies_include_tenants
-  types = var.protection_policies_types
-  exclude_linked_policies = var.protection_policies_exclude_linked_policies
-  include_replicated_policies = var.protection_policies_include_replicated_policies
-  include_stats = var.protection_policies_include_stats
+data "ibm_baas_protection_policies" "baas_protection_policies_instance" {
+  x_ibm_tenant_id = var.baas_protection_policies_x_ibm_tenant_id
+  request_initiator_type = var.baas_protection_policies_request_initiator_type
+  ids = var.baas_protection_policies_ids
+  policy_names = var.baas_protection_policies_policy_names
+  types = var.baas_protection_policies_types
+  exclude_linked_policies = var.baas_protection_policies_exclude_linked_policies
+  include_replicated_policies = var.baas_protection_policies_include_replicated_policies
+  include_stats = var.baas_protection_policies_include_stats
 }
 ```
 
@@ -1019,11 +1164,10 @@ data "ibm_protection_policies" "protection_policies_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | ids | Filter policies by a list of policy ids. | `list(string)` | false |
 | policy_names | Filter policies by a list of policy names. | `list(string)` | false |
-| tenant_ids | TenantIds contains ids of the organizations for which objects are to be returned. | `list(string)` | false |
-| include_tenants | IncludeTenantPolicies specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned. | `bool` | false |
 | types | Types specifies the policy type of policies to be returned. | `list(string)` | false |
 | exclude_linked_policies | If excludeLinkedPolicies is set to true then only local policies created on cluster will be returned. The result will exclude all linked policies created from policy templates. | `bool` | false |
 | include_replicated_policies | If includeReplicatedPolicies is set to true, then response will also contain replicated policies. By default, replication policies are not included in the response. | `bool` | false |
@@ -1035,12 +1179,13 @@ data "ibm_protection_policies" "protection_policies_instance" {
 |------|-------------|
 | policies | Specifies a list of protection policies. |
 
-### Data source: ibm_protection_policy
+### Data source: ibm_baas_protection_policy
 
 ```hcl
-data "ibm_protection_policy" "protection_policy_instance" {
-  protection_policy_id = var.data_protection_policy_protection_policy_id
-  request_initiator_type = var.data_protection_policy_request_initiator_type
+data "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+  baas_protection_policy_id = var.data_baas_protection_policy_baas_protection_policy_id
+  x_ibm_tenant_id = var.data_baas_protection_policy_x_ibm_tenant_id
+  request_initiator_type = var.data_baas_protection_policy_request_initiator_type
 }
 ```
 
@@ -1048,7 +1193,8 @@ data "ibm_protection_policy" "protection_policy_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| protection_policy_id | Specifies a unique id of the Protection Policy to return. | `string` | true |
+| baas_protection_policy_id | Specifies a unique id of the Protection Policy to return. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 
 #### Outputs
@@ -1073,13 +1219,12 @@ data "ibm_protection_policy" "protection_policy_instance" {
 | num_protection_groups | Specifies the number of protection groups using the protection policy. |
 | num_protected_objects | Specifies the number of protected objects using the protection policy. |
 
-### Data source: ibm_protection_run_summary
+### Data source: ibm_baas_recovery
 
 ```hcl
-data "ibm_protection_run_summary" "protection_run_summary_instance" {
-  start_time_usecs = var.protection_run_summary_start_time_usecs
-  end_time_usecs = var.protection_run_summary_end_time_usecs
-  run_status = var.protection_run_summary_run_status
+data "ibm_baas_recovery" "baas_recovery_instance" {
+  baas_recovery_id = var.data_baas_recovery_baas_recovery_id
+  x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
 }
 ```
 
@@ -1087,59 +1232,8 @@ data "ibm_protection_run_summary" "protection_run_summary_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| start_time_usecs | Start time for time range filter. Specify the start time as a Unix epoch Timestamp (in microseconds), only runs executing after this time will be returned. By default it is endTimeUsecs minus an hour. | `number` | false |
-| end_time_usecs | End time for time range filter. Specify the end time as a Unix epoch Timestamp (in microseconds), only runs executing before this time will be returned. By default it is current time. | `number` | false |
-| run_status | Specifies a list of status, runs matching the status will be returned.<br> 'Running' indicates that the run is still running.<br> 'Canceled' indicates that the run has been canceled.<br> 'Canceling' indicates that the run is in the process of being canceled.<br> 'Failed' indicates that the run has failed.<br> 'Missed' indicates that the run was unable to take place at the scheduled time because the previous run was still happening.<br> 'Succeeded' indicates that the run has finished successfully.<br> 'SucceededWithWarning' indicates that the run finished successfully, but there were some warning messages.<br> 'Skipped' indicates that the run was skipped. | `list(string)` | false |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| protection_runs_summary | Specifies a list of summaries of protection runs. |
-
-### Data source: ibm_protection_sources
-
-```hcl
-data "ibm_protection_sources" "protection_sources_instance" {
-  request_initiator_type = var.protection_sources_request_initiator_type
-  tenant_ids = var.protection_sources_tenant_ids
-  include_tenants = var.protection_sources_include_tenants
-  include_source_credentials = var.protection_sources_include_source_credentials
-  encryption_key = var.protection_sources_encryption_key
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which Sources are to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Sources which belong belong to all tenants which the current user has permission to see. If false, then only Sources for the current user will be returned. | `bool` | false |
-| include_source_credentials | If true, the encrypted crednetial for the registered sources will be included. Credential is first encrypted with internal key and then reencrypted with user supplied encryption key. | `bool` | false |
-| encryption_key | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | false |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| sources | Specifies the list of Protection Sources. |
-
-### Data source: ibm_recovery
-
-```hcl
-data "ibm_recovery" "recovery_instance" {
-  recovery_id = var.data_recovery_recovery_id
-  include_tenants = var.data_recovery_include_tenants
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| recovery_id | Specifies the id of a Recovery. | `string` | true |
-| include_tenants | Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned. | `bool` | false |
+| baas_recovery_id | Specifies the id of a Recovery. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 
 #### Outputs
 
@@ -1163,24 +1257,22 @@ data "ibm_recovery" "recovery_instance" {
 | retrieve_archive_tasks | Specifies the list of persistent state of a retrieve of an archive task. |
 | is_multi_stage_restore | Specifies whether the current recovery operation is a multi-stage restore operation. This is currently used by VMware recoveres for the migration/hot-standby use case. |
 | physical_params | Specifies the recovery options specific to Physical environment. |
-| oracle_params | Specifies the recovery options specific to oracle environment. |
+| mssql_params | Specifies the recovery options specific to Sql environment. |
 
-### Data source: ibm_recoveries
+### Data source: ibm_baas_recoveries
 
 ```hcl
-data "ibm_recoveries" "recoveries_instance" {
-  ids = var.recoveries_ids
-  return_only_child_recoveries = var.recoveries_return_only_child_recoveries
-  tenant_ids = var.recoveries_tenant_ids
-  include_tenants = var.recoveries_include_tenants
-  start_time_usecs = var.recoveries_start_time_usecs
-  end_time_usecs = var.recoveries_end_time_usecs
-  storage_domain_id = var.recoveries_storage_domain_id
-  snapshot_target_type = var.recoveries_snapshot_target_type
-  archival_target_type = var.recoveries_archival_target_type
-  snapshot_environments = var.recoveries_snapshot_environments
-  status = var.recoveries_status
-  recovery_actions = var.recoveries_recovery_actions
+data "ibm_baas_recoveries" "baas_recoveries_instance" {
+  x_ibm_tenant_id = var.baas_recoveries_x_ibm_tenant_id
+  ids = var.baas_recoveries_ids
+  return_only_child_recoveries = var.baas_recoveries_return_only_child_recoveries
+  start_time_usecs = var.baas_recoveries_start_time_usecs
+  end_time_usecs = var.baas_recoveries_end_time_usecs
+  snapshot_target_type = var.baas_recoveries_snapshot_target_type
+  archival_target_type = var.baas_recoveries_archival_target_type
+  snapshot_environments = var.baas_recoveries_snapshot_environments
+  status = var.baas_recoveries_status
+  recovery_actions = var.baas_recoveries_recovery_actions
 }
 ```
 
@@ -1188,13 +1280,11 @@ data "ibm_recoveries" "recoveries_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | ids | Filter Recoveries for given ids. | `list(string)` | false |
 | return_only_child_recoveries | Returns only child recoveries if passed as true. This filter should always be used along with 'ids' filter. | `bool` | false |
-| tenant_ids | TenantIds contains ids of the organizations for which recoveries are to be returned. | `list(string)` | false |
-| include_tenants | Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned. | `bool` | false |
 | start_time_usecs | Returns the recoveries which are started after the specific time. This value should be in Unix timestamp epoch in microseconds. | `number` | false |
 | end_time_usecs | Returns the recoveries which are started before the specific time. This value should be in Unix timestamp epoch in microseconds. | `number` | false |
-| storage_domain_id | Filter by Storage Domain id. Only recoveries writing data to this Storage Domain will be returned. | `number` | false |
 | snapshot_target_type | Specifies the snapshot's target type from which recovery has been performed. | `list(string)` | false |
 | archival_target_type | Specifies the snapshot's archival target type from which recovery has been performed. This parameter applies only if 'snapshotTargetType' is 'Archival'. | `list(string)` | false |
 | snapshot_environments | Specifies the list of snapshot environment types to filter Recoveries. If empty, Recoveries related to all environments will be returned. | `list(string)` | false |
@@ -1207,16 +1297,17 @@ data "ibm_recoveries" "recoveries_instance" {
 |------|-------------|
 | recoveries | Specifies list of Recoveries. |
 
-### Data source: ibm_source_registrations
+### Data source: ibm_baas_source_registrations
 
 ```hcl
-data "ibm_source_registrations" "source_registrations_instance" {
-  ids = var.source_registrations_ids
-  tenant_ids = var.source_registrations_tenant_ids
-  include_tenants = var.source_registrations_include_tenants
-  include_source_credentials = var.source_registrations_include_source_credentials
-  encryption_key = var.source_registrations_encryption_key
-  use_cached_data = var.source_registrations_use_cached_data
+data "ibm_baas_source_registrations" "baas_source_registrations_instance" {
+  x_ibm_tenant_id = var.baas_source_registrations_x_ibm_tenant_id
+  ids = var.baas_source_registrations_ids
+  include_source_credentials = var.baas_source_registrations_include_source_credentials
+  encryption_key = var.baas_source_registrations_encryption_key
+  use_cached_data = var.baas_source_registrations_use_cached_data
+  include_external_metadata = var.baas_source_registrations_include_external_metadata
+  ignore_tenant_migration_in_progress_check = var.baas_source_registrations_ignore_tenant_migration_in_progress_check
 }
 ```
 
@@ -1224,12 +1315,13 @@ data "ibm_source_registrations" "source_registrations_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | ids | Ids specifies the list of source registration ids to return. If left empty, every source registration will be returned by default. | `list(number)` | false |
-| tenant_ids | TenantIds contains ids of the tenants for which objects are to be returned. | `list(string)` | false |
-| include_tenants | If true, the response will include Registrations which were created by all tenants which the current user has permission to see. If false, then only Registrations created by the current user will be returned. | `bool` | false |
 | include_source_credentials | If true, the encrypted crednetial for the registered sources will be included. Credential is first encrypted with internal key and then reencrypted with user supplied encryption key. | `bool` | false |
 | encryption_key | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | false |
 | use_cached_data | Specifies whether we can serve the GET request from the read replica cache. There is a lag of 15 seconds between the read replica and primary data source. | `bool` | false |
+| include_external_metadata | If true, the external entity metadata like maintenance mode config for the registered sources will be included. | `bool` | false |
+| ignore_tenant_migration_in_progress_check | If true, tenant migration check will be ignored. | `bool` | false |
 
 #### Outputs
 
@@ -1237,12 +1329,13 @@ data "ibm_source_registrations" "source_registrations_instance" {
 |------|-------------|
 | registrations | Specifies the list of Protection Source Registrations. |
 
-### Data source: ibm_source_registration
+### Data source: ibm_baas_source_registration
 
 ```hcl
-data "ibm_source_registration" "source_registration_instance" {
-  source_registration_id = var.data_source_registration_source_registration_id
-  request_initiator_type = var.data_source_registration_request_initiator_type
+data "ibm_baas_source_registration" "baas_source_registration_instance" {
+  baas_source_registration_id = var.data_baas_source_registration_baas_source_registration_id
+  x_ibm_tenant_id = var.data_baas_source_registration_x_ibm_tenant_id
+  request_initiator_type = var.data_baas_source_registration_request_initiator_type
 }
 ```
 
@@ -1250,7 +1343,8 @@ data "ibm_source_registration" "source_registration_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| source_registration_id | Specifies the id of the Protection Source registration. | `number` | true |
+| baas_source_registration_id | Specifies the id of the Protection Source registration. | `number` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 
 #### Outputs
@@ -1264,16 +1358,43 @@ data "ibm_source_registration" "source_registration_instance" {
 | connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. This field will be depricated in future. Use connections field. |
 | connections | Specfies the list of connections for the source. |
 | connector_group_id | Specifies the connector group id of connector groups. |
+| data_source_connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision. |
 | advanced_configs | Specifies the advanced configuration for a protection source. |
 | authentication_status | Specifies the status of the authentication during the registration of a Protection Source. 'Pending' indicates the authentication is in progress. 'Scheduled' indicates the authentication is scheduled. 'Finished' indicates the authentication is completed. 'RefreshInProgress' indicates the refresh is in progress. |
 | registration_time_msecs | Specifies the time when the source was registered in milliseconds. |
 | last_refreshed_time_msecs | Specifies the time when the source was last refreshed in milliseconds. |
-| physical_params | Physical Params params. |
-| oracle_params | Physical Params params. |
+| external_metadata | Specifies the External metadata of an entity. |
+| physical_params | Specifies parameters to register physical server. |
+
+### Data source: ibm_baas_download_indexed_files
+
+```hcl
+data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
+  snapshots_id = var.baas_download_indexed_files_snapshots_id
+  x_ibm_tenant_id = var.baas_download_indexed_files_x_ibm_tenant_id
+  file_path = var.baas_download_indexed_files_file_path
+  nvram_file = var.baas_download_indexed_files_nvram_file
+  retry_attempt = var.baas_download_indexed_files_retry_attempt
+  start_offset = var.baas_download_indexed_files_start_offset
+  length = var.baas_download_indexed_files_length
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| snapshots_id | Specifies the snapshot id to download from. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| file_path | Specifies the path to the file to download. If no path is specified and snapshot environment is kVMWare, VMX file for VMware will be downloaded. For other snapshot environments, this field must be specified. | `string` | false |
+| nvram_file | Specifies if NVRAM file for VMware should be downloaded. | `bool` | false |
+| retry_attempt | Specifies the number of attempts the protection run took to create this file. | `number` | false |
+| start_offset | Specifies the start offset of file chunk to be downloaded. | `number` | false |
+| length | Specifies the length of bytes to download. This can not be greater than 8MB (8388608 byets). | `number` | false |
 
 ## Assumptions
 
-1. TODO
+1. End user has connectorURL endpoint value
 
 ## Notes
 
@@ -1282,22 +1403,27 @@ This service includes certain resources that do not have fully implemented CRUD 
 
 #### Protection Group Run:
 
-***Create:*** A `ibm_protection_group_run_request` resource is available for creating new protection group run.
+***Create:*** A `ibm_baas_protection_group_run_request` resource is available for creating new protection group run.
 
-***Update:*** protection group run updates are managed through a separate `ibm_update_protection_group_run_request` resource. Note that the `ibm_protection_group_run_request` and `ibm_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
+***Update:*** protection group run updates are managed through a separate `ibm_baas_update_protection_group_run_request` resource. Note that the `ibm_baas_protection_group_run_request` and `ibm_baas_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
 
-***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_update_protection_group_run_request or ibm_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
+***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_baas_update_protection_group_run_request or ibm_baas_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
 
 
 #### Other resources that do not support update and delete:
 
-Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend.
-- ibm_perform_action_on_protection_group_run_request
-- ibm_recovery_download_files_folders
-- ibm_recovery_cancel
-- ibm_recovery_teardown
-- ibm_search_indexed_object
-- ibm_protection_group_state
+Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend. Similarly updating these resources will only update the terraform statefile without affecting the actual backend resources.
+- ibm_baas_perform_action_on_protection_group_run_request
+- ibm_baas_recovery_download_files_folders
+- ibm_baas_agent_upgrade_task
+- ibm_baas_download_agent
+- ibm_baas_search_indexed_object
+- ibm_baas_protection_group_state
+- ibm_baas_connection_registration_token
+- ibm_baas_restore_points
+- ibm_baas_data_source_connector_patch
+- ibm_baas_data_source_connector_registration
+- 
 
 **Important:** When managing resources that lack complete CRUD operations, users should exercise caution and consider the limitations described above. Manual intervention may be required to manage these resources in the backend if updates or deletions are necessary.**
 

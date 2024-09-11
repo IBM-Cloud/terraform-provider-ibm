@@ -1,5 +1,22 @@
 // This output allows protection_group_run_request data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
+output "ibm_baas_connection_registration_token" {
+  value       = ibm_baas_connection_registration_token.baas_connection_registration_token_instance
+  description = "baas_connection_registration_token resource instance"
+}
+// This output allows baas_agent_upgrade_task data to be referenced by other resources and the terraform CLI
+// Modify this output if only certain data should be exposed
+output "ibm_baas_agent_upgrade_task" {
+  value       = ibm_baas_agent_upgrade_task.baas_agent_upgrade_task_instance
+  description = "baas_agent_upgrade_task resource instance"
+}
+// This output allows baas_connectors_metadata data to be referenced by other resources and the terraform CLI
+// Modify this output if only certain data should be exposed
+output "ibm_baas_connectors_metadata" {
+  value       = ibm_baas_connectors_metadata.baas_connectors_metadata_instance
+  description = "baas_connectors_metadata resource instance"
+}
+
 output "ibm_protection_group_run_request" {
   value       = ibm_protection_group_run_request.protection_group_run_request_instance
   description = "protection_group_run_request resource instance"
