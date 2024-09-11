@@ -304,6 +304,12 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 	for i, v := range removeTags.List() {
 		remove[i] = fmt.Sprint(v)
 	}
+	var tType string
+	if v, ok := d.GetOk(tagType); ok && v != nil {
+		tType = v.(string)
+	} else {
+		tType = "user"
+	}
 
 	if len(remove) > 0 {
 		resources := []globaltaggingv1.Resource{}
@@ -313,6 +319,7 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 		detachTagOptions := &globaltaggingv1.DetachTagOptions{
 			Resources: resources,
 			TagNames:  remove,
+			TagType:   &tType,
 		}
 
 		_, resp, err := gtClient.DetachTag(detachTagOptions)

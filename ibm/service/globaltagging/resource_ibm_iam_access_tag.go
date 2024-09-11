@@ -1,9 +1,10 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package globaltagging
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,15 +13,16 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceIBMResourceAccessTag() *schema.Resource {
+func ResourceIBMIamAccessTag() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMResourceAccessTagCreate,
-		Read:     resourceIBMResourceAccessTagRead,
-		Delete:   resourceIBMResourceAccessTagDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMIamAccessTagCreate,
+		ReadContext:   resourceIBMIamAccessTagRead,
+		DeleteContext: resourceIBMIamAccessTagDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 
@@ -28,7 +30,7 @@ func ResourceIBMResourceAccessTag() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_resource_access_tag", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_iam_access_tag", "name"),
 				Set:          flex.ResourceIBMVPCHash,
 				Description:  "Name of the access tag",
 			},
@@ -38,11 +40,10 @@ func ResourceIBMResourceAccessTag() *schema.Resource {
 				Description: "Type of the tag(access)",
 			},
 		},
-		DeprecationMessage: "ibm_resource_access_tag has been deprecated. Use ibm_iam_access_tag instead.",
 	}
 }
 
-func ResourceIBMResourceAccessTagValidator() *validate.ResourceValidator {
+func ResourceIBMIamAccessTagValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 
@@ -56,15 +57,17 @@ func ResourceIBMResourceAccessTagValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmResourceAccessTagValidator := validate.ResourceValidator{ResourceName: "ibm_resource_access_tag", Schema: validateSchema}
-	return &ibmResourceAccessTagValidator
+	ibmIamAccessTagValidator := validate.ResourceValidator{ResourceName: "ibm_iam_access_tag", Schema: validateSchema}
+	return &ibmIamAccessTagValidator
 }
 
-func resourceIBMResourceAccessTagCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIamAccessTagCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_tag", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	tagName := d.Get("name").(string)
@@ -75,9 +78,10 @@ func resourceIBMResourceAccessTagCreate(d *schema.ResourceData, meta interface{}
 		TagType:  &accessTagType,
 		TagNames: add,
 	}
-	results, _, err := gtClient.CreateTag(createTagOptions)
+	results, _, err := gtClient.CreateTagWithContext(context, createTagOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_tag", "create")
+		return tfErr.GetDiag()
 	}
 	if results != nil {
 		errMap := make([]globaltaggingv1.CreateTagResultsResultsItem, 0)
@@ -87,9 +91,8 @@ func resourceIBMResourceAccessTagCreate(d *schema.ResourceData, meta interface{}
 			}
 		}
 		if len(errMap) > 0 {
-			output, err := json.MarshalIndent(errMap, "", "    ")
-			log.Printf("err is %s", err)
-			return fmt.Errorf("[ERROR] Error while creating access tag(%s) : %s", tagName, string(output))
+			output, _ := json.MarshalIndent(errMap, "", "    ")
+			return diag.FromErr(fmt.Errorf("Error while creating access tag(%s) : %s", tagName, string(output)))
 		}
 	}
 
@@ -99,19 +102,22 @@ func resourceIBMResourceAccessTagCreate(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceIBMResourceAccessTagRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIamAccessTagRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tagName := d.Id()
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_tag", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	accessTagType := "access"
 	listTagsOptions := &globaltaggingv1.ListTagsOptions{
 		TagType: &accessTagType,
 	}
-	taggingResult, _, err := gtClient.ListTags(listTagsOptions)
+	taggingResult, _, err := gtClient.ListTagsWithContext(context, listTagsOptions)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_tag", "read")
+		return tfErr.GetDiag()
 	}
 
 	var taglist []string
@@ -128,11 +134,13 @@ func resourceIBMResourceAccessTagRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceIBMResourceAccessTagDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMIamAccessTagDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_tag", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	tagName := d.Get("name").(string)
 	accessTagType := "access"
@@ -142,10 +150,10 @@ func resourceIBMResourceAccessTagDelete(d *schema.ResourceData, meta interface{}
 		TagType: &accessTagType,
 	}
 
-	results, resp, err := gtClient.DeleteTag(deleteTagOptions)
+	results, resp, err := gtClient.DeleteTagWithContext(context, deleteTagOptions)
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while deleting access tag(%s) : %v\n%v", tagName, err, resp)
+		return diag.FromErr(fmt.Errorf("Error while deleting access tag(%s) : %v\n%v", tagName, err, resp))
 	}
 	if results != nil {
 		errMap := make([]globaltaggingv1.DeleteTagResultsItem, 0)
@@ -155,9 +163,8 @@ func resourceIBMResourceAccessTagDelete(d *schema.ResourceData, meta interface{}
 			}
 		}
 		if len(errMap) > 0 {
-			output, err := json.MarshalIndent(errMap, "", "    ")
-			log.Printf("err is %s", err)
-			return fmt.Errorf("[ERROR] Error while deleting access tag(%s) : %s", tagName, string(output))
+			output, _ := json.MarshalIndent(errMap, "", "    ")
+			return diag.FromErr(fmt.Errorf("Error while deleting access tag(%s) : %s", tagName, string(output)))
 		}
 	}
 
