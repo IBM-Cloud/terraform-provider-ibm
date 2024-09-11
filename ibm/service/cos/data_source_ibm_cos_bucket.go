@@ -598,6 +598,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
+	testEnv := false
 	bucketName := d.Get("bucket_name").(string)
 	serviceID := d.Get("resource_instance_id").(string)
 	bucketType := d.Get("bucket_type").(string)
@@ -621,7 +622,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		apiEndpoint = SelectSatlocCosApi(bucketType, serviceID, satlc_id)
 
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion, testEnv)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -718,6 +719,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion, strings.Contains(apiEndpoint, "test"))
 	d.Set("s3_endpoint_public", apiEndpoint)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
 	d.Set("s3_endpoint_direct", directApiEndpoint)
