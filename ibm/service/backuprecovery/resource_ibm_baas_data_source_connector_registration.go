@@ -105,6 +105,13 @@ func resourceIbmBaasDataSourceConnectorRegistrationCreate(context context.Contex
 		return tfErr.GetDiag()
 	}
 
+	if backupRecoveryClient.ConnectorUrl == "" {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_registration", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", "Connector URL is not set")
+		return tfErr.GetDiag()
+	}
+
+	backupRecoveryClient.SetServiceURL(backupRecoveryClient.ConnectorUrl)
 	registerDataSourceConnectorOptions := &backuprecoveryv1.RegisterDataSourceConnectorOptions{}
 
 	registerDataSourceConnectorOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
