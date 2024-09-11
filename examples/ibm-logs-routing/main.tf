@@ -6,8 +6,9 @@ provider "ibm" {
 // Provision logs_router_tenant resource instance
 resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
   name = var.logs_router_tenant_name
+  region = "us-east"
   targets {
-    log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+    log_sink_crn = "crn:v1:bluemix:public:logdna:us-east:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
     name = "my-logdna-target"
     parameters {
       host = "www.example-1.com"
@@ -16,11 +17,25 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
     }
   }
     targets {
-    log_sink_crn = "crn:v1:bluemix:public:logs:eu-de:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+    log_sink_crn = "crn:v1:bluemix:public:logs:us-east:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
     name = "my-cloud-logs-target"
     parameters {
       host = "www.example-2.com"
       port = 80
+    }
+  }
+}
+
+resource "ibm_logs_router_tenant" "logs_router_tenant_instance_eu_de" {
+  name = "eu-de-tenant"
+  region = "eu-de"
+  targets {
+    log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/7246b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
+    name = "my-logdna-target"
+    parameters {
+      host = "www.example-1.com"
+      port = 80
+      access_credential = "new-cred"
     }
   }
 }

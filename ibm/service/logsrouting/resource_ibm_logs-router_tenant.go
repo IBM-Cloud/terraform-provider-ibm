@@ -30,7 +30,22 @@ func ResourceIBMLogsRouterTenant() *schema.Resource {
 		ReadContext:   resourceIBMLogsRouterTenantRead,
 		UpdateContext: resourceIBMLogsRouterTenantUpdate,
 		DeleteContext: resourceIBMLogsRouterTenantDelete,
-		Importer:      &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) (result []*schema.ResourceData, err error) {
+				ID := d.Id()
+				parts := strings.Split(ID, "/")
+				if len(parts) < 2 {
+					return nil, fmt.Errorf("Invalid import format: please specify 'tenant_id/region'")
+				}
+				tenantID := parts[0]
+				region := parts[1]
+				d.SetId(tenantID)
+				if err := d.Set("region", region); err != nil {
+					return nil, err
+				}
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -39,9 +54,16 @@ func ResourceIBMLogsRouterTenant() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_tenant", "name"),
 				Description:  "The name for this tenant. The name is regionally unique across all tenants in the account.",
 			},
+			"region": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_logs_router_tenant", "region"),
+				Description:  "The region where this tenant exists.",
+			},
 			"targets": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				MinItems:    1,
 				Description: "List of targets",
 				Elem: &schema.Resource{
@@ -86,7 +108,7 @@ func ResourceIBMLogsRouterTenant() *schema.Resource {
 						"parameters": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
-							Optional:    true,
+							Required:    true,
 							Description: "List of properties returned from a successful list operation for a log-sink of type IBM Log Analysis (logdna).",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -148,6 +170,15 @@ func ResourceIBMLogsRouterTenantValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             35,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "region",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[a-zA-Z0-9 -._:]+$`,
+			MinValueLength:             3,
+			MaxValueLength:             1000,
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_router_tenant", Schema: validateSchema}
@@ -166,6 +197,7 @@ func resourceIBMLogsRouterTenantCreate(context context.Context, d *schema.Resour
 	createTenantOptions := &ibmcloudlogsroutingv0.CreateTenantOptions{}
 
 	createTenantOptions.SetName(d.Get("name").(string))
+	createTenantOptions.SetRegion(d.Get("region").(string))
 	var targets []ibmcloudlogsroutingv0.TargetTypePrototypeIntf
 	for _, v := range d.Get("targets").([]interface{}) {
 		value := v.(map[string]interface{})
@@ -201,6 +233,7 @@ func resourceIBMLogsRouterTenantRead(context context.Context, d *schema.Resource
 
 	tenantId := strfmt.UUID(d.Id())
 	getTenantDetailOptions.SetTenantID(&tenantId)
+	getTenantDetailOptions.SetRegion(d.Get("region").(string))
 
 	tenant, response, err := ibmCloudLogsRoutingClient.GetTenantDetailWithContext(context, getTenantDetailOptions)
 	if err != nil {
@@ -317,6 +350,7 @@ func resourceIBMLogsRouterTenantUpdate(context context.Context, d *schema.Resour
 
 	tenantId := strfmt.UUID(d.Id())
 	updateTenantOptions.SetTenantID(&tenantId)
+	updateTenantOptions.SetRegion(d.Get("region").(string))
 
 	hasChange := false
 	hasChangeTarget0 := false
@@ -336,6 +370,7 @@ func resourceIBMLogsRouterTenantUpdate(context context.Context, d *schema.Resour
 	target0ID := strfmt.UUID(d.Get("targets.0.id").(string))
 	updateTarget0Options.SetTenantID(&tenantId)
 	updateTarget0Options.SetTargetID(&target0ID)
+	updateTarget0Options.SetRegion(d.Get("region").(string))
 
 	patchValsTarget0 := &ibmcloudlogsroutingv0.TargetTypePatch{}
 	if d.HasChange("targets.0.tenant_id") {
@@ -367,6 +402,7 @@ func resourceIBMLogsRouterTenantUpdate(context context.Context, d *schema.Resour
 	target1ID := strfmt.UUID(d.Get("targets.1.id").(string))
 	updateTarget1Options.SetTenantID(&tenantId)
 	updateTarget1Options.SetTargetID(&target1ID)
+	updateTarget1Options.SetRegion(d.Get("region").(string))
 
 	bodyModelMap := map[string]interface{}{}
 	createTarget1Options := &ibmcloudlogsroutingv0.CreateTargetOptions{}
@@ -383,6 +419,7 @@ func resourceIBMLogsRouterTenantUpdate(context context.Context, d *schema.Resour
 			bodyModelMap["parameters"] = d.Get("targets.1.parameters")
 		}
 		createTarget1Options.SetTenantID(&tenantId)
+		createTarget1Options.SetRegion(d.Get("region").(string))
 		convertedModel, err := ResourceIBMLogsRouterTargetMapToTargetTypePrototypeTargetTypeLogDNAPrototype(bodyModelMap)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_target", "create", "parse-request-body").GetDiag()
@@ -497,6 +534,7 @@ func resourceIBMLogsRouterTenantUpdate(context context.Context, d *schema.Resour
 			deleteTargetOptions := &ibmcloudlogsroutingv0.DeleteTargetOptions{}
 			deleteTargetOptions.SetTenantID(&tenantId)
 			deleteTargetOptions.SetTargetID(&target1ID)
+			deleteTargetOptions.SetRegion(d.Get("region").(string))
 			_, err = ibmCloudLogsRoutingClient.DeleteTargetWithContext(context, deleteTargetOptions)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTargetWithContext failed: %s", err.Error()), "ibm_logs_router_target", "delete")
@@ -567,6 +605,7 @@ func resourceIBMLogsRouterTenantDelete(context context.Context, d *schema.Resour
 
 	tenantId := strfmt.UUID(d.Id())
 	deleteTenantOptions.SetTenantID(&tenantId)
+	deleteTenantOptions.SetRegion(d.Get("region").(string))
 
 	_, err = ibmCloudLogsRoutingClient.DeleteTenantWithContext(context, deleteTenantOptions)
 	if err != nil {
