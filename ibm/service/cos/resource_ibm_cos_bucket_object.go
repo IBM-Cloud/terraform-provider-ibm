@@ -502,8 +502,7 @@ func getS3Client(bxSession *bxsession.Session, bucketLocation string, endpointTy
 	if endpointType == "direct" {
 		visibility = "private"
 	}
-	testEnv := false
-	apiEndpoint := getCosEndpoint(bucketLocation, endpointType, testEnv)
+	apiEndpoint := getCosEndpoint(bucketLocation, endpointType, false)
 	apiEndpoint = conns.FileFallBack(bxSession.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bucketLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
