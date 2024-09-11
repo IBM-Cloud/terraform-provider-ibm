@@ -405,13 +405,16 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 
 	d.SetId(cls.ID)
 
-	returnedClusterInfo, err := waitForVpcCluster(d, meta, timeoutStage, timeout)
-	if err != nil {
-		return err
-	}
+	if timeoutStage != "" {
+		err = waitForVpcCluster(d, meta, timeoutStage, timeout)
+		if err != nil {
+			return err
+		}
 
-	if returnedClusterInfo != nil {
-		cls = returnedClusterInfo
+		cls, err = csClient.Clusters().GetCluster(clusterNameOrID, targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving container vpc cluster: %s", err)
+		}
 	}
 
 	d.Set("crn", cls.CRN)

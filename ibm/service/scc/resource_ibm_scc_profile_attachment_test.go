@@ -50,11 +50,40 @@ func TestAccIbmSccProfileAttachmentAllArgs(t *testing.T) {
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSccProfileAttachmentConfig(acc.SccInstanceID),
-				Check:  resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "5"),
+				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmSccProfileAttachmentConfigChange(acc.SccInstanceID),
-				Check:  resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSccProfileAttachmentExists("ibm_scc_profile_attachment.scc_profile_attachment_instance", conf),
+					// verify if all attachment_parameters are stored in the state
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.#", "5"),
+					// verify the changes to rule-7c5f6385-67e4-4edf-bec8-c722558b2dec
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.0.assessment_id", "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.0.parameter_value", "23"),
+					// verify the changes to rule-9653d2c7-6290-4128-a5a3-65487ba40370
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.1.assessment_id", "rule-9653d2c7-6290-4128-a5a3-65487ba40370"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.1.parameter_value", "1234"),
+					// verify the changes to rule-e16fcfea-fe21-4d30-a721-423611481fea
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.2.assessment_id", "rule-e16fcfea-fe21-4d30-a721-423611481fea"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.2.parameter_value", "['1.2', '1.3']"),
+					// verify the changes to rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.3.assessment_id", "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_profile_attachment.scc_profile_attachment_instance", "attachment_parameters.3.parameter_value", "4000"),
+				),
 			},
 			resource.TestStep{
 				ResourceName:      "ibm_scc_profile_attachment.scc_profile_attachment_instance",
@@ -138,7 +167,7 @@ func testAccCheckIbmSccProfileAttachmentConfigBasic(instanceID string) string {
 				}
 			}
 			schedule = "every_30_days"
-			status = "enabled"
+			status = "disabled"
 			notifications {
 				enabled = false
 				controls {
@@ -168,7 +197,7 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark"]
+		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 		name = "profile_attachment_name"
 		description = "scc_profile_attachment_description"
 			scope {
@@ -235,6 +264,7 @@ func testAccCheckIbmSccProfileAttachmentConfig(instanceID string) string {
 	`, instanceID, instanceID)
 }
 
+// Returns a terraform change where the attachment_parameters are modified slightly.
 func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 	return fmt.Sprintf(`
 	locals {
@@ -253,7 +283,7 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 
     resource "ibm_scc_profile_attachment" "scc_profile_attachment_instance" {
 		instance_id = "%s"
-		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark"]
+		profile_id = local.scc_profiles_map["CIS IBM Cloud Foundations Benchmark v1.1.0"]
 		name = "profile_attachment_name"
 		description = "scc_profile_attachment_description"
 			scope {
@@ -285,7 +315,7 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 			parameter_type = "string_list"
 		}
 		attachment_parameters {
-			parameter_value = "22"
+			parameter_value = "8080"
 			assessment_id = "rule-f9137be8-2490-4afb-8cd5-a201cb167eb2"
 			assessment_type = "automated"
 			parameter_display_name = "Network ACL rule for allowed IPs to SSH port"
@@ -293,7 +323,7 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 			parameter_type = "numeric"
 		}
 		attachment_parameters {
-			parameter_value = "22"
+			parameter_value = "23"
 			assessment_id = "rule-7c5f6385-67e4-4edf-bec8-c722558b2dec"
 			assessment_type = "automated"
 			parameter_display_name = "Security group rule SSH allow port number"
@@ -301,18 +331,18 @@ func testAccCheckIbmSccProfileAttachmentConfigChange(instanceID string) string {
 			parameter_type = "numeric"
 		}
 		attachment_parameters {
-			parameter_value = "3389"
-			assessment_id = "rule-9653d2c7-6290-4128-a5a3-65487ba40370"
+			parameter_value = "4000"
+			assessment_id = "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"
 			assessment_type = "automated"
-			parameter_display_name = "Security group rule RDP allow port number"
+			parameter_display_name = "Disallowed IPs for ingress to RDP port"
 			parameter_name = "rdp_port"
 			parameter_type = "numeric"
 		}
 		attachment_parameters {
-			parameter_value = "3389"
-			assessment_id = "rule-f1e80ee7-88d5-4bf2-b42f-c863bb24601c"
+			parameter_value = "1234"
+			assessment_id = "rule-9653d2c7-6290-4128-a5a3-65487ba40370"
 			assessment_type = "automated"
-			parameter_display_name = "Disallowed IPs for ingress to RDP port"
+			parameter_display_name = "Security group rule RDP allow port number"
 			parameter_name = "rdp_port"
 			parameter_type = "numeric"
 		}
@@ -325,7 +355,7 @@ func testAccCheckIbmSccProfileAttachmentExists(n string, obj securityandcomplian
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		securityandcompliancecenterapiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecurityAndComplianceCenterV3()
@@ -379,9 +409,9 @@ func testAccCheckIbmSccProfileAttachmentDestroy(s *terraform.State) error {
 		_, response, err := securityandcompliancecenterapiClient.GetProfileAttachment(getProfileAttachmentOptions)
 
 		if err == nil {
-			return fmt.Errorf("scc_profile_attachment still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("scc_profile_attachment still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for scc_profile_attachment (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for scc_profile_attachment (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

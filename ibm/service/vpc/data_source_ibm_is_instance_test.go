@@ -115,10 +115,22 @@ func TestAccIBMISInstanceDataSource_vni(t *testing.T) {
 						resName, "primary_network_attachment.0.id"),
 					resource.TestCheckResourceAttr(
 						resName, "primary_network_attachment.0.name", "test-vni"),
+					resource.TestCheckResourceAttr(
+						resName, "primary_network_attachment.0.virtual_network_interface.#", "1"),
 					resource.TestCheckResourceAttrSet(
 						resName, "primary_network_attachment.0.primary_ip.#"),
 					resource.TestCheckResourceAttrSet(
 						resName, "primary_network_attachment.0.subnet.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "network_attachments.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "network_attachments.0.id"),
+					resource.TestCheckResourceAttr(
+						resName, "network_attachments.0.virtual_network_interface.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						resName, "network_attachments.0.primary_ip.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "network_attachments.0.subnet.#"),
 				),
 			},
 		},
@@ -302,6 +314,11 @@ resource "ibm_is_virtual_network_interface" "testacc_vni"{
 	allow_ip_spoofing = true
 	subnet = ibm_is_subnet.testacc_subnet.id
 } 
+resource "ibm_is_virtual_network_interface" "testacc_vni2"{
+	name = "%s-2"
+	allow_ip_spoofing = true
+	subnet = ibm_is_subnet.testacc_subnet.id
+} 
 
 resource "ibm_is_instance" "testacc_instance" {
   name    = "%s"
@@ -313,6 +330,12 @@ resource "ibm_is_instance" "testacc_instance" {
 		id = ibm_is_virtual_network_interface.testacc_vni.id
 	}
   }
+  network_attachments {
+	name = "test-vni-sec"
+	virtual_network_interface { 
+		id = ibm_is_virtual_network_interface.testacc_vni2.id
+	}
+  }
   vpc  = ibm_is_vpc.testacc_vpc.id
   zone = "%s"
   keys = [ibm_is_ssh_key.testacc_sshkey.id]
@@ -321,7 +344,7 @@ data "ibm_is_instance" "ds_instance" {
   name        = ibm_is_instance.testacc_instance.name
   private_key = file("./test-fixtures/.ssh/id_rsa")
   passphrase  = ""
-}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, vniname, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName)
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, vniname, vniname, instanceName, acc.IsWinImage, acc.InstanceProfileName, acc.ISZoneName)
 }
 func testAccCheckIBMISInstanceDataSourcePKCS8SSHConfig(vpcname, subnetname, sshname, instanceName string) string {
 	return fmt.Sprintf(`
