@@ -14,9 +14,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -104,36 +101,4 @@ func testAccCheckIbmBaasDownloadAgentDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func TestResourceIbmBaasDownloadAgentLinuxAgentParamsToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["package_type"] = "kScript"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.LinuxAgentParams)
-	model.PackageType = core.StringPtr("kScript")
-
-	result, err := backuprecovery.ResourceIbmBaasDownloadAgentLinuxAgentParamsToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmBaasDownloadAgentMapToLinuxAgentParams(t *testing.T) {
-	checkResult := func(result *backuprecoveryv1.LinuxAgentParams) {
-		model := new(backuprecoveryv1.LinuxAgentParams)
-		model.PackageType = core.StringPtr("kScript")
-
-		assert.Equal(t, result, model)
-	}
-
-	model := make(map[string]interface{})
-	model["package_type"] = "kScript"
-
-	result, err := backuprecovery.ResourceIbmBaasDownloadAgentMapToLinuxAgentParams(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

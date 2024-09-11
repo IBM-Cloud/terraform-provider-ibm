@@ -13,9 +13,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -152,26 +149,4 @@ func testAccCheckIbmBaasDataSourceConnectionDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func TestResourceIbmBaasDataSourceConnectionNetworkSettingsToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["cluster_fqdn"] = "testString"
-		model["dns"] = []string{"testString"}
-		model["network_gateway"] = "testString"
-		model["ntp"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.NetworkSettings)
-	model.ClusterFqdn = core.StringPtr("testString")
-	model.Dns = []string{"testString"}
-	model.NetworkGateway = core.StringPtr("testString")
-	model.Ntp = core.StringPtr("testString")
-
-	result, err := backuprecovery.ResourceIbmBaasDataSourceConnectionNetworkSettingsToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

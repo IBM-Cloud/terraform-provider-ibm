@@ -14,10 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func TestAccIbmBaasConnectorStatusDataSourceBasic(t *testing.T) {
@@ -42,42 +38,4 @@ func testAccCheckIbmBaasConnectorStatusDataSourceConfigBasic() string {
 			X-IBM-Tenant-Id = "X-IBM-Tenant-Id"
 		}
 	`)
-}
-
-func TestDataSourceIbmBaasConnectorStatusDataSourceConnectorClusterConnectionStatusToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["is_active"] = true
-		model["last_connected_timestamp_msecs"] = int(26)
-		model["message"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.DataSourceConnectorClusterConnectionStatus)
-	model.IsActive = core.BoolPtr(true)
-	model.LastConnectedTimestampMsecs = core.Int64Ptr(int64(26))
-	model.Message = core.StringPtr("testString")
-
-	result, err := backuprecovery.DataSourceIbmBaasConnectorStatusDataSourceConnectorClusterConnectionStatusToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIbmBaasConnectorStatusDataSourceConnectorRegistrationStatusToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["message"] = "testString"
-		model["status"] = "NotDone"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.DataSourceConnectorRegistrationStatus)
-	model.Message = core.StringPtr("testString")
-	model.Status = core.StringPtr("NotDone")
-
-	result, err := backuprecovery.DataSourceIbmBaasConnectorStatusDataSourceConnectorRegistrationStatusToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

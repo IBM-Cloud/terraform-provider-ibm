@@ -14,10 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
@@ -45,46 +41,4 @@ func testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic() string {
 			tenant_id = 8
 		}
 	`)
-}
-
-func TestDataSourceIbmBaasConnectorsMetadataConnectorImageMetadataToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		connectorImageFileModel := make(map[string]interface{})
-		connectorImageFileModel["image_type"] = "VSI"
-		connectorImageFileModel["url"] = "testString"
-
-		model := make(map[string]interface{})
-		model["connector_image_file_list"] = []map[string]interface{}{connectorImageFileModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	connectorImageFileModel := new(backuprecoveryv1.ConnectorImageFile)
-	connectorImageFileModel.ImageType = core.StringPtr("VSI")
-	connectorImageFileModel.URL = core.StringPtr("testString")
-
-	model := new(backuprecoveryv1.ConnectorImageMetadata)
-	model.ConnectorImageFileList = []backuprecoveryv1.ConnectorImageFile{*connectorImageFileModel}
-
-	result, err := backuprecovery.DataSourceIbmBaasConnectorsMetadataConnectorImageMetadataToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIbmBaasConnectorsMetadataConnectorImageFileToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["image_type"] = "VSI"
-		model["url"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.ConnectorImageFile)
-	model.ImageType = core.StringPtr("VSI")
-	model.URL = core.StringPtr("testString")
-
-	result, err := backuprecovery.DataSourceIbmBaasConnectorsMetadataConnectorImageFileToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

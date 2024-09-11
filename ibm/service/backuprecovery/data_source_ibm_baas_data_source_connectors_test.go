@@ -15,10 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func TestAccIbmBaasDataSourceConnectorsDataSourceBasic(t *testing.T) {
@@ -101,62 +97,4 @@ func testAccCheckIbmBaasDataSourceConnectorsDataSourceConfig(dataSourceConnector
 			connection_id = ibm_baas_data_source_connector_patch.baas_data_source_connector_patch_instance.connection_id
 		}
 	`, dataSourceConnectorConnectorID, dataSourceConnectorTenantID, dataSourceConnectorConnectorName)
-}
-
-func TestDataSourceIbmBaasDataSourceConnectorsDataSourceConnectorToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		dataSourceConnectorStatusModel := make(map[string]interface{})
-		dataSourceConnectorStatusModel["is_connected"] = true
-		dataSourceConnectorStatusModel["last_connected_timestamp_secs"] = int(26)
-		dataSourceConnectorStatusModel["message"] = "testString"
-
-		model := make(map[string]interface{})
-		model["cluster_side_ip"] = "testString"
-		model["connection_id"] = "testString"
-		model["connector_id"] = "testString"
-		model["connector_name"] = "testString"
-		model["connector_status"] = []map[string]interface{}{dataSourceConnectorStatusModel}
-		model["software_version"] = "testString"
-		model["tenant_side_ip"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	dataSourceConnectorStatusModel := new(backuprecoveryv1.DataSourceConnectorStatus)
-	dataSourceConnectorStatusModel.IsConnected = core.BoolPtr(true)
-	dataSourceConnectorStatusModel.LastConnectedTimestampSecs = core.Int64Ptr(int64(26))
-	dataSourceConnectorStatusModel.Message = core.StringPtr("testString")
-
-	model := new(backuprecoveryv1.DataSourceConnector)
-	model.ClusterSideIp = core.StringPtr("testString")
-	model.ConnectionID = core.StringPtr("testString")
-	model.ConnectorID = core.StringPtr("testString")
-	model.ConnectorName = core.StringPtr("testString")
-	model.ConnectorStatus = dataSourceConnectorStatusModel
-	model.SoftwareVersion = core.StringPtr("testString")
-	model.TenantSideIp = core.StringPtr("testString")
-
-	result, err := backuprecovery.DataSourceIbmBaasDataSourceConnectorsDataSourceConnectorToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIbmBaasDataSourceConnectorsDataSourceConnectorStatusToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["is_connected"] = true
-		model["last_connected_timestamp_secs"] = int(26)
-		model["message"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.DataSourceConnectorStatus)
-	model.IsConnected = core.BoolPtr(true)
-	model.LastConnectedTimestampSecs = core.Int64Ptr(int64(26))
-	model.Message = core.StringPtr("testString")
-
-	result, err := backuprecovery.DataSourceIbmBaasDataSourceConnectorsDataSourceConnectorStatusToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

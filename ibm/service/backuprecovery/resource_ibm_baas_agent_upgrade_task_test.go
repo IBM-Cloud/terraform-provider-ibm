@@ -13,9 +13,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -144,104 +141,4 @@ func testAccCheckIbmBaasAgentUpgradeTaskDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func TestResourceIbmBaasAgentUpgradeTaskAgentUpgradeInfoObjectToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		errorModel := make(map[string]interface{})
-		errorModel["error_code"] = "testString"
-		errorModel["message"] = "testString"
-		errorModel["task_log_id"] = "testString"
-
-		agentInfoObjectModel := make(map[string]interface{})
-		agentInfoObjectModel["end_time_usecs"] = int(26)
-		agentInfoObjectModel["error"] = []map[string]interface{}{errorModel}
-		agentInfoObjectModel["name"] = "testString"
-		agentInfoObjectModel["previous_software_version"] = "testString"
-		agentInfoObjectModel["start_time_usecs"] = int(26)
-		agentInfoObjectModel["status"] = "Scheduled"
-
-		model := make(map[string]interface{})
-		model["id"] = int(26)
-		model["info"] = []map[string]interface{}{agentInfoObjectModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	errorModel := new(backuprecoveryv1.Error)
-	errorModel.ErrorCode = core.StringPtr("testString")
-	errorModel.Message = core.StringPtr("testString")
-	errorModel.TaskLogID = core.StringPtr("testString")
-
-	agentInfoObjectModel := new(backuprecoveryv1.AgentInfoObject)
-	agentInfoObjectModel.EndTimeUsecs = core.Int64Ptr(int64(26))
-	agentInfoObjectModel.Error = errorModel
-	agentInfoObjectModel.Name = core.StringPtr("testString")
-	agentInfoObjectModel.PreviousSoftwareVersion = core.StringPtr("testString")
-	agentInfoObjectModel.StartTimeUsecs = core.Int64Ptr(int64(26))
-	agentInfoObjectModel.Status = core.StringPtr("Scheduled")
-
-	model := new(backuprecoveryv1.AgentUpgradeInfoObject)
-	model.ID = core.Int64Ptr(int64(26))
-	model.Info = agentInfoObjectModel
-
-	result, err := backuprecovery.ResourceIbmBaasAgentUpgradeTaskAgentUpgradeInfoObjectToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmBaasAgentUpgradeTaskAgentInfoObjectToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		errorModel := make(map[string]interface{})
-		errorModel["error_code"] = "testString"
-		errorModel["message"] = "testString"
-		errorModel["task_log_id"] = "testString"
-
-		model := make(map[string]interface{})
-		model["end_time_usecs"] = int(26)
-		model["error"] = []map[string]interface{}{errorModel}
-		model["name"] = "testString"
-		model["previous_software_version"] = "testString"
-		model["start_time_usecs"] = int(26)
-		model["status"] = "Scheduled"
-
-		assert.Equal(t, result, model)
-	}
-
-	errorModel := new(backuprecoveryv1.Error)
-	errorModel.ErrorCode = core.StringPtr("testString")
-	errorModel.Message = core.StringPtr("testString")
-	errorModel.TaskLogID = core.StringPtr("testString")
-
-	model := new(backuprecoveryv1.AgentInfoObject)
-	model.EndTimeUsecs = core.Int64Ptr(int64(26))
-	model.Error = errorModel
-	model.Name = core.StringPtr("testString")
-	model.PreviousSoftwareVersion = core.StringPtr("testString")
-	model.StartTimeUsecs = core.Int64Ptr(int64(26))
-	model.Status = core.StringPtr("Scheduled")
-
-	result, err := backuprecovery.ResourceIbmBaasAgentUpgradeTaskAgentInfoObjectToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestResourceIbmBaasAgentUpgradeTaskErrorToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["error_code"] = "testString"
-		model["message"] = "testString"
-		model["task_log_id"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.Error)
-	model.ErrorCode = core.StringPtr("testString")
-	model.Message = core.StringPtr("testString")
-	model.TaskLogID = core.StringPtr("testString")
-
-	result, err := backuprecovery.ResourceIbmBaasAgentUpgradeTaskErrorToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

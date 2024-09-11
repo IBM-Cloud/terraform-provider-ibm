@@ -427,7 +427,6 @@ func resourceIbmBaasAgentUpgradeTaskUpdate(context context.Context, d *schema.Re
 		Detail:   "Update operation for this resource not supported and will only affect the terraform statefile. No changes will be made to actual backend resource. ",
 	}
 	diags = append(diags, warning)
-	d.SetId("")
 	return diags
 }
 

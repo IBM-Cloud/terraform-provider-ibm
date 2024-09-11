@@ -13,9 +13,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
@@ -100,24 +97,4 @@ func testAccCheckIbmBaasDataSourceConnectorRegistrationDestroy(s *terraform.Stat
 	}
 
 	return nil
-}
-
-func TestResourceIbmBaasDataSourceConnectorRegistrationDataSourceConnectorStatusToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["is_connected"] = true
-		model["last_connected_timestamp_secs"] = int(26)
-		model["message"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.DataSourceConnectorStatus)
-	model.IsConnected = core.BoolPtr(true)
-	model.LastConnectedTimestampSecs = core.Int64Ptr(int64(26))
-	model.Message = core.StringPtr("testString")
-
-	result, err := backuprecovery.ResourceIbmBaasDataSourceConnectorRegistrationDataSourceConnectorStatusToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }

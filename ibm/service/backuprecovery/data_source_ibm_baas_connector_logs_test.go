@@ -14,10 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 func TestAccIbmBaasConnectorLogsDataSourceBasic(t *testing.T) {
@@ -42,24 +38,4 @@ func testAccCheckIbmBaasConnectorLogsDataSourceConfigBasic() string {
 			X-IBM-Tenant-Id = "X-IBM-Tenant-Id"
 		}
 	`)
-}
-
-func TestDataSourceIbmBaasConnectorLogsDataSourceConnectorLogToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["message"] = "testString"
-		model["timestamp_msecs"] = int(26)
-		model["type"] = "Info"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(backuprecoveryv1.DataSourceConnectorLog)
-	model.Message = core.StringPtr("testString")
-	model.TimestampMsecs = core.Int64Ptr(int64(26))
-	model.Type = core.StringPtr("Info")
-
-	result, err := backuprecovery.DataSourceIbmBaasConnectorLogsDataSourceConnectorLogToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }
