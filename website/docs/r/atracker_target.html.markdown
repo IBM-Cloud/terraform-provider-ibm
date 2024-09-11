@@ -97,7 +97,7 @@ Nested scheme for **eventstreams_endpoint**:
 * `region` - (Optional, String) Include this optional field if you want to create a target in a different region other than the one you are connected.
   * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
 * `target_type` - (Required, Forces new resource, String) The type of the target. It can be cloud_object_storage, logdna or event_streams. Based on this type you must include cos_endpoint, logdna_endpoint or eventstreams_endpoint.
-  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`.
+  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`, `cloud_logs`.
 
 ## Attribute reference
 
