@@ -167,8 +167,8 @@ github.com/IBM/keyprotect-go-client v0.15.1 h1:m4qzqF5zOumRxKZ8s7vtK7A/UV/D278L8
 github.com/IBM/keyprotect-go-client v0.15.1/go.mod h1:asXtHwL/4uCHA221Vd/7SkXEi2pcRHDzPyyksc1DthE=
 github.com/IBM/logs-go-sdk v0.3.0 h1:FHzTCCMyp9DvQGXgkppzcOPywC4ggt7x8xu0MR5h8xI=
 github.com/IBM/logs-go-sdk v0.3.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
-github.com/IBM/logs-router-go-sdk v1.0.3 h1:VO64OpANNouxS/0kvUeBpENKWxYx3TYnoNzW8OycMb0=
-github.com/IBM/logs-router-go-sdk v1.0.3/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
+github.com/IBM/logs-router-go-sdk v1.0.5 h1:r0kC1+HfmSeQCD6zQTUp4PDI/zp4Ueo1Zo19ipHuNlw=
+github.com/IBM/logs-router-go-sdk v1.0.5/go.mod h1:tCN2vFgu5xG0ob9iJcxi5M4bJ6mWmu3nhmRPnvlwev0=
 github.com/IBM/mqcloud-go-sdk v0.1.0 h1:fWt4uisg5GbbsfNmAxx5/6c5gQIPM+VrEsTtnimELeA=
 github.com/IBM/mqcloud-go-sdk v0.1.0/go.mod h1:LesMQlKHXvdks4jqQLZH7HfATY5lvTzHuwQU5+y7b2g=
 github.com/IBM/networking-go-sdk v0.49.0 h1:lPS34u3C0JVrbxH+Ulua76Nwl6Frv8BEfq6LRkyvOv0=

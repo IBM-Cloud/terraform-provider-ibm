@@ -49,9 +49,16 @@ func TestAccIBMLogsRouterTenantBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:            "ibm_logs_router_tenant.logs_router_tenant_instance",
-				ImportState:             true,
-				ImportStateVerify:       true,
+				ResourceName:      "ibm_logs_router_tenant.logs_router_tenant_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["ibm_logs_router_tenant.logs_router_tenant_instance"]
+					if !ok {
+						return "", fmt.Errorf("Not found: %s", "ibm_logs_router_tenant.logs_router_tenant_instance")
+					}
+					return fmt.Sprintf("%s/%s", rs.Primary.ID, rs.Primary.Attributes["region"]), nil
+				},
 				ImportStateVerifyIgnore: []string{"targets.0.parameters.0.access_credential", "targets.1.parameters.0.access_credential"},
 			},
 		},
@@ -92,9 +99,16 @@ func TestAccIBMLogsRouterTenantAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:            "ibm_logs_router_tenant.logs_router_tenant_instance",
-				ImportState:             true,
-				ImportStateVerify:       true,
+				ResourceName:      "ibm_logs_router_tenant.logs_router_tenant_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["ibm_logs_router_tenant.logs_router_tenant_instance"]
+					if !ok {
+						return "", fmt.Errorf("Not found: %s", "ibm_logs_router_tenant.logs_router_tenant_instance")
+					}
+					return fmt.Sprintf("%s/%s", rs.Primary.ID, rs.Primary.Attributes["region"]), nil
+				},
 				ImportStateVerifyIgnore: []string{"targets.0.parameters.0.access_credential", "targets.1.parameters.0.access_credential"},
 			},
 		},
@@ -105,6 +119,7 @@ func testAccCheckIBMLogsRouterTenantConfigBasic(name string, crn string, host st
 	return fmt.Sprintf(`
 		resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 			name = "%s"
+			region = "br-sao"
 			targets {
 				log_sink_crn = "%s"
 				name = "my-log-sink"
@@ -122,6 +137,7 @@ func testAccCheckIBMLogsRouterTenantConfigAllArgs(name string, target0Name strin
 	return fmt.Sprintf(`
 		resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 			name = "%s"
+			region = "br-sao"
 			targets {
 				log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 				name = "%s"
@@ -151,6 +167,7 @@ func testAccCheckIBMLogsRouterTenantExists(n string, obj ibmcloudlogsroutingv0.T
 
 		tenantId := strfmt.UUID(rs.Primary.ID)
 		getTenantDetailOptions.SetTenantID(&tenantId)
+		getTenantDetailOptions.SetRegion(rs.Primary.Attributes["region"])
 
 		tenant, _, err := ibmCloudLogsRoutingClient.GetTenantDetail(getTenantDetailOptions)
 		if err != nil {
@@ -176,6 +193,7 @@ func testAccCheckIBMLogsRouterTenantDestroy(s *terraform.State) error {
 
 		tenantId := strfmt.UUID(rs.Primary.ID)
 		getTenantDetailOptions.SetTenantID(&tenantId)
+		getTenantDetailOptions.SetRegion(rs.Primary.Attributes["region"])
 
 		// Try to find the key
 		_, response, err := ibmCloudLogsRoutingClient.GetTenantDetail(getTenantDetailOptions)
