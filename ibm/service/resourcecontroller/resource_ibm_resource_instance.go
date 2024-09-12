@@ -251,12 +251,14 @@ func ResourceIBMResourceInstance() *schema.Resource {
 			"resource_aliases_url": {
 				Description: "The relative path to the resource aliases for the instance.",
 				Type:        schema.TypeString,
+				Deprecated:  "Remove this attribute's configuration as it's no longer in use and the attribute will be removed in the upcoming major version of the provider 1.71.0.",
 				Computed:    true,
 			},
 
 			"resource_bindings_url": {
 				Description: "The relative path to the resource bindings for the instance.",
 				Type:        schema.TypeString,
+				Deprecated:  "Remove this attribute's configuration as it's no longer in use and the attribute will be removed in the upcoming major version of the provider 1.71.0.",
 				Computed:    true,
 			},
 
