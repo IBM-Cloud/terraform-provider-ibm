@@ -94,16 +94,9 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	resourceGroup := d.Get(Arg_ResourceGroupID).(string)
 	plan := d.Get(Arg_Plan).(string)
 
-	userTags := make([]string, 0)
-	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		if len(tags.([]interface{})) > 0 {
-			userTags = flex.ExpandStringList(tags.([]interface{}))
-		}
-	}
-
 	// No need for cloudInstanceID because we are creating a workspace
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, "")
-	controller, _, err := client.CreateWithUserTags(name, datacenter, resourceGroup, plan, userTags)
+	controller, _, err := client.Create(name, datacenter, resourceGroup, plan)
 	if err != nil {
 		log.Printf("[DEBUG] create workspace failed %v", err)
 		return diag.FromErr(err)
@@ -115,6 +108,23 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	// Add user tags for newly created workspace
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		if len(tags.([]interface{})) > 0 {
+			userTags := flex.ExpandStringList(tags.([]interface{}))
+			gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
+			if err != nil {
+				log.Printf("[ERROR] Error getting global tagging client settings: %s", err)
+				return diag.FromErr(err)
+			}
+			_, err = gtClient.Tags().AttachTags(*controller.CRN, userTags)
+			if err != nil {
+				log.Printf(
+					"[ERROR] The resource instance has failed updating user tags (%s) err: %s", d.Id(), err)
+				return diag.FromErr(err)
+			}
+		}
+	}
 	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
 
