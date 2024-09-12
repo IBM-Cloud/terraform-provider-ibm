@@ -8,7 +8,6 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -61,8 +60,14 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The Workspace crn.",
+				Type:        schema.TypeString,
+			},
 			Attr_WorkspaceDetails: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated, use crn instead.",
 				Description: "Workspace information.",
 				Type:        schema.TypeMap,
 			},
@@ -139,10 +144,10 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set(Arg_Name, controller.Name)
 	wsDetails := map[string]interface{}{
 		Attr_CreationDate: controller.CreatedAt,
-		Attr_CRN:          controller.TargetCRN,
+		Attr_CRN:          controller.CRN,
 	}
 
-	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsDetails))
+	d.Set(Attr_CRN, controller.CRN)
 
 	return nil
 }
