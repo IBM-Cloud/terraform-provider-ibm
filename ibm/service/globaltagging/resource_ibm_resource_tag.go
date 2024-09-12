@@ -330,26 +330,9 @@ func resourceIBMResourceTagDelete(context context.Context, d *schema.ResourceDat
 	} else {
 		tType = "user"
 	}
-	var tType string
-	if v, ok := d.GetOk(tagType); ok && v != nil {
-		tType = v.(string)
-	} else {
-		tType = "user"
-	}
 
 	if len(remove) > 0 {
 		err := flex.UpdateGlobalTagsUsingCRN(removeTags, nil, meta, rID, rType, tType)
-		resources := []globaltaggingv1.Resource{}
-		r := globaltaggingv1.Resource{ResourceID: flex.PtrToString(rID), ResourceType: flex.PtrToString(rType)}
-		resources = append(resources, r)
-
-		detachTagOptions := &globaltaggingv1.DetachTagOptions{
-			Resources: resources,
-			TagNames:  remove,
-			TagType:   &tType,
-		}
-
-		_, resp, err := gtClient.DetachTag(detachTagOptions)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error on deleting tags: %s", err))
 		}
