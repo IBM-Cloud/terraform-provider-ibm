@@ -632,12 +632,6 @@ func resourceIbmCodeEngineFunctionUpdate(context context.Context, d *schema.Reso
 	hasChange := false
 
 	patchVals := &codeenginev2.FunctionPatch{}
-	if d.HasChange("project_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id")
-		tfErr := flex.TerraformErrorf(err, errMsg, "ibm_code_engine_function", "update")
-		return tfErr.GetDiag()
-	}
 	if d.HasChange("code_binary") {
 		newCodeBinary := d.Get("code_binary").(bool)
 		patchVals.CodeBinary = &newCodeBinary
