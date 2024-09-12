@@ -34,7 +34,7 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
     name = "my-log-sink"
     parameters {
       host = "www.example.com"
-      port = 1
+      port = 443
       access_credential = "new-credential"
     }
   }

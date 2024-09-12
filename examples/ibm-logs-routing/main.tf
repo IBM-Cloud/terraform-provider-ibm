@@ -12,7 +12,7 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
     name = "my-logdna-target"
     parameters {
       host = "www.example-1.com"
-      port = 80
+      port = 443
       access_credential = "new-cred"
     }
   }
@@ -21,7 +21,7 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
     name = "my-cloud-logs-target"
     parameters {
       host = "www.example-2.com"
-      port = 80
+      port = 443
     }
   }
 }
@@ -34,7 +34,7 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance_eu_de" {
     name = "my-logdna-target"
     parameters {
       host = "www.example-1.com"
-      port = 80
+      port = 443
       access_credential = "new-cred"
     }
   }
@@ -42,10 +42,12 @@ resource "ibm_logs_router_tenant" "logs_router_tenant_instance_eu_de" {
 
 // Create logs_router_tenants data source
 data "ibm_logs_router_tenants" "logs_router_tenants_instance" {
-  name = ibm_logs_router_tenant.logs_router_tenant_instance_both.name
+  name = ibm_logs_router_tenant.logs_router_tenant_instance.name
+  region = ibm_logs_router_tenant.logs_router_tenant_instance.region
 }
 
 // Create logs_router_targets data source
 data "ibm_logs_router_targets" "logs_router_targets_instance" {
-  tenant_id = ibm_logs_router_tenant.logs_router_tenant_instance_both.id
+  tenant_id = ibm_logs_router_tenant.logs_router_tenant_instance.id
+  region = ibm_logs_router_tenant.logs_router_tenant_instance.region
 }
