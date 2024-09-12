@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -58,6 +59,13 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_UserTags: {
+				Description: "The user tags attached to this resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ForceNew:    true,
+				Optional:    true,
+				Type:        schema.TypeList,
+			},
 
 			// Attributes
 			Attr_CRN: {
@@ -86,9 +94,16 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	resourceGroup := d.Get(Arg_ResourceGroupID).(string)
 	plan := d.Get(Arg_Plan).(string)
 
+	userTags := make([]string, 0)
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		if len(tags.([]interface{})) > 0 {
+			userTags = flex.ExpandStringList(tags.([]interface{}))
+		}
+	}
+
 	// No need for cloudInstanceID because we are creating a workspace
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, "")
-	controller, _, err := client.Create(name, datacenter, resourceGroup, plan)
+	controller, _, err := client.CreateWithUserTags(name, datacenter, resourceGroup, plan, userTags)
 	if err != nil {
 		log.Printf("[DEBUG] create workspace failed %v", err)
 		return diag.FromErr(err)
@@ -142,12 +157,14 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 	d.Set(Arg_Name, controller.Name)
+	d.Set(Attr_CRN, controller.CRN)
+
+	// Deprecated Workspace Details Set
 	wsDetails := map[string]interface{}{
 		Attr_CreationDate: controller.CreatedAt,
 		Attr_CRN:          controller.CRN,
 	}
-
-	d.Set(Attr_CRN, controller.CRN)
+	d.Set(Attr_WorkspaceDetails, flex.Flatten(wsDetails))
 
 	return nil
 }
