@@ -1,3 +1,12 @@
+# 1.69.1(Sep 10, 2024)
+BugFixes
+* BUG: 1.69.0 panic when attempting to update ibm_resource_instance ([5618](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5618))
+* fix: unexpected topic state change and acceptance test ([5620](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5620))
+* docs: add missing target_type from ibm_atracker_target documentation ([5627](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5627))
+* wait_till for Classic Clusters data source is not working (ibm_container_cluster) ([5611](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5611))
+* ibm_is_instance for catalog images is not allowing vsi creation with VNI ([5629](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5629))
+* Updated documents for vpn gateway connection ([5628](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5628))
+
 # 1.69.0(Sep 04, 2024)
 Features
 * Support Cloud Logs Routing

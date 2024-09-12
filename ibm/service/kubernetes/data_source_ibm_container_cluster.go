@@ -40,7 +40,7 @@ func DataSourceIBMContainerCluster() *schema.Resource {
 			"wait_till": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{oneWorkerNodeReady, clusterNormal}, true),
+				ValidateFunc: validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, clusterNormal}, true),
 				Description:  "wait_till can be configured for Master Ready, One worker Ready, Ingress Ready or Normal",
 			},
 			"wait_till_timeout": {
@@ -423,6 +423,21 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
 	}
+
+	d.SetId(clusterFields.ID)
+
+	if timeoutStage != "" {
+		err = waitForCluster(d, timeoutStage, timeout, meta)
+		if err != nil {
+			return err
+		}
+
+		clusterFields, err = csAPI.Find(name, targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving cluster after waitForCluster: %s", err)
+		}
+	}
+
 	workerFields, err := wrkAPI.List(name, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
@@ -461,20 +476,6 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 
 	filterType := d.Get("alb_type").(string)
 	filteredAlbs := flex.FlattenAlbs(albs, filterType)
-
-	d.SetId(clusterFields.ID)
-
-	if timeoutStage != "" {
-		err = waitForCluster(d, timeoutStage, timeout, meta)
-		if err != nil {
-			return err
-		}
-
-		clusterFields, err = csAPI.Find(name, targetEnv)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving cluster after waitForCluster: %s", err)
-		}
-	}
 
 	d.Set("state", clusterFields.State)
 	d.Set("worker_count", clusterFields.WorkerCount)
