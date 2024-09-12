@@ -42,13 +42,13 @@ func TestAccResourceTag_Basic(t *testing.T) {
 	})
 }
 
-func TestAccResourceTag_AccountOutOfScopeError(t *testing.T) {
+func TestAccResourceTag_FakeCrnExpectingError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckResourceTagCreateAccountOutOfScope(),
+				Config:      testAccCheckResourceTagCreateFakeCrnExpectingError(),
 				ExpectError: regexp.MustCompile("\"is_error\": true"),
 			},
 		},
@@ -136,7 +136,7 @@ func testAccCheckResourceTagCreate(name string) string {
 `, name)
 }
 
-func testAccCheckResourceTagCreateAccountOutOfScope() string {
+func testAccCheckResourceTagCreateFakeCrnExpectingError() string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_tag" "tag" {
 		resource_id = "crn:v1:staging:public:cloud-object-storage:global:a/d99e99999dfe99ee999999f99bddd099:ab25d9be-5e0c-44dd-ad89-0bced3992758::"

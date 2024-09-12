@@ -322,19 +322,8 @@ func resourceIBMResourceTagDelete(context context.Context, d *schema.ResourceDat
 		rType = parts[1]
 	}
 
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
 	var remove []string
 	removeTags := d.Get(tags).(*schema.Set)
-	remove = make([]string, len(removeTags.List()))
-	for i, v := range removeTags.List() {
-		remove[i] = fmt.Sprint(v)
-	}
 	var tType string
 	if v, ok := d.GetOk(tagType); ok && v != nil {
 		tType = v.(string)
@@ -343,57 +332,9 @@ func resourceIBMResourceTagDelete(context context.Context, d *schema.ResourceDat
 	}
 
 	if len(remove) > 0 {
-		resources := []globaltaggingv1.Resource{}
-		r := globaltaggingv1.Resource{ResourceID: flex.PtrToString(rID), ResourceType: flex.PtrToString(rType)}
-		resources = append(resources, r)
-
-		detachTagOptions := &globaltaggingv1.DetachTagOptions{
-			Resources: resources,
-			TagNames:  remove,
-			TagType:   &tType,
-		}
-
-		results, fullResponse, err := gtClient.DetachTagWithContext(context, detachTagOptions)
+		err := flex.UpdateGlobalTagsUsingCRN(removeTags, nil, meta, rID, rType, tType)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "delete")
-			return tfErr.GetDiag()
-		}
-
-		// Check if there are errors on the detach internal response
-		if results != nil {
-			errMap := make([]globaltaggingv1.TagResultsItem, 0)
-			for _, res := range results.Results {
-				if res.IsError != nil && *res.IsError {
-					errMap = append(errMap, res)
-				}
-			}
-			if len(errMap) > 0 {
-				output, _ := json.MarshalIndent(errMap, "", "    ")
-				return diag.FromErr(fmt.Errorf("Error while detaching tag: %s - Full response: %s", string(output), fullResponse))
-			}
-		}
-
-		for _, v := range remove {
-			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-				TagName: flex.PtrToString(v),
-			}
-			results, fullResponse, err := gtClient.DeleteTagWithContext(context, delTagOptions)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("Error deleting resource tag %v: %s\n%s", v, err, fullResponse))
-			}
-
-			if results != nil {
-				errMap := make([]globaltaggingv1.DeleteTagResultsItem, 0)
-				for _, res := range results.Results {
-					if res.IsError != nil && *res.IsError {
-						errMap = append(errMap, res)
-					}
-				}
-				if len(errMap) > 0 {
-					output, _ := json.MarshalIndent(errMap, "", "    ")
-					return diag.FromErr(fmt.Errorf("Error while deleting tag: %s - Full response: %s", string(output), fullResponse))
-				}
-			}
+			return diag.FromErr(fmt.Errorf("Error on deleting tags: %s", err))
 		}
 	}
 	return nil
