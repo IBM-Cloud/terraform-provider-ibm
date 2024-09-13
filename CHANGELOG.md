@@ -1,3 +1,7 @@
+# 1.69.2(Sep 13, 2024)
+* Add region parameter to logs-routing resources and data sources ([5634](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5634))
+* fix(is_share): added empty check and moved source_share_crn outside ([5632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5632))
+
 # 1.69.1(Sep 10, 2024)
 BugFixes
 * BUG: 1.69.0 panic when attempting to update ibm_resource_instance ([5618](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5618))
