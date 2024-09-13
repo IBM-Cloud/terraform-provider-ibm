@@ -2638,8 +2638,6 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 }
 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
-	log.Println("UpdateTagsUsingCRN start")
-	fmt.Println("[INFO] UpdateTagsUsingCRN start")
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
@@ -2681,7 +2679,7 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 
 		results, fullResponse, err := gtClient.DetachTag(detachTagOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s", remove, err)
+			return fmt.Errorf("[ERROR] Error detaching tags %v: %s", remove, err)
 		}
 		if results != nil {
 			errMap := make([]globaltaggingv1.TagResultsItem, 0)
@@ -2701,7 +2699,7 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 			}
 			results, fullResponse, err := gtClient.DeleteTag(delTagOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s\n%s", v, err, fullResponse)
+				return fmt.Errorf("[ERROR] Error deleting tag %v: %s\n%s", v, err, fullResponse)
 			}
 
 			if results != nil {
@@ -2725,7 +2723,7 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 		AttachTagOptions.TagNames = add
 		results, fullResponse, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating database tags %v : %s", add, err)
+			return fmt.Errorf("[ERROR] Error updating tags %v : %s", add, err)
 		}
 		if results != nil {
 			errMap := make([]globaltaggingv1.TagResultsItem, 0)
