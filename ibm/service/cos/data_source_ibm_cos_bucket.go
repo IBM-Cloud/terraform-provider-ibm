@@ -600,7 +600,7 @@ func DataSourceIBMCosBucket() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"prefix": {
-										Type:     schema.TypeString, // check if prefix empty is eccepted and if filter empty is accepted
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -608,7 +608,7 @@ func DataSourceIBMCosBucket() *schema.Resource {
 						},
 						"rule_id": {
 							Type:     schema.TypeString,
-							Computed: true, // check with team if we have any validation function
+							Computed: true,
 						},
 						"noncurrent_version_expiration": {
 							Type:     schema.TypeList,
@@ -634,7 +634,6 @@ func DataSourceIBMCosBucket() *schema.Resource {
 									"date": {
 										Type:     schema.TypeString,
 										Computed: true,
-										// ValidateFunc: verify.ValidUTCTimestamp,
 									},
 									"days": {
 										Type:     schema.TypeInt,
@@ -907,7 +906,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("lifecycle_rule", lifecycleConfiguration)
 		}
 	}
-	//Reading new resource end here
 
 	// Read the retention policy
 	retentionInput := &s3.GetBucketProtectionConfigurationInput{

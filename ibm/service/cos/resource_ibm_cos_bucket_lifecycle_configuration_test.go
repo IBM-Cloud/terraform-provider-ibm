@@ -595,7 +595,6 @@ func TestAccIBMCosBucket_Lifecycle_Configuration_Transition_Multiple_Rules(t *te
 	})
 }
 
-// check
 func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Days(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int) string {
 
 	return fmt.Sprintf(`
@@ -631,8 +630,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Days(cosSe
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days)
 }
 
@@ -671,8 +668,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Date(cosSe
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, date)
 }
 
@@ -711,9 +706,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Days(cosSe
 		   status = "Enabled"
 	
 		 }
-	  }
-	
-	 
+	  }	 
 	`, cosServiceName, bucketName, region, storageClass, days, tStorageclass)
 }
 
@@ -753,8 +746,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Date(cosSe
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, date, tStorageclass)
 }
 
@@ -796,8 +787,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Abort_Inco
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days, initiationDays)
 }
 
@@ -835,9 +824,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Abort_Incomplete_Multipart
 		   status = "Enabled"
 	
 		 }
-	  }
-	
-	 
+	  } 
 	`, cosServiceName, bucketName, region, storageClass, initiationDays)
 }
 
@@ -879,9 +866,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Transition
 		   status = "Enabled"
 	
 		 }
-	  }
-	
-	 
+	  } 
 	`, cosServiceName, bucketName, region, storageClass, days, tDays, tStorageClass)
 }
 
@@ -924,8 +909,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Abort_Inco
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, tDays, tStorageClass, initiationDays)
 }
 
@@ -967,8 +950,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Noncurrent
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days, ncDays)
 }
 func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Object_Delete_Marker(cosServiceName string, bucketName string, regiontype string, region string, storageClass string) string {
@@ -1006,8 +987,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Ob
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass)
 }
 
@@ -1049,8 +1028,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Ob
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass)
 }
 
@@ -1096,8 +1073,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Transition_Abor
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days, tDays, tStorageClass, initiationDays)
 }
 
@@ -1133,8 +1108,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_With_No_Filter(cosServiceN
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days)
 }
 
@@ -1173,8 +1146,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Status_Disabled(cosService
 	
 		 }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days)
 }
 
@@ -1230,8 +1201,6 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Multiple_Rules(cosServiceN
 	 
 		  }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass, days1, initiationDays1, days2, initiationDays2)
 }
 
@@ -1252,7 +1221,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 	resource "ibm_cos_bucket" "bucket" {
 		bucket_name           = "%s"
 		resource_instance_id  = ibm_resource_instance.instance.id
-	    region_location = "%s"
+		region_location = "%s"
 		storage_class         = "%s"
 	}
 	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
@@ -1260,20 +1229,19 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 		bucket_location = ibm_cos_bucket.bucket.region_location
 		lifecycle_rule {
 		   transition{
-				days = 1
-				storage_class = "GLACIER"
+			 days = 1
+			 storage_class = "GLACIER"
 			}
 		   filter {
 		     prefix = ""
 		   }  
 		   rule_id = "id"
 		   status = "Enabled"
-	
 		 }
 		 lifecycle_rule {
 			transition{
-				 days = 3
-				 storage_class = "ACCELERATED"
+			 days = 3
+			 storage_class = "ACCELERATED"
 			 }
 			filter {
 			  prefix = ""
@@ -1283,7 +1251,5 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 	 
 		  }
 	  }
-	
-	 
 	`, cosServiceName, bucketName, region, storageClass)
 }

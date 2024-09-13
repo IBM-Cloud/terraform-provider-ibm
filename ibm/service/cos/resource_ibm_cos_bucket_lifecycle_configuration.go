@@ -14,7 +14,6 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	// "github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -64,8 +63,9 @@ func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"days_after_initiation": {
-										Type:     schema.TypeInt,
-										Optional: true,
+										Type:         schema.TypeInt,
+										ValidateFunc: validate.ValidateAllowedRangeInt(1, 3650),
+										Optional:     true,
 									},
 								},
 							},
@@ -99,12 +99,12 @@ func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 							Type:             schema.TypeList,
 							Required:         true,
 							DiffSuppressFunc: suppressMissingFilterConfigurationBlock,
-							// IBM has filter a required parameter
+							// IBM has filter as required parameter
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"prefix": {
-										Type:     schema.TypeString, // check if prefix empty is eccepted and if filter empty is accepted
+										Type:     schema.TypeString,
 										Optional: true,
 									},
 								},
@@ -113,7 +113,7 @@ func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 						"rule_id": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validation.StringLenBetween(1, 255), // check with team if we have any validation function
+							ValidateFunc: validation.StringLenBetween(1, 255),
 						},
 						"noncurrent_version_expiration": {
 							Type:     schema.TypeList,
@@ -226,7 +226,6 @@ func lifecycleRuleFilterSet(filter []interface{}) *s3.LifecycleRuleFilter {
 		result = &resultValue
 		return result
 	}
-
 	filterMap := filter[0].(map[string]interface{})
 	if v, ok := filterMap["prefix"].(string); ok {
 		resultValue.Prefix = aws.String(v)
@@ -236,7 +235,6 @@ func lifecycleRuleFilterSet(filter []interface{}) *s3.LifecycleRuleFilter {
 }
 
 func noncurrentVersionExpirationSet(noncurrentVersionExpiration map[string]interface{}) *s3.NoncurrentVersionExpiration {
-
 	var result *s3.NoncurrentVersionExpiration
 	resultValue := s3.NoncurrentVersionExpiration{}
 	if v, ok := noncurrentVersionExpiration["noncurrent_days"]; ok {
@@ -250,13 +248,11 @@ func transitionsSet(transitions []interface{}) []*s3.Transition {
 	if len(transitions) == 0 {
 		return nil
 	}
-
 	var results []*s3.Transition
 	var transition = s3.Transition{}
 	if transitions[0] == nil {
 		return results
 	}
-
 	transitionMap := transitions[0].(map[string]interface{})
 	if v, ok := transitionMap["date"].(string); ok && v != "" {
 		t, _ := time.Parse(time.RFC3339, v)
@@ -269,54 +265,42 @@ func transitionsSet(transitions []interface{}) []*s3.Transition {
 	if v, ok := transitionMap["days"]; ok && v.(int) >= 0 && transition.Date == nil {
 		transition.Days = aws.Int64(int64(v.(int)))
 	}
-
 	if v, ok := transitionMap["storage_class"].(string); ok && v != "" {
 		transition.StorageClass = aws.String(v)
 	}
-
 	results = append(results, &transition)
 
 	return results
 }
 
 func lifecycleConfigurationSet(lifecycleConfigurationList []interface{}) []*s3.LifecycleRule {
-
 	var lifecycleRules []*s3.LifecycleRule
-
 	for _, lifecycleRuleMapRaw := range lifecycleConfigurationList {
 		lifecycleRuleMap, ok := lifecycleRuleMapRaw.(map[string]interface{})
-
 		if !ok {
 			continue
 		}
-
 		lifecycleRule := s3.LifecycleRule{} // single rule to be appended to the list of lifecycle rules
-
 		// check for abort incomplete multipart
 		if v, ok := lifecycleRuleMap["abort_incomplete_multipart_upload"].([]interface{}); ok && len(v) > 0 && v[0] != nil {
 			lifecycleRule.AbortIncompleteMultipartUpload = abortIncompleteMultipartUploadSet(v[0].(map[string]interface{}))
 		}
-
 		// check for expiration
 		if v, ok := lifecycleRuleMap["expiration"].([]interface{}); ok && len(v) > 0 {
 			lifecycleRule.Expiration = lifecycleExpirationSet(v)
 		}
-
 		// check for filter (required)
 		if v, ok := lifecycleRuleMap["filter"].([]interface{}); ok && len(v) > 0 {
 			lifecycleRule.Filter = lifecycleRuleFilterSet(v)
 		}
-
 		// check for rule id (required)
 		if v, ok := lifecycleRuleMap["rule_id"].(string); ok {
 			lifecycleRule.ID = aws.String(v)
 		}
-
 		// check for noncurrent version expiration
 		if v, ok := lifecycleRuleMap["noncurrent_version_expiration"].([]interface{}); ok && len(v) > 0 && v[0] != nil {
 			lifecycleRule.NoncurrentVersionExpiration = noncurrentVersionExpirationSet(v[0].(map[string]interface{}))
 		}
-
 		// check for status
 		if v, ok := lifecycleRuleMap["status"].(string); ok && v != "" {
 			lifecycleRule.Status = aws.String(v)
@@ -334,7 +318,6 @@ func lifecycleConfigurationSet(lifecycleConfigurationList []interface{}) []*s3.L
 }
 
 func resourceIBMCOSBucketLifecycleConfigurationCreate(d *schema.ResourceData, meta interface{}) error {
-
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
@@ -345,7 +328,6 @@ func resourceIBMCOSBucketLifecycleConfigurationCreate(d *schema.ResourceData, me
 		return err
 	}
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
-
 	lifecycleRule := d.Get("lifecycle_rule")
 	rules := lifecycleConfigurationSet(lifecycleRule.([]interface{})) // setting each lifecycle rule
 	if err != nil {
@@ -357,9 +339,7 @@ func resourceIBMCOSBucketLifecycleConfigurationCreate(d *schema.ResourceData, me
 			Rules: rules,
 		},
 	}
-
 	_, err = s3Client.PutBucketLifecycleConfiguration(&putBucketLifecycleConfigurationInput)
-
 	if err != nil {
 		return fmt.Errorf("Failed to put Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
 	}
@@ -392,7 +372,6 @@ func resourceIBMCOSBucketLifecycleConfigurationUpdate(d *schema.ResourceData, me
 			},
 		}
 		_, err = s3Client.PutBucketLifecycleConfiguration(&putBucketLifecycleConfigurationInput)
-
 		if err != nil {
 			return fmt.Errorf("Failed to put Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
 		}
@@ -428,7 +407,7 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta
 	}
 	var output *s3.GetBucketLifecycleConfigurationOutput
 
-	// Adding a retry to overcome the
+	// Adding a retry to overcome the NoSuchLifecycleConfiguration error as it takes time for the lifecycle rules to  get applied.
 	err = resource.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *resource.RetryError {
 		var err error
 		output, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
@@ -436,13 +415,10 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta
 		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
 
 			return resource.RetryableError(err)
-
 		}
-
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-
 		return nil
 	})
 	if conns.IsResourceTimeoutError(err) {
@@ -451,7 +427,6 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting Lifecycle Configuration for the bucket %s", bucketName)
 	}
-
 	var outputptr *s3.LifecycleConfiguration
 	outputptr = (*s3.LifecycleConfiguration)(output)
 	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
@@ -519,26 +494,23 @@ func resourceValidateLifecycleRule(_ context.Context, diff *schema.ResourceDiff,
 	if lifecycle, ok := diff.GetOk("lifecycle_rule"); ok {
 		lifecycle_list := lifecycle.([]interface{})
 		for _, l := range lifecycle_list {
-
 			lifecycleMap, _ := l.(map[string]interface{})
 			expiration := lifecycleMap["expiration"]
-			expctr := 0
+			expirationParameterCounter := 0
 			if expiration != nil {
 				expirationList, _ := expiration.([]interface{})
 				for _, e := range expirationList {
 					expirationMap, _ := e.(map[string]interface{})
 					if val, days_exist := expirationMap["days"]; days_exist && val.(int) != 0 {
-
-						expctr++
+						expirationParameterCounter++
 					}
 					if val, date_exist := expirationMap["date"]; date_exist && val != "" {
-						expctr++
+						expirationParameterCounter++
 					}
 					if val, expired_object_delete_marker_exist := expirationMap["expired_object_delete_marker"]; expired_object_delete_marker_exist && val.(bool) != false {
-
-						expctr++
+						expirationParameterCounter++
 					}
-					if expctr > 1 {
+					if expirationParameterCounter > 1 {
 						return fmt.Errorf("[ERROR] The expiry 3 action elements (Days, Date, ExpiredObjectDeleteMarker) are all mutually exclusive. These can not be used with each other. Please set one expiry element on the same rule of expiration.")
 					}
 				}
@@ -553,15 +525,12 @@ func suppressMissingFilterConfigurationBlock(k, old, new string, d *schema.Resou
 	if strings.HasSuffix(k, "filter.#") {
 		oraw, nraw := d.GetChange(k)
 		o, n := oraw.(int), nraw.(int)
-
 		if o == 1 && n == 0 {
 			return true
 		}
-
 		if o == 1 && n == 1 {
 			return old == "1" && new == "0"
 		}
-
 		return false
 	}
 	return false

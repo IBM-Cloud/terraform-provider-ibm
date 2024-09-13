@@ -506,7 +506,7 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 
 # Adding lifecycle configuration with expiration and prefix filter.
 
-resource "ibm_cos_bucket" "cos_bucket" {
+resource "ibm_cos_bucket" "cos_bucket_lifecycle_expiration" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
@@ -533,14 +533,14 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 # Adding lifecycle configuration with transition.
 
-resource "ibm_cos_bucket" "cos_bucket" {
+resource "ibm_cos_bucket" "cos_bucket_transition" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
 
 }
-resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_transition" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   lifecycle_rule {
@@ -560,14 +560,14 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 # Adding lifecycle configuration with abort incomplete multipart upload.
 
-resource "ibm_cos_bucket" "cos_bucket" {
+resource "ibm_cos_bucket" "cos_bucket_abort_incomplete" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
 
 }
-resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_abort_incomplete" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   lifecycle_rule {
@@ -586,19 +586,19 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 # Adding lifecycle configuration with non current version expiration.
 
-resource "ibm_cos_bucket" "cos_bucket" {
+resource "ibm_cos_bucket" "cos_bucket_lifecycle_version_expiration" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
 
 }
-resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_new" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   lifecycle_rule {
     noncurrent_version_expiration{
-			   noncurrent_days = "1"
+			noncurrent_days = "1"
 		}
     filter {
       prefix = ""
@@ -609,18 +609,16 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
   }
 }
 
-
 # Adding lifecycle configuration with multiple rules
 
-
-resource "ibm_cos_bucket" "cos_bucket" {
+resource "ibm_cos_bucket" "cos_bucket_lifecycle" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.standard_storage_class
-
 }
-resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_config" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   lifecycle_rule {
