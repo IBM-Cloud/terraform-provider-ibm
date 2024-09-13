@@ -196,9 +196,10 @@ type Config struct {
 	IAMRefreshToken string
 
 	// Zone
-	Zone          string
-	Visibility    string
-	EndpointsFile string
+	Zone               string
+	Visibility         string
+	EndpointsFile      string
+	DeletionProtection bool
 }
 
 // Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -310,10 +311,13 @@ type ClientSession interface {
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
+	DeletionProtection() bool
 }
 
 type clientSession struct {
 	session *Session
+
+	deletionProtection bool
 
 	appidErr error
 	appidAPI *appid.AppIDManagementV4
@@ -656,6 +660,11 @@ type clientSession struct {
 	// Logs Routing
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
+}
+
+// DeletionProtection
+func (session clientSession) DeletionProtection() bool {
+	return session.deletionProtection
 }
 
 // Usage Reports
@@ -1410,6 +1419,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching account user details: %q", err)
 	}
 	session.bmxUserDetails = userConfig
+
+	session.deletionProtection = c.DeletionProtection
 
 	if sess.SoftLayerSession != nil && sess.SoftLayerSession.APIKey == "" {
 		log.Println("Configuring SoftLayer Session with token from IBM Cloud Session")

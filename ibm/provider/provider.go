@@ -227,6 +227,12 @@ func Provider() *schema.Provider {
 				Description: "Path of the file that contains private and public regional endpoints mapping",
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
 			},
+			flex.DeletionProtection: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether Terraform will be prevented from destroying the resources",
+			},
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -1196,7 +1202,6 @@ func Provider() *schema.Provider {
 			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),
 			"ibm_is_subnet_reserved_ip":                     vpc.ResourceIBMISReservedIP(),
-			"ibm_is_subnet_reserved_ip_patch":               vpc.ResourceIBMISReservedIPPatch(),
 			"ibm_is_subnet_network_acl_attachment":          vpc.ResourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_subnet_public_gateway_attachment":       vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
@@ -1407,9 +1412,6 @@ func Provider() *schema.Provider {
 			// Added for Resource Tag
 			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
 			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
-
-			// Added for Iam Access Tag
-			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
 
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
@@ -1639,8 +1641,26 @@ func wrapFunction(
 ) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
 	if function != nil {
 		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+			// only allow deletion if the resource is not marked as protected
+			deletionProtection := meta.(conns.ClientSession).DeletionProtection()
+
+			if operationName == "delete" && deletionProtection {
+
+				log.Printf("[DEBUG] Resource has deletion protection turned on %s", resourceName)
+				var diags diag.Diagnostics
+				summary := fmt.Sprintf("Deletion protection is enabled for resource %s to prevent accidential deletion", schema.Get("name"))
+				return append(
+					diags,
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  summary,
+						Detail:   "Set deletion_protection to false, apply and then destroy if deletion should proceed",
+					},
+				)
+			}
 			return function(context, schema, meta)
 		}
+
 	} else if fallback != nil {
 		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
 			return wrapError(fallback(schema, meta), resourceName, operationName, isDataSource)
@@ -1879,7 +1899,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
 				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
-				"ibm_iam_access_tag":                      globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
@@ -2181,6 +2200,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
+	deletionProtection := d.Get(flex.DeletionProtection).(bool)
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
@@ -2210,6 +2230,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Visibility:           visibility,
 		EndpointsFile:        file,
 		IAMTrustedProfileID:  iamTrustedProfileId,
+		DeletionProtection:   deletionProtection,
 	}
 
 	return config.ClientSession()
