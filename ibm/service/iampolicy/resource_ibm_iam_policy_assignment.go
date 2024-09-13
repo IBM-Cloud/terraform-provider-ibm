@@ -33,7 +33,11 @@ func ResourceIBMIAMPolicyAssignment() *schema.Resource {
 		UpdateContext: resourceIBMPolicyAssignmentUpdate,
 		DeleteContext: resourceIBMPolicyAssignmentDelete,
 		Importer:      &schema.ResourceImporter{},
-
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"version": {
 				Type:        schema.TypeString,
@@ -260,9 +264,9 @@ func resourceIBMPolicyAssignmentCreate(context context.Context, d *schema.Resour
 	createPolicyTemplateAssignmentOptions := &iampolicymanagementv1.CreatePolicyTemplateAssignmentOptions{}
 
 	createPolicyTemplateAssignmentOptions.SetVersion(d.Get("version").(string))
-	targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
+	targetModel, diags := GetTargetModel(d)
+	if diags.HasError() {
+		return diags
 	}
 	createPolicyTemplateAssignmentOptions.SetTarget(targetModel)
 	var templates []iampolicymanagementv1.AssignmentTemplateDetails
@@ -401,10 +405,11 @@ func resourceIBMPolicyAssignmentUpdate(context context.Context, d *schema.Resour
 	updatePolicyAssignmentOptions := &iampolicymanagementv1.UpdatePolicyAssignmentOptions{}
 
 	updatePolicyAssignmentOptions.SetAssignmentID(d.Id())
-	targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
 
-	if err != nil {
-		return diag.FromErr(err)
+	targetModel, diags := GetTargetModel(d)
+
+	if diags.HasError() {
+		return diags
 	}
 
 	hasChange := false
@@ -442,7 +447,7 @@ func resourceIBMPolicyAssignmentUpdate(context context.Context, d *schema.Resour
 		if targetModel.Type != nil && (*targetModel.Type == "Account") {
 			log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 		} else {
-			_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssigned)
+			_, err = waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccessPolicyAssigned)
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error assigning: %s", err))
 			}
@@ -465,11 +470,6 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 
 	deletePolicyAssignmentOptions.SetAssignmentID(d.Id())
 
-	targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	response, err := iamPolicyManagementClient.DeletePolicyAssignmentWithContext(context, deletePolicyAssignmentOptions)
 	if err != nil {
@@ -482,13 +482,18 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 		}
 	}
 
+	targetModel, diags := GetTargetModel(d)
+	if diags.HasError() {
+		return diags
+	}
+	
 	if targetModel.Type != nil && (*targetModel.Type == "Account") {
 		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 	} else {
-		_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccessPolicyAssignedDeleted)
+		_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccessPolicyAssignedDeleted)
 		if err != nil {
 			if strings.Contains(err.Error(), "not found") {
-				log.Printf("[DEBUG] Policy assignment already deleted, skipping wait: %s", d.Id())
+				return nil
 			} else {
 				return diag.FromErr(fmt.Errorf("error assigning: %s", err))
 			}
@@ -532,6 +537,17 @@ func ResourceIBMPolicyAssignmentAssignmentTemplateDetailsToMap(model *iampolicym
 	}
 	return modelMap, nil
 }
+
+func GetTargetModel(d *schema.ResourceData) (*iampolicymanagementv1.AssignmentTargetDetails, diag.Diagnostics) {
+    targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
+    
+    if err != nil {
+        return targetModel, diag.FromErr(err)
+    }
+
+    return targetModel, nil
+}
+
 
 func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
 
@@ -629,10 +645,6 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
 				return assignment, InProgress, nil
-			}
-
-			if *assignment.Status == "succeeded" {
-				return assignment, complete, nil
 			}
 
 			if *assignment.Status == "failed" {
