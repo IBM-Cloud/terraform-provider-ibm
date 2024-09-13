@@ -308,21 +308,18 @@ func resourceIBMResourceTagUpdate(context context.Context, d *schema.ResourceDat
 
 func resourceIBMResourceTagDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var rID, rType string
-
 	if strings.HasPrefix(d.Id(), "crn:") {
 		rID = d.Id()
 	} else {
 		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "delete")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			log.Printf("[ERROR] Error in deleting.\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 		rID = parts[0]
 		rType = parts[1]
 	}
-
-	var remove []string
 	removeTags := d.Get(tags).(*schema.Set)
 	var tType string
 	if v, ok := d.GetOk(tagType); ok && v != nil {
@@ -330,8 +327,7 @@ func resourceIBMResourceTagDelete(context context.Context, d *schema.ResourceDat
 	} else {
 		tType = "user"
 	}
-
-	if len(remove) > 0 {
+	if len(removeTags.List()) > 0 {
 		err := flex.UpdateGlobalTagsUsingCRN(removeTags, nil, meta, rID, rType, tType)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error on deleting tags: %s", err))
