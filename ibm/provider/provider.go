@@ -1201,6 +1201,7 @@ func Provider() *schema.Provider {
 			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),
 			"ibm_is_subnet_reserved_ip":                     vpc.ResourceIBMISReservedIP(),
+			"ibm_is_subnet_reserved_ip_patch":               vpc.ResourceIBMISReservedIPPatch(),
 			"ibm_is_subnet_network_acl_attachment":          vpc.ResourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_subnet_public_gateway_attachment":       vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
