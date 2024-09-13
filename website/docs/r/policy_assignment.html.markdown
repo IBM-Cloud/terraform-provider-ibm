@@ -94,7 +94,7 @@ Nested schema for **target**:
 	* `id` - (Required, String) ID of the target account.
 	  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
 	* `type` - (Required, String) Assignment target type.
-	  * Constraints: Allowable values are: `Account`. The maximum length is `30` characters. The minimum length is `1` character.
+	  * Constraints: Allowable values are: `Account`, `Account Group` and `Enterprise`. The maximum length is `30` characters. The minimum length is `1` character.
 * `version` - (Required, String) specify version of response body format.
   * Constraints: Allowable values are: `1.0`. The minimum length is `1` character.
 
