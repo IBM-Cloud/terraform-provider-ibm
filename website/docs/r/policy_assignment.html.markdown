@@ -73,6 +73,34 @@ resource "ibm_iam_policy_assignment" "policy_assignment" {
 	}
 	template_version=ibm_iam_policy_template_version.template_version.version
 }
+
+resource "ibm_iam_policy_assignment" "policy_assignment" {
+	version ="1.0"
+	target  ={
+		type = "Account Group"
+		id = "<target-accountgroupId>"
+	}
+	
+	templates{
+		id = ibm_iam_policy_template.policy_s2s_template.template_id 
+		version = ibm_iam_policy_template.policy_s2s_template.version
+	}
+	template_version=ibm_iam_policy_template_version.template_version.version
+}
+
+resource "ibm_iam_policy_assignment" "policy_assignment" {
+	version ="1.0"
+	target  ={
+		type = "Enterprise"
+		id = "<target-enterpriseId>"
+	}
+	
+	templates{
+		id = ibm_iam_policy_template.policy_s2s_template.template_id 
+		version = ibm_iam_policy_template.policy_s2s_template.version
+	}
+	template_version=ibm_iam_policy_template_version.template_version.version
+}
 ```
 **Note**: Above configuration is to create policy template versions and assign to a target
 enterprise account. Update this parameter(***template_version***) and terraform apply again to update the assignment
