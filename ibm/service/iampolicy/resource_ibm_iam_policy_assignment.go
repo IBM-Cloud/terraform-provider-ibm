@@ -474,7 +474,7 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 	response, err := iamPolicyManagementClient.DeletePolicyAssignmentWithContext(context, deletePolicyAssignmentOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			log.Printf("[DEBUG] Policy assignment not found during delete, assuming it's already deleted: %s", d.Id())
+			return nil
 		} else {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeletePolicyAssignmentWithContext failed: %s", err.Error()), "ibm_policy_assignment", "delete")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
