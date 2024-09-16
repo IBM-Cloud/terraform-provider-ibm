@@ -3,13 +3,14 @@
 These examples illustrate how to use the resources and data sources associated with IBM Backup recovery API.
 
 The following resources are supported:
-* ibm_baas_connection_registration_token
 * ibm_baas_agent_upgrade_task
-* ibm_baas_connectors_metadata
-* ibm_baas_protection_group_run_request
+* ibm_baas_connection_registration_token
 * ibm_baas_data_source_connection
+* ibm_baas_data_source_connection_patch
 * ibm_baas_data_source_connector_registration
 * ibm_baas_download_agent
+* ibm_baas_connectors_metadata
+* ibm_baas_protection_group_run_request
 * ibm_baas_recovery_download_files_folders
 * ibm_baas_restore_points
 * ibm_baas_perform_action_on_protection_group_run_request
@@ -22,25 +23,26 @@ The following resources are supported:
 
 The following data sources are supported:
 * ibm_baas_agent_upgrade_tasks
+* ibm_baas_connector_logs
+* ibm_baas_connector_status
 * ibm_baas_connectors_metadata
 * ibm_baas_data_source_connections
 * ibm_baas_data_source_connectors
-* ibm_baas_connector_status
-* ibm_baas_connector_logs
+* ibm_baas_download_indexed_files
 * ibm_baas_object_snapshots
-* ibm_baas_search_objects
-* ibm_baas_search_protected_objects
-* ibm_baas_protection_group
-* ibm_baas_protection_groups
 * ibm_baas_protection_group_run
 * ibm_baas_protection_group_runs
+* ibm_baas_protection_group
+* ibm_baas_protection_groups
 * ibm_baas_protection_policies
 * ibm_baas_protection_policy
 * ibm_baas_recovery
 * ibm_baas_recoveries
+* ibm_baas_search_objects
+* ibm_baas_search_protected_objects
 * ibm_baas_source_registrations
 * ibm_baas_source_registration
-* ibm_baas_download_indexed_files
+
 
 ## Usage
 

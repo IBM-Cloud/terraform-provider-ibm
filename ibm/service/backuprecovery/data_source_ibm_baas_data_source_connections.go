@@ -53,7 +53,7 @@ func DataSourceIbmBaasDataSourceConnections() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"connection_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies the unique ID of the connection.",
@@ -107,6 +107,11 @@ func DataSourceIbmBaasDataSourceConnections() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies a token that can be used to register a connector against this connection.",
+						},
+						"tenant_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies a tenantId",
 						},
 					},
 				},
@@ -177,7 +182,7 @@ func dataSourceIbmBaasDataSourceConnectionsID(d *schema.ResourceData) string {
 func DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(model *backuprecoveryv1.DataSourceConnection) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ConnectionID != nil {
-		modelMap["id"] = *model.ConnectionID
+		modelMap["connection_id"] = *model.ConnectionID
 	}
 	modelMap["connection_name"] = *model.ConnectionName
 	if model.ConnectorIds != nil {
@@ -193,6 +198,10 @@ func DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(model *back
 	if model.RegistrationToken != nil {
 		modelMap["registration_token"] = *model.RegistrationToken
 	}
+	if model.TenantID != nil {
+		modelMap["tenant_id"] = *model.TenantID
+	}
+
 	return modelMap, nil
 }
 

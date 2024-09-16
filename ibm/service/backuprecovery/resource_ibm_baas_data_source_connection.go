@@ -30,10 +30,16 @@ func ResourceIbmBaasDataSourceConnection() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Id of the tenant accessing the cluster.",
+			},
+			"connection_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "connection Id",
 			},
 			"connection_name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -138,6 +144,11 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectionsWithContext failed: %s", err.Error()), "ibm_baas_data_source_connection", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("connection_id", dataSourceConnectionList.Connections[0].ConnectionID); err != nil {
+		err = fmt.Errorf("Error setting connection_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connection_id").GetDiag()
 	}
 
 	if err = d.Set("connection_name", dataSourceConnectionList.Connections[0].ConnectionName); err != nil {

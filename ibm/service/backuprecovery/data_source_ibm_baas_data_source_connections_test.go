@@ -17,43 +17,28 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
+const (
+	tenant_id string = "nhvbcdlnp8/"
+)
+
 func TestAccIbmBaasDataSourceConnectionsDataSourceBasic(t *testing.T) {
 	dataSourceConnectionConnectionName := fmt.Sprintf("tf_connection_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:   func() { acc.TestAccPreCheck(t) },
+		Providers:  acc.TestAccProviders,
+		IsUnitTest: true,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmBaasDataSourceConnectionsDataSourceConfigBasic(dataSourceConnectionConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "tenant_id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmBaasDataSourceConnectionsDataSourceAllArgs(t *testing.T) {
-	dataSourceConnectionTenantID := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	dataSourceConnectionConnectionName := fmt.Sprintf("tf_connection_name_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmBaasDataSourceConnectionsDataSourceConfig(dataSourceConnectionTenantID, dataSourceConnectionConnectionName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "tenant_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connection_ids"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connection_names"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.id"),
+					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "x_ibm_tenant_id", tenant_id),
+					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connection_names.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.connection_id"),
+					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.tenant_id", tenant_id),
+					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.connector_ids.#", "0"),
 					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.connection_name", dataSourceConnectionConnectionName),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.registration_token"),
 				),
 			},
 		},
@@ -62,29 +47,19 @@ func TestAccIbmBaasDataSourceConnectionsDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmBaasDataSourceConnectionsDataSourceConfigBasic(dataSourceConnectionConnectionName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
-			connection_name = "%s"
+		
+	resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
+		x_ibm_tenant_id = "%s"
+		connection_name = "%s"
+		lifecycle {
+			ignore_changes = [connector_ids, network_settings]
 		}
-
-		data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
-			tenant_id = ibm_baas_data_source_connection.baas_data_source_connection_instance.tenant_id
-			connection_ids = [ "connectionIds" ]
-			connection_names = [ "connectionNames" ]
-		}
-	`, dataSourceConnectionConnectionName)
-}
-
-func testAccCheckIbmBaasDataSourceConnectionsDataSourceConfig(dataSourceConnectionTenantID string, dataSourceConnectionConnectionName string) string {
-	return fmt.Sprintf(`
-		resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
-			tenant_id = %s
-			connection_name = "%s"
-		}
-
-		data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
-			tenant_id = ibm_baas_data_source_connection.baas_data_source_connection_instance.tenant_id
-			connection_ids = [ "connectionIds" ]
-			connection_names = [ "connectionNames" ]
-		}
-	`, dataSourceConnectionTenantID, dataSourceConnectionConnectionName)
+	  }
+	
+	data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
+		x_ibm_tenant_id = ibm_baas_data_source_connection.baas_data_source_connection_instance.x_ibm_tenant_id
+		connection_names = [ibm_baas_data_source_connection.baas_data_source_connection_instance.connection_name]
+		depends_on = [ibm_baas_data_source_connection.baas_data_source_connection_instance]
+	  }
+		`, tenant_id, dataSourceConnectionConnectionName)
 }
