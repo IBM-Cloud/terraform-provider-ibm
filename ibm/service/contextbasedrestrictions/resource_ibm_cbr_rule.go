@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,12 +17,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
-)
-
-const (
-	cbrRuleReadPending  = "pending"
-	cbrRuleReadComplete = "finished"
-	cbrRuleReadError    = "error"
 )
 
 func ResourceIBMCbrRule() *schema.Resource {
@@ -256,53 +249,6 @@ func ResourceIBMCbrRuleValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-// waitForCbrRuleRead will leverage use retry.StateChangeConf due to the service's eventual consistency
-func waitForCbrRuleRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (interface{}, error) {
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{cbrRuleReadPending},
-		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
-		Refresh: func() (interface{}, string, error) {
-			log.Printf("[DEBUG] Read cbr rule (%s) read", id)
-			getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
-			getRuleOptions.SetRuleID(id)
-			_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
-			if err != nil && response.StatusCode == 404 {
-				return response, cbrRuleReadPending, nil
-			} else if err != nil {
-				return response, cbrRuleReadError, err
-			} else {
-				return response, cbrRuleReadComplete, nil
-			}
-		},
-
-		Timeout:    120 * time.Second,
-		Delay:      20 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	return stateConf.WaitForStateContext(context)
-}
-
-func readNewCbrRule(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, d *schema.ResourceData) diag.Diagnostics {
-	getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
-	getRuleOptions.SetRuleID(d.Id())
-
-	_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
-	if err != nil {
-		//  Leverage retry for the read due to eventual consistency of the service.
-		if response != nil && response.StatusCode == 404 {
-			log.Printf("[INFO] Read cbr rule response status code: 404, provider will try again. %s", err)
-			_, err := waitForCbrRuleRead(cbrClient, context, d.Id())
-			if err != nil {
-				log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
-				d.SetId("")
-				return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
-			}
-		}
-	}
-
-	return nil
-}
-
 func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	contextBasedRestrictionsClient, err := meta.(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
@@ -362,10 +308,7 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*rule.ID)
 
-	// handle Eventual consistency case
-	readNewCbrRule(contextBasedRestrictionsClient, context, d)
-
-	return resourceIBMCbrRuleRead(context, d, meta)
+	return nil
 }
 
 func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -520,7 +463,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("ReplaceRuleWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMCbrRuleRead(context, d, meta)
+	return nil
 }
 
 func resourceIBMCbrRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
