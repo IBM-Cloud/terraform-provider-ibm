@@ -153,7 +153,7 @@ func resourceIBMIamAccessTagDelete(context context.Context, d *schema.ResourceDa
 	results, resp, err := gtClient.DeleteTagWithContext(context, deleteTagOptions)
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error while deleting access tag(%s) : %v\n%v", tagName, err, resp))
+		return diag.FromErr(fmt.Errorf("Error while deleting access tag calling api (%s) : %v\n%v", tagName, err, resp))
 	}
 	if results != nil {
 		errMap := make([]globaltaggingv1.DeleteTagResultsItem, 0)
@@ -164,7 +164,7 @@ func resourceIBMIamAccessTagDelete(context context.Context, d *schema.ResourceDa
 		}
 		if len(errMap) > 0 {
 			output, _ := json.MarshalIndent(errMap, "", "    ")
-			return diag.FromErr(fmt.Errorf("Error while deleting access tag(%s) : %s", tagName, string(output)))
+			return diag.FromErr(fmt.Errorf("Error while deleting access tag in results (%s) : %s", tagName, string(output)))
 		}
 	}
 
