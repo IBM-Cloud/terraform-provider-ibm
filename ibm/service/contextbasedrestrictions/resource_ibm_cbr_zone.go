@@ -311,13 +311,14 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*zone.ID)
 
-	if fromErr := ResourceIBMCbrZoneSetData(response, zone, d); fromErr != nil {
+	version := response.Headers.Get("Etag")
+	if fromErr := ResourceIBMCbrZoneSetData(zone, version, d); fromErr != nil {
 		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", fromErr))
 	}
 	return nil
 }
 
-func ResourceIBMCbrZoneSetData(response *core.DetailedResponse, zone *contextbasedrestrictionsv1.Zone, d *schema.ResourceData) diag.Diagnostics {
+func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, version string, d *schema.ResourceData) diag.Diagnostics {
 	if err := d.Set("name", zone.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -370,7 +371,7 @@ func ResourceIBMCbrZoneSetData(response *core.DetailedResponse, zone *contextbas
 	if err = d.Set("last_modified_by_id", zone.LastModifiedByID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
 	}
-	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
+	if err = d.Set("version", version); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
 	}
 
@@ -395,60 +396,8 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		return nil
 	}
 
-	if err = d.Set("name", zone.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if err = d.Set("account_id", zone.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
-	}
-	if err = d.Set("description", zone.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-	}
-
-	var addresses []map[string]interface{}
-	addresses, err = resourceDecodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("addresses", addresses); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting addresses: %s", err))
-	}
-
-	var excluded []map[string]interface{}
-	excluded, err = resourceDecodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("excluded", excluded); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting excluded: %s", err))
-	}
-
-	if err = d.Set("crn", zone.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-	}
-	if err = d.Set("address_count", flex.IntValue(zone.AddressCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting address_count: %s", err))
-	}
-	if err = d.Set("excluded_count", flex.IntValue(zone.ExcludedCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting excluded_count: %s", err))
-	}
-	if err = d.Set("href", zone.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(zone.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("created_by_id", zone.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
-	}
-	if err = d.Set("last_modified_at", flex.DateTimeToString(zone.LastModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
-	}
-	if err = d.Set("last_modified_by_id", zone.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
-	}
-	if err = d.Set("version", version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+	if fromErr := ResourceIBMCbrZoneSetData(zone, version, d); fromErr != nil {
+		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", fromErr))
 	}
 
 	return nil
@@ -519,10 +468,15 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		replaceZoneOptions.SetTransactionID(d.Get("transaction_id").(string))
 	}
 
-	_, response, err := contextBasedRestrictionsClient.ReplaceZoneWithContext(context, replaceZoneOptions)
+	zone, response, err := contextBasedRestrictionsClient.ReplaceZoneWithContext(context, replaceZoneOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ReplaceZoneWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ReplaceZoneWithContext failed %s\n%s", err, response))
+	}
+
+	version = response.Headers.Get("Etag")
+	if fromErr := ResourceIBMCbrZoneSetData(zone, version, d); fromErr != nil {
+		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", fromErr))
 	}
 
 	return nil
