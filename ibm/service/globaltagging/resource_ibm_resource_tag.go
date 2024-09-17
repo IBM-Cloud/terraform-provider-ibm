@@ -5,6 +5,7 @@ package globaltagging
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 const (
@@ -32,11 +34,11 @@ const (
 
 func ResourceIBMResourceTag() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMResourceTagCreate,
-		Read:     resourceIBMResourceTagRead,
-		Update:   resourceIBMResourceTagUpdate,
-		Delete:   resourceIBMResourceTagDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMResourceTagCreate,
+		ReadContext:   resourceIBMResourceTagRead,
+		UpdateContext: resourceIBMResourceTagUpdate,
+		DeleteContext: resourceIBMResourceTagDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
@@ -125,19 +127,23 @@ func ResourceIBMResourceTagValidator() *validate.ResourceValidator {
 	return &ibmResourceTagValidator
 }
 
-func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceTagCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var rType, tType string
 	resources := []globaltaggingv1.Resource{}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	accountID := userDetails.UserAccount
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	resourceID := d.Get(resourceID).(string)
@@ -187,9 +193,24 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if len(add) > 0 {
-		_, resp, err := gtClient.AttachTag(AttachTagOptions)
+		results, fullResponse, err := gtClient.AttachTagWithContext(context, AttachTagOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error attaching resource tags : %v\n%s", resp, err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "create")
+			return tfErr.GetDiag()
+		}
+
+		// Check if there are errors on the attach internal response
+		if results != nil {
+			errMap := make([]globaltaggingv1.TagResultsItem, 0)
+			for _, res := range results.Results {
+				if res.IsError != nil && *res.IsError {
+					errMap = append(errMap, res)
+				}
+			}
+			if len(errMap) > 0 {
+				output, _ := json.MarshalIndent(errMap, "", "    ")
+				return diag.FromErr(fmt.Errorf("Error while creating tag: %s - Full response: %s", string(output), fullResponse))
+			}
 		}
 		response, errored := flex.WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, d.Timeout(schema.TimeoutCreate))
 		if errored != nil {
@@ -204,15 +225,17 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		d.SetId(fmt.Sprintf("%s/%s", resourceID, rType))
 	}
 
-	return resourceIBMResourceTagRead(d, meta)
+	return resourceIBMResourceTagRead(context, d, meta)
 }
 
-func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceTagRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var rID, rType, tType string
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	acctID := userDetails.UserAccount
 
@@ -221,10 +244,12 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 	} else {
 		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if len(parts) < 2 {
-			return fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of resourceID/resourceType", d.Id())
+			return diag.FromErr(fmt.Errorf("Incorrect ID %s: Id should be a combination of resourceID/resourceType", d.Id()))
 		}
 		rID = parts[0]
 		rType = parts[1]
@@ -240,7 +265,7 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 
 	tagList, err := flex.GetGlobalTagsUsingSearchAPI(meta, rID, rType, tType)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting resource tags for: %s with error : %s", rID, err)
+		return diag.FromErr(fmt.Errorf("Error getting resource tags for: %s with error : %s", rID, err))
 	}
 
 	d.Set(resourceID, rID)
@@ -250,7 +275,7 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceIBMResourceTagUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceTagUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var rID, rType, tType string
 
 	if strings.HasPrefix(d.Id(), "crn:") {
@@ -258,7 +283,9 @@ func resourceIBMResourceTagUpdate(d *schema.ResourceData, meta interface{}) erro
 	} else {
 		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		rID = parts[0]
 		rType = parts[1]
@@ -272,68 +299,38 @@ func resourceIBMResourceTagUpdate(d *schema.ResourceData, meta interface{}) erro
 		oldList, newList := d.GetChange(tags)
 		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, rID, rType, tType)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on create of resource tags: %s", err)
+			return diag.FromErr(fmt.Errorf("Error on create of resource tags: %s", err))
 		}
 	}
 
-	return resourceIBMResourceTagRead(d, meta)
+	return resourceIBMResourceTagRead(context, d, meta)
 }
 
-func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMResourceTagDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var rID, rType string
-
 	if strings.HasPrefix(d.Id(), "crn:") {
 		rID = d.Id()
 	} else {
 		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_resource_tag", "delete")
+			log.Printf("[ERROR] Error in deleting.\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		rID = parts[0]
 		rType = parts[1]
 	}
-
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
-	}
-
-	var remove []string
 	removeTags := d.Get(tags).(*schema.Set)
-	remove = make([]string, len(removeTags.List()))
-	for i, v := range removeTags.List() {
-		remove[i] = fmt.Sprint(v)
-	}
 	var tType string
 	if v, ok := d.GetOk(tagType); ok && v != nil {
 		tType = v.(string)
 	} else {
 		tType = "user"
 	}
-
-	if len(remove) > 0 {
-		resources := []globaltaggingv1.Resource{}
-		r := globaltaggingv1.Resource{ResourceID: flex.PtrToString(rID), ResourceType: flex.PtrToString(rType)}
-		resources = append(resources, r)
-
-		detachTagOptions := &globaltaggingv1.DetachTagOptions{
-			Resources: resources,
-			TagNames:  remove,
-			TagType:   &tType,
-		}
-
-		_, resp, err := gtClient.DetachTag(detachTagOptions)
+	if len(removeTags.List()) > 0 {
+		err := flex.UpdateGlobalTagsUsingCRN(removeTags, nil, meta, rID, rType, tType)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error detaching resource tags %v: %s\n%s", remove, err, resp)
-		}
-		for _, v := range remove {
-			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-				TagName: flex.PtrToString(v),
-			}
-			_, resp, err := gtClient.DeleteTag(delTagOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting resource tag %v: %s\n%s", v, err, resp)
-			}
+			return diag.FromErr(fmt.Errorf("Error on deleting tags: %s", err))
 		}
 	}
 	return nil
