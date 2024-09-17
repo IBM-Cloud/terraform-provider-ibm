@@ -127,7 +127,9 @@ Nested schema for **target**:
   * Constraints: Allowable values are: `1.0`. The minimum length is `1` character.
 
 ## Timeouts section
+
 The resource includes default timeout settings for the following operations:
+
 * `create` - (Timeout) Defaults to 30 minutes.
 * `update` - (Timeout) Defaults to 30 minutes.
 * `delete` - (Timeout) Defaults to 30 minutes.
