@@ -962,7 +962,7 @@ func dataSourceVPNGatewayConnectionIkePolicyToMap(ikePolicyItem vpcv1.IkePolicyR
 	return ikePolicyMap
 }
 
-func dataSourceVPNGatewayConnectionIkePolicyDeletedToMap(deletedItem vpcv1.IkePolicyReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNGatewayConnectionIkePolicyDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -1005,7 +1005,7 @@ func dataSourceVPNGatewayConnectionIpsecPolicyToMap(ipsecPolicyItem vpcv1.IPsecP
 	return ipsecPolicyMap
 }
 
-func dataSourceVPNGatewayConnectionIpsecPolicyDeletedToMap(deletedItem vpcv1.IPsecPolicyReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVPNGatewayConnectionIpsecPolicyDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

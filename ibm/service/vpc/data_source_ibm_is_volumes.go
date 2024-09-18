@@ -952,7 +952,7 @@ func dataSourceVolumeCollectionVolumesSourceImageToMap(sourceImageItem vpcv1.Ima
 	return sourceImageMap
 }
 
-func dataSourceVolumeCollectionSourceImageDeletedToMap(deletedItem vpcv1.ImageReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionSourceImageDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -990,7 +990,7 @@ func dataSourceVolumeCollectionVolumesSourceSnapshotToMap(sourceSnapshotItem vpc
 	return sourceSnapshotMap
 }
 
-func dataSourceVolumeCollectionSourceSnapshotDeletedToMap(deletedItem vpcv1.SnapshotReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionSourceSnapshotDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -1072,7 +1072,7 @@ func dataSourceVolumeCollectionVolumesVolumeAttachmentsToMap(volumeAttachmentsIt
 	return volumeAttachmentsMap
 }
 
-func dataSourceVolumeCollectionVolumeAttachmentsDeletedToMap(deletedItem vpcv1.VolumeAttachmentReferenceVolumeContextDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionVolumeAttachmentsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -1117,7 +1117,7 @@ func dataSourceVolumeCollectionVolumeAttachmentsInstanceToMap(instanceItem vpcv1
 	return instanceMap
 }
 
-func dataSourceVolumeCollectionInstanceDeletedToMap(deletedItem vpcv1.InstanceReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionInstanceDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
