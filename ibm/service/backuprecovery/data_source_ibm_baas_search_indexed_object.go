@@ -18,19 +18,13 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
+func DataSourceIbmBaasSearchIndexedObject() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasSearchIndexedObjectCreate,
-		ReadContext:   resourceIbmBaasSearchIndexedObjectRead,
-		UpdateContext: resourceIbmBaasSearchIndexedObjectUpdate,
-		DeleteContext: resourceIbmBaasSearchIndexedObjectDelete,
-		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBaasSearchIndexedObject,
+		ReadContext: resourceIbmBaasSearchIndexedObjectRead,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -8098,43 +8092,7 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBaasSearchIndexedObject(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	// oldId, _ := d.GetChange("x_ibm_tenant_id")
-	// if oldId == "" {
-	// 	return nil
-	// }
-
-	// return if it's a new resource
-	if d.Id() == "" {
-		return nil
-		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_search_indexed_object does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
-	}
-
-	for fieldName := range ResourceIbmBaasSearchIndexedObject().Schema {
-		if d.HasChange(fieldName) {
-			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_search_indexed_object does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
-		}
-	}
-	return nil
-}
-
-func ResourceIbmBaasSearchIndexedObjectValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "object_type",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "CassandraObjects, CouchbaseObjects, Emails, ExchangeObjects, Files, GroupsObjects, HbaseObjects, HDFSObjects, HiveObjects, MongoObjects, OneDriveObjects, PublicFolders, SfdcRecords, SharepointObjects, TeamsObjects, UdaObjects",
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_search_indexed_object", Schema: validateSchema}
-	return &resourceValidator
-}
-
-func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBaasSearchIndexedObjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "initialize-client")
@@ -8665,42 +8623,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 			}
 		}
 	}
-	return resourceIbmBaasSearchIndexedObjectRead(context, d, meta)
+	return nil
 }
 
 func resourceIbmBaasSearchIndexedObjectID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
-}
-
-func resourceIbmBaasSearchIndexedObjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
-}
-
-func resourceIbmBaasSearchIndexedObjectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
-
-	var diags diag.Diagnostics
-	warning := diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Delete Not Supported",
-		Detail:   "Delete operation is not supported for this resource. The resource will be removed from the terraform state file but will continue to exist in the backend.",
-	}
-	diags = append(diags, warning)
-	d.SetId("")
-	return diags
-}
-
-func resourceIbmBaasSearchIndexedObjectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
-	var diags diag.Diagnostics
-	warning := diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
-		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource.",
-	}
-	diags = append(diags, warning)
-	// d.SetId("")
-	return diags
 }
 
 func ResourceIbmBaasSearchIndexedObjectMapToCassandraOnPremSearchParams(modelMap map[string]interface{}) (*backuprecoveryv1.CassandraOnPremSearchParams, error) {

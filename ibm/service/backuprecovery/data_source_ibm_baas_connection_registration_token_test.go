@@ -13,7 +13,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasConnectionRegistrationTokenBasic(t *testing.T) {
+func TestAccIbmBaasConnectionRegistrationTokenDataSourceBasic(t *testing.T) {
 	connectionID := fmt.Sprintf("tf_connection_id_%d", acctest.RandIntRange(10, 100))
 	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
 

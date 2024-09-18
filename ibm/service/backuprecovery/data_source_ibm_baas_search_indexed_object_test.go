@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasSearchIndexedObjectBasic(t *testing.T) {
+func TestAccIbmBaasSearchIndexedObjectDataSourceBasic(t *testing.T) {
 	var conf backuprecoveryv1.SearchIndexedObjectsResponse
 	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
 	objectType := "Emails"
