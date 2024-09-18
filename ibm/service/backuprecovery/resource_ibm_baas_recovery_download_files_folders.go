@@ -30,7 +30,7 @@ func ResourceIbmBaasRecoveryDownloadFilesFolders() *schema.Resource {
 		DeleteContext: resourceIbmBaasRecoveryDownloadFilesFoldersDelete,
 		UpdateContext: resourceIbmBaasRecoveryDownloadFilesFoldersUpdate,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: checkDiffResourceIbmBaasRecoveryDownloadFilesFolders,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -2803,6 +2803,26 @@ func ResourceIbmBaasRecoveryDownloadFilesFolders() *schema.Resource {
 	}
 }
 
+func checkDiffResourceIbmBaasRecoveryDownloadFilesFolders(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_recovery_download_files_folders does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+	}
+
+	for fieldName := range ResourceIbmBaasRecoveryDownloadFilesFolders().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_recovery_download_files_folders does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+		}
+	}
+	return nil
+}
+
 func ResourceIbmBaasRecoveryDownloadFilesFoldersValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -3030,6 +3050,10 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 		if err = d.Set("recovery_retrieve_archive_tasks", retrieveArchiveTasks); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retrieve_archive_tasks: %s", err), "(Data) ibm_recovery", "read", "set-retrieve_archive_tasks").GetDiag()
 		}
+	} else {
+		if err = d.Set("recovery_retrieve_archive_tasks", []interface{}{}); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mssql_params: %s", err), "(Data) ibm_recovery", "read", "set-mssql_params").GetDiag()
+		}
 	}
 
 	if !core.IsNil(recovery.IsMultiStageRestore) {
@@ -3060,6 +3084,10 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 		if err = d.Set("recovery_mssql_params", mssqlParams); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mssql_params: %s", err), "(Data) ibm_recovery", "read", "set-mssql_params").GetDiag()
 		}
+	} else {
+		if err = d.Set("recovery_mssql_params", []interface{}{}); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mssql_params: %s", err), "(Data) ibm_recovery", "read", "set-mssql_params").GetDiag()
+		}
 	}
 
 	return nil
@@ -3067,7 +3095,6 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 
 func resourceIbmBaasRecoveryDownloadFilesFoldersDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
-
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
@@ -3080,15 +3107,14 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersDelete(context context.Context, 
 }
 
 func resourceIbmBaasRecoveryDownloadFilesFoldersUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	// This resource does not support a "update" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State. Not the actual backend resource",
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
 		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource.",
 	}
 	diags = append(diags, warning)
-	// d.SetId("")
 	return diags
 }
 
@@ -3371,7 +3397,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersMapToArchivalTargetTierInfo(mode
 		}
 		model.AzureTiering = AzureTieringModel
 	}
-	model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
+	if modelMap["cloud_platform"] != nil && modelMap["cloud_platform"].(string) != "" {
+		model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
+	}
 	if modelMap["google_tiering"] != nil && len(modelMap["google_tiering"].([]interface{})) > 0 {
 		GoogleTieringModel, err := ResourceIbmBaasRecoveryDownloadFilesFoldersMapToGoogleTiers(modelMap["google_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3800,7 +3828,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersArchivalTargetTierInfoToMap(mode
 		}
 		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
 	}
-	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.CloudPlatform != nil {
+		modelMap["cloud_platform"] = *model.CloudPlatform
+	}
 	if model.GoogleTiering != nil {
 		googleTieringMap, err := ResourceIbmBaasRecoveryDownloadFilesFoldersGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {

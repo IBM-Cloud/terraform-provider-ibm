@@ -28,7 +28,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequest() *schema.Resource {
 		ReadContext:   resourceIbmBaasUpdateProtectionGroupRunRequestRead,
 		DeleteContext: resourceIbmBaasUpdateProtectionGroupRunRequestDelete,
 		UpdateContext: resourceIbmBaasUpdateProtectionGroupRunRequestUpdate,
-		CustomizeDiff: checkResourceIbmBaasUpdateProtectionGroupRunRequestDiff,
+		CustomizeDiff: checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -374,23 +374,23 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequest() *schema.Resource {
 	}
 }
 
-func checkResourceIbmBaasUpdateProtectionGroupRunRequestDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	// skip if it's a new resource
+func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
 	if d.Id() == "" {
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_update_protection_group_run_request does not support DELETE operation. Terraform will remove it from the statefile but the udpates will continue to exist in the backend's protection group run resource.")
 		return nil
 	}
 
-	resourceSchema := ResourceIbmBaasUpdateProtectionGroupRunRequest().Schema
-
-	// handle update resource
-LOOP:
-	for key := range resourceSchema {
-		if d.HasChange(key) {
-			log.Println("[WARNING] Update operation is not supported for this resource. No changes will be applied.")
-			break LOOP
+	for fieldName := range ResourceIbmBaasUpdateProtectionGroupRunRequest().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_update_protection_group_run_request does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
 		}
 	}
-
 	return nil
 }
 
@@ -481,7 +481,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestUpdate(context context.Contex
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State. Not the actual backend resource",
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
 		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource.",
 	}
 	diags = append(diags, warning)

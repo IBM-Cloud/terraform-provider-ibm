@@ -29,7 +29,7 @@ func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
 		DeleteContext: resourceIbmBaasAgentUpgradeTaskDelete,
 		UpdateContext: resourceIbmBaasAgentUpgradeTaskUpdate,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: checkDiffResourceIbmBaasAgentUpgradeTaskCreate,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -222,6 +222,26 @@ func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
 	}
 }
 
+func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_agent_upgrade_task does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+	}
+
+	for fieldName := range ResourceIbmBaasAgentUpgradeTask().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_agent_upgrade_task does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+		}
+	}
+	return nil
+}
+
 func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -366,6 +386,11 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "error-to-map").GetDiag()
 		}
 		if err = d.Set("error", []map[string]interface{}{errorMap}); err != nil {
+			err = fmt.Errorf("Error setting error: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-error").GetDiag()
+		}
+	} else {
+		if err = d.Set("error", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting error: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-error").GetDiag()
 		}

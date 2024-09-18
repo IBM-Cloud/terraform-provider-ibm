@@ -1563,19 +1563,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service options.
 	backupRecoveryURL := "https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2"
-	var backupRecoveryConnectorURL string
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
-		backupRecoveryConnectorURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_CONNECTOR_ENDPOINT", c.Region, backupRecoveryConnectorURL)
 	}
-
-	// baasAuthenticator := backuprecoveryv1.NewIAMAuthenticator(c.BluemixAPIKey, EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL))
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
 		Authenticator: authenticator,
 		URL:           backupRecoveryURL,
-		ConnectorUrl:  EnvFallBack([]string{"BACKUP_RECOVERY_CONNECTOR_ENDPOINT"}, backupRecoveryConnectorURL),
 	}
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)

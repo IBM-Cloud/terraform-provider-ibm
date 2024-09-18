@@ -32,32 +32,25 @@ func ResourceIbmBaasProtectionGroupRunRequest() *schema.Resource {
 		CustomizeDiff: checkDiffResourceIbmBaasProtectionGroupRun,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { return true },
-				// ForceNew:    true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"group_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { return true },
 				// ValidateFunc: validate.InvokeValidator("ibm_create_protection_group_run_request", "run_type"),
 				Description: "Protection group id",
 			},
 			"run_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { return true },
-				// ForceNew: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_baas_protection_group_run_request", "run_type"),
 				Description: "Type of protection run. 'kRegular' indicates an incremental (CBT) backup. Incremental backups utilizing CBT (if supported) are captured of the target protection objects. The first run of a kRegular schedule captures all the blocks. 'kFull' indicates a full (no CBT) backup. A complete backup (all blocks) of the target protection objects are always captured and Change Block Tracking (CBT) is not utilized. 'kLog' indicates a Database Log backup. Capture the database transaction logs to allow rolling back to a specific point in time. 'kSystem' indicates system volume backup. It produces an image for bare metal recovery.",
 			},
 			"objects": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { return true },
-				// ForceNew:    true,
+				Type:        schema.TypeList,
+				Optional:    true,
 				Description: "Specifies the list of objects to be protected by this Protection Group run. These can be leaf objects or non-leaf objects in the protection hierarchy. This must be specified only if a subset of objects from the Protection Groups needs to be protected.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -91,11 +84,9 @@ func ResourceIbmBaasProtectionGroupRunRequest() *schema.Resource {
 				},
 			},
 			"targets_config": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { return true },
-				// ForceNew:    true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
 				Description: "Specifies the replication and archival targets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -404,41 +395,30 @@ func ResourceIbmBaasProtectionGroupRunRequest() *schema.Resource {
 	}
 }
 
-// func checkResourceIbmBaasProtectionGroupRunDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-// 	// skip if it's a new resource
-// 	if d.Id() == "" {
-// 		return nil
-// 	}
-
-// 	resourceSchema := ResourceIbmBaasProtectionGroupRunRequest().Schema
-
-// 	// handle update resource
-// LOOP:
-// 	for key := range resourceSchema {
-// 		if d.HasChange(key) {
-// 			log.Println("[WARNING] Update operation is not supported for this resource. No changes will be applied. Please use ibm_update_protection_group_run_request resource for updates.")
-// 			break LOOP
-// 		}
-// 	}
-
-// 	return nil
-// }
+const (
+	colorReset  = "\033[0m"
+	colorYellow = "\033[33m"
+)
 
 func checkDiffResourceIbmBaasProtectionGroupRun(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// skip if it's a new resource
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
 	if d.Id() == "" {
 		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_protection_group_run_request does not support DELETE operation. Terraform will remove it from the statefile but the resource will continue to persist in the backend.")
 	}
 
-	resourceSchema := ResourceIbmBaasProtectionGroupRunRequest().Schema
-
-	// handle update resource
-	for key := range resourceSchema {
-		if d.HasChange(key) {
-			return nil
+	// display a warning in the plan if resource is updated
+	for fieldName := range ResourceIbmBaasProtectionGroupRunRequest().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_protection_group_run_request does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure. Please use ibm_update_protection_group_run_request resource for updates.", fieldName)
 		}
 	}
-
 	return nil
 }
 
@@ -536,7 +516,7 @@ func resourceIbmBaasProtectionGroupRunRequestUpdate(context context.Context, d *
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State. Not the actual backend resource",
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
 		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource. Please use ibm_baas_update_protection_group_run_request resource for updates.",
 	}
 	// d.SetId("")

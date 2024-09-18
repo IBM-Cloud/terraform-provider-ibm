@@ -30,7 +30,7 @@ func ResourceIbmBaasRestorePoints() *schema.Resource {
 		DeleteContext: resourceIbmBaasRestorePointsDelete,
 		UpdateContext: resourceIbmBaasRestorePointsUpdate,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: checkDiffResourceIbmBaasRestorePoints,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -46,7 +46,7 @@ func ResourceIbmBaasRestorePoints() *schema.Resource {
 			},
 			"environment": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 				// ForceNew: true,
 				// ValidateFunc: validate.InvokeValidator("ibm_baas_restore_points", "environment"),
 				Description: "Specifies the protection source environment type.",
@@ -3346,6 +3346,26 @@ func ResourceIbmBaasRestorePoints() *schema.Resource {
 	}
 }
 
+func checkDiffResourceIbmBaasRestorePoints(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_restore_points does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+	}
+
+	for fieldName := range ResourceIbmBaasRestorePoints().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_restore_points does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+		}
+	}
+	return nil
+}
+
 func ResourceIbmBaasRestorePointsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -3353,7 +3373,7 @@ func ResourceIbmBaasRestorePointsValidator() *validate.ResourceValidator {
 			Identifier:                 "environment",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			AllowedValues:              "kAcropolis, kAD, kAWS, kAzure, kCassandra, kCouchbase, kElastifile, kExchange, kFlashBlade, kGCP, kGenericNas, kGPFS, kHBase, kHdfs, kHive, kHyperV, kIbmFlashSystem, kIsilon, kKubernetes, kKVM, kMongoDB, kNetapp, kO365, kOracle, kPhysical, kPure, kRemoteAdapter, kSAPHANA, kSfdc, kSQL, kUDA, kView, kVMware",
 		},
 	)
@@ -3374,6 +3394,7 @@ func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.Resou
 
 	getRestorePointsInTimeRangeOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
 	getRestorePointsInTimeRangeOptions.SetEndTimeUsecs(int64(d.Get("end_time_usecs").(int)))
+	getRestorePointsInTimeRangeOptions.SetEnvironment(d.Get("environment").(string))
 	var protectionGroupIds []string
 	for _, v := range d.Get("protection_group_ids").([]interface{}) {
 		protectionGroupIdsItem := v.(string)
@@ -3448,15 +3469,14 @@ func resourceIbmBaasRestorePointsDelete(context context.Context, d *schema.Resou
 }
 
 func resourceIbmBaasRestorePointsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	// This resource does not support a "update" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State. Not the actual backend resource",
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
 		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource.",
 	}
 	diags = append(diags, warning)
-	// d.SetId("")
 	return diags
 }
 

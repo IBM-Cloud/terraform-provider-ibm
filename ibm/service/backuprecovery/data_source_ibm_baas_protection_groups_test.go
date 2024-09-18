@@ -31,7 +31,7 @@ func TestAccIbmBaasProtectionGroupsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(protectionGroupResponseTenantID, protectionGroupResponseName, protectionGroupResponsePolicyID, protectionGroupResponseEnvironment),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "x_ibm_tenant_id"),
 				),
 			},
 		},
@@ -60,7 +60,7 @@ func TestAccIbmBaasProtectionGroupsDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIbmBaasProtectionGroupsDataSourceConfig(protectionGroupResponseTenantID, protectionGroupResponseName, protectionGroupResponsePolicyID, protectionGroupResponsePriority, protectionGroupResponseDescription, protectionGroupResponseEndTimeUsecs, protectionGroupResponseLastModifiedTimestampUsecs, protectionGroupResponseQosPolicy, protectionGroupResponseAbortInBlackouts, protectionGroupResponsePauseInBlackouts, protectionGroupResponseIsPaused, protectionGroupResponseEnvironment),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "x_ibm_tenant_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "request_initiator_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "ids"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "names"),

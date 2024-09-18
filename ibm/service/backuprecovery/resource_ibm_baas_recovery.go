@@ -30,7 +30,7 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 		DeleteContext: resourceIbmBaasRecoveryDelete,
 		UpdateContext: resourceIbmBaasRecoveryUpdate,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: checkDiffResourceIbmBaasRecovery,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -62,6 +62,7 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
+				Computed: true,
 				// ForceNew:    true,
 				Description: "Specifies the recovery options specific to Physical environment.",
 				Elem: &schema.Resource{
@@ -85,11 +86,13 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 									"protection_group_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the protection group id of the object snapshot.",
 									},
 									"protection_group_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the protection group name of the object snapshot.",
 									},
 									"snapshot_creation_time_usecs": &schema.Schema{
@@ -101,68 +104,81 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the information about the object for which the snapshot is taken.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies object id.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the name of the object.",
 												},
 												"source_id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies registered source id to which object belongs.",
 												},
 												"source_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies registered source name to which object belongs.",
 												},
 												"environment": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the environment of the object.",
 												},
 												"object_hash": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the hash identifier of the object.",
 												},
 												"object_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the type of the object.",
 												},
 												"logical_size_bytes": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the logical size of object in bytes.",
 												},
 												"uuid": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the uuid which is a unique identifier of the object.",
 												},
 												"global_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the global id which is a unique identifier of the object.",
 												},
 												"protection_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the protection type of the object if any.",
 												},
 												"sharepoint_site_summary": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the common parameters for Sharepoint site objects.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -177,11 +193,13 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 												"os_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the operating system type of the object.",
 												},
 												"child_objects": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies child object details.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -303,6 +321,7 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 													Type:     schema.TypeList,
 													MaxItems: 1,
 													Optional: true,
+													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"is_cloud_env": &schema.Schema{
@@ -317,6 +336,7 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 													Type:     schema.TypeList,
 													MaxItems: 1,
 													Optional: true,
+													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"cluster_source_type": &schema.Schema{
@@ -344,43 +364,51 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"target_id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival target ID.",
 												},
 												"archival_task_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.",
 												},
 												"target_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival target name.",
 												},
 												"target_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival target type.",
 												},
 												"usage_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the usage type for the target.",
 												},
 												"ownership_context": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the ownership context for the target.",
 												},
 												"tier_settings": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the tier info for archival.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -2071,17 +2099,106 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
 												},
+												"metrics_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the metadata for metrics configuration. The metadata defined here will be used by cluster to send the usgae metrics to IBM cloud metering service for calculating the tenant billing.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"cos_resource_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the details of COS resource configuration required for posting metrics and trackinb billing information for IBM tenants.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"resource_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the resource COS resource configuration endpoint that will be used for fetching bucket usage for a given tenant.",
+																		},
+																	},
+																},
+															},
+															"iam_metrics_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the IAM configuration that will be used for accessing the billing service in IBM cloud.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"iam_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the IAM URL needed to fetch the operator token from IBM. The operator token is needed to make service API calls to IBM billing service.",
+																		},
+																		"billing_api_key_secret_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies Id of the secret that contains the API key.",
+																		},
+																	},
+																},
+															},
+															"metering_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the metering configuration that will be used for IBM cluster to send the billing details to IBM billing service.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"part_ids": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the list of part identifiers used for metrics identification.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"submission_interval_in_secs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the frequency in seconds at which the metrics will be pushed to IBM billing service from cluster.",
+																		},
+																		"url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the base metering URL that will be used by cluster to send the billing information.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"ownership_mode": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
 												},
+												"plan_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the Plan Id associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
+												},
 												"resource_group_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the Resource Group ID associated with the tenant.",
+												},
+												"resource_instance_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the Resource Instance ID associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
 												},
 											},
 										},
@@ -2229,6 +2346,26 @@ func ResourceIbmBaasRecovery() *schema.Resource {
 			},
 		},
 	}
+}
+
+func checkDiffResourceIbmBaasRecovery(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_recovery does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+	}
+
+	for fieldName := range ResourceIbmBaasRecovery().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_recovery does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+		}
+	}
+	return nil
 }
 
 func ResourceIbmBaasRecoveryValidator() *validate.ResourceValidator {
@@ -2452,6 +2589,11 @@ func resourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceData
 			err = fmt.Errorf("Error setting retrieve_archive_tasks: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery", "read", "set-retrieve_archive_tasks").GetDiag()
 		}
+	} else {
+		if err = d.Set("retrieve_archive_tasks", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting retrieve_archive_tasks: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery", "read", "set-retrieve_archive_tasks").GetDiag()
+		}
 	}
 	if !core.IsNil(recovery.IsMultiStageRestore) {
 		if err = d.Set("is_multi_stage_restore", recovery.IsMultiStageRestore); err != nil {
@@ -2477,15 +2619,14 @@ func resourceIbmBaasRecoveryDelete(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIbmBaasRecoveryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	// This resource does not support a "update" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State. Not the actual backend resource",
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
 		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource.",
 	}
 	diags = append(diags, warning)
-	// d.SetId("")
 	return diags
 }
 
@@ -2818,7 +2959,9 @@ func ResourceIbmBaasRecoveryMapToArchivalTargetTierInfo(modelMap map[string]inte
 		}
 		model.AzureTiering = AzureTieringModel
 	}
-	model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
+	if modelMap["cloud_platform"] != nil && modelMap["cloud_platform"].(string) != "" {
+		model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
+	}
 	if modelMap["google_tiering"] != nil && len(modelMap["google_tiering"].([]interface{})) > 0 {
 		GoogleTieringModel, err := ResourceIbmBaasRecoveryMapToGoogleTiers(modelMap["google_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3952,7 +4095,9 @@ func ResourceIbmBaasRecoveryArchivalTargetTierInfoToMap(model *backuprecoveryv1.
 		}
 		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
 	}
-	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.CloudPlatform != nil {
+		modelMap["cloud_platform"] = *model.CloudPlatform
+	}
 	if model.GoogleTiering != nil {
 		googleTieringMap, err := ResourceIbmBaasRecoveryGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
@@ -4827,11 +4972,24 @@ func ResourceIbmBaasRecoveryIbmTenantMetadataParamsToMap(model *backuprecoveryv1
 	if model.LivenessMode != nil {
 		modelMap["liveness_mode"] = *model.LivenessMode
 	}
+	if model.MetricsConfig != nil {
+		metricsConfigMap, err := ResourceIbmBaasRecoveryIbmTenantMetricsConfigToMap(model.MetricsConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metrics_config"] = []map[string]interface{}{metricsConfigMap}
+	}
 	if model.OwnershipMode != nil {
 		modelMap["ownership_mode"] = *model.OwnershipMode
 	}
+	if model.PlanID != nil {
+		modelMap["plan_id"] = *model.PlanID
+	}
 	if model.ResourceGroupID != nil {
 		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	if model.ResourceInstanceID != nil {
+		modelMap["resource_instance_id"] = *model.ResourceInstanceID
 	}
 	return modelMap, nil
 }
@@ -4843,6 +5001,65 @@ func ResourceIbmBaasRecoveryExternalVendorCustomPropertiesToMap(model *backuprec
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasRecoveryIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CosResourceConfig != nil {
+		cosResourceConfigMap, err := ResourceIbmBaasRecoveryIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cos_resource_config"] = []map[string]interface{}{cosResourceConfigMap}
+	}
+	if model.IamMetricsConfig != nil {
+		iamMetricsConfigMap, err := ResourceIbmBaasRecoveryIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["iam_metrics_config"] = []map[string]interface{}{iamMetricsConfigMap}
+	}
+	if model.MeteringConfig != nil {
+		meteringConfigMap, err := ResourceIbmBaasRecoveryIbmTenantMeteringConfigToMap(model.MeteringConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metering_config"] = []map[string]interface{}{meteringConfigMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasRecoveryIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ResourceURL != nil {
+		modelMap["resource_url"] = *model.ResourceURL
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasRecoveryIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IAMURL != nil {
+		modelMap["iam_url"] = *model.IAMURL
+	}
+	if model.BillingApiKeySecretID != nil {
+		modelMap["billing_api_key_secret_id"] = *model.BillingApiKeySecretID
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasRecoveryIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PartIds != nil {
+		modelMap["part_ids"] = model.PartIds
+	}
+	if model.SubmissionIntervalInSecs != nil {
+		modelMap["submission_interval_in_secs"] = flex.IntValue(model.SubmissionIntervalInSecs)
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
 	}
 	return modelMap, nil
 }

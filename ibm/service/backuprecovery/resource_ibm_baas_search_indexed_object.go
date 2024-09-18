@@ -30,7 +30,7 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 		UpdateContext: resourceIbmBaasSearchIndexedObjectUpdate,
 		DeleteContext: resourceIbmBaasSearchIndexedObjectDelete,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: checkDiffResourceIbmBaasSearchIndexedObject,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -1262,7 +1262,6 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"tags": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies tag applied to the object.",
 							Elem: &schema.Resource{
@@ -1277,7 +1276,6 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 						},
 						"snapshot_tags": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies snapshot tags applied to the object.",
 							Elem: &schema.Resource{
@@ -1289,7 +1287,6 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 									},
 									"run_ids": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies runs the tags are applied to.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
@@ -1299,129 +1296,119 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the name of the object.",
 						},
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the path of the object.",
 						},
 						"protection_group_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "\"Specifies the protection group id which contains this object.\".",
 						},
 						"protection_group_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "\"Specifies the protection group name which contains this object.\".",
 						},
 						"policy_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the protection policy id for this file.",
 						},
 						"policy_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the protection policy name for this file.",
 						},
 						"storage_domain_id": &schema.Schema{
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Computed:    true,
 							Description: "\"Specifies the Storage Domain id where the backup data of Object is present.\".",
 						},
 						"source_info": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the Source Object information.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": &schema.Schema{
 										Type:        schema.TypeInt,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies object id.",
 									},
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the name of the object.",
 									},
 									"source_id": &schema.Schema{
-										Type:        schema.TypeInt,
-										Optional:    true,
+										Type: schema.TypeInt,
+
 										Computed:    true,
 										Description: "Specifies registered source id to which object belongs.",
 									},
 									"source_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies registered source name to which object belongs.",
 									},
 									"environment": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the environment of the object.",
 									},
 									"object_hash": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the hash identifier of the object.",
 									},
 									"object_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the type of the object.",
 									},
 									"logical_size_bytes": &schema.Schema{
-										Type:        schema.TypeInt,
-										Optional:    true,
+										Type: schema.TypeInt,
+
 										Computed:    true,
 										Description: "Specifies the logical size of object in bytes.",
 									},
 									"uuid": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the uuid which is a unique identifier of the object.",
 									},
 									"global_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the global id which is a unique identifier of the object.",
 									},
 									"protection_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the protection type of the object if any.",
 									},
 									"sharepoint_site_summary": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
+										Type: schema.TypeList,
+
 										Computed:    true,
 										Description: "Specifies the common parameters for Sharepoint site objects.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"site_web_url": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the web url for the Sharepoint site.",
 												},
@@ -1429,94 +1416,94 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 										},
 									},
 									"os_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
+										Type: schema.TypeString,
+
 										Computed:    true,
 										Description: "Specifies the operating system type of the object.",
 									},
 									"child_objects": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
+										Type: schema.TypeList,
+
 										Computed:    true,
 										Description: "Specifies child object details.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
+													Type: schema.TypeInt,
+
 													Computed:    true,
 													Description: "Specifies object id.",
 												},
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the name of the object.",
 												},
 												"source_id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
+													Type: schema.TypeInt,
+
 													Computed:    true,
 													Description: "Specifies registered source id to which object belongs.",
 												},
 												"source_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies registered source name to which object belongs.",
 												},
 												"environment": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the environment of the object.",
 												},
 												"object_hash": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the hash identifier of the object.",
 												},
 												"object_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the type of the object.",
 												},
 												"logical_size_bytes": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
+													Type: schema.TypeInt,
+
 													Computed:    true,
 													Description: "Specifies the logical size of object in bytes.",
 												},
 												"uuid": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the uuid which is a unique identifier of the object.",
 												},
 												"global_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the global id which is a unique identifier of the object.",
 												},
 												"protection_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the protection type of the object if any.",
 												},
 												"sharepoint_site_summary": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
+													Type: schema.TypeList,
+
 													Computed:    true,
 													Description: "Specifies the common parameters for Sharepoint site objects.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"site_web_url": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
+																Type: schema.TypeString,
+
 																Computed:    true,
 																Description: "Specifies the web url for the Sharepoint site.",
 															},
@@ -1524,14 +1511,14 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 													},
 												},
 												"os_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the operating system type of the object.",
 												},
 												"child_objects": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
+													Type: schema.TypeList,
+
 													Computed:    true,
 													Description: "Specifies child object details.",
 													Elem: &schema.Resource{
@@ -1539,14 +1526,14 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 													},
 												},
 												"v_center_summary": &schema.Schema{
-													Type:     schema.TypeList,
-													Optional: true,
+													Type: schema.TypeList,
+
 													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"is_cloud_env": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
+																Type: schema.TypeBool,
+
 																Computed:    true,
 																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
 															},
@@ -1554,14 +1541,14 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 													},
 												},
 												"windows_cluster_summary": &schema.Schema{
-													Type:     schema.TypeList,
-													Optional: true,
+													Type: schema.TypeList,
+
 													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"cluster_source_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
+																Type: schema.TypeString,
+
 																Computed:    true,
 																Description: "Specifies the type of cluster resource this source represents.",
 															},
@@ -1572,14 +1559,14 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 										},
 									},
 									"v_center_summary": &schema.Schema{
-										Type:     schema.TypeList,
-										Optional: true,
+										Type: schema.TypeList,
+
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"is_cloud_env": &schema.Schema{
-													Type:        schema.TypeBool,
-													Optional:    true,
+													Type: schema.TypeBool,
+
 													Computed:    true,
 													Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
 												},
@@ -1587,14 +1574,14 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 										},
 									},
 									"windows_cluster_summary": &schema.Schema{
-										Type:     schema.TypeList,
-										Optional: true,
+										Type: schema.TypeList,
+
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"cluster_source_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
+													Type: schema.TypeString,
+
 													Computed:    true,
 													Description: "Specifies the type of cluster resource this source represents.",
 												},
@@ -1606,19 +1593,16 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the id of the indexed object.",
 						},
 						"keyspace_type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies type of Keyspace.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the Cassandra Object type.",
 						},
@@ -8114,6 +8098,26 @@ func ResourceIbmBaasSearchIndexedObject() *schema.Resource {
 	}
 }
 
+func checkDiffResourceIbmBaasSearchIndexedObject(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_search_indexed_object does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+	}
+
+	for fieldName := range ResourceIbmBaasSearchIndexedObject().Schema {
+		if d.HasChange(fieldName) {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_search_indexed_object does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+		}
+	}
+	return nil
+}
+
 func ResourceIbmBaasSearchIndexedObjectValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -8373,6 +8377,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting cassandra_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-cassandra_objects").GetDiag()
 			}
+		} else {
+			if err = d.Set("cassandra_objects", []map[string]interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting cassandra_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-cassandra_objects").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.CouchbaseObjects) {
 			couchbaseObjects := []map[string]interface{}{}
@@ -8384,6 +8393,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				couchbaseObjects = append(couchbaseObjects, couchbaseObjectsItemMap)
 			}
 			if err = d.Set("couchbase_objects", couchbaseObjects); err != nil {
+				err = fmt.Errorf("Error setting couchbase_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-couchbase_objects").GetDiag()
+			}
+		} else {
+			if err = d.Set("couchbase_objects", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting couchbase_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-couchbase_objects").GetDiag()
 			}
@@ -8401,6 +8415,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting emails: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-emails").GetDiag()
 			}
+		} else {
+			if err = d.Set("emails", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting emails: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-emails").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.ExchangeObjects) {
 			exchangeObjects := []map[string]interface{}{}
@@ -8412,6 +8431,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				exchangeObjects = append(exchangeObjects, exchangeObjectsItemMap)
 			}
 			if err = d.Set("exchange_objects", exchangeObjects); err != nil {
+				err = fmt.Errorf("Error setting exchange_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-exchange_objects").GetDiag()
+			}
+		} else {
+			if err = d.Set("exchange_objects", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting exchange_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-exchange_objects").GetDiag()
 			}
@@ -8429,6 +8453,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting files: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-files").GetDiag()
 			}
+		} else {
+			if err = d.Set("files", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting files: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-files").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.HbaseObjects) {
 			hbaseObjects := []map[string]interface{}{}
@@ -8440,6 +8469,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				hbaseObjects = append(hbaseObjects, hbaseObjectsItemMap)
 			}
 			if err = d.Set("hbase_objects", hbaseObjects); err != nil {
+				err = fmt.Errorf("Error setting hbase_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-hbase_objects").GetDiag()
+			}
+		} else {
+			if err = d.Set("hbase_objects", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting hbase_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-hbase_objects").GetDiag()
 			}
@@ -8457,6 +8491,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting hdfs_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-hdfs_objects").GetDiag()
 			}
+		} else {
+			if err = d.Set("hdfs_objects", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting hdfs_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-hdfs_objects").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.HiveObjects) {
 			hiveObjects := []map[string]interface{}{}
@@ -8468,6 +8507,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				hiveObjects = append(hiveObjects, hiveObjectsItemMap)
 			}
 			if err = d.Set("hive_objects", hiveObjects); err != nil {
+				err = fmt.Errorf("Error setting hive_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-hive_objects").GetDiag()
+			}
+		} else {
+			if err = d.Set("hive_objects", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting hive_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-hive_objects").GetDiag()
 			}
@@ -8485,6 +8529,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting mongo_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-mongo_objects").GetDiag()
 			}
+		} else {
+			if err = d.Set("mongo_objects", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting mongo_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-mongo_objects").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.MsGroupItems) {
 			msGroupItems := []map[string]interface{}{}
@@ -8496,6 +8545,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				msGroupItems = append(msGroupItems, msGroupItemsItemMap)
 			}
 			if err = d.Set("ms_group_items", msGroupItems); err != nil {
+				err = fmt.Errorf("Error setting ms_group_items: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-ms_group_items").GetDiag()
+			}
+		} else {
+			if err = d.Set("ms_group_items", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting ms_group_items: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-ms_group_items").GetDiag()
 			}
@@ -8513,6 +8567,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting one_drive_items: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-one_drive_items").GetDiag()
 			}
+		} else {
+			if err = d.Set("one_drive_items", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting one_drive_items: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-one_drive_items").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.PublicFolderItems) {
 			publicFolderItems := []map[string]interface{}{}
@@ -8527,6 +8586,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting public_folder_items: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-public_folder_items").GetDiag()
 			}
+		} else {
+			if err = d.Set("public_folder_items", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting public_folder_items: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-public_folder_items").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.SfdcRecords) {
 			sfdcRecordsMap, err := ResourceIbmBaasSearchIndexedObjectSfdcRecordsToMap(searchIndexedObjectsResponse.SfdcRecords)
@@ -8534,6 +8598,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "sfdc_records-to-map").GetDiag()
 			}
 			if err = d.Set("sfdc_records", []map[string]interface{}{sfdcRecordsMap}); err != nil {
+				err = fmt.Errorf("Error setting sfdc_records: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-sfdc_records").GetDiag()
+			}
+		} else {
+			if err = d.Set("sfdc_records", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting sfdc_records: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-sfdc_records").GetDiag()
 			}
@@ -8551,6 +8620,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting sharepoint_items: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-sharepoint_items").GetDiag()
 			}
+		} else {
+			if err = d.Set("sharepoint_items", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting sharepoint_items: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-sharepoint_items").GetDiag()
+			}
 		}
 		if !core.IsNil(searchIndexedObjectsResponse.TeamsItems) {
 			teamsItems := []map[string]interface{}{}
@@ -8562,6 +8636,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				teamsItems = append(teamsItems, teamsItemsItemMap)
 			}
 			if err = d.Set("teams_items", teamsItems); err != nil {
+				err = fmt.Errorf("Error setting teams_items: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-teams_items").GetDiag()
+			}
+		} else {
+			if err = d.Set("teams_items", []interface{}{}); err != nil {
 				err = fmt.Errorf("Error setting teams_items: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-teams_items").GetDiag()
 			}
@@ -8579,6 +8658,11 @@ func resourceIbmBaasSearchIndexedObjectCreate(context context.Context, d *schema
 				err = fmt.Errorf("Error setting uda_objects: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-uda_objects").GetDiag()
 			}
+		} else {
+			if err = d.Set("uda_objects", []interface{}{}); err != nil {
+				err = fmt.Errorf("Error setting uda_objects: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_search_indexed_object", "read", "set-uda_objects").GetDiag()
+			}
 		}
 	}
 	return resourceIbmBaasSearchIndexedObjectRead(context, d, meta)
@@ -8589,8 +8673,6 @@ func resourceIbmBaasSearchIndexedObjectID(d *schema.ResourceData) string {
 }
 
 func resourceIbmBaasSearchIndexedObjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	getRecoveryByIdOptions := &backuprecoveryv1.GetRecoveryByIdOptions{}
-	getRecoveryByIdOptions.SetID("")
 	return nil
 }
 
@@ -8613,7 +8695,7 @@ func resourceIbmBaasSearchIndexedObjectUpdate(context context.Context, d *schema
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State. Not the actual backend resource",
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
 		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource.",
 	}
 	diags = append(diags, warning)

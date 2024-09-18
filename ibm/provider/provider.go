@@ -241,7 +241,6 @@ func Provider() *schema.Provider {
 			"ibm_baas_search_protected_objects": backuprecovery.DataSourceIbmBaasSearchProtectedObjects(),
 			"ibm_baas_protection_group":         backuprecovery.DataSourceIbmBaasProtectionGroup(),
 			"ibm_baas_protection_groups":        backuprecovery.DataSourceIbmBaasProtectionGroups(),
-			"ibm_baas_protection_group_run":     backuprecovery.DataSourceIbmBaasProtectionGroupRun(),
 			"ibm_baas_protection_group_runs":    backuprecovery.DataSourceIbmBaasProtectionGroupRuns(),
 			"ibm_baas_protection_policies":      backuprecovery.DataSourceIbmBaasProtectionPolicies(),
 			"ibm_baas_protection_policy":        backuprecovery.DataSourceIbmBaasProtectionPolicy(),

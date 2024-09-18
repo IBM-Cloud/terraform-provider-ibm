@@ -26,7 +26,7 @@ func TestAccIbmBaasProtectionGroupRunsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "baas_protection_group_runs_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "x_ibm_tenant_id"),
 				),
 			},
 		},
@@ -37,7 +37,7 @@ func testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
 			id = "id"
-			tenantId = 1
+			X-IBM-Tenant-Id = "X-IBM-Tenant-Id"
 			requestInitiatorType = "UIUser"
 			runId = "runId"
 			startTimeUsecs = 1

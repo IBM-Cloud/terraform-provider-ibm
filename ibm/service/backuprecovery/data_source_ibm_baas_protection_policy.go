@@ -4501,7 +4501,9 @@ func DataSourceIbmBaasProtectionPolicyTierLevelSettingsToMap(model *backuprecove
 		}
 		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
 	}
-	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.CloudPlatform != nil {
+		modelMap["cloud_platform"] = *model.CloudPlatform
+	}
 	if model.GoogleTiering != nil {
 		googleTieringMap, err := DataSourceIbmBaasProtectionPolicyGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {

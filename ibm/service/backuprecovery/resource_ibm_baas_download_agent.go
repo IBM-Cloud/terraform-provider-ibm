@@ -41,8 +41,9 @@ func ResourceIbmBaasDownloadAgent() *schema.Resource {
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"file_path": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Specifies the absolute path for download",
 			},
 			"linux_params": &schema.Schema{
 				Type:        schema.TypeList,
@@ -69,6 +70,26 @@ func ResourceIbmBaasDownloadAgent() *schema.Resource {
 			},
 		},
 	}
+}
+
+func checkDiffResourceIbmBaasDownloadAgent(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+	// if oldId == "" {
+	// 	return nil
+	// }
+
+	// return if it's a new resource
+	if d.Id() == "" {
+		return nil
+		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_download_agent does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+	}
+
+	for fieldName := range ResourceIbmBaasDownloadAgent().Schema {
+		if d.HasChange(fieldName) && fieldName != "file_path" {
+			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_download_agent does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+		}
+	}
+	return nil
 }
 
 func ResourceIbmBaasDownloadAgentValidator() *validate.ResourceValidator {
@@ -168,15 +189,20 @@ func resourceIbmBaasDownloadAgentDelete(context context.Context, d *schema.Resou
 
 func resourceIbmBaasDownloadAgentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
-	var diags diag.Diagnostics
-	warning := diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Resource Update Will Only Affect Terraform State",
-		Detail:   "Update operation for this resource not supported and will only affect the terraform statefile. No changes will be made to actual backend resource. ",
+	if d.HasChange("file_path") {
+		return resourceIbmBaasDownloadAgentCreate(context, d, meta)
+	} else {
+		var diags diag.Diagnostics
+		warning := diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Resource Update Will Only Affect Terraform State",
+			Detail:   "Update operation for this resource not supported and will only affect the terraform statefile. No changes will be made to actual backend resource. ",
+		}
+		diags = append(diags, warning)
+		d.SetId("")
+		return diags
 	}
-	diags = append(diags, warning)
-	d.SetId("")
-	return diags
+
 }
 
 func ResourceIbmBaasDownloadAgentMapToLinuxAgentParams(modelMap map[string]interface{}) (*backuprecoveryv1.LinuxAgentParams, error) {

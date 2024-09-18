@@ -60,26 +60,22 @@ func ResourceIbmBaasDataSourceConnection() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"cluster_fqdn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the FQDN for the cluster as visible to the connectors in this connection.",
 						},
 						"dns": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the DNS servers to be used by the connectors in this connection.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"network_gateway": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the network gateway to be used by the connectors in this connection.",
 						},
 						"ntp": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the NTP server to be used by the connectors in this connection.",
 						},
@@ -90,6 +86,11 @@ func ResourceIbmBaasDataSourceConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specifies a token that can be used to register a connector against this connection.",
+			},
+			"tenant_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Specifies the tenant ID of the connection.",
 			},
 		},
 	}
@@ -160,6 +161,11 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 			err = fmt.Errorf("Error setting connector_ids: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connector_ids").GetDiag()
 		}
+	} else {
+		if err = d.Set("connector_ids", []string{}); err != nil {
+			err = fmt.Errorf("Error setting connector_ids: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connector_ids").GetDiag()
+		}
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].NetworkSettings) {
 		networkSettingsMap, err := ResourceIbmBaasDataSourceConnectionNetworkSettingsToMap(dataSourceConnectionList.Connections[0].NetworkSettings)
@@ -170,11 +176,22 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 			err = fmt.Errorf("Error setting network_settings: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-network_settings").GetDiag()
 		}
+	} else {
+		if err = d.Set("network_settings", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting network_settings: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-network_settings").GetDiag()
+		}
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].RegistrationToken) {
 		if err = d.Set("registration_token", dataSourceConnectionList.Connections[0].RegistrationToken); err != nil {
 			err = fmt.Errorf("Error setting registration_token: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-registration_token").GetDiag()
+		}
+	}
+	if !core.IsNil(dataSourceConnectionList.Connections[0].TenantID) {
+		if err = d.Set("tenant_id", dataSourceConnectionList.Connections[0].TenantID); err != nil {
+			err = fmt.Errorf("Error setting tenant_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-tenant_id").GetDiag()
 		}
 	}
 

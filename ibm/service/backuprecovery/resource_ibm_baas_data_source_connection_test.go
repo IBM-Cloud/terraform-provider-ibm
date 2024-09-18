@@ -34,7 +34,7 @@ func TestAccIbmBaasDataSourceConnectionBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_baas_data_source_connection.baas_data_source_connection_instance", "connection_name", connectionName),
 					resource.TestCheckResourceAttrSet("ibm_baas_data_source_connection.baas_data_source_connection_instance", "registration_token"),
 					resource.TestCheckResourceAttrSet("ibm_baas_data_source_connection.baas_data_source_connection_instance", "connection_id"),
-					resource.TestCheckResourceAttr("ibm_baas_data_source_connection.baas_data_source_connection_instance", "x_ibm_tenant_id", tenant_id),
+					resource.TestCheckResourceAttr("ibm_baas_data_source_connection.baas_data_source_connection_instance", "x_ibm_tenant_id", tenantId),
 				),
 			},
 			resource.TestStep{
@@ -43,7 +43,7 @@ func TestAccIbmBaasDataSourceConnectionBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_baas_data_source_connection.baas_data_source_connection_instance", "connection_name", connectionNameUpdate),
 					resource.TestCheckResourceAttrSet("ibm_baas_data_source_connection.baas_data_source_connection_instance", "registration_token"),
 					resource.TestCheckResourceAttrSet("ibm_baas_data_source_connection.baas_data_source_connection_instance", "id"),
-					resource.TestCheckResourceAttr("ibm_baas_data_source_connection.baas_data_source_connection_instance", "x_ibm_tenant_id", tenant_id),
+					resource.TestCheckResourceAttr("ibm_baas_data_source_connection.baas_data_source_connection_instance", "x_ibm_tenant_id", tenantId),
 				),
 			},
 		},
@@ -59,7 +59,7 @@ func testAccCheckIbmBaasDataSourceConnectionConfigBasic(connectionName string) s
 			ignore_changes = [connector_ids, network_settings]
 		}
 	  }
-	`, tenant_id, connectionName)
+	`, tenantId, connectionName)
 }
 
 func testAccCheckIbmBaasDataSourceConnectionExists(resource string, obj backuprecoveryv1.DataSourceConnection, connName string) resource.TestCheckFunc {
@@ -77,7 +77,7 @@ func testAccCheckIbmBaasDataSourceConnectionExists(resource string, obj backupre
 
 		getDataSourceConnectionsOptions := &backuprecoveryv1.GetDataSourceConnectionsOptions{}
 
-		getDataSourceConnectionsOptions.SetXIBMTenantID(tenant_id)
+		getDataSourceConnectionsOptions.SetXIBMTenantID(tenantId)
 		getDataSourceConnectionsOptions.SetConnectionIds([]string{rs.Primary.ID})
 
 		dataSourceConnection, _, err := backupRecoveryClient.GetDataSourceConnections(getDataSourceConnectionsOptions)
@@ -105,7 +105,7 @@ func testAccCheckIbmBaasDataSourceConnectionDestroy(s *terraform.State) error {
 
 		getDataSourceConnectionsOptions := &backuprecoveryv1.GetDataSourceConnectionsOptions{}
 
-		getDataSourceConnectionsOptions.SetXIBMTenantID(tenant_id)
+		getDataSourceConnectionsOptions.SetXIBMTenantID(tenantId)
 		getDataSourceConnectionsOptions.SetConnectionIds([]string{rs.Primary.ID})
 
 		// Try to find the key

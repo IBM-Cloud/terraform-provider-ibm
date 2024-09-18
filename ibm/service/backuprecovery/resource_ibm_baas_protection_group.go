@@ -61,6 +61,7 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "Specifies the time of day. Used for scheduling purposes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -90,7 +91,7 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 			},
 			"last_modified_timestamp_usecs": &schema.Schema{
 				Type:        schema.TypeInt,
-				Optional:    true,
+				Computed:    true,
 				Description: "Specifies the last time this protection group was updated. If this is passed into a PUT request, then the backend will validate that the timestamp passed in matches the time that the protection group was actually last modified. If the two timestamps do not match, then the request will be rejected with a stale error.",
 			},
 			"alert_policy": &schema.Schema{
@@ -151,6 +152,7 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 			"sla": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Specifies the SLA parameters for this Protection Group.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -4546,17 +4548,106 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 																Computed:    true,
 																Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
 															},
+															"metrics_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the metadata for metrics configuration. The metadata defined here will be used by cluster to send the usgae metrics to IBM cloud metering service for calculating the tenant billing.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"cos_resource_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the details of COS resource configuration required for posting metrics and trackinb billing information for IBM tenants.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"resource_url": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the resource COS resource configuration endpoint that will be used for fetching bucket usage for a given tenant.",
+																					},
+																				},
+																			},
+																		},
+																		"iam_metrics_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the IAM configuration that will be used for accessing the billing service in IBM cloud.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"iam_url": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the IAM URL needed to fetch the operator token from IBM. The operator token is needed to make service API calls to IBM billing service.",
+																					},
+																					"billing_api_key_secret_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies Id of the secret that contains the API key.",
+																					},
+																				},
+																			},
+																		},
+																		"metering_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the metering configuration that will be used for IBM cluster to send the billing details to IBM billing service.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"part_ids": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the list of part identifiers used for metrics identification.",
+																						Elem:        &schema.Schema{Type: schema.TypeString},
+																					},
+																					"submission_interval_in_secs": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the frequency in seconds at which the metrics will be pushed to IBM billing service from cluster.",
+																					},
+																					"url": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the base metering URL that will be used by cluster to send the billing information.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
 															"ownership_mode": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
 																Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
 															},
+															"plan_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the Plan Id associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
+															},
 															"resource_group_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
 																Description: "Specifies the Resource Group ID associated with the tenant.",
+															},
+															"resource_instance_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the Resource Instance ID associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
 															},
 														},
 													},
@@ -4732,17 +4823,106 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
 												},
+												"metrics_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the metadata for metrics configuration. The metadata defined here will be used by cluster to send the usgae metrics to IBM cloud metering service for calculating the tenant billing.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"cos_resource_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the details of COS resource configuration required for posting metrics and trackinb billing information for IBM tenants.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"resource_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the resource COS resource configuration endpoint that will be used for fetching bucket usage for a given tenant.",
+																		},
+																	},
+																},
+															},
+															"iam_metrics_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the IAM configuration that will be used for accessing the billing service in IBM cloud.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"iam_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the IAM URL needed to fetch the operator token from IBM. The operator token is needed to make service API calls to IBM billing service.",
+																		},
+																		"billing_api_key_secret_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies Id of the secret that contains the API key.",
+																		},
+																	},
+																},
+															},
+															"metering_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the metering configuration that will be used for IBM cluster to send the billing details to IBM billing service.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"part_ids": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the list of part identifiers used for metrics identification.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"submission_interval_in_secs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the frequency in seconds at which the metrics will be pushed to IBM billing service from cluster.",
+																		},
+																		"url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the base metering URL that will be used by cluster to send the billing information.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"ownership_mode": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
 												},
+												"plan_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the Plan Id associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
+												},
 												"resource_group_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the Resource Group ID associated with the tenant.",
+												},
+												"resource_instance_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the Resource Instance ID associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
 												},
 											},
 										},
@@ -5205,6 +5385,11 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 			err = fmt.Errorf("Error setting last_run: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-last_run").GetDiag()
 		}
+	} else {
+		if err = d.Set("last_run", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting last_run: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-last_run").GetDiag()
+		}
 	}
 	if !core.IsNil(protectionGroupResponse.Permissions) {
 		permissions := []map[string]interface{}{}
@@ -5239,6 +5424,11 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 			err = fmt.Errorf("Error setting missing_entities: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-missing_entities").GetDiag()
 		}
+	} else {
+		if err = d.Set("missing_entities", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting missing_entities: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-missing_entities").GetDiag()
+		}
 	}
 	if !core.IsNil(protectionGroupResponse.InvalidEntities) {
 		invalidEntities := []map[string]interface{}{}
@@ -5250,6 +5440,11 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 			invalidEntities = append(invalidEntities, invalidEntitiesItemMap)
 		}
 		if err = d.Set("invalid_entities", invalidEntities); err != nil {
+			err = fmt.Errorf("Error setting invalid_entities: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-invalid_entities").GetDiag()
+		}
+	} else {
+		if err = d.Set("invalid_entities", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting invalid_entities: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-invalid_entities").GetDiag()
 		}
@@ -7577,7 +7772,9 @@ func ResourceIbmBaasProtectionGroupArchivalTargetTierInfoToMap(model *backupreco
 		}
 		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
 	}
-	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.CloudPlatform != nil {
+		modelMap["cloud_platform"] = *model.CloudPlatform
+	}
 	if model.GoogleTiering != nil {
 		googleTieringMap, err := ResourceIbmBaasProtectionGroupGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
@@ -8104,11 +8301,24 @@ func ResourceIbmBaasProtectionGroupIbmTenantMetadataParamsToMap(model *backuprec
 	if model.LivenessMode != nil {
 		modelMap["liveness_mode"] = *model.LivenessMode
 	}
+	if model.MetricsConfig != nil {
+		metricsConfigMap, err := ResourceIbmBaasProtectionGroupIbmTenantMetricsConfigToMap(model.MetricsConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metrics_config"] = []map[string]interface{}{metricsConfigMap}
+	}
 	if model.OwnershipMode != nil {
 		modelMap["ownership_mode"] = *model.OwnershipMode
 	}
+	if model.PlanID != nil {
+		modelMap["plan_id"] = *model.PlanID
+	}
 	if model.ResourceGroupID != nil {
 		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	if model.ResourceInstanceID != nil {
+		modelMap["resource_instance_id"] = *model.ResourceInstanceID
 	}
 	return modelMap, nil
 }
@@ -8120,6 +8330,65 @@ func ResourceIbmBaasProtectionGroupExternalVendorCustomPropertiesToMap(model *ba
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasProtectionGroupIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CosResourceConfig != nil {
+		cosResourceConfigMap, err := ResourceIbmBaasProtectionGroupIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cos_resource_config"] = []map[string]interface{}{cosResourceConfigMap}
+	}
+	if model.IamMetricsConfig != nil {
+		iamMetricsConfigMap, err := ResourceIbmBaasProtectionGroupIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["iam_metrics_config"] = []map[string]interface{}{iamMetricsConfigMap}
+	}
+	if model.MeteringConfig != nil {
+		meteringConfigMap, err := ResourceIbmBaasProtectionGroupIbmTenantMeteringConfigToMap(model.MeteringConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metering_config"] = []map[string]interface{}{meteringConfigMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasProtectionGroupIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ResourceURL != nil {
+		modelMap["resource_url"] = *model.ResourceURL
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasProtectionGroupIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IAMURL != nil {
+		modelMap["iam_url"] = *model.IAMURL
+	}
+	if model.BillingApiKeySecretID != nil {
+		modelMap["billing_api_key_secret_id"] = *model.BillingApiKeySecretID
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasProtectionGroupIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PartIds != nil {
+		modelMap["part_ids"] = model.PartIds
+	}
+	if model.SubmissionIntervalInSecs != nil {
+		modelMap["submission_interval_in_secs"] = flex.IntValue(model.SubmissionIntervalInSecs)
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
 	}
 	return modelMap, nil
 }

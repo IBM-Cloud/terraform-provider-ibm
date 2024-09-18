@@ -32,7 +32,7 @@ func TestAccIbmBaasProtectionGroupDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "baas_protection_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id"),
 				),
 			},
 		},
@@ -62,7 +62,7 @@ func TestAccIbmBaasProtectionGroupDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "protection_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "request_initiator_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "include_last_run_info"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "prune_excluded_source_ids"),

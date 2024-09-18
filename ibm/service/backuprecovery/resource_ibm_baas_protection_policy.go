@@ -4162,7 +4162,7 @@ func ResourceIbmBaasProtectionPolicy() *schema.Resource {
 			},
 			"last_modification_time_usecs": &schema.Schema{
 				Type:        schema.TypeInt,
-				Optional:    true,
+				Computed:    true,
 				Description: "Specifies the last time this Policy was updated. If this is passed into a PUT request, then the backend will validate that the timestamp passed in matches the time that the policy was actually last modified. If the two timestamps do not match, then the request will be rejected with a stale error.",
 			},
 			"template_id": &schema.Schema{
@@ -4289,9 +4289,9 @@ func resourceIbmBaasProtectionPolicyCreate(context context.Context, d *schema.Re
 	if _, ok := d.GetOk("is_cbs_enabled"); ok {
 		createProtectionPolicyOptions.SetIsCBSEnabled(d.Get("is_cbs_enabled").(bool))
 	}
-	if _, ok := d.GetOk("last_modification_time_usecs"); ok {
-		createProtectionPolicyOptions.SetLastModificationTimeUsecs(int64(d.Get("last_modification_time_usecs").(int)))
-	}
+	// if _, ok := d.GetOk("last_modification_time_usecs"); ok {
+	// 	createProtectionPolicyOptions.SetLastModificationTimeUsecs(int64(d.Get("last_modification_time_usecs").(int)))
+	// }
 	if _, ok := d.GetOk("template_id"); ok {
 		createProtectionPolicyOptions.SetTemplateID(d.Get("template_id").(string))
 	}
@@ -4931,7 +4931,9 @@ func ResourceIbmBaasProtectionPolicyMapToTierLevelSettings(modelMap map[string]i
 		}
 		model.AzureTiering = AzureTieringModel
 	}
-	model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
+	if modelMap["cloud_platform"] != nil && modelMap["cloud_platform"].(string) != "" {
+		model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
+	}
 	if modelMap["google_tiering"] != nil && len(modelMap["google_tiering"].([]interface{})) > 0 {
 		GoogleTieringModel, err := ResourceIbmBaasProtectionPolicyMapToGoogleTiers(modelMap["google_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -6164,7 +6166,9 @@ func ResourceIbmBaasProtectionPolicyTierLevelSettingsToMap(model *backuprecovery
 		}
 		modelMap["azure_tiering"] = []map[string]interface{}{azureTieringMap}
 	}
-	modelMap["cloud_platform"] = *model.CloudPlatform
+	if model.CloudPlatform != nil {
+		modelMap["cloud_platform"] = *model.CloudPlatform
+	}
 	if model.GoogleTiering != nil {
 		googleTieringMap, err := ResourceIbmBaasProtectionPolicyGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {

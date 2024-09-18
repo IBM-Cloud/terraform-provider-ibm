@@ -49,34 +49,49 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 				Description: "The user specified name for this source.",
 			},
 			"connection_id": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. This field will be depricated in future. Use connections field.",
+			},
+			"is_internal_encrypted": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Specifies if credentials are encrypted by internal key.",
+			},
+			"encryption_key": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Specifies the key that user has encrypted the credential with.",
 			},
 			"connections": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "Specfies the list of connections for the source.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"connection_id": &schema.Schema{
-							Type:        schema.TypeInt,
+							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the id of the connection.",
 						},
 						"entity_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the entity id of the source. The source can a non-root entity.",
 						},
 						"connector_group_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the connector group id of connector groups.",
 						},
 						"data_source_connection_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the id of the connection in string format.",
 						},
 					},
@@ -90,6 +105,7 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 			"data_source_connection_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision.",
 			},
 			"advanced_configs": &schema.Schema{
@@ -605,17 +621,106 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 																			Computed:    true,
 																			Description: "Specifies the current liveness mode of the tenant. This mode may change based on AZ failures when vendor chooses to failover or failback the tenants to other AZs.",
 																		},
+																		"metrics_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the metadata for metrics configuration. The metadata defined here will be used by cluster to send the usgae metrics to IBM cloud metering service for calculating the tenant billing.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"cos_resource_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the details of COS resource configuration required for posting metrics and trackinb billing information for IBM tenants.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"resource_url": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Optional:    true,
+																									Computed:    true,
+																									Description: "Specifies the resource COS resource configuration endpoint that will be used for fetching bucket usage for a given tenant.",
+																								},
+																							},
+																						},
+																					},
+																					"iam_metrics_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the IAM configuration that will be used for accessing the billing service in IBM cloud.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"iam_url": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Optional:    true,
+																									Computed:    true,
+																									Description: "Specifies the IAM URL needed to fetch the operator token from IBM. The operator token is needed to make service API calls to IBM billing service.",
+																								},
+																								"billing_api_key_secret_id": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Optional:    true,
+																									Computed:    true,
+																									Description: "Specifies Id of the secret that contains the API key.",
+																								},
+																							},
+																						},
+																					},
+																					"metering_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the metering configuration that will be used for IBM cluster to send the billing details to IBM billing service.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"part_ids": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Optional:    true,
+																									Computed:    true,
+																									Description: "Specifies the list of part identifiers used for metrics identification.",
+																									Elem:        &schema.Schema{Type: schema.TypeString},
+																								},
+																								"submission_interval_in_secs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Optional:    true,
+																									Computed:    true,
+																									Description: "Specifies the frequency in seconds at which the metrics will be pushed to IBM billing service from cluster.",
+																								},
+																								"url": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Optional:    true,
+																									Computed:    true,
+																									Description: "Specifies the base metering URL that will be used by cluster to send the billing information.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
 																		"ownership_mode": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Computed:    true,
 																			Description: "Specifies the current ownership mode for the tenant. The ownership of the tenant represents the active role for functioning of the tenant.",
 																		},
+																		"plan_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the Plan Id associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
+																		},
 																		"resource_group_id": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Computed:    true,
 																			Description: "Specifies the Resource Group ID associated with the tenant.",
+																		},
+																		"resource_instance_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the Resource Instance ID associated with the tenant. This field is introduced for tracking purposes inside IBM enviournment.",
 																		},
 																	},
 																},
@@ -799,26 +904,26 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"maintenance_mode_config": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "Specifies the entity metadata for maintenance mode.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"activation_time_intervals": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the absolute intervals where the maintenance schedule is valid, i.e. maintenance_shedule is considered only for these time ranges. (For example, if there is one time range with [now_usecs, now_usecs + 10 days], the action will be done during the maintenance_schedule for the next 10 days.)The start time must be specified. The end time can be -1 which would denote an indefinite maintenance mode.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"end_time_usecs": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
+													Type:     schema.TypeInt,
+													Computed: true,
+
 													Description: "Specifies the end time of this time range.",
 												},
 												"start_time_usecs": &schema.Schema{
-													Type:        schema.TypeInt,
-													Computed:    true,
+													Type:     schema.TypeInt,
+													Computed: true,
+
 													Description: "Specifies the start time of this time range.",
 												},
 											},
@@ -826,63 +931,59 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 									},
 									"maintenance_schedule": &schema.Schema{
 										Type:        schema.TypeList,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies a schedule for actions to be taken.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"periodic_time_windows": &schema.Schema{
 													Type:        schema.TypeList,
-													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the time range within the days of the week.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"day_of_the_week": &schema.Schema{
 																Type:        schema.TypeString,
-																Optional:    true,
 																Computed:    true,
 																Description: "Specifies the week day.",
 															},
 															"end_time": &schema.Schema{
 																Type:        schema.TypeList,
-																Optional:    true,
 																Computed:    true,
 																Description: "Specifies the time in hours and minutes.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"hour": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Optional:    true,
-																			Computed:    true,
+																			Type:     schema.TypeInt,
+																			Computed: true,
+
 																			Description: "Specifies the hour of this time.",
 																		},
 																		"minute": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Optional:    true,
-																			Computed:    true,
+																			Type:     schema.TypeInt,
+																			Computed: true,
+
 																			Description: "Specifies the minute of this time.",
 																		},
 																	},
 																},
 															},
 															"start_time": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
+																Type:     schema.TypeList,
+																Computed: true,
+
 																Description: "Specifies the time in hours and minutes.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"hour": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Optional:    true,
-																			Computed:    true,
+																			Type:     schema.TypeInt,
+																			Computed: true,
+
 																			Description: "Specifies the hour of this time.",
 																		},
 																		"minute": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Optional:    true,
-																			Computed:    true,
+																			Type:     schema.TypeInt,
+																			Computed: true,
+
 																			Description: "Specifies the minute of this time.",
 																		},
 																	},
@@ -892,15 +993,15 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 													},
 												},
 												"schedule_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
+
 													Description: "Specifies the type of schedule for this ScheduleProto.",
 												},
 												"time_ranges": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Computed:    true,
+													Type:     schema.TypeList,
+													Computed: true,
+
 													Description: "Specifies the time ranges in usecs.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -918,35 +1019,37 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 													},
 												},
 												"timezone": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
+
 													Description: "Specifies the timezone of the user of this ScheduleProto. The timezones have unique names of the form 'Area/Location'.",
 												},
 											},
 										},
 									},
 									"user_message": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
+										Type:     schema.TypeString,
+										Computed: true,
+
 										Description: "User provided message associated with this maintenance mode.",
 									},
 									"workflow_intervention_spec_list": &schema.Schema{
-										Type:        schema.TypeList,
-										Optional:    true,
-										Computed:    true,
+										Type:     schema.TypeList,
+										Computed: true,
+
 										Description: "Specifies the type of intervention for different workflows when the source goes into maintenance mode.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"intervention": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
+
 													Description: "Specifies the intervention type for ongoing tasks.",
 												},
 												"workflow_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
+													Type:     schema.TypeString,
+													Computed: true,
+
 													Description: "Specifies the workflow type for which an intervention would be needed when maintenance mode begins.",
 												},
 											},
@@ -1000,7 +1103,11 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 		registerProtectionSourceOptions.SetEncryptionKey(d.Get("encryption_key").(string))
 	}
 	if _, ok := d.GetOk("connection_id"); ok {
-		registerProtectionSourceOptions.SetConnectionID(int64(d.Get("connection_id").(int)))
+		connId, err := strconv.ParseInt(d.Get("connection_id").(string), 10, 64)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "create", "parse-connection-id").GetDiag()
+		}
+		registerProtectionSourceOptions.SetConnectionID(connId)
 	}
 	if _, ok := d.GetOk("connections"); ok {
 		var connections []backuprecoveryv1.ConnectionConfig
@@ -1091,7 +1198,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ConnectionID) {
-		if err = d.Set("connection_id", flex.IntValue(sourceRegistrationReponseParams.ConnectionID)); err != nil {
+		if err = d.Set("connection_id", strconv.Itoa(int(*sourceRegistrationReponseParams.ConnectionID))); err != nil {
 			err = fmt.Errorf("Error setting connection_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-connection_id").GetDiag()
 		}
@@ -1108,6 +1215,11 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		if err = d.Set("connections", connections); err != nil {
 			err = fmt.Errorf("Error setting connections: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-connections").GetDiag()
+		}
+	} else {
+		if err = d.Set("connections", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting external_metadata: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-external_metadata").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ConnectorGroupID) {
@@ -1189,6 +1301,11 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 			err = fmt.Errorf("Error setting external_metadata: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-external_metadata").GetDiag()
 		}
+	} else {
+		if err = d.Set("external_metadata", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting external_metadata: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-external_metadata").GetDiag()
+		}
 	}
 
 	return nil
@@ -1202,17 +1319,10 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 		return tfErr.GetDiag()
 	}
 
-	patchProtectionSourceRegistrationOptions := &backuprecoveryv1.PatchProtectionSourceRegistrationOptions{}
-	patchProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
-	updateProtectionSourceRegistrationOptions := &backuprecoveryv1.UpdateProtectionSourceRegistrationOptions{}
-	updateProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
-
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	updateProtectionSourceRegistrationOptions.SetID(int64(id))
-	patchProtectionSourceRegistrationOptions.SetID(int64(id))
 
 	patchData := false
 	putData := false
@@ -1221,38 +1331,62 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 		patchData = true
 	}
 
-	patchProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
-	updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
+	if d.HasChange("name") ||
+		d.HasChange("is_internal_encrypted") ||
+		d.HasChange("encryption_key") ||
+		d.HasChange("connection_id") ||
+		d.HasChange("connections") ||
+		d.HasChange("connector_group_id") ||
+		d.HasChange("advanced_configs") ||
+		d.HasChange("data_source_connection_id") ||
+		d.HasChange("physical_params") {
+		putData = true
+	}
 
-	if d.HasChange("name") {
+	if patchData && !putData {
+		patchProtectionSourceRegistrationOptions := &backuprecoveryv1.PatchProtectionSourceRegistrationOptions{}
+		patchProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+
+		patchProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
+		patchProtectionSourceRegistrationOptions.SetID(int64(id))
+		_, _, err = backupRecoveryClient.PatchProtectionSourceRegistrationWithContext(context, patchProtectionSourceRegistrationOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "patch")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	} else {
+
+		updateProtectionSourceRegistrationOptions := &backuprecoveryv1.UpdateProtectionSourceRegistrationOptions{}
+		updateProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+
+		updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
 		if _, ok := d.GetOk("name"); ok {
 			updateProtectionSourceRegistrationOptions.SetName(d.Get("name").(string))
-			putData = true
 		}
-	}
-
-	if d.HasChange("is_internal_encrypted") {
 		if _, ok := d.GetOk("is_internal_encrypted"); ok {
 			updateProtectionSourceRegistrationOptions.SetIsInternalEncrypted(d.Get("is_internal_encrypted").(bool))
-			putData = true
 		}
-	}
-
-	if d.HasChange("encryption_key") {
 		if _, ok := d.GetOk("encryption_key"); ok {
 			updateProtectionSourceRegistrationOptions.SetEncryptionKey(d.Get("encryption_key").(string))
-			putData = true
 		}
-	}
 
-	if d.HasChange("connection_id") {
-		if _, ok := d.GetOk("connection_id"); ok {
-			updateProtectionSourceRegistrationOptions.SetConnectionID(int64(d.Get("connection_id").(int)))
-			putData = true
+		if !d.HasChange("data_source_connection_id") {
+			if _, ok := d.GetOk("connection_id"); ok {
+				connId, err := strconv.ParseInt(d.Get("connection_id").(string), 10, 64)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("setting connection_id failed: %s", err.Error()), "ibm_source_registration", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				updateProtectionSourceRegistrationOptions.SetConnectionID(connId)
+			}
+		} else {
+			if _, ok := d.GetOk("data_source_connection_id"); ok {
+				updateProtectionSourceRegistrationOptions.SetDataSourceConnectionID(d.Get("data_source_connection_id").(string))
+			}
 		}
-	}
 
-	if d.HasChange("connections") {
 		if _, ok := d.GetOk("connections"); ok {
 			var connections []backuprecoveryv1.ConnectionConfig
 			for _, v := range d.Get("connections").([]interface{}) {
@@ -1264,18 +1398,10 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 				connections = append(connections, *connectionsItem)
 			}
 			updateProtectionSourceRegistrationOptions.SetConnections(connections)
-			putData = true
 		}
-	}
-
-	if d.HasChange("connector_group_id") {
 		if _, ok := d.GetOk("connector_group_id"); ok {
 			updateProtectionSourceRegistrationOptions.SetConnectorGroupID(int64(d.Get("connector_group_id").(int)))
-			putData = true
 		}
-	}
-
-	if d.HasChange("advanced_configs") {
 		if _, ok := d.GetOk("advanced_configs"); ok {
 			var advancedConfigs []backuprecoveryv1.KeyValuePair
 			for _, v := range d.Get("advanced_configs").([]interface{}) {
@@ -1287,43 +1413,16 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 				advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
 			}
 			updateProtectionSourceRegistrationOptions.SetAdvancedConfigs(advancedConfigs)
-			putData = true
 		}
-	}
 
-	if d.HasChange("data_source_connection_id") {
-		if _, ok := d.GetOk("data_source_connection_id"); ok {
-			updateProtectionSourceRegistrationOptions.SetDataSourceConnectionID(d.Get("data_source_connection_id").(string))
-			putData = true
-		}
-	}
-
-	if d.HasChange("last_modified_timestamp_usecs") {
-		if _, ok := d.GetOk("last_modified_timestamp_usecs"); ok {
-			updateProtectionSourceRegistrationOptions.SetLastModifiedTimestampUsecs(int64(d.Get("last_modified_timestamp_usecs").(int)))
-			putData = true
-		}
-	}
-
-	if d.HasChange("physical_params") {
 		if _, ok := d.GetOk("physical_params"); ok {
 			physicalParams, err := ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-physical_params").GetDiag()
 			}
 			updateProtectionSourceRegistrationOptions.SetPhysicalParams(physicalParams)
-			putData = true
 		}
-	}
-
-	if patchData && !putData {
-		_, _, err = backupRecoveryClient.PatchProtectionSourceRegistrationWithContext(context, patchProtectionSourceRegistrationOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "patch")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-	} else {
+		updateProtectionSourceRegistrationOptions.SetID(int64(id))
 		_, _, err = backupRecoveryClient.UpdateProtectionSourceRegistrationWithContext(context, updateProtectionSourceRegistrationOptions)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "update")
@@ -1332,6 +1431,7 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 		}
 	}
 
+	d.SetId(d.Id())
 	return resourceIbmBaasSourceRegistrationRead(context, d, meta)
 }
 
@@ -1416,7 +1516,8 @@ func ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(mode
 func ResourceIbmBaasSourceRegistrationConnectionConfigToMap(model *backuprecoveryv1.ConnectionConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ConnectionID != nil {
-		modelMap["connection_id"] = flex.IntValue(model.ConnectionID)
+		connId := strconv.Itoa(int(*model.ConnectionID))
+		modelMap["connection_id"] = flex.StringValue(&connId)
 	}
 	if model.EntityID != nil {
 		modelMap["entity_id"] = flex.IntValue(model.EntityID)
@@ -1823,11 +1924,24 @@ func ResourceIbmBaasSourceRegistrationIbmTenantMetadataParamsToMap(model *backup
 	if model.LivenessMode != nil {
 		modelMap["liveness_mode"] = *model.LivenessMode
 	}
+	if model.MetricsConfig != nil {
+		metricsConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantMetricsConfigToMap(model.MetricsConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metrics_config"] = []map[string]interface{}{metricsConfigMap}
+	}
 	if model.OwnershipMode != nil {
 		modelMap["ownership_mode"] = *model.OwnershipMode
 	}
+	if model.PlanID != nil {
+		modelMap["plan_id"] = *model.PlanID
+	}
 	if model.ResourceGroupID != nil {
 		modelMap["resource_group_id"] = *model.ResourceGroupID
+	}
+	if model.ResourceInstanceID != nil {
+		modelMap["resource_instance_id"] = *model.ResourceInstanceID
 	}
 	return modelMap, nil
 }
@@ -1839,6 +1953,65 @@ func ResourceIbmBaasSourceRegistrationExternalVendorCustomPropertiesToMap(model 
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasSourceRegistrationIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CosResourceConfig != nil {
+		cosResourceConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cos_resource_config"] = []map[string]interface{}{cosResourceConfigMap}
+	}
+	if model.IamMetricsConfig != nil {
+		iamMetricsConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["iam_metrics_config"] = []map[string]interface{}{iamMetricsConfigMap}
+	}
+	if model.MeteringConfig != nil {
+		meteringConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantMeteringConfigToMap(model.MeteringConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metering_config"] = []map[string]interface{}{meteringConfigMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasSourceRegistrationIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ResourceURL != nil {
+		modelMap["resource_url"] = *model.ResourceURL
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasSourceRegistrationIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.IAMURL != nil {
+		modelMap["iam_url"] = *model.IAMURL
+	}
+	if model.BillingApiKeySecretID != nil {
+		modelMap["billing_api_key_secret_id"] = *model.BillingApiKeySecretID
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBaasSourceRegistrationIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PartIds != nil {
+		modelMap["part_ids"] = model.PartIds
+	}
+	if model.SubmissionIntervalInSecs != nil {
+		modelMap["submission_interval_in_secs"] = flex.IntValue(model.SubmissionIntervalInSecs)
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
 	}
 	return modelMap, nil
 }
