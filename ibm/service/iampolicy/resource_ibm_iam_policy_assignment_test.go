@@ -46,6 +46,7 @@ func TestAccIBMPolicyAssignmentBasic(t *testing.T) {
 	})
 }
 
+
 func TestAccIBMPolicyAssignmentS2SBasic(t *testing.T) {
 	var conf iampolicymanagementv1.GetPolicyAssignmentResponse
 	var name string = fmt.Sprintf("TerraformTemplateTest%d", acctest.RandIntRange(10, 100))
