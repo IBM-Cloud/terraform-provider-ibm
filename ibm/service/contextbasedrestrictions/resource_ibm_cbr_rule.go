@@ -308,81 +308,81 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*rule.ID)
 
-	if fromErr := resourceIBMCbrRuleSetData(response, rule, d); fromErr != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", fromErr))
+	if err := resourceIBMCbrRuleSetData(response, rule, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMCbrRuleSetData(response *core.DetailedResponse, rule *contextbasedrestrictionsv1.Rule, d *schema.ResourceData) diag.Diagnostics {
+func resourceIBMCbrRuleSetData(response *core.DetailedResponse, rule *contextbasedrestrictionsv1.Rule, d *schema.ResourceData) error {
 	if err := d.Set("x_correlation_id", response.Headers.Get("x_correlation_id")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting x_correlation_id: %s", err))
+		return fmt.Errorf("Error setting x_correlation_id: %s", err)
 	}
 	if err := d.Set("transaction_id", response.Headers.Get("transaction_id")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
+		return fmt.Errorf("Error setting transaction_id: %s", err)
 	}
 	if err := d.Set("description", rule.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		return fmt.Errorf("Error setting description: %s", err)
 	}
 	contexts := []map[string]interface{}{}
 	if rule.Contexts != nil {
 		for _, contextsItem := range rule.Contexts {
 			contextsItemMap, err := resourceIBMCbrRuleRuleContextToMap(&contextsItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return err
 			}
 			contexts = append(contexts, contextsItemMap)
 		}
 	}
 	if err := d.Set("contexts", contexts); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting contexts: %s", err))
+		return fmt.Errorf("Error setting contexts: %s", err)
 	}
 	resources := []map[string]interface{}{}
 	if rule.Resources != nil {
 		for _, resourcesItem := range rule.Resources {
 			resourcesItemMap, err := resourceIBMCbrRuleResourceToMap(&resourcesItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return err
 			}
 			resources = append(resources, resourcesItemMap)
 		}
 	}
 	if err := d.Set("resources", resources); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resources: %s", err))
+		return fmt.Errorf("Error setting resources: %s", err)
 	}
 	if rule.Operations != nil {
 		operationsMap, err := resourceIBMCbrRuleNewRuleOperationsToMap(rule.Operations)
 		if err != nil {
-			return diag.FromErr(err)
+			return err
 		}
 		if err = d.Set("operations", []map[string]interface{}{operationsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting operations: %s", err))
+			return fmt.Errorf("Error setting operations: %s", err)
 		}
 	}
 	if err := d.Set("enforcement_mode", rule.EnforcementMode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting enforcement_mode: %s", err))
+		return fmt.Errorf("Error setting enforcement_mode: %s", err)
 	}
 	if err := d.Set("crn", rule.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		return fmt.Errorf("Error setting crn: %s", err)
 	}
 	if err := d.Set("href", rule.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return fmt.Errorf("Error setting href: %s", err)
 	}
 	if err := d.Set("created_at", flex.DateTimeToString(rule.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return fmt.Errorf("Error setting created_at: %s", err)
 	}
 	if err := d.Set("created_by_id", rule.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
+		return fmt.Errorf("Error setting created_by_id: %s", err)
 	}
 	if err := d.Set("last_modified_at", flex.DateTimeToString(rule.LastModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
+		return fmt.Errorf("Error setting last_modified_at: %s", err)
 	}
 	if err := d.Set("last_modified_by_id", rule.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
+		return fmt.Errorf("Error setting last_modified_by_id: %s", err)
 	}
 	if err := d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		return fmt.Errorf("Error setting version: %s", err)
 	}
 
 	return nil
@@ -475,8 +475,8 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("ReplaceRuleWithContext failed %s\n%s", err, response))
 	}
 
-	if fromErr := resourceIBMCbrRuleSetData(response, rule, d); fromErr != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", fromErr))
+	if err := resourceIBMCbrRuleSetData(response, rule, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
 	}
 
 	return nil
