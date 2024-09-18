@@ -535,7 +535,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }

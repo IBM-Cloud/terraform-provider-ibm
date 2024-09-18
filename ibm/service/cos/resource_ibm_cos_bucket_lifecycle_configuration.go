@@ -12,6 +12,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -19,12 +21,16 @@ import (
 
 func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 	return &schema.Resource{
-		Create:        resourceIBMCOSBucketLifecycleConfigurationCreate,
-		Read:          resourceIBMCOSBucketLifecycleConfigurationRead,
-		Update:        resourceIBMCOSBucketLifecycleConfigurationUpdate,
-		Delete:        resourceIBMCOSBucketLifecycleConfigurationDelete,
+		CreateContext: resourceIBMCOSBucketLifecycleConfigurationCreate,
+		ReadContext:   resourceIBMCOSBucketLifecycleConfigurationRead,
+		UpdateContext: resourceIBMCOSBucketLifecycleConfigurationUpdate,
+		DeleteContext: resourceIBMCOSBucketLifecycleConfigurationDelete,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: resourceValidateLifecycleRule,
+		CustomizeDiff: customdiff.Sequence(
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return resourceValidateLifecycleRule(diff)
+			},
+		),
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -132,7 +138,7 @@ func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 						"status": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validate.ValidateAllowedStringValues([]string{"Enabled", "Disabled"}),
+							ValidateFunc: validate.ValidateAllowedStringValues([]string{"enable", "disable"}),
 						},
 						"transition": {
 							Type:     schema.TypeList,
@@ -303,7 +309,12 @@ func lifecycleConfigurationSet(lifecycleConfigurationList []interface{}) []*s3.L
 		}
 		// check for status
 		if v, ok := lifecycleRuleMap["status"].(string); ok && v != "" {
-			lifecycleRule.Status = aws.String(v)
+			if v == "enable" {
+				lifecycleRule.Status = aws.String("Enabled")
+			} else if v == "disable" {
+				lifecycleRule.Status = aws.String("Disabled")
+			}
+
 		}
 
 		// check for transition
@@ -317,7 +328,7 @@ func lifecycleConfigurationSet(lifecycleConfigurationList []interface{}) []*s3.L
 	return lifecycleRules
 }
 
-func resourceIBMCOSBucketLifecycleConfigurationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketLifecycleConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
@@ -325,13 +336,13 @@ func resourceIBMCOSBucketLifecycleConfigurationCreate(d *schema.ResourceData, me
 	endpointType := d.Get("endpoint_type").(string)
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	lifecycleRule := d.Get("lifecycle_rule")
 	rules := lifecycleConfigurationSet(lifecycleRule.([]interface{})) // setting each lifecycle rule
 	if err != nil {
-		return fmt.Errorf("Failed to read lifecycle configuration for COS bucket %s, %v", bucketName, err)
+		return diag.Errorf("Failed to read lifecycle configuration for COS bucket %s, %v", bucketName, err)
 	}
 	putBucketLifecycleConfigurationInput := s3.PutBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -341,14 +352,14 @@ func resourceIBMCOSBucketLifecycleConfigurationCreate(d *schema.ResourceData, me
 	}
 	_, err = s3Client.PutBucketLifecycleConfiguration(&putBucketLifecycleConfigurationInput)
 	if err != nil {
-		return fmt.Errorf("Failed to put Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
+		return diag.Errorf("Failed to put Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
 	}
 	bktID := fmt.Sprintf("%s:%s:%s:meta:%s:%s", strings.Replace(instanceCRN, "::", "", -1), "bucket", bucketName, bucketLocation, endpointType)
 	d.SetId(bktID)
-	return resourceIBMCOSBucketLifecycleConfigurationUpdate(d, meta)
+	return resourceIBMCOSBucketLifecycleConfigurationUpdate(ctx, d, meta)
 }
 
-func resourceIBMCOSBucketLifecycleConfigurationUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketLifecycleConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := strings.Split(bucketCRN, ":bucket:")[1]
 	instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
@@ -356,14 +367,14 @@ func resourceIBMCOSBucketLifecycleConfigurationUpdate(d *schema.ResourceData, me
 	endpointType := d.Get("endpoint_type").(string)
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	if d.HasChange("lifecycle_rule") {
 		lifecycleRule := d.Get("lifecycle_rule")
 		rules := lifecycleConfigurationSet(lifecycleRule.([]interface{}))
 		if err != nil {
-			return fmt.Errorf("Failed to read lifecycle configuration for COS bucket %s, %v", bucketName, err)
+			return diag.Errorf("Failed to read lifecycle configuration for COS bucket %s, %v", bucketName, err)
 		}
 		putBucketLifecycleConfigurationInput := s3.PutBucketLifecycleConfigurationInput{
 			Bucket: aws.String(bucketName),
@@ -373,13 +384,13 @@ func resourceIBMCOSBucketLifecycleConfigurationUpdate(d *schema.ResourceData, me
 		}
 		_, err = s3Client.PutBucketLifecycleConfiguration(&putBucketLifecycleConfigurationInput)
 		if err != nil {
-			return fmt.Errorf("Failed to put Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
+			return diag.Errorf("Failed to put Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
 		}
 	}
-	return resourceIBMCOSBucketLifecycleConfigurationRead(d, meta)
+	return resourceIBMCOSBucketLifecycleConfigurationRead(ctx, d, meta)
 }
 
-func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketCRN := parseWebsiteId(d.Id(), "bucketCRN")
 	bucketName := parseWebsiteId(d.Id(), "bucketName")
 	bucketLocation := parseWebsiteId(d.Id(), "bucketLocation")
@@ -392,11 +403,11 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta
 	}
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	if err != nil {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	//getBucketConfiguration
 	const (
@@ -425,12 +436,12 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta
 		output, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
 	}
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting Lifecycle Configuration for the bucket %s", bucketName)
+		return diag.Errorf("[ERROR] Error getting Lifecycle Configuration for the bucket %s", bucketName)
 	}
 	var outputptr *s3.LifecycleConfiguration
 	outputptr = (*s3.LifecycleConfiguration)(output)
 	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	if outputptr.Rules != nil {
 		lifecycleConfiguration := flex.LifecylceRuleGet(outputptr.Rules)
@@ -443,25 +454,25 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceIBMCOSBucketLifecycleConfigurationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCOSBucketLifecycleConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketName := parseWebsiteId(d.Id(), "bucketName")
 	bucketLocation := parseWebsiteId(d.Id(), "bucketLocation")
 	instanceCRN := parseWebsiteId(d.Id(), "instanceCRN")
 	endpointType := parseWebsiteId(d.Id(), "endpointType")
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	s3Client, err := getS3ClientSession(bxSession, bucketLocation, endpointType, instanceCRN)
 	if err != nil {
-		return err
+		return diag.Errorf("%v", err)
 	}
 	deleteBucketLifecycleInput := &s3.DeleteBucketLifecycleInput{
 		Bucket: aws.String(bucketName),
 	}
 	_, err = s3Client.DeleteBucketLifecycle(deleteBucketLifecycleInput)
 	if err != nil {
-		return fmt.Errorf("failed to delete the Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
+		return diag.Errorf("failed to delete the Lifecycle configuration on the COS bucket %s, %v", bucketName, err)
 	}
 	return nil
 }
@@ -490,7 +501,7 @@ func parseLifecycleId(id string, info string) string {
 	return parseBucketId(bucketCRN, info)
 }
 
-func resourceValidateLifecycleRule(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func resourceValidateLifecycleRule(diff *schema.ResourceDiff) error {
 	if lifecycle, ok := diff.GetOk("lifecycle_rule"); ok {
 		lifecycle_list := lifecycle.([]interface{})
 		for _, l := range lifecycle_list {

@@ -297,7 +297,7 @@ resource "ibm_kms_key" "key" {
   force_delete = true
 }
 
-resource "ibm_cos_bucket" "hpcs-enabled" {
+resource "ibm_cos_bucket" "hpcs-enable" {
   depends_on           = [ibm_iam_authorization_policy.policy2]
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
@@ -307,7 +307,7 @@ resource "ibm_cos_bucket" "hpcs-enabled" {
 }
 
 //HPCS - UKO plan
-resource "ibm_cos_bucket" "hpcs-uko-enabled" {
+resource "ibm_cos_bucket" "hpcs-uko-enable" {
   depends_on           = [ibm_iam_authorization_policy.policy2]
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
@@ -386,7 +386,7 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
  bucket_crn      = ibm_cos_bucket.bucket.crn
  bucket_location = var.regional_loc
  object_lock_configuration{
-   object_lock_enabled = "Enabled"
+   object_lock_enable = "Enabled"
    object_lock_rule{
      default_retention{
         mode = "COMPLIANCE"
@@ -524,7 +524,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -552,7 +552,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_transition" {
       prefix = ""
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -578,7 +578,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_abort_incomplete" 
       prefix = ""
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -604,7 +604,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_new" {
       prefix = ""
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -629,7 +629,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_config" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   }
     lifecycle_rule {
     expiration{
@@ -639,7 +639,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_config" {
       prefix = "bar"
     }  
     rule_id = "id2"
-    status = "Enabled"
+    status = "enable"
   }
 }
 

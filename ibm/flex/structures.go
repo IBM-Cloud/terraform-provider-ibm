@@ -1006,7 +1006,11 @@ func LifecylceRuleGet(lifecycleRuleInput []*s3.LifecycleRule) []map[string]inter
 		for _, lifecyclerule := range lifecycleRuleInput {
 			lifecycleRuleConfig := make(map[string]interface{})
 			if lifecyclerule.Status != nil {
-				lifecycleRuleConfig["status"] = *lifecyclerule.Status
+				if *lifecyclerule.Status == "Enabled" {
+					lifecycleRuleConfig["status"] = "enable"
+				} else {
+					lifecycleRuleConfig["status"] = "disable"
+				}
 			}
 			if lifecyclerule.ID != nil {
 				lifecycleRuleConfig["rule_id"] = *lifecyclerule.ID

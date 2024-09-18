@@ -38,7 +38,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -71,7 +71,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = ""
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -100,7 +100,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = ""
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -129,7 +129,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = ""
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
 }
@@ -158,7 +158,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   }
     lifecycle_rule {
     expiration{
@@ -168,7 +168,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "bar"
     }  
     rule_id = "id2"
-    status = "Enabled"
+    status = "enable"
   }
 }
 
@@ -231,7 +231,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
   }
@@ -262,7 +262,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       prefix = "foo"
     }  
     rule_id = "id"
-    status = "Enabled"
+    status = "enable"
   
   }
   }
@@ -284,7 +284,7 @@ Review the argument references that you can specify for your resource.
   - `noncurrent_version`- (Optinal) Configuration block that specifies when noncurrent object versions expire.
   - `id`- (Required) Unique id for the rule.
   - `filter`- (Required)  Configuration block used to identify objects that a Lifecycle Rule applies to.If not specified, the rule will default to using prefix.
-  - `status`- (Required) Whether the rule is currently being applied. Valid values: Enabled or Disabled.
+  - `status`- (Required) Whether the rule is currently being applied. Valid values: enable or disable.
 
  Nested scheme for `expiration`:
   - `days`- (Optional)  Days, of the objects that are subject to the rule. The value must be a non-zero positive integer.

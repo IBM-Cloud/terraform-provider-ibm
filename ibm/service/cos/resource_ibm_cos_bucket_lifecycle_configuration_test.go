@@ -366,7 +366,7 @@ func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Object_
 	})
 }
 
-func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Object_Delete_Marker_On_Versioning_Enabled_Bucket(t *testing.T) {
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Object_Delete_Marker_On_Versioning_enable_Bucket(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
 	bucketRegion := "us-south"
@@ -462,7 +462,7 @@ func TestAccIBMCosBucket_Lifecycle_Configuration_Status_Disabled(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Status_Disabled(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays),
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Status_disable(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
@@ -470,7 +470,7 @@ func TestAccIBMCosBucket_Lifecycle_Configuration_Status_Disabled(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
 					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
-					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.status", "Disabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.status", "disable"),
 				),
 			},
 		},
@@ -626,7 +626,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Days(cosSe
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -664,7 +664,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Date(cosSe
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -703,7 +703,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Days(cosSe
 		     prefix = ""
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }	 
@@ -742,7 +742,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Date(cosSe
 		     prefix = ""
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -783,7 +783,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Abort_Inco
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -821,7 +821,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Abort_Incomplete_Multipart
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  } 
@@ -863,7 +863,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Transition
 		     prefix = ""
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  } 
@@ -905,7 +905,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Abort_Inco
 		     prefix = ""
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -946,7 +946,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Noncurrent
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -983,7 +983,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Ob
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -1024,7 +1024,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Expired_Ob
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -1069,7 +1069,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Transition_Abor
 		     prefix = ""
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
@@ -1104,14 +1104,14 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_With_No_Filter(cosServiceN
 		     days = "%d"
 		   }
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 	  }
 	`, cosServiceName, bucketName, region, storageClass, days)
 }
 
-func testAccCheckIBMCosBucket_Lifecycle_Configuration_Status_Disabled(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int) string {
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Status_disable(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int) string {
 
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "cos_group" {
@@ -1142,7 +1142,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Status_Disabled(cosService
 		     prefix = "foo"
 		   }  
 		   rule_id = "id"
-		   status = "Disabled"
+		   status = "disable"
 	
 		 }
 	  }
@@ -1183,7 +1183,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Multiple_Rules(cosServiceN
 		     prefix = "foo"
 		   }  
 		   rule_id = "id1"
-		   status = "Enabled"
+		   status = "enable"
 	
 		 }
 		 lifecycle_rule {
@@ -1197,7 +1197,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Multiple_Rules(cosServiceN
 			  prefix = "bar"
 			}  
 			rule_id = "id2"
-			status = "Enabled"
+			status = "enable"
 	 
 		  }
 	  }
@@ -1236,7 +1236,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 		     prefix = ""
 		   }  
 		   rule_id = "id"
-		   status = "Enabled"
+		   status = "enable"
 		 }
 		 lifecycle_rule {
 			transition{
@@ -1247,7 +1247,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 			  prefix = ""
 			}  
 			rule_id = "id2"
-			status = "Enabled"
+			status = "enable"
 	 
 		  }
 	  }
