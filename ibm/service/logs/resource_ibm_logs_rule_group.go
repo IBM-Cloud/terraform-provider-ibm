@@ -393,7 +393,7 @@ func ResourceIbmLogsRuleGroupValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
+			Regexp:                     `^[\u0000-\uFFFF_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             255,
 		},

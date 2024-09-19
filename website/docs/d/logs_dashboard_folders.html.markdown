@@ -37,9 +37,9 @@ After your data source is created, you can read values from the following attrib
   * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 Nested schema for **folders**:
 	* `id` - (String) The dashboard folder ID, uuid.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[\\u0000-\\uFFFF_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 	* `name` - (String) The dashboard folder name, required.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\u0000-\\uFFFF_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 	* `parent_id` - (String) The dashboard folder parent ID, optional. If not set, the folder is a root folder, if set, the folder is a subfolder of the parent folder and needs to be a uuid.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[\\u0000-\\uFFFF_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
 

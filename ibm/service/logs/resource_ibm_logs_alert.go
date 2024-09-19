@@ -1,6 +1,10 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.95.0-d0e386be-20240906-183310
+ */
+
 package logs
 
 import (
@@ -110,7 +114,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -263,7 +267,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -421,7 +425,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -574,7 +578,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -798,7 +802,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -956,7 +960,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -1109,7 +1113,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"threshold": &schema.Schema{
 													Type:        schema.TypeFloat,
-													Required:    true,
+													Optional:    true,
 													Description: "The threshold for the alert condition.",
 												},
 												"timeframe": &schema.Schema{
@@ -1250,7 +1254,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 			},
 			"notification_groups": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Alert notification groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1307,9 +1311,8 @@ func ResourceIbmLogsAlert() *schema.Resource {
 			},
 			"filters": &schema.Schema{
 				Type:        schema.TypeList,
-				MinItems:    1,
 				MaxItems:    1,
-				Required:    true,
+				Optional:    true,
 				Description: "Alert filters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1568,7 +1571,7 @@ func ResourceIbmLogsAlertValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
+			Regexp:                     `^[\u0000-\uFFFF_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -1616,37 +1619,41 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	createAlertOptions.SetCondition(conditionModel)
-	var notificationGroups []logsv0.AlertsV2AlertNotificationGroups
-	for _, v := range d.Get("notification_groups").([]interface{}) {
-		if v != nil {
-			value := v.(map[string]interface{})
-			notificationGroupsItem, err := ResourceIbmLogsAlertMapToAlertsV2AlertNotificationGroups(value)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			notificationGroups = append(notificationGroups, *notificationGroupsItem)
-		}
-	}
-	createAlertOptions.SetNotificationGroups(notificationGroups)
-	filtersModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFilters(d.Get("filters.0").(map[string]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	createAlertOptions.SetFilters(filtersModel)
 	if _, ok := d.GetOk("description"); ok {
 		createAlertOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("expiration"); ok {
 		expirationModel, err := ResourceIbmLogsAlertMapToAlertsV1Date(d.Get("expiration.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-expiration").GetDiag()
 		}
 		createAlertOptions.SetExpiration(expirationModel)
+	}
+	if _, ok := d.GetOk("notification_groups"); ok {
+		var notificationGroups []logsv0.AlertsV2AlertNotificationGroups
+		for _, v := range d.Get("notification_groups").([]interface{}) {
+			if v != nil {
+				value := v.(map[string]interface{})
+				notificationGroupsItem, err := ResourceIbmLogsAlertMapToAlertsV2AlertNotificationGroups(value)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-notification_groups").GetDiag()
+				}
+				notificationGroups = append(notificationGroups, *notificationGroupsItem)
+			}
+		}
+		createAlertOptions.SetNotificationGroups(notificationGroups)
+	}
+	if _, ok := d.GetOk("filters"); ok {
+		filtersModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFilters(d.Get("filters.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-filters").GetDiag()
+		}
+		createAlertOptions.SetFilters(filtersModel)
 	}
 	if _, ok := d.GetOk("active_when"); ok {
 		activeWhenModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertActiveWhen(d.Get("active_when.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-active_when").GetDiag()
 		}
 		createAlertOptions.SetActiveWhen(activeWhenModel)
 	}
@@ -1664,7 +1671,7 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 			value := v.(map[string]interface{})
 			metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-meta_labels").GetDiag()
 			}
 			metaLabels = append(metaLabels, *metaLabelsItem)
 		}
@@ -1681,7 +1688,7 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("incident_settings"); ok {
 		incidentSettingsModel, err := ResourceIbmLogsAlertMapToAlertsV2AlertIncidentSettings(d.Get("incident_settings.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-incident_settings").GetDiag()
 		}
 		createAlertOptions.SetIncidentSettings(incidentSettingsModel)
 	}
@@ -1702,7 +1709,7 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_alert", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1736,97 +1743,115 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if err = d.Set("name", alert.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-name").GetDiag()
 	}
 	if !core.IsNil(alert.Description) {
 		if err = d.Set("description", alert.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+			err = fmt.Errorf("Error setting description: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-description").GetDiag()
 		}
 	}
 	if err = d.Set("is_active", alert.IsActive); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting is_active: %s", err))
+		err = fmt.Errorf("Error setting is_active: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-is_active").GetDiag()
 	}
 	if err = d.Set("severity", alert.Severity); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting severity: %s", err))
+		err = fmt.Errorf("Error setting severity: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-severity").GetDiag()
 	}
 	if !core.IsNil(alert.Expiration) {
 		expirationMap, err := ResourceIbmLogsAlertAlertsV1DateToMap(alert.Expiration)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "expiration-to-map").GetDiag()
 		}
 		if err = d.Set("expiration", []map[string]interface{}{expirationMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting expiration: %s", err))
+			err = fmt.Errorf("Error setting expiration: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-expiration").GetDiag()
 		}
 	}
 	conditionMap, err := ResourceIbmLogsAlertAlertsV2AlertConditionToMap(alert.Condition)
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "condition-to-map").GetDiag()
 	}
 	if err = d.Set("condition", []map[string]interface{}{conditionMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting condition: %s", err))
+		err = fmt.Errorf("Error setting condition: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-condition").GetDiag()
 	}
-	notificationGroups := []map[string]interface{}{}
-	for _, notificationGroupsItem := range alert.NotificationGroups {
-		notificationGroupsItemMap, err := ResourceIbmLogsAlertAlertsV2AlertNotificationGroupsToMap(&notificationGroupsItem)
-		if err != nil {
-			return diag.FromErr(err)
+	if !core.IsNil(alert.NotificationGroups) {
+		notificationGroups := []map[string]interface{}{}
+		for _, notificationGroupsItem := range alert.NotificationGroups {
+			notificationGroupsItemMap, err := ResourceIbmLogsAlertAlertsV2AlertNotificationGroupsToMap(&notificationGroupsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "notification_groups-to-map").GetDiag()
+			}
+			notificationGroups = append(notificationGroups, notificationGroupsItemMap)
 		}
-		notificationGroups = append(notificationGroups, notificationGroupsItemMap)
+		if err = d.Set("notification_groups", notificationGroups); err != nil {
+			err = fmt.Errorf("Error setting notification_groups: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-notification_groups").GetDiag()
+		}
 	}
-	if err = d.Set("notification_groups", notificationGroups); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting notification_groups: %s", err))
-	}
-	filtersMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(alert.Filters)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("filters", []map[string]interface{}{filtersMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting filters: %s", err))
+	if !core.IsNil(alert.Filters) {
+		filtersMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(alert.Filters)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "filters-to-map").GetDiag()
+		}
+		if err = d.Set("filters", []map[string]interface{}{filtersMap}); err != nil {
+			err = fmt.Errorf("Error setting filters: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-filters").GetDiag()
+		}
 	}
 	if !core.IsNil(alert.ActiveWhen) {
 		activeWhenMap, err := ResourceIbmLogsAlertAlertsV1AlertActiveWhenToMap(alert.ActiveWhen)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "active_when-to-map").GetDiag()
 		}
 		if err = d.Set("active_when", []map[string]interface{}{activeWhenMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting active_when: %s", err))
+			err = fmt.Errorf("Error setting active_when: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-active_when").GetDiag()
 		}
 	}
 	if !core.IsNil(alert.NotificationPayloadFilters) {
 		if err = d.Set("notification_payload_filters", alert.NotificationPayloadFilters); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting notification_payload_filters: %s", err))
+			err = fmt.Errorf("Error setting notification_payload_filters: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-notification_payload_filters").GetDiag()
 		}
 	}
 	if !core.IsNil(alert.MetaLabels) {
 		metaLabels := []map[string]interface{}{}
 		for _, metaLabelsItem := range alert.MetaLabels {
-			metaLabelsItemMap, err := ResourceIbmLogsAlertAlertsV1MetaLabelToMap(&metaLabelsItem)
+			metaLabelsItemMap, err := ResourceIbmLogsAlertAlertsV1MetaLabelToMap(&metaLabelsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "meta_labels-to-map").GetDiag()
 			}
 			metaLabels = append(metaLabels, metaLabelsItemMap)
 		}
 		if err = d.Set("meta_labels", metaLabels); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting meta_labels: %s", err))
+			err = fmt.Errorf("Error setting meta_labels: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-meta_labels").GetDiag()
 		}
 	}
 	if !core.IsNil(alert.MetaLabelsStrings) {
 		if err = d.Set("meta_labels_strings", alert.MetaLabelsStrings); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting meta_labels_strings: %s", err))
+			err = fmt.Errorf("Error setting meta_labels_strings: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-meta_labels_strings").GetDiag()
 		}
 	}
 	if !core.IsNil(alert.IncidentSettings) {
 		incidentSettingsMap, err := ResourceIbmLogsAlertAlertsV2AlertIncidentSettingsToMap(alert.IncidentSettings)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "incident_settings-to-map").GetDiag()
 		}
 		if err = d.Set("incident_settings", []map[string]interface{}{incidentSettingsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting incident_settings: %s", err))
+			err = fmt.Errorf("Error setting incident_settings: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-incident_settings").GetDiag()
 		}
 	}
 	if !core.IsNil(alert.UniqueIdentifier) {
 		if err = d.Set("unique_identifier", alert.UniqueIdentifier); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting unique_identifier: %s", err))
+			err = fmt.Errorf("Error setting unique_identifier: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "read", "set-unique_identifier").GetDiag()
 		}
 	}
 
@@ -1836,7 +1861,7 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_alert", "update")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1874,41 +1899,41 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		updateAlertOptions.SetCondition(conditionModel)
-
-		var notificationGroups []logsv0.AlertsV2AlertNotificationGroups
-		for _, v := range d.Get("notification_groups").([]interface{}) {
-			if v != nil {
-				value := v.(map[string]interface{})
-				notificationGroupsItem, err := ResourceIbmLogsAlertMapToAlertsV2AlertNotificationGroups(value)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				notificationGroups = append(notificationGroups, *notificationGroupsItem)
-			}
-		}
-		updateAlertOptions.SetNotificationGroups(notificationGroups)
-
-		filtersModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFilters(d.Get("filters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateAlertOptions.SetFilters(filtersModel)
-
 		if _, ok := d.GetOk("description"); ok {
 			updateAlertOptions.SetDescription(d.Get("description").(string))
 		}
-
 		if _, ok := d.GetOk("expiration"); ok {
 			expirationModel, err := ResourceIbmLogsAlertMapToAlertsV1Date(d.Get("expiration.0").(map[string]interface{}))
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-expiration").GetDiag()
 			}
 			updateAlertOptions.SetExpiration(expirationModel)
+		}
+		if _, ok := d.GetOk("notification_groups"); ok {
+			var notificationGroups []logsv0.AlertsV2AlertNotificationGroups
+			for _, v := range d.Get("notification_groups").([]interface{}) {
+				if v != nil {
+					value := v.(map[string]interface{})
+					notificationGroupsItem, err := ResourceIbmLogsAlertMapToAlertsV2AlertNotificationGroups(value)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-notification_groups").GetDiag()
+					}
+					notificationGroups = append(notificationGroups, *notificationGroupsItem)
+				}
+			}
+			updateAlertOptions.SetNotificationGroups(notificationGroups)
+		}
+		if _, ok := d.GetOk("filters"); ok {
+			filtersModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertFilters(d.Get("filters.0").(map[string]interface{}))
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-filters").GetDiag()
+			}
+			updateAlertOptions.SetFilters(filtersModel)
 		}
 		if _, ok := d.GetOk("active_when"); ok {
 			activeWhenModel, err := ResourceIbmLogsAlertMapToAlertsV1AlertActiveWhen(d.Get("active_when.0").(map[string]interface{}))
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-active_when").GetDiag()
 			}
 			updateAlertOptions.SetActiveWhen(activeWhenModel)
 		}
@@ -1920,14 +1945,13 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 			}
 			updateAlertOptions.SetNotificationPayloadFilters(notificationPayloadFilters)
 		}
-
 		if _, ok := d.GetOk("meta_labels"); ok {
 			var metaLabels []logsv0.AlertsV1MetaLabel
 			for _, v := range d.Get("meta_labels").([]interface{}) {
 				value := v.(map[string]interface{})
 				metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
 				if err != nil {
-					return diag.FromErr(err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-meta_labels").GetDiag()
 				}
 				metaLabels = append(metaLabels, *metaLabelsItem)
 			}
@@ -1944,7 +1968,7 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 		if _, ok := d.GetOk("incident_settings"); ok {
 			incidentSettingsModel, err := ResourceIbmLogsAlertMapToAlertsV2AlertIncidentSettings(d.Get("incident_settings.0").(map[string]interface{}))
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "create", "parse-incident_settings").GetDiag()
 			}
 			updateAlertOptions.SetIncidentSettings(incidentSettingsModel)
 		}
@@ -1966,7 +1990,7 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 func resourceIbmLogsAlertDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_alert", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2465,6 +2489,20 @@ func ResourceIbmLogsAlertMapToAlertsV2AlertConditionConditionLessThanUsual(model
 	return model, nil
 }
 
+func ResourceIbmLogsAlertMapToAlertsV1Date(modelMap map[string]interface{}) (*logsv0.AlertsV1Date, error) {
+	model := &logsv0.AlertsV1Date{}
+	if modelMap["year"] != nil {
+		model.Year = core.Int64Ptr(int64(modelMap["year"].(int)))
+	}
+	if modelMap["month"] != nil {
+		model.Month = core.Int64Ptr(int64(modelMap["month"].(int)))
+	}
+	if modelMap["day"] != nil {
+		model.Day = core.Int64Ptr(int64(modelMap["day"].(int)))
+	}
+	return model, nil
+}
+
 func ResourceIbmLogsAlertMapToAlertsV2AlertNotificationGroups(modelMap map[string]interface{}) (*logsv0.AlertsV2AlertNotificationGroups, error) {
 	model := &logsv0.AlertsV2AlertNotificationGroups{}
 	if modelMap["group_by_fields"] != nil {
@@ -2654,20 +2692,6 @@ func ResourceIbmLogsAlertMapToAlertsV1AlertFiltersRatioAlert(modelMap map[string
 			groupBy = append(groupBy, groupByItem.(string))
 		}
 		model.GroupBy = groupBy
-	}
-	return model, nil
-}
-
-func ResourceIbmLogsAlertMapToAlertsV1Date(modelMap map[string]interface{}) (*logsv0.AlertsV1Date, error) {
-	model := &logsv0.AlertsV1Date{}
-	if modelMap["year"] != nil {
-		model.Year = core.Int64Ptr(int64(modelMap["year"].(int)))
-	}
-	if modelMap["month"] != nil {
-		model.Month = core.Int64Ptr(int64(modelMap["month"].(int)))
-	}
-	if modelMap["day"] != nil {
-		model.Day = core.Int64Ptr(int64(modelMap["day"].(int)))
 	}
 	return model, nil
 }
@@ -2876,7 +2900,9 @@ func ResourceIbmLogsAlertAlertsV2LessThanConditionToMap(model *logsv0.AlertsV2Le
 
 func ResourceIbmLogsAlertAlertsV2ConditionParametersToMap(model *logsv0.AlertsV2ConditionParameters) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["threshold"] = *model.Threshold
+	if model.Threshold != nil {
+		modelMap["threshold"] = *model.Threshold
+	}
 	modelMap["timeframe"] = *model.Timeframe
 	if model.GroupBy != nil {
 		modelMap["group_by"] = model.GroupBy
@@ -2999,7 +3025,7 @@ func ResourceIbmLogsAlertAlertsV2FlowConditionToMap(model *logsv0.AlertsV2FlowCo
 	if model.Stages != nil {
 		stages := []map[string]interface{}{}
 		for _, stagesItem := range model.Stages {
-			stagesItemMap, err := ResourceIbmLogsAlertAlertsV1FlowStageToMap(&stagesItem)
+			stagesItemMap, err := ResourceIbmLogsAlertAlertsV1FlowStageToMap(&stagesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3025,7 +3051,7 @@ func ResourceIbmLogsAlertAlertsV1FlowStageToMap(model *logsv0.AlertsV1FlowStage)
 	if model.Groups != nil {
 		groups := []map[string]interface{}{}
 		for _, groupsItem := range model.Groups {
-			groupsItemMap, err := ResourceIbmLogsAlertAlertsV1FlowGroupToMap(&groupsItem)
+			groupsItemMap, err := ResourceIbmLogsAlertAlertsV1FlowGroupToMap(&groupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3066,7 +3092,7 @@ func ResourceIbmLogsAlertAlertsV1FlowAlertsToMap(model *logsv0.AlertsV1FlowAlert
 	if model.Values != nil {
 		values := []map[string]interface{}{}
 		for _, valuesItem := range model.Values {
-			valuesItemMap, err := ResourceIbmLogsAlertAlertsV1FlowAlertToMap(&valuesItem)
+			valuesItemMap, err := ResourceIbmLogsAlertAlertsV1FlowAlertToMap(&valuesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3322,7 +3348,7 @@ func ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(model *logsv0.AlertsV1AlertFi
 	if model.RatioAlerts != nil {
 		ratioAlerts := []map[string]interface{}{}
 		for _, ratioAlertsItem := range model.RatioAlerts {
-			ratioAlertsItemMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersRatioAlertToMap(&ratioAlertsItem)
+			ratioAlertsItemMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersRatioAlertToMap(&ratioAlertsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3372,7 +3398,7 @@ func ResourceIbmLogsAlertAlertsV1AlertActiveWhenToMap(model *logsv0.AlertsV1Aler
 	modelMap := make(map[string]interface{})
 	timeframes := []map[string]interface{}{}
 	for _, timeframesItem := range model.Timeframes {
-		timeframesItemMap, err := ResourceIbmLogsAlertAlertsV1AlertActiveTimeframeToMap(&timeframesItem)
+		timeframesItemMap, err := ResourceIbmLogsAlertAlertsV1AlertActiveTimeframeToMap(&timeframesItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
