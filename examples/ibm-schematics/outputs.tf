@@ -48,3 +48,9 @@ output "ibm_schematics_agent_health" {
   description = "schematics_agent_health resource instance"
 }
 
+// This allows schematics_agent_delete_resources data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_schematics_agent_delete_resources" {
+  value       = ibm_schematics_agent_delete_resources.schematics_agent_delete_resources_instance
+  description = "schematics_agent_delete_resources instance"
+}

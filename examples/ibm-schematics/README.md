@@ -152,6 +152,13 @@ resource "schematics_agent_health" "schematics_agent_health_instance" {
   force = var.schematics_agent_health_force
 }
 ```
+schematics_agent_delete_resources resource:
+
+```hcl
+resource "schematics_agent_delete_resources" "schematics_agent_delete_resources_instance" {
+  agent_id = var.schematics_agent_delete_resources_agent_id
+}
+```
 
 ## SchematicsV1 Data sources
 
@@ -346,6 +353,7 @@ e location of the IBM Cloud resources, provisioned using Schematics. | `string` 
 | schematics_agent_deploy_force | Equivalent to -force options in the command line, default is false. | `bool` | false |
 | schematics_agent_health_agent_id | Agent ID to get the details of agent. | `string` | true |
 | schematics_agent_health_force | Equivalent to -force options in the command line, default is false. | `bool` | false |
+| schematics_agent_delete_resources_agent_id | Agent ID to get the details of agent. | `string` | true |
 | schematics_policies_policy_kind | Policy kind or categories for managing and deriving policy decision  * `agent_assignment_policy` Agent assignment policy for job execution. | `string` | false |
 | schematics_policy_policy_id | ID to get the details of policy. | `string` | true |
 | schematics_agent_agent_id | Agent ID to get the details of agent. | `string` | true |
@@ -363,3 +371,4 @@ e location of the IBM Cloud resources, provisioned using Schematics. | `string` 
 | ibm_schematics_agent_prs | schematics_agent_prs resource instance |
 | ibm_schematics_agent_deploy | schematics_agent_deploy resource instance |
 | ibm_schematics_agent_health | schematics_agent_health resource instance |
+| ibm_schematics_agent_delete_resources | schematics_agent_delete_resources  instance |

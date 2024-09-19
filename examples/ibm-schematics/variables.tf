@@ -394,6 +394,12 @@ variable "schematics_agent_health_force" {
   default     = true
 }
 
+// Resource arguments for schematics_agent_delete_resources
+variable "schematics_agent_delete_resources_agent_id" {
+  description = "Agent ID to get the details of agent."
+  type        = string
+  default     = "agent_id"
+}
 // Data source arguments for schematics_policies
 variable "schematics_policies_policy_kind" {
   description = "Policy kind or categories for managing and deriving policy decision  * `agent_assignment_policy` Agent assignment policy for job execution."

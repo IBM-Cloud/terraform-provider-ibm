@@ -201,6 +201,11 @@ resource "ibm_schematics_agent_health" "schematics_agent_health_instance" {
   force = var.schematics_agent_health_force
 }
 
+// Provision schematics_agent_delete_resources instance
+resource "ibm_schematics_agent_delete_resources" "schematics_agent_delete_resources_instance" {
+  agent_id = var.schematics_agent_delete_resources_agent_id
+}
+
 // Create schematics_policies data source
 data "ibm_schematics_policies" "schematics_policies_instance" {
   policy_kind = var.schematics_policies_policy_kind
