@@ -29,12 +29,12 @@ func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
 		DeleteContext: resourceIbmBaasAgentUpgradeTaskDelete,
 		UpdateContext: resourceIbmBaasAgentUpgradeTaskUpdate,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBaasAgentUpgradeTaskCreate,
+		// CustomizeDiff: checkDiffResourceIbmBaasAgentUpgradeTaskCreate,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:    true,
 				Description: "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified.",
 			},
 			"retry_task_id": &schema.Schema{
@@ -43,22 +43,22 @@ func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
 				Description: "Specifies ID of a task which is to be retried.",
 			},
 			"agent_ids": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				// ForceNew:    true,
 				Description: "Specifies the agents upgraded in the task.",
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				// ForceNew:    true,
 				Description: "Specifies the description of the task.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				// ForceNew:    true,
 				Description: "Specifies the name of the task.",
 			},
 			"schedule_end_time_usecs": &schema.Schema{
@@ -222,25 +222,25 @@ func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	// oldId, _ := d.GetChange("x_ibm_tenant_id")
-	// if oldId == "" {
-	// 	return nil
-	// }
+// func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+// 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
+// 	// if oldId == "" {
+// 	// 	return nil
+// 	// }
 
-	// return if it's a new resource
-	if d.Id() == "" {
-		return nil
-		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_agent_upgrade_task does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
-	}
+// 	// return if it's a new resource
+// 	if d.Id() == "" {
+// 		return nil
+// 		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_agent_upgrade_task does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
+// 	}
 
-	for fieldName := range ResourceIbmBaasAgentUpgradeTask().Schema {
-		if d.HasChange(fieldName) {
-			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_agent_upgrade_task does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
-		}
-	}
-	return nil
-}
+// 	for fieldName := range ResourceIbmBaasAgentUpgradeTask().Schema {
+// 		if d.HasChange(fieldName) {
+// 			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_agent_upgrade_task does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+// 		}
+// 	}
+// 	return nil
+// }
 
 func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
@@ -449,7 +449,7 @@ func resourceIbmBaasAgentUpgradeTaskUpdate(context context.Context, d *schema.Re
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Resource Update Will Only Affect Terraform State",
-		Detail:   "Update operation for this resource not supported and will only affect the terraform statefile. No changes will be made to actual backend resource. ",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource. ",
 	}
 	diags = append(diags, warning)
 	return diags

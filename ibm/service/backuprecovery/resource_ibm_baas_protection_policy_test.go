@@ -5,6 +5,7 @@ package backuprecovery_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -52,27 +53,27 @@ func testAccCheckIbmBaasProtectionPolicyConfigBasic(name string, duration int) s
 			x_ibm_tenant_id = "%s"
 			name = "%s"
 			backup_policy {
-			  regular {
-				incremental{
-				  schedule{
-					day_schedule {
-					  frequency = 1
+					regular {
+						incremental{
+							schedule{
+									day_schedule {
+										frequency = 1
+									}
+									unit = "Days"
+								}
+						}
+						retention {
+							duration = %d
+							unit = "Weeks"
+						}
+						primary_backup_target {
+							use_default_backup_target = true
+						}
 					}
-					unit = "Days"
-				  }
-				}
-				retention {
-				  duration = %d
-				  unit = "Weeks"
-				}
-				primary_backup_target {
-				  use_default_backup_target = true
-				}
-			  }
 			}
 			retry_options {
-			  retries = 3
-			  retry_interval_mins = 5
+			retries = 3
+			retry_interval_mins = 5
 			}
 		}
 	`, tenantId, name, duration)
@@ -122,9 +123,12 @@ func testAccCheckIbmBaasProtectionPolicyDestroy(s *terraform.State) error {
 		getProtectionPolicyByIdOptions.SetID(rs.Primary.ID)
 
 		// Try to find the key
-		_, response, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)
+		policyResponse, response, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)
 
 		if err == nil {
+			if strings.Contains(*policyResponse.Name, fmt.Sprintf("%s_DELETED", rs.Primary.Attributes["name"])) {
+				return nil
+			}
 			return fmt.Errorf("baas_protection_policy still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("Error checking for baas_protection_policy (%s) has been destroyed: %s", rs.Primary.ID, err)

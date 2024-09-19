@@ -55,9 +55,6 @@ func testAccCheckIbmBaasDataSourceConnectionConfigBasic(connectionName string) s
 	resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
 		x_ibm_tenant_id = "%s"
 		connection_name = "%s"
-		lifecycle {
-			ignore_changes = [connector_ids, network_settings]
-		}
 	  }
 	`, tenantId, connectionName)
 }

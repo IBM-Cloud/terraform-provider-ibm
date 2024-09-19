@@ -20,6 +20,7 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 	var conf backuprecoveryv1.ProtectionGroupRunsResponse
 	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
 	action := "Pause"
+	objectId := 72
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,7 +28,7 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(xIbmTenantID, action),
+				Config: testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(action, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestExists("ibm_baas_perform_action_on_protection_group_run_request.baas_perform_action_on_protection_group_run_request_instance", conf),
 					resource.TestCheckResourceAttr("ibm_baas_perform_action_on_protection_group_run_request.baas_perform_action_on_protection_group_run_request_instance", "x_ibm_tenant_id", xIbmTenantID),
@@ -43,13 +44,60 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(xIbmTenantID string, action string) string {
+func testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(action string, objectId int) string {
 	return fmt.Sprintf(`
+
+			resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+				x_ibm_tenant_id = "%s"
+				name = "tf-name-policy-test-1"
+				backup_policy {
+						regular {
+							incremental{
+								schedule{
+										day_schedule {
+											frequency = 1
+										}
+										unit = "Days"
+									}
+							}
+							retention {
+								duration = 1
+								unit = "Weeks"
+							}
+							primary_backup_target {
+								use_default_backup_target = true
+							}
+						}
+				}
+				retry_options {
+				retries = 3
+				retry_interval_mins = 5
+				}
+			}
+
+		resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+			x_ibm_tenant_id = "%s"
+			policy_id = ibm_baas_protection_policy.baas_protection_policy_instance.id
+			name = "tf-name-group-test-1"
+			environment = "kPhysical"
+			physical_params {
+				protection_type = "kFile"
+				file_protection_type_params {
+				objects {
+					id = %d
+					file_paths{
+						included_path = "/"
+					}
+				}
+				}
+			}
+		}
+
 		resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
 			x_ibm_tenant_id = "%s"
 			action = "%s"
 		}
-	`, xIbmTenantID, action)
+	`, tenantId, tenantId, objectId, tenantId, action)
 }
 
 func testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestExists(n string, obj backuprecoveryv1.ProtectionGroupRunsResponse) resource.TestCheckFunc {

@@ -517,7 +517,7 @@ func resourceIbmBaasProtectionGroupRunRequestUpdate(context context.Context, d *
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
-		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to actual backend resource. Please use ibm_baas_update_protection_group_run_request resource for updates.",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource. Please use ibm_baas_update_protection_group_run_request resource for updates.",
 	}
 	// d.SetId("")
 	diags = append(diags, warning)
