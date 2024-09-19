@@ -1360,16 +1360,17 @@ func Provider() *schema.Provider {
 			"ibm_billing_report_snapshot": usagereports.ResourceIBMBillingReportSnapshot(),
 
 			// Added for Schematics
-			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
-			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
-			"ibm_schematics_job":            schematics.ResourceIBMSchematicsJob(),
-			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
-			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
-			"ibm_schematics_policy":         schematics.ResourceIbmSchematicsPolicy(),
-			"ibm_schematics_agent":          schematics.ResourceIbmSchematicsAgent(),
-			"ibm_schematics_agent_prs":      schematics.ResourceIbmSchematicsAgentPrs(),
-			"ibm_schematics_agent_deploy":   schematics.ResourceIbmSchematicsAgentDeploy(),
-			"ibm_schematics_agent_health":   schematics.ResourceIbmSchematicsAgentHealth(),
+			"ibm_schematics_workspace":              schematics.ResourceIBMSchematicsWorkspace(),
+			"ibm_schematics_action":                 schematics.ResourceIBMSchematicsAction(),
+			"ibm_schematics_job":                    schematics.ResourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":              schematics.ResourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query":         schematics.ResourceIBMSchematicsResourceQuery(),
+			"ibm_schematics_policy":                 schematics.ResourceIbmSchematicsPolicy(),
+			"ibm_schematics_agent":                  schematics.ResourceIbmSchematicsAgent(),
+			"ibm_schematics_agent_prs":              schematics.ResourceIbmSchematicsAgentPrs(),
+			"ibm_schematics_agent_deploy":           schematics.ResourceIbmSchematicsAgentDeploy(),
+			"ibm_schematics_agent_health":           schematics.ResourceIbmSchematicsAgentHealth(),
+			"ibm_schematics_agent_delete_resources": schematics.ResourceIbmSchematicsAgentDeleteResources(),
 
 			// Added for Secrets Manager
 			"ibm_sm_secret_group":                                                secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmSecretGroup()),
