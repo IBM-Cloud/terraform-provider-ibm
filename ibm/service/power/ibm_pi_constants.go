@@ -297,6 +297,7 @@ const (
 	Attr_PVMInstances                                = "pvm_instances"
 	Attr_PVMSnapshots                                = "pvm_snapshots"
 	Attr_Region                                      = "region"
+	Attr_RegionStorageTiers                          = "region_storage_tiers"
 	Attr_RemoteCopyID                                = "remote_copy_id"
 	Attr_RemoteCopyRelationshipNames                 = "remote_copy_relationship_names"
 	Attr_RemoteCopyRelationships                     = "remote_copy_relationships"
