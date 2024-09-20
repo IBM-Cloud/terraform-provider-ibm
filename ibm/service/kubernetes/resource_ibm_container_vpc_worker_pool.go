@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	kubernetesutils "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes/utils"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -231,9 +229,6 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 		},
-		CustomizeDiff: customdiff.All(
-			kubernetesutils.InplaceOSUpdate,
-		),
 	}
 }
 

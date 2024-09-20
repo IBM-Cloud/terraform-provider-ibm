@@ -9,8 +9,6 @@ import (
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes/utils"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -207,9 +205,6 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Description: "Autoscaling is enabled on the workerpool",
 			},
 		},
-		CustomizeDiff: customdiff.All(
-			kubernetesutils.InplaceOSUpdate,
-		),
 	}
 }
 
