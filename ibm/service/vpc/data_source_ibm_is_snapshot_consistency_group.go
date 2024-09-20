@@ -510,7 +510,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceToMap(model
 	return modelMap, nil
 }
 
-func dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceDeletedToMap(model *vpcv1.BackupPolicyPlanReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -567,7 +567,7 @@ func dataSourceIBMIsSnapshotConsistencyGroupSnapshotConsistencyGroupSnapshotsIte
 	return modelMap, nil
 }
 
-func dataSourceIBMIsSnapshotConsistencyGroupSnapshotReferenceDeletedToMap(model *vpcv1.SnapshotReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsSnapshotConsistencyGroupSnapshotReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil

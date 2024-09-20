@@ -427,7 +427,7 @@ func dataSourceShareMountTargetVpcToMap(vpcItem vpcv1.VPCReference) (vpcMap map[
 	return vpcMap
 }
 
-func dataSourceShareMountTargetVpcDeletedToMap(deletedItem vpcv1.VPCReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareMountTargetVpcDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -474,7 +474,7 @@ func dataSourceShareTargetPrimaryIPToMap(primaryIPItem vpcv1.ReservedIPReference
 	return primaryIPMap
 }
 
-func dataSourceShareTargetPrimaryIPDeletedToMap(deletedItem vpcv1.ReservedIPReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetPrimaryIPDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -521,7 +521,7 @@ func dataSourceShareTargetSubnetToMap(subnetItem vpcv1.SubnetReference) (subnetM
 	return subnetMap
 }
 
-func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcv1.SubnetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetSubnetDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

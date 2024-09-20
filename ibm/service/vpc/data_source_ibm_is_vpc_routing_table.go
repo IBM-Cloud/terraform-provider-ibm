@@ -363,7 +363,7 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteReferenceToMap(model *vpcv1.RouteRefe
 	return modelMap, nil
 }
 
-func dataSourceIBMIBMIsVPCRoutingTableRouteReferenceDeletedToMap(model *vpcv1.RouteReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIBMIsVPCRoutingTableRouteReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := map[string]interface{}{}
 	if model.MoreInfo != nil {
 		modelMap[rMoreInfo] = *model.MoreInfo
@@ -395,7 +395,7 @@ func dataSourceIBMIBMIsVPCRoutingTableSubnetReferenceToMap(model *vpcv1.SubnetRe
 	return modelMap, nil
 }
 
-func dataSourceIBMIBMIsVPCRoutingTableSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIBMIsVPCRoutingTableSubnetReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := map[string]interface{}{}
 	if model.MoreInfo != nil {
 		modelMap[rMoreInfo] = *model.MoreInfo
