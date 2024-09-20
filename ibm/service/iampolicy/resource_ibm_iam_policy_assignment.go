@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	InProgress                        = "in_progress"
-	complete                          = "complete"
-	failed                            = "failed"
+	InProgress = "in_progress"
+	complete   = "complete"
+	failed     = "failed"
 )
 
 func ResourceIBMIAMPolicyAssignment() *schema.Resource {
@@ -470,7 +470,6 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 
 	deletePolicyAssignmentOptions.SetAssignmentID(d.Id())
 
-
 	response, err := iamPolicyManagementClient.DeletePolicyAssignmentWithContext(context, deletePolicyAssignmentOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -486,7 +485,7 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 	if diags.HasError() {
 		return diags
 	}
-	
+
 	if targetModel.Type != nil && (*targetModel.Type == "Account") {
 		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 	} else {
@@ -539,15 +538,14 @@ func ResourceIBMPolicyAssignmentAssignmentTemplateDetailsToMap(model *iampolicym
 }
 
 func GetTargetModel(d *schema.ResourceData) (*iampolicymanagementv1.AssignmentTargetDetails, diag.Diagnostics) {
-    targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
-    
-    if err != nil {
-        return targetModel, diag.FromErr(err)
-    }
+	targetModel, err := ResourceIBMPolicyAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
 
-    return targetModel, nil
+	if err != nil {
+		return targetModel, diag.FromErr(err)
+	}
+
+	return targetModel, nil
 }
-
 
 func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
 
@@ -639,7 +637,6 @@ func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRe
 		if !ok {
 			return nil, failed, fmt.Errorf("[ERROR] Type assertion failed for assignment details : %s", id)
 		}
-
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
