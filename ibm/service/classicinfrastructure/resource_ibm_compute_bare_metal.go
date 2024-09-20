@@ -320,6 +320,12 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 							Required:    true,
 							Description: "Hard-drives List",
 						},
+						"hard_drive_category_codes": {
+							Type:        schema.TypeList,
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+							Required:    true,
+							Description: "Hard-drives List",
+						},
 						"array_size": {
 							Type:        schema.TypeInt,
 							Optional:    true,
@@ -1461,6 +1467,11 @@ func getStorageGroupsFromResourceData(d dataRetriever) []datatypes.Container_Pro
 		storageGroupObj.HardDrives = make([]int, 0, len(hardDrives))
 		for _, hardDrive := range hardDrives {
 			storageGroupObj.HardDrives = append(storageGroupObj.HardDrives, hardDrive.(int))
+		}
+		hardDriveCategoryCodes := storageGroup["hard_drive_category_codes"].([]interface{})
+		storageGroupObj.HardDriveCategoryCodes = make([]string, 0, len(hardDriveCategoryCodes))
+		for _, hardDrive := range hardDriveCategoryCodes {
+			storageGroupObj.HardDriveCategoryCodes = append(storageGroupObj.HardDriveCategoryCodes, hardDrive.(string))
 		}
 		arraySize := storageGroup["array_size"].(int)
 		if arraySize > 0 {
