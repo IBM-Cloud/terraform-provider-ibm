@@ -5470,19 +5470,19 @@ func ResourceIbmBaasProtectionPolicyMapToAzureTargetConfig(modelMap map[string]i
 		model.ResourceGroupName = core.StringPtr(modelMap["resource_group_name"].(string))
 	}
 	model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
-	if modelMap["storage_account"] != nil {
+	if modelMap["storage_account"] != nil && modelMap["storage_account"].(int) != 0 {
 		model.StorageAccount = core.Int64Ptr(int64(modelMap["storage_account"].(int)))
 	}
 	if modelMap["storage_account_name"] != nil && modelMap["storage_account_name"].(string) != "" {
 		model.StorageAccountName = core.StringPtr(modelMap["storage_account_name"].(string))
 	}
-	if modelMap["storage_container"] != nil {
+	if modelMap["storage_container"] != nil && modelMap["storage_container"].(int) != 0 {
 		model.StorageContainer = core.Int64Ptr(int64(modelMap["storage_container"].(int)))
 	}
 	if modelMap["storage_container_name"] != nil && modelMap["storage_container_name"].(string) != "" {
 		model.StorageContainerName = core.StringPtr(modelMap["storage_container_name"].(string))
 	}
-	if modelMap["storage_resource_group"] != nil {
+	if modelMap["storage_resource_group"] != nil && modelMap["storage_resource_group"].(int) != 0 {
 		model.StorageResourceGroup = core.Int64Ptr(int64(modelMap["storage_resource_group"].(int)))
 	}
 	if modelMap["storage_resource_group_name"] != nil && modelMap["storage_resource_group_name"].(string) != "" {

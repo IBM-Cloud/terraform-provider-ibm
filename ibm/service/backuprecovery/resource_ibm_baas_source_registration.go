@@ -1848,10 +1848,10 @@ func ResourceIbmBaasSourceRegistrationGroupToMap(model *backuprecoveryv1.Group) 
 
 func ResourceIbmBaasSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.CreatedAtTimeMsecs != nil {
+	if model.CreatedAtTimeMsecs != nil && *(model.CreatedAtTimeMsecs) != 0 {
 		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
 	}
-	if model.DeletedAtTimeMsecs != nil {
+	if model.DeletedAtTimeMsecs != nil && *(model.DeletedAtTimeMsecs) != 0 {
 		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
 	}
 	if model.Description != nil {
@@ -1870,7 +1870,7 @@ func ResourceIbmBaasSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant
 	if model.IsManagedOnHelios != nil {
 		modelMap["is_managed_on_helios"] = *model.IsManagedOnHelios
 	}
-	if model.LastUpdatedAtTimeMsecs != nil {
+	if model.LastUpdatedAtTimeMsecs != nil && *(model.LastUpdatedAtTimeMsecs) != 0 {
 		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
 	}
 	if model.Name != nil {

@@ -231,12 +231,11 @@ func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *
 	// return if it's a new resource
 	if d.Id() == "" {
 		return nil
-		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_agent_upgrade_task does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
 	}
 
 	for fieldName := range ResourceIbmBaasAgentUpgradeTask().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_agent_upgrade_task does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+			return fmt.Errorf("[ERROR] Resource ibm_baas_agent_upgrade_task cannot be updated.")
 		}
 	}
 	return nil
@@ -436,7 +435,7 @@ func resourceIbmBaasAgentUpgradeTaskDelete(context context.Context, d *schema.Re
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Delete Not Supported",
-		Detail:   "Delete operation is not supported for this resource. The resource will be removed from the terraform state file but will continue to exist in the backend.",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
 	}
 	diags = append(diags, warning)
 	d.SetId("")

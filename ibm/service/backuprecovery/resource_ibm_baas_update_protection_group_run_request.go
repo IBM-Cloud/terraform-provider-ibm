@@ -382,13 +382,12 @@ func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Con
 
 	// return if it's a new resource
 	if d.Id() == "" {
-		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_update_protection_group_run_request does not support DELETE operation. Terraform will remove it from the statefile but the udpates will continue to exist in the backend's protection group run resource.")
 		return nil
 	}
 
 	for fieldName := range ResourceIbmBaasUpdateProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_update_protection_group_run_request does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+			return fmt.Errorf("[ERROR] Resource ibm_baas_update_protection_group_run_request cannot be updated.")
 		}
 	}
 	return nil
@@ -469,7 +468,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestDelete(context context.Contex
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Delete Not Supported",
-		Detail:   "Delete operation is not supported for this resource. The resource will be removed from the terraform state file but will continue to exist in the backend.",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
 	}
 	diags = append(diags, warning)
 	d.SetId("")

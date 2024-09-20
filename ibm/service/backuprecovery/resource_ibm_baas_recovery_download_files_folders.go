@@ -2812,12 +2812,11 @@ func checkDiffResourceIbmBaasRecoveryDownloadFilesFolders(context context.Contex
 	// return if it's a new resource
 	if d.Id() == "" {
 		return nil
-		// return fmt.Errorf("[WARNING] Partial CRUD Implementation: The resource ibm_baas_recovery_download_files_folders does not support DELETE operation. Terraform will remove it from the statefile but no changes will be made to the backend.")
 	}
 
 	for fieldName := range ResourceIbmBaasRecoveryDownloadFilesFolders().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[WARNING] Partial CRUD Implementation: The field %s cannot be updated as ibm_baas_recovery_download_files_folders does not support update (PUT)or DELETE operation. Any changes applied through Terraform will only update the state file (or remove the resource state from statefile in case of deletion) but will not be applied to the actual infrastructure.", fieldName)
+			return fmt.Errorf("[ERROR] Resource ibm_baas_recovery_download_files_folders cannot be updated.")
 		}
 	}
 	return nil
@@ -3099,7 +3098,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersDelete(context context.Context, 
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Delete Not Supported",
-		Detail:   "Delete operation is not supported for this resource. The resource will be removed from the terraform state file but will continue to exist in the backend.",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
 	}
 	diags = append(diags, warning)
 	d.SetId("")
@@ -3130,9 +3129,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshot
 	if modelMap["protection_group_name"] != nil && modelMap["protection_group_name"].(string) != "" {
 		model.ProtectionGroupName = core.StringPtr(modelMap["protection_group_name"].(string))
 	}
-	// if modelMap["snapshot_creation_time_usecs"] != nil {
-	// 	model.SnapshotCreationTimeUsecs = core.Int64Ptr(int64(modelMap["snapshot_creation_time_usecs"].(int)))
-	// }
+	if modelMap["snapshot_creation_time_usecs"] != nil && modelMap["snapshot_creation_time_usecs"].(int) != 0 {
+		model.SnapshotCreationTimeUsecs = core.Int64Ptr(int64(modelMap["snapshot_creation_time_usecs"].(int)))
+	}
 	if modelMap["object_info"] != nil && len(modelMap["object_info"].([]interface{})) > 0 {
 		ObjectInfoModel, err := ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsObjectInfo(modelMap["object_info"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3143,9 +3142,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshot
 	if modelMap["snapshot_target_type"] != nil && modelMap["snapshot_target_type"].(string) != "" {
 		model.SnapshotTargetType = core.StringPtr(modelMap["snapshot_target_type"].(string))
 	}
-	// if modelMap["storage_domain_id"] != nil {
-	// 	model.StorageDomainID = core.Int64Ptr(int64(modelMap["storage_domain_id"].(int)))
-	// }
+	if modelMap["storage_domain_id"] != nil && modelMap["storage_domain_id"].(int) != 0 {
+		model.StorageDomainID = core.Int64Ptr(int64(modelMap["storage_domain_id"].(int)))
+	}
 	if modelMap["archival_target_info"] != nil && len(modelMap["archival_target_info"].([]interface{})) > 0 {
 		ArchivalTargetInfoModel, err := ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap["archival_target_info"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3162,12 +3161,12 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshot
 	if modelMap["status"] != nil && modelMap["status"].(string) != "" {
 		model.Status = core.StringPtr(modelMap["status"].(string))
 	}
-	// if modelMap["start_time_usecs"] != nil {
-	// 	model.StartTimeUsecs = core.Int64Ptr(int64(modelMap["start_time_usecs"].(int)))
-	// }
-	// if modelMap["end_time_usecs"] != nil {
-	// 	model.EndTimeUsecs = core.Int64Ptr(int64(modelMap["end_time_usecs"].(int)))
-	// }
+	if modelMap["start_time_usecs"] != nil && modelMap["start_time_usecs"].(int) != 0 {
+		model.StartTimeUsecs = core.Int64Ptr(int64(modelMap["start_time_usecs"].(int)))
+	}
+	if modelMap["end_time_usecs"] != nil && modelMap["end_time_usecs"].(int) != 0 {
+		model.EndTimeUsecs = core.Int64Ptr(int64(modelMap["end_time_usecs"].(int)))
+	}
 	if modelMap["messages"] != nil {
 		messages := []string{}
 		for _, messagesItem := range modelMap["messages"].([]interface{}) {
@@ -3175,9 +3174,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshot
 		}
 		model.Messages = messages
 	}
-	// if modelMap["bytes_restored"] != nil {
-	// 	model.BytesRestored = core.Int64Ptr(int64(modelMap["bytes_restored"].(int)))
-	// }
+	if modelMap["bytes_restored"] != nil && modelMap["bytes_restored"].(int) != 0 {
+		model.BytesRestored = core.Int64Ptr(int64(modelMap["bytes_restored"].(int)))
+	}
 	return model, nil
 }
 
@@ -3565,9 +3564,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParam
 	if model.ProtectionGroupName != nil {
 		modelMap["protection_group_name"] = *model.ProtectionGroupName
 	}
-	// if model.SnapshotCreationTimeUsecs != nil {
-	// 	modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
-	// }
+	if model.SnapshotCreationTimeUsecs != nil && *(model.SnapshotCreationTimeUsecs) != 0 {
+		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
+	}
 	if model.ObjectInfo != nil {
 		objectInfoMap, err := ResourceIbmBaasRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
 		if err != nil {
@@ -3578,9 +3577,9 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParam
 	if model.SnapshotTargetType != nil {
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
-	// if model.StorageDomainID != nil {
-	// 	modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
-	// }
+	if model.StorageDomainID != nil && *(model.StorageDomainID) != 0 {
+		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
+	}
 	if model.ArchivalTargetInfo != nil {
 		archivalTargetInfoMap, err := ResourceIbmBaasRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
@@ -3597,18 +3596,18 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParam
 	if model.Status != nil {
 		modelMap["status"] = *model.Status
 	}
-	// if model.StartTimeUsecs != nil {
-	// 	modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
-	// }
-	// if model.EndTimeUsecs != nil {
-	// 	modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
-	// }
+	if model.StartTimeUsecs != nil && *(model.StartTimeUsecs) != 0 {
+		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
+	}
+	if model.EndTimeUsecs != nil && *(model.EndTimeUsecs) != 0 {
+		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
+	}
 	if model.Messages != nil {
 		modelMap["messages"] = model.Messages
 	}
-	// if model.BytesRestored != nil {
-	// 	modelMap["bytes_restored"] = flex.IntValue(model.BytesRestored)
-	// }
+	if model.BytesRestored != nil && *(model.BytesRestored) != 0 {
+		modelMap["bytes_restored"] = flex.IntValue(model.BytesRestored)
+	}
 	return modelMap, nil
 }
 

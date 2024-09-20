@@ -7355,7 +7355,7 @@ func ResourceIbmBaasProtectionGroupSnapshotInfoToMap(model *backuprecoveryv1.Sna
 	if model.QueueDurationUsecs != nil {
 		modelMap["queue_duration_usecs"] = flex.IntValue(model.QueueDurationUsecs)
 	}
-	if model.SnapshotCreationTimeUsecs != nil {
+	if model.SnapshotCreationTimeUsecs != nil && *(model.SnapshotCreationTimeUsecs) != 0 {
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.Stats != nil {
@@ -8225,10 +8225,10 @@ func ResourceIbmBaasProtectionGroupCloudSpinRunSummaryToMap(model *backuprecover
 
 func ResourceIbmBaasProtectionGroupTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.CreatedAtTimeMsecs != nil {
+	if model.CreatedAtTimeMsecs != nil && *(model.CreatedAtTimeMsecs) != 0 {
 		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
 	}
-	if model.DeletedAtTimeMsecs != nil {
+	if model.DeletedAtTimeMsecs != nil && *(model.DeletedAtTimeMsecs) != 0 {
 		modelMap["deleted_at_time_msecs"] = flex.IntValue(model.DeletedAtTimeMsecs)
 	}
 	if model.Description != nil {
@@ -8247,7 +8247,7 @@ func ResourceIbmBaasProtectionGroupTenantToMap(model *backuprecoveryv1.Tenant) (
 	if model.IsManagedOnHelios != nil {
 		modelMap["is_managed_on_helios"] = *model.IsManagedOnHelios
 	}
-	if model.LastUpdatedAtTimeMsecs != nil {
+	if model.LastUpdatedAtTimeMsecs != nil && *(model.LastUpdatedAtTimeMsecs) != 0 {
 		modelMap["last_updated_at_time_msecs"] = flex.IntValue(model.LastUpdatedAtTimeMsecs)
 	}
 	if model.Name != nil {
