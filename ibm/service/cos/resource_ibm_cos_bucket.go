@@ -244,7 +244,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"abort_incomplete_multipart_upload_days": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				MaxItems:    1,
+				MaxItems:    1000,
 				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable abort incomplete multipart upload to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
