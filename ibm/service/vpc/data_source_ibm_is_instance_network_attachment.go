@@ -302,7 +302,7 @@ func dataSourceIBMIsInstanceNetworkAttachmentReservedIPReferenceToMap(model *vpc
 	return modelMap, nil
 }
 
-func dataSourceIBMIsInstanceNetworkAttachmentReservedIPReferenceDeletedToMap(model *vpcv1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsInstanceNetworkAttachmentReservedIPReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -325,7 +325,7 @@ func dataSourceIBMIsInstanceNetworkAttachmentSubnetReferenceToMap(model *vpcv1.S
 	return modelMap, nil
 }
 
-func dataSourceIBMIsInstanceNetworkAttachmentSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsInstanceNetworkAttachmentSubnetReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
