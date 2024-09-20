@@ -2205,7 +2205,7 @@ func ResourceIBMIsShareRegionReferenceToMap(model *vpcv1.RegionReference) map[st
 	modelMap["name"] = *model.Name
 	return modelMap
 }
-func ResourceIBMIsShareShareReferenceDeletedToMap(model *vpcv1.ShareReferenceDeleted) map[string]interface{} {
+func ResourceIBMIsShareShareReferenceDeletedToMap(model *vpcv1.Deleted) map[string]interface{} {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = *model.MoreInfo
 	return modelMap

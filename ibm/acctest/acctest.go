@@ -393,7 +393,7 @@ var (
 
 // For IAM Access Management
 var (
-	TargetAccountId string
+	TargetAccountId    string
 	TargetEnterpriseId string
 )
 
@@ -1870,7 +1870,6 @@ func init() {
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
 	}
-
 
 	TargetEnterpriseId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID")
 	if TargetEnterpriseId == "" {

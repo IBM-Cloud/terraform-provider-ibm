@@ -356,7 +356,7 @@ func dataSourceSecurityGroupRuleLocalToMap(localItem *vpcv1.SecurityGroupRuleLoc
 	return localMap
 }
 
-func dataSourceSecurityGroupRuleRemoteDeletedToMap(deletedItem *vpcv1.SecurityGroupReferenceDeleted) (resultMap map[string]interface{}) {
+func dataSourceSecurityGroupRuleRemoteDeletedToMap(deletedItem *vpcv1.Deleted) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
