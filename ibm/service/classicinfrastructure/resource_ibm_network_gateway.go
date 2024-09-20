@@ -410,7 +410,7 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 		order.ProvisionScripts = []string{v.(string)}
 	}
 
-	var productOrder datatypes.Container_Product_Order
+	productOrder := datatypes.Container_Product_Order_Hardware_Server_Gateway_Appliance{}
 
 	if sameOrder {
 		//Ordering HA
@@ -465,28 +465,25 @@ func resourceIBMNetworkGatewayCreate(d *schema.ResourceData, meta interface{}) e
 
 	clusterIdentifier := randomString(8)
 
-	productOrder = datatypes.Container_Product_Order{
-		OrderContainers: []datatypes.Container_Product_Order{
-			{
-				ComplexType:       sl.String("SoftLayer_Container_Product_Order_Hardware_Server_Gateway_Appliance"),
-				Quantity:          order.Quantity,
-				PackageId:         order.PackageId,
-				Prices:            order.Prices,
-				Hardware:          order.Hardware,
-				Location:          order.Location,
-				ClusterIdentifier: sl.String(clusterIdentifier),
-			},
-			{
-				ComplexType: sl.String("SoftLayer_Container_Product_Order_Gateway_Appliance_Cluster"),
-				Quantity:    sl.Int(1),
-				PackageId:   pkg.Id,
-				Prices: []datatypes.Product_Item_Price{
-					gwCluster,
-				},
-				ClusterIdentifier: sl.String(clusterIdentifier),
+	productOrder.OrderContainers = []datatypes.Container_Product_Order{
+		{
+			ComplexType: sl.String("SoftLayer_Container_Product_Order_Hardware_Server_Gateway_Appliance"),
+			Quantity:    order.Quantity,
+			PackageId:   order.PackageId,
+			Prices:      order.Prices,
+			Hardware:    order.Hardware,
+			Location:    order.Location,
+		},
+		{
+			ComplexType: sl.String("SoftLayer_Container_Product_Order_Gateway_Appliance_Cluster"),
+			Quantity:    sl.Int(1),
+			PackageId:   pkg.Id,
+			Prices: []datatypes.Product_Item_Price{
+				gwCluster,
 			},
 		},
 	}
+	productOrder.ClusterIdentifier = sl.String(clusterIdentifier)
 
 	if len(mSshKeys) > 0 {
 		productOrder.OrderContainers[0].SshKeys = mSshKeys
@@ -625,9 +622,7 @@ func resourceIBMNetworkGatewayRead(d *schema.ResourceData, meta interface{}) err
 func updateGatewayName(id int, name string, meta interface{}) error {
 	sess := meta.(conns.ClientSession).SoftLayerSession()
 	service := services.GetNetworkGatewayService(sess)
-	_, err := service.Id(id).EditObject(&datatypes.Network_Gateway{
-		Name: sl.String(name),
-	})
+	_, err := service.Id(id).Rename(sl.String(name))
 	if err != nil {
 		return fmt.Errorf("[ERROR] Could n't set the gateway name to %s", name)
 	}

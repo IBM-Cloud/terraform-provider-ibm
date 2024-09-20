@@ -242,7 +242,7 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
+replace github.com/softlayer/softlayer-go v1.0.3 => github.com/softlayer/softlayer-go v1.1.6-0.20240919213419-4ad3d01356cd
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 

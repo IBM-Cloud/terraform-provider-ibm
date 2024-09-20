@@ -1985,9 +1985,9 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 	if err != nil {
 		return datatypes.Container_Product_Order_Receipt{}, err
 	}
-	guestOrders := make([]datatypes.Container_Product_Order, 0)
-	var template datatypes.Container_Product_Order
 	if quote_id > 0 {
+		guestOrders := make([]datatypes.Container_Product_Order, 0)
+		var template datatypes.Container_Product_Order
 		// Build a virtual instance template from the quote.
 		template, err = services.GetBillingOrderQuoteService(sess).
 			Id(quote_id).GetRecalculatedOrderContainer(nil, sl.Bool(false))
@@ -2036,6 +2036,9 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 			Id(quote_id).PlaceOrder(order)
 		return receipt, err1
 	}
+	guestOrders := make([]datatypes.Container_Product_Order_Virtual_Guest, 0)
+	var template datatypes.Container_Product_Order
+	var order datatypes.Container_Product_Order_Virtual_Guest
 	for i := 0; i < len(options); i++ {
 		opts := options[i]
 
@@ -2188,21 +2191,25 @@ func placeOrder(d *schema.ResourceData, meta interface{}, name string, publicVla
 		}
 		// GenerateOrderTemplate omits UserData, subnet, and maxSpeed, so configure virtual_guest.
 		template.VirtualGuests[0] = opts
+
+		order = datatypes.Container_Product_Order_Virtual_Guest{
+			Container_Product_Order_Hardware_Server: datatypes.Container_Product_Order_Hardware_Server{
+				Container_Product_Order: template,
+			},
+		}
+
 		if opts.DedicatedHost != nil {
-			template.HostId = opts.DedicatedHost.Id
+			order.HostId = opts.DedicatedHost.Id
 		}
 		if opts.ReservedCapacityGroup != nil {
-			template.ReservedCapacityId = opts.ReservedCapacityGroup.Id
+			order.ReservedCapacityId = opts.ReservedCapacityGroup.Id
 		}
-		guestOrders = append(guestOrders, template)
+		guestOrders = append(guestOrders, order)
 
-	}
-	order := &datatypes.Container_Product_Order{
-		OrderContainers: guestOrders,
 	}
 
 	orderService := services.GetProductOrderService(sess.SetRetries(0))
-	receipt, err1 := orderService.PlaceOrder(order, sl.Bool(false))
+	receipt, err1 := orderService.PlaceOrder(guestOrders, sl.Bool(false))
 	return receipt, err1
 
 }
