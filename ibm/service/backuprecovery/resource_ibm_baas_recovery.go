@@ -2562,6 +2562,11 @@ func resourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceData
 			err = fmt.Errorf("Error setting messages: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery", "read", "set-messages").GetDiag()
 		}
+	} else {
+		if err = d.Set("messages", []interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting messages: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery", "read", "set-messages").GetDiag()
+		}
 	}
 	if !core.IsNil(recovery.IsParentRecovery) {
 		if err = d.Set("is_parent_recovery", recovery.IsParentRecovery); err != nil {

@@ -3023,6 +3023,10 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 		if err = d.Set("recovery_messages", messages); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting messages: %s", err), "(Data) ibm_recovery", "read", "set-messages").GetDiag()
 		}
+	} else {
+		if err = d.Set("recovery_messages", []interface{}{}); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting messages: %s", err), "(Data) ibm_recovery", "read", "set-messages").GetDiag()
+		}
 	}
 
 	if !core.IsNil(recovery.IsParentRecovery) {

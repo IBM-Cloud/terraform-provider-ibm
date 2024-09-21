@@ -248,7 +248,7 @@ func Provider() *schema.Provider {
 			"ibm_baas_protection_policy":        backuprecovery.DataSourceIbmBaasProtectionPolicy(),
 			"ibm_baas_recovery":                 backuprecovery.DataSourceIbmBaasRecovery(),
 			"ibm_baas_recoveries":               backuprecovery.DataSourceIbmBaasRecoveries(),
-			"ibm_recovery_download_files":       backuprecovery.DataSourceIbmBaasRecoveryDownloadFiles(),
+			"ibm_baas_recovery_download_files":  backuprecovery.DataSourceIbmBaasRecoveryDownloadFiles(),
 			"ibm_baas_source_registrations":     backuprecovery.DataSourceIbmBaasSourceRegistrations(),
 			"ibm_baas_source_registration":      backuprecovery.DataSourceIbmBaasSourceRegistration(),
 			"ibm_baas_download_indexed_files":   backuprecovery.DataSourceIbmBaasDownloadIndexedFiles(),

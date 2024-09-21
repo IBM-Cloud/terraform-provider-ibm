@@ -19,9 +19,10 @@ import (
 
 func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
 	var conf backuprecoveryv1.ProtectionGroupResponse
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
+	policyName := fmt.Sprintf("tf_name_policy_%d", acctest.RandIntRange(10, 100))
 	environment := "kPhysical"
-	includedPath := "/"
+	includedPath := "/data/"
 	includedPathUpdate := "/data1/"
 	protectionType := "kFile"
 	objectId := 72
@@ -32,29 +33,29 @@ func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmBaasProtectionGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPath, protectionType, objectId),
+				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBaasProtectionGroupExists("ibm_baas_protection_group.baas_protection_group_instance", conf),
 					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "name", groupName),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPathUpdate, protectionType, objectId),
+				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(groupName, environment, includedPathUpdate, protectionType, policyName, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "name", groupName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPath, protectionType string, objectId int) string {
+func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
 			resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
-				x_ibm_tenant_id = "%[1]s"
-				name = "tf-name-policy-test-1"
+				x_ibm_tenant_id = "%s"
+				name = "%s"
 				backup_policy {
 						regular {
 							incremental{
@@ -75,29 +76,29 @@ func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPa
 						}
 				}
 				retry_options {
-				retries = 3
-				retry_interval_mins = 5
+					retries = 0
+					retry_interval_mins = 10
 				}
 			}
 
 		resource "ibm_baas_protection_group" "baas_protection_group_instance" {
-			x_ibm_tenant_id = "%[1]s"
+			x_ibm_tenant_id = "%s"
 			policy_id = ibm_baas_protection_policy.baas_protection_policy_instance.id
-			name = "%[2]s"
-			environment = "%[3]s"
+			name = "%s"
+			environment = "%s"
 			physical_params {
-				protection_type = "%[5]s"
+				protection_type = "%s"
 				file_protection_type_params {
 				objects {
 					id = %d
 					file_paths{
-						included_path = "%[4]s"
+						included_path = "%s"
 					}
 				  }
 				}
 			}
 		}
-	`, tenantId, name, environment, includedPath, protectionType, objectId)
+	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)
 }
 
 func testAccCheckIbmBaasProtectionGroupExists(n string, obj backuprecoveryv1.ProtectionGroupResponse) resource.TestCheckFunc {

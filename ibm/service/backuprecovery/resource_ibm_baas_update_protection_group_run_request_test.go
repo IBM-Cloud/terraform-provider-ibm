@@ -6,8 +6,8 @@ package backuprecovery_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -17,148 +17,142 @@ import (
 )
 
 func TestAccIbmBaasUpdateProtectionGroupRunRequestBasic(t *testing.T) {
-	var conf backuprecoveryv1.ProtectionGroupRunsResponse
-	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
-
+	objectId := 72
+	runType := "kRegular"
+	groupName := "tf-pg-10" // or can use "tf-group-5" //id: 5901263190628181:1725393921826:9414
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasUpdateProtectionGroupRunRequestDestroy,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmBaasUpdateProtectionGroupRunRequestConfigBasic(xIbmTenantID),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasUpdateProtectionGroupRunRequestExists("ibm_baas_update_protection_group_run_request.baas_update_protection_group_run_request_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_update_protection_group_run_request.baas_update_protection_group_run_request_instance", "x_ibm_tenant_id", xIbmTenantID),
+			{
+				Destroy: false,
+				Config:  testAccCreateIbmBaasProtectionGroupForUpdateRunRequest(groupName, runType, objectId),
+				Check: resource.ComposeTestCheckFunc(
+					testUpdateRunExists("ibm_baas_protection_group_run_request.baas_protection_group_run_request_instance"),
 				),
 			},
-			resource.TestStep{
-				ResourceName:      "ibm_baas_update_protection_group_run_request.baas_update_protection_group_run_request",
-				ImportState:       true,
-				ImportStateVerify: true,
+			{
+				Destroy: false,
+				Config:  testAccCreateIbmBaasProtectionGroupRunUpdateRequestConfigBasic(runType, groupName, objectId),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_baas_update_protection_group_run_request.baas_update_protection_group_run_request_instance", "group_id"),
+					resource.TestCheckResourceAttr("ibm_baas_update_protection_group_run_request.baas_update_protection_group_run_request_instance", "update_protection_group_run_params.#", "1"),
+				),
+			},
+			{
+				Destroy: false,
+				Config:  testAccCreateIbmBaasProtectionGroupRunCancelUpdateRequestConfigBasic(runType, groupName, objectId),
+				Check:   resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBaasUpdateProtectionGroupRunRequestConfigBasic(xIbmTenantID string) string {
-	return fmt.Sprintf(`
-		resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
-			x_ibm_tenant_id = "%s"
-			update_protection_group_run_params {
-				run_id = "run_id"
-				local_snapshot_config {
-					enable_legal_hold = true
-					delete_snapshot = true
-					data_lock = "Compliance"
-					days_to_keep = 1
-				}
-				replication_snapshot_config {
-					new_snapshot_config {
-						id = 1
-						retention {
-							unit = "Days"
-							duration = 1
-							data_lock_config {
-								mode = "Compliance"
-								unit = "Days"
-								duration = 1
-								enable_worm_on_external_target = true
-							}
-						}
-					}
-					update_existing_snapshot_config {
-						id = 1
-						name = "name"
-						enable_legal_hold = true
-						delete_snapshot = true
-						resync = true
-						data_lock = "Compliance"
-						days_to_keep = 1
-					}
-				}
-				archival_snapshot_config {
-					new_snapshot_config {
-						id = 1
-						archival_target_type = "Tape"
-						retention {
-							unit = "Days"
-							duration = 1
-							data_lock_config {
-								mode = "Compliance"
-								unit = "Days"
-								duration = 1
-								enable_worm_on_external_target = true
-							}
-						}
-						copy_only_fully_successful = true
-					}
-					update_existing_snapshot_config {
-						id = 1
-						name = "name"
-						archival_target_type = "Tape"
-						enable_legal_hold = true
-						delete_snapshot = true
-						resync = true
-						data_lock = "Compliance"
-						days_to_keep = 1
-					}
-				}
-			}
-		}
-	`, xIbmTenantID)
-}
-
-func testAccCheckIbmBaasUpdateProtectionGroupRunRequestExists(n string, obj backuprecoveryv1.ProtectionGroupRunsResponse) resource.TestCheckFunc {
-
+func testUpdateRunExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+		timeout := time.Now().Add(4 * time.Minute) // Set a 3-Minute timeout for waiting
+		for time.Now().Before(timeout) {
+
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("Not found: %s", n)
+			}
+			backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
+			if err != nil {
+				return err
+			}
+
+			getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
+			getProtectionGroupRunsOptions.SetID(rs.Primary.ID)
+			getProtectionGroupRunsOptions.SetXIBMTenantID(tenantId)
+			GetProtectionGroupRunsResponse, _, err := backupRecoveryClient.GetProtectionGroupRuns(getProtectionGroupRunsOptions)
+			if err != nil {
+				return err
+			}
+
+			if GetProtectionGroupRunsResponse != nil &&
+				len(GetProtectionGroupRunsResponse.Runs) > 0 &&
+				*(GetProtectionGroupRunsResponse.Runs[0].ProtectionGroupID) == rs.Primary.ID &&
+				len(GetProtectionGroupRunsResponse.Runs) > 0 &&
+				GetProtectionGroupRunsResponse.Runs[0].ArchivalInfo != nil &&
+				len(GetProtectionGroupRunsResponse.Runs[0].ArchivalInfo.ArchivalTargetResults) > 0 &&
+				*(GetProtectionGroupRunsResponse.Runs[0].ArchivalInfo.ArchivalTargetResults[0].ArchivalTaskID) != "" {
+
+				return nil
+			}
+			time.Sleep(15 * time.Second)
 		}
-
-		backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
-		if err != nil {
-			return err
-		}
-
-		getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
-
-		getProtectionGroupRunsOptions.SetID(rs.Primary.ID)
-
-		updateProtectionGroupRunRequest, _, err := backupRecoveryClient.GetProtectionGroupRuns(getProtectionGroupRunsOptions)
-		if err != nil {
-			return err
-		}
-
-		obj = *updateProtectionGroupRunRequest
 		return nil
 	}
 }
 
-func testAccCheckIbmBaasUpdateProtectionGroupRunRequestDestroy(s *terraform.State) error {
-	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
-	if err != nil {
-		return err
-	}
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_baas_update_protection_group_run_request" {
-			continue
+func testAccCreateIbmBaasProtectionGroupForUpdateRunRequest(groupName, runType string, objectID int) string {
+	return fmt.Sprintf(`
+
+		data "ibm_baas_protection_groups" "ibm_baas_protection_groups_instance" {
+			x_ibm_tenant_id = "%s"
+			names = ["%s"]
 		}
 
-		getProtectionGroupRunsOptions := &backuprecoveryv1.GetProtectionGroupRunsOptions{}
-
-		getProtectionGroupRunsOptions.SetID(rs.Primary.ID)
-
-		// Try to find the key
-		_, response, err := backupRecoveryClient.GetProtectionGroupRuns(getProtectionGroupRunsOptions)
-
-		if err == nil {
-			return fmt.Errorf("Update Protection Group Run Request Body. still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for Update Protection Group Run Request Body. (%s) has been destroyed: %s", rs.Primary.ID, err)
+		resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_request_instance" {
+			x_ibm_tenant_id = "%s"
+			run_type = "%s"
+			group_id = data.ibm_baas_protection_groups.ibm_baas_protection_groups_instance.protection_groups.0.id
+			lifecycle {
+				ignore_changes = ["x_ibm_tenant_id","run_type","group_id"]
+			}
 		}
+	`, tenantId, groupName, tenantId, runType)
+}
+
+func testAccCreateIbmBaasProtectionGroupRunUpdateRequestConfigBasic(runType, groupName string, objectID int) string {
+	return fmt.Sprintf(`
+		data "ibm_baas_protection_groups" "baas_protection_group_existing_instance" {
+			x_ibm_tenant_id = "%[1]s"
+			names = ["%[2]s"]
+		}
+
+		data "ibm_baas_protection_group_runs" "example_runs" {
+			x_ibm_tenant_id = "nhvbcdlnp8/"
+			protection_group_id = data.ibm_baas_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
+		}
+
+		resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
+			x_ibm_tenant_id = "%[1]s"
+			group_id = data.ibm_baas_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
+			update_protection_group_run_params {
+				run_id = data.ibm_baas_protection_group_runs.example_runs.runs.0.id
+				local_snapshot_config {
+					delete_snapshot = false
+				}
+			}
+		}	
+	`, tenantId, groupName)
+}
+
+func testAccCreateIbmBaasProtectionGroupRunCancelUpdateRequestConfigBasic(runType, groupName string, objectID int) string {
+	return fmt.Sprintf(`
+	data "ibm_baas_protection_groups" "baas_protection_group_existing_instance" {
+		x_ibm_tenant_id = "%[1]s"
+		names = ["%[2]s"]
 	}
 
-	return nil
+	data "ibm_baas_protection_group_runs" "example_runs" {
+		x_ibm_tenant_id = "nhvbcdlnp8/"
+		protection_group_id = data.ibm_baas_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
+	}
+
+	resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform_action_on_updated_protection_group_run_request_instance" {
+		x_ibm_tenant_id = "%[1]s"
+		group_id = data.ibm_baas_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
+		action = "Cancel"
+		cancel_params {
+			run_id = data.ibm_baas_protection_group_runs.example_runs.runs.0.id
+			local_task_id = data.ibm_baas_protection_group_runs.example_runs.runs.0.archival_info.0.archival_target_results.0.archival_task_id
+		  }
+		lifecycle {
+			ignore_changes = ["x_ibm_tenant_id","group_id","action", "cancel_params"]
+		}
+	  }
+	`, tenantId, groupName)
 }

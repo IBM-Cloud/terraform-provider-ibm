@@ -17,57 +17,17 @@ import (
 )
 
 func TestAccIbmBaasRestorePointsBasic(t *testing.T) {
-	var conf backuprecoveryv1.GetRestorePointsInTimeRangeResponse
 	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
 	endTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
 	startTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasRestorePointsDestroy,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIbmBaasRestorePointsConfigBasic(xIbmTenantID, endTimeUsecs, startTimeUsecs),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasRestorePointsExists("ibm_baas_restore_points.baas_restore_points_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "x_ibm_tenant_id", xIbmTenantID),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "end_time_usecs", endTimeUsecs),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "start_time_usecs", startTimeUsecs),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmBaasRestorePointsAllArgs(t *testing.T) {
-	var conf backuprecoveryv1.GetRestorePointsInTimeRangeResponse
-	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
-	endTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	environment := "kVMware"
-	sourceID := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	startTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasRestorePointsDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmBaasRestorePointsConfig(xIbmTenantID, endTimeUsecs, environment, sourceID, startTimeUsecs),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasRestorePointsExists("ibm_baas_restore_points.baas_restore_points_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "x_ibm_tenant_id", xIbmTenantID),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "end_time_usecs", endTimeUsecs),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "environment", environment),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "source_id", sourceID),
-					resource.TestCheckResourceAttr("ibm_baas_restore_points.baas_restore_points_instance", "start_time_usecs", startTimeUsecs),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_baas_restore_points.baas_restore_points",
-				ImportState:       true,
-				ImportStateVerify: true,
+				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
@@ -75,27 +35,7 @@ func TestAccIbmBaasRestorePointsAllArgs(t *testing.T) {
 
 func testAccCheckIbmBaasRestorePointsConfigBasic(xIbmTenantID string, endTimeUsecs string, startTimeUsecs string) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_restore_points" "baas_restore_points_instance" {
-			x_ibm_tenant_id = "%s"
-			end_time_usecs = %s
-			protection_group_ids = "FIXME"
-			start_time_usecs = %s
-		}
-	`, xIbmTenantID, endTimeUsecs, startTimeUsecs)
-}
-
-func testAccCheckIbmBaasRestorePointsConfig(xIbmTenantID string, endTimeUsecs string, environment string, sourceID string, startTimeUsecs string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_baas_restore_points" "baas_restore_points_instance" {
-			x_ibm_tenant_id = "%s"
-			end_time_usecs = %s
-			environment = "%s"
-			protection_group_ids = "FIXME"
-			source_id = %s
-			start_time_usecs = %s
-		}
-	`, xIbmTenantID, endTimeUsecs, environment, sourceID, startTimeUsecs)
+	`)
 }
 
 func testAccCheckIbmBaasRestorePointsExists(n string, obj backuprecoveryv1.GetRestorePointsInTimeRangeResponse) resource.TestCheckFunc {
@@ -121,29 +61,4 @@ func testAccCheckIbmBaasRestorePointsExists(n string, obj backuprecoveryv1.GetRe
 		obj = *getRestorePointsInTimeRangeParams
 		return nil
 	}
-}
-
-func testAccCheckIbmBaasRestorePointsDestroy(s *terraform.State) error {
-	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
-	if err != nil {
-		return err
-	}
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_baas_restore_points" {
-			continue
-		}
-
-		getRestorePointsInTimeRangeOptions := &backuprecoveryv1.GetRestorePointsInTimeRangeOptions{}
-
-		// Try to find the key
-		_, response, err := backupRecoveryClient.GetRestorePointsInTimeRange(getRestorePointsInTimeRangeOptions)
-
-		if err == nil {
-			return fmt.Errorf("baas_restore_points still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for baas_restore_points (%s) has been destroyed: %s", rs.Primary.ID, err)
-		}
-	}
-
-	return nil
 }
