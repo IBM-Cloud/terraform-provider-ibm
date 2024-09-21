@@ -86,7 +86,6 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 			},
 			"published": &schema.Schema{
 				Type:        schema.TypeBool,
-				Optional:    true,
 				Computed:    true,
 				Description: "Indicates the availability of this private path service gateway.",
 			},
@@ -284,9 +283,6 @@ func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sche
 	}
 	if err = d.Set("endpoint_gateway_binding_auto_delete_timeout", privatePathServiceGateway.EndpointGatewayBindingAutoDeleteTimeout); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting endpoint_gateway_binding_auto_delete_timeout: %s", err))
-	}
-	if err = d.Set("published", privatePathServiceGateway.Published); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting published: %s", err))
 	}
 	if err = d.Set("published", privatePathServiceGateway.Published); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting published: %s", err))
