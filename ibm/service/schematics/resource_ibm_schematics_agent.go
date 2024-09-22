@@ -900,7 +900,9 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	deleteAgentDataOptions := &schematicsv1.DeleteAgentDataOptions{}
+	deleteAgentDataOptions := &schematicsv1.DeleteAgentDataOptions{
+		Force: core.BoolPtr(true),
+	}
 	session, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return diag.FromErr(err)
