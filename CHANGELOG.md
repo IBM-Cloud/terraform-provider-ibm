@@ -1,3 +1,42 @@
+# 1.70.0-beta0(Sep 22, 2024)
+
+Breaking Changes
+* update(cloud-databases): Make Service Endpoints as Required argument([5615](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5615))
+
+Features
+* Support IAM Access tag
+    - **Resources**
+        - ibm_iam_access_tag
+* Support VPC
+    - **Resources**
+        - ibm_is_subnet_reserved_ip_patch
+* Support code Engine
+    - **Resources**
+        - ibm_code_engine_function
+
+Enhancements
+* add service_to_service_enabled field to atracker event streams endpoint ([5605](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5605))
+* Deprecated ibm_resource_access_tag and replaced it with ibm_iam_access_tag ([5567](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5567))
+* SM New error formatting + crypto_key label name changes ([5562](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5562))
+* Deprecating alias and bindings APIs and schema items ([5612](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5612))
+* update(cloud-databases): Make Service Endpoints Required and send warning when public endpoints are in use ([5402](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5402))
+* discourage use of ibm_container_bind_service ([5588](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5588))
+* updated resources, data source and documentation for Slack Direct destination support ([5615](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5615))
+* IAM Policy Assignment: S2S Policy Assignments ET and AG ([5624](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5624))
+* fix for context and history parameter of template assignment ([5640](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5640))
+* Updating to latest schematics sdk and updating sch_agent resource to enable force deletion by default ([5660](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5660))
+* add support for 4th zone ([5644](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5644))
+
+BugFixes
+* The ibm_resource_tag do not detach if tag_type is access or service ([5566](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5566))
+* fix(is_share): added empty check and moved source_share_crn outside ([5632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5632))
+* Add test bucket endpoints ([5636](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5636))
+* The ibm_resource_tag does not check the response on api tags calls ([5641](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5641))
+
+# 1.69.2(Sep 13, 2024)
+* Add region parameter to logs-routing resources and data sources ([5634](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5634))
+* fix(is_share): added empty check and moved source_share_crn outside ([5632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5632))
+
 # 1.69.1(Sep 10, 2024)
 BugFixes
 * BUG: 1.69.0 panic when attempting to update ibm_resource_instance ([5618](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5618))
