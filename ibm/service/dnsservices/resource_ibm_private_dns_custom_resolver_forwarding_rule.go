@@ -156,7 +156,9 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 		}
 
 	} else {
-		forwardingRuleInp, _ = dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyView(ruleType, ruleMatch, expandPDNSFRViews(views))
+		if _, ok := d.GetOk(pdnsCRFRViews); !ok {
+			return diag.FromErr(fmt.Errorf("[ERROR] Can not creating the forwarding rules. One of the field from forward_to or views must be provided."))
+		}
 	}
 
 	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID, forwardingRuleInp)
