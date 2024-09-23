@@ -316,12 +316,6 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 }
 
 func resourceIBMCbrRuleSetData(response *core.DetailedResponse, rule *contextbasedrestrictionsv1.Rule, d *schema.ResourceData) error {
-	if err := d.Set("x_correlation_id", response.Headers.Get("x_correlation_id")); err != nil {
-		return fmt.Errorf("Error setting x_correlation_id: %s", err)
-	}
-	if err := d.Set("transaction_id", response.Headers.Get("transaction_id")); err != nil {
-		return fmt.Errorf("Error setting transaction_id: %s", err)
-	}
 	if err := d.Set("description", rule.Description); err != nil {
 		return fmt.Errorf("Error setting description: %s", err)
 	}
@@ -406,6 +400,13 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 		}
 		log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
+	}
+
+	if err = d.Set("x_correlation_id", getRuleOptions.XCorrelationID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting x_correlation_id: %s", err))
+	}
+	if err = d.Set("transaction_id", getRuleOptions.TransactionID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
 	}
 
 	if fromErr := resourceIBMCbrRuleSetData(response, rule, d); fromErr != nil {
