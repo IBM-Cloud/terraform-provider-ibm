@@ -340,6 +340,26 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 				},
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
+			"backend_network_component": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"vlan_id": {
+							Type:        schema.TypeInt,
+							Required:    true,
+							Description: "Private vlan Id",
+						},
+						"subnet_id": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "Private subnet Id",
+						},
+					},
+				},
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
 
 			// Quote based provisioning only
 			"quote_id": {
@@ -519,7 +539,6 @@ func getBareMetalOrderFromResourceData(d *schema.ResourceData, meta interface{})
 			{Value: sl.String(userMetadata.(string))},
 		}
 	}
-
 	// Get configured ssh_keys
 	ssh_key_ids := d.Get("ssh_key_ids").([]interface{})
 	if len(ssh_key_ids) > 0 {
@@ -1308,6 +1327,10 @@ func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, or
 		order.Hardware[0].PrimaryBackendNetworkComponent.NetworkVlan.PrimarySubnetId = sl.Int(subnetId)
 	}
 
+	if _, ok := d.GetOk("backend_network_component"); ok {
+		order.Hardware[0].BackendNetworkComponents = getBackendNetworksFromResourceData(d)
+	}
+
 	if userMetadata, ok := d.GetOk("user_metadata"); ok {
 		order.Hardware[0].UserData = []datatypes.Hardware_Attribute{
 			{Value: sl.String(userMetadata.(string))},
@@ -1484,6 +1507,29 @@ func getStorageGroupsFromResourceData(d dataRetriever) []datatypes.Container_Pro
 		storageGroups = append(storageGroups, storageGroupObj)
 	}
 	return storageGroups
+}
+
+func getBackendNetworksFromResourceData(d dataRetriever) []datatypes.Network_Component {
+	backendNetworkLists := d.Get("backend_network_component").([]interface{})
+	networks := make([]datatypes.Network_Component, 0)
+
+	for _, backendNetworkpList := range backendNetworkLists {
+		backendNetwork := backendNetworkpList.(map[string]interface{})
+		var backendNetworkObj datatypes.Network_Component
+		var backendNetworkvlanObj datatypes.Network_Vlan
+		vlanId := backendNetwork["vlan_id"].(int)
+		if vlanId > 0 {
+			backendNetworkvlanObj.Id = sl.Int(vlanId)
+
+		}
+		subnetId := backendNetwork["subnet_id"].(int)
+		if subnetId > 0 {
+			backendNetworkvlanObj.PrimarySubnetId = sl.Int(subnetId)
+		}
+		backendNetworkObj.NetworkVlan = &backendNetworkvlanObj
+		networks = append(networks, backendNetworkObj)
+	}
+	return networks
 }
 
 func addCommomDefaultPrices(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order, items []datatypes.Product_Item) datatypes.Container_Product_Order {

@@ -150,6 +150,11 @@ Review the argument references that you can specify for your resource.
 
 ### Argument reference for monthly bare metal servers
 
+- `backend_network_component` - (Optional, List of Objects)Configurations for backend network components.
+
+  Nested scheme for `backend_network_component`:
+  - `vlan_id`- (Required, Integer) The private vlan id.
+  - `subent_id` - (Required, Integer) The private subnet id.
 - `disk_key_names` (Optional, Array of Strings) The internal key names for the monthly Bare Metal server's disk. Use this argument when you create a new monthly Bare Metal server. To get disk key names, first find the package key name in the [IBM Cloud API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}). Then, replace <PACKAGE_NAME> with your package key name in the following [URL](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/PACKAGE_NAME/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]). Select disk key names from the resulting available disk key names.
 - `memory` - (Optional, Integer) The amount of memory, which is specified in gigabytes, for the server.
 - `os_key_name` - (Optional, String) The operating system key name that you want to use to provision the computing instance. To get disk key names, first find the package key name in the [IBM Cloud API](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/getAllObjects?objectFilter={"type":{"keyName":{"operation":"BARE_METAL_CPU"}}}). Then, replace <PACKAGE_NAME> with your package key name in the following [URL](https://api.softlayer.com/rest/v3/SoftLayer_Product_Package/<PACKAGE_NAME>/getItems?objectMask=mask[prices[id,categories[id,name,categoryCode],capacityRestrictionType,capacityRestrictionMinimum,capacityRestrictionMaximum,locationGroupId]]). Select an OS key name from the resulting available OS key names.
