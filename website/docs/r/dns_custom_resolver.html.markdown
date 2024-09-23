@@ -48,6 +48,8 @@ Provides a private DNS custom resolver resource. This allows DNS custom resolver
         description        =  "new test CR - TF"
         high_availability  =  true
         enabled            =  true
+        profile            =  "essential"
+        allow_disruptive_updates = false
         locations {
              subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet1.crn
              enabled     = true
@@ -73,6 +75,8 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default. To meet high availability status, configure custom resolvers with a minimum of two resolver locations.
 - `locations`- (Optional, List) The list of locations where this custom resolver is deployed.  A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets.
+- `profile` - (Optional, String) The profile name of the custom resolver. Supported values are `ESSENTIAL`, `ADVANCED`, `PREMIER`. Default value is `ESSENTIAL`.
+- `allow_disruptive_updates` - (Optional, Boolean) Whether disruptive update is allowed for the custom resolver. Default value is false.
 
 ## Attribute reference
 
@@ -82,8 +86,6 @@ In addition to all argument reference list, you can access the following attribu
 - `custom_resolver_id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
-- `profile` - (String) The profile name of the custom resolver. Supported values are `ESSENTIAL`, `ADVANCED`, `PREMIER`.
-- `allow_disruptive_updates` - (Boolean) Whether disruptive update is allowed for the custom resolver.
 - `locations` - (List) Locations on which the custom resolver will be running.
 
   Nested scheme for `locations`:
