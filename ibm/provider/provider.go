@@ -232,6 +232,14 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 
+			"ibm_api_gateway":        apigateway.DataSourceIBMApiGateway(),
+			"ibm_account":            cloudfoundry.DataSourceIBMAccount(),
+			"ibm_app":                cloudfoundry.DataSourceIBMApp(),
+			"ibm_app_domain_private": cloudfoundry.DataSourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":  cloudfoundry.DataSourceIBMAppDomainShared(),
+			"ibm_app_route":          cloudfoundry.DataSourceIBMAppRoute(),
+
+			// // BackupAndRecovery
 			"ibm_baas_agent_upgrade_tasks":      backuprecovery.DataSourceIbmBaasAgentUpgradeTasks(),
 			"ibm_baas_download_agent":           backuprecovery.DataSourceIbmBaasDownloadAgent(),
 			"ibm_baas_search_indexed_object":    backuprecovery.DataSourceIbmBaasSearchIndexedObject(),
