@@ -802,7 +802,7 @@ func dataSourceIBMIsSnapshotsSnapshotCopiesItemToMap(model *vpcv1.SnapshotCopies
 	return modelMap, nil
 }
 
-func dataSourceIBMIsSnapshotsSnapshotRemoteReferenceDeletedToMap(model *vpcv1.SnapshotReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsSnapshotsSnapshotRemoteReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoreInfo != nil {
 		modelMap["more_info"] = *model.MoreInfo
