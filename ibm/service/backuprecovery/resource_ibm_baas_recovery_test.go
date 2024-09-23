@@ -21,7 +21,7 @@ func TestAccIbmBaasRecoveryBasic(t *testing.T) {
 	snapshotEnvironment := "kPhysical"
 	objectId := 72
 	targetenvironment := "kPhysical"
-	absolutePath := "/"
+	absolutePath := "/data/"
 	restoreEntityType := "kRegular"
 	recoveryAction := "RecoverFiles"
 

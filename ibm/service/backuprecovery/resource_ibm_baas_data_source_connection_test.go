@@ -107,8 +107,6 @@ func testAccCheckIbmBaasDataSourceConnectionDestroy(s *terraform.State) error {
 
 		// Try to find the key
 		_, response, err := backupRecoveryClient.GetDataSourceConnections(getDataSourceConnectionsOptions)
-
-		fmt.Println("response.StatusCode..", response.StatusCode)
 		if err == nil {
 			return fmt.Errorf("Data-Source Connection still exists: %s", rs.Primary.ID)
 		}

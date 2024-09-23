@@ -25,7 +25,11 @@ func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "tenant_id"),
+					resource.TestCheckResourceAttr("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.image_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.url"),
 				),
 			},
 		},
@@ -34,11 +38,8 @@ func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
-		}
-
-		data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
-			tenant_id = 8
-		}
-	`)
+	data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
+		x_ibm_tenant_id = "%s"
+	  }
+	`, tenantId)
 }

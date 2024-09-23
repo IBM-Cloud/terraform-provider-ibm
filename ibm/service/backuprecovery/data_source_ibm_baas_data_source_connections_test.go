@@ -34,7 +34,6 @@ func TestAccIbmBaasDataSourceConnectionsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connection_names.#", "1"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.connection_id"),
 					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.tenant_id", tenantId),
 					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connections.baas_data_source_connections_instance", "connections.0.connector_ids.#", "0"),
@@ -45,21 +44,17 @@ func TestAccIbmBaasDataSourceConnectionsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasDataSourceConnectionsDataSourceConfigBasic(dataSourceConnectionConnectionName string) string {
+func testAccCheckIbmBaasDataSourceConnectionsDataSourceConfigBasic(connectionName string) string {
 	return fmt.Sprintf(`
-		
+	
 	resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
 		x_ibm_tenant_id = "%s"
 		connection_name = "%s"
-		lifecycle {
-			ignore_changes = [connector_ids, network_settings]
-		}
 	  }
 	
 	data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
 		x_ibm_tenant_id = ibm_baas_data_source_connection.baas_data_source_connection_instance.x_ibm_tenant_id
-		connection_names = [ibm_baas_data_source_connection.baas_data_source_connection_instance.connection_name]
-		depends_on = [ibm_baas_data_source_connection.baas_data_source_connection_instance]
+		connection_ids = [ibm_baas_data_source_connection.baas_data_source_connection_instance.id]
 	  }
-		`, tenantId, dataSourceConnectionConnectionName)
+		`, tenantId, connectionName)
 }

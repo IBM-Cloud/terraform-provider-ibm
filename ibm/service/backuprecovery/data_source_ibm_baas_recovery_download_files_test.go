@@ -18,33 +18,45 @@ import (
 )
 
 func TestAccIbmRecoveryDownloadFilesDataSourceBasic(t *testing.T) {
-	recoveryDownloadFilesXIBMTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_recovery_download_files_folders_name_%d", acctest.RandIntRange(10, 100))
+	objectId := 72
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(recoveryDownloadFilesXIBMTenantID),
+				Config: testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name, objectId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_recovery_download_files.recovery_download_files_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_recovery_download_files.recovery_download_files_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_baas_recovery_download_files.recovery_download_files_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(recoveryDownloadFilesXIBMTenantID string) string {
+func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, objectId int) string {
 	return fmt.Sprintf(`
-		data "ibm_recovery_download_files" "recovery_download_files_instance" {
-			x_ibm_tenant_id = "%s"
-			id = "id"
-			startOffset = 1
-			length = 1
-			fileType = "fileType"
-			sourceName = "sourceName"
-			startTime = "startTime"
-			includeTenants = true
+	data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+		x_ibm_tenant_id = "%s"
+		baas_object_id = %d
+	  }
+
+	resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+		x_ibm_tenant_id = "%s"
+		name = "%s"
+		object {
+		  snapshot_id = data.ibm_baas_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
 		}
-	`, recoveryDownloadFilesXIBMTenantID)
+		files_and_folders {
+			absolute_path = "/data/"
+		}
+	  }
+	  data "ibm_baas_recovery_download_files" "recovery_download_files_instance" {
+		x_ibm_tenant_id = "%[1]s"
+		recovery_download_files_id = ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance.id
+	}
+	`, tenantId, objectId, tenantId, name)
+
 }

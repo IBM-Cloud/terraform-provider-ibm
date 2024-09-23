@@ -17,45 +17,46 @@ import (
 )
 
 func TestAccIbmBaasProtectionGroupRunsDataSourceBasic(t *testing.T) {
+	groupName := "tf-pg-10"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(),
+				Config: testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "baas_protection_group_runs_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "total_runs"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.#"),
+					resource.TestCheckResourceAttr("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_name", groupName),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.permissions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.archival_info.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_cloud_archival_direct"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_local_snapshots_deleted"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.environment"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_replication_run"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.on_legal_hold"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic() string {
+func testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(groupName string) string {
 	return fmt.Sprintf(`
-		data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
-			id = "id"
-			X-IBM-Tenant-Id = "X-IBM-Tenant-Id"
-			requestInitiatorType = "UIUser"
-			runId = "runId"
-			startTimeUsecs = 1
-			endTimeUsecs = 1
-			runTypes = [ "kAll" ]
-			includeObjectDetails = true
-			localBackupRunStatus = [ "Accepted" ]
-			replicationRunStatus = [ "Accepted" ]
-			archivalRunStatus = [ "Accepted" ]
-			cloudSpinRunStatus = [ "Accepted" ]
-			numRuns = 1
-			excludeNonRestorableRuns = true
-			runTags = [ "runTags" ]
-			useCachedData = true
-			filterByEndTime = true
-			snapshotTargetTypes = [ "Local" ]
-			onlyReturnSuccessfulCopyRun = true
-			filterByCopyTaskEndTime = true
-		}
-	`)
+	data "ibm_baas_protection_groups" "ibm_baas_protection_groups_instance" {
+		x_ibm_tenant_id = "%s"
+		names = ["%s"]
+	}
+
+	data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
+		x_ibm_tenant_id = "%[1]s"
+		protection_group_id = data.ibm_baas_protection_groups.ibm_baas_protection_groups_instance.protection_groups.0.id
+	}
+	`, tenantId, groupName)
 }

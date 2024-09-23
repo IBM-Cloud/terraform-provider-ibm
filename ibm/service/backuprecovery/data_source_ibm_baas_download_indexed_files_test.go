@@ -17,32 +17,34 @@ import (
 )
 
 func TestAccIbmBaasDownloadIndexedFilesDataSourceBasic(t *testing.T) {
+	objectId := 72
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasDownloadIndexedFilesDataSourceConfigBasic(),
+				Config: testAccCheckIbmBaasDownloadIndexedFilesDataSourceConfigBasic(objectId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_download_indexed_files.baas_download_indexed_files_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_download_indexed_files.baas_download_indexed_files_instance", "snapshots_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_download_indexed_files.baas_download_indexed_files_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_download_indexed_files.baas_download_indexed_files_instance", "x_ibm_tenant_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBaasDownloadIndexedFilesDataSourceConfigBasic() string {
+func testAccCheckIbmBaasDownloadIndexedFilesDataSourceConfigBasic(objectId int) string {
+
 	return fmt.Sprintf(`
-		data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
-			snapshotsId = "snapshotsId"
-			tenantId = 1
-			filePath = "filePath"
-			nvramFile = true
-			retryAttempt = 1
-			startOffset = 1
-			length = 1
+		data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+			x_ibm_tenant_id = "%s"
+			baas_object_id = %d
 		}
-	`)
+
+		data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
+			x_ibm_tenant_id = "%s"
+			snapshotsId = "data.ibm_baas_object_snapshots.baas_object_snapshots_instance.snapshots.0.id"
+			file_path = "/data/"
+		}
+	`, tenantId, objectId, tenantId)
 }

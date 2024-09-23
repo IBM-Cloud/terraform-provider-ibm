@@ -25,7 +25,10 @@ func TestAccIbmBaasSearchProtectedObjectsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBaasSearchProtectedObjectsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttr("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "metadata.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "objects.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "num_results"),
 				),
 			},
 		},
@@ -34,23 +37,8 @@ func TestAccIbmBaasSearchProtectedObjectsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasSearchProtectedObjectsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance" {
-			X-IBM-Tenant-Id = "X-IBM-Tenant-Id"
-			requestInitiatorType = "UIUser"
-			searchString = "searchString"
-			environments = [ "kPhysical" ]
-			snapshotActions = [ "RecoverVMs" ]
-			objectActionKey = "kPhysical"
-			protectionGroupIds = [ "protectionGroupIds" ]
-			objectIds = [ 1 ]
-			subResultSize = 1
-			filterSnapshotFromUsecs = 1
-			filterSnapshotToUsecs = 1
-			osTypes = [ "kLinux" ]
-			sourceIds = [ 1 ]
-			runInstanceIds = [ 1 ]
-			cdpProtectedOnly = true
-			useCachedData = true
-		}
-	`)
+	data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance" {
+		x_ibm_tenant_id = "%s"
+	  }
+	`, tenantId)
 }
