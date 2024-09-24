@@ -249,14 +249,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == "" {
-						return true
-					}
-					return false
-				},
 			},
 			"backup_id": {
 				Description: "The CRN of backup source database",
@@ -1722,6 +1716,11 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		return appendSwitchoverWarning()
 	}
 
+	endpoint, _ := instance.Parameters["service-endpoints"]
+	if endpoint == "public" || endpoint == "public-and-private" {
+		return publicServiceEndpointsWarning()
+	}
+
 	return nil
 
 }
@@ -2735,6 +2734,19 @@ func appendSwitchoverWarning() diag.Diagnostics {
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Note: IBM Cloud Databases released new Hosting Models on May 1. All existing multi-tenant instances will have their resources adjusted to Shared Compute allocations during August 2024. To monitor your current resource needs, and learn about how the transition to Shared Compute will impact your instance, see our documentation https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hosting-models",
+	}
+
+	diags = append(diags, warning)
+
+	return diags
+}
+
+func publicServiceEndpointsWarning() diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "IBM recommends using private endpoints only to improve security by restricting access to your database to the IBM Cloud private network. For more information, please refer to our security best practices, https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-manage-security-compliance.",
 	}
 
 	diags = append(diags, warning)

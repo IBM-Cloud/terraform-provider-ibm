@@ -19,6 +19,14 @@ data "ibm_iam_policy_assignments" "policy_assignment" {
 
 ## Argument Reference
 
+## Timeouts section
+
+The resource includes default timeout settings for the following operations:
+
+* `create` - (Timeout) Defaults to 30 minutes.
+* `update` - (Timeout) Defaults to 30 minutes.
+* `delete` - (Timeout) Defaults to 30 minutes.
+
 
 ## Attribute Reference
 

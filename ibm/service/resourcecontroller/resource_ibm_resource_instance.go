@@ -251,12 +251,14 @@ func ResourceIBMResourceInstance() *schema.Resource {
 			"resource_aliases_url": {
 				Description: "The relative path to the resource aliases for the instance.",
 				Type:        schema.TypeString,
+				Deprecated:  "Remove this attribute's configuration as it's no longer in use and the attribute will be removed in the upcoming major version of the provider 1.71.0.",
 				Computed:    true,
 			},
 
 			"resource_bindings_url": {
 				Description: "The relative path to the resource bindings for the instance.",
 				Type:        schema.TypeString,
+				Deprecated:  "Remove this attribute's configuration as it's no longer in use and the attribute will be removed in the upcoming major version of the provider 1.71.0.",
 				Computed:    true,
 			},
 
@@ -901,7 +903,7 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.LastOperation.Async {
+			if instance.LastOperation != nil && instance.LastOperation.Async != nil && *instance.LastOperation.Async {
 				if *instance.LastOperation.State == RsInstanceFailStatus {
 					return instance, *instance.LastOperation.State, fmt.Errorf("[ERROR] The resource instance '%s' update failed: %v", d.Id(), err)
 				}

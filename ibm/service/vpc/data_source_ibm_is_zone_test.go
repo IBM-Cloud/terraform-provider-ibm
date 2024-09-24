@@ -23,6 +23,8 @@ func TestAccIBMISZoneDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_is_zone.testacc_ds_zone", "name", acc.ISZoneName),
 					resource.TestCheckResourceAttr("data.ibm_is_zone.testacc_ds_zone", "region", acc.RegionName),
+					resource.TestCheckResourceAttr("data.ibm_is_zone.testacc_ds_zone", "data_center", "DAL10"),
+					resource.TestCheckResourceAttr("data.ibm_is_zone.testacc_ds_zone", "universal_name", "us-south-dal10-a"),
 				),
 			},
 		},

@@ -66,6 +66,16 @@ func DataSourceIBMEnSlackDestination() *schema.Resource {
 										Computed:    true,
 										Description: "Slack webhook url",
 									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The Slack Destination type incoming_webhook/direct_message",
+									},
+									"token": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Slack Bot token. Required in case of type is direct_message",
+									},
 								},
 							},
 						},
@@ -183,6 +193,14 @@ func enSlackDestinationConfigParamsToMap(paramsItem en.DestinationConfigOneOfInt
 
 	if params.URL != nil {
 		paramsMap["url"] = params.URL
+	}
+
+	if params.Type != nil {
+		paramsMap["type"] = params.Type
+	}
+
+	if params.Token != nil {
+		paramsMap["token"] = params.Token
 	}
 	return paramsMap
 }

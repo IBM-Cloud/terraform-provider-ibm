@@ -75,7 +75,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 						"service_to_service_enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "ATracker service is enabled to support service to service authentication. If service to service is enabled then set this flag is true and do not supply apikey.",
+							Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
 						},
 					},
 				},
@@ -127,10 +127,15 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 						},
 						"api_key": &schema.Schema{ // pragma: allowlist secret
 							Type:             schema.TypeString,
-							Required:         true,
+							Optional:         true,
 							Sensitive:        true,
 							DiffSuppressFunc: flex.ApplyOnce,
-							Description:      "The user password (api key) for the message hub topic in the Event Streams instance.",
+							Description:      "The user password (api key) for the message hub topic in the Event Streams instance. This is required if service_to_service is not enabled.",
+						},
+						"service_to_service_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
 						},
 					},
 				},
@@ -575,7 +580,10 @@ func resourceIBMAtrackerTargetMapToEventstreamsEndpointPrototype(modelMap map[st
 		brokers = append(brokers, brokersItem.(string))
 	}
 	model.Brokers = brokers
-	model.APIKey = core.StringPtr(modelMap["api_key"].(string)) // pragma: whitelist secret
+	if modelMap["api_key"] != nil && modelMap["api_key"].(string) != "" {
+		model.APIKey = core.StringPtr(modelMap["api_key"].(string)) // pragma: whitelist secret
+	}
+	model.ServiceToServiceEnabled = core.BoolPtr(modelMap["service_to_service_enabled"].(bool))
 	return model, nil
 }
 
@@ -611,6 +619,7 @@ func resourceIBMAtrackerTargetEventstreamsEndpointPrototypeToMap(model *atracker
 	modelMap["topic"] = model.Topic
 	// TODO: remove after deprecation
 	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
+	modelMap["service_to_service_enabled"] = model.ServiceToServiceEnabled
 	return modelMap, nil
 }
 
