@@ -68,7 +68,8 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
-				Type:        schema.TypeList,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 
 			//Computed Attributes
@@ -109,8 +110,8 @@ func resourceIBMPINetworkPortAttachCreate(ctx context.Context, d *schema.Resourc
 		nwportBody.IPAddress = ipaddress
 	}
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		if len(tags.([]interface{})) > 0 {
-			nwportBody.UserTags = flex.ExpandStringList(tags.([]interface{}))
+		if len(flex.FlattenSet(tags.(*schema.Set))) > 0 {
+			nwportBody.UserTags = flex.FlattenSet(tags.(*schema.Set))
 		}
 	}
 	nwportattachBody := &models.NetworkPortUpdate{
