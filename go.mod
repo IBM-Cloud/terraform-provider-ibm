@@ -55,7 +55,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
-	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.2.3
+	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v0.0.0-20240924103421-904a8063e091
 	golang.org/x/crypto v0.23.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
@@ -247,5 +247,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go => /Users/deekshasharma/Documents/prac/ibm-backup-recovery-sdk-go
