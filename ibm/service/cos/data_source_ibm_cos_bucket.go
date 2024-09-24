@@ -556,6 +556,99 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"lifecycle_rule": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"abort_incomplete_multipart_upload": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"days_after_initiation": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"expiration": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"expired_object_delete_marker": {
+										Type:     schema.TypeBool,
+										Computed: true, // API returns false; conflicts with date and days
+									},
+								},
+							},
+						},
+						"filter": {
+							Type:     schema.TypeList,
+							Computed: true,
+							// IBM has filter a required parameter
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"prefix": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"noncurrent_version_expiration": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"noncurrent_days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"transition": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"storag_class": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -794,6 +887,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			if len(abort_mpuRules) > 0 {
 				d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 			}
+		}
+	}
+
+	//lifecycle configuration new resource read
+	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	var outputLifecycleConfig *s3.GetBucketLifecycleConfigurationOutput
+	outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
+	var outputLifecycleConfigptr *s3.LifecycleConfiguration
+	outputLifecycleConfigptr = (*s3.LifecycleConfiguration)(outputLifecycleConfig)
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
+		return err
+	}
+	if outputLifecycleConfigptr.Rules != nil {
+		lifecycleConfiguration := flex.LifecylceRuleGet(outputLifecycleConfigptr.Rules)
+		if len(lifecycleConfiguration) > 0 {
+			d.Set("lifecycle_rule", lifecycleConfiguration)
 		}
 	}
 
