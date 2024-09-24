@@ -6,9 +6,11 @@ package eventstreams
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,11 +51,15 @@ func DataSourceIBMEventStreamsSchemaGlobalCompatibilityRule() *schema.Resource {
 func dataSourceIBMEventStreamsSchemaGlobalCompatibilityRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schemaregistryClient, err := meta.(conns.ClientSession).ESschemaRegistrySession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry session", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	adminURL, instanceCRN, err := getSchemaRuleInstanceURL(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry URL", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	schemaregistryClient.SetServiceURL(adminURL)
 
@@ -61,10 +67,14 @@ func dataSourceIBMEventStreamsSchemaGlobalCompatibilityRuleRead(context context.
 	getOpts.SetRule(schemaCompatibilityRuleType)
 	rule, _, err := schemaregistryClient.GetGlobalRuleWithContext(context, getOpts)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "GetGlobalRule returned error", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if rule.Config == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Unexpected nil config when getting global compatibility rule"))
+		tfErr := flex.TerraformErrorf(err, "Unexpected nil config when getting global compatibility rule", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(getSchemaGlobalCompatibilityRuleID(instanceCRN))
 	d.Set("resource_instance_id", instanceCRN)

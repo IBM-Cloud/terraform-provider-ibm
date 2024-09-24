@@ -5,8 +5,10 @@ package eventstreams
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,11 +52,15 @@ func resourceIBMEventStreamsSchemaGlobalCompatibilityRuleRead(context context.Co
 func resourceIBMEventStreamsSchemaGlobalCompatibilityRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schemaregistryClient, err := meta.(conns.ClientSession).ESschemaRegistrySession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry session", "ibm_event_streams_schema_global_compatibility_rule", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	adminURL, _, err := getSchemaRuleInstanceURL(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry URL", "ibm_event_streams_schema_global_compatibility_rule", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	schemaregistryClient.SetServiceURL(adminURL)
 
@@ -65,7 +71,9 @@ func resourceIBMEventStreamsSchemaGlobalCompatibilityRuleUpdate(context context.
 
 	_, _, err = schemaregistryClient.UpdateGlobalRuleWithContext(context, updateOpts)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "UpdateGlobalRule returned error", "ibm_event_streams_schema_global_compatibility_rule", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return resourceIBMEventStreamsSchemaGlobalCompatibilityRuleRead(context, d, meta)
 }
@@ -74,11 +82,15 @@ func resourceIBMEventStreamsSchemaGlobalCompatibilityRuleUpdate(context context.
 func resourceIBMEventStreamsSchemaGlobalCompatibilityRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schemaregistryClient, err := meta.(conns.ClientSession).ESschemaRegistrySession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry session", "ibm_event_streams_schema_global_compatibility_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	adminURL, _, err := getSchemaRuleInstanceURL(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry URL", "ibm_event_streams_schema_global_compatibility_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	schemaregistryClient.SetServiceURL(adminURL)
 
@@ -89,7 +101,9 @@ func resourceIBMEventStreamsSchemaGlobalCompatibilityRuleDelete(context context.
 
 	_, _, err = schemaregistryClient.UpdateGlobalRuleWithContext(context, updateOpts)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "UpdateGlobalRule returned error", "ibm_event_streams_schema_global_compatibility_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
