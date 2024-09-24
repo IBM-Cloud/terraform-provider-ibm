@@ -1,121 +1,72 @@
-// This output allows protection_group_run_request data to be referenced by other resources and the terraform CLI
+// This output allows baas_connection_registration_token data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
 output "ibm_baas_connection_registration_token" {
   value       = ibm_baas_connection_registration_token.baas_connection_registration_token_instance
   description = "baas_connection_registration_token resource instance"
 }
-// This output allows baas_agent_upgrade_task data to be referenced by other resources and the terraform CLI
+// This output allows baas_protection_group_run_request data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_baas_agent_upgrade_task" {
-  value       = ibm_baas_agent_upgrade_task.baas_agent_upgrade_task_instance
-  description = "baas_agent_upgrade_task resource instance"
+output "ibm_baas_protection_group_run_request" {
+  value       = ibm_baas_protection_group_run_request.baas_protection_group_run_request_instance
+  description = "baas_protection_group_run_request resource instance"
 }
-// This output allows baas_connectors_metadata data to be referenced by other resources and the terraform CLI
+// This output allows baas_data_source_connection data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_baas_connectors_metadata" {
-  value       = ibm_baas_connectors_metadata.baas_connectors_metadata_instance
-  description = "baas_connectors_metadata resource instance"
+output "ibm_baas_data_source_connection" {
+  value       = ibm_baas_data_source_connection.baas_data_source_connection_instance
+  description = "baas_data_source_connection resource instance"
 }
-
-output "ibm_protection_group_run_request" {
-  value       = ibm_protection_group_run_request.protection_group_run_request_instance
-  description = "protection_group_run_request resource instance"
-}
-// This output allows recovery_download_files_folders data to be referenced by other resources and the terraform CLI
+// This output allows baas_recovery_download_files_folders data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_recovery_download_files_folders" {
-  value       = ibm_recovery_download_files_folders.recovery_download_files_folders_instance
-  description = "recovery_download_files_folders resource instance"
+output "ibm_baas_recovery_download_files_folders" {
+  value       = ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance
+  description = "baas_recovery_download_files_folders resource instance"
 }
-// This output allows perform_action_on_protection_group_run_request data to be referenced by other resources and the terraform CLI
+// This output allows baas_restore_points data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_perform_action_on_protection_group_run_request" {
-  value       = ibm_perform_action_on_protection_group_run_request.perform_action_on_protection_group_run_request_instance
-  description = "perform_action_on_protection_group_run_request resource instance"
+output "ibm_baas_restore_points" {
+  value       = ibm_baas_restore_points.baas_restore_points_instance
+  description = "baas_restore_points resource instance"
 }
-// This output allows protection_group data to be referenced by other resources and the terraform CLI
+// This output allows baas_perform_action_on_protection_group_run_request data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_protection_group" {
-  value       = ibm_protection_group.protection_group_instance
-  description = "protection_group resource instance"
+output "ibm_baas_perform_action_on_protection_group_run_request" {
+  value       = ibm_baas_perform_action_on_protection_group_run_request.baas_perform_action_on_protection_group_run_request_instance
+  description = "baas_perform_action_on_protection_group_run_request resource instance"
 }
-// This output allows protection_policy data to be referenced by other resources and the terraform CLI
+// This output allows baas_protection_group data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_protection_policy" {
-  value       = ibm_protection_policy.protection_policy_instance
-  description = "protection_policy resource instance"
+output "ibm_baas_protection_group" {
+  value       = ibm_baas_protection_group.baas_protection_group_instance
+  description = "baas_protection_group resource instance"
 }
-// This output allows recovery data to be referenced by other resources and the terraform CLI
+// This output allows baas_protection_policy data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_recovery" {
-  value       = ibm_recovery.recovery_instance
-  description = "recovery resource instance"
+output "ibm_baas_protection_policy" {
+  value       = ibm_baas_protection_policy.baas_protection_policy_instance
+  description = "baas_protection_policy resource instance"
 }
-// This output allows search_indexed_object data to be referenced by other resources and the terraform CLI
+// This output allows baas_recovery data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_search_indexed_object" {
-  value       = ibm_search_indexed_object.search_indexed_object_instance
-  description = "search_indexed_object resource instance"
+output "ibm_baas_recovery" {
+  value       = ibm_baas_recovery.baas_recovery_instance
+  description = "baas_recovery resource instance"
 }
-// This output allows source_registration data to be referenced by other resources and the terraform CLI
+// This output allows baas_search_indexed_object data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_source_registration" {
-  value       = ibm_source_registration.source_registration_instance
-  description = "source_registration resource instance"
+output "ibm_baas_search_indexed_object" {
+  value       = ibm_baas_search_indexed_object.baas_search_indexed_object_instance
+  description = "baas_search_indexed_object resource instance"
 }
-// This output allows update_protection_group_run_request data to be referenced by other resources and the terraform CLI
+// This output allows baas_source_registration data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_update_protection_group_run_request" {
-  value       = ibm_update_protection_group_run_request.update_protection_group_run_request_instance
-  description = "update_protection_group_run_request resource instance"
+output "ibm_baas_source_registration" {
+  value       = ibm_baas_source_registration.baas_source_registration_instance
+  description = "baas_source_registration resource instance"
 }
-// This output allows protection_group_state data to be referenced by other resources and the terraform CLI
+// This output allows baas_update_protection_group_run_request data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_protection_group_state" {
-  value       = ibm_protection_group_state.protection_group_state_instance
-  description = "protection_group_state resource instance"
+output "ibm_baas_update_protection_group_run_request" {
+  value       = ibm_baas_update_protection_group_run_request.baas_update_protection_group_run_request_instance
+  description = "baas_update_protection_group_run_request resource instance"
 }
-
-// This output allows common_source_registration_request_params data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_common_source_registration_request_params" {
-  value       = ibm_common_source_registration_request_params.common_source_registration_request_params_instance
-  description = "common_source_registration_request_params resource instance"
-}
-// This output allows create_protection_group_run_request data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_create_protection_group_run_request" {
-  value       = ibm_create_protection_group_run_request.create_protection_group_run_request_instance
-  description = "create_protection_group_run_request resource instance"
-}
-// This output allows perform_action_on_protection_group_run_request data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_perform_action_on_protection_group_run_request" {
-  value       = ibm_perform_action_on_protection_group_run_request.perform_action_on_protection_group_run_request_instance
-  description = "perform_action_on_protection_group_run_request resource instance"
-}
-// This output allows protection_group_reuqest_params data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_protection_group_reuqest_params" {
-  value       = ibm_protection_group_reuqest_params.protection_group_reuqest_params_instance
-  description = "protection_group_reuqest_params resource instance"
-}
-// This output allows protection_policy data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_protection_policy" {
-  value       = ibm_protection_policy.protection_policy_instance
-  description = "protection_policy resource instance"
-}
-// This output allows update_protection_group_run_request data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_update_protection_group_run_request" {
-  value       = ibm_update_protection_group_run_request.update_protection_group_run_request_instance
-  description = "update_protection_group_run_request resource instance"
-}
-// This output allows protection_policy_state data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_protection_policy_state" {
-  value       = ibm_protection_policy_state.protection_policy_state_instance
-  description = "protection_policy_state resource instance"
-}
-

@@ -15,39 +15,6 @@ variable "baas_connection_registration_token_x_ibm_tenant_id" {
   default     = "x_ibm_tenant_id"
 }
 
-// Resource arguments for baas_agent_upgrade_task
-variable "baas_agent_upgrade_task_x_ibm_tenant_id" {
-  description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
-  type        = string
-  default     = "x_ibm_tenant_id"
-}
-variable "baas_agent_upgrade_task_agent_i_ds" {
-  description = "Specifies the agents upgraded in the task."
-  type        = list(number)
-  default     = [ 1 ]
-}
-variable "baas_agent_upgrade_task_description" {
-  description = "Specifies the description of the task."
-  type        = string
-  default     = "description"
-}
-variable "baas_agent_upgrade_task_name" {
-  description = "Specifies the name of the task."
-  type        = string
-  default     = "name"
-}
-variable "baas_agent_upgrade_task_schedule_end_time_usecs" {
-  description = "Specifies the time before which the upgrade task should start execution as a Unix epoch Timestamp (in microseconds). If this is not specified the task will start anytime after scheduleTimeUsecs."
-  type        = number
-  default     = 1
-}
-variable "baas_agent_upgrade_task_schedule_time_usecs" {
-  description = "Specifies the time when the task should start execution as a Unix epoch Timestamp (in microseconds). If no schedule is specified, the task will start immediately."
-  type        = number
-  default     = 1
-}
-
-
 // Resource arguments for baas_protection_group_run_request
 variable "baas_protection_group_run_request_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
@@ -70,25 +37,6 @@ variable "baas_data_source_connection_connection_name" {
   description = "Specifies the name of the connection. For a given tenant, different connections can't have the same name. However, two (or more) different tenants can each have a connection with the same name."
   type        = string
   default     = "connection_name"
-}
-
-// Resource arguments for baas_data_source_connector_registration
-variable "baas_data_source_connector_registration_x_ibm_tenant_id" {
-  description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
-  type        = string
-  default     = "x_ibm_tenant_id"
-}
-
-// Resource arguments for baas_download_agent
-variable "baas_download_agent_x_ibm_tenant_id" {
-  description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
-  type        = string
-  default     = "x_ibm_tenant_id"
-}
-variable "baas_download_agent_platform" {
-  description = "Specifies the platform for which agent needs to be downloaded."
-  type        = string
-  default     = "kWindows"
 }
 
 // Resource arguments for baas_recovery_download_files_folders
@@ -411,13 +359,6 @@ variable "baas_agent_upgrade_tasks_ids" {
   default     = [ 0 ]
 }
 
-// Data source arguments for baas_connectors_metadata
-variable "data_baas_connectors_metadata_x_ibm_tenant_id" {
-  description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
-  type        = string
-  default     = "x_ibm_tenant_id"
-}
-
 // Data source arguments for baas_data_source_connections
 variable "baas_data_source_connections_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
@@ -457,18 +398,21 @@ variable "baas_data_source_connectors_connection_id" {
   default     = "placeholder"
 }
 
-// Data source arguments for baas_connector_status
-variable "baas_connector_status_x_ibm_tenant_id" {
+// Data source arguments for baas_download_agent
+variable "baas_download_agent_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
   type        = string
   default     = "x_ibm_tenant_id"
 }
-
-// Data source arguments for baas_connector_logs
-variable "baas_connector_logs_x_ibm_tenant_id" {
-  description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
+variable "baas_download_agent_platform" {
+  description = "Specifies the platform for which agent needs to be downloaded."
   type        = string
-  default     = "x_ibm_tenant_id"
+  default     = "kWindows"
+}
+variable "baas_download_agent_linux_params" {
+  description = "Linux agent parameters."
+  type        = list(object({ example=string }))
+  default     = { example: "object" }
 }
 
 // Data source arguments for baas_object_snapshots

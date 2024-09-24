@@ -22,7 +22,7 @@ func TestAccIbmBaasProtectionGroupsDataSourceBasic(t *testing.T) {
 	policyName := fmt.Sprintf("tf_policyname_%d", acctest.RandIntRange(10, 100))
 	objectId := 72
 	environment := "kPhysical"
-	includedPath := "/data/"
+	includedPath := "/data1/data/"
 	protectionType := "kFile"
 
 	resource.Test(t, resource.TestCase{
@@ -58,7 +58,7 @@ func testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(name, environment,
 					incremental{
 						schedule{
 								day_schedule {
-									frequency = 1
+									frequency = 10
 								}
 								unit = "Days"
 							}
@@ -96,7 +96,7 @@ func testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(name, environment,
 		}
 	}
 		data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
-			tenant_id = "%[1]s"
+			x_ibm_tenant_id = "%[1]s"
 			ids = [ ibm_baas_protection_group.baas_protection_group_instance.id ]
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)

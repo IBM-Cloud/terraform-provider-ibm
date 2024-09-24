@@ -3,14 +3,9 @@
 These examples illustrate how to use the resources and data sources associated with IBM Backup recovery API.
 
 The following resources are supported:
-* ibm_baas_agent_upgrade_task
 * ibm_baas_connection_registration_token
-* ibm_baas_data_source_connection
-* ibm_baas_data_source_connection_patch
-* ibm_baas_data_source_connector_registration
-* ibm_baas_download_agent
-* ibm_baas_connectors_metadata
 * ibm_baas_protection_group_run_request
+* ibm_baas_data_source_connection
 * ibm_baas_recovery_download_files_folders
 * ibm_baas_restore_points
 * ibm_baas_perform_action_on_protection_group_run_request
@@ -23,26 +18,23 @@ The following resources are supported:
 
 The following data sources are supported:
 * ibm_baas_agent_upgrade_tasks
-* ibm_baas_connector_logs
-* ibm_baas_connector_status
-* ibm_baas_connectors_metadata
 * ibm_baas_data_source_connections
 * ibm_baas_data_source_connectors
-* ibm_baas_download_indexed_files
+* ibm_baas_download_agent
 * ibm_baas_object_snapshots
-* ibm_baas_protection_group_run
-* ibm_baas_protection_group_runs
+* ibm_baas_search_objects
+* ibm_baas_search_protected_objects
 * ibm_baas_protection_group
 * ibm_baas_protection_groups
+* ibm_baas_protection_group_run
+* ibm_baas_protection_group_runs
 * ibm_baas_protection_policies
 * ibm_baas_protection_policy
 * ibm_baas_recovery
 * ibm_baas_recoveries
-* ibm_baas_search_objects
-* ibm_baas_search_protected_objects
 * ibm_baas_source_registrations
 * ibm_baas_source_registration
-
+* ibm_baas_download_indexed_files
 
 ## Usage
 
@@ -80,58 +72,6 @@ resource "ibm_baas_connection_registration_token" "baas_connection_registration_
 | Name | Description |
 |------|-------------|
 | registration_token |  |
-
-### Resource: ibm_baas_agent_upgrade_task
-
-```hcl
-resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
-  x_ibm_tenant_id = var.baas_agent_upgrade_task_x_ibm_tenant_id
-  agent_i_ds = var.baas_agent_upgrade_task_agent_i_ds
-  description = var.baas_agent_upgrade_task_description
-  name = var.baas_agent_upgrade_task_name
-  schedule_end_time_usecs = var.baas_agent_upgrade_task_schedule_end_time_usecs
-  schedule_time_usecs = var.baas_agent_upgrade_task_schedule_time_usecs
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
-| agent_i_ds | Specifies the agents upgraded in the task. | `list(number)` | false |
-| description | Specifies the description of the task. | `string` | false |
-| name | Specifies the name of the task. | `string` | false |
-| schedule_end_time_usecs | Specifies the time before which the upgrade task should start execution as a Unix epoch Timestamp (in microseconds). If this is not specified the task will start anytime after scheduleTimeUsecs. | `number` | false |
-| schedule_time_usecs | Specifies the time when the task should start execution as a Unix epoch Timestamp (in microseconds). If no schedule is specified, the task will start immediately. | `number` | false |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| agents | Specifies the upgrade information for each agent. |
-| cluster_version | Specifies the version to which agents are upgraded. |
-| end_time_usecs | Specifies the time when the upgrade task completed execution as a Unix epoch Timestamp (in microseconds). |
-| error | Object that holds the error object. |
-| is_retryable | Specifies if a task can be retried. |
-| retried_task_id | Specifies ID of a task which was retried if type is 'Retry'. |
-| start_time_usecs | Specifies the time, as a Unix epoch timestamp in microseconds, when the task started execution. |
-| status | Specifies the status of the task.<br> 'Scheduled' indicates that the upgrade task is yet to start.<br> 'Running' indicates that the upgrade task has started execution.<br> 'Succeeded' indicates that the upgrade task completed without an error.<br> 'Failed' indicates that upgrade has failed for all agents. 'PartiallyFailed' indicates that upgrade has failed for some agents. |
-| type | Specifes the type of task.<br> 'Auto' indicates an auto agent upgrade task which is started after a cluster upgrade.<br> 'Manual' indicates a schedule based agent upgrade task.<br> 'Retry' indicates an agent upgrade task which was retried. |
-
-### Resource: ibm_baas_connectors_metadata
-
-```hcl
-resource "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
-}
-```
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| connector_image_metadata | Specifies information about the connector images for various platforms. |
 
 ### Resource: ibm_baas_protection_group_run_request
 
@@ -178,51 +118,7 @@ resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance
 | connector_ids | Specifies the IDs of the connectors in this connection. |
 | network_settings | Specifies the common network settings for the connectors associated with this connection. |
 | registration_token | Specifies a token that can be used to register a connector against this connection. |
-
-### Resource: ibm_baas_data_source_connector_registration
-
-```hcl
-resource "ibm_baas_data_source_connector_registration" "baas_data_source_connector_registration_instance" {
-  x_ibm_tenant_id = var.baas_data_source_connector_registration_x_ibm_tenant_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| cluster_side_ip | Specifies the IP of the connector's NIC facing the cluster. |
-| connection_id | Specifies the ID of the connection to which this connector belongs. |
-| connector_name | Specifies the name of the connector. The name of a connector need not be unique within a tenant or across tenants. The name of the connector can be updated as needed. |
-| connector_status | Specifies status information for the data-source connector. For example if it's currently connected to the cluster, when it last connected to the cluster successfully, etc. |
-| software_version | Specifies the connector's software version. |
-| tenant_side_ip | Specifies the IP of the connector's NIC facing the sources of the tenant to which the connector belongs. |
-
-### Resource: ibm_baas_download_agent
-
-```hcl
-resource "ibm_baas_download_agent" "baas_download_agent_instance" {
-  x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
-  linux_params = var.baas_download_agent_linux_params
-  platform = var.baas_download_agent_platform
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
-| linux_params | Linux agent parameters. | `` | false |
-| platform | Specifies the platform for which agent needs to be downloaded. | `string` | true |
+| tenant_id | Specifies the tenant ID of the connection. |
 
 ### Resource: ibm_baas_recovery_download_files_folders
 
@@ -271,7 +167,7 @@ resource "ibm_baas_restore_points" "baas_restore_points_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | end_time_usecs | Specifies the end time specified as a Unix epoch Timestamp in microseconds. | `number` | true |
-| environment | Specifies the protection source environment type. | `string` | false |
+| environment | Specifies the protection source environment type. | `string` | true |
 | protection_group_ids | Specifies the jobs for which to get the full snapshot information. | `list(string)` | true |
 | source_id | Specifies the id of the Protection Source which is to be restored. | `number` | false |
 | start_time_usecs | Specifies the start time specified as a Unix epoch Timestamp in microseconds. | `number` | true |
@@ -616,26 +512,6 @@ data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
 |------|-------------|
 | tasks | Specifies the list of agent upgrade tasks. |
 
-### Data source: ibm_baas_connectors_metadata
-
-```hcl
-data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
-  x_ibm_tenant_id = var.data_baas_connectors_metadata_x_ibm_tenant_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| connector_image_metadata | Specifies information about the connector images for various platforms. |
-
 ### Data source: ibm_baas_data_source_connections
 
 ```hcl
@@ -686,11 +562,13 @@ data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
 |------|-------------|
 | connectors |  |
 
-### Data source: ibm_baas_connector_status
+### Data source: ibm_baas_download_agent
 
 ```hcl
-data "ibm_baas_connector_status" "baas_connector_status_instance" {
-  x_ibm_tenant_id = var.baas_connector_status_x_ibm_tenant_id
+data "ibm_baas_download_agent" "baas_download_agent_instance" {
+  x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
+  platform = var.baas_download_agent_platform
+  linux_params = var.baas_download_agent_linux_params
 }
 ```
 
@@ -699,34 +577,8 @@ data "ibm_baas_connector_status" "baas_connector_status_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| cluster_connection_status | Specifies the data-source connector-cluster connectivity status. |
-| is_certificate_valid | Flag to indicate if connector certificate is valid. |
-| registration_status | Specifies the data-source connector registration status. |
-
-### Data source: ibm_baas_connector_logs
-
-```hcl
-data "ibm_baas_connector_logs" "baas_connector_logs_instance" {
-  x_ibm_tenant_id = var.baas_connector_logs_x_ibm_tenant_id
-}
-```
-
-#### Inputs
-
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
-
-#### Outputs
-
-| Name | Description |
-|------|-------------|
-| connector_logs | Specifies the data-source connector logs. |
+| platform | Specifies the platform for which agent needs to be downloaded. | `string` | true |
+| linux_params | Linux agent parameters. | `` | false |
 
 ### Data source: ibm_baas_object_snapshots
 
@@ -1396,7 +1248,9 @@ data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
 
 ## Assumptions
 
-1. End user has connectorURL endpoint value
+1. End user has connector endpoint URL
+2. End user has tenantID
+3. End user has BAAS cluster URL
 
 ## Notes
 
@@ -1407,19 +1261,18 @@ This service includes certain resources that do not have fully implemented CRUD 
 
 ***Create:*** A `ibm_baas_protection_group_run_request` resource is available for creating new protection group run.
 
-***Update:*** protection group run updates are managed through a separate `ibm_baas_update_protection_group_run_request` resource. Note that the `ibm_baas_protection_group_run_request` and `ibm_baas_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
+***Update:*** protection group run updates are managed through a separate resource `ibm_baas_update_protection_group_run_request`. 
+Note that the `ibm_baas_protection_group_run_request` and `ibm_baas_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
 
 ***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_baas_update_protection_group_run_request or ibm_baas_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
 
 
 #### Other resources that do not support update and delete:
 
-Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend. Similarly updating these resources will only update the terraform statefile without affecting the actual backend resources.
+Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend. Similarly updating these resources will throw an error in the plan phase stating that the resource cannot be updated.
 - ibm_baas_perform_action_on_protection_group_run_request
 - ibm_baas_recovery_download_files_folders
 - ibm_baas_agent_upgrade_task
-- ibm_baas_download_agent
-- ibm_baas_search_indexed_object
 - ibm_baas_protection_group_state
 - ibm_baas_connection_registration_token
 - ibm_baas_restore_points
