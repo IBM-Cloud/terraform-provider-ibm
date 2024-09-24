@@ -152,8 +152,9 @@ github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3bt
 github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
-github.com/IBM/go-sdk-core/v5 v5.17.4 h1:VGb9+mRrnS2HpHZFM5hy4J6ppIWnwNrw0G+tLSgcJLc=
 github.com/IBM/go-sdk-core/v5 v5.17.4/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
+github.com/IBM/go-sdk-core/v5 v5.17.5 h1:AjGC7xNee5tgDIjndekBDW5AbypdERHSgib3EZ1KNsA=
+github.com/IBM/go-sdk-core/v5 v5.17.5/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
 github.com/IBM/ibm-cos-sdk-go v1.10.3 h1:YfZSLqMiCrqDPbr3r+amY2sicIXlrd+3L5pok6QRXIQ=
 github.com/IBM/ibm-cos-sdk-go v1.10.3/go.mod h1:T9x7pC47DUd5jD/TMFzlvly39P6EdW5wOemA78XEo2g=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0 h1:U7EmXSfv7jtugRpTpOkPUmgS/xiNKtGfKVH3BGyC1hg=
@@ -185,8 +186,8 @@ github.com/IBM/scc-go-sdk/v5 v5.4.1 h1:RXIuxOo9/hxkWyHCI69ae+KIJgSbXcAkJwTEl+fO3
 github.com/IBM/scc-go-sdk/v5 v5.4.1/go.mod h1:2xQTDgNXG5QMEfQxBDKB067z+5ha6OgcaKCTcdGDAo8=
 github.com/IBM/schematics-go-sdk v0.3.0 h1:Vwxw85SONflakiBsNHAfViKLyp9zJiH5/hh6SewOP5Q=
 github.com/IBM/schematics-go-sdk v0.3.0/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
-github.com/IBM/secrets-manager-go-sdk/v2 v2.0.6 h1:bF6bAdI4wDZSje6+Yx1mJxvirboxO+uMuKhzgfRCNxE=
-github.com/IBM/secrets-manager-go-sdk/v2 v2.0.6/go.mod h1:XWYnbcc5vN1RnKwk/fCzfD8aZd7At/Y1/b6c+oDyliU=
+github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7 h1:5lKt1rHuKaAaiZtbPfsF8dgiko/gGbVgreiut3zU128=
+github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7/go.mod h1:RglK3v6CPe3T1myRtQCD6z+nBygXvNJwufAon0qcZok=
 github.com/IBM/vmware-go-sdk v0.1.2 h1:5lKWFyInWz9e2hwGsoFTEoLa1jYkD30SReN0fQ10w9M=
 github.com/IBM/vmware-go-sdk v0.1.2/go.mod h1:2UGPBJju3jiv5VKKBBm9a5L6bzF/aJdKOKAzJ7HaOjA=
 github.com/IBM/vpc-beta-go-sdk v0.6.0 h1:wfM3AcW3zOM3xsRtZ+EA6+sESlGUjQ6Yf4n5QQyz4uc=
