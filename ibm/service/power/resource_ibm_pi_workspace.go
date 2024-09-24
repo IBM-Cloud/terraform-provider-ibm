@@ -60,11 +60,12 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_UserTags: {
-				Description: "The user tags attached to this resource.",
+				Description: "List of user tags attached to the resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
-				Type:        schema.TypeList,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 
 			// Attributes
@@ -110,8 +111,8 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 
 	// Add user tags for newly created workspace
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		if len(tags.([]interface{})) > 0 {
-			userTags := flex.ExpandStringList(tags.([]interface{}))
+		if len(flex.FlattenSet(tags.(*schema.Set))) > 0 {
+			userTags := flex.FlattenSet(tags.(*schema.Set))
 			gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
 			if err != nil {
 				log.Printf("[ERROR] Error getting global tagging client settings: %s", err)
