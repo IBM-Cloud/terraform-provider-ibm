@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccIbmLogsAlertDataSourceBasic(t *testing.T) {
-	alertName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	alertName := fmt.Sprintf("tf_name_応答時間モニター!_%d", acctest.RandIntRange(10, 100))
 	alertIsActive := "false"
 	alertSeverity := "info_or_unspecified"
 

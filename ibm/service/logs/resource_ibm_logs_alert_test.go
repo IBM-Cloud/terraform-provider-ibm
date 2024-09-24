@@ -21,7 +21,7 @@ import (
 
 func TestAccIbmLogsAlertBasic(t *testing.T) {
 	var conf logsv0.Alert
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("答時間モニター_%d", acctest.RandIntRange(10, 100))
 	isActive := "false"
 	severity := "info_or_unspecified"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
