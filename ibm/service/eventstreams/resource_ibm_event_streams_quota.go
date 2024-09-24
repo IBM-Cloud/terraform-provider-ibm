@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,7 +58,9 @@ func ResourceIBMEventStreamsQuota() *schema.Resource {
 func resourceIBMEventStreamsQuotaCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	adminrestClient, instanceCRN, entity, err := getQuotaClientInstanceEntity(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams instance", "ibm_event_streams_quota", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createQuotaOptions := &adminrestv1.CreateQuotaOptions{}
@@ -76,8 +79,9 @@ func resourceIBMEventStreamsQuotaCreate(context context.Context, d *schema.Resou
 
 	response, err := adminrestClient.CreateQuotaWithContext(context, createQuotaOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateQuota failed with error: %s and response: %s\n", err, response)
-		return diag.FromErr(fmt.Errorf("CreateQuota for %s failed with error: %s", entity, err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateQuota failed with response: %s", response), "ibm_event_streams_quota", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(getQuotaID(instanceCRN, entity))
 
@@ -87,19 +91,24 @@ func resourceIBMEventStreamsQuotaCreate(context context.Context, d *schema.Resou
 func resourceIBMEventStreamsQuotaRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	adminrestClient, instanceCRN, entity, err := getQuotaClientInstanceEntity(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams instance", "ibm_event_streams_quota", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getQuotaOptions := &adminrestv1.GetQuotaOptions{}
 	getQuotaOptions.SetEntityName(entity)
 	quota, response, err := adminrestClient.GetQuotaWithContext(context, getQuotaOptions)
 	if err != nil || quota == nil {
-		log.Printf("[DEBUG] GetQuota failed with error: %s and response: %s\n", err, response)
 		d.SetId("")
+		var tfErr *flex.TerraformProblem
 		if response != nil && response.StatusCode == 404 {
-			return diag.FromErr(fmt.Errorf("Quota for '%s' does not exist", entity))
+			tfErr = flex.TerraformErrorf(err, fmt.Sprintf("Quota for '%s' does not exist", entity), "ibm_event_streams_quota", "read")
+		} else {
+			tfErr = flex.TerraformErrorf(err, fmt.Sprintf("GetQuota failed with response: %s", response), "ibm_event_streams_quota", "read")
 		}
-		return diag.FromErr(fmt.Errorf("GetQuota for '%s' failed with error: %s", entity, err))
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set("resource_instance_id", instanceCRN)
@@ -115,7 +124,9 @@ func resourceIBMEventStreamsQuotaUpdate(context context.Context, d *schema.Resou
 	if d.HasChange("producer_byte_rate") || d.HasChange("consumer_byte_rate") {
 		adminrestClient, _, entity, err := getQuotaClientInstanceEntity(d, meta)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, "Error getting Event Streams instance", "ibm_event_streams_quota", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		updateQuotaOptions := &adminrestv1.UpdateQuotaOptions{}
@@ -125,8 +136,9 @@ func resourceIBMEventStreamsQuotaUpdate(context context.Context, d *schema.Resou
 
 		response, err := adminrestClient.UpdateQuotaWithContext(context, updateQuotaOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateQuota failed with error: %s and response: %s\n", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateQuota failed with error: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateQuota failed with response: %s", response), "ibm_event_streams_quota", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return resourceIBMEventStreamsQuotaRead(context, d, meta)
@@ -135,7 +147,9 @@ func resourceIBMEventStreamsQuotaUpdate(context context.Context, d *schema.Resou
 func resourceIBMEventStreamsQuotaDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	adminrestClient, _, entity, err := getQuotaClientInstanceEntity(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams instance", "ibm_event_streams_quota", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteQuotaOptions := &adminrestv1.DeleteQuotaOptions{}
@@ -143,10 +157,10 @@ func resourceIBMEventStreamsQuotaDelete(context context.Context, d *schema.Resou
 
 	response, err := adminrestClient.DeleteQuotaWithContext(context, deleteQuotaOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteQuota failed with error: %s and response: %s\n", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteQuota failed with error %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteQuota failed with response: %s", response), "ibm_event_streams_quota", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
 	d.SetId("")
 	return nil
 }

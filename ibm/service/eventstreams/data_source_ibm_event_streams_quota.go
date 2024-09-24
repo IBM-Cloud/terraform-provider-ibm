@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,18 +51,23 @@ func DataSourceIBMEventStreamsQuota() *schema.Resource {
 func dataSourceIBMEventStreamsQuotaRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	adminrestClient, instanceCRN, entity, err := getQuotaClientInstanceEntity(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams instance", "ibm_event_streams_quota", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getQuotaOptions := &adminrestv1.GetQuotaOptions{}
 	getQuotaOptions.SetEntityName(entity)
 	quota, response, err := adminrestClient.GetQuotaWithContext(context, getQuotaOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetQuota failed with error: %s and response: %s\n", err, response)
+		var tfErr *flex.TerraformProblem
 		if response != nil && response.StatusCode == 404 {
-			return diag.FromErr(fmt.Errorf("Quota for '%s' does not exist", entity))
+			tfErr = flex.TerraformErrorf(err, fmt.Sprintf("Quota for '%s' does not exist", entity), "ibm_event_streams_quota", "read")
+		} else {
+			tfErr = flex.TerraformErrorf(err, fmt.Sprintf("GetQuota failed with response: %s", response), "ibm_event_streams_quota", "read")
 		}
-		return diag.FromErr(fmt.Errorf("GetQuota for '%s' failed %s", entity, err))
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set("resource_instance_id", instanceCRN)
