@@ -244,14 +244,12 @@ func ResourceIBMCbrZoneValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func getZone(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (result *contextbasedrestrictionsv1.Zone, version string, found bool, err error) {
+func getZone(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (result *contextbasedrestrictionsv1.Zone, response *core.DetailedResponse, found bool, err error) {
 	getZoneOptions := cbrClient.NewGetZoneOptions(id)
 
-	var response *core.DetailedResponse
 	result, response, err = cbrClient.GetZoneWithContext(context, getZoneOptions)
 	found = err == nil
 	if found {
-		version = response.Headers.Get("Etag")
 		return
 	}
 	if response != nil && response.StatusCode == 404 {
@@ -311,14 +309,13 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*zone.ID)
 
-	version := response.Headers.Get("Etag")
-	if err := ResourceIBMCbrZoneSetData(zone, version, d); err != nil {
+	if err := ResourceIBMCbrZoneSetData(response, zone, d); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", err))
 	}
 	return nil
 }
 
-func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, version string, d *schema.ResourceData) error {
+func ResourceIBMCbrZoneSetData(response *core.DetailedResponse, zone *contextbasedrestrictionsv1.Zone, d *schema.ResourceData) error {
 	if err := d.Set("name", zone.Name); err != nil {
 		return fmt.Errorf("Error setting name: %s", err)
 	}
@@ -371,7 +368,7 @@ func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, version st
 	if err = d.Set("last_modified_by_id", zone.LastModifiedByID); err != nil {
 		return fmt.Errorf("Error setting last_modified_by_id: %s", err)
 	}
-	if err = d.Set("version", version); err != nil {
+	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
 		return fmt.Errorf("Error setting version: %s", err)
 	}
 
@@ -384,10 +381,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	var zone *contextbasedrestrictionsv1.Zone
-	var version string
-	var found bool
-	zone, version, found, err = getZone(contextBasedRestrictionsClient, context, d.Id())
+	zone, response, found, err := getZone(contextBasedRestrictionsClient, context, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -396,7 +390,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		return nil
 	}
 
-	if fromErr := ResourceIBMCbrZoneSetData(zone, version, d); fromErr != nil {
+	if fromErr := ResourceIBMCbrZoneSetData(response, zone, d); fromErr != nil {
 		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", fromErr))
 	}
 
@@ -416,10 +410,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	var currentZone *contextbasedrestrictionsv1.Zone
-	var version string
-	var found bool
-	currentZone, version, found, err = getZone(contextBasedRestrictionsClient, context, zoneId)
+	currentZone, response, found, err := getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -428,6 +419,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		return nil
 	}
 
+	version := response.Headers.Get("Etag")
 	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, version)
 
 	if _, ok := d.GetOk("name"); ok {
@@ -473,9 +465,8 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG] ReplaceZoneWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ReplaceZoneWithContext failed %s\n%s", err, response))
 	}
-
-	version = response.Headers.Get("Etag")
-	if err := ResourceIBMCbrZoneSetData(zone, version, d); err != nil {
+	
+	if err := ResourceIBMCbrZoneSetData(response, zone, d); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", err))
 	}
 
