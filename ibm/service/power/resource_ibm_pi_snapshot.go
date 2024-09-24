@@ -63,7 +63,8 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				ForceNew:    true,
 				Optional:    true,
-				Type:        schema.TypeList,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
 			},
 			Arg_VolumeIDs: {
 				Description:      "A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.",
@@ -136,10 +137,9 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if v, ok := d.GetOk(Arg_UserTags); ok {
-		if len(v.([]interface{})) > 0 {
-			snapshotBody.UserTags = flex.ExpandStringList(v.([]interface{}))
+		if len(flex.FlattenSet(v.(*schema.Set))) > 0 {
+			snapshotBody.UserTags = flex.FlattenSet(v.(*schema.Set))
 		}
-
 	}
 
 	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
