@@ -308,14 +308,14 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*rule.ID)
 
-	if err := resourceIBMCbrRuleSetData(response, rule, d); err != nil {
+	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMCbrRuleSetData(response *core.DetailedResponse, rule *contextbasedrestrictionsv1.Rule, d *schema.ResourceData) error {
+func resourceIBMCbrRuleSetData(rule *contextbasedrestrictionsv1.Rule, response *core.DetailedResponse, d *schema.ResourceData) error {
 	if err := d.Set("description", rule.Description); err != nil {
 		return fmt.Errorf("Error setting description: %s", err)
 	}
@@ -409,8 +409,8 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
 	}
 
-	if fromErr := resourceIBMCbrRuleSetData(response, rule, d); fromErr != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", fromErr))
+	if err = resourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
 	}
 
 	return nil
@@ -476,7 +476,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("ReplaceRuleWithContext failed %s\n%s", err, response))
 	}
 
-	if err := resourceIBMCbrRuleSetData(response, rule, d); err != nil {
+	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
 	}
 

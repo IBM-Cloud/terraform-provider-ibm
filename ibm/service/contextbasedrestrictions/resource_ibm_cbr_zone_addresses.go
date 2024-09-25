@@ -246,9 +246,7 @@ func resourceReplaceZoneAddresses(context context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	version := response.Headers.Get("Etag")
-
-	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, version)
+	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, response.Headers.Get("Etag"))
 	replaceZoneOptions.SetName(*currentZone.Name)
 	replaceZoneOptions.SetAccountID(*currentZone.AccountID)
 	if currentZone.Description != nil {
