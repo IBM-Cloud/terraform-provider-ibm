@@ -1,6 +1,6 @@
 
 provider "ibm" {
-  ibmcloud_api_key = "yXtlDkzR8R4oQGizdR3mms-07gEeh9IXLtkO36trhM5B"
+  ibmcloud_api_key = var.ibmcloud_api_key
 }
 
 // Provision config_aggregator_settings resource instance
