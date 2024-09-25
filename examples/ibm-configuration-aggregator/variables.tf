@@ -1,7 +1,6 @@
 variable "ibmcloud_api_key" {
   description = "IBM Cloud API key"
   type        = string
-  default="yXtlDkzR8R4oQGizdR3mms-07gEeh9IXLtkO36trhM5B"
 }
 
 // Resource arguments for config_aggregator_settings

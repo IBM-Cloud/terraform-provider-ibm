@@ -119,10 +119,5 @@ data "ibm_config_aggregator_resource_collection_status" "config_aggregator_resou
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12 |
+| terraform | ~> 1.9.6 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| ibm | 1.13.1 |
