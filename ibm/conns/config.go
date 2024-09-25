@@ -93,6 +93,8 @@ import (
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
+	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
+
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
@@ -220,6 +222,7 @@ type ClientSession interface {
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
 	ContainerRegistryV1() (*containerregistryv1.ContainerRegistryV1, error)
+	ConfigurationAggregatorV1() (*configurationaggregatorv1.ConfigurationAggregatorV1, error)
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
@@ -326,6 +329,9 @@ type clientSession struct {
 
 	accountV1ConfigErr     error
 	bmxAccountv1ServiceAPI accountv1.AccountServiceAPI
+
+	configurationAggregatorClient    *configurationaggregatorv1.ConfigurationAggregatorV1
+	configurationAggregatorClientErr error
 
 	bmxUserDetails  *UserConfig
 	bmxUserFetchErr error
@@ -665,6 +671,11 @@ func (session clientSession) UsageReportsV4() (*usagereportsv4.UsageReportsV4, e
 
 func (session clientSession) PartnerCenterSellV1() (*partnercentersellv1.PartnerCenterSellV1, error) {
 	return session.partnerCenterSellClient, session.partnerCenterSellClientErr
+}
+
+// Configuration Aggregator
+func (session clientSession) ConfigurationAggregatorV1() (*configurationaggregatorv1.ConfigurationAggregatorV1, error) {
+	return session.configurationAggregatorClient, session.configurationAggregatorClientErr
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -2379,6 +2390,32 @@ func (c *Config) ClientSession() (interface{}, error) {
 		// session.transitgatewayAPI.SetDefaultHeaders(gohttp.Header{
 		// 	"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		// })
+	}
+
+	// Construct an instance of the 'Configuration Aggregator' service.
+	if session.configurationAggregatorClientErr == nil {
+		// Construct the service options.
+		authenticator := &core.IamAuthenticator{
+			ApiKey: "yXtlDkzR8R4oQGizdR3mms-07gEeh9IXLtkO36trhM5B",
+			URL:    "https://iam.test.cloud.ibm.com",
+		}
+		configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
+			URL:           "https://apprapp-dev-37b89de8caeb649450a9af91731f3589-0005.us-south.containers.appdomain.cloud/apprapp/config_aggregator/v1/instances/43f65e31-fd51-4fe1-8801-7a40b226df7f",
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.configurationAggregatorClient, err = configurationaggregatorv1.NewConfigurationAggregatorV1(configurationAggregatorClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.configurationAggregatorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.configurationAggregatorClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.configurationAggregatorClientErr = fmt.Errorf("Error occurred while constructing 'Configuration Aggregator' service client: %q", err)
+		}
 	}
 
 	// CIS Service instances starts here.
