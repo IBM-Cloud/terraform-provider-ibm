@@ -52,6 +52,8 @@ In addition to all argument references listed, you can access the following attr
 
   Nested scheme for **params**:
 
+  - `type` - (String) The type of slack destination. The supported values are incoming_webhook and direct_message
   - `url` - (String) Slack Webhook url.
+  - `token`- (String) Token of slack application
 
 - `updated_at` - (String) Last updated time.

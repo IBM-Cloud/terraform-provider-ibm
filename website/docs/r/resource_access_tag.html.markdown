@@ -8,6 +8,9 @@ description: |-
 
 # ibm_resource_access_tag
 
+  ~>**Deprecated:**
+  The ability to use the ibm_resource_access_tag resource to create or delete IBM Cloud access management tags in Terraform has been removed in favor of a dedicated ibm_iam_access_tag resource. For more information, check out [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/iam_access_tag)
+
 Create, update, or delete IBM Cloud access management tags. For more information, about tagging, see [IBM Cloud access management tags](https://cloud.ibm.com/apidocs/tagging#create-tag).
 
 

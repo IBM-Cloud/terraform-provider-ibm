@@ -1223,7 +1223,7 @@ func resourceIBMIsLbListenerPolicyLoadBalancerListenerPolicyTargetToMap(model vp
 	}
 }
 
-func resourceIBMIsLbListenerPolicyLoadBalancerPoolReferenceDeletedToMap(model *vpcv1.LoadBalancerPoolReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsLbListenerPolicyLoadBalancerPoolReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -1243,7 +1243,7 @@ func resourceIBMIsLbListenerPolicyLoadBalancerListenerReferenceToMap(model *vpcv
 	return modelMap, nil
 }
 
-func resourceIBMIsLbListenerPolicyLoadBalancerListenerReferenceDeletedToMap(model *vpcv1.LoadBalancerListenerReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsLbListenerPolicyLoadBalancerListenerReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil

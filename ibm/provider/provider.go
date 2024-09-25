@@ -30,6 +30,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/configurationaggregator"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
@@ -230,12 +231,15 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway":        apigateway.DataSourceIBMApiGateway(),
-			"ibm_account":            cloudfoundry.DataSourceIBMAccount(),
-			"ibm_app":                cloudfoundry.DataSourceIBMApp(),
-			"ibm_app_domain_private": cloudfoundry.DataSourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":  cloudfoundry.DataSourceIBMAppDomainShared(),
-			"ibm_app_route":          cloudfoundry.DataSourceIBMAppRoute(),
+			"ibm_api_gateway":                      apigateway.DataSourceIBMApiGateway(),
+			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
+			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
+			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":                cloudfoundry.DataSourceIBMAppDomainShared(),
+			"ibm_app_route":                        cloudfoundry.DataSourceIBMAppRoute(),
+			"ibm_config_aggregator_configurations": configurationaggregator.DataSourceIbmConfigAggregatorConfigurations(),
+			"ibm_config_aggregator_settings":       configurationaggregator.DataSourceIbmConfigAggregatorSettings(),
+			"ibm_config_aggregator_resource_collection_status": configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus(),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -932,6 +936,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_build":          codeengine.DataSourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map":     codeengine.DataSourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_domain_mapping": codeengine.DataSourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_function":       codeengine.DataSourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":            codeengine.DataSourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":        codeengine.DataSourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":         codeengine.DataSourceIbmCodeEngineSecret(),
@@ -976,6 +981,7 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":                cloudfoundry.ResourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
 			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
+			"ibm_config_aggregator_settings":        configurationaggregator.ResourceIbmConfigAggregatorSettings(),
 
 			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),
@@ -1094,6 +1100,7 @@ func Provider() *schema.Provider {
 			"ibm_cos_bucket_object":                        cos.ResourceIBMCOSBucketObject(),
 			"ibm_cos_bucket_object_lock_configuration":     cos.ResourceIBMCOSBucketObjectlock(),
 			"ibm_cos_bucket_website_configuration":         cos.ResourceIBMCOSBucketWebsiteConfiguration(),
+			"ibm_cos_bucket_lifecycle_configuration":       cos.ResourceIBMCOSBucketLifecycleConfiguration(),
 			"ibm_dns_domain":                               classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":      classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                            classicinfrastructure.ResourceIBMDNSSecondary(),
@@ -1196,6 +1203,7 @@ func Provider() *schema.Provider {
 			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),
 			"ibm_is_subnet_reserved_ip":                     vpc.ResourceIBMISReservedIP(),
+			"ibm_is_subnet_reserved_ip_patch":               vpc.ResourceIBMISReservedIPPatch(),
 			"ibm_is_subnet_network_acl_attachment":          vpc.ResourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_subnet_public_gateway_attachment":       vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
@@ -1407,6 +1415,9 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
 			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
 
+			// Added for Iam Access Tag
+			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
+
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
@@ -1530,6 +1541,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_function":       codeengine.ResourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecret(),
@@ -1635,6 +1647,26 @@ func wrapFunction(
 ) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
 	if function != nil {
 		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+			// only allow deletion if the resource is not marked as protected
+			if operationName == "delete" && schema.Get("deletion_protection") != nil {
+				// we check the value in state, not current config. Current config will always be null for a delete
+
+				if schema.Get("deletion_protection") == true {
+					log.Printf("[DEBUG] Resource has deletion protection turned on %s", resourceName)
+					var diags diag.Diagnostics
+					summary := fmt.Sprintf("Deletion protection is enabled for resource %s to prevent accidential deletion", schema.Get("name"))
+					return append(
+						diags,
+						diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  summary,
+							Detail:   "Set deletion_protection to false, apply and then destroy if deletion should proceed",
+						},
+					)
+				}
+			}
+
 			return function(context, schema, meta)
 		}
 	} else if fallback != nil {
@@ -1791,6 +1823,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_keystore":                            hpcs.ResourceIbmKeystoreValidator(),
 				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
+				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
 				// MQ on Cloud
 				"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
@@ -1875,6 +1908,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
 				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
+				"ibm_iam_access_tag":                      globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
@@ -1985,6 +2019,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuildValidator(),
 				"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
+				"ibm_code_engine_function":       codeengine.ResourceIbmCodeEngineFunctionValidator(),
 				"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProjectValidator(),
 				"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecretValidator(),
