@@ -550,6 +550,40 @@ func DataSourceIBMISInstance() *schema.Resource {
 								},
 							},
 						},
+						"virtual_network_interface": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The virtual network interface for this instance network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this virtual network interface.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this virtual network interface.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this virtual network interface.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -751,6 +785,40 @@ func DataSourceIBMISInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"virtual_network_interface": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The virtual network interface for this instance network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this virtual network interface.",
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this virtual network interface.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this virtual network interface.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.",
 									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -1747,6 +1815,21 @@ func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceToMap(model *vpcv1
 		return modelMap, err
 	}
 	modelMap["subnet"] = []map[string]interface{}{subnetMap}
+	virtualNetworkInterfaceMap, err := dataSourceIBMIsInstanceVirtualNetworkInterfaceReferenceAttachmentContextToMap(model.VirtualNetworkInterface)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["virtual_network_interface"] = []map[string]interface{}{virtualNetworkInterfaceMap}
+	return modelMap, nil
+}
+
+func dataSourceIBMIsInstanceVirtualNetworkInterfaceReferenceAttachmentContextToMap(model *vpcv1.VirtualNetworkInterfaceReferenceAttachmentContext) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["crn"] = model.CRN
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["name"] = model.Name
+	modelMap["resource_type"] = model.ResourceType
 	return modelMap, nil
 }
 func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model *vpcv1.InstanceNetworkAttachmentReferenceDeleted) (map[string]interface{}, error) {

@@ -48,3 +48,4 @@ In addition to all argument reference list, you can access the following attribu
 - `parameters_json` - (String) The parameters associated with the instance in json format.
 - `plan` - (String) The plan for the service offering used by this resource instance.
 - `status` - (String) The status of resource instance.
+- `onetime_credentials` - (Bool) A boolean that dictates if the onetime_credentials is true or false.

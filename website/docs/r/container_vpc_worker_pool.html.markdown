@@ -104,6 +104,7 @@ Review the argument references that you can specify for your resource.
 - `crk` - Root Key ID for boot volume encryption.
 - `kms_instance_id` - Instance ID for boot volume encryption. 
 - `kms_account_id` - Account ID for boot volume encryption, if other account is providing the kms.
+- `import_on_create` - (Optional, Bool) Import an existing WorkerPool from the cluster, instead of creating a new.
 - `security_groups` - (Optional, List) Enables users to define specific security groups for their workers.
 
 ## Attribute reference

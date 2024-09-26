@@ -434,7 +434,7 @@ func resourceIBMContainerWorkerPoolUpdate(d *schema.ResourceData, meta interface
 
 	if d.HasChange("operating_system") {
 		operatingSystem := d.Get("operating_system").(string)
-		targetEnv, err := getVpcClusterTargetHeader(d, meta)
+		targetEnv, err := getVpcClusterTargetHeader(d)
 		if err != nil {
 			return err
 		}

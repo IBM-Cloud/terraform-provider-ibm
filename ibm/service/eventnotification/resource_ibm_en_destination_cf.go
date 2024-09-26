@@ -102,6 +102,7 @@ func ResourceIBMEnCFDestination() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
+		DeprecationMessage: "The IBM Cloud Function destination has been deprectated",
 	}
 }
 

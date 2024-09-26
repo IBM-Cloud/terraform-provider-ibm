@@ -400,7 +400,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.version_crn"},
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
+							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a catalog offering by a unique CRN property",
 						},
 						isInstanceCatalogOfferingVersionCrn: {
@@ -408,7 +408,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.offering_crn"},
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceKeys, isInstanceVPC, isInstanceProfile},
+							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a version of a catalog offering by a unique CRN property",
 						},
 						isInstanceCatalogOfferingPlanCrn: {
@@ -1143,7 +1143,7 @@ func ResourceIBMISInstance() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 				AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
-				RequiredWith:  []string{isInstanceZone, isInstanceKeys, isInstanceVPC, isInstanceProfile},
+				RequiredWith:  []string{isInstanceZone, isInstanceVPC, isInstanceProfile},
 				Description:   "image id",
 			},
 
@@ -1159,7 +1159,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							Computed:      true,
-							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceVPC},
 							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.volume_id", "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "boot_volume.0.name", "boot_volume.0.encryption", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn"},
 							Description:   "The unique identifier for this volume",
@@ -1179,7 +1179,7 @@ func ResourceIBMISInstance() *schema.Resource {
 
 						isInstanceVolumeSnapshot: {
 							Type:          schema.TypeString,
-							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceVPC},
 							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id", "boot_volume.0.snapshot_crn"},
 							Optional:      true,
@@ -1188,7 +1188,7 @@ func ResourceIBMISInstance() *schema.Resource {
 						},
 						isInstanceVolumeSnapshotCrn: {
 							Type:          schema.TypeString,
-							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							RequiredWith:  []string{isInstanceZone, isInstanceProfile, isInstanceVPC},
 							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot", "boot_volume.0.snapshot_crn", "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id"},
 							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate, "catalog_offering.0.offering_crn", "catalog_offering.0.version_crn", "boot_volume.0.volume_id", "boot_volume.0.snapshot"},
 							Optional:      true,
@@ -2121,16 +2121,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -2568,16 +2570,18 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -2994,16 +2998,18 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -3427,16 +3433,18 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -3826,16 +3834,18 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		instanceproto.NetworkInterfaces = intfs
 	}
 
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
-	if keySet.Len() != 0 {
-		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
-		for i, key := range keySet.List() {
-			keystr := key.(string)
-			keyobjs[i] = &vpcv1.KeyIdentity{
-				ID: &keystr,
+	if keySetIntf, ok := d.GetOk(isInstanceKeys); ok {
+		keySet := keySetIntf.(*schema.Set)
+		if keySet.Len() != 0 {
+			keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
+			for i, key := range keySet.List() {
+				keystr := key.(string)
+				keyobjs[i] = &vpcv1.KeyIdentity{
+					ID: &keystr,
+				}
 			}
+			instanceproto.Keys = keyobjs
 		}
-		instanceproto.Keys = keyobjs
 	}
 
 	if userdata, ok := d.GetOk(isInstanceUserData); ok {
@@ -6493,8 +6503,10 @@ func resourceIBMIsInstanceMapToVirtualNetworkInterfacePrototypeAttachmentContext
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
-	if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok {
-		model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+	if modelMap["protocol_state_filtering_mode"] != nil {
+		if pStateFilteringInt, ok := modelMap["protocol_state_filtering_mode"]; ok && pStateFilteringInt.(string) != "" {
+			model.ProtocolStateFilteringMode = core.StringPtr(pStateFilteringInt.(string))
+		}
 	}
 	if modelMap["primary_ip"] != nil && len(modelMap["primary_ip"].([]interface{})) > 0 {
 		PrimaryIPModel, err := resourceIBMIsInstanceMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap["primary_ip"].([]interface{})[0].(map[string]interface{}))

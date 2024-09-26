@@ -23,6 +23,11 @@ import (
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
 
+var cosConfigUrls = map[string]string{
+	"private": "https://config.private.cloud-object-storage.cloud.ibm.com/v1",
+	"direct":  "https://config.direct.cloud-object-storage.cloud.ibm.com/v1",
+}
+
 func DataSourceIBMCosBucket() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMCosBucketRead,
@@ -62,7 +67,7 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Optional: true,
 				// ValidateFunc:  validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
 				ValidateFunc:  validate.InvokeDataSourceValidator("ibm_cos_bucket", "endpoint_type"),
-				Description:   "public or private",
+				Description:   "COS endpoint type: public, private, direct",
 				ConflictsWith: []string{"satellite_location_id"},
 				Default:       "public",
 			},
@@ -602,7 +607,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		keyProtectFlag = true
 	}
 
-	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint string
+	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if satlc, ok := d.GetOk("satellite_location_id"); ok {
 		satlc_id = satlc.(string)
@@ -617,15 +622,19 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	} else {
 		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
 		if endpointType == "direct" {
+			// visibility type "direct" is not supported in endpoints file.
+			visibility = "private"
 			apiEndpoint = directApiEndpoint
 		}
 
 	}
 
+	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bucketRegion, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
@@ -716,11 +725,13 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	if endpointType == "private" {
-		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
-	}
-	if endpointType == "direct" {
-		sess.SetServiceURL("https://config.direct.cloud-object-storage.cloud.ibm.com/v1")
+	if endpointType != "public" {
+		// User is expected to define both private and direct url type under "private" in endpoints file since visibility type "direct" is not supported.
+		cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, "private", "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
+		cosConfigURL = conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigURL)
+		if cosConfigURL != "" {
+			sess.SetServiceURL(cosConfigURL)
+		}
 	}
 
 	if bucketType == "sl" {

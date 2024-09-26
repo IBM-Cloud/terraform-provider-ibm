@@ -544,9 +544,10 @@ Review the argument references that you can specify for your resource.
     ~> **Note:**
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
-- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. ** Constraints: Allowable values are: `disabled`, `sgx`** {Select Availability}
+- `confidential_compute_mode` - (Optional, String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. **Constraints: Allowable values are: `disabled`, `sgx`** {Select Availability}
 
-  ~>**Note:** The confidential_compute_mode is `Select Availability` feature.
+  ~>**Note:** The confidential_compute_mode is `Select Availability` feature. Confidential computing with Intel SGX for VPC is available only in the US-South (Dallas) region.
+
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 
@@ -566,8 +567,11 @@ Review the argument references that you can specify for your resource.
   
   ~> **Note:**
   `image` conflicts with `boot_volume.0.snapshot` and `catalog_offering`, not required when creating instance using `instance_template` or `catalog_offering`
-- `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `keys` - (Optional, List) A comma-separated list of SSH keys that you want to add to your instance. The public SSH keys for the administrative user of the virtual server instance. Keys will be made available to the virtual server instance as cloud-init vendor data. For cloud-init enabled images, these keys will also be added as SSH authorized keys for the administrative user.
 
+  ~> **Note:**
+  For Windows images, the keys of type rsa must be specified, and one will be selected to encrypt the administrator password. Keys are optional for other images, but if no keys are specified, the instance will be inaccessible unless the specified image provides another means of access.
+  
   ~> **Note:**
   **&#x2022;** `ed25519` can only be used if the operating system supports this key type.</br>
   **&#x2022;** `ed25519` can't be used with Windows or VMware images.</br>
