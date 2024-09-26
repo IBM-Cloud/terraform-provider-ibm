@@ -116,17 +116,10 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	// Add user tags for newly created workspace
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
 		if len(flex.FlattenSet(tags.(*schema.Set))) > 0 {
-			userTags := flex.FlattenSet(tags.(*schema.Set))
-			gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *controller.CRN, "", UserTagType)
 			if err != nil {
-				log.Printf("[ERROR] Error getting global tagging client settings: %s", err)
-				return diag.FromErr(err)
-			}
-			_, err = gtClient.Tags().AttachTags(*controller.CRN, userTags)
-			if err != nil {
-				log.Printf(
-					"[ERROR] The resource instance has failed updating user tags (%s) err: %s", d.Id(), err)
-				return diag.FromErr(err)
+				log.Printf("Error on creation of workspace (%s) user_tags: %s", *controller.CRN, err)
 			}
 		}
 	}
