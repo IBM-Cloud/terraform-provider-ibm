@@ -60,7 +60,7 @@ require (
 	github.com/openshift/client-go v0.0.0-20230324103026-3f1513df25e0
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
-	github.com/softlayer/softlayer-go v1.0.3
+	github.com/softlayer/softlayer-go v1.1.6-0.20240925205953-129de40e6140
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.25.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -209,7 +209,7 @@ require (
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
@@ -231,8 +231,6 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/softlayer/softlayer-go v1.0.3 => github.com/softlayer/softlayer-go v1.1.6-0.20240919213419-4ad3d01356cd
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
