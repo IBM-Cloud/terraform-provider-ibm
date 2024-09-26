@@ -317,13 +317,13 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 						"hard_drives": {
 							Type:        schema.TypeList,
 							Elem:        &schema.Schema{Type: schema.TypeInt},
-							Required:    true,
+							Optional:    true,
 							Description: "Hard-drives List",
 						},
 						"hard_drive_category_codes": {
 							Type:        schema.TypeList,
 							Elem:        &schema.Schema{Type: schema.TypeInt},
-							Required:    true,
+							Optional:    true,
 							Description: "Hard-drives List",
 						},
 						"array_size": {
@@ -340,24 +340,27 @@ func ResourceIBMComputeBareMetal() *schema.Resource {
 				},
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
-			"backend_network_component": {
+			"additional_network_components": {
 				Type:     schema.TypeList,
 				Optional: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"vlan_id": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "Private vlan Id",
+						"private_vlan_id": {
+							Type:     schema.TypeInt,
+							Optional: true,
 						},
-						"subnet_id": {
-							Type:        schema.TypeList,
-							Required:    true,
-							Description: "Private subnet Id",
+						"private_subnet": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
+				DiffSuppressFunc: flex.ApplyOnce,
+			},
+
+			"additional_private_networks_count": {
+				Type:             schema.TypeInt,
+				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 
@@ -1284,6 +1287,43 @@ func setMonthlyHourlyCommonOrder(d *schema.ResourceData, items []datatypes.Produ
 		}
 		order.Prices = append(order.Prices, price)
 	}
+
+	if d.Get("ipv6_static_enabled").(bool) {
+		if privateNetworkOnly {
+			return fmt.Errorf("[ERROR] Unable  to configure a public static IPv6 address with a private_network_only option")
+		}
+		keyName := "64_BLOCK_STATIC_PUBLIC_IPV6_ADDRESSES"
+
+		price, err := getItemPriceId(items, "static_ipv6_addresses", keyName)
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
+	}
+
+	nwc := d.Get("additional_private_networks_count").(int)
+	if nwc > 0 {
+
+		price, err := getItemPriceId(items, "public_port", "PUBLIC_PORT")
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
+
+		price, err = getItemPriceId(items, "service_port", "SERVICE_PORT")
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
+
+		price, err = getItemPriceId(items, "service_port1", "SERVICE_PORT1")
+		if err != nil {
+			return err
+		}
+		order.Prices = append(order.Prices, price)
+
+	}
+
 	return nil
 }
 
@@ -1327,8 +1367,12 @@ func setCommonBareMetalOrderOptions(d *schema.ResourceData, meta interface{}, or
 		order.Hardware[0].PrimaryBackendNetworkComponent.NetworkVlan.PrimarySubnetId = sl.Int(subnetId)
 	}
 
-	if _, ok := d.GetOk("backend_network_component"); ok {
-		order.Hardware[0].BackendNetworkComponents = getBackendNetworksFromResourceData(d)
+	if _, ok := d.GetOk("additional_network_components"); ok {
+		bnw, err := getAdditionalNetwroksFromResourceData(d, meta)
+		if err != nil {
+			return datatypes.Container_Product_Order{}, fmt.Errorf("[ERROR] Error adding additional networks %v: %s", bnw, err)
+		}
+		order.Hardware[0].BackendNetworkComponents = bnw
 	}
 
 	if userMetadata, ok := d.GetOk("user_metadata"); ok {
@@ -1509,27 +1553,38 @@ func getStorageGroupsFromResourceData(d dataRetriever) []datatypes.Container_Pro
 	return storageGroups
 }
 
-func getBackendNetworksFromResourceData(d dataRetriever) []datatypes.Network_Component {
-	backendNetworkLists := d.Get("backend_network_component").([]interface{})
+func getAdditionalNetwroksFromResourceData(d dataRetriever, meta interface{}) ([]datatypes.Network_Component, error) {
+	backendNetworkLists := d.Get("additional_network_components").([]interface{})
 	networks := make([]datatypes.Network_Component, 0)
 
 	for _, backendNetworkpList := range backendNetworkLists {
 		backendNetwork := backendNetworkpList.(map[string]interface{})
 		var backendNetworkObj datatypes.Network_Component
 		var backendNetworkvlanObj datatypes.Network_Vlan
-		vlanId := backendNetwork["vlan_id"].(int)
-		if vlanId > 0 {
-			backendNetworkvlanObj.Id = sl.Int(vlanId)
+		_, ok := backendNetwork["private_vlan_id"]
+		if ok {
+			vlanId := backendNetwork["private_vlan_id"].(int)
+			if vlanId > 0 {
+				backendNetworkvlanObj.Id = sl.Int(vlanId)
+
+			}
 
 		}
-		subnetId := backendNetwork["subnet_id"].(int)
-		if subnetId > 0 {
+		_, ok = backendNetwork["private_subnet"]
+		if ok {
+			subnet := backendNetwork["private_subnet"].(string)
+			subnetId, err := getSubnetID(subnet, meta)
+			if err != nil {
+				return networks, fmt.Errorf("[ERROR] Error determining id for subnet %s: %s", subnet, err)
+			}
 			backendNetworkvlanObj.PrimarySubnetId = sl.Int(subnetId)
+
 		}
+
 		backendNetworkObj.NetworkVlan = &backendNetworkvlanObj
 		networks = append(networks, backendNetworkObj)
 	}
-	return networks
+	return networks, nil
 }
 
 func addCommomDefaultPrices(d *schema.ResourceData, meta interface{}, order datatypes.Container_Product_Order, items []datatypes.Product_Item) datatypes.Container_Product_Order {
