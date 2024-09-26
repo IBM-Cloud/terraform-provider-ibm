@@ -38,6 +38,7 @@ func ResourceIBMResourceAccessTag() *schema.Resource {
 				Description: "Type of the tag(access)",
 			},
 		},
+		DeprecationMessage: "ibm_resource_access_tag has been deprecated. Use ibm_iam_access_tag instead.",
 	}
 }
 

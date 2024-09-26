@@ -96,7 +96,7 @@ func DataSourceIBMEnCFDestination() *schema.Resource {
 				},
 			},
 		},
-		DeprecationMessage: "The IBM Cloud Function destination has been deprectated",
+		DeprecationMessage: "datasource is depreacted due to cloud function servie depreaction",
 	}
 }
 

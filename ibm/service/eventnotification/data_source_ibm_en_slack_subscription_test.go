@@ -64,7 +64,8 @@ func testAccCheckIBMEnSlackSubscriptionDataSourceConfig(instanceName, name, desc
 		description = "tf_destinatios_description_0364"
 		config {
 			params {
-				url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
+			    type = "direct_message"
+				token  = "dsgdewgfpwfgpewweeffewsgcvsaksdksff"
 			}
 		}
 	}
@@ -76,7 +77,10 @@ func testAccCheckIBMEnSlackSubscriptionDataSourceConfig(instanceName, name, desc
 		topic_id       = ibm_en_topic.en_topic_resource_4.topic_id
 		destination_id = ibm_en_destination_slack.en_destination_resource_4.destination_id
 		attributes {
-			attachment_color         = "#0000FF"
+		    channels {
+			id = "GFDRTUIIOBVD"
+			}
+			
 		}
 	}
 

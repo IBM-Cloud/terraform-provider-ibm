@@ -5,7 +5,6 @@ package scc
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -126,45 +125,45 @@ func dataSourceIbmSccProviderTypeRead(context context.Context, d *schema.Resourc
 	providerTypeItem, response, err := securityAndComplianceCenterApIsClient.GetProviderTypeByIDWithContext(context, getProviderTypeByIdOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetProviderTypeByIDWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProviderTypeByIDWithContext failed %s\n%s", err, response))
+		return diag.FromErr(flex.FmtErrorf("GetProviderTypeByIDWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*providerTypeItem.ID)
 
 	if err = d.Set("id", providerTypeItem.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting id: %s", err))
 	}
 
 	if err = d.Set("type", providerTypeItem.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting type: %s", err))
 	}
 
 	if err = d.Set("name", providerTypeItem.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 	}
 
 	if err = d.Set("description", providerTypeItem.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting description: %s", err))
 	}
 
 	if err = d.Set("s2s_enabled", providerTypeItem.S2sEnabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting s2s_enabled: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting s2s_enabled: %s", err))
 	}
 
 	if err = d.Set("instance_limit", flex.IntValue(providerTypeItem.InstanceLimit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_limit: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting instance_limit: %s", err))
 	}
 
 	if err = d.Set("mode", providerTypeItem.Mode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting mode: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting mode: %s", err))
 	}
 
 	if err = d.Set("data_type", providerTypeItem.DataType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting data_type: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting data_type: %s", err))
 	}
 
 	if err = d.Set("icon", providerTypeItem.Icon); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting icon: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting icon: %s", err))
 	}
 
 	label := []map[string]interface{}{}
@@ -176,7 +175,7 @@ func dataSourceIbmSccProviderTypeRead(context context.Context, d *schema.Resourc
 		label = append(label, modelMap)
 	}
 	if err = d.Set("label", label); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting label %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting label %s", err))
 	}
 
 	if providerTypeItem.Attributes != nil {
@@ -186,19 +185,19 @@ func dataSourceIbmSccProviderTypeRead(context context.Context, d *schema.Resourc
 		}
 
 		if err = d.Set("attributes", flex.Flatten(convertedMap)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting attributes: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting attributes: %s", err))
 		}
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting attributes %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting attributes %s", err))
 		}
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(providerTypeItem.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(providerTypeItem.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting updated_at: %s", err))
 	}
 
 	return nil

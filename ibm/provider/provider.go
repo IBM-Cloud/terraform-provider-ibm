@@ -51,6 +51,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -931,6 +932,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_build":          codeengine.DataSourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map":     codeengine.DataSourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_domain_mapping": codeengine.DataSourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_function":       codeengine.DataSourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":            codeengine.DataSourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":        codeengine.DataSourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":         codeengine.DataSourceIbmCodeEngineSecret(),
@@ -1093,6 +1095,7 @@ func Provider() *schema.Provider {
 			"ibm_cos_bucket_object":                        cos.ResourceIBMCOSBucketObject(),
 			"ibm_cos_bucket_object_lock_configuration":     cos.ResourceIBMCOSBucketObjectlock(),
 			"ibm_cos_bucket_website_configuration":         cos.ResourceIBMCOSBucketWebsiteConfiguration(),
+			"ibm_cos_bucket_lifecycle_configuration":       cos.ResourceIBMCOSBucketLifecycleConfiguration(),
 			"ibm_dns_domain":                               classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":      classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
 			"ibm_dns_secondary":                            classicinfrastructure.ResourceIBMDNSSecondary(),
@@ -1195,6 +1198,7 @@ func Provider() *schema.Provider {
 			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),
 			"ibm_is_subnet_reserved_ip":                     vpc.ResourceIBMISReservedIP(),
+			"ibm_is_subnet_reserved_ip_patch":               vpc.ResourceIBMISReservedIPPatch(),
 			"ibm_is_subnet_network_acl_attachment":          vpc.ResourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_subnet_public_gateway_attachment":       vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
@@ -1270,6 +1274,15 @@ func Provider() *schema.Provider {
 			"ibm_ssl_certificate":                           classicinfrastructure.ResourceIBMSSLCertificate(),
 			"ibm_cdn":                                       classicinfrastructure.ResourceIBMCDN(),
 			"ibm_hardware_firewall_shared":                  classicinfrastructure.ResourceIBMFirewallShared(),
+
+			// Partner Center Sell
+			"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistration(),
+			"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProduct(),
+			"ibm_onboarding_iam_registration":   partnercentersell.ResourceIbmOnboardingIamRegistration(),
+			"ibm_onboarding_catalog_product":    partnercentersell.ResourceIbmOnboardingCatalogProduct(),
+			"ibm_onboarding_catalog_plan":       partnercentersell.ResourceIbmOnboardingCatalogPlan(),
+			"ibm_onboarding_catalog_deployment": partnercentersell.ResourceIbmOnboardingCatalogDeployment(),
+			"ibm_onboarding_resource_broker":    partnercentersell.ResourceIbmOnboardingResourceBroker(),
 
 			// Added for Power Colo
 			"ibm_pi_capture":                         power.ResourceIBMPICapture(),
@@ -1397,6 +1410,9 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
 			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
 
+			// Added for Iam Access Tag
+			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
+
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
@@ -1520,6 +1536,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuild(),
 			"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMap(),
 			"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMapping(),
+			"ibm_code_engine_function":       codeengine.ResourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJob(),
 			"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecret(),
@@ -1625,6 +1642,26 @@ func wrapFunction(
 ) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
 	if function != nil {
 		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+			// only allow deletion if the resource is not marked as protected
+			if operationName == "delete" && schema.Get("deletion_protection") != nil {
+				// we check the value in state, not current config. Current config will always be null for a delete
+
+				if schema.Get("deletion_protection") == true {
+					log.Printf("[DEBUG] Resource has deletion protection turned on %s", resourceName)
+					var diags diag.Diagnostics
+					summary := fmt.Sprintf("Deletion protection is enabled for resource %s to prevent accidential deletion", schema.Get("name"))
+					return append(
+						diags,
+						diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  summary,
+							Detail:   "Set deletion_protection to false, apply and then destroy if deletion should proceed",
+						},
+					)
+				}
+			}
+
 			return function(context, schema, meta)
 		}
 	} else if fallback != nil {
@@ -1865,6 +1902,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
 				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
+				"ibm_iam_access_tag":                      globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
@@ -1876,6 +1914,15 @@ func Validator() validate.ValidatorDict {
 				"ibm_metrics_router_settings":             metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
+
+				// Partner Center Sell
+				"ibm_onboarding_registration":       partnercentersell.ResourceIbmOnboardingRegistrationValidator(),
+				"ibm_onboarding_product":            partnercentersell.ResourceIbmOnboardingProductValidator(),
+				"ibm_onboarding_iam_registration":   partnercentersell.ResourceIbmOnboardingIamRegistrationValidator(),
+				"ibm_onboarding_catalog_product":    partnercentersell.ResourceIbmOnboardingCatalogProductValidator(),
+				"ibm_onboarding_catalog_plan":       partnercentersell.ResourceIbmOnboardingCatalogPlanValidator(),
+				"ibm_onboarding_catalog_deployment": partnercentersell.ResourceIbmOnboardingCatalogDeploymentValidator(),
+				"ibm_onboarding_resource_broker":    partnercentersell.ResourceIbmOnboardingResourceBrokerValidator(),
 
 				// Added for Context Based Restrictions
 				"ibm_cbr_zone":           contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
@@ -1966,6 +2013,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_build":          codeengine.ResourceIbmCodeEngineBuildValidator(),
 				"ibm_code_engine_config_map":     codeengine.ResourceIbmCodeEngineConfigMapValidator(),
 				"ibm_code_engine_domain_mapping": codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
+				"ibm_code_engine_function":       codeengine.ResourceIbmCodeEngineFunctionValidator(),
 				"ibm_code_engine_job":            codeengine.ResourceIbmCodeEngineJobValidator(),
 				"ibm_code_engine_project":        codeengine.ResourceIbmCodeEngineProjectValidator(),
 				"ibm_code_engine_secret":         codeengine.ResourceIbmCodeEngineSecretValidator(),
