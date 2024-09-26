@@ -73,6 +73,34 @@ resource "ibm_iam_policy_assignment" "policy_assignment" {
 	}
 	template_version=ibm_iam_policy_template_version.template_version.version
 }
+
+resource "ibm_iam_policy_assignment" "policy_assignment" {
+	version ="1.0"
+	target  ={
+		type = "Account Group"
+		id = "<target-accountgroupId>"
+	}
+	
+	templates{
+		id = ibm_iam_policy_template.policy_s2s_template.template_id 
+		version = ibm_iam_policy_template.policy_s2s_template.version
+	}
+	template_version=ibm_iam_policy_template_version.template_version.version
+}
+
+resource "ibm_iam_policy_assignment" "policy_assignment" {
+	version ="1.0"
+	target  ={
+		type = "Enterprise"
+		id = "<target-enterpriseId>"
+	}
+	
+	templates{
+		id = ibm_iam_policy_template.policy_s2s_template.template_id 
+		version = ibm_iam_policy_template.policy_s2s_template.version
+	}
+	template_version=ibm_iam_policy_template_version.template_version.version
+}
 ```
 **Note**: Above configuration is to create policy template versions and assign to a target
 enterprise account. Update this parameter(***template_version***) and terraform apply again to update the assignment
@@ -94,9 +122,17 @@ Nested schema for **target**:
 	* `id` - (Required, String) ID of the target account.
 	  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
 	* `type` - (Required, String) Assignment target type.
-	  * Constraints: Allowable values are: `Account`. The maximum length is `30` characters. The minimum length is `1` character.
+	  * Constraints: Allowable values are: `Account`, `Account Group` and `Enterprise`. The maximum length is `30` characters. The minimum length is `1` character.
 * `version` - (Required, String) specify version of response body format.
   * Constraints: Allowable values are: `1.0`. The minimum length is `1` character.
+
+## Timeouts section
+
+The resource includes default timeout settings for the following operations:
+
+* `create` - (Timeout) Defaults to 30 minutes.
+* `update` - (Timeout) Defaults to 30 minutes.
+* `delete` - (Timeout) Defaults to 30 minutes.
 
 ## Attribute Reference
 

@@ -66,8 +66,18 @@ func ResourceIBMEnSlackDestination() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"url": {
 										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Slack webhook url. Required in case of type is incoming_webhook",
+									},
+									"type": {
+										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Slack webhook url.",
+										Description: "The Slack Destination type incoming_webhook/direct_message",
+									},
+									"token": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Slack Bot token. Required in case of type is direct_message",
 									},
 								},
 							},
@@ -182,7 +192,7 @@ func resourceIBMEnSlackDestinationRead(context context.Context, d *schema.Resour
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enWebhookDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enSlackDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -279,8 +289,28 @@ func resourceIBMEnSlackDestinationDelete(context context.Context, d *schema.Reso
 
 func SlackdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
 	params := new(en.DestinationConfigOneOf)
-	if configParams["url"] != nil {
-		params.URL = core.StringPtr(configParams["url"].(string))
+
+	params.Type = core.StringPtr(configParams["type"].(string))
+
+	if *params.Type == "incoming_webhook" {
+
+		if configParams["url"] != nil {
+			params.URL = core.StringPtr(configParams["url"].(string))
+		}
+
+		if configParams["type"] != nil {
+			params.Type = core.StringPtr(configParams["type"].(string))
+		}
+
+	} else {
+
+		if configParams["token"] != nil {
+			params.Token = core.StringPtr(configParams["token"].(string))
+		}
+
+		if configParams["type"] != nil {
+			params.Type = core.StringPtr(configParams["type"].(string))
+		}
 	}
 
 	destinationConfig := new(en.DestinationConfig)

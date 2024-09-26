@@ -1,3 +1,144 @@
+# 1.70.0-beta0(Sep 22, 2024)
+
+Breaking Changes
+* update(cloud-databases): Make Service Endpoints as Required argument([5615](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5615))
+
+Features
+* Support IAM Access tag
+    - **Resources**
+        - ibm_iam_access_tag
+* Support VPC
+    - **Resources**
+        - ibm_is_subnet_reserved_ip_patch
+* Support code Engine
+    - **Resources**
+        - ibm_code_engine_function
+
+Enhancements
+* add service_to_service_enabled field to atracker event streams endpoint ([5605](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5605))
+* Deprecated ibm_resource_access_tag and replaced it with ibm_iam_access_tag ([5567](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5567))
+* SM New error formatting + crypto_key label name changes ([5562](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5562))
+* Deprecating alias and bindings APIs and schema items ([5612](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5612))
+* update(cloud-databases): Make Service Endpoints Required and send warning when public endpoints are in use ([5402](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5402))
+* discourage use of ibm_container_bind_service ([5588](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5588))
+* updated resources, data source and documentation for Slack Direct destination support ([5615](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5615))
+* IAM Policy Assignment: S2S Policy Assignments ET and AG ([5624](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5624))
+* fix for context and history parameter of template assignment ([5640](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5640))
+* Updating to latest schematics sdk and updating sch_agent resource to enable force deletion by default ([5660](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5660))
+* add support for 4th zone ([5644](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5644))
+
+BugFixes
+* The ibm_resource_tag do not detach if tag_type is access or service ([5566](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5566))
+* fix(is_share): added empty check and moved source_share_crn outside ([5632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5632))
+* Add test bucket endpoints ([5636](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5636))
+* The ibm_resource_tag does not check the response on api tags calls ([5641](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5641))
+
+# 1.69.2(Sep 13, 2024)
+* Add region parameter to logs-routing resources and data sources ([5634](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5634))
+* fix(is_share): added empty check and moved source_share_crn outside ([5632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5632))
+
+# 1.69.1(Sep 10, 2024)
+BugFixes
+* BUG: 1.69.0 panic when attempting to update ibm_resource_instance ([5618](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5618))
+* fix: unexpected topic state change and acceptance test ([5620](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5620))
+* docs: add missing target_type from ibm_atracker_target documentation ([5627](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5627))
+* wait_till for Classic Clusters data source is not working (ibm_container_cluster) ([5611](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5611))
+* ibm_is_instance for catalog images is not allowing vsi creation with VNI ([5629](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5629))
+* Updated documents for vpn gateway connection ([5628](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5628))
+
+# 1.69.0(Sep 04, 2024)
+Features
+* Support Cloud Logs Routing
+    - **Datasources**
+        - ibm_logs_router_tenant
+    - **Resources**
+        - ibm_logs_router_tenants
+        - ibm_logs_router_targets
+* Support EN
+    - **Datasources**
+        - ibm_en_metrics
+        - ibm_en_smtp_allowed_ips
+
+* Support Partner Center Sell
+     - **Resources**
+        - ibm_onboarding_registration
+        - ibm_onboarding_product
+        - ibm_onboarding_iam_registration
+        - ibm_onboarding_catalog_product
+        - ibm_onboarding_catalog_plan
+        - ibm_onboarding_catalog_deployment
+        - ibm_onboarding_resource_broker
+
+Enhancements
+* Deprecate `force_delete` attribute of ibm_kms_rings ([5539](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5539))
+* feat(tekton): Add support for CEL filtering ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* PKI HSM Addition ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* updated error messages for catalog service ([5553](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5553))
+* feat(CIS): Origin Post Quantum Encryption and Max HTTP Version ([5504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5504))
+* refactor of instance network attachment reference to use vni ([5563](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5563))
+* Update storage types docs ([5569](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5569))
+* Force delete subresources during kmip_adapter destroy, avoid casting panics ([5565](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5565))
+* Add support for retry of deletion of resource group ([5537](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5537))
+* Remove beta for logs service docs ([5581](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5581))
+* feat: document tagging and enhanced metrics ([5604](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5604))
+* move wait_till logic into function, integrate it into cluster datasource ([5540](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5540))
+
+BugFixes
+* fix(docs): doc section fix for share accessor binding data sources ([5559](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5559))
+* Fix panics on alerts resource ([5561](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5561))
+* ibm_is_lb: Total provision time too long ([5523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5523))
+* ibm_pi_image docs should link to the catalog images ibm_pi_catalog_images ([5047](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5047))
+* Resource controller can't able to update service-endpoint for event-stream instance ([5568](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5568))
+* The terraform-provider-ibm_v1.68.1 plugin crashed when trying to update Code Engine Secrets ([5582](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5582))
+* ibm_scc_profile_attachment does not update attachment parameters ([5535](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5535))
+* fix: wait for async instance update ([5601](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5601))
+* Updated ibm_is_subnet_reserved_ip docs ([5606](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5606))
+
+# 1.69.0-beta1 (Aug 31, 2024)
+Features
+* Support Cloud Logs Routing
+    - **Datasources**
+        - ibm_logs_router_tenant
+    - **Resources**
+        - ibm_logs_router_tenants
+        - ibm_logs_router_targets
+* Support EN
+    - **Datasources**
+        - ibm_en_metrics
+        - ibm_en_smtp_allowed_ips
+
+* Support Partner Center Sell
+     - **Resources**
+        - ibm_onboarding_registration
+        - ibm_onboarding_product
+        - ibm_onboarding_iam_registration
+        - ibm_onboarding_catalog_product
+        - ibm_onboarding_catalog_plan
+        - ibm_onboarding_catalog_deployment
+        - ibm_onboarding_resource_broker
+
+Enhancements
+* Deprecate `force_delete` attribute of ibm_kms_rings ([5539](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5539))
+* feat(tekton): Add support for CEL filtering ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* PKI HSM Addition ([5531](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5531))
+* updated error messages for catalog service ([5553](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5553))
+* feat(CIS): Origin Post Quantum Encryption and Max HTTP Version ([5504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5504))
+* refactor of instance network attachment reference to use vni ([5563](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5563))
+* Update storage types docs ([5569](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5569))
+* Force delete subresources during kmip_adapter destroy, avoid casting panics ([5565](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5565))
+* Add support for retry of deletion of resource group ([5537](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5537))
+* Remove beta for logs service docs ([5581](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5581))
+
+BugFixes
+* fix(docs): doc section fix for share accessor binding data sources ([5559](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5559))
+* Fix panics on alerts resource ([5561](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5561))
+* ibm_is_lb: Total provision time too long ([5523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5523))
+* ibm_pi_image docs should link to the catalog images ibm_pi_catalog_images ([5047](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5047))
+* Resource controller can't able to update service-endpoint for event-stream instance ([5568](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5568))
+* The terraform-provider-ibm_v1.68.1 plugin crashed when trying to update Code Engine Secrets ([5582](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5582))
+* ibm_scc_profile_attachment does not update attachment parameters ([5535](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5535))
+
+
 # 1.69.0-beta0 (Aug 22, 2024)
 Features
 * Support Cloud Logs Routing
