@@ -115,6 +115,8 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/DataDog/zstd v1.4.4/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4 h1:43l8CU5cW4pOea10+jWtqRJj/4F4Ghfn6Oc82jB9RhM=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20240423071914-9e96525baef4/go.mod h1:/7hMjdZA6fEpd/dQAOEABxKEwN0t72P3PlpEDu0Y7bE=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062 h1:VCFztsAnZBuzyVeOrpFEJFPiKDyx6tVOLe+p3VBsfWk=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062/go.mod h1:/7hMjdZA6fEpd/dQAOEABxKEwN0t72P3PlpEDu0Y7bE=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b h1:Wnq0BuprazpP41+nQlRpxpmAs8+8jyOqU50KrvFdJQ4=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240216115622-a311507b4b5b/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
