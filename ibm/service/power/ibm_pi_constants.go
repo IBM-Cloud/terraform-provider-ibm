@@ -444,6 +444,7 @@ const (
 	Shared                    = "shared"
 	Soft                      = "soft"
 	Suffix                    = "suffix"
+	UserTagType               = "user"
 	Vlan                      = "vlan"
 	vSCSI                     = "vSCSI"
 	Warning                   = "WARNING"

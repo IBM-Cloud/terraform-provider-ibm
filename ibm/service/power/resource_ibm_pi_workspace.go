@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -19,13 +20,15 @@ import (
 func ResourceIBMPIWorkspace() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIWorkspaceCreate,
-		ReadContext:   resourceIBMPIWorkspaceRead,
 		DeleteContext: resourceIBMPIWorkspaceDelete,
+		ReadContext:   resourceIBMPIWorkspaceRead,
+		UpdateContext: resourceIBMPIWorkspaceUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -62,7 +65,6 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 			Arg_UserTags: {
 				Description: "List of user tags attached to the resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				ForceNew:    true,
 				Optional:    true,
 				Set:         schema.HashString,
 				Type:        schema.TypeSet,
@@ -103,8 +105,10 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(*controller.GUID)
-	_, err = waitForResourceInstanceCreate(ctx, client, *controller.GUID, d.Timeout(schema.TimeoutCreate))
+	cloudInstanceID := strings.Split(*controller.CRN, ":")[7]
+	d.SetId(cloudInstanceID)
+
+	_, err = waitForResourceWorkspaceCreate(ctx, client, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +133,7 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
 
-func waitForResourceInstanceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress, State_Inactive, State_Provisioning},
 		Target:     []string{State_Active},
@@ -168,6 +172,12 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 	d.Set(Arg_Name, controller.Name)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *controller.CRN, "", UserTagType)
+	if err != nil {
+		log.Printf("Error on get of workspace (%s) user_tags: %s", cloudInstanceID, err)
+	}
+	d.Set(Arg_UserTags, tags)
+
 	d.Set(Attr_CRN, controller.CRN)
 
 	// Deprecated Workspace Details Set
@@ -192,7 +202,7 @@ func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, m
 	if err != nil && response != nil && response.StatusCode == 410 {
 		return nil
 	}
-	_, err = waitForResourceInstanceDelete(ctx, client, cloudInstanceID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForResourceWorkspaceDelete(ctx, client, cloudInstanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -201,7 +211,7 @@ func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func waitForResourceInstanceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress, State_Inactive, State_Active},
 		Target:     []string{State_Removed, State_PendingReclamation},
@@ -231,4 +241,18 @@ func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id
 			return controller, *controller.State, nil
 		}
 	}
+}
+
+func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if d.HasChange(Arg_UserTags) {
+		crn := d.Get(Attr_CRN)
+		if crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of workspace (%s) user_tags: %s", crn, err)
+			}
+		}
+	}
+	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
