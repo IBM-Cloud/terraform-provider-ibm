@@ -27,7 +27,7 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
 	github.com/IBM/keyprotect-go-client v0.15.1
 	github.com/IBM/logs-go-sdk v0.3.0
-	github.com/IBM/logs-router-go-sdk v1.0.3
+	github.com/IBM/logs-router-go-sdk v1.0.5
 	github.com/IBM/mqcloud-go-sdk v0.1.0
 	github.com/IBM/networking-go-sdk v0.49.0
 	github.com/IBM/platform-services-go-sdk v0.68.1
