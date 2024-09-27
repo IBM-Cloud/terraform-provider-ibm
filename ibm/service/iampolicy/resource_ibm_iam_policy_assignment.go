@@ -485,7 +485,6 @@ func resourceIBMPolicyAssignmentDelete(context context.Context, d *schema.Resour
 	if diags.HasError() {
 		return diags
 	}
-
 	if targetModel.Type != nil && (*targetModel.Type == "Account") {
 		log.Printf("[DEBUG] Skipping waitForAssignment for target type: %s", *targetModel.Type)
 	} else {
