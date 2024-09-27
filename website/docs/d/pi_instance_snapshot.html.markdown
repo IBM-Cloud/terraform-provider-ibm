@@ -48,4 +48,5 @@ In addition to all argument reference list, you can access the following attribu
 - `name` - (String) The name of the Power Systems Virtual Machine instance snapshot.
 - `percent_complete` - (Integer) The snapshot completion percentage.
 - `status` - (String) The status of the Power Virtual Machine instance snapshot.
+- `user_tags` - (List) List of user tags attached to the resource.
 - `volume_snapshots` - (Map) A map of volume snapshots included in the Power Virtual Machine instance snapshot.

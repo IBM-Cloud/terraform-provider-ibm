@@ -61,7 +61,6 @@ func ResourceIBMPISnapshot() *schema.Resource {
 			Arg_UserTags: {
 				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				ForceNew:    true,
 				Optional:    true,
 				Set:         schema.HashString,
 				Type:        schema.TypeSet,
@@ -181,6 +180,11 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_CreationDate, snapshotdata.CreationDate.String())
 	if snapshotdata.Crn != "" {
 		d.Set(Attr_CRN, snapshotdata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(snapshotdata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi snapshot (%s) pi_user_tags: %s", *snapshotdata.SnapshotID, err)
+		}
+		d.Set(Arg_UserTags, tags)
 	}
 	d.Set(Attr_LastUpdateDate, snapshotdata.LastUpdateDate.String())
 	d.Set(Attr_SnapshotID, *snapshotdata.SnapshotID)
@@ -217,6 +221,16 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 		_, err = isWaitForPIInstanceSnapshotAvailable(ctx, client, snapshotID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi snapshot (%s) pi_user_tags: %s", snapshotID, err)
+			}
 		}
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -79,6 +80,13 @@ func DataSourceIBMPIInstanceSnapshots() *schema.Resource {
 							Description: "The status of the Power Virtual Machine instance snapshot.",
 							Type:        schema.TypeString,
 						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
+						},
 						Attr_VolumeSnapshots: {
 							Computed:    true,
 							Description: "A map of volume snapshots included in the Power Virtual Machine instance snapshot.",
@@ -107,12 +115,12 @@ func dataSourceIBMPIInstanceSnapshotsRead(ctx context.Context, d *schema.Resourc
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Attr_InstanceSnapshots, flattenSnapshotsInstances(snapshotData.Snapshots))
+	d.Set(Attr_InstanceSnapshots, flattenSnapshotsInstances(snapshotData.Snapshots, meta))
 
 	return nil
 }
 
-func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{} {
+func flattenSnapshotsInstances(list []*models.Snapshot, meta interface{}) []map[string]interface{} {
 	log.Printf("Calling the flattenSnapshotsInstances call with list %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
@@ -129,6 +137,11 @@ func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{}
 		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(i.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of pi instance snapshot (%s) user_tags: %s", *i.SnapshotID, err)
+			}
+			l[Attr_UserTags] = tags
 		}
 		result = append(result, l)
 	}

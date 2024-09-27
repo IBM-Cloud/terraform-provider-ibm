@@ -5,9 +5,11 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -72,6 +74,13 @@ func DataSourceIBMPIInstanceSnapshot() *schema.Resource {
 				Description: "The status of the Power Virtual Machine instance snapshot.",
 				Type:        schema.TypeString,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			Attr_VolumeSnapshots: {
 				Computed:    true,
 				Description: "A map of volume snapshots included in the Power Virtual Machine instance snapshot.",
@@ -99,6 +108,11 @@ func dataSourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_CreationDate, snapshotData.CreationDate.String())
 	if snapshotData.Crn != "" {
 		d.Set(Attr_CRN, snapshotData.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(snapshotData.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi instance snapshot (%s) user_tags: %s", *snapshotData.SnapshotID, err)
+		}
+		d.Set(Attr_UserTags, tags)
 	}
 	d.Set(Attr_Description, snapshotData.Description)
 	d.Set(Attr_LastUpdatedDate, snapshotData.LastUpdateDate.String())
