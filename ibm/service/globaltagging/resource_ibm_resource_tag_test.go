@@ -18,10 +18,8 @@ import (
 )
 
 func TestAccResourceTag_Basic(t *testing.T) {
-	name := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
-	var tags []string
-	tags = append(tags, "env:dev")
-	tags = append(tags, "cpu:4")
+	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	managed_from := "wdc04"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -29,18 +27,18 @@ func TestAccResourceTag_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckTagDestroy("ibm_resource_tag.tag", "user", tags),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckResourceTagCreate(name, tags),
+				Config: testAccCheckResourceTagCreate(name, managed_from),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
 				),
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"replace"},
 			},
 		},
 	})
 }
+func TestAccResourceTag_Wait(t *testing.T) {
+	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 
 func TestAccResourceTag_FakeCrnExpectingError(t *testing.T) {
 	var tags []string
@@ -185,36 +183,28 @@ func testAccCheckResourceTagExists(n string) resource.TestCheckFunc {
 
 func testAccCheckResourceTagCreate(name string, tagNames []string) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "resource_1" {
-		name              = "%s"
-		service           = "cloud-object-storage"
-		plan              = "lite"
-		location          = "global"
+
+	resource "ibm_is_vpc" "vpc" {
+		name		  = "%s"
+	}
+
+	data "ibm_is_vpc" "test_vpc" {
+		name  = ibm_is_vpc.vpc.name
 	}
 
 	resource "ibm_resource_tag" "tag" {
-		resource_id = ibm_resource_instance.resource_1.crn
-		tags        = ["%s"]
+		resource_id = data.ibm_is_vpc.test_vpc.crn
+		tags        = ["env:dev", "cpu:4", "user:8"]
 	}
 `, name, strings.Join(tagNames[:], "\",\""))
 }
-
-func testAccCheckResourceTagCreateFakeCrnExpectingError(tagNames []string) string {
+func testAccCheckResourceTagCreate(name, managed_from string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_tag" "tag" {
-		resource_id = "crn:v1:staging:public:cloud-object-storage:global:a/d99e99999dfe99ee999999f99bddd099:ab99d9be-9e9c-99dd-ad99-9bced9999999::"
-		tags        = ["%s"]
+		resource_id = data.ibm_satellite_location.test_location.crn
+		tags        = ["env:dev", "cpu:4"]
 	}
-`, strings.Join(tagNames[:], "\",\""))
-}
-
-func testAccCheckResourceAttachOnExistingResource(crn string, tagNames []string) string {
-	return fmt.Sprintf(`
-	resource "ibm_resource_tag" "tag" {
-		resource_id = "%s"
-		tags        = ["%s"]
-	}
-`, crn, strings.Join(tagNames[:], "\",\""))
+`, name, managed_from)
 }
 
 func TestAccResourceTag_replace_Basic(t *testing.T) {
@@ -245,12 +235,15 @@ func TestAccResourceTag_replace_Basic(t *testing.T) {
 
 func testAccCheckResourceTagCreate_replace(name string) string {
 	return fmt.Sprintf(`
+
         resource "ibm_resource_instance" "resource_1" {
           name              = "%s"
           service           = "cloud-object-storage"
           plan              = "lite"
           location          = "global"
-        }
+
+
+         }
 
         resource "ibm_resource_tag" "tag" {
             resource_id = resource.ibm_resource_instance.resource_1.crn

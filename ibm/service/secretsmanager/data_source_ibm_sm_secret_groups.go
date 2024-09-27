@@ -68,8 +68,7 @@ func DataSourceIbmSmSecretGroups() *schema.Resource {
 func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -81,8 +80,7 @@ func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.Resource
 	secretGroupCollection, response, err := secretsManagerClient.ListSecretGroupsWithContext(context, listSecretGroupsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListSecretGroupsWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSecretGroupsWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("ListSecretGroupsWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
@@ -92,25 +90,21 @@ func dataSourceIbmSmSecretGroupsRead(context context.Context, d *schema.Resource
 		for _, modelItem := range secretGroupCollection.SecretGroups {
 			modelMap, err := dataSourceIbmSmSecretGroupsSecretGroupToMap(&modelItem)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
-				return tfErr.GetDiag()
+				return diag.FromErr(err)
 			}
 			secretGroups = append(secretGroups, modelMap)
 		}
 	}
 	if err = d.Set("secret_groups", secretGroups); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_groups"), fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_groups %s", err))
 	}
 
 	if err = d.Set("total_count", flex.IntValue(secretGroupCollection.TotalCount)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting total_count"), fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", SecretGroupsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	return nil
 }

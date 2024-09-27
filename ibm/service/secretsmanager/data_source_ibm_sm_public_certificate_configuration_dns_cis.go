@@ -6,7 +6,6 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -68,8 +67,7 @@ func DataSourceIbmSmConfigurationPublicCertificateDNSCis() *schema.Resource {
 func dataSourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -83,8 +81,7 @@ func dataSourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Con
 	publicCertificateConfigurationDNSCloudInternetServicesIntf, response, err := secretsManagerClient.GetConfigurationWithContext(context, getConfigurationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetConfigurationWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetConfigurationWithContext failed %s\n%s", err, response))
 	}
 
 	publicCertificateConfigurationDNSCloudInternetServices := publicCertificateConfigurationDNSCloudInternetServicesIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
@@ -92,43 +89,35 @@ func dataSourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Con
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 
 	if err = d.Set("config_type", publicCertificateConfigurationDNSCloudInternetServices.ConfigType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config_type"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting config_type: %s", err))
 	}
 
 	if err = d.Set("secret_type", publicCertificateConfigurationDNSCloudInternetServices.SecretType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
 	}
 
 	if err = d.Set("created_by", publicCertificateConfigurationDNSCloudInternetServices.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
 	if err = d.Set("created_at", DateTimeToRFC3339(publicCertificateConfigurationDNSCloudInternetServices.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(publicCertificateConfigurationDNSCloudInternetServices.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
 	if err = d.Set("cloud_internet_services_apikey", publicCertificateConfigurationDNSCloudInternetServices.CloudInternetServicesApikey); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting cloud_internet_services_apikey"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting cloud_internet_services_apikey: %s", err))
 	}
 
 	if err = d.Set("cloud_internet_services_crn", publicCertificateConfigurationDNSCloudInternetServices.CloudInternetServicesCrn); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting cloud_internet_services_crn"), fmt.Sprintf("(Data) %s", PublicCertConfigDnsCISResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting cloud_internet_services_crn: %s", err))
 	}
 
 	return nil

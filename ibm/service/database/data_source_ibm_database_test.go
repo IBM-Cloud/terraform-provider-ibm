@@ -64,7 +64,6 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 		plan              = "standard"
 		location          = "%[3]s"
 		tags              = ["one:two"]
-		service_endpoints = "public"
 	}
 
 				`, databaseResourceGroup, name, acc.Region())

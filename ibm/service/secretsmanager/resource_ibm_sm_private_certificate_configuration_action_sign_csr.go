@@ -212,8 +212,7 @@ func ResourceIbmSmPrivateCertificateConfigurationActionSignCsr() *schema.Resourc
 func resourceIbmSmPrivateCertificateConfigurationActionSignCsrCreateOrUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PrivateCertConfigActionSignCsr, "create/update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -224,8 +223,7 @@ func resourceIbmSmPrivateCertificateConfigurationActionSignCsrCreateOrUpdate(con
 
 	configurationActionPrototypeModel, err := resourceIbmSmPrivateCertificateConfigurationActionSignCsrMapToConfigurationActionPrototype(d)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PrivateCertConfigActionSignCsr, "create/update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	createConfigurationActionOptions.SetConfigActionPrototype(configurationActionPrototypeModel)
 	createConfigurationActionOptions.SetName(d.Get("name").(string))
@@ -233,8 +231,7 @@ func resourceIbmSmPrivateCertificateConfigurationActionSignCsrCreateOrUpdate(con
 	configurationActionIntf, response, err := secretsManagerClient.CreateConfigurationActionWithContext(context, createConfigurationActionOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateConfigurationActionWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateConfigurationActionWithContext failed: %s\n%s", err.Error(), response), PrivateCertConfigActionSignCsr, "create/update")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("CreateConfigurationActionWithContext failed %s\n%s", err, response))
 	}
 
 	configurationAction := configurationActionIntf.(*secretsmanagerv2.PrivateCertificateConfigurationActionSignCSR)
@@ -242,12 +239,10 @@ func resourceIbmSmPrivateCertificateConfigurationActionSignCsrCreateOrUpdate(con
 	if configurationAction.Data != nil {
 		dataMap, err := resourceIbmSmPrivateCertificateConfigurationActionSignCsrDataToMap(*configurationAction.Data)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, "", PrivateCertConfigActionSignCsr, "create/update")
-			return tfErr.GetDiag()
+			return diag.FromErr(err)
 		}
 		if err = d.Set("data", []map[string]interface{}{dataMap}); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting data: %s", err), PrivateCertConfigActionSignCsr, "create/update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting data: %s", err))
 		}
 	}
 

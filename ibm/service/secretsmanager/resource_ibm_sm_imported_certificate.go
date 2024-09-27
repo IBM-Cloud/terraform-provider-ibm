@@ -223,8 +223,7 @@ func ResourceIbmSmImportedCertificate() *schema.Resource {
 func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -235,16 +234,14 @@ func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.R
 
 	secretPrototypeModel, err := resourceIbmSmImportedCertificateMapToSecretPrototype(d)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	createSecretOptions.SetSecretPrototype(secretPrototypeModel)
 
 	secretIntf, response, err := secretsManagerClient.CreateSecretWithContext(context, createSecretOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateSecretWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecretWithContext failed: %s\n%s", err.Error(), response), ImportedCertSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("CreateSecretWithContext failed %s\n%s", err, response))
 	}
 	secret := secretIntf.(*secretsmanagerv2.ImportedCertificate)
 
@@ -253,8 +250,8 @@ func resourceIbmSmImportedCertificateCreate(context context.Context, d *schema.R
 
 	_, err = waitForIbmSmImportedCertificateCreate(secretsManagerClient, d)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error waiting for resource IbmSmImportedCertificate (%s) to be created: %s", d.Id(), err.Error()), ImportedCertSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmImportedCertificate (%s) to be created: %s", d.Id(), err))
 	}
 
 	return resourceIbmSmImportedCertificateRead(context, d, meta)
@@ -297,14 +294,12 @@ func waitForIbmSmImportedCertificateCreate(secretsManagerClient *secretsmanagerv
 func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
 	if len(id) != 3 {
-		tfErr := flex.TerraformErrorf(nil, "Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`", ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
 	}
 	region := id[0]
 	instanceId := id[1]
@@ -322,136 +317,105 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 			return nil
 		}
 		log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretWithContext failed %s\n%s", err, response), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
 	}
 	secret := secretIntf.(*secretsmanagerv2.ImportedCertificate)
 
 	if err = d.Set("secret_id", secretId); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
 	}
 	if err = d.Set("instance_id", instanceId); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting instance_id"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crn"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 	if secret.CustomMetadata != nil {
 		d.Set("custom_metadata", secret.CustomMetadata)
 	}
 	if err = d.Set("description", secret.Description); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 	if err = d.Set("downloaded", secret.Downloaded); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting downloaded"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
 	}
 	if secret.Labels != nil {
 		if err = d.Set("labels", secret.Labels); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting labels"), ImportedCertSecretResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 		}
 	}
 	if err = d.Set("locks_total", flex.IntValue(secret.LocksTotal)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting locks_total"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
 	if err = d.Set("name", secret.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if err = d.Set("secret_group_id", secret.SecretGroupID); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_group_id: %s", err))
 	}
 	if err = d.Set("secret_type", secret.SecretType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
 	}
 	if err = d.Set("state", flex.IntValue(secret.State)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state_description"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting versions_total"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting versions_total: %s", err))
 	}
 	if err = d.Set("signing_algorithm", secret.SigningAlgorithm); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting signing_algorithm"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting signing_algorithm: %s", err))
 	}
 	if err = d.Set("common_name", secret.CommonName); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting common_name"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 	if err = d.Set("expiration_date", DateTimeToRFC3339(secret.ExpirationDate)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting expiration_date"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 	if err = d.Set("intermediate_included", secret.IntermediateIncluded); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting intermediate_included"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting intermediate_included: %s", err))
 	}
 	if err = d.Set("issuer", secret.Issuer); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting issuer"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting issuer: %s", err))
 	}
 	if err = d.Set("key_algorithm", secret.KeyAlgorithm); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting key_algorithm"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting key_algorithm: %s", err))
 	}
 	if err = d.Set("private_key_included", secret.PrivateKeyIncluded); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting private_key_included"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting private_key_included: %s", err))
 	}
 	if err = d.Set("serial_number", secret.SerialNumber); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting serial_number"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting serial_number: %s", err))
 	}
 	validityMap, err := resourceIbmSmImportedCertificateCertificateValidityToMap(secret.Validity)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	if err = d.Set("validity", []map[string]interface{}{validityMap}); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting validity"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting validity: %s", err))
 	}
 	if err = d.Set("certificate", secret.Certificate); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting certificate"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting certificate: %s", err))
 	}
 	if err = d.Set("intermediate", secret.Intermediate); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting intermediate"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting intermediate: %s", err))
 	}
 	if err = d.Set("private_key", secret.PrivateKey); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting private_key"), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting private_key: %s", err))
 	}
 
 	// Call get version metadata API to get the current version_custom_metadata
@@ -462,15 +426,13 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 	versionMetadataIntf, response, err := secretsManagerClient.GetSecretVersionMetadataWithContext(context, getVersionMetdataOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetSecretVersionMetadataWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response), ImportedCertSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response))
 	}
 
 	versionMetadata := versionMetadataIntf.(*secretsmanagerv2.ImportedCertificateVersionMetadata)
 	if versionMetadata.VersionCustomMetadata != nil {
 		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting version_custom_metadata"), ImportedCertSecretResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
 		}
 	}
 
@@ -480,8 +442,7 @@ func resourceIbmSmImportedCertificateRead(context context.Context, d *schema.Res
 func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
@@ -526,8 +487,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 		_, response, err := secretsManagerClient.UpdateSecretMetadataWithContext(context, updateSecretMetadataOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecretMetadataWithContext failed %s\n%s", err, response), ImportedCertSecretResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -559,8 +519,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 				resourceIbmSmImportedCertificateRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecretVersionWithContext failed %s\n%s", err, response), ImportedCertSecretResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
 		}
 	} else if d.HasChange("version_custom_metadata") {
 		// Apply change to version_custom_metadata in current version
@@ -579,8 +538,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 				resourceIbmSmImportedCertificateRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response), ImportedCertSecretResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))
 		}
 	}
 	return resourceIbmSmImportedCertificateRead(context, d, meta)
@@ -589,8 +547,7 @@ func resourceIbmSmImportedCertificateUpdate(context context.Context, d *schema.R
 func resourceIbmSmImportedCertificateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", ImportedCertSecretResourceName, "delete")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
@@ -606,8 +563,7 @@ func resourceIbmSmImportedCertificateDelete(context context.Context, d *schema.R
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteSecretWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecretWithContext failed %s\n%s", err, response), ImportedCertSecretResourceName, "delete")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("DeleteSecretWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

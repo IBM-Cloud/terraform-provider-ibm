@@ -87,7 +87,6 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 				allocation_mb = 20480
 			}
 		}
-		service_endpoints            = "public"
 		tags                         = ["one:two"]
 		users {
 			name     = "user123"

@@ -519,8 +519,7 @@ func DataSourceIbmSmSecrets() *schema.Resource {
 func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -570,15 +569,13 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 	var pager *secretsmanagerv2.SecretsPager
 	pager, err = secretsManagerClient.NewSecretsPager(listSecretsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	allItems, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] SecretsPager.GetAll() failed %s", err)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SecretsPager.GetAll() failed %s", err), fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("SecretsPager.GetAll() failed %s", err))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
@@ -587,24 +584,20 @@ func dataSourceIbmSmSecretsRead(context context.Context, d *schema.ResourceData,
 	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIbmSmSecretsSecretMetadataToMap(modelItem)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(err)
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if err = d.Set("secrets", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secrets"), fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secrets %s", err))
 	}
 
 	if err = d.Set("total_count", len(mapSlice)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting total_count"), fmt.Sprintf("(Data) %s", SecretsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
 
 	return nil
