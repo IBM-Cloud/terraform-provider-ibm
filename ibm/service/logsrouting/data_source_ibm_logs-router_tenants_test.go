@@ -43,6 +43,7 @@ func testAccCheckIBMLogsRouterTenantsDataSourceConfigBasic(tenantName string) st
 	return fmt.Sprintf(`
 		 resource "ibm_logs_router_tenant" "logs_router_tenant_instance" {
 			 name = "%s"
+			 region = "br-sao"
 			 targets {
 				 log_sink_crn = "crn:v1:bluemix:public:logdna:eu-de:a/3516b8fa0a174a71899f5affa4f18d78:3517d2ed-9429-af34-ad52-34278391cbc8::"
 				 name = "my-log-sink"
@@ -57,6 +58,7 @@ func testAccCheckIBMLogsRouterTenantsDataSourceConfigBasic(tenantName string) st
  
 		 data "ibm_logs_router_tenants" "logs_router_tenants_instance" {
 			 name = ibm_logs_router_tenant.logs_router_tenant_instance.name
+			 region = ibm_logs_router_tenant.logs_router_tenant_instance.region
 		 }
 	 `, tenantName, acc.IngestionKey)
 }

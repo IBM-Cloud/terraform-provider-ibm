@@ -66,6 +66,7 @@ func ResourceIBMResourceKey() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "The id of the resource alias for which to create resource key",
+				Deprecated:    "Remove this attribute's configuration as it's no longer in use and the attribute will be removed in the upcoming major version of the provider 1.71.0.",
 				ConflictsWith: []string{"resource_instance_id"},
 			},
 
