@@ -333,8 +333,7 @@ func DataSourceIbmSmPrivateCertificateConfigurationRootCA() *schema.Resource {
 func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -348,8 +347,7 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 	privateCertificateConfigurationRootCAIntf, response, err := secretsManagerClient.GetConfigurationWithContext(context, getConfigurationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetConfigurationWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetConfigurationWithContext failed %s\n%s", err, response))
 	}
 
 	privateCertificateConfigurationRootCA := privateCertificateConfigurationRootCAIntf.(*secretsmanagerv2.PrivateCertificateConfigurationRootCA)
@@ -357,194 +355,158 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 
 	if err = d.Set("config_type", privateCertificateConfigurationRootCA.ConfigType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config_type"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting config_type: %s", err))
 	}
 
 	if err = d.Set("secret_type", privateCertificateConfigurationRootCA.SecretType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
 	}
 
 	if err = d.Set("created_by", privateCertificateConfigurationRootCA.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 
 	if err = d.Set("created_at", DateTimeToRFC3339(privateCertificateConfigurationRootCA.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(privateCertificateConfigurationRootCA.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
 	if err = d.Set("max_ttl_seconds", flex.IntValue(privateCertificateConfigurationRootCA.MaxTtlSeconds)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting max_ttl_seconds"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting max_ttl_seconds: %s", err))
 	}
 
 	if err = d.Set("crl_expiry_seconds", flex.IntValue(privateCertificateConfigurationRootCA.CrlExpirySeconds)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crl_expiry_seconds"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting crl_expiry_seconds: %s", err))
 	}
 
 	if err = d.Set("crl_disable", privateCertificateConfigurationRootCA.CrlDisable); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crl_disable"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting crl_disable: %s", err))
 	}
 
 	if err = d.Set("crl_distribution_points_encoded", privateCertificateConfigurationRootCA.CrlDistributionPointsEncoded); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crl_distribution_points_encoded"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting crl_distribution_points_encoded: %s", err))
 	}
 
 	if err = d.Set("issuing_certificates_urls_encoded", privateCertificateConfigurationRootCA.IssuingCertificatesUrlsEncoded); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting issuing_certificates_urls_encoded"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting issuing_certificates_urls_encoded: %s", err))
 	}
 
 	if err = d.Set("common_name", privateCertificateConfigurationRootCA.CommonName); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting common_name"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting common_name: %s", err))
 	}
 
 	if privateCertificateConfigurationRootCA.AltNames != nil {
 		if err = d.Set("alt_names", privateCertificateConfigurationRootCA.AltNames); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting alt_names"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting alt_names: %s", err))
 		}
 	}
 
 	if err = d.Set("ip_sans", privateCertificateConfigurationRootCA.IpSans); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting ip_sans"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting ip_sans: %s", err))
 	}
 
 	if err = d.Set("uri_sans", privateCertificateConfigurationRootCA.UriSans); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting uri_sans"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting uri_sans: %s", err))
 	}
 	if privateCertificateConfigurationRootCA.OtherSans != nil {
 		if err = d.Set("other_sans", privateCertificateConfigurationRootCA.OtherSans); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting other_sans"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting other_sans: %s", err))
 		}
 	}
 	if err = d.Set("ttl_seconds", flex.IntValue(privateCertificateConfigurationRootCA.TtlSeconds)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting ttl_seconds"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting ttl_seconds: %s", err))
 	}
 
 	if err = d.Set("format", privateCertificateConfigurationRootCA.Format); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting format"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting format: %s", err))
 	}
 
 	if err = d.Set("private_key_format", privateCertificateConfigurationRootCA.PrivateKeyFormat); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting private_key_format"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting private_key_format: %s", err))
 	}
 
 	if err = d.Set("key_type", privateCertificateConfigurationRootCA.KeyType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting key_type"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting key_type: %s", err))
 	}
 
 	if err = d.Set("key_bits", flex.IntValue(privateCertificateConfigurationRootCA.KeyBits)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting key_bits"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting key_bits: %s", err))
 	}
 
 	if err = d.Set("max_path_length", flex.IntValue(privateCertificateConfigurationRootCA.MaxPathLength)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting max_path_length"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting max_path_length: %s", err))
 	}
 
 	if err = d.Set("exclude_cn_from_sans", privateCertificateConfigurationRootCA.ExcludeCnFromSans); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting exclude_cn_from_sans"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting exclude_cn_from_sans: %s", err))
 	}
 	if privateCertificateConfigurationRootCA.PermittedDnsDomains != nil {
 		if err = d.Set("permitted_dns_domains", privateCertificateConfigurationRootCA.PermittedDnsDomains); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting permitted_dns_domains"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting permitted_dns_domains: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.Ou != nil {
 		if err = d.Set("ou", privateCertificateConfigurationRootCA.Ou); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting ou"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting ou: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.Organization != nil {
 		if err = d.Set("organization", privateCertificateConfigurationRootCA.Organization); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting organization"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting organization: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.Country != nil {
 		if err = d.Set("country", privateCertificateConfigurationRootCA.Country); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting country"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting country: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.Locality != nil {
 		if err = d.Set("locality", privateCertificateConfigurationRootCA.Locality); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting locality"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting locality: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.Province != nil {
 		if err = d.Set("province", privateCertificateConfigurationRootCA.Province); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting province"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting province: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.StreetAddress != nil {
 		if err = d.Set("street_address", privateCertificateConfigurationRootCA.StreetAddress); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting street_address"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting street_address: %s", err))
 		}
 	}
 	if privateCertificateConfigurationRootCA.PostalCode != nil {
 		if err = d.Set("postal_code", privateCertificateConfigurationRootCA.PostalCode); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting postal_code"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting postal_code: %s", err))
 		}
 	}
 	if err = d.Set("serial_number", privateCertificateConfigurationRootCA.SerialNumber); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting serial_number"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting serial_number: %s", err))
 	}
 
 	if err = d.Set("status", privateCertificateConfigurationRootCA.Status); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting status"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
 	if err = d.Set("expiration_date", DateTimeToRFC3339(privateCertificateConfigurationRootCA.ExpirationDate)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting expiration_date"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 
 	if privateCertificateConfigurationRootCA.CryptoKey != nil {
 		cryptoKeyMap, err := resourceIbmSmPrivateCertificateConfigurationCryptoKeyToMap(privateCertificateConfigurationRootCA.CryptoKey)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(err)
 		}
 		if len(cryptoKeyMap) > 0 {
 			if err = d.Set("crypto_key", []map[string]interface{}{cryptoKeyMap}); err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crypto_key"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-				return tfErr.GetDiag()
+				return diag.FromErr(fmt.Errorf("Error setting crypto_key: %s", err))
 			}
 		}
 	}
@@ -552,12 +514,10 @@ func dataSourceIbmSmPrivateCertificateConfigurationRootCARead(context context.Co
 	if privateCertificateConfigurationRootCA.Data != nil {
 		dataMap, err := dataSourceIbmSmPrivateCertificateConfigurationRootCAPrivateCertificateCADataToMap(privateCertificateConfigurationRootCA.Data)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(err)
 		}
 		if err = d.Set("data", []map[string]interface{}{dataMap}); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting data"), fmt.Sprintf("(Data) %s", PrivateCertConfigRootCAResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting data: %s", err))
 		}
 	}
 

@@ -6,7 +6,6 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"log"
 	"strings"
 
@@ -42,13 +41,13 @@ func ResourceIbmSmConfigurationPublicCertificateDNSCis() *schema.Resource {
 			"cloud_internet_services_apikey": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator(PublicCertConfigDnsCISResourceName, "cloud_internet_services_apikey"),
+				ValidateFunc: validate.InvokeValidator("ibm_sm_public_certificate_configuration_dns_cis", "cloud_internet_services_apikey"),
 				Description:  "An IBM Cloud API key that can to list domains in your Cloud Internet Services instance.To grant Secrets Manager the ability to view the Cloud Internet Services instance and all of its domains, the API key must be assigned the Reader service role on Internet Services (`internet-svcs`).If you need to manage specific domains, you can assign the Manager role. For production environments, it is recommended that you assign the Reader access role, and then use the[IAM Policy Management API](https://cloud.ibm.com/apidocs/iam-policy-management#create-policy) to control specific domains. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates#authorize-specific-domains).",
 			},
 			"cloud_internet_services_crn": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.InvokeValidator(PublicCertConfigDnsCISResourceName, "cloud_internet_services_crn"),
+				ValidateFunc: validate.InvokeValidator("ibm_sm_public_certificate_configuration_dns_cis", "cloud_internet_services_crn"),
 				Description:  "A CRN that uniquely identifies an IBM Cloud resource.",
 			},
 			"secret_type": &schema.Schema{
@@ -98,15 +97,14 @@ func ResourceIbmSmConfigurationPublicCertificateDNSCisValidator() *validate.Reso
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: PublicCertConfigDnsCISResourceName, Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_sm_public_certificate_configuration_dns_cis", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -131,16 +129,14 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Con
 	}
 	convertedModel, err := resourceIbmSmConfigurationPublicCertificateCisMapToPublicCertificateConfigurationDNSCloudInternetServicesPrototype(bodyModelMap)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	createConfigurationOptions.SetConfigurationPrototype(convertedModel)
 
 	configurationIntf, response, err := secretsManagerClient.CreateConfigurationWithContext(context, createConfigurationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateConfigurationWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateConfigurationWithContext failed: %s\n%s", err.Error(), response), PublicCertConfigDnsCISResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("CreateConfigurationWithContext failed %s\n%s", err, response))
 	}
 
 	configuration := configurationIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
@@ -152,14 +148,12 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Con
 func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
 	if len(id) != 3 {
-		tfErr := flex.TerraformErrorf(nil, "Wrong format of resource ID. To import a DNS configuration use the format `<region>/<instance_id>/<name>`", PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.Errorf("Wrong format of resource ID. To import a DNS configuration use the format `<region>/<instance_id>/<name>`")
 	}
 	region := id[0]
 	instanceId := id[1]
@@ -176,56 +170,45 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Conte
 			return nil
 		}
 		log.Printf("[DEBUG] GetConfigurationWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetConfigurationWithContext failed %s\n%s", err, response))
 	}
 
 	configuration := configurationIntf.(*secretsmanagerv2.PublicCertificateConfigurationDNSCloudInternetServices)
 	if err = d.Set("instance_id", instanceId); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting instance_id"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if !core.IsNil(configuration.ConfigType) {
 		if err = d.Set("config_type", configuration.ConfigType); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting config_type"), PublicCertConfigDnsCISResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting config_type: %s", err))
 		}
 	}
 	if !core.IsNil(configuration.CloudInternetServicesApikey) {
 		if err = d.Set("cloud_internet_services_apikey", configuration.CloudInternetServicesApikey); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting cloud_internet_services_apikey"), PublicCertConfigDnsCISResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting cloud_internet_services_apikey: %s", err))
 		}
 	}
 	if !core.IsNil(configuration.CloudInternetServicesCrn) {
 		if err = d.Set("cloud_internet_services_crn", configuration.CloudInternetServicesCrn); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting cloud_internet_services_crn"), PublicCertConfigDnsCISResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting cloud_internet_services_crn: %s", err))
 		}
 	}
 	if err = d.Set("name", configuration.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting config name: %s", err))
 	}
 	if err = d.Set("secret_type", configuration.SecretType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
 	}
 	if err = d.Set("created_by", configuration.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 	if err = d.Set("created_at", DateTimeToRFC3339(configuration.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(configuration.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), PublicCertConfigDnsCISResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
 	return nil
@@ -234,8 +217,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Conte
 func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
@@ -266,8 +248,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Con
 		_, response, err := secretsManagerClient.UpdateConfigurationWithContext(context, updateConfigurationOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateConfigurationWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateConfigurationWithContext failed %s\n%s", err, response), PublicCertConfigDnsCISResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("UpdateConfigurationWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -277,8 +258,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Con
 func resourceIbmSmConfigurationPublicCertificateDNSCisDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "delete")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
@@ -293,8 +273,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisDelete(context context.Con
 	response, err := secretsManagerClient.DeleteConfigurationWithContext(context, deleteConfigurationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteConfigurationWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteConfigurationWithContext failed %s\n%s", err, response), PublicCertConfigDnsCISResourceName, "delete")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("DeleteConfigurationWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

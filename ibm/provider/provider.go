@@ -1198,7 +1198,6 @@ func Provider() *schema.Provider {
 			"ibm_is_reservation":                            vpc.ResourceIBMISReservation(),
 			"ibm_is_reservation_activate":                   vpc.ResourceIBMISReservationActivate(),
 			"ibm_is_subnet_reserved_ip":                     vpc.ResourceIBMISReservedIP(),
-			"ibm_is_subnet_reserved_ip_patch":               vpc.ResourceIBMISReservedIPPatch(),
 			"ibm_is_subnet_network_acl_attachment":          vpc.ResourceIBMISSubnetNetworkACLAttachment(),
 			"ibm_is_subnet_public_gateway_attachment":       vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_subnet_routing_table_attachment":        vpc.ResourceIBMISSubnetRoutingTableAttachment(),
@@ -1409,9 +1408,6 @@ func Provider() *schema.Provider {
 			// Added for Resource Tag
 			"ibm_resource_tag":        globaltagging.ResourceIBMResourceTag(),
 			"ibm_resource_access_tag": globaltagging.ResourceIBMResourceAccessTag(),
-
-			// Added for Iam Access Tag
-			"ibm_iam_access_tag": globaltagging.ResourceIBMIamAccessTag(),
 
 			// Atracker
 			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
@@ -1902,7 +1898,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
 				"ibm_resource_access_tag":                 globaltagging.ResourceIBMResourceAccessTagValidator(),
-				"ibm_iam_access_tag":                      globaltagging.ResourceIBMIamAccessTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
 				"ibm_satellite_cluster":                   satellite.ResourceIBMSatelliteClusterValidator(),
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),

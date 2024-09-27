@@ -135,8 +135,7 @@ func ResourceIbmSmKvSecret() *schema.Resource {
 func resourceIbmSmKvSecretCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", KvSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -147,16 +146,14 @@ func resourceIbmSmKvSecretCreate(context context.Context, d *schema.ResourceData
 
 	secretPrototypeModel, err := resourceIbmSmKvSecretMapToSecretPrototype(d)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", KvSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	createSecretOptions.SetSecretPrototype(secretPrototypeModel)
 
 	secretIntf, response, err := secretsManagerClient.CreateSecretWithContext(context, createSecretOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateSecretWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecretWithContext failed: %s\n%s", err.Error(), response), KvSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("CreateSecretWithContext failed %s\n%s", err, response))
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.KVSecret)
@@ -165,8 +162,8 @@ func resourceIbmSmKvSecretCreate(context context.Context, d *schema.ResourceData
 
 	_, err = waitForIbmSmKvSecretCreate(secretsManagerClient, d)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error waiting for resource IbmSmKvSecret (%s) to be created: %s", d.Id(), err.Error()), KvSecretResourceName, "create")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf(
+			"Error waiting for resource IbmSmKvSecret (%s) to be created: %s", d.Id(), err))
 	}
 
 	return resourceIbmSmKvSecretRead(context, d, meta)
@@ -209,14 +206,12 @@ func waitForIbmSmKvSecretCreate(secretsManagerClient *secretsmanagerv2.SecretsMa
 func resourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
 	if len(id) != 3 {
-		tfErr := flex.TerraformErrorf(nil, "Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`", KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.Errorf("Wrong format of resource ID. To import a secret use the format `<region>/<instance_id>/<secret_id>`")
 	}
 	region := id[0]
 	instanceId := id[1]
@@ -234,83 +229,65 @@ func resourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData, 
 			return nil
 		}
 		log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretWithContext failed %s\n%s", err, response), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
 	}
 
 	secret := secretIntf.(*secretsmanagerv2.KVSecret)
 
 	if err = d.Set("secret_id", secretId); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_id"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_id: %s", err))
 	}
 	if err = d.Set("instance_id", instanceId); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting instance_id"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 	if err = d.Set("region", region); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if err = d.Set("created_by", secret.CreatedBy); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_by"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 	if err = d.Set("created_at", DateTimeToRFC3339(secret.CreatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("crn", secret.Crn); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crn"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("downloaded", secret.Downloaded); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting downloaded"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting downloaded: %s", err))
 	}
 	if err = d.Set("locks_total", flex.IntValue(secret.LocksTotal)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting locks_total"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
 	if err = d.Set("name", secret.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if err = d.Set("secret_group_id", secret.SecretGroupID); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_group_id"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_group_id: %s", err))
 	}
 	if err = d.Set("secret_type", secret.SecretType); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting secret_type"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting secret_type: %s", err))
 	}
 	if err = d.Set("state", flex.IntValue(secret.State)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 	if err = d.Set("state_description", secret.StateDescription); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting state_description"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting state_description: %s", err))
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting versions_total"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting versions_total: %s", err))
 	}
 	if secret.CustomMetadata != nil {
 		d.Set("custom_metadata", secret.CustomMetadata)
 	}
 	if err = d.Set("description", secret.Description); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description"), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 	if secret.Labels != nil {
 		if err = d.Set("labels", secret.Labels); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting labels"), KvSecretResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting labels: %s", err))
 		}
 	}
 	if secret.Data != nil {
@@ -325,15 +302,13 @@ func resourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData, 
 	versionMetadataIntf, response, err := secretsManagerClient.GetSecretVersionMetadataWithContext(context, getVersionMetdataOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetSecretVersionMetadataWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response), KvSecretResourceName, "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("GetSecretVersionMetadataWithContext failed %s\n%s", err, response))
 	}
 
 	versionMetadata := versionMetadataIntf.(*secretsmanagerv2.KVSecretVersionMetadata)
 	if versionMetadata.VersionCustomMetadata != nil {
 		if err = d.Set("version_custom_metadata", versionMetadata.VersionCustomMetadata); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting version_custom_metadata"), KvSecretResourceName, "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("Error setting version_custom_metadata: %s", err))
 		}
 	}
 
@@ -343,8 +318,7 @@ func resourceIbmSmKvSecretRead(context context.Context, d *schema.ResourceData, 
 func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", KvSecretResourceName, "update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
@@ -389,8 +363,7 @@ func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData
 		_, response, err := secretsManagerClient.UpdateSecretMetadataWithContext(context, updateSecretMetadataOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateSecretMetadataWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecretMetadataWithContext failed %s\n%s", err, response), KvSecretResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("UpdateSecretMetadataWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -416,8 +389,7 @@ func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData
 				resourceIbmSmKvSecretRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] CreateSecretVersionWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecretVersionWithContext failed %s\n%s", err, response), KvSecretResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("CreateSecretVersionWithContext failed %s\n%s", err, response))
 		}
 	} else if d.HasChange("version_custom_metadata") {
 		// Apply change to version_custom_metadata in current version
@@ -436,8 +408,7 @@ func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData
 				resourceIbmSmKvSecretRead(context, d, meta)
 			}
 			log.Printf("[DEBUG] UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response), KvSecretResourceName, "update")
-			return tfErr.GetDiag()
+			return diag.FromErr(fmt.Errorf("UpdateSecretVersionMetadataWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -447,8 +418,7 @@ func resourceIbmSmKvSecretUpdate(context context.Context, d *schema.ResourceData
 func resourceIbmSmKvSecretDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", KvSecretResourceName, "delete")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	id := strings.Split(d.Id(), "/")
@@ -464,8 +434,7 @@ func resourceIbmSmKvSecretDelete(context context.Context, d *schema.ResourceData
 	response, err := secretsManagerClient.DeleteSecretWithContext(context, deleteSecretOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteSecretWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecretWithContext failed %s\n%s", err, response), KvSecretResourceName, "delete")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("DeleteSecretWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

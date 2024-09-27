@@ -127,7 +127,6 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
-		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -165,7 +164,6 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
-		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -211,7 +209,6 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
-		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -242,7 +239,6 @@ func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, 
 		service           = "databases-for-mongodb"
 		plan              = "standard"
 		location          = "%[3]s"
-		service_endpoints            = "public"
 	}
 
 				`, databaseResourceGroup, name, acc.Region())

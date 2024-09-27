@@ -6,7 +6,6 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"log"
 	"time"
 
@@ -202,8 +201,7 @@ func DataSourceIbmSmConfigurations() *schema.Resource {
 func dataSourceIbmSmConfigurationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -233,15 +231,13 @@ func dataSourceIbmSmConfigurationsRead(context context.Context, d *schema.Resour
 	var pager *secretsmanagerv2.ConfigurationsPager
 	pager, err = secretsManagerClient.NewConfigurationsPager(listConfigurationsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	allItems, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] ConfigurationsPager.GetAll() failed %s", err)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ConfigurationsPager.GetAll() %s", err), fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("ConfigurationsPager.GetAll() failed %s", err))
 	}
 
 	d.SetId(dataSourceIbmSmConfigurationsID(d))
@@ -250,19 +246,16 @@ func dataSourceIbmSmConfigurationsRead(context context.Context, d *schema.Resour
 	for _, modelItem := range allItems {
 		modelMap, err := dataSourceIbmSmConfigurationsConfigurationMetadataToMap(modelItem)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
-			return tfErr.GetDiag()
+			return diag.FromErr(err)
 		}
 		mapSlice = append(mapSlice, modelMap)
 	}
 
 	if err = d.Set("configurations", mapSlice); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting configurations"), fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting configurations %s", err))
 	}
 	if err = d.Set("total_count", len(mapSlice)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting total_count"), fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting locks_total: %s", err))
 	}
 
 	return nil

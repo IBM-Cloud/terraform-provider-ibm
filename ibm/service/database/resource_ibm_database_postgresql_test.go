@@ -532,7 +532,6 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 				id = "multitenant"
 			}
 		}
-		service_endpoints            = "public"
 		users {
 			name     = "user123"
 			password = "password12345678"
@@ -685,7 +684,6 @@ func testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup string,
 		service           = "databases-for-postgresql"
 		plan              = "standard"
 		location          = "%[3]s"
-		service_endpoints = "public-and-private"
 	  }
 				`, databaseResourceGroup, name, acc.Region())
 }
@@ -703,7 +701,6 @@ func testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup string
 		service           = "databases-for-postgresql"
 		plan              = "standard"
 		location          = "%[3]s"
-		service_endpoints            = "public-and-private"
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }
@@ -721,7 +718,6 @@ func testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup s
 		service           = "databases-for-postgresql"
 		plan              = "standard"
 		location          = "%[3]s"
-		service_endpoints = "public-and-private"
 	}
 
 	resource "ibm_database" "%[2]s-pitr" {
@@ -732,7 +728,6 @@ func testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup s
 		location                              = "%[3]s"
 		point_in_time_recovery_deployment_id  = ibm_database.%[2]s.id
 		point_in_time_recovery_time           = ""
-		service_endpoints                     = "public-and-private"
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }

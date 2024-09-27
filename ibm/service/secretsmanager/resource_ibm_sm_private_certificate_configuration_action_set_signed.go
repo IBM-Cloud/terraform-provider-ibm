@@ -3,7 +3,6 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -48,8 +47,7 @@ func ResourceIbmSmPrivateCertificateConfigurationActionSetSigned() *schema.Resou
 func resourceIbmSmPrivateCertificateConfigurationActionSetSignedCreateOrUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PrivateCertConfigActionSetSigned, "create/update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	region := getRegion(secretsManagerClient, d)
@@ -60,8 +58,7 @@ func resourceIbmSmPrivateCertificateConfigurationActionSetSignedCreateOrUpdate(c
 
 	configurationActionPrototypeModel, err := resourceIbmSmPrivateCertificateConfigurationActionSetSignedPrototype(d)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "", PrivateCertConfigActionSetSigned, "create/update")
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	createConfigurationActionOptions.SetConfigActionPrototype(configurationActionPrototypeModel)
 	createConfigurationActionOptions.SetName(d.Get("name").(string))
@@ -69,8 +66,7 @@ func resourceIbmSmPrivateCertificateConfigurationActionSetSignedCreateOrUpdate(c
 	_, response, err := secretsManagerClient.CreateConfigurationActionWithContext(context, createConfigurationActionOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateConfigurationActionWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateConfigurationActionWithContext failed: %s\n%s", err.Error(), response), PrivateCertConfigActionSetSigned, "create/update")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("CreateConfigurationActionWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s/set_signed", region, instanceId, d.Get("name").(string)))

@@ -31,12 +31,6 @@ func DataSourceIBMLogsRouterTenants() *schema.Resource {
 				Required:    true,
 				Description: "Optional: The name of a tenant.",
 			},
-			"region": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The region where the tenants exist.",
-			},
 			"tenants": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -156,10 +150,6 @@ func dataSourceIBMLogsRouterTenantsRead(context context.Context, d *schema.Resou
 
 	if _, ok := d.GetOk("name"); ok {
 		listTenantsOptions.SetName(d.Get("name").(string))
-	}
-
-	if _, ok := d.GetOk("region"); ok {
-		listTenantsOptions.SetRegion(d.Get("region").(string))
 	}
 
 	tenantCollection, _, err := ibmCloudLogsRoutingClient.ListTenantsWithContext(context, listTenantsOptions)
