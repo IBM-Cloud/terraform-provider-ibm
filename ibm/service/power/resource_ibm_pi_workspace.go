@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -105,7 +104,7 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := strings.Split(*controller.CRN, ":")[7]
+	cloudInstanceID := *controller.GUID
 	d.SetId(cloudInstanceID)
 
 	_, err = waitForResourceWorkspaceCreate(ctx, client, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
@@ -238,8 +237,7 @@ func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id
 
 func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if d.HasChange(Arg_UserTags) {
-		crn := d.Get(Attr_CRN)
-		if crn != "" {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
 			oldList, newList := d.GetChange(Arg_UserTags)
 			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
 			if err != nil {
