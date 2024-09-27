@@ -45,7 +45,7 @@ Review the argument references that you can specify for your resource.
 
 - `resource_id` - (Required, String) The CRN of the resource on which the tags is be attached.
 - `resource_type` - (Optional, String) The resource type on which the tags should be attached.
-- `tag_type` - (Optional, String) Type of the tag. Supported values are: `user`, `service`, or `access`. The default value is user.
+- `tag_type` - (Optional, String) Type of the tag. Supported values are: `user` or `access`. The default value is user.
 - `tags` - (Required, Array of strings) List of tags associated with resource instance.
 - `replace` - (Optional, Bool) If true, it indicates that the attaching operation is a replacement operation
 

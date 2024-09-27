@@ -15,7 +15,7 @@ Provides a read-only data source to retrieve information about logs_router_targe
 ```hcl
 data "ibm_logs_router_targets" "logs_router_targets" {
 	tenant_id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
-	name = "my-target"
+	region = "us-east"
 }
 ```
 
@@ -25,6 +25,8 @@ You can specify the following arguments for this data source.
 
 * `name` - (Optional, String) Optional: Name of the tenant target.
   * Constraints: The maximum length is `35` characters. The minimum length is `1` character. The value must match regular expression `/[A-F,0-9,-]/`.
+* `region` - (Required, Forces new resource, String) The region where the tenant for this target exists.
+  * Constraints: The value must match one of the available regions. For a list of regions, see the available [IBM Cloud Logs Router Endpoints](https://cloud.ibm.com/docs/logs-router?topic=logs-router-locations).
 * `tenant_id` - (Required, Forces new resource, String) The instance ID of the tenant.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[A-F,0-9,-]/`.
 
