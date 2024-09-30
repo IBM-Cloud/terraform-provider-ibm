@@ -20,7 +20,7 @@ func TestAccIBMEventStreamsSchemaGlobalCompatibilityRuleDataSource(t *testing.T)
 			{
 				Config: testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleDataSourceConfig(getTestInstanceName(mzrKey)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleProperties("data.ibm_event_streams_schema_global_compatibility_rule.es_globalrule", ""),
+					testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleProperties("data.ibm_event_streams_schema_global_rule.es_globalrule", ""),
 				),
 			},
 		},
@@ -36,7 +36,7 @@ func testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleDataSourceConfig(in
 		resource_group_id = data.ibm_resource_group.group.id
 		name              = "%s"
 	}
-	data "ibm_event_streams_schema_global_compatibility_rule" "es_globalrule" {
+	data "ibm_event_streams_schema_global_rule" "es_globalrule" {
 		resource_instance_id = data.ibm_resource_instance.es_instance.id
 	}`, instanceName)
 }

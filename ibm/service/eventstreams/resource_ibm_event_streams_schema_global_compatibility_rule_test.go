@@ -23,11 +23,11 @@ func TestAccIBMEventStreamsSchemaGlobalCompatibilityRuleResource(t *testing.T) {
 			{
 				Config: testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleResourceConfig(getTestInstanceName(mzrKey), "FORWARD"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleProperties("ibm_event_streams_schema_global_compatibility_rule.es_globalrule", "FORWARD"),
+					testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleProperties("ibm_event_streams_schema_global_rule.es_globalrule", "FORWARD"),
 				),
 			},
 			{
-				ResourceName:      "ibm_event_streams_schema_global_compatibility_rule.es_globalrule",
+				ResourceName:      "ibm_event_streams_schema_global_rule.es_globalrule",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -44,7 +44,7 @@ func testAccCheckIBMEventStreamsSchemaGlobalCompatibilityRuleResourceConfig(inst
 		resource_group_id = data.ibm_resource_group.group.id
 		name              = "%s"
 	}
-	resource "ibm_event_streams_schema_global_compatibility_rule" "es_globalrule" {
+	resource "ibm_event_streams_schema_global_rule" "es_globalrule" {
 		resource_instance_id = data.ibm_resource_instance.es_instance.id
 		config = "%s"
 	}`, instanceName, rule)

@@ -51,13 +51,13 @@ func DataSourceIBMEventStreamsSchemaGlobalCompatibilityRule() *schema.Resource {
 func dataSourceIBMEventStreamsSchemaGlobalCompatibilityRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schemaregistryClient, err := meta.(conns.ClientSession).ESschemaRegistrySession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry session", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry session", "ibm_event_streams_schema_global_rule", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	adminURL, instanceCRN, err := getSchemaRuleInstanceURL(d, meta)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry URL", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		tfErr := flex.TerraformErrorf(err, "Error getting Event Streams schema registry URL", "ibm_event_streams_schema_global_rule", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -67,12 +67,12 @@ func dataSourceIBMEventStreamsSchemaGlobalCompatibilityRuleRead(context context.
 	getOpts.SetRule(schemaCompatibilityRuleType)
 	rule, _, err := schemaregistryClient.GetGlobalRuleWithContext(context, getOpts)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, "GetGlobalRule returned error", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		tfErr := flex.TerraformErrorf(err, "GetGlobalRule returned error", "ibm_event_streams_schema_global_rule", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if rule.Config == nil {
-		tfErr := flex.TerraformErrorf(err, "Unexpected nil config when getting global compatibility rule", "ibm_event_streams_schema_global_compatibility_rule", "read")
+		tfErr := flex.TerraformErrorf(err, "Unexpected nil config when getting global compatibility rule", "ibm_event_streams_schema_global_rule", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
