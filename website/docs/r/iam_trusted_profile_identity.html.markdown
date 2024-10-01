@@ -38,7 +38,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the iam_trusted_profile_identity. Id is combination of `profile_id`/ `identity-type`/ `identifier-id`.
+* `id` - The unique identifier of the iam_trusted_profile_identity. Id is combination of `profile_id`| `identity-type`| `identifier-id`.
 
 
 ## Import
@@ -47,7 +47,7 @@ You can import the `ibm_iam_trusted_profile_identity` resource by using `iam_id`
 The `iam_id` property can be formed from `profile-id`, `identity-type`, and `identifier-id` in the following format:
 
 ```
-<profile-id>/<identity-type>/<identifier-id>
+<profile-id>|<identity-type>|<identifier-id>
 ```
 * `profile-id`: A string. ID of the trusted profile.
 * `identity-type`: A string. Type of the identity.
@@ -55,5 +55,5 @@ The `iam_id` property can be formed from `profile-id`, `identity-type`, and `ide
 
 # Syntax
 ```
-$ terraform import ibm_iam_trusted_profile_identity.iam_trusted_profile_identity <profile-id>/<identity-type>/<identifier-id>
+$ terraform import ibm_iam_trusted_profile_identity.iam_trusted_profile_identity <profile-id>|<identity-type>|<identifier-id>
 ```
