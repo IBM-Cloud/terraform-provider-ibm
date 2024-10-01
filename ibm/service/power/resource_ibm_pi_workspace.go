@@ -118,7 +118,7 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 			oldList, newList := d.GetChange(Arg_UserTags)
 			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *controller.CRN, "", UserTagType)
 			if err != nil {
-				log.Printf("Error on creation of workspace (%s) user_tags: %s", *controller.CRN, err)
+				log.Printf("Error on creation of workspace (%s) pi_user_tags: %s", *controller.CRN, err)
 			}
 		}
 	}
@@ -166,7 +166,7 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set(Arg_Name, controller.Name)
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *controller.CRN, "", UserTagType)
 	if err != nil {
-		log.Printf("Error on get of workspace (%s) user_tags: %s", cloudInstanceID, err)
+		log.Printf("Error on get of workspace (%s) pi_user_tags: %s", cloudInstanceID, err)
 	}
 	d.Set(Arg_UserTags, tags)
 
@@ -241,7 +241,7 @@ func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, m
 			oldList, newList := d.GetChange(Arg_UserTags)
 			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
 			if err != nil {
-				log.Printf("Error on update of workspace (%s) user_tags: %s", crn, err)
+				log.Printf("Error on update of workspace (%s) pi_user_tags: %s", crn, err)
 			}
 		}
 	}

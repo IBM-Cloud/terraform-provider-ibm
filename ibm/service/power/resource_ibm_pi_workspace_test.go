@@ -47,6 +47,9 @@ func TestAccIBMPIWorkspaceUserTags(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIWorkspaceExists("ibm_pi_workspace.powervs_service_instance"),
 					resource.TestCheckResourceAttrSet("ibm_pi_workspace.powervs_service_instance", "id"),
+					resource.TestCheckResourceAttr("ibm_pi_workspace.powervs_service_instance", "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr("ibm_pi_workspace.powervs_service_instance", "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr("ibm_pi_workspace.powervs_service_instance", "pi_user_tags.*", "dataresidency:france"),
 				),
 			},
 		},
