@@ -19,11 +19,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 */
 
 data "ibm_config_aggregator_configurations" "config_aggregator_configurations_instance" {
-  config_type                = var.config_type
-  location                   = var.location
-  resource_crn               = var.resource_crn
-  resource_group_id          = var.resource_group_id
-  service_name               = var.service_name
+
 }
 
 // Data source is not linked to a resource instance
