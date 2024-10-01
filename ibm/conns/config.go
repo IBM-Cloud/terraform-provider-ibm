@@ -1570,7 +1570,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
 		Authenticator: authenticator,
-		URL:           backupRecoveryURL,
+		URL:           EnvFallBack([]string{"BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
 	}
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)
