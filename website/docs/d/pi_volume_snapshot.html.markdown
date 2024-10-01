@@ -15,7 +15,7 @@ Retrieve information about a volume snapshot.
 ```terraform
 data "ibm_pi_volume_snapshot" "snapshot" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>" 
-  pi_snapshot_id = "snapshot_id"
+  pi_snapshot_id       = "snapshot_id"
 }
 ```
 
@@ -48,7 +48,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `creation_date` - (String) The date and time when the volume snapshot was created.
 - `crn` - (String) The CRN for this resource.
-- `id` - The unique identifier of the volume snapshot.
+- `id` - (String) The unique identifier of the volume snapshot.
 - `name` - (String) The volume snapshot name.
 - `size` - (Float) The size of the volume snapshot, in gibibytes (GiB).
 - `status` - (String) The status for the volume snapshot.
