@@ -1202,10 +1202,16 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("resource_instance_id", serviceID)
 	d.Set("bucket_name", bucketName)
 
-	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, strings.Contains(apiEndpoint, "test"))
-	d.Set("s3_endpoint_public", apiEndpointPublic)
-	d.Set("s3_endpoint_private", apiEndpointPrivate)
-	d.Set("s3_endpoint_direct", directApiEndpoint)
+	testEnv := strings.Contains(apiEndpoint, ".test.")
+	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, testEnv)
+
+	if testEnv {
+		d.Set(fmt.Sprintf("s3_endpoint_%s", endpointType), apiEndpoint)
+	} else {
+		d.Set("s3_endpoint_public", apiEndpointPublic)
+		d.Set("s3_endpoint_private", apiEndpointPrivate)
+		d.Set("s3_endpoint_direct", directApiEndpoint)
+	}
 	if endpointType != "" {
 		d.Set("endpoint_type", endpointType)
 	}
@@ -1225,7 +1231,6 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if apiType == "sl" {
 
 		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bLocation)
-
 		sess.SetServiceURL(satconfig)
 	}
 
@@ -1673,7 +1678,6 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 		if endpointType == "direct" {
 			apiEndpoint = directApiEndpoint
 		}
-
 	}
 
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
