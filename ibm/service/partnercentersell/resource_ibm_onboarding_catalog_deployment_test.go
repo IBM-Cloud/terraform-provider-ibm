@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -21,30 +22,24 @@ import (
 
 func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := acc.PcsOnboardingProductWithCatalogProduct
-	catalogProductID := acc.PcsOnboardingCatalogProductId
-	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	name := "test-deployment-name-terraform"
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "false"
+	disabled := "true"
 	kind := "deployment"
-	nameUpdate := "test-deployment-name-terraform"
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "deployment"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(name, active, disabled, kind),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", active),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabled),
@@ -52,11 +47,8 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", activeUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "disabled", disabledUpdate),
@@ -69,32 +61,26 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 
 func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogDeployment
-	productID := acc.PcsOnboardingProductWithCatalogProduct
-	catalogProductID := acc.PcsOnboardingCatalogProductId
-	catalogPlanID := acc.PcsOnboardingCatalogPlanId
-	env := "current"
-	name := "test-deployment-name-terraform"
+	env := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	active := "true"
-	disabled := "false"
+	disabled := "true"
 	kind := "deployment"
-	envUpdate := "current"
-	nameUpdate := "test-deployment-name-terraform"
+	envUpdate := fmt.Sprintf("tf_env_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
 	kindUpdate := "deployment"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(env, name, active, disabled, kind),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "env", env),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", active),
@@ -103,11 +89,8 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
-					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_plan_id", catalogPlanID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "env", envUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "active", activeUpdate),
@@ -116,50 +99,40 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance",
+				ResourceName:      "ibm_onboarding_catalog_deployment.onboarding_catalog_deployment",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"env", "product_id", "catalog_product_id", "catalog_plan_id",
-				},
 			},
 		},
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, catalogProductID string, catalogPlanID string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-			product_id = "%s"
-			catalog_product_id = "%s"
-			catalog_plan_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
+			catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+			catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
 			name = "%s"
 			active = %s
 			disabled = %s
 			kind = "%s"
-			tags = ["sample"]
+			tags = "FIXME"
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "email"
 			}
-			metadata {
-				service {
-				  	rc_provisionable = true
-  					iam_compatible = true
-				}
-                rc_compatible =	false
-            }
 		}
-	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind)
+	`, name, active, disabled, kind)
 }
 
-func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogProductID string, catalogPlanID string, env string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogDeploymentConfig(env string, name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-			product_id = "%s"
-			catalog_product_id = "%s"
-			catalog_plan_id = "%s"
+			product_id = ibm_onboarding_product.onboarding_product_instance.id
+			catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+			catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
 			env = "%s"
 			name = "%s"
 			active = %s
@@ -172,24 +145,63 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 					long_description = "long_description"
 				}
 			}
-			tags = ["sample"]
+			tags = "FIXME"
 			object_provider {
 				name = "name"
-				email = "email@email.com"
+				email = "email"
 			}
 			metadata {
 				rc_compatible = true
-				service {
-				  	rc_provisionable = true
-  					iam_compatible = true
-				}
 				ui {
+					strings {
+						en {
+							bullets {
+								description = "description"
+								description_i18n = { "key" = "anything as a string" }
+								title = "title"
+								title_i18n = { "key" = "anything as a string" }
+							}
+							media {
+								caption = "caption"
+								caption_i18n = { "key" = "anything as a string" }
+								thumbnail = "thumbnail"
+								type = "image"
+								url = "url"
+							}
+							embeddable_dashboard = "embeddable_dashboard"
+						}
+					}
+					urls {
+						doc_url = "doc_url"
+						apidocs_url = "apidocs_url"
+						terms_url = "terms_url"
+						instructions_url = "instructions_url"
+						catalog_details_url = "catalog_details_url"
+						custom_create_page_url = "custom_create_page_url"
+						dashboard = "dashboard"
+					}
 					hidden = true
 					side_by_side_index = 1.0
 				}
+				service {
+					rc_provisionable = true
+					iam_compatible = true
+					bindable = true
+					plan_updateable = true
+					service_key_supported = true
+				}
+				deployment {
+					broker {
+						name = "name"
+						guid = "guid"
+					}
+					location = "location"
+					location_url = "location_url"
+					target_crn = "target_crn"
+				}
 			}
 		}
-	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind)
+	`, env, name, active, disabled, kind)
 }
 
 func testAccCheckIbmOnboardingCatalogDeploymentExists(n string, obj partnercentersellv1.GlobalCatalogDeployment) resource.TestCheckFunc {
@@ -330,13 +342,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -344,13 +356,19 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 		globalCatalogMetadataUiStringsContentModel := make(map[string]interface{})
 		globalCatalogMetadataUiStringsContentModel["bullets"] = []map[string]interface{}{catalogHighlightItemModel}
 		globalCatalogMetadataUiStringsContentModel["media"] = []map[string]interface{}{catalogProductMediaItemModel}
+		globalCatalogMetadataUiStringsContentModel["embeddable_dashboard"] = "testString"
 
 		globalCatalogMetadataUiStringsModel := make(map[string]interface{})
 		globalCatalogMetadataUiStringsModel["en"] = []map[string]interface{}{globalCatalogMetadataUiStringsContentModel}
 
 		globalCatalogMetadataUiUrlsModel := make(map[string]interface{})
 		globalCatalogMetadataUiUrlsModel["doc_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["apidocs_url"] = "testString"
 		globalCatalogMetadataUiUrlsModel["terms_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["instructions_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["catalog_details_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["custom_create_page_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["dashboard"] = "testString"
 
 		globalCatalogMetadataUiModel := make(map[string]interface{})
 		globalCatalogMetadataUiModel["strings"] = []map[string]interface{}{globalCatalogMetadataUiStringsModel}
@@ -361,24 +379,38 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 		globalCatalogMetadataServiceModel := make(map[string]interface{})
 		globalCatalogMetadataServiceModel["rc_provisionable"] = true
 		globalCatalogMetadataServiceModel["iam_compatible"] = true
+		globalCatalogMetadataServiceModel["bindable"] = true
+		globalCatalogMetadataServiceModel["plan_updateable"] = true
+		globalCatalogMetadataServiceModel["service_key_supported"] = true
+
+		globalCatalogMetadataDeploymentBrokerModel := make(map[string]interface{})
+		globalCatalogMetadataDeploymentBrokerModel["name"] = "testString"
+		globalCatalogMetadataDeploymentBrokerModel["guid"] = "testString"
+
+		globalCatalogMetadataDeploymentModel := make(map[string]interface{})
+		globalCatalogMetadataDeploymentModel["broker"] = []map[string]interface{}{globalCatalogMetadataDeploymentBrokerModel}
+		globalCatalogMetadataDeploymentModel["location"] = "testString"
+		globalCatalogMetadataDeploymentModel["location_url"] = "testString"
+		globalCatalogMetadataDeploymentModel["target_crn"] = "testString"
 
 		model := make(map[string]interface{})
 		model["rc_compatible"] = true
 		model["ui"] = []map[string]interface{}{globalCatalogMetadataUiModel}
 		model["service"] = []map[string]interface{}{globalCatalogMetadataServiceModel}
+		model["deployment"] = []map[string]interface{}{globalCatalogMetadataDeploymentModel}
 
 		assert.Equal(t, result, model)
 	}
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -386,13 +418,19 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 	globalCatalogMetadataUiStringsContentModel := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 	globalCatalogMetadataUiStringsContentModel.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 	globalCatalogMetadataUiStringsContentModel.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+	globalCatalogMetadataUiStringsContentModel.EmbeddableDashboard = core.StringPtr("testString")
 
 	globalCatalogMetadataUiStringsModel := new(partnercentersellv1.GlobalCatalogMetadataUIStrings)
 	globalCatalogMetadataUiStringsModel.En = globalCatalogMetadataUiStringsContentModel
 
 	globalCatalogMetadataUiUrlsModel := new(partnercentersellv1.GlobalCatalogMetadataUIUrls)
 	globalCatalogMetadataUiUrlsModel.DocURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.ApidocsURL = core.StringPtr("testString")
 	globalCatalogMetadataUiUrlsModel.TermsURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.InstructionsURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.CatalogDetailsURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.CustomCreatePageURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.Dashboard = core.StringPtr("testString")
 
 	globalCatalogMetadataUiModel := new(partnercentersellv1.GlobalCatalogMetadataUI)
 	globalCatalogMetadataUiModel.Strings = globalCatalogMetadataUiStringsModel
@@ -403,11 +441,25 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 	globalCatalogMetadataServiceModel := new(partnercentersellv1.GlobalCatalogMetadataService)
 	globalCatalogMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
 	globalCatalogMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+	globalCatalogMetadataServiceModel.Bindable = core.BoolPtr(true)
+	globalCatalogMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
+	globalCatalogMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+
+	globalCatalogMetadataDeploymentBrokerModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
+	globalCatalogMetadataDeploymentBrokerModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataDeploymentBrokerModel.Guid = core.StringPtr("testString")
+
+	globalCatalogMetadataDeploymentModel := new(partnercentersellv1.GlobalCatalogMetadataDeployment)
+	globalCatalogMetadataDeploymentModel.Broker = globalCatalogMetadataDeploymentBrokerModel
+	globalCatalogMetadataDeploymentModel.Location = core.StringPtr("testString")
+	globalCatalogMetadataDeploymentModel.LocationURL = core.StringPtr("testString")
+	globalCatalogMetadataDeploymentModel.TargetCrn = core.StringPtr("testString")
 
 	model := new(partnercentersellv1.GlobalCatalogDeploymentMetadata)
 	model.RcCompatible = core.BoolPtr(true)
 	model.Ui = globalCatalogMetadataUiModel
 	model.Service = globalCatalogMetadataServiceModel
+	model.Deployment = globalCatalogMetadataDeploymentModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataToMap(model)
 	assert.Nil(t, err)
@@ -418,13 +470,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIToMap(t *t
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -432,13 +484,19 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIToMap(t *t
 		globalCatalogMetadataUiStringsContentModel := make(map[string]interface{})
 		globalCatalogMetadataUiStringsContentModel["bullets"] = []map[string]interface{}{catalogHighlightItemModel}
 		globalCatalogMetadataUiStringsContentModel["media"] = []map[string]interface{}{catalogProductMediaItemModel}
+		globalCatalogMetadataUiStringsContentModel["embeddable_dashboard"] = "testString"
 
 		globalCatalogMetadataUiStringsModel := make(map[string]interface{})
 		globalCatalogMetadataUiStringsModel["en"] = []map[string]interface{}{globalCatalogMetadataUiStringsContentModel}
 
 		globalCatalogMetadataUiUrlsModel := make(map[string]interface{})
 		globalCatalogMetadataUiUrlsModel["doc_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["apidocs_url"] = "testString"
 		globalCatalogMetadataUiUrlsModel["terms_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["instructions_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["catalog_details_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["custom_create_page_url"] = "testString"
+		globalCatalogMetadataUiUrlsModel["dashboard"] = "testString"
 
 		model := make(map[string]interface{})
 		model["strings"] = []map[string]interface{}{globalCatalogMetadataUiStringsModel}
@@ -451,13 +509,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIToMap(t *t
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -465,13 +523,19 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIToMap(t *t
 	globalCatalogMetadataUiStringsContentModel := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 	globalCatalogMetadataUiStringsContentModel.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 	globalCatalogMetadataUiStringsContentModel.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+	globalCatalogMetadataUiStringsContentModel.EmbeddableDashboard = core.StringPtr("testString")
 
 	globalCatalogMetadataUiStringsModel := new(partnercentersellv1.GlobalCatalogMetadataUIStrings)
 	globalCatalogMetadataUiStringsModel.En = globalCatalogMetadataUiStringsContentModel
 
 	globalCatalogMetadataUiUrlsModel := new(partnercentersellv1.GlobalCatalogMetadataUIUrls)
 	globalCatalogMetadataUiUrlsModel.DocURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.ApidocsURL = core.StringPtr("testString")
 	globalCatalogMetadataUiUrlsModel.TermsURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.InstructionsURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.CatalogDetailsURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.CustomCreatePageURL = core.StringPtr("testString")
+	globalCatalogMetadataUiUrlsModel.Dashboard = core.StringPtr("testString")
 
 	model := new(partnercentersellv1.GlobalCatalogMetadataUI)
 	model.Strings = globalCatalogMetadataUiStringsModel
@@ -488,13 +552,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsToM
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -502,6 +566,7 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsToM
 		globalCatalogMetadataUiStringsContentModel := make(map[string]interface{})
 		globalCatalogMetadataUiStringsContentModel["bullets"] = []map[string]interface{}{catalogHighlightItemModel}
 		globalCatalogMetadataUiStringsContentModel["media"] = []map[string]interface{}{catalogProductMediaItemModel}
+		globalCatalogMetadataUiStringsContentModel["embeddable_dashboard"] = "testString"
 
 		model := make(map[string]interface{})
 		model["en"] = []map[string]interface{}{globalCatalogMetadataUiStringsContentModel}
@@ -511,13 +576,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsToM
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -525,6 +590,7 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsToM
 	globalCatalogMetadataUiStringsContentModel := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 	globalCatalogMetadataUiStringsContentModel.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 	globalCatalogMetadataUiStringsContentModel.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+	globalCatalogMetadataUiStringsContentModel.EmbeddableDashboard = core.StringPtr("testString")
 
 	model := new(partnercentersellv1.GlobalCatalogMetadataUIStrings)
 	model.En = globalCatalogMetadataUiStringsContentModel
@@ -538,13 +604,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsCon
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -552,19 +618,20 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsCon
 		model := make(map[string]interface{})
 		model["bullets"] = []map[string]interface{}{catalogHighlightItemModel}
 		model["media"] = []map[string]interface{}{catalogProductMediaItemModel}
+		model["embeddable_dashboard"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -572,6 +639,7 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsCon
 	model := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 	model.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 	model.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+	model.EmbeddableDashboard = core.StringPtr("testString")
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsContentToMap(model)
 	assert.Nil(t, err)
@@ -582,18 +650,18 @@ func TestResourceIbmOnboardingCatalogDeploymentCatalogHighlightItemToMap(t *test
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["description"] = "testString"
-		model["description_i18n"] = map[string]interface{}{"key1": "testString"}
+		model["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		model["title"] = "testString"
-		model["title_i18n"] = map[string]interface{}{"key1": "testString"}
+		model["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(partnercentersellv1.CatalogHighlightItem)
 	model.Description = core.StringPtr("testString")
-	model.DescriptionI18n = map[string]string{"key1": "testString"}
+	model.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	model.Title = core.StringPtr("testString")
-	model.TitleI18n = map[string]string{"key1": "testString"}
+	model.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentCatalogHighlightItemToMap(model)
 	assert.Nil(t, err)
@@ -604,7 +672,7 @@ func TestResourceIbmOnboardingCatalogDeploymentCatalogProductMediaItemToMap(t *t
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["caption"] = "testString"
-		model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+		model["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 		model["thumbnail"] = "testString"
 		model["type"] = "image"
 		model["url"] = "testString"
@@ -614,7 +682,7 @@ func TestResourceIbmOnboardingCatalogDeploymentCatalogProductMediaItemToMap(t *t
 
 	model := new(partnercentersellv1.CatalogProductMediaItem)
 	model.Caption = core.StringPtr("testString")
-	model.CaptionI18n = map[string]string{"key1": "testString"}
+	model.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 	model.Thumbnail = core.StringPtr("testString")
 	model.Type = core.StringPtr("image")
 	model.URL = core.StringPtr("testString")
@@ -628,14 +696,24 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIUrlsToMap(
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["doc_url"] = "testString"
+		model["apidocs_url"] = "testString"
 		model["terms_url"] = "testString"
+		model["instructions_url"] = "testString"
+		model["catalog_details_url"] = "testString"
+		model["custom_create_page_url"] = "testString"
+		model["dashboard"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(partnercentersellv1.GlobalCatalogMetadataUIUrls)
 	model.DocURL = core.StringPtr("testString")
+	model.ApidocsURL = core.StringPtr("testString")
 	model.TermsURL = core.StringPtr("testString")
+	model.InstructionsURL = core.StringPtr("testString")
+	model.CatalogDetailsURL = core.StringPtr("testString")
+	model.CustomCreatePageURL = core.StringPtr("testString")
+	model.Dashboard = core.StringPtr("testString")
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIUrlsToMap(model)
 	assert.Nil(t, err)
@@ -647,6 +725,9 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataServiceToMap
 		model := make(map[string]interface{})
 		model["rc_provisionable"] = true
 		model["iam_compatible"] = true
+		model["bindable"] = true
+		model["plan_updateable"] = true
+		model["service_key_supported"] = true
 
 		assert.Equal(t, result, model)
 	}
@@ -654,8 +735,59 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataServiceToMap
 	model := new(partnercentersellv1.GlobalCatalogMetadataService)
 	model.RcProvisionable = core.BoolPtr(true)
 	model.IamCompatible = core.BoolPtr(true)
+	model.Bindable = core.BoolPtr(true)
+	model.PlanUpdateable = core.BoolPtr(true)
+	model.ServiceKeySupported = core.BoolPtr(true)
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataServiceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		globalCatalogMetadataDeploymentBrokerModel := make(map[string]interface{})
+		globalCatalogMetadataDeploymentBrokerModel["name"] = "testString"
+		globalCatalogMetadataDeploymentBrokerModel["guid"] = "testString"
+
+		model := make(map[string]interface{})
+		model["broker"] = []map[string]interface{}{globalCatalogMetadataDeploymentBrokerModel}
+		model["location"] = "testString"
+		model["location_url"] = "testString"
+		model["target_crn"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataDeploymentBrokerModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
+	globalCatalogMetadataDeploymentBrokerModel.Name = core.StringPtr("testString")
+	globalCatalogMetadataDeploymentBrokerModel.Guid = core.StringPtr("testString")
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataDeployment)
+	model.Broker = globalCatalogMetadataDeploymentBrokerModel
+	model.Location = core.StringPtr("testString")
+	model.LocationURL = core.StringPtr("testString")
+	model.TargetCrn = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentBrokerToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["name"] = "testString"
+		model["guid"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
+	model.Name = core.StringPtr("testString")
+	model.Guid = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentBrokerToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
@@ -728,13 +860,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	checkResult := func(result *partnercentersellv1.GlobalCatalogDeploymentMetadata) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -742,13 +874,19 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 		globalCatalogMetadataUiStringsContentModel := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 		globalCatalogMetadataUiStringsContentModel.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 		globalCatalogMetadataUiStringsContentModel.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+		globalCatalogMetadataUiStringsContentModel.EmbeddableDashboard = core.StringPtr("testString")
 
 		globalCatalogMetadataUiStringsModel := new(partnercentersellv1.GlobalCatalogMetadataUIStrings)
 		globalCatalogMetadataUiStringsModel.En = globalCatalogMetadataUiStringsContentModel
 
 		globalCatalogMetadataUiUrlsModel := new(partnercentersellv1.GlobalCatalogMetadataUIUrls)
 		globalCatalogMetadataUiUrlsModel.DocURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.ApidocsURL = core.StringPtr("testString")
 		globalCatalogMetadataUiUrlsModel.TermsURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.InstructionsURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.CatalogDetailsURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.CustomCreatePageURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.Dashboard = core.StringPtr("testString")
 
 		globalCatalogMetadataUiModel := new(partnercentersellv1.GlobalCatalogMetadataUI)
 		globalCatalogMetadataUiModel.Strings = globalCatalogMetadataUiStringsModel
@@ -759,24 +897,38 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 		globalCatalogMetadataServiceModel := new(partnercentersellv1.GlobalCatalogMetadataService)
 		globalCatalogMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
 		globalCatalogMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+		globalCatalogMetadataServiceModel.Bindable = core.BoolPtr(true)
+		globalCatalogMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
+		globalCatalogMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
+
+		globalCatalogMetadataDeploymentBrokerModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
+		globalCatalogMetadataDeploymentBrokerModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataDeploymentBrokerModel.Guid = core.StringPtr("testString")
+
+		globalCatalogMetadataDeploymentModel := new(partnercentersellv1.GlobalCatalogMetadataDeployment)
+		globalCatalogMetadataDeploymentModel.Broker = globalCatalogMetadataDeploymentBrokerModel
+		globalCatalogMetadataDeploymentModel.Location = core.StringPtr("testString")
+		globalCatalogMetadataDeploymentModel.LocationURL = core.StringPtr("testString")
+		globalCatalogMetadataDeploymentModel.TargetCrn = core.StringPtr("testString")
 
 		model := new(partnercentersellv1.GlobalCatalogDeploymentMetadata)
 		model.RcCompatible = core.BoolPtr(true)
 		model.Ui = globalCatalogMetadataUiModel
 		model.Service = globalCatalogMetadataServiceModel
+		model.Deployment = globalCatalogMetadataDeploymentModel
 
 		assert.Equal(t, result, model)
 	}
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -784,13 +936,19 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	globalCatalogMetadataUiStringsContentModel := make(map[string]interface{})
 	globalCatalogMetadataUiStringsContentModel["bullets"] = []interface{}{catalogHighlightItemModel}
 	globalCatalogMetadataUiStringsContentModel["media"] = []interface{}{catalogProductMediaItemModel}
+	globalCatalogMetadataUiStringsContentModel["embeddable_dashboard"] = "testString"
 
 	globalCatalogMetadataUiStringsModel := make(map[string]interface{})
 	globalCatalogMetadataUiStringsModel["en"] = []interface{}{globalCatalogMetadataUiStringsContentModel}
 
 	globalCatalogMetadataUiUrlsModel := make(map[string]interface{})
 	globalCatalogMetadataUiUrlsModel["doc_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["apidocs_url"] = "testString"
 	globalCatalogMetadataUiUrlsModel["terms_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["instructions_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["catalog_details_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["custom_create_page_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["dashboard"] = "testString"
 
 	globalCatalogMetadataUiModel := make(map[string]interface{})
 	globalCatalogMetadataUiModel["strings"] = []interface{}{globalCatalogMetadataUiStringsModel}
@@ -801,11 +959,25 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	globalCatalogMetadataServiceModel := make(map[string]interface{})
 	globalCatalogMetadataServiceModel["rc_provisionable"] = true
 	globalCatalogMetadataServiceModel["iam_compatible"] = true
+	globalCatalogMetadataServiceModel["bindable"] = true
+	globalCatalogMetadataServiceModel["plan_updateable"] = true
+	globalCatalogMetadataServiceModel["service_key_supported"] = true
+
+	globalCatalogMetadataDeploymentBrokerModel := make(map[string]interface{})
+	globalCatalogMetadataDeploymentBrokerModel["name"] = "testString"
+	globalCatalogMetadataDeploymentBrokerModel["guid"] = "testString"
+
+	globalCatalogMetadataDeploymentModel := make(map[string]interface{})
+	globalCatalogMetadataDeploymentModel["broker"] = []interface{}{globalCatalogMetadataDeploymentBrokerModel}
+	globalCatalogMetadataDeploymentModel["location"] = "testString"
+	globalCatalogMetadataDeploymentModel["location_url"] = "testString"
+	globalCatalogMetadataDeploymentModel["target_crn"] = "testString"
 
 	model := make(map[string]interface{})
 	model["rc_compatible"] = true
 	model["ui"] = []interface{}{globalCatalogMetadataUiModel}
 	model["service"] = []interface{}{globalCatalogMetadataServiceModel}
+	model["deployment"] = []interface{}{globalCatalogMetadataDeploymentModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadata(model)
 	assert.Nil(t, err)
@@ -816,13 +988,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(t *t
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUI) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -830,13 +1002,19 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(t *t
 		globalCatalogMetadataUiStringsContentModel := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 		globalCatalogMetadataUiStringsContentModel.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 		globalCatalogMetadataUiStringsContentModel.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+		globalCatalogMetadataUiStringsContentModel.EmbeddableDashboard = core.StringPtr("testString")
 
 		globalCatalogMetadataUiStringsModel := new(partnercentersellv1.GlobalCatalogMetadataUIStrings)
 		globalCatalogMetadataUiStringsModel.En = globalCatalogMetadataUiStringsContentModel
 
 		globalCatalogMetadataUiUrlsModel := new(partnercentersellv1.GlobalCatalogMetadataUIUrls)
 		globalCatalogMetadataUiUrlsModel.DocURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.ApidocsURL = core.StringPtr("testString")
 		globalCatalogMetadataUiUrlsModel.TermsURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.InstructionsURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.CatalogDetailsURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.CustomCreatePageURL = core.StringPtr("testString")
+		globalCatalogMetadataUiUrlsModel.Dashboard = core.StringPtr("testString")
 
 		model := new(partnercentersellv1.GlobalCatalogMetadataUI)
 		model.Strings = globalCatalogMetadataUiStringsModel
@@ -849,13 +1027,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(t *t
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -863,13 +1041,19 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(t *t
 	globalCatalogMetadataUiStringsContentModel := make(map[string]interface{})
 	globalCatalogMetadataUiStringsContentModel["bullets"] = []interface{}{catalogHighlightItemModel}
 	globalCatalogMetadataUiStringsContentModel["media"] = []interface{}{catalogProductMediaItemModel}
+	globalCatalogMetadataUiStringsContentModel["embeddable_dashboard"] = "testString"
 
 	globalCatalogMetadataUiStringsModel := make(map[string]interface{})
 	globalCatalogMetadataUiStringsModel["en"] = []interface{}{globalCatalogMetadataUiStringsContentModel}
 
 	globalCatalogMetadataUiUrlsModel := make(map[string]interface{})
 	globalCatalogMetadataUiUrlsModel["doc_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["apidocs_url"] = "testString"
 	globalCatalogMetadataUiUrlsModel["terms_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["instructions_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["catalog_details_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["custom_create_page_url"] = "testString"
+	globalCatalogMetadataUiUrlsModel["dashboard"] = "testString"
 
 	model := make(map[string]interface{})
 	model["strings"] = []interface{}{globalCatalogMetadataUiStringsModel}
@@ -886,13 +1070,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStrings) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -900,6 +1084,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 		globalCatalogMetadataUiStringsContentModel := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 		globalCatalogMetadataUiStringsContentModel.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 		globalCatalogMetadataUiStringsContentModel.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+		globalCatalogMetadataUiStringsContentModel.EmbeddableDashboard = core.StringPtr("testString")
 
 		model := new(partnercentersellv1.GlobalCatalogMetadataUIStrings)
 		model.En = globalCatalogMetadataUiStringsContentModel
@@ -909,13 +1094,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -923,6 +1108,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 	globalCatalogMetadataUiStringsContentModel := make(map[string]interface{})
 	globalCatalogMetadataUiStringsContentModel["bullets"] = []interface{}{catalogHighlightItemModel}
 	globalCatalogMetadataUiStringsContentModel["media"] = []interface{}{catalogProductMediaItemModel}
+	globalCatalogMetadataUiStringsContentModel["embeddable_dashboard"] = "testString"
 
 	model := make(map[string]interface{})
 	model["en"] = []interface{}{globalCatalogMetadataUiStringsContentModel}
@@ -936,13 +1122,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStringsContent) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
+		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -950,19 +1136,20 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 		model := new(partnercentersellv1.GlobalCatalogMetadataUIStringsContent)
 		model.Bullets = []partnercentersellv1.CatalogHighlightItem{*catalogHighlightItemModel}
 		model.Media = []partnercentersellv1.CatalogProductMediaItem{*catalogProductMediaItemModel}
+		model.EmbeddableDashboard = core.StringPtr("testString")
 
 		assert.Equal(t, result, model)
 	}
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -970,6 +1157,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 	model := make(map[string]interface{})
 	model["bullets"] = []interface{}{catalogHighlightItemModel}
 	model["media"] = []interface{}{catalogProductMediaItemModel}
+	model["embeddable_dashboard"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStringsContent(model)
 	assert.Nil(t, err)
@@ -980,18 +1168,18 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(t *test
 	checkResult := func(result *partnercentersellv1.CatalogHighlightItem) {
 		model := new(partnercentersellv1.CatalogHighlightItem)
 		model.Description = core.StringPtr("testString")
-		model.DescriptionI18n = map[string]string{"key1": "testString"}
+		model.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		model.Title = core.StringPtr("testString")
-		model.TitleI18n = map[string]string{"key1": "testString"}
+		model.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
 
 		assert.Equal(t, result, model)
 	}
 
 	model := make(map[string]interface{})
 	model["description"] = "testString"
-	model["description_i18n"] = map[string]interface{}{"key1": "testString"}
+	model["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	model["title"] = "testString"
-	model["title_i18n"] = map[string]interface{}{"key1": "testString"}
+	model["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(model)
 	assert.Nil(t, err)
@@ -1002,7 +1190,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(t *t
 	checkResult := func(result *partnercentersellv1.CatalogProductMediaItem) {
 		model := new(partnercentersellv1.CatalogProductMediaItem)
 		model.Caption = core.StringPtr("testString")
-		model.CaptionI18n = map[string]string{"key1": "testString"}
+		model.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
 		model.Thumbnail = core.StringPtr("testString")
 		model.Type = core.StringPtr("image")
 		model.URL = core.StringPtr("testString")
@@ -1012,7 +1200,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(t *t
 
 	model := make(map[string]interface{})
 	model["caption"] = "testString"
-	model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
+	model["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
 	model["thumbnail"] = "testString"
 	model["type"] = "image"
 	model["url"] = "testString"
@@ -1026,14 +1214,24 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIUrls(
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIUrls) {
 		model := new(partnercentersellv1.GlobalCatalogMetadataUIUrls)
 		model.DocURL = core.StringPtr("testString")
+		model.ApidocsURL = core.StringPtr("testString")
 		model.TermsURL = core.StringPtr("testString")
+		model.InstructionsURL = core.StringPtr("testString")
+		model.CatalogDetailsURL = core.StringPtr("testString")
+		model.CustomCreatePageURL = core.StringPtr("testString")
+		model.Dashboard = core.StringPtr("testString")
 
 		assert.Equal(t, result, model)
 	}
 
 	model := make(map[string]interface{})
 	model["doc_url"] = "testString"
+	model["apidocs_url"] = "testString"
 	model["terms_url"] = "testString"
+	model["instructions_url"] = "testString"
+	model["catalog_details_url"] = "testString"
+	model["custom_create_page_url"] = "testString"
+	model["dashboard"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIUrls(model)
 	assert.Nil(t, err)
@@ -1045,6 +1243,9 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataService
 		model := new(partnercentersellv1.GlobalCatalogMetadataService)
 		model.RcProvisionable = core.BoolPtr(true)
 		model.IamCompatible = core.BoolPtr(true)
+		model.Bindable = core.BoolPtr(true)
+		model.PlanUpdateable = core.BoolPtr(true)
+		model.ServiceKeySupported = core.BoolPtr(true)
 
 		assert.Equal(t, result, model)
 	}
@@ -1052,8 +1253,59 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataService
 	model := make(map[string]interface{})
 	model["rc_provisionable"] = true
 	model["iam_compatible"] = true
+	model["bindable"] = true
+	model["plan_updateable"] = true
+	model["service_key_supported"] = true
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataService(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeployment(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataDeployment) {
+		globalCatalogMetadataDeploymentBrokerModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
+		globalCatalogMetadataDeploymentBrokerModel.Name = core.StringPtr("testString")
+		globalCatalogMetadataDeploymentBrokerModel.Guid = core.StringPtr("testString")
+
+		model := new(partnercentersellv1.GlobalCatalogMetadataDeployment)
+		model.Broker = globalCatalogMetadataDeploymentBrokerModel
+		model.Location = core.StringPtr("testString")
+		model.LocationURL = core.StringPtr("testString")
+		model.TargetCrn = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogMetadataDeploymentBrokerModel := make(map[string]interface{})
+	globalCatalogMetadataDeploymentBrokerModel["name"] = "testString"
+	globalCatalogMetadataDeploymentBrokerModel["guid"] = "testString"
+
+	model := make(map[string]interface{})
+	model["broker"] = []interface{}{globalCatalogMetadataDeploymentBrokerModel}
+	model["location"] = "testString"
+	model["location_url"] = "testString"
+	model["target_crn"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeployment(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentBroker(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataDeploymentBroker) {
+		model := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
+		model.Name = core.StringPtr("testString")
+		model.Guid = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["name"] = "testString"
+	model["guid"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentBroker(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

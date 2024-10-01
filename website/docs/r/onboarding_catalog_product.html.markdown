@@ -29,22 +29,28 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 				en {
 					bullets {
 						description = "description"
-						description_i18n = { "key" = "inner" }
+						description_i18n = { "key" = "anything as a string" }
 						title = "title"
-						title_i18n = { "key" = "inner" }
+						title_i18n = { "key" = "anything as a string" }
 					}
 					media {
 						caption = "caption"
-						caption_i18n = { "key" = "inner" }
+						caption_i18n = { "key" = "anything as a string" }
 						thumbnail = "thumbnail"
 						type = "image"
 						url = "url"
 					}
+					embeddable_dashboard = "embeddable_dashboard"
 				}
 			}
 			urls {
 				doc_url = "doc_url"
+				apidocs_url = "apidocs_url"
 				terms_url = "terms_url"
+				instructions_url = "instructions_url"
+				catalog_details_url = "catalog_details_url"
+				custom_create_page_url = "custom_create_page_url"
+				dashboard = "dashboard"
 			}
 			hidden = true
 			side_by_side_index = 1.0
@@ -52,6 +58,9 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 		service {
 			rc_provisionable = true
 			iam_compatible = true
+			bindable = true
+			plan_updateable = true
+			service_key_supported = true
 		}
 		other {
 			pc {
@@ -61,7 +70,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 					locations = [ "locations" ]
 					languages = [ "languages" ]
 					process = "process"
-					process_i18n = { "key" = "inner" }
+					process_i18n = { "key" = "anything as a string" }
 					support_type = "community"
 					support_escalation {
 						contact = "contact"
@@ -95,7 +104,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 			}
 		}
   }
-  name = "name"
+  name = "1p-service-08-06"
   object_provider {
 		name = "name"
 		email = "email"
@@ -107,7 +116,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 			long_description = "long_description"
 		}
   }
-  product_id = "product_id"
+  product_id = ibm_onboarding_product.onboarding_product_instance.id
 }
 ```
 
@@ -122,6 +131,7 @@ You can specify the following arguments for this resource.
 * `images` - (Optional, List) Images from the global catalog entry that help illustrate the service.
 Nested schema for **images**:
 	* `image` - (Optional, String) The URL for your product logo.
+	  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `kind` - (Required, String) The kind of the global catalog object.
   * Constraints: Allowable values are: `service`, `platform_service`.
 * `metadata` - (Optional, List) The global catalog service metadata object.
@@ -177,8 +187,11 @@ Nested schema for **metadata**:
 	* `rc_compatible` - (Optional, Boolean) Whether the object is compatible with the resource controller service.
 	* `service` - (Optional, List) The global catalog metadata of the service.
 	Nested schema for **service**:
+		* `bindable` - (Optional, Boolean) Deprecated. Controls the Connections tab on the Resource Details page.
 		* `iam_compatible` - (Optional, Boolean) Whether the service is compatible with the IAM service.
+		* `plan_updateable` - (Optional, Boolean) Indicates plan update support and controls the Plan tab on the Resource Details page.
 		* `rc_provisionable` - (Optional, Boolean) Whether the service is provisionable by the resource controller service.
+		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
 	* `ui` - (Optional, List) The UI metadata of this service.
 	Nested schema for **ui**:
 		* `hidden` - (Optional, Boolean) Whether the object is hidden from the consumption catalog.
@@ -196,6 +209,8 @@ Nested schema for **metadata**:
 					* `title` - (Optional, String) The descriptive title for the feature.
 					  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 					* `title_i18n` - (Optional, Map) The descriptive title for the feature in translation.
+				* `embeddable_dashboard` - (Optional, String) On a service kind record this controls if your service has a custom dashboard or Resource Detail page.
+				  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 				* `media` - (Optional, List) The list of supporting media for this product.
 				  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 				Nested schema for **media**:
@@ -208,10 +223,22 @@ Nested schema for **metadata**:
 					  * Constraints: Allowable values are: `image`, `youtube`, `video_mp_4`, `video_webm`.
 					* `url` - (Required, String) The URL that links to the media that shows off the product.
 					  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
-		* `urls` - (Optional, List) The UI based URLs.
+		* `urls` - (Optional, List) Metadata with URLs related to a service.
 		Nested schema for **urls**:
-			* `doc_url` - (Optional, String) The URL for your product documentation.
+			* `apidocs_url` - (Optional, String) The URL for your product's API documentation.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
+			* `catalog_details_url` - (Optional, String) Controls the Provisioning page URL, if set the assumption is that this URL is the provisioning URL for your service.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
+			* `custom_create_page_url` - (Optional, String) Controls the Provisioning page URL, if set the assumption is that this URL is the provisioning URL for your service.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
+			* `dashboard` - (Optional, String) Controls if your service has a custom dashboard or Resource Detail page.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
+			* `doc_url` - (Optional, String) The URL for your product's documentation.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
+			* `instructions_url` - (Optional, String) Controls the Getting Started tab on the Resource Details page. Setting it the content is loaded from the specified URL.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 			* `terms_url` - (Optional, String) The URL for your product's end user license agreement.
+			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this product.
   * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
 * `object_provider` - (Required, List) The provider or owner of the product.
@@ -252,5 +279,5 @@ The `id` property can be formed from `product_id`, and `catalog_product_id` in t
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product <productid>/<catalogproductid>;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
 </pre>

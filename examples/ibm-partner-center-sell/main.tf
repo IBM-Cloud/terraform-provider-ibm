@@ -20,9 +20,9 @@ resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" 
 
 // Provision onboarding_catalog_deployment resource instance
 resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
-  product_id = var.onboarding_catalog_deployment_product_id
-  catalog_product_id = var.onboarding_catalog_deployment_catalog_product_id
-  catalog_plan_id = var.onboarding_catalog_deployment_catalog_plan_id
+  product_id = ibm_onboarding_product.onboarding_product_instance.id
+  catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
+  catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
   env = var.onboarding_catalog_deployment_env
   name = var.onboarding_catalog_deployment_name
   active = var.onboarding_catalog_deployment_active
@@ -47,22 +47,28 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
         en {
           bullets {
             description = "description"
-            description_i18n = { "key" = "inner" }
+            description_i18n = { "key" = "anything as a string" }
             title = "title"
-            title_i18n = { "key" = "inner" }
+            title_i18n = { "key" = "anything as a string" }
           }
           media {
             caption = "caption"
-            caption_i18n = { "key" = "inner" }
+            caption_i18n = { "key" = "anything as a string" }
             thumbnail = "thumbnail"
             type = "image"
             url = "url"
           }
+          embeddable_dashboard = "embeddable_dashboard"
         }
       }
       urls {
         doc_url = "doc_url"
+        apidocs_url = "apidocs_url"
         terms_url = "terms_url"
+        instructions_url = "instructions_url"
+        catalog_details_url = "catalog_details_url"
+        custom_create_page_url = "custom_create_page_url"
+        dashboard = "dashboard"
       }
       hidden = true
       side_by_side_index = 1.0
@@ -70,14 +76,26 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
     service {
       rc_provisionable = true
       iam_compatible = true
+      bindable = true
+      plan_updateable = true
+      service_key_supported = true
+    }
+    deployment {
+      broker {
+        name = "name"
+        guid = "guid"
+      }
+      location = "location"
+      location_url = "location_url"
+      target_crn = "target_crn"
     }
   }
 }
 
 // Provision onboarding_catalog_plan resource instance
 resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
-  product_id = var.onboarding_catalog_plan_product_id
-  catalog_product_id = var.onboarding_catalog_plan_catalog_product_id
+  product_id = ibm_onboarding_product.onboarding_product_instance.id
+  catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   env = var.onboarding_catalog_plan_env
   name = var.onboarding_catalog_plan_name
   active = var.onboarding_catalog_plan_active
@@ -102,36 +120,53 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
         en {
           bullets {
             description = "description"
-            description_i18n = { "key" = "inner" }
+            description_i18n = { "key" = "anything as a string" }
             title = "title"
-            title_i18n = { "key" = "inner" }
+            title_i18n = { "key" = "anything as a string" }
           }
           media {
             caption = "caption"
-            caption_i18n = { "key" = "inner" }
+            caption_i18n = { "key" = "anything as a string" }
             thumbnail = "thumbnail"
             type = "image"
             url = "url"
           }
+          embeddable_dashboard = "embeddable_dashboard"
         }
       }
       urls {
         doc_url = "doc_url"
+        apidocs_url = "apidocs_url"
         terms_url = "terms_url"
+        instructions_url = "instructions_url"
+        catalog_details_url = "catalog_details_url"
+        custom_create_page_url = "custom_create_page_url"
+        dashboard = "dashboard"
       }
       hidden = true
       side_by_side_index = 1.0
     }
+    service {
+      rc_provisionable = true
+      iam_compatible = true
+      bindable = true
+      plan_updateable = true
+      service_key_supported = true
+    }
     pricing {
       type = "free"
       origin = "global_catalog"
+    }
+    plan {
+      allow_internal_users = true
+      bindable = true
     }
   }
 }
 
 // Provision onboarding_catalog_product resource instance
 resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
-  product_id = var.onboarding_catalog_product_product_id
+  product_id = ibm_onboarding_product.onboarding_product_instance.id
   env = var.onboarding_catalog_product_env
   name = var.onboarding_catalog_product_name
   active = var.onboarding_catalog_product_active
@@ -159,22 +194,28 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
         en {
           bullets {
             description = "description"
-            description_i18n = { "key" = "inner" }
+            description_i18n = { "key" = "anything as a string" }
             title = "title"
-            title_i18n = { "key" = "inner" }
+            title_i18n = { "key" = "anything as a string" }
           }
           media {
             caption = "caption"
-            caption_i18n = { "key" = "inner" }
+            caption_i18n = { "key" = "anything as a string" }
             thumbnail = "thumbnail"
             type = "image"
             url = "url"
           }
+          embeddable_dashboard = "embeddable_dashboard"
         }
       }
       urls {
         doc_url = "doc_url"
+        apidocs_url = "apidocs_url"
         terms_url = "terms_url"
+        instructions_url = "instructions_url"
+        catalog_details_url = "catalog_details_url"
+        custom_create_page_url = "custom_create_page_url"
+        dashboard = "dashboard"
       }
       hidden = true
       side_by_side_index = 1.0
@@ -182,6 +223,9 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
     service {
       rc_provisionable = true
       iam_compatible = true
+      bindable = true
+      plan_updateable = true
+      service_key_supported = true
     }
     other {
       pc {
@@ -191,7 +235,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
           locations = [ "locations" ]
           languages = [ "languages" ]
           process = "process"
-          process_i18n = { "key" = "inner" }
+          process_i18n = { "key" = "anything as a string" }
           support_type = "community"
           support_escalation {
             contact = "contact"
@@ -229,7 +273,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 
 // Provision onboarding_iam_registration resource instance
 resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance" {
-  product_id = var.onboarding_iam_registration_product_id
+  product_id = ibm_onboarding_product.onboarding_product_instance.id
   env = var.onboarding_iam_registration_env
   name = var.onboarding_iam_registration_name
   enabled = var.onboarding_iam_registration_enabled
@@ -408,7 +452,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
       zh_cn = "zh_cn"
     }
     options {
-      access_policy = { "key" = "inner" }
+      access_policy = true
       policy_type = [ "access" ]
       account_type = "enterprise"
     }

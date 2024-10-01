@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -20,11 +21,11 @@ import (
 
 func TestAccIbmOnboardingProductBasic(t *testing.T) {
 	var conf partnercentersellv1.OnboardingProduct
-	typeVar := "service"
-	typeVarUpdate := "service"
+	typeVar := "software"
+	typeVarUpdate := "professional_service"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingProductDestroy,
 		Steps: []resource.TestStep{
@@ -47,17 +48,17 @@ func TestAccIbmOnboardingProductBasic(t *testing.T) {
 
 func TestAccIbmOnboardingProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.OnboardingProduct
-	typeVar := "service"
-	eccnNumber := "5D002.C.1"
-	eroClass := "A6VR"
-	taxAssessment := "PAAS"
-	typeVarUpdate := "service"
-	eccnNumberUpdate := "5D002.C.1"
-	eroClassUpdate := "A6VR"
-	taxAssessmentUpdate := "PAAS"
+	typeVar := "software"
+	eccnNumber := fmt.Sprintf("tf_eccn_number_%d", acctest.RandIntRange(10, 100))
+	eroClass := fmt.Sprintf("tf_ero_class_%d", acctest.RandIntRange(10, 100))
+	taxAssessment := fmt.Sprintf("tf_tax_assessment_%d", acctest.RandIntRange(10, 100))
+	typeVarUpdate := "professional_service"
+	eccnNumberUpdate := fmt.Sprintf("tf_eccn_number_%d", acctest.RandIntRange(10, 100))
+	eroClassUpdate := fmt.Sprintf("tf_ero_class_%d", acctest.RandIntRange(10, 100))
+	taxAssessmentUpdate := fmt.Sprintf("tf_tax_assessment_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingProductDestroy,
 		Steps: []resource.TestStep{
@@ -81,7 +82,7 @@ func TestAccIbmOnboardingProductAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_product.onboarding_product_instance",
+				ResourceName:      "ibm_onboarding_product.onboarding_product",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -94,8 +95,8 @@ func testAccCheckIbmOnboardingProductConfigBasic(typeVar string) string {
 		resource "ibm_onboarding_product" "onboarding_product_instance" {
 			type = "%s"
 			primary_contact {
-				name = "petra"
-				email = "petra@ibm.com"
+				name = "name"
+				email = "email"
 			}
 		}
 	`, typeVar)
@@ -108,12 +109,19 @@ func testAccCheckIbmOnboardingProductConfig(typeVar string, eccnNumber string, e
 			type = "%s"
 			primary_contact {
 				name = "name"
-				email = "petra@email.com"
+				email = "email"
 			}
 			eccn_number = "%s"
 			ero_class = "%s"
-			unspsc = "25191503"
+			unspsc = "FIXME"
 			tax_assessment = "%s"
+			support {
+				escalation_contacts {
+					name = "name"
+					email = "email"
+					role = "role"
+				}
+			}
 		}
 	`, typeVar, eccnNumber, eroClass, taxAssessment)
 }
