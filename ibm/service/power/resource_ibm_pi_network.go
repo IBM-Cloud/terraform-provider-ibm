@@ -239,6 +239,16 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
+	if _, ok := d.GetOk(Arg_UserTags); ok {
+		if networkResponse.Crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(networkResponse.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi snapshot (%s) pi_user_tags during creation: %s", networkID, err)
+			}
+		}
+	}
+
 	return resourceIBMPINetworkRead(ctx, d, meta)
 }
 
