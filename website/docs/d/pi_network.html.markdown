@@ -52,4 +52,5 @@ In addition to all argument reference list, you can access the following attribu
 - `type` - (String) The type of network.
 - `used_ip_count` - (Float) The number of used IP addresses.
 - `used_ip_percent` - (Float) The percentage of IP addresses used.
+- `user_tags` - (List) List of user tags attached to the resource.
 - `vlan_id` - (String) The VLAN ID that the network is connected to.

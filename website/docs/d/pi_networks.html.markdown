@@ -49,4 +49,5 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of a network.
   - `network_id` - (String) The ID of the network.
   - `type` - (String) The type of network.
+  - `user_tags` - (List) List of user tags attached to the resource.
   - `vlan_id` - (String) The VLAN ID that the network is connected to.

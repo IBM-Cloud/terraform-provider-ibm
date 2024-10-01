@@ -125,7 +125,6 @@ func ResourceIBMPINetwork() *schema.Resource {
 			Arg_UserTags: {
 				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				ForceNew:    true,
 				Optional:    true,
 				Set:         schema.HashString,
 				Type:        schema.TypeSet,
@@ -261,6 +260,11 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 	if networkdata.Crn != "" {
 		d.Set(Attr_CRN, networkdata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(networkdata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi network (%s) pi_user_tags: %s", *networkdata.NetworkID, err)
+		}
+		d.Set(Arg_UserTags, tags)
 	}
 	d.Set("network_id", networkdata.NetworkID)
 	d.Set(helpers.PINetworkCidr, networkdata.Cidr)
@@ -326,6 +330,16 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		_, err = networkC.Update(networkID, body)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi network (%s) pi_user_tags: %s", networkID, err)
+			}
 		}
 	}
 

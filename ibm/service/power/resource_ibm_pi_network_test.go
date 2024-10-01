@@ -152,6 +152,43 @@ func TestAccIBMPINetworkDHCPbasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMPINetworkUserTags(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
+	networkRes := "ibm_pi_network.power_networks"
+	userTagsString := `["env:dev","test_tag"]`
+	userTagsStringUpdated := `["env:dev","test_tag","test_tag2"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPINetworkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworkUserTagsConfig(name, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists(networkRes),
+					resource.TestCheckResourceAttr(networkRes, "pi_network_name", name),
+					resource.TestCheckResourceAttrSet(networkRes, "id"),
+					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPINetworkUserTagsConfig(name, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists(networkRes),
+					resource.TestCheckResourceAttr(networkRes, "pi_network_name", name),
+					resource.TestCheckResourceAttrSet(networkRes, "id"),
+					resource.TestCheckResourceAttr(networkRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(networkRes, "pi_user_tags.*", "test_tag2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -289,4 +326,15 @@ func testAccCheckIBMPINetworkConfigGatewayDHCPUpdateDNS(name string) string {
 			pi_dns               = ["10.1.0.69"]
 		}
 	`, acc.Pi_cloud_instance_id, name)
+}
+
+func testAccCheckIBMPINetworkUserTagsConfig(name string, userTagsString string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network" "power_networks" {
+			pi_cloud_instance_id = "%s"
+			pi_network_name      = "%s"
+			pi_network_type      = "pub-vlan"
+			pi_user_tags         = %s
+		}
+	`, acc.Pi_cloud_instance_id, name, userTagsString)
 }
