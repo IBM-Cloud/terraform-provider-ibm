@@ -45,7 +45,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `id` - (String) The unique identifier of the storage tiers.
-- `region_storage_tiers` - (List) An array of of storage tiers supported in a region.
+- `region_storage_tiers` - (List) An array of storage tiers supported in a region.
     Nested schema for `region_storage_tiers`:
   - `description` - (String) Description of the storage tier label.
   - `name` - (String) Name of the storage tier.
