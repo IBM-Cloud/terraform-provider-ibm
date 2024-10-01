@@ -2393,11 +2393,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an instance of the 'Configuration Aggregator' service.
+	instance_id := "ConfigAggregatorInstanceID"
+	configURL := "https://us-south.apprapp.cloud.ibm.com/apprapp/config_aggregator/v1/instances/" + instance_id
 	if session.configurationAggregatorClientErr == nil {
 		// Construct the service options.
 		configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
-			URL:           EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
 			Authenticator: authenticator,
+			URL:           configURL,
 		}
 
 		// Construct the service client.

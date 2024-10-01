@@ -16,10 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 )
 
 func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
@@ -27,6 +26,11 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 		ReadContext: dataSourceIbmConfigAggregatorConfigurationsRead,
 
 		Schema: map[string]*schema.Schema{
+			"account_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The account id of the resource.",
+			},
 			"config_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -41,6 +45,11 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The resource group id of the resources.",
+			},
+			"resource_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the resource.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
@@ -167,6 +176,12 @@ func dataSourceIbmConfigAggregatorConfigurationsRead(context context.Context, d 
 
 	if _, ok := d.GetOk("config_type"); ok {
 		listConfigsOptions.SetConfigType(d.Get("config_type").(string))
+	}
+	if _, ok := d.GetOk("account_id"); ok {
+		listConfigsOptions.SetConfigType(d.Get("account_id").(string))
+	}
+	if _, ok := d.GetOk("resource_name"); ok {
+		listConfigsOptions.SetConfigType(d.Get("resource_name").(string))
 	}
 	if _, ok := d.GetOk("service_name"); ok {
 		listConfigsOptions.SetServiceName(d.Get("service_name").(string))

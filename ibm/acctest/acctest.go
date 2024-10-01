@@ -1516,6 +1516,16 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	ConfigAggregatorEndpoint := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT")
+	if ConfigAggregatorEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT with a VALID SCC API ENDPOINT")
+	}
+
+	ConfigAggregatorInstanceID := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID")
+	if ConfigAggregatorInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID with a VALID SCC INSTANCE ID")
+	}
+
 	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")
 	if SccInstanceID == "" {
 		fmt.Println("[WARN] Set the environment variable IBMCLOUD_SCC_INSTANCE_ID with a VALID SCC INSTANCE ID")

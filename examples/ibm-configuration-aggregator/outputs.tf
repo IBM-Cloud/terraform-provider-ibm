@@ -18,19 +18,14 @@ output "aggregator_settings" {
   }
 }
 
-output "config_aggregator_configurations" {
+output "ibm_config_aggregator_configurations" {
   value = {
     about = {
-      account_id               = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.account_id
       config_type              = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.config_type
       location                 = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.location
       resource_crn             = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.resource_crn
       resource_group_id        = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.resource_group_id
-      resource_name            = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.resource_name
       service_name             = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.service_name
-    },
-    config = {
-      event_notification_enabled = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance.event_notification_enabled
     }
   }
 }

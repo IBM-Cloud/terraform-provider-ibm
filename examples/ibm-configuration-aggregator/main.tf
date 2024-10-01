@@ -14,16 +14,17 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 // Uncomment if an existing data source instance exists
 /*
 // Create config_aggregator_configurations data source
+
+
+*/
+
 data "ibm_config_aggregator_configurations" "config_aggregator_configurations_instance" {
-  account_id                 = var.account_id
   config_type                = var.config_type
   location                   = var.location
   resource_crn               = var.resource_crn
   resource_group_id          = var.resource_group_id
-  resource_name              = var.resource_name
   service_name               = var.service_name
 }
-*/
 
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
