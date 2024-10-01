@@ -33,7 +33,7 @@ func TestAccIbmConfigAggregatorResourceCollectionStatusDataSourceBasic(t *testin
 
 func testAccCheckIbmConfigAggregatorResourceCollectionStatusDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		 data "ibm_config_aggregator_resource_collection_status" "config_aggregator_resource_collection_status_instance" {
-		 }
-	 `)
+		data "ibm_config_aggregator_resource_collection_status" "config_aggregator_resource_collection_status_instance" {
+		}
+	`)
 }

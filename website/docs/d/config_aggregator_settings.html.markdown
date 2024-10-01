@@ -2,73 +2,44 @@
 layout: "ibm"
 page_title: "IBM : ibm_config_aggregator_settings"
 description: |-
-  Manages config_aggregator_settings.
+  Get information about config_aggregator_settings
 subcategory: "Configuration Aggregator"
 ---
 
 # ibm_config_aggregator_settings
 
-Create, update, and delete config_aggregator_settingss with this resource.
+Provides a read-only data source to retrieve information about config_aggregator_settings. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
-  additional_scope {
-		type = "Enterprise"
-		enterprise_id = "enterprise_id"
-		profile_template {
-			id = "ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57"
-			trusted_profile_id = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
-		}
-  }
-  regions = us-south
-  resource_collection_enabled = true
-  trusted_profile_id = "Profile-1260aec2-f2fc-44e2-8697-2cc15a447560"
+data "ibm_config_aggregator_settings" "config_aggregator_settings" {
 }
 ```
 
-## Argument Reference
-
-You can specify the following arguments for this resource.
-
-* `additional_scope` - (Optional, Forces new resource, List) The additional scope that enables resource collection for Enterprise acccounts.
-  * Constraints: The maximum length is `10` items. The minimum length is `0` items.
-Nested schema for **additional_scope**:
-	* `enterprise_id` - (Optional, String) The Enterprise ID.
-	  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
-	* `profile_template` - (Optional, List) The Profile Template details applied on the enterprise account.
-	Nested schema for **profile_template**:
-		* `id` - (Optional, String) The Profile Template ID created in the enterprise account that provides access to App Configuration instance for resource collection.
-		  * Constraints: The maximum length is `52` characters. The minimum length is `52` characters. The value must match regular expression `/[a-zA-Z0-9-]/`.
-		* `trusted_profile_id` - (Optional, String) The trusted profile ID that provides access to App Configuration instance to retrieve template information.
-		  * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
-	* `type` - (Optional, String) The type of scope. Currently allowed value is Enterprise.
-	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
-* `regions` - (Optional, Forces new resource, List) The list of regions across which the resource collection is enabled.
-  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9-]*$/`. The maximum length is `10` items. The minimum length is `0` items.
-* `resource_collection_enabled` - (Optional, Forces new resource, Boolean) The field denoting if the resource collection is enabled.
-* `trusted_profile_id` - (Optional, Forces new resource, String) The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
-  * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 
 ## Attribute Reference
 
-After your resource is created, you can read values from the listed arguments and the following attributes.
+After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the config_aggregator_settings.
+* `additional_scope` - (List) The additional scope that enables resource collection for Enterprise acccounts.
+  * Constraints: The maximum length is `10` items. The minimum length is `0` items.
+Nested schema for **additional_scope**:
+	* `enterprise_id` - (String) The Enterprise ID.
+	  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
+	* `profile_template` - (List) The Profile Template details applied on the enterprise account.
+	Nested schema for **profile_template**:
+		* `id` - (String) The Profile Template ID created in the enterprise account that provides access to App Configuration instance for resource collection.
+		  * Constraints: The maximum length is `52` characters. The minimum length is `52` characters. The value must match regular expression `/[a-zA-Z0-9-]/`.
+		* `trusted_profile_id` - (String) The trusted profile ID that provides access to App Configuration instance to retrieve template information.
+		  * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
+	* `type` - (String) The type of scope. Currently allowed value is Enterprise.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
+* `last_updated` - (String) The last time the settings was last updated.
+* `regions` - (List) Regions for which the resource collection is enabled.
+  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9-]*$/`. The maximum length is `10` items. The minimum length is `0` items.
+* `resource_collection_enabled` - (Boolean) The field to check if the resource collection is enabled.
+* `trusted_profile_id` - (String) The trusted profile ID that provides access to App Configuration instance to retrieve resource metadata.
+  * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 
-
-## Import
-
-You can import the `ibm_config_aggregator_settings` resource by using `trusted_profile_id`. The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
-For more information, see [the documentation](https://cloud.ibm.com/docs/app-configuration)
-
-# Syntax
-<pre>
-$ terraform import ibm_config_aggregator_settings.config_aggregator_settings &lt;trusted_profile_id&gt;
-</pre>
-
-# Example
-```
-$ terraform import ibm_config_aggregator_settings.config_aggregator_settings Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3
-```

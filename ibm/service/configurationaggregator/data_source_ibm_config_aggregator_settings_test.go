@@ -13,10 +13,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/configurationaggregator"
+	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,9 +37,9 @@ func TestAccIbmConfigAggregatorSettingsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmConfigAggregatorSettingsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		 data "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
-		 }
-	 `)
+		data "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
+		}
+	`)
 }
 
 func TestDataSourceIbmConfigAggregatorSettingsAdditionalScopeToMap(t *testing.T) {

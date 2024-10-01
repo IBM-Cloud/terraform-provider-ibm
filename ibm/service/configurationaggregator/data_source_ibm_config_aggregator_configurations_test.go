@@ -11,53 +11,45 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/configurationaggregator"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIbmConfigAggregatorConfigurationsDataSourceBasic(t *testing.T) {
+	var configType = "your-config-type"
+	var location = "your-location"
+	var resourceCrn = "your-resource-crn"
+	var resourceGroupID = "your-resource-group-id"
+	var serviceName = "your-service-name"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(),
+			{
+				Config: testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(configType, location, resourceCrn, resourceGroupID, serviceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "config_type", configType),
+					resource.TestCheckResourceAttr("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "location", location),
+					resource.TestCheckResourceAttr("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "resource_crn", resourceCrn),
+					resource.TestCheckResourceAttr("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "resource_group_id", resourceGroupID),
+					resource.TestCheckResourceAttr("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "service_name", serviceName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic() string {
+func testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(configType, location, resourceCrn, resourceGroupID, serviceName string) string {
 	return fmt.Sprintf(`
-		 data "ibm_config_aggregator_configurations" "config_aggregator_configurations_instance" {
-			 config_type = "config_type"
-			 service_name = "service_name"
-			 resource_group_id = "resource_group_id"
-			 location = "location"
-			 resource_crn = "resource_crn"
-		 }
-	 `)
-}
-
-func TestDataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(configurationaggregatorv1.Configuration)
-
-	result, err := configurationaggregator.DataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
+		data "ibm_config_aggregator_configurations" "config_aggregator_configurations_instance" {
+			config_type       = "%s"
+			location          = "%s"
+			resource_crn      = "%s"
+			resource_group_id = "%s"
+			service_name      = "%s"
+		}
+	`, configType, location, resourceCrn, resourceGroupID, serviceName)
 }

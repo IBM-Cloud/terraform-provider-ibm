@@ -1,285 +1,199 @@
 // Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-/*
- * IBM OpenAPI Terraform Generator Version: 3.92.0-af5c89a5-20240617-153232
- */
-
 package configurationaggregator_test
 
 import (
-	"context"
 	"fmt"
-	"log"
+	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
-
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/configurationaggregator"
+	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/stretchr/testify/assert"
 )
 
-func ResourceIbmConfigAggregatorSettings() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceIbmConfigAggregatorSettingsCreate,
-		ReadContext:   resourceIbmConfigAggregatorSettingsRead,
-		DeleteContext: resourceIbmConfigAggregatorSettingsDelete,
-		Importer:      &schema.ResourceImporter{},
+func TestAccIbmConfigAggregatorSettingsBasic(t *testing.T) {
+	var conf configurationaggregatorv1.SettingsResponse
+	resourceCollectionEnabled := "false"
+	trustedProfileID := fmt.Sprintf("tf_trusted_profile_id_%d", acctest.RandIntRange(10, 100))
 
-		Schema: map[string]*schema.Schema{
-			"resource_collection_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The field denoting if the resource collection is enabled.",
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmConfigAggregatorSettingsDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmConfigAggregatorSettingsConfigBasic(resourceCollectionEnabled, trustedProfileID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmConfigAggregatorSettingsExists("ibm_config_aggregator_settings.config_aggregator_settings_instance", conf),
+					resource.TestCheckResourceAttr("ibm_config_aggregator_settings.config_aggregator_settings_instance", "resource_collection_enabled", resourceCollectionEnabled),
+					resource.TestCheckResourceAttr("ibm_config_aggregator_settings.config_aggregator_settings_instance", "trusted_profile_id", trustedProfileID),
+				),
 			},
-			"trusted_profile_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_config_aggregator_settings", "trusted_profile_id"),
-				Description:  "The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.",
-			},
-			"regions": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The list of regions across which the resource collection is enabled.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"additional_scope": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The additional scope that enables resource collection for Enterprise acccounts.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The type of scope. Currently allowed value is Enterprise.",
-						},
-						"enterprise_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The Enterprise ID.",
-						},
-						"profile_template": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "The Profile Template details applied on the enterprise account.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The Profile Template ID created in the enterprise account that provides access to App Configuration instance for resource collection.",
-									},
-									"trusted_profile_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "The trusted profile ID that provides access to App Configuration instance to retrieve template information.",
-									},
-								},
-							},
-						},
-					},
-				},
+			resource.TestStep{
+				ResourceName:      "ibm_config_aggregator_settings.config_aggregator_settings",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
+	})
+}
+
+func testAccCheckIbmConfigAggregatorSettingsConfigBasic(resourceCollectionEnabled string, trustedProfileID string) string {
+	return fmt.Sprintf(`
+		resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
+			resource_collection_enabled = %s
+			trusted_profile_id = "%s"
+			regions = "FIXME"
+		}
+	`, resourceCollectionEnabled, trustedProfileID)
+}
+
+func testAccCheckIbmConfigAggregatorSettingsExists(n string, obj configurationaggregatorv1.SettingsResponse) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		_, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		configurationAggregatorClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ConfigurationAggregatorV1()
+		if err != nil {
+			return err
+		}
+
+		getSettingsOptions := &configurationaggregatorv1.GetSettingsOptions{}
+
+		settingsResponse, _, err := configurationAggregatorClient.GetSettings(getSettingsOptions)
+		if err != nil {
+			return err
+		}
+
+		obj = *settingsResponse
+		return nil
 	}
 }
 
-func ResourceIbmConfigAggregatorSettingsValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "trusted_profile_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9-]*$`,
-			MinValueLength:             44,
-			MaxValueLength:             44,
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_config_aggregator_settings", Schema: validateSchema}
-	return &resourceValidator
-}
-
-func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
+func testAccCheckIbmConfigAggregatorSettingsDestroy(s *terraform.State) error {
+	configurationAggregatorClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ConfigurationAggregatorV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return err
 	}
-
-	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
-
-	if _, ok := d.GetOk("resource_collection_enabled"); ok {
-		replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
-	}
-	if _, ok := d.GetOk("trusted_profile_id"); ok {
-		replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
-	}
-	if _, ok := d.GetOk("regions"); ok {
-		var regions []string
-		for _, v := range d.Get("regions").([]interface{}) {
-			regionsItem := v.(string)
-			regions = append(regions, regionsItem)
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_config_aggregator_settings" {
+			continue
 		}
-		replaceSettingsOptions.SetRegions(regions)
-	}
-	if _, ok := d.GetOk("additional_scope"); ok {
-		var additionalScope []configurationaggregatorv1.AdditionalScope
-		for _, v := range d.Get("additional_scope").([]interface{}) {
-			value := v.(map[string]interface{})
-			additionalScopeItem, err := ResourceIbmConfigAggregatorSettingsMapToAdditionalScope(value)
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create", "parse-additional_scope").GetDiag()
-			}
-			additionalScope = append(additionalScope, *additionalScopeItem)
-		}
-		replaceSettingsOptions.SetAdditionalScope(additionalScope)
-	}
 
-	settingsResponse, _, err := configurationAggregatorClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
+		getSettingsOptions := &configurationaggregatorv1.GetSettingsOptions{}
 
-	d.SetId(*settingsResponse.TrustedProfileID)
+		// Try to find the key
+		_, response, err := configurationAggregatorClient.GetSettings(getSettingsOptions)
 
-	return resourceIbmConfigAggregatorSettingsRead(context, d, meta)
-}
-
-func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	getSettingsOptions := &configurationaggregatorv1.GetSettingsOptions{}
-
-	settingsResponse, response, err := configurationAggregatorClient.GetSettingsWithContext(context, getSettingsOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	if !core.IsNil(settingsResponse.ResourceCollectionEnabled) {
-		if err = d.Set("resource_collection_enabled", settingsResponse.ResourceCollectionEnabled); err != nil {
-			err = fmt.Errorf("Error setting resource_collection_enabled: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-resource_collection_enabled").GetDiag()
-		}
-	}
-	if !core.IsNil(settingsResponse.TrustedProfileID) {
-		if err = d.Set("trusted_profile_id", settingsResponse.TrustedProfileID); err != nil {
-			err = fmt.Errorf("Error setting trusted_profile_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-trusted_profile_id").GetDiag()
-		}
-	}
-	if !core.IsNil(settingsResponse.Regions) {
-		if err = d.Set("regions", settingsResponse.Regions); err != nil {
-			err = fmt.Errorf("Error setting regions: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-regions").GetDiag()
-		}
-	}
-	if !core.IsNil(settingsResponse.AdditionalScope) {
-		additionalScope := []map[string]interface{}{}
-		for _, additionalScopeItem := range settingsResponse.AdditionalScope {
-			additionalScopeItemMap, err := ResourceIbmConfigAggregatorSettingsAdditionalScopeToMap(&additionalScopeItem)
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "additional_scope-to-map").GetDiag()
-			}
-			additionalScope = append(additionalScope, additionalScopeItemMap)
-		}
-		if err = d.Set("additional_scope", additionalScope); err != nil {
-			err = fmt.Errorf("Error setting additional_scope: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-additional_scope").GetDiag()
+		if err == nil {
+			return fmt.Errorf("config_aggregator_settings still exists: %s", rs.Primary.ID)
+		} else if response.StatusCode != 404 {
+			return fmt.Errorf("Error checking for config_aggregator_settings (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
 }
 
-func resourceIbmConfigAggregatorSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
-	d.SetId("")
-	return nil
+func TestResourceIbmConfigAggregatorSettingsAdditionalScopeToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		profileTemplateModel := make(map[string]interface{})
+		profileTemplateModel["id"] = "ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57"
+		profileTemplateModel["trusted_profile_id"] = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
+
+		model := make(map[string]interface{})
+		model["type"] = "Enterprise"
+		model["enterprise_id"] = "testString"
+		model["profile_template"] = []map[string]interface{}{profileTemplateModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	profileTemplateModel := new(configurationaggregatorv1.ProfileTemplate)
+	profileTemplateModel.ID = core.StringPtr("ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57")
+	profileTemplateModel.TrustedProfileID = core.StringPtr("Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3")
+
+	model := new(configurationaggregatorv1.AdditionalScope)
+	model.Type = core.StringPtr("Enterprise")
+	model.EnterpriseID = core.StringPtr("testString")
+	model.ProfileTemplate = profileTemplateModel
+
+	result, err := configurationaggregator.ResourceIbmConfigAggregatorSettingsAdditionalScopeToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }
 
-func ResourceIbmConfigAggregatorSettingsMapToAdditionalScope(modelMap map[string]interface{}) (*configurationaggregatorv1.AdditionalScope, error) {
-	model := &configurationaggregatorv1.AdditionalScope{}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
-		model.Type = core.StringPtr(modelMap["type"].(string))
+func TestResourceIbmConfigAggregatorSettingsProfileTemplateToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57"
+		model["trusted_profile_id"] = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
+
+		assert.Equal(t, result, model)
 	}
-	if modelMap["enterprise_id"] != nil && modelMap["enterprise_id"].(string) != "" {
-		model.EnterpriseID = core.StringPtr(modelMap["enterprise_id"].(string))
-	}
-	if modelMap["profile_template"] != nil && len(modelMap["profile_template"].([]interface{})) > 0 {
-		ProfileTemplateModel, err := ResourceIbmConfigAggregatorSettingsMapToProfileTemplate(modelMap["profile_template"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ProfileTemplate = ProfileTemplateModel
-	}
-	return model, nil
+
+	model := new(configurationaggregatorv1.ProfileTemplate)
+	model.ID = core.StringPtr("ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57")
+	model.TrustedProfileID = core.StringPtr("Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3")
+
+	result, err := configurationaggregator.ResourceIbmConfigAggregatorSettingsProfileTemplateToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }
 
-func ResourceIbmConfigAggregatorSettingsMapToProfileTemplate(modelMap map[string]interface{}) (*configurationaggregatorv1.ProfileTemplate, error) {
-	model := &configurationaggregatorv1.ProfileTemplate{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
+func TestResourceIbmConfigAggregatorSettingsMapToAdditionalScope(t *testing.T) {
+	checkResult := func(result *configurationaggregatorv1.AdditionalScope) {
+		profileTemplateModel := new(configurationaggregatorv1.ProfileTemplate)
+		profileTemplateModel.ID = core.StringPtr("ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57")
+		profileTemplateModel.TrustedProfileID = core.StringPtr("Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3")
+
+		model := new(configurationaggregatorv1.AdditionalScope)
+		model.Type = core.StringPtr("Enterprise")
+		model.EnterpriseID = core.StringPtr("testString")
+		model.ProfileTemplate = profileTemplateModel
+
+		assert.Equal(t, result, model)
 	}
-	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
-		model.TrustedProfileID = core.StringPtr(modelMap["trusted_profile_id"].(string))
-	}
-	return model, nil
+
+	profileTemplateModel := make(map[string]interface{})
+	profileTemplateModel["id"] = "ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57"
+	profileTemplateModel["trusted_profile_id"] = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
+
+	model := make(map[string]interface{})
+	model["type"] = "Enterprise"
+	model["enterprise_id"] = "testString"
+	model["profile_template"] = []interface{}{profileTemplateModel}
+
+	result, err := configurationaggregator.ResourceIbmConfigAggregatorSettingsMapToAdditionalScope(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }
 
-func ResourceIbmConfigAggregatorSettingsAdditionalScopeToMap(model *configurationaggregatorv1.AdditionalScope) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Type != nil {
-		modelMap["type"] = *model.Type
-	}
-	if model.EnterpriseID != nil {
-		modelMap["enterprise_id"] = *model.EnterpriseID
-	}
-	if model.ProfileTemplate != nil {
-		profileTemplateMap, err := ResourceIbmConfigAggregatorSettingsProfileTemplateToMap(model.ProfileTemplate)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["profile_template"] = []map[string]interface{}{profileTemplateMap}
-	}
-	return modelMap, nil
-}
+func TestResourceIbmConfigAggregatorSettingsMapToProfileTemplate(t *testing.T) {
+	checkResult := func(result *configurationaggregatorv1.ProfileTemplate) {
+		model := new(configurationaggregatorv1.ProfileTemplate)
+		model.ID = core.StringPtr("ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57")
+		model.TrustedProfileID = core.StringPtr("Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3")
 
-func ResourceIbmConfigAggregatorSettingsProfileTemplateToMap(model *configurationaggregatorv1.ProfileTemplate) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
+		assert.Equal(t, result, model)
 	}
-	if model.TrustedProfileID != nil {
-		modelMap["trusted_profile_id"] = *model.TrustedProfileID
-	}
-	return modelMap, nil
+
+	model := make(map[string]interface{})
+	model["id"] = "ProfileTemplate-adb55769-ae22-4c60-aead-bd1f84f93c57"
+	model["trusted_profile_id"] = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
+
+	result, err := configurationaggregator.ResourceIbmConfigAggregatorSettingsMapToProfileTemplate(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

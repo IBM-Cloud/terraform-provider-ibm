@@ -40,9 +40,9 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| resource_collection_enabled | The field denoting if the resource collection is enabled. | `bool` | false |
-| trusted_profile_id | The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata. | `string` | false |
-| regions | The list of regions across which the resource collection is enabled. | `list(string)` | false |
+| resource_collection_enabled | The field denoting if the resource collection is enabled. | `bool` | true |
+| trusted_profile_id | The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata. | `string` | true |
+| regions | The list of regions across which the resource collection is enabled. | `list(string)` | true |
 | additional_scope | The additional scope that enables resource collection for Enterprise acccounts. | `list()` | false |
 
 ## Configuration Aggregator data sources
@@ -119,5 +119,10 @@ data "ibm_config_aggregator_resource_collection_status" "config_aggregator_resou
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 1.9.6 |
+| terraform | ~> 0.12 |
 
+## Providers
+
+| Name | Version |
+|------|---------|
+| ibm | 1.13.1 |
