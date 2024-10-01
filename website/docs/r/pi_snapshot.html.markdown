@@ -18,11 +18,11 @@ The following example enables you to create a snapshot:
 
 ```terraform
 resource "ibm_pi_snapshot" "testacc_snapshot"{
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
-  pi_description  = "Testing snapshot for instance"
-  pi_instance_name       = test-instance
-  pi_snap_shot_name       = test-snapshot
-  pi_volume_ids       = ["volumeid1","volumeid2"]
+  pi_cloud_instance_id  = "<value of the cloud_instance_id>"
+  pi_description        = "Testing snapshot for instance"
+  pi_instance_name      = test-instance
+  pi_snap_shot_name     = test-snapshot
+  pi_volume_ids         = ["volumeid1","volumeid2"]
 }
 ```
 
@@ -58,6 +58,7 @@ Review the argument references that you can specify for your resource.
 - `pi_description` - (Optional, String) Description of the PVM instance snapshot.
 - `pi_instance_name` - (Required, String) The name of the instance you want to take a snapshot of.
 - `pi_snap_shot_name` - (Required, String) The unique name of the snapshot.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_volume_ids` - (Optional, String) A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.
 
 ## Attribute reference
@@ -65,6 +66,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `creation_date` - (String) Creation date of the snapshot.
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The unique identifier of the snapshot. The ID is composed of <pi_cloud_instance_id>/<snapshot_id>.
 - `last_update_date` - (String) The last updated date of the snapshot.
 - `snapshot_id` - (String) ID of the PVM instance snapshot.
