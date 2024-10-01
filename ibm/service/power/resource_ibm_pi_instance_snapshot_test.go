@@ -21,7 +21,7 @@ import (
 
 func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-instance-snapshot-%d", acctest.RandIntRange(10, 100))
-	snapshotRes := "ibm_pi_intance_snapshot.power_snapshot"
+	snapshotRes := "ibm_pi_instance_snapshot.power_snapshot"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -31,7 +31,7 @@ func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, power.OK),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
-					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),
+					resource.TestCheckResourceAttr(snapshotRes, "pi_snapshot_name", name),
 					resource.TestCheckResourceAttr(snapshotRes, "status", power.State_Available),
 					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
 				),
@@ -46,7 +46,7 @@ func testAccCheckIBMPIInstanceSnapshotDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_pi_intance_snapshot" {
+		if rs.Type != "ibm_pi_instance_snapshot" {
 			continue
 		}
 		cloudInstanceID, snapshotID, err := splitID(rs.Primary.ID)
@@ -95,11 +95,11 @@ func testAccCheckIBMPIInstanceSnapshotExists(n string) resource.TestCheckFunc {
 
 func testAccCheckIBMPIInstanceSnapshotConfig(name, healthStatus string) string {
 	return testAccCheckIBMPIInstanceConfig(name, healthStatus) + fmt.Sprintf(`
-		resource "ibm_pi_intance_snapshot" "power_snapshot"{
+		resource "ibm_pi_instance_snapshot" "power_snapshot"{
 			depends_on=[ibm_pi_instance.power_instance]
 			pi_instance_name       = ibm_pi_instance.power_instance.pi_instance_name
 			pi_cloud_instance_id   = "%s"
-			pi_snap_shot_name      = "%s"
+			pi_snapshot_name       = "%s"
 			pi_volume_ids          = [ibm_pi_volume.power_volume.volume_id]
 		}`, acc.Pi_cloud_instance_id, name)
 }

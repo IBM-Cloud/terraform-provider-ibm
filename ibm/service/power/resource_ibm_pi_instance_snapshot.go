@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
@@ -137,7 +137,7 @@ func resourceIBMPIInstanceSnapshotCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceIBMPISnapshotRead(ctx, d, meta)
+	return resourceIBMPIInstanceSnapshotRead(ctx, d, meta)
 }
 
 func resourceIBMPIInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -190,13 +190,13 @@ func resourceIBMPIInstanceSnapshotUpdate(ctx context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 
-		_, err = isWaitForPIInstanceSnapshotAvailable(ctx, client, snapshotID, d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForPIInstanceSnapshotAvailable(ctx, client, snapshotID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return resourceIBMPISnapshotRead(ctx, d, meta)
+	return resourceIBMPIInstanceSnapshotRead(ctx, d, meta)
 }
 
 func resourceIBMPIInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
