@@ -67,13 +67,13 @@ In addition to all argument reference list, you can access the following attribu
   - `networks` - (List) List of networks associated with this instance.
 
       Nested scheme for `networks`:
-    - `external_ip` - (String) The external IP address of the instance.
-    - `ip` - (String) The IP address of the instance.
-    - `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
+        - `external_ip` - (String) The external IP address of the instance.
+        - `ip` - (String) The IP address of the instance.
+        - `macaddress` - (String) The MAC address of the instance. Deprecated please use `mac_address` instead.
         - `mac_address` - (String) The MAC address of the instance.
-    - `network_id` - (String) The network ID of the instance.
-    - `network_name` - (String) The network name of the instance.
-    - `type` - (String) The type of the network.
+        - `network_id` - (String) The network ID of the instance.
+        - `network_name` - (String) The network name of the instance.
+        - `type` - (String) The type of the network.
 
   - `pin_policy` - (String) The pinning policy of the instance.
   - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
