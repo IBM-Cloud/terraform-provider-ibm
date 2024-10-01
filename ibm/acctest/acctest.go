@@ -214,6 +214,7 @@ var (
 	Pi_image_bucket_name            string
 	Pi_image_bucket_region          string
 	Pi_image_bucket_secret_key      string
+	Pi_instance_id                  string
 	Pi_instance_name                string
 	Pi_key_name                     string
 	Pi_network_name                 string
@@ -236,11 +237,6 @@ var (
 	PiSAPProfileID                  string
 	PiStoragePool                   string
 	PiStorageType                   string
-	Pi_shared_processor_pool_id     string
-	Pi_target_storage_tier          string
-	Pi_volume_clone_task_id         string
-	Pi_resource_group_id            string
-	Pi_instance_id                  string
 )
 
 var (
