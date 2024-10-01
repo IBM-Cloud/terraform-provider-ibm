@@ -66,10 +66,10 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 						Attr_SupportedSystems: {
 							Computed:    true,
 							Description: "List of supported systems.",
-							Type:        schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
 							Computed:    true,
