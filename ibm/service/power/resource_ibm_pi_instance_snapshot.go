@@ -237,7 +237,7 @@ func resourceIBMPIInstanceSnapshotDelete(ctx context.Context, d *schema.Resource
 func isWaitForPIInstanceSnapshotAvailable(ctx context.Context, client *instance.IBMPISnapshotClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress},
-		Target:     []string{State_Available, State_ACTIVE},
+		Target:     []string{State_Available},
 		Refresh:    isPIInstanceSnapshotRefreshFunc(client, id),
 		Delay:      30 * time.Second,
 		MinTimeout: 2 * time.Minute,
