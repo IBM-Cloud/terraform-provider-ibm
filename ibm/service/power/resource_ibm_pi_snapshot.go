@@ -155,6 +155,16 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	if _, ok := d.GetOk(Arg_UserTags); ok {
+		if snapshotResponse.Crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(snapshotResponse.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi snapshot (%s) pi_user_tags during creation: %s", *snapshotResponse.SnapshotID, err)
+			}
+		}
+	}
+
 	return resourceIBMPISnapshotRead(ctx, d, meta)
 }
 
