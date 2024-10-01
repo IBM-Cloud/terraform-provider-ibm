@@ -117,6 +117,8 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/DataDog/zstd v1.4.4/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20240719075425-078fcb3a55be h1:USOcBHkYQ4o/ccoEvoHinrba8NQthLJpFXnAoBY+MI4=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20240719075425-078fcb3a55be/go.mod h1:/7hMjdZA6fEpd/dQAOEABxKEwN0t72P3PlpEDu0Y7bE=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062 h1:VCFztsAnZBuzyVeOrpFEJFPiKDyx6tVOLe+p3VBsfWk=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062/go.mod h1:/7hMjdZA6fEpd/dQAOEABxKEwN0t72P3PlpEDu0Y7bE=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
@@ -138,8 +140,8 @@ github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac h1:9Y5TB9Ar
 github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac/go.mod h1:sy4CocPPaCiS+T1znqVdw83dkoyxSMUFxkksqahUhbY=
 github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
 github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
-github.com/IBM/continuous-delivery-go-sdk v1.6.0 h1:eAL/jIWHrDFlWDF+Qd9Y5UN99Pr5Mjd/H/bvTbXUbz4=
-github.com/IBM/continuous-delivery-go-sdk v1.6.0/go.mod h1:nZdKUnubXNLo+zo28R4Rd+TGDqiJ/xoE8WO/A3kLw1E=
+github.com/IBM/continuous-delivery-go-sdk v1.8.1 h1:BWmp58XODXqAe3DRQE3I0Lnrwewf8HzXH1FVCBYlAa0=
+github.com/IBM/continuous-delivery-go-sdk v1.8.1/go.mod h1:5umVUaXEoTP2ULARgXRBPcR3vWDCmKD66P6XgNqpzZk=
 github.com/IBM/event-notifications-go-admin-sdk v0.9.0 h1:eaCd+GkxhNyot+8rA9WkAQdlVYrRD20LYiXjEytFO6M=
 github.com/IBM/event-notifications-go-admin-sdk v0.9.0/go.mod h1:OByvqfrNVxs7G6ggv8pwQCEVw10/TBJCLh7NM3z707w=
 github.com/IBM/eventstreams-go-sdk v1.4.0 h1:yS/Ns29sBOe8W2tynQmz9HTKqQZ0ckse4Py5Oy/F2rM=
@@ -176,6 +178,8 @@ github.com/IBM/mqcloud-go-sdk v0.1.0 h1:fWt4uisg5GbbsfNmAxx5/6c5gQIPM+VrEsTtnimE
 github.com/IBM/mqcloud-go-sdk v0.1.0/go.mod h1:LesMQlKHXvdks4jqQLZH7HfATY5lvTzHuwQU5+y7b2g=
 github.com/IBM/networking-go-sdk v0.49.0 h1:lPS34u3C0JVrbxH+Ulua76Nwl6Frv8BEfq6LRkyvOv0=
 github.com/IBM/networking-go-sdk v0.49.0/go.mod h1:G9CKbmPE8gSLjN+ABh4hIZ1bMx076enl5Eekvj6zQnA=
+github.com/IBM/platform-services-go-sdk v0.69.1 h1:Wb8BYVpsPIppWbOQCgF7ytm+BbSOXdWWCf9zcZ6xGA4=
+github.com/IBM/platform-services-go-sdk v0.69.1/go.mod h1:ZP3zUDxR1qRdUqzFdnJOlQN0QpVYol2eOUCv4uk03Jc=
 github.com/IBM/project-go-sdk v0.3.5 h1:L+YClFUa14foS0B/hOOY9n7sIdsT5/XQicnXOyJSpyM=
 github.com/IBM/project-go-sdk v0.3.5/go.mod h1:FOJM9ihQV3EEAY6YigcWiTNfVCThtdY8bLC/nhQHFvo=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
@@ -186,8 +190,8 @@ github.com/IBM/scc-go-sdk/v5 v5.4.1 h1:RXIuxOo9/hxkWyHCI69ae+KIJgSbXcAkJwTEl+fO3
 github.com/IBM/scc-go-sdk/v5 v5.4.1/go.mod h1:2xQTDgNXG5QMEfQxBDKB067z+5ha6OgcaKCTcdGDAo8=
 github.com/IBM/schematics-go-sdk v0.3.0 h1:Vwxw85SONflakiBsNHAfViKLyp9zJiH5/hh6SewOP5Q=
 github.com/IBM/schematics-go-sdk v0.3.0/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
-github.com/IBM/secrets-manager-go-sdk/v2 v2.0.6 h1:bF6bAdI4wDZSje6+Yx1mJxvirboxO+uMuKhzgfRCNxE=
-github.com/IBM/secrets-manager-go-sdk/v2 v2.0.6/go.mod h1:XWYnbcc5vN1RnKwk/fCzfD8aZd7At/Y1/b6c+oDyliU=
+github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7 h1:5lKt1rHuKaAaiZtbPfsF8dgiko/gGbVgreiut3zU128=
+github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7/go.mod h1:RglK3v6CPe3T1myRtQCD6z+nBygXvNJwufAon0qcZok=
 github.com/IBM/vmware-go-sdk v0.1.2 h1:5lKWFyInWz9e2hwGsoFTEoLa1jYkD30SReN0fQ10w9M=
 github.com/IBM/vmware-go-sdk v0.1.2/go.mod h1:2UGPBJju3jiv5VKKBBm9a5L6bzF/aJdKOKAzJ7HaOjA=
 github.com/IBM/vpc-beta-go-sdk v0.6.0 h1:wfM3AcW3zOM3xsRtZ+EA6+sESlGUjQ6Yf4n5QQyz4uc=

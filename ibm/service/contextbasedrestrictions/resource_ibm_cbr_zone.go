@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,9 +21,6 @@ import (
 )
 
 const (
-	cbrZoneReadPending      = "pending"
-	cbrZoneReadComplete     = "finished"
-	cbrZoneReadError        = "error"
 	cbrZoneAddressIdDefault = ""
 )
 
@@ -248,14 +244,12 @@ func ResourceIBMCbrZoneValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func getZone(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (result *contextbasedrestrictionsv1.Zone, version string, found bool, err error) {
+func getZone(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (result *contextbasedrestrictionsv1.Zone, response *core.DetailedResponse, found bool, err error) {
 	getZoneOptions := cbrClient.NewGetZoneOptions(id)
 
-	var response *core.DetailedResponse
 	result, response, err = cbrClient.GetZoneWithContext(context, getZoneOptions)
 	found = err == nil
 	if found {
-		version = response.Headers.Get("Etag")
 		return
 	}
 	if response != nil && response.StatusCode == 404 {
@@ -264,37 +258,6 @@ func getZone(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, c
 	}
 	log.Printf("[DEBUG] GetZoneWithContext failed %s\n%s", err, response)
 	err = fmt.Errorf("GetZoneWithContext failed %s\n%s", err, response)
-	return
-}
-
-func readNewCbrZone(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (err error) {
-	var found bool
-	_, _, found, err = getZone(cbrClient, context, id)
-	if found || err != nil {
-		return
-	}
-
-	//  Manual change. leverage retry for the read due to eventual consistency of the service.
-	log.Printf("[INFO] Read cbr zone response status code: 404, provider will try again. %s", err)
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{cbrRuleReadPending},
-		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
-		Refresh: func() (interface{}, string, error) {
-			log.Printf("[INFO] Retrying cbr rule (%s) read", id)
-			_, _, found, err := getZone(cbrClient, context, id)
-			if err != nil {
-				return nil, cbrZoneReadError, err
-			}
-			if !found {
-				return nil, cbrZoneReadPending, nil
-			}
-			return nil, cbrZoneReadComplete, nil
-		},
-		Timeout:    120 * time.Second,
-		Delay:      20 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	_, err = stateConf.WaitForStateContext(context)
 	return
 }
 
@@ -344,14 +307,72 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("CreateZoneWithContext failed %s\n%s", err, response))
 	}
 
-	// handle Eventual consistency case
-	err = readNewCbrZone(contextBasedRestrictionsClient, context, *zone.ID)
-	if err != nil {
-		return diag.FromErr(err)
+	d.SetId(*zone.ID)
+
+	if err := ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", err))
+	}
+	return nil
+}
+
+func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, response *core.DetailedResponse, d *schema.ResourceData) error {
+	if err := d.Set("name", zone.Name); err != nil {
+		return fmt.Errorf("Error setting name: %s", err)
+	}
+	if err := d.Set("account_id", zone.AccountID); err != nil {
+		return fmt.Errorf("Error setting account_id: %s", err)
+	}
+	if err := d.Set("description", zone.Description); err != nil {
+		return fmt.Errorf("Error setting description: %s", err)
 	}
 
-	d.SetId(*zone.ID)
-	return resourceIBMCbrZoneRead(context, d, meta)
+	var addresses []map[string]interface{}
+	addresses, err := resourceDecodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
+	if err != nil {
+		return err
+	}
+	if err = d.Set("addresses", addresses); err != nil {
+		return fmt.Errorf("Error setting addresses: %s", err)
+	}
+
+	var excluded []map[string]interface{}
+	excluded, err = resourceDecodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
+	if err != nil {
+		return err
+	}
+	if err = d.Set("excluded", excluded); err != nil {
+		return fmt.Errorf("Error setting excluded: %s", err)
+	}
+
+	if err = d.Set("crn", zone.CRN); err != nil {
+		return fmt.Errorf("Error setting crn: %s", err)
+	}
+	if err = d.Set("address_count", flex.IntValue(zone.AddressCount)); err != nil {
+		return fmt.Errorf("Error setting address_count: %s", err)
+	}
+	if err = d.Set("excluded_count", flex.IntValue(zone.ExcludedCount)); err != nil {
+		return fmt.Errorf("Error setting excluded_count: %s", err)
+	}
+	if err = d.Set("href", zone.Href); err != nil {
+		return fmt.Errorf("Error setting href: %s", err)
+	}
+	if err = d.Set("created_at", flex.DateTimeToString(zone.CreatedAt)); err != nil {
+		return fmt.Errorf("Error setting created_at: %s", err)
+	}
+	if err = d.Set("created_by_id", zone.CreatedByID); err != nil {
+		return fmt.Errorf("Error setting created_by_id: %s", err)
+	}
+	if err = d.Set("last_modified_at", flex.DateTimeToString(zone.LastModifiedAt)); err != nil {
+		return fmt.Errorf("Error setting last_modified_at: %s", err)
+	}
+	if err = d.Set("last_modified_by_id", zone.LastModifiedByID); err != nil {
+		return fmt.Errorf("Error setting last_modified_by_id: %s", err)
+	}
+	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
+		return fmt.Errorf("Error setting version: %s", err)
+	}
+
+	return nil
 }
 
 func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -360,10 +381,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	var zone *contextbasedrestrictionsv1.Zone
-	var version string
-	var found bool
-	zone, version, found, err = getZone(contextBasedRestrictionsClient, context, d.Id())
+	zone, response, found, err := getZone(contextBasedRestrictionsClient, context, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -372,60 +390,8 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		return nil
 	}
 
-	if err = d.Set("name", zone.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if err = d.Set("account_id", zone.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
-	}
-	if err = d.Set("description", zone.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-	}
-
-	var addresses []map[string]interface{}
-	addresses, err = resourceDecodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("addresses", addresses); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting addresses: %s", err))
-	}
-
-	var excluded []map[string]interface{}
-	excluded, err = resourceDecodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("excluded", excluded); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting excluded: %s", err))
-	}
-
-	if err = d.Set("crn", zone.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-	}
-	if err = d.Set("address_count", flex.IntValue(zone.AddressCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting address_count: %s", err))
-	}
-	if err = d.Set("excluded_count", flex.IntValue(zone.ExcludedCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting excluded_count: %s", err))
-	}
-	if err = d.Set("href", zone.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(zone.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("created_by_id", zone.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
-	}
-	if err = d.Set("last_modified_at", flex.DateTimeToString(zone.LastModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
-	}
-	if err = d.Set("last_modified_by_id", zone.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
-	}
-	if err = d.Set("version", version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+	if err = ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", err))
 	}
 
 	return nil
@@ -444,10 +410,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	var currentZone *contextbasedrestrictionsv1.Zone
-	var version string
-	var found bool
-	currentZone, version, found, err = getZone(contextBasedRestrictionsClient, context, zoneId)
+	currentZone, response, found, err := getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -456,7 +419,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		return nil
 	}
 
-	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, version)
+	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, response.Headers.Get("Etag"))
 
 	if _, ok := d.GetOk("name"); ok {
 		replaceZoneOptions.SetName(d.Get("name").(string))
@@ -496,13 +459,17 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		replaceZoneOptions.SetTransactionID(d.Get("transaction_id").(string))
 	}
 
-	_, response, err := contextBasedRestrictionsClient.ReplaceZoneWithContext(context, replaceZoneOptions)
+	zone, response, err := contextBasedRestrictionsClient.ReplaceZoneWithContext(context, replaceZoneOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ReplaceZoneWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ReplaceZoneWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMCbrZoneRead(context, d, meta)
+	if err := ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting zone's resource data: %s", err))
+	}
+
+	return nil
 }
 
 func resourceIBMCbrZoneDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
