@@ -5,9 +5,11 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -77,6 +79,13 @@ func DataSourceIBMPISharedProcessorPools() *schema.Resource {
 							Description: "The status details of the shared processor pool.",
 							Type:        schema.TypeString,
 						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
+						},
 					},
 				},
 				Type: schema.TypeList,
@@ -113,6 +122,11 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 		}
 		if pool.Crn != "" {
 			key[Attr_CRN] = pool.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(pool.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of pi shared_processor_pool (%s) user_tags: %s", *pool.ID, err)
+			}
+			key[Attr_UserTags] = tags
 		}
 		result = append(result, key)
 	}

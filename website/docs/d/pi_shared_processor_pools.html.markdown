@@ -50,3 +50,4 @@ In addition to all argument reference list, you can access the following attribu
   - `shared_processor_pool_id` - (String) The shared processor pool's unique ID.
   - `status` - (String) The status of the shared processor pool.
   - `status_detail` - (String) The status details of the shared processor pool.
+  - `user_tags` - (List) List of user tags attached to the resource.
