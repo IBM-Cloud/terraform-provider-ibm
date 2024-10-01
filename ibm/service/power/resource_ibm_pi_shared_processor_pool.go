@@ -223,6 +223,16 @@ func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	if _, ok := d.GetOk(Arg_UserTags); ok {
+		if spp.Crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(spp.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi shared processor pool (%s) pi_user_tags during creation: %s", *spp.ID, err)
+			}
+		}
+	}
+
 	return resourceIBMPISharedProcessorPoolRead(ctx, d, meta)
 
 }
