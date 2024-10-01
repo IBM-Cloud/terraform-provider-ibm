@@ -6,13 +6,13 @@ description: |-
   Manages volumes in Power Virtual Server cloud.
 ---
 
-# ibm_pi_volumes_attach
+# ibm_pi_volumes_detach
 
 Detach volumes to a Power Systems Virtual Server instance, see [volumes](https://cloud.ibm.com/apidocs/power-cloud#pcloud-v2-pvminstances-volumes-post)
 
 ## Example Usage
 
-The following example attach volumes to power virtual instance.
+The following example detach volumes from a power virtual instance.
 
 ```terraform
 resource "ibm_pi_volumes_detach" "pi_volumes_detach_instance" {
