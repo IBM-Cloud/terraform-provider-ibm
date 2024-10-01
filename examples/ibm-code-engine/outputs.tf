@@ -48,3 +48,9 @@ output "ibm_code_engine_domain_mapping" {
   value       = ibm_code_engine_domain_mapping.code_engine_domain_mapping_instance
   description = "code_engine_domain_mapping resource instance"
 }
+// This allows code_engine_function data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_code_engine_function" {
+  value       = ibm_code_engine_function.code_engine_function_instance
+  description = "code_engine_function resource instance"
+}

@@ -181,14 +181,15 @@ func testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName string)
 	return fmt.Sprintf(`
 
 resource "ibm_container_cluster" "testacc_cluster" {
-  name            = "%s"
-  datacenter      = "%s"
-  machine_type    = "%s"
-  hardware        = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
-  kube_version    = "%s"
-  wait_till         = "OneWorkerNodeReady"
+  name             = "%s"
+  datacenter       = "%s"
+  machine_type     = "%s"
+  hardware         = "shared"
+  public_vlan_id   = "%s"
+  private_vlan_id  = "%s"
+  kube_version     = "%s"
+  wait_till        = "OneWorkerNodeReady"
+  operating_system = "UBUNTU_20_64"
   taints {
 	key    = "key1"
 	value  = "value1"
@@ -236,6 +237,7 @@ resource "ibm_container_worker_pool" "test_pool" {
   size_per_zone    = 2
   hardware         = "shared"
   disk_encryption  = true
+  operating_system = "UBUNTU_24_64"
   labels = {
     "test"  = "test-pool"
     "test1" = "test-pool1"
