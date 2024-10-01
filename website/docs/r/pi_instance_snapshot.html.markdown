@@ -1,14 +1,14 @@
 ---
 subcategory: "Power Systems"
 layout: "ibm"
-page_title: "IBM: pi_snapshot"
+page_title: "IBM: pi_instance_snapshot"
 description: |-
   Manages instance snapshots in the Power Virtual Server cloud.
 ---
 
-# ibm_pi_snapshot
+# ibm_pi_instance_snapshot
 
-Creates, updates, deletes, and manages instance snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshotting, cloning, and restoring](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone).
+Manages instance snapshots in the Power Virtual Server Cloud. For more information, about snapshots in the Power Virutal Server, see [snapshots for PVM Instance](https://cloud.ibm.com/apidocs/power-cloud#pcloud-pvminstances-snapshots-post).
 
 ## Example usage
 
@@ -16,11 +16,11 @@ The following example enables you to create a snapshot:
 
 ```terraform
 resource "ibm_pi_instance_snapshot" "testacc_snapshot"{
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
-  pi_description  = "Testing snapshot for instance"
-  pi_instance_name       = test-instance
-  pi_snap_shot_name       = test-snapshot
-  pi_volume_ids       = ["volumeid1","volumeid2"]
+  pi_cloud_instance_id   = "<value of the cloud_instance_id>"
+  pi_description         = "Testing snapshot for instance"
+  pi_instance_name       = "test-instance"
+  pi_snapshot_name       = "test-snapshot"
+  pi_volume_ids          = ["volumeid1","volumeid2"]
 }
 ```
 
@@ -55,7 +55,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_description` - (Optional, String) Description of the PVM instance snapshot.
 - `pi_instance_name` - (Required, String) The name of the instance you want to take a snapshot of.
-- `pi_snap_shot_name` - (Required, String) The unique name of the snapshot.
+- `pi_snapshot_name` - (Required, String) The unique name of the snapshot.
 - `pi_volume_ids` - (Optional, String) A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.
 
 ## Attribute reference
