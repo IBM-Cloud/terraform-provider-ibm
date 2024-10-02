@@ -46,6 +46,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of the storage tiers.
 - `region_storage_tiers` - (List) An array of storage tiers supported in a region.
+
     Nested schema for `region_storage_tiers`:
   - `description` - (String) Description of the storage tier label.
   - `name` - (String) Name of the storage tier.
