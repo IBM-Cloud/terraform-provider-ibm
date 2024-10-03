@@ -49,6 +49,7 @@ func TestAccIbmConfigAggregatorSettingsBasic(t *testing.T) {
 func testAccCheckIbmConfigAggregatorSettingsConfigBasic(resourceCollectionEnabled string, trustedProfileID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
+			instance_id = s
 			resource_collection_enabled = %s
 			trusted_profile_id = "%s"
 			regions = "FIXME"

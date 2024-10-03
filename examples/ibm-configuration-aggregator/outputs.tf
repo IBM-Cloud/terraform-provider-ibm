@@ -18,9 +18,6 @@ output "aggregator_settings" {
   }
 }
 
-output "ibm_config_aggregator_configurations" {
-  value = data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance
-}
 
 output "config_aggregator_resource_collection_status"{
     value={

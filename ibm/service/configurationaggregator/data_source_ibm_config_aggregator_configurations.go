@@ -26,11 +26,6 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 		ReadContext: dataSourceIbmConfigAggregatorConfigurationsRead,
 
 		Schema: map[string]*schema.Schema{
-			"account_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The account id of the resource.",
-			},
 			"config_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -45,11 +40,6 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The resource group id of the resources.",
-			},
-			"resource_name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the resource.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
@@ -172,16 +162,17 @@ func dataSourceIbmConfigAggregatorConfigurationsRead(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
+	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	instanceId := d.Get("instance_id").(string)
+	log.Printf("Fetching config for instance_id: %s", instanceId)
+	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
+	fmt.Println("Logging endpoint from datasource")
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
+
 	listConfigsOptions := &configurationaggregatorv1.ListConfigsOptions{}
 
 	if _, ok := d.GetOk("config_type"); ok {
 		listConfigsOptions.SetConfigType(d.Get("config_type").(string))
-	}
-	if _, ok := d.GetOk("account_id"); ok {
-		listConfigsOptions.SetConfigType(d.Get("account_id").(string))
-	}
-	if _, ok := d.GetOk("resource_name"); ok {
-		listConfigsOptions.SetConfigType(d.Get("resource_name").(string))
 	}
 	if _, ok := d.GetOk("service_name"); ok {
 		listConfigsOptions.SetServiceName(d.Get("service_name").(string))

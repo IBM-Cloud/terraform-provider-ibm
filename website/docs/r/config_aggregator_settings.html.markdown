@@ -45,10 +45,10 @@ Nested schema for **additional_scope**:
 		  * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 	* `type` - (Optional, String) The type of scope. Currently allowed value is Enterprise.
 	  * Constraints: The maximum length is `64` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
-* `regions` - (Required, Forces new resource, List) The list of regions across which the resource collection is enabled.
+* `regions` - (Optional, Forces new resource, List) The list of regions across which the resource collection is enabled.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9-]*$/`. The maximum length is `10` items. The minimum length is `0` items.
-* `resource_collection_enabled` - (Required, Forces new resource, Boolean) The field denoting if the resource collection is enabled.
-* `trusted_profile_id` - (Required, Forces new resource, String) The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
+* `resource_collection_enabled` - (Optional, Forces new resource, Boolean) The field denoting if the resource collection is enabled.
+* `trusted_profile_id` - (Optional, Forces new resource, String) The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
   * Constraints: The maximum length is `44` characters. The minimum length is `44` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 
 ## Attribute Reference
