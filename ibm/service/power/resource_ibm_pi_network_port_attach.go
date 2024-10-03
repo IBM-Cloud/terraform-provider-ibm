@@ -110,9 +110,7 @@ func resourceIBMPINetworkPortAttachCreate(ctx context.Context, d *schema.Resourc
 		nwportBody.IPAddress = ipaddress
 	}
 	if tags, ok := d.GetOk(Arg_UserTags); ok {
-		if len(flex.FlattenSet(tags.(*schema.Set))) > 0 {
-			nwportBody.UserTags = flex.FlattenSet(tags.(*schema.Set))
-		}
+		nwportBody.UserTags = flex.FlattenSet(tags.(*schema.Set))
 	}
 	nwportattachBody := &models.NetworkPortUpdate{
 		Description:   &description,
