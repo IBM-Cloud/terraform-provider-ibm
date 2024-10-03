@@ -3,6 +3,18 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
+variable "region"{
+  description="Config Aggregator Instance ID"
+  type=string
+  default="us-south"
+}
+
+variable "instance_id"{
+  description="Config Aggregator Instance ID"
+  type=string
+  default="d3e4c771-fc45-4699-ab13-faecc6e1fc74"
+}
+
 // Resource arguments for config_aggregator_settings
 variable "config_aggregator_settings_resource_collection_enabled" {
   description = "The field denoting if the resource collection is enabled."
@@ -12,7 +24,7 @@ variable "config_aggregator_settings_resource_collection_enabled" {
 variable "config_aggregator_settings_trusted_profile_id" {
   description = "The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata."
   type        = string
-  default     = "Profile-7d935dbb-7ee5-44e1-9e85-38e65d722398"
+  default="Profile-2546925a-7b46-40dd-81ff-48015a49ff43"
 }
 variable "config_aggregator_settings_regions" {
   description = "The list of regions across which the resource collection is enabled."
@@ -21,56 +33,30 @@ variable "config_aggregator_settings_regions" {
 }
 
 // Data source arguments for config_aggregator_configurations
-variable "account_id" {
-  description = "Account ID for the IBM Cloud instance"
+variable "config_aggregator_configurations_config_type" {
+  description = "The type of resource configuration that are to be retrieved."
   type        = string
-  default     = "18b006922637405389523fb06338e363"
+  default     = "placeholder"
+}
+variable "config_aggregator_configurations_service_name" {
+  description = "The name of the IBM Cloud service for which resources are to be retrieved."
+  type        = string
+  default     = "placeholder"
+}
+variable "config_aggregator_configurations_resource_group_id" {
+  description = "The resource group id of the resources."
+  type        = string
+  default     = "placeholder"
+}
+variable "config_aggregator_configurations_location" {
+  description = "The location or region in which the resources are created."
+  type        = string
+  default     = "placeholder"
+}
+variable "config_aggregator_configurations_resource_crn" {
+  description = "The crn of the resource."
+  type        = string
+  default     = "placeholder"
 }
 
-variable "config_type" {
-  description = "Configuration type for the resource"
-  type        = string
-  default     = "instance"
-}
 
-variable "last_config_refresh_time" {
-  description = "Last configuration refresh time"
-  type        = string
-  default     = "2024-09-16T00:30:22Z"
-}
-
-variable "location" {
-  description = "Location of the resource"
-  type        = string
-  default     = "us-south"
-}
-
-variable "resource_crn" {
-  description = "Resource CRN"
-  type        = string
-  default     = "crn:v1:staging:public:project:us-south:a/18b006922637405389523fb06338e363:3fdba864-9ab0-4cbd-a705-a78ce1e757ea::"
-}
-
-variable "resource_group_id" {
-  description = "Resource Group ID"
-  type        = string
-  default     = "c5450ce8dde54581bdfb8e785d27d292"
-}
-
-variable "resource_name" {
-  description = "Resource Name"
-  type        = string
-  default     = "logdna"
-}
-
-variable "service_name" {
-  description = "Service Name"
-  type        = string
-  default     = "project"
-}
-
-variable "event_notification_enabled" {
-  description = "Whether event notification is enabled"
-  type        = bool
-  default     = true
-}

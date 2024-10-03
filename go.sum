@@ -134,8 +134,6 @@ github.com/IBM/cloudant-go-sdk v0.8.0 h1:XzaqZFy5fm1Q9+iK52X5zRW39SHaahT9pf5SRgV
 github.com/IBM/cloudant-go-sdk v0.8.0/go.mod h1:zDGBs8ideVtn9MehXbIQNI3852B68BsMtKJvq3iPn/Q=
 github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac h1:9Y5TB9Ar2SM6JPr2kM6c9pHSdSuHMDCIcbvTa/hNTj4=
 github.com/IBM/code-engine-go-sdk v0.0.0-20240808131715-b9d168602dac/go.mod h1:sy4CocPPaCiS+T1znqVdw83dkoyxSMUFxkksqahUhbY=
-github.com/IBM/configuration-aggregator-go-sdk v0.0.1 h1:bgJqfd39hzKqtLxgrmOZ7UgjhB2lgZ4jWqRfgqa0VTk=
-github.com/IBM/configuration-aggregator-go-sdk v0.0.1/go.mod h1:iMQUJgo42cbRk1XW06lmeHzm9/Nfk5/laBscGdPnSqY=
 github.com/IBM/container-registry-go-sdk v1.1.0 h1:sYyknIod8R4RJZQqAheiduP6wbSTphE9Ag8ho28yXjc=
 github.com/IBM/container-registry-go-sdk v1.1.0/go.mod h1:4TwsCnQtVfZ4Vkapy/KPvQBKFc3VOyUZYkwRU4FTPrs=
 github.com/IBM/continuous-delivery-go-sdk v1.6.0 h1:eAL/jIWHrDFlWDF+Qd9Y5UN99Pr5Mjd/H/bvTbXUbz4=
@@ -191,8 +189,8 @@ github.com/IBM/secrets-manager-go-sdk/v2 v2.0.6 h1:bF6bAdI4wDZSje6+Yx1mJxvirboxO
 github.com/IBM/secrets-manager-go-sdk/v2 v2.0.6/go.mod h1:XWYnbcc5vN1RnKwk/fCzfD8aZd7At/Y1/b6c+oDyliU=
 github.com/IBM/vmware-go-sdk v0.1.2 h1:5lKWFyInWz9e2hwGsoFTEoLa1jYkD30SReN0fQ10w9M=
 github.com/IBM/vmware-go-sdk v0.1.2/go.mod h1:2UGPBJju3jiv5VKKBBm9a5L6bzF/aJdKOKAzJ7HaOjA=
-github.com/IBM/vpc-beta-go-sdk v0.6.0 h1:wfM3AcW3zOM3xsRtZ+EA6+sESlGUjQ6Yf4n5QQyz4uc=
-github.com/IBM/vpc-beta-go-sdk v0.6.0/go.mod h1:fzHDAQIqH/5yJmYsKodKHLcqxMDT+yfH6vZjdiw8CQA=
+github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5Jt9eE=
+github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
 github.com/IBM/vpc-go-sdk v0.58.0 h1:Slk1jkcV7tPnf0iECQV2Oja7W8Bom0z7k9M4fMBY4bI=
 github.com/IBM/vpc-go-sdk v0.58.0/go.mod h1:swmxiYLT+OfBsBYqJWGeRd6NPmBk4u/het2PZdtzIaw=
 github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=

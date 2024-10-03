@@ -42,6 +42,9 @@ func DataSourceIbmConfigAggregatorResourceCollectionStatus() *schema.Resource {
 
 func dataSourceIbmConfigAggregatorResourceCollectionStatusRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
+	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	instanceId := d.Get("instance_id").(string)
+	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_config_aggregator_resource_collection_status", "read")

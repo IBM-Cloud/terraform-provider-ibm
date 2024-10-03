@@ -237,9 +237,9 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                cloudfoundry.DataSourceIBMAppDomainShared(),
 			"ibm_app_route":                        cloudfoundry.DataSourceIBMAppRoute(),
-			"ibm_config_aggregator_configurations": configurationaggregator.DataSourceIbmConfigAggregatorConfigurations(),
-			"ibm_config_aggregator_settings":       configurationaggregator.DataSourceIbmConfigAggregatorSettings(),
-			"ibm_config_aggregator_resource_collection_status": configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus(),
+			"ibm_config_aggregator_configurations": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorConfigurations()),
+			"ibm_config_aggregator_settings":       configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorSettings()),
+			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -981,7 +981,7 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":                cloudfoundry.ResourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
 			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
-			"ibm_config_aggregator_settings":        configurationaggregator.ResourceIbmConfigAggregatorSettings(),
+			"ibm_config_aggregator_settings":        configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
 
 			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),

@@ -114,6 +114,18 @@ func ResourceIbmConfigAggregatorSettingsValidator() *validate.ResourceValidator 
 
 func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
+	fmt.Println("Initial settings")
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
+	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	fmt.Println("Initial settings region")
+	fmt.Println(region)
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
+	instanceId := d.Get("instance_id").(string)
+	fmt.Println("Initial settings instance_id")
+	fmt.Println(instanceId)
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
+	log.Printf("Before Fetching config for instance_id: %s", instanceId)
+	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create")
@@ -123,14 +135,20 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 
 	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
 
-	replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
-	replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
-	var regions []string
-	for _, v := range d.Get("regions").([]interface{}) {
-		regionsItem := v.(string)
-		regions = append(regions, regionsItem)
+	if _, ok := d.GetOk("resource_collection_enabled"); ok {
+		replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
 	}
-	replaceSettingsOptions.SetRegions(regions)
+	if _, ok := d.GetOk("trusted_profile_id"); ok {
+		replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
+	}
+	if _, ok := d.GetOk("regions"); ok {
+		var regions []string
+		for _, v := range d.Get("regions").([]interface{}) {
+			regionsItem := v.(string)
+			regions = append(regions, regionsItem)
+		}
+		replaceSettingsOptions.SetRegions(regions)
+	}
 	if _, ok := d.GetOk("additional_scope"); ok {
 		var additionalScope []configurationaggregatorv1.AdditionalScope
 		for _, v := range d.Get("additional_scope").([]interface{}) {
@@ -143,8 +161,11 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 		}
 		replaceSettingsOptions.SetAdditionalScope(additionalScope)
 	}
-
+	fmt.Println("After Logging endpoint from datasource")
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
 	settingsResponse, _, err := configurationAggregatorClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
+	fmt.Println("Settings Response")
+	fmt.Println(settingsResponse)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -176,18 +197,39 @@ func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
-	if err = d.Set("resource_collection_enabled", settingsResponse.ResourceCollectionEnabled); err != nil {
-		err = fmt.Errorf("Error setting resource_collection_enabled: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-resource_collection_enabled").GetDiag()
+	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	instanceId := d.Get("instance_id").(string)
+	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
+	fmt.Println(" Before Instance ID URL from settings response")
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
+	fmt.Println("After Instance ID URL from settings response")
+	fmt.Println(configurationAggregatorClient.GetServiceURL())
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	if err = d.Set("trusted_profile_id", settingsResponse.TrustedProfileID); err != nil {
-		err = fmt.Errorf("Error setting trusted_profile_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-trusted_profile_id").GetDiag()
+	if err = d.Set("instance_id", instanceId); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
-	if err = d.Set("regions", settingsResponse.Regions); err != nil {
-		err = fmt.Errorf("Error setting regions: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-regions").GetDiag()
+	if err = d.Set("region", region); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
+	if !core.IsNil(settingsResponse.ResourceCollectionEnabled) {
+		if err = d.Set("resource_collection_enabled", settingsResponse.ResourceCollectionEnabled); err != nil {
+			err = fmt.Errorf("Error setting resource_collection_enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-resource_collection_enabled").GetDiag()
+		}
+	}
+	if !core.IsNil(settingsResponse.TrustedProfileID) {
+		if err = d.Set("trusted_profile_id", settingsResponse.TrustedProfileID); err != nil {
+			err = fmt.Errorf("Error setting trusted_profile_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-trusted_profile_id").GetDiag()
+		}
+	}
+	if !core.IsNil(settingsResponse.Regions) {
+		if err = d.Set("regions", settingsResponse.Regions); err != nil {
+			err = fmt.Errorf("Error setting regions: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-regions").GetDiag()
+		}
 	}
 	if !core.IsNil(settingsResponse.AdditionalScope) {
 		additionalScope := []map[string]interface{}{}

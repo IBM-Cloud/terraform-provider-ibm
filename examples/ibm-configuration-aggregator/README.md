@@ -40,9 +40,9 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| resource_collection_enabled | The field denoting if the resource collection is enabled. | `bool` | true |
-| trusted_profile_id | The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata. | `string` | true |
-| regions | The list of regions across which the resource collection is enabled. | `list(string)` | true |
+| resource_collection_enabled | The field denoting if the resource collection is enabled. | `bool` | false |
+| trusted_profile_id | The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata. | `string` | false |
+| regions | The list of regions across which the resource collection is enabled. | `list(string)` | false |
 | additional_scope | The additional scope that enables resource collection for Enterprise acccounts. | `list()` | false |
 
 ## Configuration Aggregator data sources
