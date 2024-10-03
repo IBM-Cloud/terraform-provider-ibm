@@ -1276,9 +1276,11 @@ Some resources in this service do not support update or delete operations due to
 - ibm_baas_protection_group_state
 - ibm_baas_connection_registration_token
 - ibm_baas_restore_points
+- ibm_baas_recovery
 - ibm_baas_data_source_connector_patch
 - ibm_baas_data_source_connector_registration
-- 
+- ibm_baas_update_protection_group_run_request
+
 
 **Important:** When managing resources that lack complete CRUD operations, users should exercise caution and consider the limitations described above. Manual intervention may be required to manage these resources in the backend if updates or deletions are necessary.**
 

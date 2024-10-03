@@ -1983,6 +1983,7 @@ data "ibm_baas_download_agent" "baas_download_agent_instance" {
   x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
   platform = var.baas_download_agent_platform
   linux_params = var.baas_download_agent_linux_params
+  file_path = "./Cohesity_Agent_ibm_rm_20240824_Win_x64_Installer_3.exe"
 }
 
 
