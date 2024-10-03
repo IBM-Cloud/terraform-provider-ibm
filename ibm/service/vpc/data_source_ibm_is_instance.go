@@ -1193,7 +1193,7 @@ func DataSourceIBMISInstance() *schema.Resource {
 	}
 }
 
-func resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(catalogOfferingVersionPlanReferenceDeleted vpcv1.CatalogOfferingVersionPlanReferenceDeleted) map[string]interface{} {
+func resourceIbmIsInstanceCatalogOfferingVersionPlanReferenceDeletedToMap(catalogOfferingVersionPlanReferenceDeleted vpcv1.Deleted) map[string]interface{} {
 	catalogOfferingVersionPlanReferenceDeletedMap := map[string]interface{}{}
 
 	catalogOfferingVersionPlanReferenceDeletedMap["more_info"] = catalogOfferingVersionPlanReferenceDeleted.MoreInfo
@@ -1701,7 +1701,7 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 
 }
 
-func dataSourceInstanceReservationDeletedToMap(deletedItem vpcv1.ReservationReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceInstanceReservationDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -1832,7 +1832,7 @@ func dataSourceIBMIsInstanceVirtualNetworkInterfaceReferenceAttachmentContextToM
 	modelMap["resource_type"] = model.ResourceType
 	return modelMap, nil
 }
-func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model *vpcv1.InstanceNetworkAttachmentReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsInstanceInstanceNetworkAttachmentReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -1869,13 +1869,13 @@ func dataSourceIBMIsInstanceSubnetReferenceToMap(model *vpcv1.SubnetReference) (
 	modelMap["resource_type"] = model.ResourceType
 	return modelMap, nil
 }
-func dataSourceIBMIsInstanceSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsInstanceSubnetReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
 }
 
-func dataSourceIBMIsInstanceReservedIPReferenceDeletedToMap(model *vpcv1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsInstanceReservedIPReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil

@@ -17,6 +17,15 @@ resource "ibm_en_topic" "en_topic" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   name          = "e2e topic"
   description   = "Topic for EN events routing"
+  sources {
+		id = ibm_resource_instance.cloud_logs_instance.crn
+		
+	rules {
+		enabled =  true
+		event_type_filter = "$.*"
+		notification_filter = "$.data.alert_definition.name == '[${var.environment}]'"
+	}
+	}
 }
 ```
 
@@ -38,7 +47,7 @@ Review the argument reference that you can specify for your resource.
   - `rules` - (Required, List) List of rules.
     Nested scheme for **rules**:
 
-  - `enabled` - (Required, Boolean) Whether the rule is enabled or not. The default value is `true`.
+  - `enabled` - (Boolean) Whether the rule is enabled or not. The default value is `true`.
 
   - `event_type_filter` - (Required, String) Event type filter. The default value is `$.*`. The maximum length is `255`characters. The minimum length is`3`characters. The value must match regular expression`/[a-zA-Z 0-9-_$.=']_/`.
 

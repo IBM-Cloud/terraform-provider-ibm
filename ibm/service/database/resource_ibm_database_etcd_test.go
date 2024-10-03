@@ -123,6 +123,7 @@ func testAccCheckIBMDatabaseInstanceEtcdBasic(databaseResourceGroup string, name
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			memory {
@@ -161,6 +162,7 @@ func testAccCheckIBMDatabaseInstanceEtcdFullyspecified(databaseResourceGroup str
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			host_flavor {
@@ -205,6 +207,7 @@ func testAccCheckIBMDatabaseInstanceEtcdReduced(databaseResourceGroup string, na
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			memory {
@@ -234,6 +237,7 @@ func testAccCheckIBMDatabaseInstanceEtcdImport(databaseResourceGroup string, nam
 		service           = "databases-for-etcd"
 		plan              = "standard"
 		location          = "%[3]s"
+		service_endpoints            = "public-and-private"
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,12 +17,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
-)
-
-const (
-	cbrRuleReadPending  = "pending"
-	cbrRuleReadComplete = "finished"
-	cbrRuleReadError    = "error"
 )
 
 func ResourceIBMCbrRule() *schema.Resource {
@@ -256,53 +249,6 @@ func ResourceIBMCbrRuleValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-// waitForCbrRuleRead will leverage use retry.StateChangeConf due to the service's eventual consistency
-func waitForCbrRuleRead(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, id string) (interface{}, error) {
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{cbrRuleReadPending},
-		Target:  []string{cbrRuleReadError, cbrRuleReadComplete, ""},
-		Refresh: func() (interface{}, string, error) {
-			log.Printf("[DEBUG] Read cbr rule (%s) read", id)
-			getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
-			getRuleOptions.SetRuleID(id)
-			_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
-			if err != nil && response.StatusCode == 404 {
-				return response, cbrRuleReadPending, nil
-			} else if err != nil {
-				return response, cbrRuleReadError, err
-			} else {
-				return response, cbrRuleReadComplete, nil
-			}
-		},
-
-		Timeout:    120 * time.Second,
-		Delay:      20 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	return stateConf.WaitForStateContext(context)
-}
-
-func readNewCbrRule(cbrClient *contextbasedrestrictionsv1.ContextBasedRestrictionsV1, context context.Context, d *schema.ResourceData) diag.Diagnostics {
-	getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
-	getRuleOptions.SetRuleID(d.Id())
-
-	_, response, err := cbrClient.GetRuleWithContext(context, getRuleOptions)
-	if err != nil {
-		//  Leverage retry for the read due to eventual consistency of the service.
-		if response != nil && response.StatusCode == 404 {
-			log.Printf("[INFO] Read cbr rule response status code: 404, provider will try again. %s", err)
-			_, err := waitForCbrRuleRead(cbrClient, context, d.Id())
-			if err != nil {
-				log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
-				d.SetId("")
-				return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
-			}
-		}
-	}
-
-	return nil
-}
-
 func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	contextBasedRestrictionsClient, err := meta.(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
@@ -362,10 +308,78 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*rule.ID)
 
-	// handle Eventual consistency case
-	readNewCbrRule(contextBasedRestrictionsClient, context, d)
+	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
+	}
 
-	return resourceIBMCbrRuleRead(context, d, meta)
+	return nil
+}
+
+func resourceIBMCbrRuleSetData(rule *contextbasedrestrictionsv1.Rule, response *core.DetailedResponse, d *schema.ResourceData) error {
+	if err := d.Set("description", rule.Description); err != nil {
+		return fmt.Errorf("Error setting description: %s", err)
+	}
+	contexts := []map[string]interface{}{}
+	if rule.Contexts != nil {
+		for _, contextsItem := range rule.Contexts {
+			contextsItemMap, err := resourceIBMCbrRuleRuleContextToMap(&contextsItem)
+			if err != nil {
+				return err
+			}
+			contexts = append(contexts, contextsItemMap)
+		}
+	}
+	if err := d.Set("contexts", contexts); err != nil {
+		return fmt.Errorf("Error setting contexts: %s", err)
+	}
+	resources := []map[string]interface{}{}
+	if rule.Resources != nil {
+		for _, resourcesItem := range rule.Resources {
+			resourcesItemMap, err := resourceIBMCbrRuleResourceToMap(&resourcesItem)
+			if err != nil {
+				return err
+			}
+			resources = append(resources, resourcesItemMap)
+		}
+	}
+	if err := d.Set("resources", resources); err != nil {
+		return fmt.Errorf("Error setting resources: %s", err)
+	}
+	if rule.Operations != nil {
+		operationsMap, err := resourceIBMCbrRuleNewRuleOperationsToMap(rule.Operations)
+		if err != nil {
+			return err
+		}
+		if err = d.Set("operations", []map[string]interface{}{operationsMap}); err != nil {
+			return fmt.Errorf("Error setting operations: %s", err)
+		}
+	}
+	if err := d.Set("enforcement_mode", rule.EnforcementMode); err != nil {
+		return fmt.Errorf("Error setting enforcement_mode: %s", err)
+	}
+	if err := d.Set("crn", rule.CRN); err != nil {
+		return fmt.Errorf("Error setting crn: %s", err)
+	}
+	if err := d.Set("href", rule.Href); err != nil {
+		return fmt.Errorf("Error setting href: %s", err)
+	}
+	if err := d.Set("created_at", flex.DateTimeToString(rule.CreatedAt)); err != nil {
+		return fmt.Errorf("Error setting created_at: %s", err)
+	}
+	if err := d.Set("created_by_id", rule.CreatedByID); err != nil {
+		return fmt.Errorf("Error setting created_by_id: %s", err)
+	}
+	if err := d.Set("last_modified_at", flex.DateTimeToString(rule.LastModifiedAt)); err != nil {
+		return fmt.Errorf("Error setting last_modified_at: %s", err)
+	}
+	if err := d.Set("last_modified_by_id", rule.LastModifiedByID); err != nil {
+		return fmt.Errorf("Error setting last_modified_by_id: %s", err)
+	}
+	if err := d.Set("version", response.Headers.Get("Etag")); err != nil {
+		return fmt.Errorf("Error setting version: %s", err)
+	}
+
+	return nil
 }
 
 func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -394,67 +408,9 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 	if err = d.Set("transaction_id", getRuleOptions.TransactionID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
 	}
-	if err = d.Set("description", rule.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
-	}
-	contexts := []map[string]interface{}{}
-	if rule.Contexts != nil {
-		for _, contextsItem := range rule.Contexts {
-			contextsItemMap, err := resourceIBMCbrRuleRuleContextToMap(&contextsItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			contexts = append(contexts, contextsItemMap)
-		}
-	}
-	if err = d.Set("contexts", contexts); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting contexts: %s", err))
-	}
-	resources := []map[string]interface{}{}
-	if rule.Resources != nil {
-		for _, resourcesItem := range rule.Resources {
-			resourcesItemMap, err := resourceIBMCbrRuleResourceToMap(&resourcesItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			resources = append(resources, resourcesItemMap)
-		}
-	}
-	if err = d.Set("resources", resources); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resources: %s", err))
-	}
-	if rule.Operations != nil {
-		operationsMap, err := resourceIBMCbrRuleNewRuleOperationsToMap(rule.Operations)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set("operations", []map[string]interface{}{operationsMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting operations: %s", err))
-		}
-	}
-	if err = d.Set("enforcement_mode", rule.EnforcementMode); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting enforcement_mode: %s", err))
-	}
-	if err = d.Set("crn", rule.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-	}
-	if err = d.Set("href", rule.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(rule.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("created_by_id", rule.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
-	}
-	if err = d.Set("last_modified_at", flex.DateTimeToString(rule.LastModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
-	}
-	if err = d.Set("last_modified_by_id", rule.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
-	}
-	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+
+	if err = resourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
 	}
 
 	return nil
@@ -514,13 +470,17 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 	}
 	replaceRuleOptions.SetIfMatch(d.Get("version").(string))
 
-	_, response, err := contextBasedRestrictionsClient.ReplaceRuleWithContext(context, replaceRuleOptions)
+	rule, response, err := contextBasedRestrictionsClient.ReplaceRuleWithContext(context, replaceRuleOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ReplaceRuleWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ReplaceRuleWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMCbrRuleRead(context, d, meta)
+	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rule's resource data: %s", err))
+	}
+
+	return nil
 }
 
 func resourceIBMCbrRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
