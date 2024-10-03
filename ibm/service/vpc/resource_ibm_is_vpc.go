@@ -299,6 +299,7 @@ func ResourceIBMISVPC() *schema.Resource {
 			isVPCClassicAccess: {
 				Type:        schema.TypeBool,
 				ForceNew:    true,
+				Deprecated:  "Classic access is deprecated",
 				Default:     false,
 				Optional:    true,
 				Description: "Set to true if classic access needs to enabled to VPC",
