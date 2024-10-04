@@ -117,6 +117,11 @@ func DataSourceIbmSmIamCredentialsSecretMetadata() *schema.Resource {
 				Computed:    true,
 				Description: "The date a secret is expired. The date format follows RFC 3339.",
 			},
+			"account_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the account in which the IAM credentials are created. Use this field only if the target account is not the same as the account of the Secrets Manager instance.",
+			},
 			"access_groups": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -297,6 +302,13 @@ func dataSourceIbmSmIamCredentialsSecretMetadataRead(context context.Context, d 
 	if err = d.Set("api_key_id", iAMCredentialsSecretMetadata.ApiKeyID); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting api_key_id"), fmt.Sprintf("(Data) %s_metadata", IAMCredentialsSecretResourceName), "read")
 		return tfErr.GetDiag()
+	}
+
+	if iAMCredentialsSecretMetadata.AccountID != nil {
+		if err = d.Set("account_id", iAMCredentialsSecretMetadata.AccountID); err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting account_id"), fmt.Sprintf("(Data) %s_metadata", IAMCredentialsSecretResourceName), "read")
+			return tfErr.GetDiag()
+		}
 	}
 
 	if err = d.Set("service_id", iAMCredentialsSecretMetadata.ServiceID); err != nil {

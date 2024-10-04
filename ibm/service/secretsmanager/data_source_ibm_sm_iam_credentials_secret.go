@@ -6,11 +6,10 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
@@ -124,6 +123,11 @@ func DataSourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date a secret is expired. The date format follows RFC 3339.",
+			},
+			"account_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the account in which the IAM credentials are created. Use this field only if the target account is not the same as the account of the Secrets Manager instance.",
 			},
 			"access_groups": &schema.Schema{
 				Type:        schema.TypeList,
@@ -300,6 +304,13 @@ func dataSourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.
 	if err = d.Set("service_id", iAMCredentialsSecret.ServiceID); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting service_id"), fmt.Sprintf("(Data) %s", IAMCredentialsSecretResourceName), "read")
 		return tfErr.GetDiag()
+	}
+
+	if iAMCredentialsSecret.AccountID != nil {
+		if err = d.Set("account_id", iAMCredentialsSecret.AccountID); err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting account_id"), fmt.Sprintf("(Data) %s", IAMCredentialsSecretResourceName), "read")
+			return tfErr.GetDiag()
+		}
 	}
 
 	if err = d.Set("service_id_is_static", iAMCredentialsSecret.ServiceIdIsStatic); err != nil {

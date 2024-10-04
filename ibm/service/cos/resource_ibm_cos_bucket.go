@@ -244,7 +244,8 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"abort_incomplete_multipart_upload_days": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				MaxItems:    1,
+				MaxItems:    1000,
+				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable abort incomplete multipart upload to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -278,6 +279,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
+				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable configuration archive_rule (glacier/accelerated) to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -312,6 +314,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1000,
+				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable configuration expire_rule to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1085,6 +1088,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	var keyProtectFlag bool
+	var archiveFlag, expireFlag, abortFlag, ncFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -1100,6 +1104,18 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 
 	if _, ok := d.GetOk("key_protect"); ok {
 		keyProtectFlag = true
+	}
+	if _, ok := d.GetOk("expire_rule"); ok {
+		expireFlag = true
+	}
+	if _, ok := d.GetOk("archive_rule"); ok {
+		archiveFlag = true
+	}
+	if _, ok := d.GetOk("noncurrent_version_expiration"); ok {
+		archiveFlag = true
+	}
+	if _, ok := d.GetOk("abort_incomplete_multipart_upload_days"); ok {
+		abortFlag = true
 	}
 
 	//split satellite resource instance id to get the 1st value
@@ -1287,23 +1303,27 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
 		return err
 	}
-	if lifecycleptr != nil {
+
+	if lifecycleptr.Rules != nil {
 		archiveRules := flex.ArchiveRuleGet(lifecycleptr.Rules)
 		expireRules := flex.ExpireRuleGet(lifecycleptr.Rules)
 		nc_expRules := flex.Nc_exp_RuleGet(lifecycleptr.Rules)
 		abort_mpuRules := flex.Abort_mpu_RuleGet(lifecycleptr.Rules)
-		if len(archiveRules) > 0 {
+		if len(archiveRules) > 0 && archiveFlag == true {
+
 			d.Set("archive_rule", archiveRules)
 		}
-		if len(expireRules) > 0 {
+		if len(expireRules) > 0 && expireFlag == true {
 			d.Set("expire_rule", expireRules)
 		}
-		if len(nc_expRules) > 0 {
+		if len(nc_expRules) > 0 && ncFlag == true {
 			d.Set("noncurrent_version_expiration", nc_expRules)
 		}
-		if len(abort_mpuRules) > 0 {
+		if len(abort_mpuRules) > 0 && abortFlag == true {
 			d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 		}
+	} else {
+		fmt.Println("There is no lifecycle configuration on the bucket")
 	}
 
 	// Read retention rule

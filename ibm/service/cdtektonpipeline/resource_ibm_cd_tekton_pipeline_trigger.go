@@ -194,6 +194,12 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Default:     false,
 				Description: "Mark the trigger as a favorite.",
 			},
+			"enable_events_from_forks": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Only used for SCM triggers. When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
+			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -398,6 +404,9 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	if _, ok := d.GetOk("favorite"); ok {
 		createTektonPipelineTriggerOptions.SetFavorite(d.Get("favorite").(bool))
 	}
+	if _, ok := d.GetOk("enable_events_from_forks"); ok {
+		createTektonPipelineTriggerOptions.SetEnableEventsFromForks(d.Get("enable_events_from_forks").(bool))
+	}
 
 	triggerIntf, response, err := cdTektonPipelineClient.CreateTektonPipelineTriggerWithContext(context, createTektonPipelineTriggerOptions)
 	if err != nil {
@@ -517,6 +526,11 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			return diag.FromErr(fmt.Errorf("Error setting favorite: %s", err))
 		}
 	}
+	if !core.IsNil(trigger.EnableEventsFromForks) {
+		if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting enable_events_from_forks: %s", err))
+		}
+	}
 	if !core.IsNil(trigger.Href) {
 		if err = d.Set("href", trigger.Href); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
@@ -602,12 +616,6 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		patchVals.MaxConcurrentRuns = &newMaxConcurrentRuns
 		hasChange = true
 	}
-	if d.HasChange("favorite") {
-		newFavorite := d.Get("favorite").(bool)
-		patchVals.Favorite = &newFavorite
-		hasChange = true
-	}
-
 	if d.HasChange("enabled") {
 		newEnabled := d.Get("enabled").(bool)
 		patchVals.Enabled = &newEnabled
@@ -647,6 +655,22 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		}
 		sort.Strings(events)
 		patchVals.Events = events
+		hasChange = true
+	}
+
+	if d.HasChange("filter") {
+		newFilter := d.Get("filter").(string)
+		patchVals.Filter = &newFilter
+		hasChange = true
+	}
+	if d.HasChange("favorite") {
+		newFavorite := d.Get("favorite").(bool)
+		patchVals.Favorite = &newFavorite
+		hasChange = true
+	}
+	if d.HasChange("enable_events_from_forks") {
+		newEnableEventsFromForks := d.Get("enable_events_from_forks").(bool)
+		patchVals.EnableEventsFromForks = &newEnableEventsFromForks
 		hasChange = true
 	}
 

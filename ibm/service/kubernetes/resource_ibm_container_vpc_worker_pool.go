@@ -159,7 +159,6 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The operating system of the workers in the worker pool.",
 			},
 
@@ -512,6 +511,30 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 					return fmt.Errorf("[ERROR] Error waiting for deleting workers of worker pool (%s) of cluster (%s):  %s", workerPoolName, clusterID, err)
 				}
 			}
+		}
+	}
+
+	if d.HasChange("operating_system") {
+		clusterNameOrID := d.Get("cluster").(string)
+		workerPoolName := d.Get("worker_pool_name").(string)
+		operatingSystem := d.Get("operating_system").(string)
+		targetEnv, err := getVpcClusterTargetHeader(d)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v2.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().SetWorkerPoolOperatingSystem(v2.SetWorkerPoolOperatingSystem{
+			Cluster:         clusterNameOrID,
+			WorkerPool:      workerPoolName,
+			OperatingSystem: operatingSystem,
+		}, Env)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating the operating_system %s: %s", operatingSystem, err)
 		}
 	}
 

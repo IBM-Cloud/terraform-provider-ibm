@@ -155,7 +155,7 @@ func ResourceIbmLogsViewValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[A-Za-z0-9_\.,\-"{}()\[\]=!:#\/$|' ]+$`,
+			Regexp:                     `^[\p{L}\p{N}\p{P}\p{Z}\p{S}\p{M}]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},

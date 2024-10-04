@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,6 +38,11 @@ func DataSourceIBMPINetworks() *schema.Resource {
 						Attr_AccessConfig: {
 							Computed:    true,
 							Description: "The network communication configuration option of the network (for satellite locations only).",
+							Type:        schema.TypeString,
+						},
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
 						Attr_DhcpManaged: {
@@ -68,6 +75,13 @@ func DataSourceIBMPINetworks() *schema.Resource {
 							Description: "The type of network.",
 							Type:        schema.TypeString,
 						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
+						},
 						Attr_VLanID: {
 							Computed:    true,
 							Description: "The VLAN ID that the network is connected to.",
@@ -97,12 +111,12 @@ func dataSourceIBMPINetworksRead(ctx context.Context, d *schema.ResourceData, me
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Attr_Networks, flattenNetworks(networkdata.Networks))
+	d.Set(Attr_Networks, flattenNetworks(networkdata.Networks, meta))
 
 	return nil
 }
 
-func flattenNetworks(list []*models.NetworkReference) []map[string]interface{} {
+func flattenNetworks(list []*models.NetworkReference, meta interface{}) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
@@ -114,6 +128,15 @@ func flattenNetworks(list []*models.NetworkReference) []map[string]interface{} {
 			Attr_NetworkID:    *i.NetworkID,
 			Attr_Type:         *i.Type,
 			Attr_VLanID:       *i.VlanID,
+		}
+
+		if i.Crn != "" {
+			l[Attr_CRN] = i.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(i.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of pi network (%s) user_tags: %s", *i.NetworkID, err)
+			}
+			l[Attr_UserTags] = tags
 		}
 		result = append(result, l)
 	}

@@ -46,13 +46,14 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 	triggerTimezone := fmt.Sprintf("tf_timezone_%d", acctest.RandIntRange(10, 100))
 	triggerFilter := fmt.Sprintf("tf_filter_%d", acctest.RandIntRange(10, 100))
 	triggerFavorite := "true"
+	triggerEnableEventsFromForks := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID, triggerType, triggerName, triggerEventListener, triggerMaxConcurrentRuns, triggerEnabled, triggerCron, triggerTimezone, triggerFilter, triggerFavorite),
+				Config: testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID, triggerType, triggerName, triggerEventListener, triggerMaxConcurrentRuns, triggerEnabled, triggerCron, triggerTimezone, triggerFilter, triggerFavorite, triggerEnableEventsFromForks),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "pipeline_id"),
@@ -66,6 +67,7 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "max_concurrent_runs"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "favorite"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "enable_events_from_forks"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "source.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "secret.#"),
 				),
@@ -141,7 +143,7 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfigBasic(triggerPipeline
 	`, rgName, tcName, triggerType, triggerName, triggerEventListener)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID string, triggerType string, triggerName string, triggerEventListener string, triggerMaxConcurrentRuns string, triggerEnabled string, triggerCron string, triggerTimezone string, triggerFilter string, triggerFavorite string) string {
+func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID string, triggerType string, triggerName string, triggerEventListener string, triggerMaxConcurrentRuns string, triggerEnabled string, triggerCron string, triggerTimezone string, triggerFilter string, triggerFavorite string, triggerEnableEventsFromForks string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`

@@ -75,16 +75,16 @@ Nested schema for **filters**:
 	  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 	Nested schema for **filters**:
 		* `name` - (Required, String) Filter name.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 		* `selected_values` - (Required, Map) Filter selected values.
 * `folder_id` - (Optional, String) View folder ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `name` - (Required, String) View name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 * `search_query` - (Optional, List) View search query.
 Nested schema for **search_query**:
 	* `query` - (Required, String) View search query.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 * `time_selection` - (Required, List) View time selection.
 Nested schema for **time_selection**:
 	* `custom_selection` - (Optional, List) Custom time selection.
@@ -94,7 +94,7 @@ Nested schema for **time_selection**:
 	* `quick_selection` - (Optional, List) Quick time selection.
 	Nested schema for **quick_selection**:
 		* `caption` - (Required, String) Quick time selection caption.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 		* `seconds` - (Required, Integer) Quick time selection amount of seconds.
 		  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 

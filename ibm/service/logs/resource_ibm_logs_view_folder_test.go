@@ -21,7 +21,7 @@ import (
 
 func TestAccIbmLogsViewFolderBasic(t *testing.T) {
 	var conf logsv0.ViewFolder
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_応答時間モニター_%d", acctest.RandIntRange(10, 100))
 	// nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{

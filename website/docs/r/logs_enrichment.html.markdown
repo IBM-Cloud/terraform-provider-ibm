@@ -41,7 +41,7 @@ Nested schema for **enrichment_type**:
 	* `suspicious_ip` - (Optional, List) The suspicious ip enrichment.
 	Nested schema for **suspicious_ip**:
 * `field_name` - (Required, Forces new resource, String) The enrichment field name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 
 ## Attribute Reference
 

@@ -47,6 +47,8 @@ func TestAccIBMContainerVpcClusterWorkerPoolBasic(t *testing.T) {
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "2"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "3"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "operating_system", "UBUNTU_24_64"),
 				),
 			},
 			{
@@ -186,6 +188,7 @@ func testAccCheckIBMVpcContainerWorkerPoolBasic(name string) string {
 	  vpc_id            = data.ibm_is_vpc.vpc.id
 	  worker_count      = 1
 	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  operating_system  = "UBUNTU_20_64"
 	  zones {
 		name      = "us-south-2"
 		subnet_id = data.ibm_is_subnet.subnet2.id
@@ -304,6 +307,7 @@ func testAccCheckIBMVpcContainerWorkerPoolUpdate(name string) string {
 	  vpc_id            = ibm_is_vpc.vpc.id
 	  worker_count      = 1
 	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  operating_system  = "UBUNTU_24_64"
 	  zones {
 		name      = "eu-de-2"
 		subnet_id = ibm_is_subnet.subnet2.id

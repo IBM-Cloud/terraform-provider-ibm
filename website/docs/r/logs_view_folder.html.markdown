@@ -30,7 +30,7 @@ You can specify the following arguments for this resource.
 * `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
 * `name` - (Required, String) Folder name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 
 ## Attribute Reference
 

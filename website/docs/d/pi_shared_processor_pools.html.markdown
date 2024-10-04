@@ -43,9 +43,11 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `shared_processor_pools`:
   - `allocated_cores` - (Float) The allocated cores in the shared processor pool.
   - `available_cores` - (Integer) The available cores in the shared processor pool.
+  - `crn` - (String) The CRN of this resource.
   - `host_id` - (Integer) The host ID where the shared processor pool resides.
   - `name` - (String) The name of the shared processor pool.
   - `reserved_cores` - (Integer) The amount of reserved cores for the shared processor pool.
   - `shared_processor_pool_id` - (String) The shared processor pool's unique ID.
   - `status` - (String) The status of the shared processor pool.
   - `status_detail` - (String) The status details of the shared processor pool.
+  - `user_tags` - (List) List of user tags attached to the resource.

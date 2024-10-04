@@ -36,5 +36,5 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the logs_view_folder.
 * `name` - (String) Folder name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 

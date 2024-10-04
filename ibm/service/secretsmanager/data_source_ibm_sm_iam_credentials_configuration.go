@@ -57,6 +57,11 @@ func DataSourceIbmSmIamCredentialsConfiguration() *schema.Resource {
 				Sensitive:   true,
 				Description: "An IBM Cloud API key that can create and manage service IDs. The API key must be assigned the Editor platform role on the Access Groups Service and the Operator platform role on the IAM Identity Service. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-configure-iam-engine).",
 			},
+			"disabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "This attribute indicates whether the API key configuration is disabled. If it is set to `true`, the IAM credentials engine doesn't use the configured API key for credentials management.",
+			},
 		},
 	}
 }
@@ -117,6 +122,11 @@ func dataSourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *
 
 	if err = d.Set("api_key", iAMCredentialsConfiguration.ApiKey); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting api_key"), fmt.Sprintf("(Data) %s", IAMCredentialsConfigResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("disabled", iAMCredentialsConfiguration.Disabled); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting disabled"), fmt.Sprintf("(Data) %s", IAMCredentialsConfigResourceName), "read")
 		return tfErr.GetDiag()
 	}
 

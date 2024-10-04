@@ -152,6 +152,7 @@ Nested scheme for **licenses**:
 	* `name` - (Optional, String) license name.
 	* `type` - (Optional, String) type of license e.g., Apache xxx.
 	* `url` - (Optional, String) URL for the license text.
+* `long_description` - (Optional, String) Long description for the version.
 * `name` - (Optional, Forces new resource, String) Name of version. Required for virtual server image for VPC.
 * `offering_id` - (Required, Forces new resource, String) Offering identification.
 * `pre_install` - (Optional, List) Optional pre-install instructions.

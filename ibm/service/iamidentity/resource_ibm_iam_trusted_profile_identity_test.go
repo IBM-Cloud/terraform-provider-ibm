@@ -119,7 +119,7 @@ func testAccCheckIBMIamTrustedProfileIdentityExists(n string, obj iamidentityv1.
 
 		getProfileIdentityOptions := &iamidentityv1.GetProfileIdentityOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		parts, err := flex.SepIdParts(rs.Primary.ID, "|")
 		if err != nil {
 			return err
 		}
@@ -150,7 +150,7 @@ func testAccCheckIBMIamTrustedProfileIdentityDestroy(s *terraform.State) error {
 
 		getProfileIdentityOptions := &iamidentityv1.GetProfileIdentityOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		parts, err := flex.SepIdParts(rs.Primary.ID, "|")
 		if err != nil {
 			return err
 		}

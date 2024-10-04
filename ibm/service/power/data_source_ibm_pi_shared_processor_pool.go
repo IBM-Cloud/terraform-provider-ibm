@@ -5,9 +5,11 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -41,6 +43,11 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 				Computed:    true,
 				Description: "The available cores in the shared processor pool.",
 				Type:        schema.TypeFloat,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
 			},
 			Attr_HostID: {
 				Computed:    true,
@@ -124,6 +131,13 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The status details of the shared processor pool.",
 				Type:        schema.TypeString,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 		},
 	}
 }
@@ -146,6 +160,17 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 	d.SetId(*response.SharedProcessorPool.ID)
 	d.Set(Attr_AllocatedCores, response.SharedProcessorPool.AllocatedCores)
 	d.Set(Attr_AvailableCores, response.SharedProcessorPool.AvailableCores)
+	if response.SharedProcessorPool.Crn != "" {
+		d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
+		if response.SharedProcessorPool.Crn != "" {
+			d.Set(Attr_CRN, response.SharedProcessorPool.Crn)
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(response.SharedProcessorPool.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of pi shared_processor_pool (%s) user_tags: %s", *response.SharedProcessorPool.ID, err)
+			}
+			d.Set(Attr_UserTags, tags)
+		}
+	}
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Name, response.SharedProcessorPool.Name)
 	d.Set(Attr_ReservedCores, response.SharedProcessorPool.ReservedCores)

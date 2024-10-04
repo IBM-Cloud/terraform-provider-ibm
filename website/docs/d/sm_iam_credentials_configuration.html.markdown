@@ -47,6 +47,8 @@ In addition to all argument references listed, you can access the following attr
 * `created_by` - (String) The unique identifier that is associated with the entity that created the secret.
   * Constraints: The maximum length is `128` characters. The minimum length is `4` characters.
 
+* `disabled` - (Boolean) Indicates whether the API key configuration is disabled. If it is set to `true`, the IAM credentials engine doesn't use the configured API key for credentials management.
+ 
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 

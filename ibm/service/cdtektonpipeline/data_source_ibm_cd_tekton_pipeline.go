@@ -327,6 +327,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 							Computed:    true,
 							Description: "Mark the trigger as a favorite.",
 						},
+						"enable_events_from_forks": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
+						},
 						"source": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -805,6 +810,9 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 		if model.Favorite != nil {
 			modelMap["favorite"] = model.Favorite
 		}
+		if model.EnableEventsFromForks != nil {
+			modelMap["enable_events_from_forks"] = model.EnableEventsFromForks
+		}
 		if model.Source != nil {
 			sourceMap, err := dataSourceIBMCdTektonPipelineTriggerSourceToMap(model.Source)
 			if err != nil {
@@ -1002,6 +1010,9 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 	modelMap["enabled"] = model.Enabled
 	if model.Favorite != nil {
 		modelMap["favorite"] = model.Favorite
+	}
+	if model.EnableEventsFromForks != nil {
+		modelMap["enable_events_from_forks"] = model.EnableEventsFromForks
 	}
 	if model.Source != nil {
 		sourceMap, err := dataSourceIBMCdTektonPipelineTriggerSourceToMap(model.Source)

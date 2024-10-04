@@ -2559,6 +2559,8 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 		getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
 		getOfferingOptions.SetOfferingID(d.Get("offering_id").(string))
 
+		// Don't need to get full offering with all versions here because we call resourceIBMCmOfferingRead which does
+		// This get is just to see if the offering exists and set state id
 		offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
@@ -2817,7 +2819,7 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
 	getOfferingOptions.SetOfferingID(d.Id())
 
-	offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
+	offering, response, err := FetchOfferingWithAllVersions(context, catalogManagementClient, getOfferingOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")

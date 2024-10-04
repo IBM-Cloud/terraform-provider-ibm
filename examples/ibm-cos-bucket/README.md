@@ -510,6 +510,36 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
   }
 }
 ```
+## ibm_cos_bucket_lifecycle_configuration
+
+Provides an independent resource to manage the lifecycle configuration for a bucket.For more information please refer to [`ibm_cos_bucket_lifecycle_configuration`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/ibm_cos_bucket_lifecycle_configuration)
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      prefix = "foo"
+    }  
+    rule_id = "id"
+    status = "enable"
+  
+  }
+}
+```
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
@@ -582,4 +612,15 @@ resource ibm_cos_bucket_website_configuration "website_configuration" {
 | http_redirect_code | HTTP redirect code to use on the response. | `string` | No
 | replace_key_with | Specific object key to use in the redirect request. | `string` | No
 | replace_key_prefix_with | Object key prefix to use in the redirect request. | `string` | No
+| days | Days after which the lifecycle rule expiration will be applied on the object. | `int` | No
+| date | Date after which the lifecycle rule expiration will be applied on the object. | `int` | No
+| expire_object_delete_marker | Indicates whether ibm will remove a delete marker with no noncurrent versions. | `bool` | No
+| days | Days after which the lifecycle rule transition will be applied on the object. | `int` | No
+| date | Date after which the lifecycle rule transition will be applied on the object. | `int` | No
+| storage_class | Class of storage used to store the object. | `string` | No
+| noncurrent_days | Number of days an object is noncurrent before lifecycle action is performed. | `int` | No
+| days_after_initiatiob | Number of days after which incomplete multipart uploads are aborted. | `int` | No
+| id | Unique identifier for lifecycle rule. | `int` | Yes
+| status | Whether the rule is currently being applied. | `int` | Yes
+
 {: caption="inputs"}

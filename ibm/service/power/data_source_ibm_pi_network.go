@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -46,6 +48,11 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			Attr_CIDR: {
 				Computed:    true,
 				Description: "The CIDR of the network.",
+				Type:        schema.TypeString,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_DNS: {
@@ -91,6 +98,13 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The percentage of IP addresses used.",
 				Type:        schema.TypeFloat,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			Attr_VLanID: {
 				Computed:    true,
 				Description: "The VLAN ID that the network is connected to.",
@@ -121,6 +135,14 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 	if networkdata.Cidr != nil {
 		d.Set(Attr_CIDR, networkdata.Cidr)
+	}
+	if networkdata.Crn != "" {
+		d.Set(Attr_CRN, networkdata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(networkdata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi network (%s) user_tags: %s", *networkdata.NetworkID, err)
+		}
+		d.Set(Attr_UserTags, tags)
 	}
 	if len(networkdata.DNSServers) > 0 {
 		d.Set(Attr_DNS, networkdata.DNSServers)

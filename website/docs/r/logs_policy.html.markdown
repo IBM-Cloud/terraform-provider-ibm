@@ -40,7 +40,7 @@ You can specify the following arguments for this resource.
 * `application_rule` - (Optional, List) Rule for matching with application.
 Nested schema for **application_rule**:
 	* `name` - (Required, String) Value of the rule.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `rule_type_id` - (Required, String) Identifier of the rule.
 	  * Constraints: Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
 * `archive_retention` - (Optional, List) Archive retention definition.
@@ -54,13 +54,13 @@ Nested schema for **log_rules**:
 	* `severities` - (Optional, List) Source severities to match with.
 	  * Constraints: Allowable list items are: `unspecified`, `debug`, `verbose`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
 * `name` - (Required, String) Name of policy.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 * `priority` - (Required, String) The data pipeline sources that match the policy rules will go through.
   * Constraints: Allowable values are: `type_unspecified`, `type_block`, `type_low`, `type_medium`, `type_high`.
 * `subsystem_rule` - (Optional, List) Rule for matching with application.
 Nested schema for **subsystem_rule**:
 	* `name` - (Required, String) Value of the rule.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `rule_type_id` - (Required, String) Identifier of the rule.
 	  * Constraints: Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
 

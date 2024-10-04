@@ -457,11 +457,46 @@ resource "ibm_cos_bucket" "cos_bucket" {
 }
 ```
 
+# ibm_cos_bucket_lifecycle_configuration
+
+Provides an independent resource to manage the lifecycle configuration for a bucket.For more information please refer to [`ibm_cos_bucket_lifecycle_configuration`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/ibm_cos_bucket_lifecycle_configuration)
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      prefix = "foo"
+    }  
+    rule_id = "id"
+    status = "Enabled"
+  
+  }
+}
+```
+
+**Note:**
+To manage changes of Lifecycle rules to an cos bucket, use the ibm_cos_bucket_lifecycle_configuration resource instead. If you use `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`  on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the cos bucket, treating additional Lifecycle rules as drift. For this reason, lifecycle_rule cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given S3 bucket.
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
 - `abort_incomplete_multipart_upload_days` (Optional,List) Nested block with the following structure.
+
+(Recommended) Use `ibm_cos_bucket_lifecycle_configuration` instead of `abort_incomplete_multipart_upload_days` to manage the lifecycle abort incomplete multipart upload days on cos bucket.
   
   Nested scheme for `abort_incomplete_multipart_upload_days`:
   - `days_after_initiation` - (Optional, integer) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0 and less than 3650.
@@ -486,7 +521,9 @@ Review the argument references that you can specify for your resource.
   - `management_events`-  (Optional, bool) If set to **true**, all bucket management events will be sent to Activity Tracker.This field only applies if `activity_tracker_crn` is not populated.
   
 - `archive_rule` - (Required, List) Nested archive_rule block has following structure.
-  
+
+  (Recommended) Use `ibm_cos_bucket_lifecycle_configuration` instead of `archive rule` to manage the lifecycle archive rule on cos bucket.
+
   Nested scheme for `archive_rule`:
   - `days` - (Required, integer) Specifies the number of days when the specific rule action takes effect.
   - `enable` - (Required, bool) Specifies archive rule status either `enable` or `disable` for a bucket.
@@ -500,7 +537,8 @@ Review the argument references that you can specify for your resource.
 - `cross_region_location` - (Optional, string) Specify the cross-regional bucket location. Supported values are `us`, `eu`, and `ap`. If you use this parameter, do not set `single_site_location` or `region_location` at the same time.
 - `endpoint_type`- (Optional, string) The type of the endpoint either `public` or `private` or `direct` to be used for buckets. Default value is `public`.
 - `expire_rule` - (Required, List) An expiration rule deletes objects after a defined period (from the object creation date). see [lifecycle actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning). Nested expire_rule block has following structure.
-  
+
+  (Recommended) Use `ibm_cos_bucket_lifecycle_configuration` instead of `expire_rule` to manage the lifecycle expire rule on cos bucket.
   Nested scheme for `expire_rule`:
   - `days` - (Optional, integer) Specifies the number of days when the specific rule action takes effect.
   - `date` - (Optional, string) After the specifies date , the current version of objects in your bucket expires.
@@ -537,7 +575,12 @@ Review the argument references that you can specify for your resource.
   - `request_metrics_enabled` : (Optional, bool) If set to **true**, all request metrics (i.e. `rest.object.head`) will be sent to the monitoring service.
   - `usage_metrics_enabled` : (Optional, bool) If set to **true**, all usage metrics (i.e. `bytes_used`) will be sent to the monitoring service.
 
-- `noncurrent_version_expiration` - (Required, List) lifecycle has a versioning related expiration action: non-current version expiration. This can remove old versions of objects after they've been non-current for a specified number of days which is specified with a NoncurrentDays parameter on the rule. see [lifecycle actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning). Nested noncurrent_version_expiration block has following structure.
+- `noncurrent_version_expiration` - (Required, List) lifecycle has a versioning related expiration action: non-current version expiration. This can remove old versions of objects after they've been non-current for a specified number of days which is specified with a NoncurrentDays parameter on the rule. see [lifecycle actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning). 
+
+  (Recommended) Use `ibm_cos_bucket_lifecycle_configuration` instead of `noncurrent_version_expiration` to manage the lifecycle noncurrent version expiration on cos bucket.
+
+  Nested noncurrent_version_expiration block has following structure.
+
 
   Nested scheme for `noncurrent_version_expiration`:
   - `enable` - (Requried, bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.

@@ -10,6 +10,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1069,6 +1070,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"long_description": &schema.Schema{
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "Long description for version.",
 			},
@@ -1815,16 +1817,6 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
 	getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
 	getOfferingOptions.SetOfferingID(d.Get("offering_id").(string))
-	oldOffering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
 
 	offering, response, err := catalogManagementClient.ImportOfferingVersionWithContext(context, importOfferingVersionOptions)
 	if err != nil {
@@ -1833,7 +1825,15 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	activeVersion, err := getVersionFromOffering(oldOffering, offering)
+	// Have to fetch all offering versions to find latest one in case this is XL offering
+	offering, response, err = FetchOfferingWithAllVersions(context, catalogManagementClient, getOfferingOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetOfferingWithContext failed %s\n%s", err, response), "(Data) ibm_cm_object", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	activeVersion, err := getLatestVersionFromOffering(offering)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getVersionFromOffering failed %s\n%s", err, response), "ibm_cm_version", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -1842,33 +1842,14 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 
 	d.SetId(fmt.Sprintf("%s/%s", *offering.CatalogID, *activeVersion.ID))
 
-	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
+	patchUpdateVersionOptions := &catalogmanagementv1.PatchUpdateVersionOptions{}
 
-	updateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
-	updateOfferingOptions.SetOfferingID(*offering.ID)
+	patchUpdateVersionOptions.SetVersionLocID(*activeVersion.VersionLocator)
 	ifMatch := fmt.Sprintf("\"%s\"", *offering.Rev)
-	updateOfferingOptions.IfMatch = &ifMatch
+	patchUpdateVersionOptions.IfMatch = &ifMatch
 
 	hasChange := false
-
-	// find kind and version index
-	var kindIndex int
-	var versionIndex int
-	for i, kind := range offering.Kinds {
-		if *kind.ID == *activeVersion.KindID {
-			kindIndex = i
-
-			if kind.Versions != nil && len(kind.Versions) > 0 {
-				for j, version := range kind.Versions {
-					if *version.ID == *activeVersion.ID {
-						versionIndex = j
-					}
-				}
-			}
-		}
-	}
-
-	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
+	pathToVersion := "/kinds/0/versions/0"
 
 	if _, ok := d.GetOk("tags"); ok {
 		var method string
@@ -1883,7 +1864,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("tags"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("configuration"); ok {
@@ -1905,7 +1886,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: configurations,
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("iam_permissions"); ok {
@@ -1921,7 +1902,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("iam_permissions"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("required_resources"); ok {
@@ -1937,7 +1918,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("required_resources"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("install"); ok {
@@ -1953,7 +1934,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("install.0"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("pre_install"); ok {
@@ -1969,7 +1950,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("pre_install"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("licenses"); ok {
@@ -1985,7 +1966,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("licenses"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("solution_info"); ok {
@@ -2007,7 +1988,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: solutionInfoMap,
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("usage"); ok {
@@ -2023,7 +2004,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("usage"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if _, ok := d.GetOk("terraform_version"); ok {
@@ -2039,14 +2020,30 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("terraform_version"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("long_description") {
+		var method string
+		if activeVersion.LongDescription == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/long_description", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("long_description"),
+		}
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 
 	if hasChange {
-		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
+		_, response, err := catalogManagementClient.PatchUpdateVersionWithContext(context, patchUpdateVersionOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchUpdateVersionWithContext failed %s\n%s", err, response), "ibm_cm_version", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -2449,48 +2446,14 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 	}
 	activeVersion := partialOffering.Kinds[0].Versions[0]
 
-	getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
+	patchUpdateVersionOptions := &catalogmanagementv1.PatchUpdateVersionOptions{}
 
-	getOfferingOptions.SetCatalogIdentifier(*partialOffering.CatalogID)
-	getOfferingOptions.SetOfferingID(*partialOffering.ID)
-	offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
-
-	updateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
-	updateOfferingOptions.SetOfferingID(*offering.ID)
-	ifMatch := fmt.Sprintf("\"%s\"", *offering.Rev)
-	updateOfferingOptions.IfMatch = &ifMatch
+	patchUpdateVersionOptions.SetVersionLocID(*activeVersion.VersionLocator)
+	ifMatch := fmt.Sprintf("\"%s\"", *partialOffering.Rev)
+	patchUpdateVersionOptions.IfMatch = &ifMatch
 
 	hasChange := false
-
-	// find kind and version index
-	var kindIndex int
-	var versionIndex int
-	for i, kind := range offering.Kinds {
-		if *kind.ID == *activeVersion.KindID {
-			kindIndex = i
-
-			if kind.Versions != nil && len(kind.Versions) > 0 {
-				for j, version := range kind.Versions {
-					if *version.ID == *activeVersion.ID {
-						versionIndex = j
-					}
-				}
-			}
-		}
-	}
-
-	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
+	pathToVersion := "/kinds/0/versions/0"
 
 	if d.HasChange("flavor") {
 		var method string
@@ -2505,7 +2468,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("flavor.0"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("tags") {
@@ -2521,7 +2484,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("tags"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("configuration") {
@@ -2543,7 +2506,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: configurations,
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("iam_permissions") {
@@ -2559,7 +2522,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("iam_permissions"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("required_resources") {
@@ -2575,7 +2538,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("required_resources"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("install") {
@@ -2591,7 +2554,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("install.0"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("pre_install") {
@@ -2607,7 +2570,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("pre_install"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("licenses") {
@@ -2623,7 +2586,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("licenses"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("solution_info") {
@@ -2645,7 +2608,7 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: solutionInfoMap,
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 	if d.HasChange("terraform_version") {
@@ -2661,12 +2624,28 @@ func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData,
 			Path:  &path,
 			Value: d.Get("terraform_version"),
 		}
-		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("long_description") {
+		var method string
+		if activeVersion.LongDescription == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/long_description", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("long_description"),
+		}
+		patchUpdateVersionOptions.Updates = append(patchUpdateVersionOptions.Updates, update)
 		hasChange = true
 	}
 
 	if hasChange {
-		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
+		_, response, err := catalogManagementClient.PatchUpdateVersionWithContext(context, patchUpdateVersionOptions)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateOfferingWithContext failed %s\n%s", err, response), "ibm_cm_version", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -3543,29 +3522,36 @@ func resourceIBMCmVersionDependencyToMap(model *catalogmanagementv1.OfferingRefe
 	return modelMap, nil
 }
 
-func getVersionFromOffering(oldOffering *catalogmanagementv1.Offering, newOffering *catalogmanagementv1.Offering) (*catalogmanagementv1.Version, error) {
-	var oldVersionList []catalogmanagementv1.Version
-	var newVersionList []catalogmanagementv1.Version
-
-	for _, kind := range oldOffering.Kinds {
-		oldVersionList = append(oldVersionList, kind.Versions...)
+// Loop over all versions to find the one with the latest created time
+func getLatestVersionFromOffering(offering *catalogmanagementv1.Offering) (*catalogmanagementv1.Version, error) {
+	if offering == nil {
+		return nil, fmt.Errorf("offering is nil")
 	}
 
-	for _, kind := range newOffering.Kinds {
-		newVersionList = append(newVersionList, kind.Versions...)
-	}
+	var latestVersion *catalogmanagementv1.Version
+	var latestTime time.Time
 
-	for _, newVer := range newVersionList {
-		isOld := false
-		for _, oldVer := range oldVersionList {
-			if *newVer.ID == *oldVer.ID {
-				isOld = true
-				break
+	// Iterate over all kinds
+	for _, kind := range offering.Kinds {
+		// Iterate over all versions
+		for _, version := range kind.Versions {
+			if version.Created == nil {
+				continue
+			}
+
+			createdTime := time.Time(*version.Created)
+
+			// Check if this version is the latest one
+			if latestVersion == nil || createdTime.After(latestTime) {
+				latestVersion = &version
+				latestTime = createdTime
 			}
 		}
-		if !isOld {
-			return &newVer, nil
-		}
 	}
-	return nil, flex.FmtErrorf("error finding imported version")
+
+	if latestVersion == nil {
+		return nil, fmt.Errorf("no versions found in offering")
+	}
+
+	return latestVersion, nil
 }

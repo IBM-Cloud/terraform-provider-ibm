@@ -46,12 +46,12 @@ Nested schema for **ibm_event_notifications**:
 	* `region_id` - (String) The region ID of the selected IBM Event Notifications instance.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `4` characters. The value must match regular expression `/^[a-z]{2}-[a-z]+$/`.
 	* `source_id` - (String) The ID of the created source in the IBM Event Notifications instance. Corresponds to the Cloud Logs instance crn. Not required when creating an Outbound Integration.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `source_name` - (String) The name of the created source in the IBM Event Notifications instance. Not required when creating an Outbound Integration.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 
 * `name` - (String) The name of the Outbound Integration.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 
 * `type` - (String) The type of the deployed Outbound Integrations to list.
   * Constraints: Allowable values are: `ibm_event_notifications`.
@@ -59,5 +59,5 @@ Nested schema for **ibm_event_notifications**:
 * `updated_at` - (String) The update time of the Outbound Integration.
 
 * `url` - (String) The URL of the Outbound Integration. Null for IBM Event Notifications integration.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 

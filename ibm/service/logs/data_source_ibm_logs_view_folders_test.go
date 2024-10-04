@@ -19,7 +19,7 @@ import (
 )
 
 func TestAccIbmLogsViewFoldersDataSourceBasic(t *testing.T) {
-	viewFolderName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	viewFolderName := fmt.Sprintf("TF_LOG_アクセスログ_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },

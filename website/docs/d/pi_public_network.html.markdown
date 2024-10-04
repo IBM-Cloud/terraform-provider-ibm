@@ -39,6 +39,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The ID of the network.
 - `name` - (String) The name of the network.
 - `type` - (String) The type of VLAN that the network is connected to.

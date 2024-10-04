@@ -26,6 +26,11 @@ func DataSourceIBMPIPublicNetwork() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
 			Attr_Name: {
 				Computed:    true,
 				Description: "The name of the network.",
@@ -63,6 +68,9 @@ func dataSourceIBMPIPublicNetworkRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(*networkdata.Networks[0].NetworkID)
+	if networkdata.Networks[0].Crn != "" {
+		d.Set(Attr_CRN, networkdata.Networks[0].Crn)
+	}
 	if networkdata.Networks[0].Name != nil {
 		d.Set(Attr_Name, networkdata.Networks[0].Name)
 	}
