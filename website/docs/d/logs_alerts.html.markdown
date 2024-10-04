@@ -62,9 +62,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -73,7 +73,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -88,7 +88,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -116,7 +116,7 @@ Nested schema for **alerts**:
 						  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 						Nested schema for **values**:
 							* `id` - (String) The alert ID.
-							  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+							  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 							* `not` - (Boolean) The alert not.
 					* `next_op` - (String) Operator for the alerts.
 					  * Constraints: Allowable values are: `and`, `or`.
@@ -131,9 +131,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -142,7 +142,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -157,7 +157,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -176,9 +176,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -187,7 +187,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -202,7 +202,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -223,9 +223,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -234,7 +234,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -249,7 +249,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -268,9 +268,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -279,7 +279,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -294,7 +294,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -313,9 +313,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -324,7 +324,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -339,7 +339,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -358,9 +358,9 @@ Nested schema for **alerts**:
 			* `parameters` - (List) The Less than alert condition parameters.
 			Nested schema for **parameters**:
 				* `cardinality_fields` - (List) Cardinality fields for unique count alert.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 				* `group_by` - (List) The group by fields for the alert condition.
-				  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `3` items. The minimum length is `0` items.
+				  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `3` items. The minimum length is `0` items.
 				* `ignore_infinity` - (Boolean) Should the evaluation ignore infinity value.
 				* `metric_alert_parameters` - (List) The lucene metric alert parameters if it is a lucene metric alert.
 				Nested schema for **metric_alert_parameters**:
@@ -369,7 +369,7 @@ Nested schema for **alerts**:
 					* `arithmetic_operator_modifier` - (Integer) The arithmetic operator modifier of the metric promql alert.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `metric_field` - (String) The metric field of the metric alert.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `metric_source` - (String) The metric source of the metric alert.
 					  * Constraints: Allowable values are: `logs2metrics_or_unspecified`, `prometheus`.
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
@@ -384,7 +384,7 @@ Nested schema for **alerts**:
 					* `non_null_percentage` - (Integer) Non null percentage of the evaluation.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `promql_text` - (String) The promql text of the metric alert by fields for the alert condition.
-					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+					  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 					* `sample_threshold_percentage` - (Integer) The threshold percentage.
 					  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 					* `swap_null_values` - (Boolean) Should we swap null values with zero.
@@ -408,34 +408,34 @@ Nested schema for **alerts**:
 	* `filters` - (List) Alert filters.
 	Nested schema for **filters**:
 		* `alias` - (String) The alias of the filter.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 		* `filter_type` - (String) The type of the filter.
 		  * Constraints: Allowable values are: `text_or_unspecified`, `template`, `ratio`, `unique_count`, `time_relative`, `metric`, `flow`.
 		* `metadata` - (List) The metadata filters.
 		Nested schema for **metadata**:
 			* `applications` - (List) The applications to filter.
-			  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+			  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `100` items. The minimum length is `0` items.
 			* `subsystems` - (List) The subsystems to filter.
-			  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+			  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `100` items. The minimum length is `0` items.
 		* `ratio_alerts` - (List) The ratio alerts.
 		  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 		Nested schema for **ratio_alerts**:
 			* `alias` - (String) The alias of the filter.
-			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 			* `applications` - (List) The applications to filter.
-			  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+			  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `100` items. The minimum length is `0` items.
 			* `group_by` - (List) The group by fields.
-			  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+			  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `100` items. The minimum length is `0` items.
 			* `severities` - (List) The severities to filter.
 			  * Constraints: Allowable list items are: `debug_or_unspecified`, `verbose`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
 			* `subsystems` - (List) The subsystems to filter.
-			  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+			  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `100` items. The minimum length is `0` items.
 			* `text` - (String) The text to filter.
-			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 		* `severities` - (List) The severity of the logs to filter.
 		  * Constraints: Allowable list items are: `debug_or_unspecified`, `verbose`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
 		* `text` - (String) The text to filter.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `id` - (String) Alert ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 	* `incident_settings` - (List) Incident settings, will create the incident based on this configuration.
@@ -450,18 +450,18 @@ Nested schema for **alerts**:
 	  * Constraints: The maximum length is `200` items. The minimum length is `0` items.
 	Nested schema for **meta_labels**:
 		* `key` - (String) The key of the label.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 		* `value` - (String) The value of the label.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `meta_labels_strings` - (List) The Meta labels to add to the alert as string with ':' separator.
-	  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `4096` items. The minimum length is `0` items.
 	* `name` - (String) Alert name.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `notification_groups` - (List) Alert notification groups.
 	  * Constraints: The maximum length is `10` items. The minimum length is `1` item.
 	Nested schema for **notification_groups**:
 		* `group_by_fields` - (List) Group by fields to group the values by.
-		  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `20` items. The minimum length is `0` items.
+		  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `20` items. The minimum length is `0` items.
 		* `notifications` - (List) Webhook target settings for the the notification.
 		  * Constraints: The maximum length is `20` items. The minimum length is `0` items.
 		Nested schema for **notifications**:
@@ -476,7 +476,7 @@ Nested schema for **alerts**:
 			* `retriggering_period_seconds` - (Integer) Retriggering period of the alert in seconds.
 			  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 	* `notification_payload_filters` - (List) JSON keys to include in the alert notification, if left empty get the full log text in the alert notification.
-	  * Constraints: The list items must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`. The maximum length is `100` items. The minimum length is `0` items.
 	* `severity` - (String) Alert severity.
 	  * Constraints: Allowable values are: `info_or_unspecified`, `warning`, `critical`, `error`.
 	* `unique_identifier` - (String) Alert unique identifier.

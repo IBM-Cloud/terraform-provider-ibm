@@ -72,11 +72,13 @@ Review the argument references that you can specify for your resource.
 - `pi_network_jumbo` - (Deprecated, Optional, Bool) MTU Jumbo option of the network (for multi-zone locations only).
 - `pi_network_mtu` - (Optional, Integer) Maximum Transmission Unit option of the network, min size = 1450 & max size = 9000.
 - `pi_network_access_config` - (Optional, String) The network communication configuration option of the network (for satellite locations only).
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The unique identifier of the network. The ID is composed of `<power_instance_id>/<network_id>`.
 - `network_id` - (String) The unique identifier of the network.
 - `vlan_id` - (Integer) The ID of the VLAN that your network is attached to.
