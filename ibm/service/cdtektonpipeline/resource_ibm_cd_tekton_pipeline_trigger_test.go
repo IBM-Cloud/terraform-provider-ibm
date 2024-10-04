@@ -14,7 +14,10 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMCdTektonPipelineTriggerBasic(t *testing.T) {
@@ -34,20 +37,20 @@ func TestAccIBMCdTektonPipelineTriggerBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCdTektonPipelineTriggerConfigBasic("", typeVar, name, eventListener),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", conf),
-					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "id"),
-					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "pipeline_id"),
-					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "trigger_id"),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "type", typeVar),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", name),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "event_listener", eventListener),
+					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", conf),
+					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "id"),
+					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "pipeline_id"),
+					resource.TestCheckResourceAttrSet("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "trigger_id"),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "event_listener", eventListener),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMCdTektonPipelineTriggerConfigBasic("", typeVarUpdate, nameUpdate, eventListenerUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "event_listener", eventListenerUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "event_listener", eventListenerUpdate),
 				),
 			},
 		},
@@ -160,7 +163,7 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVa
 				name = "pipeline-name"
 			}
 		}
-		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			next_build_number = 5
 			worker {
@@ -179,8 +182,8 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVa
 			}
 			parameters {}
 		}
-		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance.pipeline_id
 			source {
 				type = "git"
 				properties {
@@ -190,13 +193,13 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVa
 				}
 			}
 			depends_on = [
-				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance
 			]
 		}
-		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
+		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			depends_on = [
-				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
+				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance
 			]
 			type = "%s"
 			name = "%s"
@@ -205,7 +208,7 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVa
 	`, rgName, tcName, typeVar, name, eventListener)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, cron string, timezone string, filter string, favorite string, enableEventsFromForks string) string {
+func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, favorite string, enableEventsFromForks string, filter string, cron string, timezone string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -222,7 +225,7 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 				name = "pipeline-name"
 			}
 		}
-		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			next_build_number = 5
 			worker {
@@ -241,8 +244,8 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 			}
 			parameters {}
 		}
-		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance.pipeline_id
 			source {
 				type = "git"
 				properties {
@@ -252,13 +255,13 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 				}
 			}
 			depends_on = [
-				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance
 			]
 		}
-		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
+		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			depends_on = [
-				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
+				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance
 			]
 			type = "manual"
 			event_listener = "listener"
@@ -268,10 +271,10 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 			enabled = %s
 			favorite = %s
 		}
-		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger2" {
+		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger2_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			depends_on = [
-				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
+				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance
 			]
 			type = "timer"
 			name = "timer1"
@@ -279,10 +282,10 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 			cron = "%s"
 			timezone = "%s"
 		}
-		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger3" {
+		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger3_instance" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			depends_on = [
-				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition
+				ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance
 			]
 			type = "generic"
 			name = "generic1"
@@ -363,4 +366,252 @@ func testAccCheckIBMCdTektonPipelineTriggerDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestResourceIBMCdTektonPipelineTriggerWorkerToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["name"] = "testString"
+		model["type"] = "testString"
+		model["id"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(cdtektonpipelinev2.Worker)
+	model.Name = core.StringPtr("testString")
+	model.Type = core.StringPtr("testString")
+	model.ID = core.StringPtr("testString")
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerWorkerToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerTriggerSourceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		toolModel := make(map[string]interface{})
+		toolModel["id"] = "testString"
+
+		triggerSourcePropertiesModel := make(map[string]interface{})
+		triggerSourcePropertiesModel["url"] = "testString"
+		triggerSourcePropertiesModel["branch"] = "testString"
+		triggerSourcePropertiesModel["pattern"] = "testString"
+		triggerSourcePropertiesModel["blind_connection"] = true
+		triggerSourcePropertiesModel["hook_id"] = "testString"
+		triggerSourcePropertiesModel["tool"] = []map[string]interface{}{toolModel}
+
+		model := make(map[string]interface{})
+		model["type"] = "testString"
+		model["properties"] = []map[string]interface{}{triggerSourcePropertiesModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	toolModel := new(cdtektonpipelinev2.Tool)
+	toolModel.ID = core.StringPtr("testString")
+
+	triggerSourcePropertiesModel := new(cdtektonpipelinev2.TriggerSourceProperties)
+	triggerSourcePropertiesModel.URL = core.StringPtr("testString")
+	triggerSourcePropertiesModel.Branch = core.StringPtr("testString")
+	triggerSourcePropertiesModel.Pattern = core.StringPtr("testString")
+	triggerSourcePropertiesModel.BlindConnection = core.BoolPtr(true)
+	triggerSourcePropertiesModel.HookID = core.StringPtr("testString")
+	triggerSourcePropertiesModel.Tool = toolModel
+
+	model := new(cdtektonpipelinev2.TriggerSource)
+	model.Type = core.StringPtr("testString")
+	model.Properties = triggerSourcePropertiesModel
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerTriggerSourceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		toolModel := make(map[string]interface{})
+		toolModel["id"] = "testString"
+
+		model := make(map[string]interface{})
+		model["url"] = "testString"
+		model["branch"] = "testString"
+		model["pattern"] = "testString"
+		model["blind_connection"] = true
+		model["hook_id"] = "testString"
+		model["tool"] = []map[string]interface{}{toolModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	toolModel := new(cdtektonpipelinev2.Tool)
+	toolModel.ID = core.StringPtr("testString")
+
+	model := new(cdtektonpipelinev2.TriggerSourceProperties)
+	model.URL = core.StringPtr("testString")
+	model.Branch = core.StringPtr("testString")
+	model.Pattern = core.StringPtr("testString")
+	model.BlindConnection = core.BoolPtr(true)
+	model.HookID = core.StringPtr("testString")
+	model.Tool = toolModel
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerToolToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(cdtektonpipelinev2.Tool)
+	model.ID = core.StringPtr("testString")
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerToolToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerGenericSecretToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["type"] = "token_matches"
+		model["value"] = "testString"
+		model["source"] = "header"
+		model["key_name"] = "testString"
+		model["algorithm"] = "md4"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(cdtektonpipelinev2.GenericSecret)
+	model.Type = core.StringPtr("token_matches")
+	model.Value = core.StringPtr("testString")
+	model.Source = core.StringPtr("header")
+	model.KeyName = core.StringPtr("testString")
+	model.Algorithm = core.StringPtr("md4")
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerGenericSecretToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["name"] = "testString"
+		model["value"] = "testString"
+		model["href"] = "testString"
+		model["enum"] = []string{"testString"}
+		model["type"] = "secure"
+		model["path"] = "testString"
+		model["locked"] = true
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(cdtektonpipelinev2.TriggerProperty)
+	model.Name = core.StringPtr("testString")
+	model.Value = core.StringPtr("testString")
+	model.Href = core.StringPtr("testString")
+	model.Enum = []string{"testString"}
+	model.Type = core.StringPtr("secure")
+	model.Path = core.StringPtr("testString")
+	model.Locked = core.BoolPtr(true)
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(t *testing.T) {
+	checkResult := func(result *cdtektonpipelinev2.WorkerIdentity) {
+		model := new(cdtektonpipelinev2.WorkerIdentity)
+		model.ID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["id"] = "testString"
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerMapToGenericSecret(t *testing.T) {
+	checkResult := func(result *cdtektonpipelinev2.GenericSecret) {
+		model := new(cdtektonpipelinev2.GenericSecret)
+		model.Type = core.StringPtr("token_matches")
+		model.Value = core.StringPtr("testString")
+		model.Source = core.StringPtr("header")
+		model.KeyName = core.StringPtr("testString")
+		model.Algorithm = core.StringPtr("md4")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["type"] = "token_matches"
+	model["value"] = "testString"
+	model["source"] = "header"
+	model["key_name"] = "testString"
+	model["algorithm"] = "md4"
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerMapToGenericSecret(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(t *testing.T) {
+	checkResult := func(result *cdtektonpipelinev2.TriggerSourcePrototype) {
+		triggerSourcePropertiesPrototypeModel := new(cdtektonpipelinev2.TriggerSourcePropertiesPrototype)
+		triggerSourcePropertiesPrototypeModel.URL = core.StringPtr("testString")
+		triggerSourcePropertiesPrototypeModel.Branch = core.StringPtr("testString")
+		triggerSourcePropertiesPrototypeModel.Pattern = core.StringPtr("testString")
+
+		model := new(cdtektonpipelinev2.TriggerSourcePrototype)
+		model.Type = core.StringPtr("testString")
+		model.Properties = triggerSourcePropertiesPrototypeModel
+
+		assert.Equal(t, result, model)
+	}
+
+	triggerSourcePropertiesPrototypeModel := make(map[string]interface{})
+	triggerSourcePropertiesPrototypeModel["url"] = "testString"
+	triggerSourcePropertiesPrototypeModel["branch"] = "testString"
+	triggerSourcePropertiesPrototypeModel["pattern"] = "testString"
+
+	model := make(map[string]interface{})
+	model["type"] = "testString"
+	model["properties"] = []interface{}{triggerSourcePropertiesPrototypeModel}
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMCdTektonPipelineTriggerMapToTriggerSourcePropertiesPrototype(t *testing.T) {
+	checkResult := func(result *cdtektonpipelinev2.TriggerSourcePropertiesPrototype) {
+		model := new(cdtektonpipelinev2.TriggerSourcePropertiesPrototype)
+		model.URL = core.StringPtr("testString")
+		model.Branch = core.StringPtr("testString")
+		model.Pattern = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["url"] = "testString"
+	model["branch"] = "testString"
+	model["pattern"] = "testString"
+
+	result, err := cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerMapToTriggerSourcePropertiesPrototype(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }
