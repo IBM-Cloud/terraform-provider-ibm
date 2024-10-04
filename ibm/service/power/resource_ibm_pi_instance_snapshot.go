@@ -136,9 +136,7 @@ func resourceIBMPIInstanceSnapshotCreate(ctx context.Context, d *schema.Resource
 	}
 
 	if v, ok := d.GetOk(Arg_UserTags); ok {
-		if len(flex.FlattenSet(v.(*schema.Set))) > 0 {
-			snapshotBody.UserTags = flex.FlattenSet(v.(*schema.Set))
-		}
+		snapshotBody.UserTags = flex.FlattenSet(v.(*schema.Set))
 	}
 
 	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
