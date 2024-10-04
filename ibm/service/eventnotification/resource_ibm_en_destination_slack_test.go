@@ -75,6 +75,7 @@ func testAccCheckIBMEnSlackDestinationConfig(instanceName, name, description str
 		description = "%s"
 		config {
 			params {
+			    type = "incoming_webhook"
 				url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
 			}
 		}

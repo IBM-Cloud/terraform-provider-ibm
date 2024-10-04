@@ -98,7 +98,7 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 									"service_to_service_enabled": {
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "ATracker service is enabled to support service to service authentication. If service to service is enabled then set this flag is true and do not supply apikey.",
+										Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
 									},
 								},
 							},
@@ -151,7 +151,12 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
-										Description: "The user password (api key) for the message hub topic in the Event Streams instance.",
+										Description: "The user password (api key) for the message hub topic in the Event Streams instance. This is required if service_to_service is not enabled.",
+									},
+									"service_to_service_enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Determines if IBM Cloud Activity Tracker Event Routing has service to service authentication enabled. Set this flag to true if service to service is enabled and do not supply an apikey.",
 									},
 								},
 							},
@@ -420,6 +425,9 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 	}
 	if model.APIKey != nil {
 		modelMap["api_key"] = *model.APIKey // pragma: allowlist secret
+	}
+	if model.ServiceToServiceEnabled != nil {
+		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
 	}
 	return modelMap, nil
 }

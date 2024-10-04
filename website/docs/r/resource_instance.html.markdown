@@ -217,8 +217,8 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_group_crn` - (String) The long ID (full CRN) of the resource group.
 - `resource_id` - (String) The unique ID of the offering. This value is provided by and stored in the global catalog.
 - `resource_plan_id` - (String) The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog.
-- `resource_aliases_url` - (String) The relative path to the resource aliases for the instance.
-- `resource_bindings_url` - (String) The relative path to the resource bindings for the instance.
+- `resource_aliases_url` - (String, Deprecated) The relative path to the resource aliases for the instance. 
+- `resource_bindings_url` - (String, Deprecated) The relative path to the resource bindings for the instance.
 - `resource_keys_url` - (String)  The relative path to the resource keys for the instance.
 - `restored_at` - (Timestamp) The date when the instance under reclamation restored.
 - `restored_by` - (String) The subject who restored the instance back from reclamation.

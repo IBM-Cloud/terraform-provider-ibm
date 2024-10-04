@@ -38,6 +38,12 @@ func DataSourceIBMLogsRouterTargets() *schema.Resource {
 				Optional:    true,
 				Description: "Optional: Name of the tenant target.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The region where the tenant for these targets exist.",
+			},
 			"targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -119,6 +125,10 @@ func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.Resou
 	listTenantTargetsOptions.SetTenantID(core.UUIDPtr(strfmt.UUID(d.Get("tenant_id").(string))))
 	if _, ok := d.GetOk("name"); ok {
 		listTenantTargetsOptions.SetName(d.Get("name").(string))
+	}
+
+	if _, ok := d.GetOk("region"); ok {
+		listTenantTargetsOptions.SetRegion(d.Get("region").(string))
 	}
 
 	targetTypeCollection, _, err := ibmCloudLogsRoutingClient.ListTenantTargetsWithContext(context, listTenantTargetsOptions)

@@ -139,7 +139,7 @@ Review the argument references that you can specify for your resource.
 - `parameters` (Optional, Map) Arbitrary parameters to pass to the resource in JSON format. If you want to create service credentials by using the private service endpoint, include the `service-endpoints =  "private"` parameter.
 - `role` - (Optional, Forces new resource, String) The name of the user role. Valid roles are `NONE`,`Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. This argument is Optional only during creation of service credentials for Cloud Databases and other non-IAM-enabled services and is Required for all other IAM-enabled services.
 - `resource_instance_id` - (Optional, Forces new resource, String) The ID of the resource instance associated with the resource key. **Note** Conflicts with `resource_alias_id`.
-- `resource_alias_id` - (Optional, Forces new resource, String) The ID of the resource alias associated with the resource key. **Note** Conflicts with `resource_instance_id`.
+- `resource_alias_id` - (Optional, Forces new resource, String, Deprecated) The ID of the resource alias associated with the resource key. **Note** Conflicts with `resource_instance_id`.
 - `tags` (Optional, Array of strings) Tags associated with the resource key instance. **Note** Tags are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
 
 

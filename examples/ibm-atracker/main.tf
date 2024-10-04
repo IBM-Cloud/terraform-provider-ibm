@@ -33,6 +33,7 @@ resource "ibm_atracker_target" atracker_target_eventstreams_instance {
     brokers = [ "kafka-x:9094" ]
     topic = "my-topic"
     api_key = "xxxxxxxxxxxxxx"
+    service_to_service_enabled = false
   }
   region = var.atracker_target_region
 }
