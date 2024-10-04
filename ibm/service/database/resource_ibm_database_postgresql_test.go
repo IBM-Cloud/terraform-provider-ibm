@@ -736,3 +736,45 @@ func testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup s
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }
+
+func TestAccIBMDatabaseInstancePostgresPromoteReadReplica(t *testing.T) {
+	// TODO lorna: I would have to create an instance, then rr, then promote?
+	// Have to provide a valid rr crn to run tests?
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+
+	promoteServiceName := serviceName + "-promote-read-replica"
+	resourceName := "ibm_database." + serviceName
+	promoteResource := "ibm_database." + promoteServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(promoteResource, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(promoteResource, "name", promoteServiceName),
+					resource.TestCheckResourceAttr(promoteResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(promoteResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(promoteResource, "location", acc.Region()),
+				),
+			},
+		},
+	})
+}
