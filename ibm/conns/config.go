@@ -2394,18 +2394,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an instance of the 'Configuration Aggregator' service.
 	var configBaseURL string
-	fmt.Println("Priniting the location of config aggregator URL")
-	fmt.Println(c.Region)
 	configBaseURL = ContructEndpoint(fmt.Sprintf("%s.apprapp", c.Region), cloudEndpoint)
-	fmt.Println("Priniting the location of config aggregator URL - configBaseURL")
-	fmt.Println(configBaseURL)
 
 	configurationAggregatorClientOptions := &configurationaggregatorv1.ConfigurationAggregatorV1Options{
 		Authenticator: authenticator,
 		URL:           configBaseURL,
 	}
-	fmt.Println("Config Aggregator Client URL")
-	fmt.Println(configurationAggregatorClientOptions.URL)
 
 	// Construct the service client.
 	session.configurationAggregatorClient, err = configurationaggregatorv1.NewConfigurationAggregatorV1(configurationAggregatorClientOptions)

@@ -14,6 +14,8 @@ Provides a read-only data source to retrieve information about config_aggregator
 
 ```hcl
 data "ibm_config_aggregator_settings" "config_aggregator_settings" {
+	instance_id=var.instance_id
+	region=var.region	
 }
 ```
 
@@ -21,7 +23,8 @@ data "ibm_config_aggregator_settings" "config_aggregator_settings" {
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
-
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Configuration Aggregator instance.
+* `region` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `id` - The unique identifier of the config_aggregator_settings.
 * `additional_scope` - (List) The additional scope that enables resource collection for Enterprise acccounts.
   * Constraints: The maximum length is `10` items. The minimum length is `0` items.

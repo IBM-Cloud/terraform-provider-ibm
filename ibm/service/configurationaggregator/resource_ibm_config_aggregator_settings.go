@@ -43,7 +43,7 @@ func ResourceIbmConfigAggregatorSettings() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_config_aggregator_settings", "trusted_profile_id"),
 				Description:  "The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.",
 			},
-			"regions": &schema.Schema{
+			"resource_collection_regions": &schema.Schema{
 				Type:        schema.TypeList,
 				Required:    true,
 				ForceNew:    true,
@@ -114,17 +114,8 @@ func ResourceIbmConfigAggregatorSettingsValidator() *validate.ResourceValidator 
 
 func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
-	fmt.Println("Initial settings")
-	fmt.Println(configurationAggregatorClient.GetServiceURL())
 	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
-	fmt.Println("Initial settings region")
-	fmt.Println(region)
-	fmt.Println(configurationAggregatorClient.GetServiceURL())
 	instanceId := d.Get("instance_id").(string)
-	fmt.Println("Initial settings instance_id")
-	fmt.Println(instanceId)
-	fmt.Println(configurationAggregatorClient.GetServiceURL())
-	log.Printf("Before Fetching config for instance_id: %s", instanceId)
 	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.
@@ -132,18 +123,14 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	replaceSettingsOptions := &configurationaggregatorv1.ReplaceSettingsOptions{}
-
-	if _, ok := d.GetOk("resource_collection_enabled"); ok {
-		replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
-	}
+	replaceSettingsOptions.SetResourceCollectionEnabled(d.Get("resource_collection_enabled").(bool))
 	if _, ok := d.GetOk("trusted_profile_id"); ok {
 		replaceSettingsOptions.SetTrustedProfileID(d.Get("trusted_profile_id").(string))
 	}
-	if _, ok := d.GetOk("regions"); ok {
+	if _, ok := d.GetOk("resource_collection_regions"); ok {
 		var regions []string
-		for _, v := range d.Get("regions").([]interface{}) {
+		for _, v := range d.Get("resource_collection_regions").([]interface{}) {
 			regionsItem := v.(string)
 			regions = append(regions, regionsItem)
 		}
@@ -164,7 +151,6 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 	fmt.Println("After Logging endpoint from datasource")
 	fmt.Println(configurationAggregatorClient.GetServiceURL())
 	settingsResponse, _, err := configurationAggregatorClient.ReplaceSettingsWithContext(context, replaceSettingsOptions)
-	fmt.Println("Settings Response")
 	fmt.Println(settingsResponse)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
@@ -172,7 +158,8 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*settingsResponse.TrustedProfileID)
+	aggregatorID := fmt.Sprintf("%s/%s", region, instanceId)
+	d.SetId(aggregatorID)
 
 	return resourceIbmConfigAggregatorSettingsRead(context, d, meta)
 }
@@ -186,8 +173,17 @@ func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.
 	}
 
 	getSettingsOptions := &configurationaggregatorv1.GetSettingsOptions{}
-
+	var region string
+	var instanceId string
+	configurationAggregatorClient, region, instanceId, err = updateClientURLWithInstanceEndpoint(d.Id(), configurationAggregatorClient, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	settingsResponse, response, err := configurationAggregatorClient.GetSettingsWithContext(context, getSettingsOptions)
+	fmt.Println("^The Settings Response^")
+	fmt.Println(settingsResponse)
+	fmt.Println(response)
+	fmt.Println(err)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -197,16 +193,7 @@ func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
-	instanceId := d.Get("instance_id").(string)
-	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
-	fmt.Println(" Before Instance ID URL from settings response")
-	fmt.Println(configurationAggregatorClient.GetServiceURL())
-	fmt.Println("After Instance ID URL from settings response")
-	fmt.Println(configurationAggregatorClient.GetServiceURL())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+
 	if err = d.Set("instance_id", instanceId); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
@@ -226,7 +213,7 @@ func resourceIbmConfigAggregatorSettingsRead(context context.Context, d *schema.
 		}
 	}
 	if !core.IsNil(settingsResponse.Regions) {
-		if err = d.Set("regions", settingsResponse.Regions); err != nil {
+		if err = d.Set("resource_collection_regions", settingsResponse.Regions); err != nil {
 			err = fmt.Errorf("Error setting regions: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "read", "set-regions").GetDiag()
 		}

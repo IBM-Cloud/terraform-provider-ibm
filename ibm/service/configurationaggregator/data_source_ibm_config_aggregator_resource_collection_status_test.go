@@ -17,12 +17,13 @@ import (
 )
 
 func TestAccIbmConfigAggregatorResourceCollectionStatusDataSourceBasic(t *testing.T) {
+	instanceID := "instance_id"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmConfigAggregatorResourceCollectionStatusDataSourceConfigBasic(),
+				Config: testAccCheckIbmConfigAggregatorResourceCollectionStatusDataSourceConfigBasic(instanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_resource_collection_status.config_aggregator_resource_collection_status_instance", "id"),
 				),
@@ -31,9 +32,10 @@ func TestAccIbmConfigAggregatorResourceCollectionStatusDataSourceBasic(t *testin
 	})
 }
 
-func testAccCheckIbmConfigAggregatorResourceCollectionStatusDataSourceConfigBasic() string {
+func testAccCheckIbmConfigAggregatorResourceCollectionStatusDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_config_aggregator_resource_collection_status" "config_aggregator_resource_collection_status_instance" {
+			instance_id="%s"
 		}
-	`)
+	`, instanceID)
 }

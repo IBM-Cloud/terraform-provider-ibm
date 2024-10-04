@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccIbmConfigAggregatorConfigurationsDataSourceBasic(t *testing.T) {
+	instanceID := "instance_id"
 	var configType = "your-config-type"
 	var location = "your-location"
 	var resourceCrn = "your-resource-crn"
@@ -28,7 +29,7 @@ func TestAccIbmConfigAggregatorConfigurationsDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(configType, location, resourceCrn, resourceGroupID, serviceName),
+				Config: testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(instanceID, configType, location, resourceCrn, resourceGroupID, serviceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_config_aggregator_configurations.config_aggregator_configurations_instance", "config_type", configType),
@@ -42,14 +43,15 @@ func TestAccIbmConfigAggregatorConfigurationsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(configType, location, resourceCrn, resourceGroupID, serviceName string) string {
+func testAccCheckIbmConfigAggregatorConfigurationsDataSourceConfigBasic(instanceID, configType, location, resourceCrn, resourceGroupID, serviceName string) string {
 	return fmt.Sprintf(`
 		data "ibm_config_aggregator_configurations" "config_aggregator_configurations_instance" {
+			instance_id ="%s"
 			config_type       = "%s"
 			location          = "%s"
 			resource_crn      = "%s"
 			resource_group_id = "%s"
 			service_name      = "%s"
 		}
-	`, configType, location, resourceCrn, resourceGroupID, serviceName)
+	`, instanceID, configType, location, resourceCrn, resourceGroupID, serviceName)
 }

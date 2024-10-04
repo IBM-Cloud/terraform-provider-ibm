@@ -21,9 +21,7 @@ func getConfigurationInstanceRegion(originalClient *configurationaggregatorv1.Co
 		return d.Get("region").(string)
 	}
 	baseUrl := originalClient.Service.GetServiceURL()
-	fmt.Println("Base URL Components")
 	url_01 := strings.Split(baseUrl, ".")[0]
-	fmt.Println(strings.Split(baseUrl, ".")[0])
 	return (strings.Split(url_01, "://")[1])
 }
 
@@ -39,8 +37,6 @@ func getClientWithConfigurationInstanceEndpoint(originalClient *configurationagg
 	newClient := &configurationaggregatorv1.ConfigurationAggregatorV1{
 		Service: originalClient.Service.Clone(),
 	}
-	fmt.Println("Print Endpoint from utils.go")
-	fmt.Println(endpoint)
 
 	newClient.Service.SetServiceURL(endpoint)
 
