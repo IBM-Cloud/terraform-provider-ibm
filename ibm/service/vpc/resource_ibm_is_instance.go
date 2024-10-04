@@ -1213,6 +1213,7 @@ func ResourceIBMISInstance() *schema.Resource {
 						},
 						isInstanceBootProfile: {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
 						},
 						isInstanceBootVolumeTags: {
@@ -1765,7 +1766,7 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 	return &ibmISInstanceValidator
 }
 
-func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image string) error {
+func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, name, vpcID, zone, image, bootProfile string) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -1861,10 +1862,11 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				CRN: &encstr,
 			}
 		}
-
-		volprof := "general-purpose"
+		if bootProfile == "" {
+			bootProfile = "general-purpose"
+		}
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
-			Name: &volprof,
+			Name: &bootProfile,
 		}
 		var userTags *schema.Set
 		if v, ok := bootvol[isInstanceBootVolumeTags]; ok {
@@ -3923,6 +3925,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	zone := d.Get(isInstanceZone).(string)
 	image := d.Get(isInstanceImage).(string)
 	snapshot := d.Get("boot_volume.0.snapshot").(string)
+	bootProfile := d.Get("boot_volume.0.profile").(string)
 	snapshotcrn := d.Get("boot_volume.0.snapshot_crn").(string)
 	volume := d.Get("boot_volume.0.volume_id").(string)
 	template := d.Get(isInstanceSourceTemplate).(string)
@@ -3952,7 +3955,7 @@ func resourceIBMisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			return err
 		}
 	} else {
-		err := instanceCreateByImage(d, meta, profile, name, vpcID, zone, image)
+		err := instanceCreateByImage(d, meta, profile, name, vpcID, zone, image, bootProfile)
 		if err != nil {
 			return err
 		}

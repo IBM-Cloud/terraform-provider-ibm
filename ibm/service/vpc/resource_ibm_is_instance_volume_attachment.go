@@ -691,30 +691,31 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error Getting Volume (%s): %s\n%s", id, err, response)
 		}
-
-		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].Name == "" {
-			return fmt.Errorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
-		}
-
-		getinsOptions := &vpcv1.GetInstanceOptions{
-			ID: &instanceId,
-		}
-		instance, response, err := instanceC.GetInstance(getinsOptions)
-		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", instanceId, err, response)
-		}
-		if instance != nil && *instance.Status != "running" {
-			actiontype := "start"
-			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-				InstanceID: &instanceId,
-				Type:       &actiontype,
+		if *vol.Profile.Name != "sdp" {
+			if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].Name == "" {
+				return fmt.Errorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
 			}
-			_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
-			if err != nil {
+
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &instanceId,
+			}
+			instance, response, err := instanceC.GetInstance(getinsOptions)
+			if err != nil || instance == nil {
+				return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", instanceId, err, response)
+			}
+			if instance != nil && *instance.Status != "running" {
+				actiontype := "start"
+				createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: &instanceId,
+					Type:       &actiontype,
+				}
+				_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
+				}
+				_, err = isWaitForInstanceAvailable(instanceC, instanceId, d.Timeout(schema.TimeoutCreate), d)
 				return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
 			}
-			_, err = isWaitForInstanceAvailable(instanceC, instanceId, d.Timeout(schema.TimeoutCreate), d)
-			return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", instanceId, err, response)
 		}
 		capacity := int64(d.Get(isVolumeCapacity).(int))
 		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{

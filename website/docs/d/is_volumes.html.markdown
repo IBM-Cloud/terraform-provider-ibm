@@ -45,6 +45,8 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for **volumes**:
 	- `access_tags`  - (List) Access management tags associated for the volume.
 	- `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
+	- `adjustable_capacity_states` - (List) The attachment states that support adjustable capacity for this volume. Allowable list items are: `attached`, `unattached`, `unusable`. 
+	- `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
 	- `attachment_state` - (Boolean) The attachment state of the volume
 	- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume.
 	- `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. This must be `false` to perform an operation that is specified to require serialization.

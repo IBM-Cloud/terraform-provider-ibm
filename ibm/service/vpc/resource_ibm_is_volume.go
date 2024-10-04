@@ -124,12 +124,12 @@ func ResourceIBMISVolume() *schema.Resource {
 			},
 
 			isVolumeCapacity: {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ForceNew:     false,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_volume", isVolumeCapacity),
-				Description:  "Volume capacity value",
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: false,
+				Computed: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_is_volume", isVolumeCapacity),
+				Description: "Volume capacity value",
 			},
 			isVolumeSourceSnapshot: {
 				Type:          schema.TypeString,
@@ -156,11 +156,11 @@ func ResourceIBMISVolume() *schema.Resource {
 				Description: "Resource group name",
 			},
 			isVolumeIops: {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_volume", isVolumeIops),
-				Description:  "IOPS value for the Volume",
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				// ValidateFunc: validate.InvokeValidator("ibm_is_volume", isVolumeIops),
+				Description: "IOPS value for the Volume",
 			},
 			isVolumeCrn: {
 				Type:        schema.TypeString,
@@ -230,6 +230,19 @@ func ResourceIBMISVolume() *schema.Resource {
 						},
 					},
 				},
+			},
+			// defined_performance changes
+			"adjustable_capacity_states": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The attachment states that support adjustable capacity for this volume.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"adjustable_iops_states": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The attachment states that support adjustable IOPS for this volume.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			isVolumeHealthReasons: {
 				Type:     schema.TypeList,
@@ -410,22 +423,20 @@ func ResourceIBMISVolumeValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "general-purpose, 5iops-tier, 10iops-tier, custom",
+			AllowedValues:              "general-purpose, 5iops-tier, 10iops-tier, custom, sdp",
 		})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVolumeCapacity,
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
-			MinValue:                   "10",
-			MaxValue:                   "16000"})
+			MinValue:                   "10"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isVolumeIops,
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
-			MinValue:                   "100",
-			MaxValue:                   "48000"})
+			MinValue:                   "100"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "accesstag",
@@ -716,6 +727,16 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if err != nil {
 		return err
 	}
+	// defined_performance changes
+
+	if err = d.Set("adjustable_capacity_states", vol.AdjustableCapacityStates); err != nil {
+		err = fmt.Errorf("Error setting adjustable_capacity_states: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-adjustable_capacity_states")
+	}
+	if err = d.Set("adjustable_iops_states", vol.AdjustableIopsStates); err != nil {
+		err = fmt.Errorf("Error setting adjustable_iops_states: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume", "read", "set-adjustable_iops_states")
+	}
 	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/storage/storageVolumes")
 	d.Set(flex.ResourceName, *vol.Name)
 	d.Set(flex.ResourceCRN, *vol.CRN)
@@ -894,32 +915,35 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 			}
 			return fmt.Errorf("[ERROR] Error Getting Volume (%s): %s\n%s", id, err, response)
 		}
-		if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].ID == "" {
-			return fmt.Errorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
-		}
-		insId := vol.VolumeAttachments[0].Instance.ID
-		getinsOptions := &vpcv1.GetInstanceOptions{
-			ID: insId,
-		}
-		instance, response, err := sess.GetInstance(getinsOptions)
-		if err != nil || instance == nil {
-			return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", *insId, err, response)
-		}
-		if instance != nil && *instance.Status != "running" {
-			actiontype := "start"
-			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-				InstanceID: insId,
-				Type:       &actiontype,
+		if *vol.Profile.Name != "sdp" {
+			if vol.VolumeAttachments == nil || len(vol.VolumeAttachments) == 0 || *vol.VolumeAttachments[0].ID == "" {
+				return fmt.Errorf("[ERROR] Error volume capacity can't be updated since volume %s is not attached to any instance for VolumePatch", id)
 			}
-			_, response, err = sess.CreateInstanceAction(createinsactoptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", *insId, err, response)
+			insId := vol.VolumeAttachments[0].Instance.ID
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: insId,
 			}
-			_, err = isWaitForInstanceAvailable(sess, *insId, d.Timeout(schema.TimeoutCreate), d)
-			if err != nil {
-				return err
+			instance, response, err := sess.GetInstance(getinsOptions)
+			if err != nil || instance == nil {
+				return fmt.Errorf("[ERROR] Error retrieving Instance (%s) : %s\n%s", *insId, err, response)
+			}
+			if instance != nil && *instance.Status != "running" {
+				actiontype := "start"
+				createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: insId,
+					Type:       &actiontype,
+				}
+				_, response, err = sess.CreateInstanceAction(createinsactoptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error starting Instance (%s) : %s\n%s", *insId, err, response)
+				}
+				_, err = isWaitForInstanceAvailable(sess, *insId, d.Timeout(schema.TimeoutCreate), d)
+				if err != nil {
+					return err
+				}
 			}
 		}
+
 		capacity = int64(d.Get(isVolumeCapacity).(int))
 		volumeCapacityPatchModel := &vpcv1.VolumePatch{}
 		volumeCapacityPatchModel.Capacity = &capacity

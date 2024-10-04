@@ -37,6 +37,23 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether a running virtual server instance has an attachment to this volume.",
 			},
+			// defined_performance changes
+			"adjustable_capacity_states": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The attachment states that support adjustable capacity for this volume.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"adjustable_iops_states": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The attachment states that support adjustable IOPS for this volume.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			isVolumeAttachmentState: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -467,6 +484,15 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 	if vol.HealthState != nil {
 		d.Set(isVolumeHealthState, *vol.HealthState)
 	}
+
+	if err = d.Set("adjustable_capacity_states", vol.AdjustableCapacityStates); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_capacity_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_capacity_states")
+	}
+
+	if err = d.Set("adjustable_iops_states", vol.AdjustableIopsStates); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting adjustable_iops_states: %s", err), "(Data) ibm_is_volume", "read", "set-adjustable_iops_states")
+	}
+
 	return nil
 }
 
