@@ -762,7 +762,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1129,7 +1129,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
-		apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
+		apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
 		apiEndpoint = apiEndpointPublic
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1219,7 +1219,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("bucket_name", bucketName)
 
 	testEnv := strings.Contains(apiEndpoint, ".test.")
-	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, testEnv)
+	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
 
 	if testEnv {
 		d.Set(fmt.Sprintf("s3_endpoint_%s", endpointType), apiEndpoint)
@@ -1432,7 +1432,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
-		apiEndpoint, privateApiEndpoint, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
+		apiEndpoint, privateApiEndpoint, directApiEndpoint = SelectCosApi(apiType, bLocation)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = privateApiEndpoint
@@ -1557,7 +1557,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1691,7 +1691,7 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1750,11 +1750,8 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	return false, nil
 }
 
-func SelectCosApi(apiType string, bLocation string, test bool) (string, string, string) {
+func SelectCosApi(apiType string, bLocation string) (string, string, string) {
 	hostUrl := "cloud-object-storage.appdomain.cloud"
-	if test {
-		hostUrl = "cloud-object-storage.test.appdomain.cloud"
-	}
 	if apiType == "crl" {
 		return fmt.Sprintf("s3.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.private.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.direct.%s.%s", bLocation, hostUrl)
 	}
