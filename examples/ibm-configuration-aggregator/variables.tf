@@ -6,13 +6,11 @@ variable "ibmcloud_api_key" {
 variable "region"{
   description="Config Aggregator Instance ID"
   type=string
-  default="us-south"
 }
 
 variable "instance_id"{
   description="Config Aggregator Instance ID"
   type=string
-  default="d3e4c771-fc45-4699-ab13-faecc6e1fc74"
 }
 
 // Resource arguments for config_aggregator_settings

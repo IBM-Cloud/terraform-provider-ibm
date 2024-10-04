@@ -14,6 +14,8 @@ Create, update, and delete config_aggregator_settingss with this resource.
 
 ```hcl
 resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
+  instance_id=var.instance_id
+  region=var.region
   additional_scope {
 		type = "Enterprise"
 		enterprise_id = "enterprise_id"
@@ -31,7 +33,8 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 ## Argument Reference
 
 You can specify the following arguments for this resource.
-
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Configuration Aggregator instance.
+* `region` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `additional_scope` - (Optional, Forces new resource, List) The additional scope that enables resource collection for Enterprise acccounts.
   * Constraints: The maximum length is `10` items. The minimum length is `0` items.
 Nested schema for **additional_scope**:

@@ -14,13 +14,16 @@ Provides a read-only data source to retrieve information about config_aggregator
 
 ```hcl
 data "ibm_config_aggregator_configurations" "config_aggregator_configurations" {
+	instance_id=var.instance_id
+	region=var.region
 }
 ```
 
 ## Argument Reference
 
 You can specify the following arguments for this data source.
-
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Configuration Aggregator instance.
+* `region` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `config_type` - (Optional, String) The type of resource configuration that are to be retrieved.
   * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 ,\\-_]+$/`.
 * `location` - (Optional, String) The location or region in which the resources are created.

@@ -21,12 +21,13 @@ import (
 )
 
 func TestAccIbmConfigAggregatorSettingsDataSourceBasic(t *testing.T) {
+	instanceID := "instance_id"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmConfigAggregatorSettingsDataSourceConfigBasic(),
+				Config: testAccCheckIbmConfigAggregatorSettingsDataSourceConfigBasic(instanceID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_config_aggregator_settings.config_aggregator_settings_instance", "id"),
 				),
@@ -35,11 +36,12 @@ func TestAccIbmConfigAggregatorSettingsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmConfigAggregatorSettingsDataSourceConfigBasic() string {
+func testAccCheckIbmConfigAggregatorSettingsDataSourceConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		data "ibm_config_aggregator_settings" "config_aggregator_settings_instance" {
+		instance_id="%s"
 		}
-	`)
+	`, instanceID)
 }
 
 func TestDataSourceIbmConfigAggregatorSettingsAdditionalScopeToMap(t *testing.T) {
