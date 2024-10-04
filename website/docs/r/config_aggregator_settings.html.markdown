@@ -24,7 +24,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 			trusted_profile_id = "Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3"
 		}
   }
-  regions = us-south
+  resource_collection_regions = us-south
   resource_collection_enabled = true
   trusted_profile_id = "Profile-1260aec2-f2fc-44e2-8697-2cc15a447560"
 }
@@ -34,7 +34,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
 
 You can specify the following arguments for this resource.
 * `instance_id` - (Required, Forces new resource, String) The GUID of the Configuration Aggregator instance.
-* `region` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `resource_collection_regions` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
 * `additional_scope` - (Optional, Forces new resource, List) The additional scope that enables resource collection for Enterprise acccounts.
   * Constraints: The maximum length is `10` items. The minimum length is `0` items.
 Nested schema for **additional_scope**:
