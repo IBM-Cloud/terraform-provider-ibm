@@ -63,15 +63,13 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_config_aggregator_settings` resource by using `trusted_profile_id`. The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata.
-For more information, see [the documentation](https://cloud.ibm.com/docs/app-configuration)
-
+You can import the `ibm_config_aggregator_settings` resource by using `region` and `instance_id`. 
 # Syntax
 <pre>
-$ terraform import ibm_config_aggregator_settings.config_aggregator_settings &lt;trusted_profile_id&gt;
+$ terraform import ibm_config_aggregator_settings.config_aggregator_settings <region>/<instance_id>
 </pre>
 
 # Example
 ```
-$ terraform import ibm_config_aggregator_settings.config_aggregator_settings Profile-6bb60124-8fc3-4d18-b63d-0b99560865d3
+$ terraform import ibm_config_aggregator_settings.config_aggregator_settings us-south/23243-3223-2323-333
 ```
