@@ -83,6 +83,7 @@ In addition to all argument reference list, you can access the following attribu
 - `routing_table` -  (List) The routing table for this subnet. 
   
   Nested scheme for `routing_table`:
+  - `crn` -  (String) The crn for this routing table.
   - `deleted` -  (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
 
     Nested scheme for `deleted`:
