@@ -214,6 +214,12 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Import an existing WorkerPool from the cluster, instead of creating a new",
 			},
 
+			"orphan_resource_on_delete": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Orphan the Worker Pool resource, instead of deleting it",
+			},
+
 			"autoscale_enabled": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -715,14 +721,22 @@ func resourceIBMContainerVpcWorkerPoolDelete(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-
-	err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
-	if err != nil {
-		return err
+	var orphan_resource bool = false
+	if orod, ok := d.GetOk("orphan_resource_on_delete"); ok {
+		orphan_resource = orod.(bool)
 	}
-	_, err = WaitForVpcWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutDelete), targetEnv)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
+
+	if orphan_resource {
+		log.Printf("[WARN] orphaning %s workerpool", workerPoolNameorID)
+	} else {
+		err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
+		if err != nil {
+			return err
+		}
+		_, err = WaitForVpcWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutDelete), targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
+		}
 	}
 	d.SetId("")
 	return nil
@@ -788,7 +802,7 @@ func WaitForWorkerPoolAvailable(d *schema.ResourceData, meta interface{}, cluste
 
 func vpcWorkerPoolStateRefreshFunc(client v2.Workers, instanceID string, workerPoolNameOrID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, "", false, target)
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
 		}
