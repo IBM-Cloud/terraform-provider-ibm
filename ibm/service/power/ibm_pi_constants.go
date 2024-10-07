@@ -74,6 +74,7 @@ const (
 	Arg_SharedProcessorPoolReservedCores    = "pi_shared_processor_pool_reserved_cores"
 	Arg_SnapshotID                          = "pi_snapshot_id"
 	Arg_SnapShotName                        = "pi_snap_shot_name"
+	Arg_SnapshotName                        = "pi_snapshot_name"
 	Arg_SPPPlacementGroupID                 = "pi_spp_placement_group_id"
 	Arg_SPPPlacementGroupName               = "pi_spp_placement_group_name"
 	Arg_SPPPlacementGroupPolicy             = "pi_spp_placement_group_policy"
