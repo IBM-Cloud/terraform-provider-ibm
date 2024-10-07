@@ -17,7 +17,7 @@ Create, update, and delete onboarding_catalog_products with this resource.
 ```hcl
 resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
   active = true
-  disabled = true
+  disabled = false
   images {
 		image = "image"
   }
@@ -102,6 +102,14 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 					}
 				}
 			}
+			composite {
+				composite_kind = "service"
+				composite_tag = "composite_tag"
+				children {
+					kind = "service"
+					name = "name"
+				}
+			}
 		}
   }
   name = "1p-service-08-06"
@@ -133,11 +141,24 @@ Nested schema for **images**:
 	* `image` - (Optional, String) The URL for your product logo.
 	  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `kind` - (Required, String) The kind of the global catalog object.
-  * Constraints: Allowable values are: `service`, `platform_service`.
+  * Constraints: Allowable values are: `service`, `platform_service`, `composite`.
 * `metadata` - (Optional, List) The global catalog service metadata object.
 Nested schema for **metadata**:
 	* `other` - (Optional, List) The additional metadata of the service in global catalog.
 	Nested schema for **other**:
+		* `composite` - (Optional, List) Optional metadata of the service defining it as a composite.
+		Nested schema for **composite**:
+			* `children` - (Optional, List)
+			  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
+			Nested schema for **children**:
+				* `kind` - (Optional, String) The type of the composite child.
+				  * Constraints: Allowable values are: `service`, `platform_service`.
+				* `name` - (Optional, String) The name of the composite child.
+				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+			* `composite_kind` - (Optional, String) The type of the composite service.
+			  * Constraints: Allowable values are: `service`, `platform_service`.
+			* `composite_tag` - (Optional, String) The tag used for the composite parent and its children.
+			  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 		* `pc` - (Optional, List) The metadata of the service owned and managed by Partner Center - Sell.
 		Nested schema for **pc**:
 			* `support` - (Optional, List) The support metadata of the service.
@@ -279,5 +300,5 @@ The `id` property can be formed from `product_id`, and `catalog_product_id` in t
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product product_id/catalog_product_id;
 </pre>

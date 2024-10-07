@@ -549,6 +549,44 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 											},
 										},
 									},
+									"composite": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Optional metadata of the service defining it as a composite.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"composite_kind": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the composite service.",
+												},
+												"composite_tag": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The tag used for the composite parent and its children.",
+												},
+												"children": &schema.Schema{
+													Type:     schema.TypeList,
+													Optional: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"kind": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The type of the composite child.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The name of the composite child.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -602,7 +640,7 @@ func ResourceIbmOnboardingCatalogProductValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "platform_service, service",
+			AllowedValues:              "composite, platform_service, service",
 		},
 	)
 
@@ -769,12 +807,6 @@ func resourceIbmOnboardingCatalogProductRead(context context.Context, d *schema.
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-url").GetDiag()
 		}
 	}
-	if parts[0] != "" {
-		if err = d.Set("product_id", parts[0]); err != nil {
-			err = fmt.Errorf("Error setting product_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-product_id").GetDiag()
-		}
-	}
 	if !core.IsNil(globalCatalogProduct.ID) {
 		if err = d.Set("catalog_product_id", globalCatalogProduct.ID); err != nil {
 			err = fmt.Errorf("Error setting catalog_product_id: %s", err)
@@ -930,7 +962,7 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogProductProvider(modelMap map
 
 func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogOverviewUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogOverviewUI, error) {
 	model := &partnercentersellv1.GlobalCatalogOverviewUI{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
 		EnModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogOverviewUITranslatedContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -967,21 +999,21 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(modelM
 	if modelMap["rc_compatible"] != nil {
 		model.RcCompatible = core.BoolPtr(modelMap["rc_compatible"].(bool))
 	}
-	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 && modelMap["ui"].([]interface{})[0] != nil {
+	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 {
 		UiModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(modelMap["ui"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Ui = UiModel
 	}
-	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 && modelMap["service"].([]interface{})[0] != nil {
+	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 {
 		ServiceModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(modelMap["service"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Service = ServiceModel
 	}
-	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 && modelMap["other"].([]interface{})[0] != nil {
+	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 {
 		OtherModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(modelMap["other"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -993,14 +1025,14 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(modelM
 
 func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUI, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataUI{}
-	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 && modelMap["strings"].([]interface{})[0] != nil {
+	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 {
 		StringsModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStrings(modelMap["strings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Strings = StringsModel
 	}
-	if modelMap["urls"] != nil && len(modelMap["urls"].([]interface{})) > 0 && modelMap["urls"].([]interface{})[0] != nil {
+	if modelMap["urls"] != nil && len(modelMap["urls"].([]interface{})) > 0 {
 		UrlsModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIUrls(modelMap["urls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1018,7 +1050,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(modelMap ma
 
 func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStrings(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUIStrings, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataUIStrings{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
 		EnModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStringsContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1064,13 +1096,13 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(modelMap map[s
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["description_i18n"] != nil {
-		model.DescriptionI18n = modelMap["description_i18n"].(map[string]interface{})
+		// TODO: handle DescriptionI18n, map with entry type 'string'
 	}
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
 	}
 	if modelMap["title_i18n"] != nil {
-		model.TitleI18n = modelMap["title_i18n"].(map[string]interface{})
+		// TODO: handle TitleI18n, map with entry type 'string'
 	}
 	return model, nil
 }
@@ -1079,7 +1111,7 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(modelMap ma
 	model := &partnercentersellv1.CatalogProductMediaItem{}
 	model.Caption = core.StringPtr(modelMap["caption"].(string))
 	if modelMap["caption_i18n"] != nil {
-		model.CaptionI18n = modelMap["caption_i18n"].(map[string]interface{})
+		// TODO: handle CaptionI18n, map with entry type 'string'
 	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
@@ -1137,19 +1169,26 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataService(modelM
 
 func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataOther, error) {
 	model := &partnercentersellv1.GlobalCatalogProductMetadataOther{}
-	if modelMap["pc"] != nil && len(modelMap["pc"].([]interface{})) > 0 && modelMap["pc"].([]interface{})[0] != nil {
+	if modelMap["pc"] != nil && len(modelMap["pc"].([]interface{})) > 0 {
 		PCModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherPC(modelMap["pc"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.PC = PCModel
 	}
+	if modelMap["composite"] != nil && len(modelMap["composite"].([]interface{})) > 0 {
+		CompositeModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherComposite(modelMap["composite"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Composite = CompositeModel
+	}
 	return model, nil
 }
 
 func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherPC(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataOtherPC, error) {
 	model := &partnercentersellv1.GlobalCatalogProductMetadataOtherPC{}
-	if modelMap["support"] != nil && len(modelMap["support"].([]interface{})) > 0 && modelMap["support"].([]interface{})[0] != nil {
+	if modelMap["support"] != nil && len(modelMap["support"].([]interface{})) > 0 {
 		SupportModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherPCSupport(modelMap["support"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1185,12 +1224,12 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherPC
 		model.Process = core.StringPtr(modelMap["process"].(string))
 	}
 	if modelMap["process_i18n"] != nil {
-		model.ProcessI18n = modelMap["process_i18n"].(map[string]interface{})
+		// TODO: handle ProcessI18n, map with entry type 'string'
 	}
 	if modelMap["support_type"] != nil && modelMap["support_type"].(string) != "" {
 		model.SupportType = core.StringPtr(modelMap["support_type"].(string))
 	}
-	if modelMap["support_escalation"] != nil && len(modelMap["support_escalation"].([]interface{})) > 0 && modelMap["support_escalation"].([]interface{})[0] != nil {
+	if modelMap["support_escalation"] != nil && len(modelMap["support_escalation"].([]interface{})) > 0 {
 		SupportEscalationModel, err := ResourceIbmOnboardingCatalogProductMapToSupportEscalation(modelMap["support_escalation"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1216,14 +1255,14 @@ func ResourceIbmOnboardingCatalogProductMapToSupportEscalation(modelMap map[stri
 	if modelMap["contact"] != nil && modelMap["contact"].(string) != "" {
 		model.Contact = core.StringPtr(modelMap["contact"].(string))
 	}
-	if modelMap["escalation_wait_time"] != nil && len(modelMap["escalation_wait_time"].([]interface{})) > 0 && modelMap["escalation_wait_time"].([]interface{})[0] != nil {
+	if modelMap["escalation_wait_time"] != nil && len(modelMap["escalation_wait_time"].([]interface{})) > 0 {
 		EscalationWaitTimeModel, err := ResourceIbmOnboardingCatalogProductMapToSupportTimeInterval(modelMap["escalation_wait_time"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.EscalationWaitTime = EscalationWaitTimeModel
 	}
-	if modelMap["response_wait_time"] != nil && len(modelMap["response_wait_time"].([]interface{})) > 0 && modelMap["response_wait_time"].([]interface{})[0] != nil {
+	if modelMap["response_wait_time"] != nil && len(modelMap["response_wait_time"].([]interface{})) > 0 {
 		ResponseWaitTimeModel, err := ResourceIbmOnboardingCatalogProductMapToSupportTimeInterval(modelMap["response_wait_time"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1259,7 +1298,7 @@ func ResourceIbmOnboardingCatalogProductMapToSupportDetailsItem(modelMap map[str
 		}
 		model.ResponseWaitTime = ResponseWaitTimeModel
 	}
-	if modelMap["availability"] != nil && len(modelMap["availability"].([]interface{})) > 0 && modelMap["availability"].([]interface{})[0] != nil {
+	if modelMap["availability"] != nil && len(modelMap["availability"].([]interface{})) > 0 {
 		AvailabilityModel, err := ResourceIbmOnboardingCatalogProductMapToSupportDetailsItemAvailability(modelMap["availability"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1301,6 +1340,39 @@ func ResourceIbmOnboardingCatalogProductMapToSupportDetailsItemAvailabilityTime(
 	}
 	if modelMap["end_time"] != nil && modelMap["end_time"].(string) != "" {
 		model.EndTime = core.StringPtr(modelMap["end_time"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherComposite(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataOtherComposite, error) {
+	model := &partnercentersellv1.GlobalCatalogProductMetadataOtherComposite{}
+	if modelMap["composite_kind"] != nil && modelMap["composite_kind"].(string) != "" {
+		model.CompositeKind = core.StringPtr(modelMap["composite_kind"].(string))
+	}
+	if modelMap["composite_tag"] != nil && modelMap["composite_tag"].(string) != "" {
+		model.CompositeTag = core.StringPtr(modelMap["composite_tag"].(string))
+	}
+	if modelMap["children"] != nil {
+		children := []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{}
+		for _, childrenItem := range modelMap["children"].([]interface{}) {
+			childrenItemModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherCompositeChild(childrenItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			children = append(children, *childrenItemModel)
+		}
+		model.Children = children
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherCompositeChild(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild, error) {
+	model := &partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{}
+	if modelMap["kind"] != nil && modelMap["kind"].(string) != "" {
+		model.Kind = core.StringPtr(modelMap["kind"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	return model, nil
 }
@@ -1544,6 +1616,13 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToMap(m
 		}
 		modelMap["pc"] = []map[string]interface{}{pcMap}
 	}
+	if model.Composite != nil {
+		compositeMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeToMap(model.Composite)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["composite"] = []map[string]interface{}{compositeMap}
+	}
 	return modelMap, nil
 }
 
@@ -1701,6 +1780,39 @@ func ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeToMap(
 	return modelMap, nil
 }
 
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeToMap(model *partnercentersellv1.GlobalCatalogProductMetadataOtherComposite) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CompositeKind != nil {
+		modelMap["composite_kind"] = *model.CompositeKind
+	}
+	if model.CompositeTag != nil {
+		modelMap["composite_tag"] = *model.CompositeTag
+	}
+	if model.Children != nil {
+		children := []map[string]interface{}{}
+		for _, childrenItem := range model.Children {
+			childrenItemMap, err := ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildToMap(&childrenItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			children = append(children, childrenItemMap)
+		}
+		modelMap["children"] = children
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildToMap(model *partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Kind != nil {
+		modelMap["kind"] = *model.Kind
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
+}
+
 func ResourceIbmOnboardingCatalogProductGlobalCatalogProductPatchAsPatch(patchVals *partnercentersellv1.GlobalCatalogProductPatch, d *schema.ResourceData) map[string]interface{} {
 	patch, _ := patchVals.AsPatch()
 	var path string
@@ -1780,6 +1892,44 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherAsPatch
 		patch["pc"] = nil
 	} else if exists && patch["pc"] != nil {
 		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCAsPatch(patch["pc"].(map[string]interface{}), d)
+	}
+	path = "metadata.0.other.0.composite"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["composite"] = nil
+	} else if exists && patch["composite"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch["composite"].(map[string]interface{}), d)
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+	var path string
+
+	path = "metadata.0.other.0.composite.0.composite_kind"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["composite_kind"] = nil
+	}
+	path = "metadata.0.other.0.composite.0.composite_tag"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["composite_tag"] = nil
+	}
+	path = "metadata.0.other.0.composite.0.children"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["children"] = nil
+	} else if exists && patch["children"] != nil {
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch["children"].([]interface{})[0].(map[string]interface{}), d)
+	}
+}
+
+func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+	var path string
+
+	path = "metadata.0.other.0.composite.0.children.0.kind"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["kind"] = nil
+	}
+	path = "metadata.0.other.0.composite.0.children.0.name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["name"] = nil
 	}
 }
 

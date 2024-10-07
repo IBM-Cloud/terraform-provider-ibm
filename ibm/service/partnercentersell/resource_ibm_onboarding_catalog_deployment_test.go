@@ -157,13 +157,13 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(env string, name string, a
 						en {
 							bullets {
 								description = "description"
-								description_i18n = { "key" = "anything as a string" }
+								description_i18n = { "key" = "inner" }
 								title = "title"
-								title_i18n = { "key" = "anything as a string" }
+								title_i18n = { "key" = "inner" }
 							}
 							media {
 								caption = "caption"
-								caption_i18n = { "key" = "anything as a string" }
+								caption_i18n = { "key" = "inner" }
 								thumbnail = "thumbnail"
 								type = "image"
 								url = "url"
@@ -342,13 +342,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -404,13 +404,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -470,13 +470,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIToMap(t *t
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -509,13 +509,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIToMap(t *t
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -552,13 +552,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsToM
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -576,13 +576,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsToM
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -604,13 +604,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsCon
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -625,13 +625,13 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataUIStringsCon
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -650,18 +650,18 @@ func TestResourceIbmOnboardingCatalogDeploymentCatalogHighlightItemToMap(t *test
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["description"] = "testString"
-		model["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		model["title"] = "testString"
-		model["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(partnercentersellv1.CatalogHighlightItem)
 	model.Description = core.StringPtr("testString")
-	model.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.DescriptionI18n = map[string]string{"key1": "testString"}
 	model.Title = core.StringPtr("testString")
-	model.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.TitleI18n = map[string]string{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentCatalogHighlightItemToMap(model)
 	assert.Nil(t, err)
@@ -672,7 +672,7 @@ func TestResourceIbmOnboardingCatalogDeploymentCatalogProductMediaItemToMap(t *t
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["caption"] = "testString"
-		model["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		model["thumbnail"] = "testString"
 		model["type"] = "image"
 		model["url"] = "testString"
@@ -682,7 +682,7 @@ func TestResourceIbmOnboardingCatalogDeploymentCatalogProductMediaItemToMap(t *t
 
 	model := new(partnercentersellv1.CatalogProductMediaItem)
 	model.Caption = core.StringPtr("testString")
-	model.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.CaptionI18n = map[string]string{"key1": "testString"}
 	model.Thumbnail = core.StringPtr("testString")
 	model.Type = core.StringPtr("image")
 	model.URL = core.StringPtr("testString")
@@ -860,13 +860,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	checkResult := func(result *partnercentersellv1.GlobalCatalogDeploymentMetadata) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -922,13 +922,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -988,13 +988,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(t *t
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUI) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1027,13 +1027,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(t *t
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1070,13 +1070,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStrings) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1094,13 +1094,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1122,13 +1122,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStringsContent) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1143,13 +1143,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1168,18 +1168,18 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(t *test
 	checkResult := func(result *partnercentersellv1.CatalogHighlightItem) {
 		model := new(partnercentersellv1.CatalogHighlightItem)
 		model.Description = core.StringPtr("testString")
-		model.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.DescriptionI18n = map[string]string{"key1": "testString"}
 		model.Title = core.StringPtr("testString")
-		model.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.TitleI18n = map[string]string{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
 
 	model := make(map[string]interface{})
 	model["description"] = "testString"
-	model["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["title"] = "testString"
-	model["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(model)
 	assert.Nil(t, err)
@@ -1190,7 +1190,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(t *t
 	checkResult := func(result *partnercentersellv1.CatalogProductMediaItem) {
 		model := new(partnercentersellv1.CatalogProductMediaItem)
 		model.Caption = core.StringPtr("testString")
-		model.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.CaptionI18n = map[string]string{"key1": "testString"}
 		model.Thumbnail = core.StringPtr("testString")
 		model.Type = core.StringPtr("image")
 		model.URL = core.StringPtr("testString")
@@ -1200,7 +1200,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(t *t
 
 	model := make(map[string]interface{})
 	model["caption"] = "testString"
-	model["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["thumbnail"] = "testString"
 	model["type"] = "image"
 	model["url"] = "testString"

@@ -145,7 +145,7 @@ func ResourceIbmOnboardingProduct() *schema.Resource {
 			"iam_registration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Iam registration identifier.",
+				Description: "IAM registration identifier.",
 			},
 		},
 	}
@@ -318,12 +318,6 @@ func resourceIbmOnboardingProductRead(context context.Context, d *schema.Resourc
 		if err = d.Set("approver_resource_id", onboardingProduct.ApproverResourceID); err != nil {
 			err = fmt.Errorf("Error setting approver_resource_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_product", "read", "set-approver_resource_id").GetDiag()
-		}
-	}
-	if !core.IsNil(onboardingProduct.IamRegistrationID) {
-		if err = d.Set("iam_registration_id", onboardingProduct.IamRegistrationID); err != nil {
-			err = fmt.Errorf("Error setting iam_registration_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_product", "read", "set-iam_registration_id").GetDiag()
 		}
 	}
 

@@ -917,13 +917,13 @@ func ResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(modelMap ma
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["description_i18n"] != nil {
-		model.DescriptionI18n = modelMap["description_i18n"].(map[string]interface{})
+		model.DescriptionI18n = modelMap["description_i18n"].(map[string]string)
 	}
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
 	}
 	if modelMap["title_i18n"] != nil {
-		model.TitleI18n = modelMap["title_i18n"].(map[string]interface{})
+		model.TitleI18n = modelMap["title_i18n"].(map[string]string)
 	}
 	return model, nil
 }
@@ -932,7 +932,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(modelMap
 	model := &partnercentersellv1.CatalogProductMediaItem{}
 	model.Caption = core.StringPtr(modelMap["caption"].(string))
 	if modelMap["caption_i18n"] != nil {
-		model.CaptionI18n = modelMap["caption_i18n"].(map[string]interface{})
+		model.CaptionI18n = modelMap["title_i18n"].(map[string]string)
 	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))

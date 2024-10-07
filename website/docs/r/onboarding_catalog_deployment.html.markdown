@@ -214,5 +214,5 @@ The `id` property can be formed from `product_id`, `catalog_product_id`, `catalo
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment &lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;/&lt;catalog_deployment_id&gt;
+$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id
 </pre>

@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_iam_registration
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_iam_registrations with this resource.
 
 ## Example Usage
@@ -549,5 +547,5 @@ The `name` property can be formed from `product_id`, and `name` in the following
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_iam_registration.onboarding_iam_registration &lt;product_id&gt;/&lt;name&gt;
+$ terraform import ibm_onboarding_iam_registration.onboarding_iam_registration product_id/name;
 </pre>

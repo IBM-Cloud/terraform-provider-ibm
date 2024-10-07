@@ -479,13 +479,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -551,7 +551,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 	globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 	globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 	globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -616,13 +616,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIToMap(t *test
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -683,13 +683,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsToMap(
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -711,13 +711,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsConten
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]string{"anyKey": "anyValue"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]string{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]string{"anyKey": "anyValue"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -732,13 +732,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsConten
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -766,9 +766,9 @@ func TestResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(t *testing
 
 	model := new(partnercentersellv1.CatalogHighlightItem)
 	model.Description = core.StringPtr("testString")
-	model.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 	model.Title = core.StringPtr("testString")
-	model.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(model)
 	assert.Nil(t, err)
@@ -789,7 +789,7 @@ func TestResourceIbmOnboardingCatalogProductCatalogProductMediaItemToMap(t *test
 
 	model := new(partnercentersellv1.CatalogProductMediaItem)
 	model.Caption = core.StringPtr("testString")
-	model.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 	model.Thumbnail = core.StringPtr("testString")
 	model.Type = core.StringPtr("image")
 	model.URL = core.StringPtr("testString")
@@ -929,7 +929,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 	globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 	globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 	globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 	globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1020,7 +1020,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCT
 	globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 	globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 	globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 	globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1105,7 +1105,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCS
 	model.Locations = []string{"testString"}
 	model.Languages = []string{"testString"}
 	model.Process = core.StringPtr("testString")
-	model.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+	model.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 	model.SupportType = core.StringPtr("community")
 	model.SupportEscalation = supportEscalationModel
 	model.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1345,13 +1345,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 	checkResult := func(result *partnercentersellv1.GlobalCatalogProductMetadata) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1417,7 +1417,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 		globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 		globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 		globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 		globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1537,13 +1537,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(t *test
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUI) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1619,13 +1619,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStrings(
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStrings) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1671,13 +1671,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStringsC
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStringsContent) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1717,9 +1717,9 @@ func TestResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(t *testing
 	checkResult := func(result *partnercentersellv1.CatalogHighlightItem) {
 		model := new(partnercentersellv1.CatalogHighlightItem)
 		model.Description = core.StringPtr("testString")
-		model.DescriptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
 		model.Title = core.StringPtr("testString")
-		model.TitleI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.TitleI18n = map[string]string{"anyKey": "anyValue"}
 
 		assert.Equal(t, result, model)
 	}
@@ -1739,7 +1739,7 @@ func TestResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(t *test
 	checkResult := func(result *partnercentersellv1.CatalogProductMediaItem) {
 		model := new(partnercentersellv1.CatalogProductMediaItem)
 		model.Caption = core.StringPtr("testString")
-		model.CaptionI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.CaptionI18n = map[string]string{"anyKey": "anyValue"}
 		model.Thumbnail = core.StringPtr("testString")
 		model.Type = core.StringPtr("image")
 		model.URL = core.StringPtr("testString")
@@ -1844,7 +1844,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 		globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 		globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 		globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1938,7 +1938,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 		globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 		globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 		globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -2026,7 +2026,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		model.Locations = []string{"testString"}
 		model.Languages = []string{"testString"}
 		model.Process = core.StringPtr("testString")
-		model.ProcessI18n = map[string]interface{}{"anyKey": "anyValue"}
+		model.ProcessI18n = map[string]string{"anyKey": "anyValue"}
 		model.SupportType = core.StringPtr("community")
 		model.SupportEscalation = supportEscalationModel
 		model.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
