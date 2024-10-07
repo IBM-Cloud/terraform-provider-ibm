@@ -25,6 +25,10 @@ const (
 	isDefaultRTTransitGatewayIngress    = "route_transit_gateway_ingress"
 	isDefaultRTVPCZoneIngress           = "route_vpc_zone_ingress"
 	isDefaultRTDefault                  = "is_default"
+	isDefaultRTResourceGroup            = "resource_group"
+	isDefaultRTResourceGroupHref        = "href"
+	isDefaultRTResourceGroupId          = "id"
+	isDefaultRTResourceGroupName        = "name"
 )
 
 func DataSourceIBMISVPCDefaultRoutingTable() *schema.Resource {
@@ -134,6 +138,30 @@ func DataSourceIBMISVPCDefaultRoutingTable() *schema.Resource {
 					},
 				},
 			},
+			isDefaultRTResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this volume.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isDefaultRTResourceGroupHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group.",
+						},
+						isDefaultRTResourceGroupId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group.",
+						},
+						isDefaultRTResourceGroupName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -188,6 +216,12 @@ func dataSourceIBMISVPCDefaultRoutingTableGet(d *schema.ResourceData, meta inter
 		}
 	}
 	d.Set(isDefaultRoutingTableRoutesList, routesInfo)
+	resourceGroupList := []map[string]interface{}{}
+	if result.ResourceGroup != nil {
+		resourceGroupMap := routingTableResourceGroupToMap(*result.ResourceGroup)
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+	}
+	d.Set(isDefaultRTResourceGroup, resourceGroupList)
 	d.Set(isDefaultRTVpcID, vpcID)
 	d.SetId(*result.ID)
 	return nil

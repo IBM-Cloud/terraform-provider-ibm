@@ -34,6 +34,10 @@ const (
 	rtNextHop                    = "next_hop"
 	rtZone                       = "zone"
 	rtOrigin                     = "origin"
+	rtResourceGroup              = "resource_group"
+	rtResourceGroupHref          = "href"
+	rtResourceGroupId            = "id"
+	rtResourceGroupName          = "name"
 )
 
 func ResourceIBMISVPCRoutingTable() *schema.Resource {
@@ -158,6 +162,30 @@ func ResourceIBMISVPCRoutingTable() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Subnet ID",
+						},
+					},
+				},
+			},
+			rtResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this volume.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rtResourceGroupHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group.",
+						},
+						rtResourceGroupId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group.",
+						},
+						rtResourceGroupName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group.",
 						},
 					},
 				},
@@ -313,7 +341,30 @@ func resourceIBMISVPCRoutingTableRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set(rtSubnets, subnets)
 
+	resourceGroupList := []map[string]interface{}{}
+	if routeTable.ResourceGroup != nil {
+		resourceGroupMap := routingTableResourceGroupToMap(*routeTable.ResourceGroup)
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+	}
+	d.Set(rtResourceGroup, resourceGroupList)
+
 	return nil
+}
+
+func routingTableResourceGroupToMap(resourceGroupItem vpcv1.ResourceGroupReference) (resourceGroupMap map[string]interface{}) {
+	resourceGroupMap = map[string]interface{}{}
+
+	if resourceGroupItem.Href != nil {
+		resourceGroupMap[isVolumesResourceGroupHref] = resourceGroupItem.Href
+	}
+	if resourceGroupItem.ID != nil {
+		resourceGroupMap[isVolumesResourceGroupId] = resourceGroupItem.ID
+	}
+	if resourceGroupItem.Name != nil {
+		resourceGroupMap[isVolumesResourceGroupName] = resourceGroupItem.Name
+	}
+
+	return resourceGroupMap
 }
 
 func resourceIBMISVPCRoutingTableUpdate(d *schema.ResourceData, meta interface{}) error {

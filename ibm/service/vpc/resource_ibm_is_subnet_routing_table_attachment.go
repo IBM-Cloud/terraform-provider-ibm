@@ -129,6 +129,30 @@ func ResourceIBMISSubnetRoutingTableAttachment() *schema.Resource {
 					},
 				},
 			},
+			rtResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this volume.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rtResourceGroupHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group.",
+						},
+						rtResourceGroupId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group.",
+						},
+						rtResourceGroupName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -224,6 +248,14 @@ func resourceIBMISSubnetRoutingTableAttachmentRead(context context.Context, d *s
 		routes = append(routes, route)
 	}
 	d.Set(rtRoutes, routes)
+
+	resourceGroupList := []map[string]interface{}{}
+	if subRT.ResourceGroup != nil {
+		resourceGroupMap := routingTableResourceGroupToMap(*subRT.ResourceGroup)
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+	}
+	d.Set(rtResourceGroup, resourceGroupList)
+
 	return nil
 }
 

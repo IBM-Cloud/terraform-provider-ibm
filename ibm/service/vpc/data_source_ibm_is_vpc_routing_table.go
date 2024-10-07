@@ -198,6 +198,30 @@ func DataSourceIBMIBMIsVPCRoutingTable() *schema.Resource {
 					},
 				},
 			},
+			rtResourceGroup: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The resource group for this volume.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						rtResourceGroupHref: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this resource group.",
+						},
+						rtResourceGroupId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this resource group.",
+						},
+						rtResourceGroupName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user-defined name for this resource group.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -346,6 +370,15 @@ func dataSourceIBMIBMIsVPCRoutingTableRead(context context.Context, d *schema.Re
 	}
 	if err = d.Set(rtSubnets, subnets); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subnets %s", err))
+	}
+
+	resourceGroupList := []map[string]interface{}{}
+	if routingTable.ResourceGroup != nil {
+		resourceGroupMap := routingTableResourceGroupToMap(*routingTable.ResourceGroup)
+		resourceGroupList = append(resourceGroupList, resourceGroupMap)
+	}
+	if err = d.Set(rtResourceGroup, resourceGroupList); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource group %s", err))
 	}
 
 	return nil
