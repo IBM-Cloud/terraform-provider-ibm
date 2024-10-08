@@ -334,13 +334,10 @@ func parseBucketReplId(id string, info string) string {
 	return parseBucketId(bucketCRN, info)
 }
 
-func getCosEndpointType(bucketLocation string, endpointType string, test bool) string {
+func getCosEndpointType(bucketLocation string, endpointType string) string {
 
 	if bucketLocation != "" {
 		hostUrl := "cloud-object-storage.appdomain.cloud"
-		if test {
-			hostUrl = "cloud-object-storage.test.appdomain.cloud"
-		}
 		switch endpointType {
 		case "public":
 			return fmt.Sprintf("s3.%s.%s", bucketLocation, hostUrl)
@@ -363,7 +360,7 @@ func getS3ClientSession(bxSession *bxsession.Session, bucketLocation string, end
 	if endpointType == "direct" {
 		visibility = "private"
 	}
-	apiEndpoint := getCosEndpointType(bucketLocation, endpointType, false)
+	apiEndpoint := getCosEndpointType(bucketLocation, endpointType)
 	apiEndpoint = conns.FileFallBack(bxSession.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bucketLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
