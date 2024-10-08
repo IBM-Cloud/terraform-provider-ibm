@@ -211,13 +211,13 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "Import an existing WorkerPool from the cluster, instead of creating a new",
+				Description:      "Import an existing workerpool from the cluster instead of creating a new",
 			},
 
 			"orphan_on_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Orphan the Worker Pool resource, instead of deleting it",
+				Description: "Orphan the workerpool resource instead of deleting it",
 			},
 
 			"autoscale_enabled": {
