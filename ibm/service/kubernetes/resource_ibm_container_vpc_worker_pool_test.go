@@ -75,7 +75,7 @@ func TestAccIBMContainerVpcClusterWorkerPoolBasic(t *testing.T) {
 				ResourceName:            "ibm_container_vpc_worker_pool.test_pool",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"orphan_resource_on_delete", "import_on_create"},
+				ImportStateVerifyIgnore: []string{"orphan_on_delete", "import_on_create"},
 			},
 			{
 				Config:  testAccCheckIBMVpcContainerWorkerPoolUpdate(name),
@@ -349,7 +349,7 @@ func testAccCheckIBMVpcContainerWorkerPoolUpdate(cluster_name string) string {
 	  depends_on = [
 		  ibm_container_vpc_worker_pool.default_pool
 	  ]
-	  orphan_resource_on_delete = "true"
+	  orphan_on_delete = "true"
 	}
 		`, acc.IksClusterVpcID, acc.IksClusterSubnetID, cluster_name, workerpool_name)
 }

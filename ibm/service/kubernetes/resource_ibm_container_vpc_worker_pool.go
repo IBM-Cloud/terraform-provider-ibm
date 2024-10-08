@@ -214,7 +214,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Import an existing WorkerPool from the cluster, instead of creating a new",
 			},
 
-			"orphan_resource_on_delete": {
+			"orphan_on_delete": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Orphan the Worker Pool resource, instead of deleting it",
@@ -722,7 +722,7 @@ func resourceIBMContainerVpcWorkerPoolDelete(d *schema.ResourceData, meta interf
 		return err
 	}
 	var orphan_resource bool = false
-	if orod, ok := d.GetOk("orphan_resource_on_delete"); ok {
+	if orod, ok := d.GetOk("orphan_on_delete"); ok {
 		orphan_resource = orod.(bool)
 	}
 
