@@ -876,13 +876,13 @@ func ResourceIbmOnboardingCatalogPlanMapToCatalogHighlightItem(modelMap map[stri
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["description_i18n"] != nil {
-		// TODO: handle DescriptionI18n, map with entry type 'string'
+		model.DescriptionI18n = modelMap["description_i18n"].(map[string]string)
 	}
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
 	}
 	if modelMap["title_i18n"] != nil {
-		// TODO: handle TitleI18n, map with entry type 'string'
+		model.DescriptionI18n = modelMap["title_i18n"].(map[string]string)
 	}
 	return model, nil
 }
