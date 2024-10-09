@@ -6,6 +6,7 @@ package schematics
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -267,7 +268,9 @@ func DataSourceIbmSchematicsPolicy() *schema.Resource {
 func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getPolicyOptions := &schematicsv1.GetPolicyOptions{}
@@ -302,7 +305,9 @@ func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resour
 	if policy.State != nil {
 		modelMap, err := dataSourceIbmSchematicsPolicyUserStateToMap(policy.State)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		state = append(state, modelMap)
 	}
@@ -323,7 +328,9 @@ func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resour
 	if policy.Target != nil {
 		modelMap, err := dataSourceIbmSchematicsPolicyPolicyObjectsToMap(policy.Target)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		target = append(target, modelMap)
 	}
@@ -335,7 +342,9 @@ func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resour
 	if policy.Parameter != nil {
 		modelMap, err := dataSourceIbmSchematicsPolicyPolicyParameterToMap(policy.Parameter)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		parameter = append(parameter, modelMap)
 	}
@@ -360,7 +369,9 @@ func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resour
 		for _, modelItem := range policy.ScopedResources {
 			modelMap, err := dataSourceIbmSchematicsPolicyScopedResourceToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			scopedResources = append(scopedResources, modelMap)
 		}

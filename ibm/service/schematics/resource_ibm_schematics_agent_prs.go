@@ -6,6 +6,7 @@ package schematics
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -78,11 +79,15 @@ func ResourceIbmSchematicsAgentPrs() *schema.Resource {
 func resourceIbmSchematicsAgentPrsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	session, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	iamAccessToken := session.Config.IAMAccessToken
 	iamRefreshToken := session.Config.IAMRefreshToken
@@ -112,12 +117,16 @@ func resourceIbmSchematicsAgentPrsCreate(context context.Context, d *schema.Reso
 func resourceIbmSchematicsAgentPrsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
@@ -169,11 +178,15 @@ func resourceIbmSchematicsAgentPrsRead(context context.Context, d *schema.Resour
 func resourceIbmSchematicsAgentPrsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	session, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	iamAccessToken := session.Config.IAMAccessToken
 	iamRefreshToken := session.Config.IAMRefreshToken
@@ -187,7 +200,9 @@ func resourceIbmSchematicsAgentPrsUpdate(context context.Context, d *schema.Reso
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	prsAgentJobOptions.SetAgentID(parts[0])
