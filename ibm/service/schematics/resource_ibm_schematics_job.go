@@ -3935,22 +3935,32 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("command_object", job.CommandObject); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_object: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("command_object_id", job.CommandObjectID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_object_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("command_name", job.CommandName); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_name: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk("command_parameter"); ok {
 		if err = d.Set("command_parameter", d.Get("command_parameter").(string)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_parameter: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.CommandOptions != nil {
 		if err = d.Set("command_options", job.CommandOptions); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_options: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.Inputs != nil {
@@ -3960,7 +3970,9 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 			jobInputs = append(jobInputs, jobInputsItemMap)
 		}
 		if err = d.Set("job_inputs", jobInputs); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting job_inputs: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.Settings != nil {
@@ -3970,76 +3982,114 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 			jobEnvSettings = append(jobEnvSettings, jobEnvSettingsItemMap)
 		}
 		if err = d.Set("job_env_settings", jobEnvSettings); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting job_env_settings: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.Tags != nil {
 		if err = d.Set("tags", job.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting tags: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("location", job.Location); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting location: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if job.Status != nil {
 		statusMap := resourceIBMSchematicsJobJobStatusToMap(*job.Status)
 		if err = d.Set("status", []map[string]interface{}{statusMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.Data != nil {
 		dataMap := resourceIBMSchematicsJobJobDataToMap(*job.Data)
 		if err = d.Set("data", []map[string]interface{}{dataMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting data: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.Bastion != nil {
 		bastionMap := resourceIBMSchematicsJobBastionResourceDefinitionToMap(*job.Bastion)
 		if err = d.Set("bastion", []map[string]interface{}{bastionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting bastion: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if job.LogSummary != nil {
 		logSummaryMap := resourceIBMSchematicsJobJobLogSummaryToMap(*job.LogSummary)
 		if err = d.Set("log_summary", []map[string]interface{}{logSummaryMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting log_summary: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("name", job.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("description", job.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("resource_group", job.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("submitted_at", flex.DateTimeToString(job.SubmittedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting submitted_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("submitted_by", job.SubmittedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting submitted_by: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("start_at", flex.DateTimeToString(job.StartAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting start_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("end_at", flex.DateTimeToString(job.EndAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting end_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("duration", job.Duration); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting duration: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("log_store_url", job.LogStoreURL); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting log_store_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("state_store_url", job.StateStoreURL); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting state_store_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("results_url", job.ResultsURL); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting results_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(job.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil

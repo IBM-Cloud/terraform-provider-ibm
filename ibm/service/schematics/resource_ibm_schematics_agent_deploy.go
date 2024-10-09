@@ -128,7 +128,9 @@ func resourceIbmSchematicsAgentDeployCreate(context context.Context, d *schema.R
 
 	_, err = isWaitForAgentAvailable(context, schematicsClient, *deployAgentJobOptions.AgentID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Waiting for agent to be available failed %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 	}
 
 	return resourceIbmSchematicsAgentDeployRead(context, d, meta)
@@ -209,28 +211,44 @@ func resourceIbmSchematicsAgentDeployRead(context context.Context, d *schema.Res
 	if agentData.RecentDeployJob != nil {
 
 		if err = d.Set("agent_id", parts[0]); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting agent_id: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("job_id", agentData.RecentDeployJob.JobID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting job_id: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("updated_at", flex.DateTimeToString(agentData.RecentDeployJob.UpdatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("updated_by", agentData.RecentDeployJob.UpdatedBy); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("agent_version", agentData.Version); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting agent_version: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("status_code", agentData.RecentDeployJob.StatusCode); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting status_code: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("status_message", agentData.RecentDeployJob.StatusMessage); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting status_message: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 		if err = d.Set("log_url", agentData.RecentDeployJob.LogURL); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting log_url: %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 
 	}
@@ -271,7 +289,9 @@ func resourceIbmSchematicsAgentDeployUpdate(context context.Context, d *schema.R
 	hasChange := false
 
 	if d.HasChange("agent_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 			" The resource must be re-created to update this property.", "agent_id"))
 	}
 	if d.HasChange("force") {
@@ -291,7 +311,9 @@ func resourceIbmSchematicsAgentDeployUpdate(context context.Context, d *schema.R
 
 		_, err = isWaitForAgentAvailable(context, schematicsClient, parts[0], d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Waiting for agent to be available failed %s", err))
+tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+return tfErr.GetDiag()
 		}
 	}
 

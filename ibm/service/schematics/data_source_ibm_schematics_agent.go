@@ -559,31 +559,45 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 	d.SetId(fmt.Sprintf("%s", *getAgentDataOptions.AgentID))
 
 	if err = d.Set("name", agentData.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("description", agentData.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("resource_group", agentData.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("version", agentData.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("schematics_location", agentData.SchematicsLocation); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting schematics_location: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("agent_location", agentData.AgentLocation); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agent_location: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if agentData.Tags != nil {
 		if err = d.Set("tags", agentData.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	agentInfrastructure := []map[string]interface{}{}
@@ -597,7 +611,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		agentInfrastructure = append(agentInfrastructure, modelMap)
 	}
 	if err = d.Set("agent_infrastructure", agentInfrastructure); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agent_infrastructure %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	agentMetadata := []map[string]interface{}{}
@@ -613,7 +629,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		}
 	}
 	if err = d.Set("agent_metadata", agentMetadata); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agent_metadata %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	agentInputs := []map[string]interface{}{}
@@ -629,7 +647,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		}
 	}
 	if err = d.Set("agent_inputs", agentInputs); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agent_inputs %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	userState := []map[string]interface{}{}
@@ -643,31 +663,45 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		userState = append(userState, modelMap)
 	}
 	if err = d.Set("user_state", userState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting user_state %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("agent_crn", agentData.AgentCrn); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agent_crn: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("id", agentData.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(agentData.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("creation_by", agentData.CreationBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting creation_by: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(agentData.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("updated_by", agentData.UpdatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	systemState := []map[string]interface{}{}
@@ -681,7 +715,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		systemState = append(systemState, modelMap)
 	}
 	if err = d.Set("system_state", systemState); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting system_state %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	agentKpi := []map[string]interface{}{}
@@ -695,7 +731,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		agentKpi = append(agentKpi, modelMap)
 	}
 	if err = d.Set("agent_kpi", agentKpi); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agent_kpi %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	recentPrsJob := []map[string]interface{}{}
@@ -709,7 +747,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		recentPrsJob = append(recentPrsJob, modelMap)
 	}
 	if err = d.Set("recent_prs_job", recentPrsJob); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting recent_prs_job %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	recentDeployJob := []map[string]interface{}{}
@@ -723,7 +763,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		recentDeployJob = append(recentDeployJob, modelMap)
 	}
 	if err = d.Set("recent_deploy_job", recentDeployJob); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting recent_deploy_job %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	recentHealthJob := []map[string]interface{}{}
@@ -737,7 +779,9 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 		recentHealthJob = append(recentHealthJob, modelMap)
 	}
 	if err = d.Set("recent_health_job", recentHealthJob); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting recent_health_job %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
