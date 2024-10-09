@@ -624,7 +624,9 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 	agentData, response, err := schematicsClient.CreateAgentDataWithContext(context, createAgentDataOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreateAgentDataWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*agentData.ID)
@@ -653,7 +655,9 @@ func resourceIbmSchematicsAgentRead(context context.Context, d *schema.ResourceD
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", agentData.Name); err != nil {
@@ -871,7 +875,9 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if agentData.Name != nil {
 		updateAgentDataOptions.Name = agentData.Name
@@ -977,7 +983,9 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 		_, response, err := schematicsClient.UpdateAgentDataWithContext(context, updateAgentDataOptions)
 		if err != nil {
 
-			return diag.FromErr(fmt.Errorf("UpdateAgentDataWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 

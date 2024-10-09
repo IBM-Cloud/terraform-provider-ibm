@@ -136,7 +136,9 @@ func dataSourceIBMSchematicsResourceQueryRead(context context.Context, d *schema
 	resourceQueryRecord, response, err := schematicsClient.GetResourcesQueryWithContext(context, getResourcesQueryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("GetResourcesQueryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*getResourcesQueryOptions.QueryID)

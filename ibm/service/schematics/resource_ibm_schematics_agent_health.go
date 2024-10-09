@@ -107,7 +107,9 @@ func resourceIbmSchematicsAgentHealthCreate(context context.Context, d *schema.R
 	agentHealthJob, response, err := schematicsClient.HealthCheckAgentJobWithContext(context, healthCheckAgentJobOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("HealthCheckAgentJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *healthCheckAgentJobOptions.AgentID, *agentHealthJob.JobID))
@@ -143,7 +145,9 @@ func resourceIbmSchematicsAgentHealthRead(context context.Context, d *schema.Res
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if agentData.RecentHealthJob != nil {
@@ -225,7 +229,9 @@ func resourceIbmSchematicsAgentHealthUpdate(context context.Context, d *schema.R
 		agentHealthJob, response, err := schematicsClient.HealthCheckAgentJobWithContext(context, healthCheckAgentJobOptions)
 		if err != nil {
 
-			return diag.FromErr(fmt.Errorf("HealthCheckAgentJobWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *healthCheckAgentJobOptions.AgentID, *agentHealthJob.JobID))
 	}

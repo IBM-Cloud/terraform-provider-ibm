@@ -1080,7 +1080,9 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 	action, response, err := schematicsClient.CreateActionWithContext(context, createActionOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreateActionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*action.ID)
@@ -1357,7 +1359,9 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetActionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("name", action.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
@@ -1914,7 +1918,9 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		_, response, err := schematicsClient.UpdateActionWithContext(context, updateActionOptions)
 		if err != nil {
 
-			return diag.FromErr(fmt.Errorf("UpdateActionWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -1941,7 +1947,9 @@ func resourceIBMSchematicsActionDelete(context context.Context, d *schema.Resour
 	response, err := schematicsClient.DeleteActionWithContext(context, deleteActionOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("DeleteActionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

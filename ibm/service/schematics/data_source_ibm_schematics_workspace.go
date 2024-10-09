@@ -657,7 +657,9 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	workspaceResponse, response, err := schematicsClient.GetWorkspaceWithContext(context, getWorkspaceOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("GetWorkspaceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*getWorkspaceOptions.WID)

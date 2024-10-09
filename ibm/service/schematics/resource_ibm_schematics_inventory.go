@@ -147,7 +147,9 @@ func resourceIBMSchematicsInventoryCreate(context context.Context, d *schema.Res
 	inventoryResourceRecord, response, err := schematicsClient.CreateInventoryWithContext(context, createInventoryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreateInventoryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*inventoryResourceRecord.ID)
@@ -180,7 +182,9 @@ func resourceIBMSchematicsInventoryRead(context context.Context, d *schema.Resou
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetInventoryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("name", inventoryResourceRecord.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
@@ -272,7 +276,9 @@ func resourceIBMSchematicsInventoryUpdate(context context.Context, d *schema.Res
 		_, response, err := schematicsClient.ReplaceInventoryWithContext(context, updateInventoryOptions)
 		if err != nil {
 
-			return diag.FromErr(fmt.Errorf("UpdateInventoryWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -299,7 +305,9 @@ func resourceIBMSchematicsInventoryDelete(context context.Context, d *schema.Res
 	response, err := schematicsClient.DeleteInventoryWithContext(context, deleteInventoryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("DeleteInventoryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

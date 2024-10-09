@@ -280,7 +280,9 @@ func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resour
 	policy, response, err := schematicsClient.GetPolicyWithContext(context, getPolicyOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("GetPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getPolicyOptions.PolicyID))

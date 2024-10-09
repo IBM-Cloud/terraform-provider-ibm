@@ -111,7 +111,9 @@ func dataSourceIBMSchematicsInventoryRead(context context.Context, d *schema.Res
 	inventoryResourceRecord, response, err := schematicsClient.GetInventoryWithContext(context, getInventoryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("GetInventoryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*getInventoryOptions.InventoryID)

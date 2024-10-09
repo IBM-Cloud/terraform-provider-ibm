@@ -169,7 +169,9 @@ func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema
 	resourceQueryRecord, response, err := schematicsClient.CreateResourceQueryWithContext(context, createResourceQueryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreateResourceQueryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*resourceQueryRecord.ID)
@@ -242,7 +244,9 @@ func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.R
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetResourcesQueryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("type", resourceQueryRecord.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
@@ -349,7 +353,9 @@ func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema
 	_, response, err := schematicsClient.ReplaceResourcesQueryWithContext(context, replaceResourcesQueryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("ReplaceResourcesQueryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMSchematicsResourceQueryRead(context, d, meta)
@@ -375,7 +381,9 @@ func resourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema
 	response, err := schematicsClient.DeleteResourcesQueryWithContext(context, deleteResourcesQueryOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("DeleteResourcesQueryWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

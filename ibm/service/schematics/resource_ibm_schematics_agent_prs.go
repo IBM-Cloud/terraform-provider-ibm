@@ -106,7 +106,9 @@ func resourceIbmSchematicsAgentPrsCreate(context context.Context, d *schema.Reso
 	agentPrsJob, response, err := schematicsClient.PrsAgentJobWithContext(context, prsAgentJobOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("PrsAgentJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *prsAgentJobOptions.AgentID, *agentPrsJob.JobID))
@@ -142,7 +144,9 @@ func resourceIbmSchematicsAgentPrsRead(context context.Context, d *schema.Resour
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if agentData.RecentPrsJob != nil {
 
@@ -222,7 +226,9 @@ func resourceIbmSchematicsAgentPrsUpdate(context context.Context, d *schema.Reso
 		agentPrsJob, response, err := schematicsClient.PrsAgentJobWithContext(context, prsAgentJobOptions)
 		if err != nil {
 
-			return diag.FromErr(fmt.Errorf("PrsAgentJobWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *prsAgentJobOptions.AgentID, *agentPrsJob.JobID))
 	}
