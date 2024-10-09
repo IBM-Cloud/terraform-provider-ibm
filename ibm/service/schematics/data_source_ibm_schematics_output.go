@@ -6,6 +6,7 @@ package schematics
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -75,7 +76,8 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 
 	outputValuesList, response, err := schematicsClient.GetWorkspaceOutputs(getWorkspaceOutputsOptions)
 	if err != nil {
-
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return err
 	}
 
