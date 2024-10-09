@@ -267,7 +267,7 @@ resource "ibm_baas_protection_group" "baas_protection_group_instance" {
 | is_paused | Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted. | `bool` | false |
 | environment | Specifies the environment of the Protection Group. | `string` | true |
 | advanced_configs | Specifies the advanced configuration for a protection job. | `list()` | false |
-| physical_params |  | `` | false |
+| physical_params | Specifies the parameters for Physical object. | `` | false |
 | mssql_params | Specifies the parameters specific to MSSQL Protection Group. | `` | false |
 
 #### Outputs
@@ -849,7 +849,7 @@ data "ibm_baas_protection_group" "baas_protection_group_instance" {
 | invalid_entities | Specifies the Information about invalid entities. An entity will be considered invalid if it is part of an active protection group but has lost compatibility for the given backup type. |
 | num_protected_objects | Specifies the number of protected objects of the Protection Group. |
 | advanced_configs | Specifies the advanced configuration for a protection job. |
-| physical_params |  |
+| physical_params | Specifies the parameters for Physical object. |
 | mssql_params | Specifies the parameters specific to MSSQL Protection Group. |
 
 ### Data source: ibm_baas_protection_groups
