@@ -74,7 +74,7 @@ resource "ibm_baas_connection_registration_token" "baas_connection_registration_
 
 | Name | Description |
 |------|-------------|
-| registration_token |  |
+| registration_token | Specifies a token that can be used to register a connector against this connection |
 
 ### Resource: ibm_baas_agent_upgrade_task
 
