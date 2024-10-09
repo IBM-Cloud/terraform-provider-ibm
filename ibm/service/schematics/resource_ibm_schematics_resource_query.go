@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -166,7 +165,7 @@ func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema
 
 	resourceQueryRecord, response, err := schematicsClient.CreateResourceQueryWithContext(context, createResourceQueryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateResourceQueryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("CreateResourceQueryWithContext failed %s\n%s", err, response))
 	}
 
@@ -237,7 +236,7 @@ func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.R
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetResourcesQueryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetResourcesQueryWithContext failed %s\n%s", err, response))
 	}
 	if err = d.Set("type", resourceQueryRecord.Type); err != nil {
@@ -342,7 +341,7 @@ func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema
 
 	_, response, err := schematicsClient.ReplaceResourcesQueryWithContext(context, replaceResourcesQueryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ReplaceResourcesQueryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("ReplaceResourcesQueryWithContext failed %s\n%s", err, response))
 	}
 
@@ -366,7 +365,7 @@ func resourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema
 
 	response, err := schematicsClient.DeleteResourcesQueryWithContext(context, deleteResourcesQueryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteResourcesQueryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("DeleteResourcesQueryWithContext failed %s\n%s", err, response))
 	}
 

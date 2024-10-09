@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -349,7 +348,7 @@ func resourceIbmSchematicsPolicyCreate(context context.Context, d *schema.Resour
 
 	policy, response, err := schematicsClient.CreatePolicyWithContext(context, createPolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreatePolicyWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("CreatePolicyWithContext failed %s\n%s", err, response))
 	}
 
@@ -374,7 +373,7 @@ func resourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resource
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetPolicyWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetPolicyWithContext failed %s\n%s", err, response))
 	}
 
@@ -521,7 +520,7 @@ func resourceIbmSchematicsPolicyUpdate(context context.Context, d *schema.Resour
 	if hasChange {
 		_, response, err := schematicsClient.UpdatePolicyWithContext(context, updatePolicyOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdatePolicyWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("UpdatePolicyWithContext failed %s\n%s", err, response))
 		}
 	}
@@ -541,7 +540,7 @@ func resourceIbmSchematicsPolicyDelete(context context.Context, d *schema.Resour
 
 	response, err := schematicsClient.DeletePolicyWithContext(context, deletePolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeletePolicyWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("DeletePolicyWithContext failed %s\n%s", err, response))
 	}
 

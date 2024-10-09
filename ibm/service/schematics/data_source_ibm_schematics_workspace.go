@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -654,7 +653,7 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 
 	workspaceResponse, response, err := schematicsClient.GetWorkspaceWithContext(context, getWorkspaceOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetWorkspaceWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
@@ -863,7 +862,7 @@ func dataSourceWorkspaceResponseCatalogRefToMap(catalogRefItem schematicsv1.Cata
 	if catalogRefItem.ServiceExtensions != nil {
 		serviceExtensionsByte, err := json.MarshalIndent(catalogRefItem.ServiceExtensions, "", "")
 		if err != nil {
-			log.Printf("[DEBUG] Marshelling of service extensions failed %s", err)
+
 		}
 		serviceExtensionsJSON := string(serviceExtensionsByte[:])
 		catalogRefMap["service_extensions"] = serviceExtensionsJSON

@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -102,7 +101,7 @@ func resourceIbmSchematicsAgentHealthCreate(context context.Context, d *schema.R
 
 	agentHealthJob, response, err := schematicsClient.HealthCheckAgentJobWithContext(context, healthCheckAgentJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] HealthCheckAgentJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("HealthCheckAgentJobWithContext failed %s\n%s", err, response))
 	}
 
@@ -134,7 +133,7 @@ func resourceIbmSchematicsAgentHealthRead(context context.Context, d *schema.Res
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
 	}
 
@@ -210,7 +209,7 @@ func resourceIbmSchematicsAgentHealthUpdate(context context.Context, d *schema.R
 	if hasChange {
 		agentHealthJob, response, err := schematicsClient.HealthCheckAgentJobWithContext(context, healthCheckAgentJobOptions)
 		if err != nil {
-			log.Printf("[DEBUG] HealthCheckAgentJobWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("HealthCheckAgentJobWithContext failed %s\n%s", err, response))
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *healthCheckAgentJobOptions.AgentID, *agentHealthJob.JobID))

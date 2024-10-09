@@ -613,7 +613,7 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 
 	agentData, response, err := schematicsClient.CreateAgentDataWithContext(context, createAgentDataOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("CreateAgentDataWithContext failed %s\n%s", err, response))
 	}
 
@@ -640,7 +640,7 @@ func resourceIbmSchematicsAgentRead(context context.Context, d *schema.ResourceD
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
 	}
 
@@ -836,7 +836,7 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
 	}
 	if agentData.Name != nil {
@@ -927,18 +927,18 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 
 		response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] DeleteAgentResourcesWithContext failed %s\n%s", err, response)
+
 		} else {
 			_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
-				log.Printf("[DEBUG] waiting for agent deploy resources to be destroyed has failed %s", err)
+
 			}
 		}
 	}
 	if hasChange {
 		_, response, err := schematicsClient.UpdateAgentDataWithContext(context, updateAgentDataOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateAgentDataWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("UpdateAgentDataWithContext failed %s\n%s", err, response))
 		}
 	}
@@ -979,11 +979,11 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 
 	response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteAgentResourcesWithContext failed %s\n%s", err, response)
+
 	} else {
 		_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			log.Printf("[DEBUG] waiting for agent deploy resources to be destroyed has failed %s", err)
+
 		}
 	}
 
@@ -991,7 +991,7 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 
 	deleteresponse, err := schematicsClient.DeleteAgentDataWithContext(context, deleteAgentDataOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteAgentDataWithContext failed %s\n%s", err, deleteresponse)
+
 		return diag.FromErr(fmt.Errorf("DeleteAgentDataWithContext failed %s\n%s", err, deleteresponse))
 	}
 

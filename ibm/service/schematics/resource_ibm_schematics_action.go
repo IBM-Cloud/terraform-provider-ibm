@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -1077,7 +1076,7 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 
 	action, response, err := schematicsClient.CreateActionWithContext(context, createActionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateActionWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("CreateActionWithContext failed %s\n%s", err, response))
 	}
 
@@ -1352,7 +1351,7 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetActionWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetActionWithContext failed %s\n%s", err, response))
 	}
 	if err = d.Set("name", action.Name); err != nil {
@@ -1907,7 +1906,7 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 	if hasChange {
 		_, response, err := schematicsClient.UpdateActionWithContext(context, updateActionOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateActionWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("UpdateActionWithContext failed %s\n%s", err, response))
 		}
 	}
@@ -1932,7 +1931,7 @@ func resourceIBMSchematicsActionDelete(context context.Context, d *schema.Resour
 
 	response, err := schematicsClient.DeleteActionWithContext(context, deleteActionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteActionWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("DeleteActionWithContext failed %s\n%s", err, response))
 	}
 

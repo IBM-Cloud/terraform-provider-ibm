@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -152,7 +151,7 @@ func dataSourceIbmSchematicsPoliciesRead(context context.Context, d *schema.Reso
 
 	policyList, response, err := schematicsClient.ListPolicyWithContext(context, listPolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListPolicyWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("ListPolicyWithContext failed %s\n%s", err, response))
 	}
 
@@ -178,7 +177,7 @@ func dataSourceIbmSchematicsPoliciesRead(context context.Context, d *schema.Reso
 
 	if suppliedFilter {
 		if len(policyList.Policies) == 0 {
-			log.Printf("[DEBUG] no Policies found with policyKind %s\n", policyKind)
+
 			// return diag.FromErr(fmt.Errorf("no Policies found with policyKind %s", policyKind))
 		}
 		d.SetId(policyKind)

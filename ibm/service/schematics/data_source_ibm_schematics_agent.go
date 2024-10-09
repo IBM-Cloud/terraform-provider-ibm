@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -548,7 +547,7 @@ func dataSourceIbmSchematicsAgentRead(context context.Context, d *schema.Resourc
 
 	agentData, response, err := schematicsClient.GetAgentDataWithContext(context, getAgentDataOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
 	}
 

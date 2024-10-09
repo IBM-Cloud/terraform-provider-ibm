@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -144,7 +143,7 @@ func resourceIBMSchematicsInventoryCreate(context context.Context, d *schema.Res
 
 	inventoryResourceRecord, response, err := schematicsClient.CreateInventoryWithContext(context, createInventoryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateInventoryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("CreateInventoryWithContext failed %s\n%s", err, response))
 	}
 
@@ -175,7 +174,7 @@ func resourceIBMSchematicsInventoryRead(context context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetInventoryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetInventoryWithContext failed %s\n%s", err, response))
 	}
 	if err = d.Set("name", inventoryResourceRecord.Name); err != nil {
@@ -265,7 +264,7 @@ func resourceIBMSchematicsInventoryUpdate(context context.Context, d *schema.Res
 	if hasChange {
 		_, response, err := schematicsClient.ReplaceInventoryWithContext(context, updateInventoryOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateInventoryWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("UpdateInventoryWithContext failed %s\n%s", err, response))
 		}
 	}
@@ -290,7 +289,7 @@ func resourceIBMSchematicsInventoryDelete(context context.Context, d *schema.Res
 
 	response, err := schematicsClient.DeleteInventoryWithContext(context, deleteInventoryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteInventoryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("DeleteInventoryWithContext failed %s\n%s", err, response))
 	}
 
