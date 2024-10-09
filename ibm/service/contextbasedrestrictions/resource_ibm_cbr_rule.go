@@ -328,9 +328,7 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	d.SetId(*rule.ID)
 
 	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("\"Error setting rule's resource data %s", err.Error()), "ibm_cbr_rule", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "rule-set-data").GetDiag()
 	}
 
 	return nil
@@ -360,9 +358,7 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("\"resourceIBMCbrRuleSetData failed: %s", err.Error()), "ibm_cbr_rule", "set_data")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "read", "rule-set-data").GetDiag()
 	}
 
 	return nil
@@ -432,9 +428,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("\"Error setting rule's resource data %s", err.Error()), "ibm_cbr_rule", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "rule-set-data").GetDiag()
 	}
 
 	return nil
