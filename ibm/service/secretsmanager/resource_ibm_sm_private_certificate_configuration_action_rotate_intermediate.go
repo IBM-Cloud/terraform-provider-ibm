@@ -80,21 +80,3 @@ func resourceIbmSmPrivateCertificateConfigurationActionRotateIntermediateMapToCo
 	}
 	return model, nil
 }
-
-func resourceIbmSmPrivateCertificateConfigurationActionRotateIntermediateDataToMap(model secretsmanagerv2.PrivateCertificateConfigurationCACertificate) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-
-	if model.Certificate != nil {
-		modelMap["certificate"] = model.Certificate
-	}
-	if model.IssuingCa != nil {
-		modelMap["issuing_ca"] = model.IssuingCa
-	}
-	if model.CaChain != nil {
-		modelMap["ca_chain"] = model.CaChain
-	}
-	if model.Expiration != nil {
-		modelMap["expiration"] = flex.IntValue(model.Expiration)
-	}
-	return modelMap, nil
-}
