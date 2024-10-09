@@ -331,7 +331,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 
 	zone, response, found, err := getZone(contextBasedRestrictionsClient, context, d.Id())
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "read", "get-zone")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getZone failed: %s", err.Error()), "ibm_cbr_zone", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -364,7 +364,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 
 	currentZone, response, found, err := getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "update", "get-zone")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getZone failed: %s", err.Error()), "ibm_cbr_zone", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -470,7 +470,7 @@ func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, response *
 	var addresses []map[string]interface{}
 	addresses, err := ResourceDecodeAddressList(zone.Addresses, cbrZoneAddressIdDefault)
 	if err != nil {
-		return fmt.Errorf("Error listing address: %s", err)
+		return fmt.Errorf("Error decoding address list: %s", err)
 	}
 	if err = d.Set("addresses", addresses); err != nil {
 		return fmt.Errorf("Error setting addresses: %s", err)
@@ -479,7 +479,7 @@ func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, response *
 	var excluded []map[string]interface{}
 	excluded, err = ResourceDecodeAddressList(zone.Excluded, cbrZoneAddressIdDefault)
 	if err != nil {
-		return fmt.Errorf("Error listing excluded address: %s", err)
+		return fmt.Errorf("Error decoding excluded address list: %s", err)
 	}
 	if err = d.Set("excluded", excluded); err != nil {
 		return fmt.Errorf("Error setting excluded: %s", err)
