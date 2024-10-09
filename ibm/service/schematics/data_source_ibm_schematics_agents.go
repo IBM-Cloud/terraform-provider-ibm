@@ -6,6 +6,7 @@ package schematics
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -187,7 +188,9 @@ func DataSourceIbmSchematicsAgents() *schema.Resource {
 func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listAgentOptions := &schematicsv1.ListAgentOptions{}
@@ -243,7 +246,9 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 		for _, modelItem := range agentList.Agents {
 			modelMap, err := dataSourceIbmSchematicsAgentsAgentToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			agents = append(agents, modelMap)
 		}

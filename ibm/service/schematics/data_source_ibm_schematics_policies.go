@@ -6,6 +6,7 @@ package schematics
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -144,7 +145,9 @@ func DataSourceIbmSchematicsPolicies() *schema.Resource {
 func dataSourceIbmSchematicsPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listPolicyOptions := &schematicsv1.ListPolicyOptions{}
@@ -202,7 +205,9 @@ func dataSourceIbmSchematicsPoliciesRead(context context.Context, d *schema.Reso
 		for _, modelItem := range policyList.Policies {
 			modelMap, err := dataSourceIbmSchematicsPoliciesPolicyLiteToMap(&modelItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed: %s", err.Error()), "ibm_cloud", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			policies = append(policies, modelMap)
 		}
