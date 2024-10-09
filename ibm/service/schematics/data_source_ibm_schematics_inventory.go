@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -108,7 +107,7 @@ func dataSourceIBMSchematicsInventoryRead(context context.Context, d *schema.Res
 
 	inventoryResourceRecord, response, err := schematicsClient.GetInventoryWithContext(context, getInventoryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetInventoryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetInventoryWithContext failed %s\n%s", err, response))
 	}
 

@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -962,7 +961,7 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 
 	action, response, err := schematicsClient.GetActionWithContext(context, getActionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetActionWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetActionWithContext failed %s\n%s", err, response))
 	}
 

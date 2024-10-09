@@ -113,7 +113,7 @@ func resourceIbmSchematicsAgentDeployCreate(context context.Context, d *schema.R
 
 	agentDeployJob, response, err := schematicsClient.DeployAgentJobWithContext(context, deployAgentJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeployAgentJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("DeployAgentJobWithContext failed %s\n%s", err, response))
 	}
 
@@ -191,7 +191,7 @@ func resourceIbmSchematicsAgentDeployRead(context context.Context, d *schema.Res
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
 	}
 	if agentData.RecentDeployJob != nil {
@@ -264,7 +264,7 @@ func resourceIbmSchematicsAgentDeployUpdate(context context.Context, d *schema.R
 	if hasChange {
 		agentDeployJob, response, err := schematicsClient.DeployAgentJobWithContext(context, deployAgentJobOptions)
 		if err != nil {
-			log.Printf("[DEBUG] DeployAgentJobWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("DeployAgentJobWithContext failed %s\n%s", err, response))
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *deployAgentJobOptions.AgentID, *agentDeployJob.JobID))

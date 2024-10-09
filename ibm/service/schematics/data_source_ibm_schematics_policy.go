@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -277,7 +276,7 @@ func dataSourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resour
 
 	policy, response, err := schematicsClient.GetPolicyWithContext(context, getPolicyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetPolicyWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetPolicyWithContext failed %s\n%s", err, response))
 	}
 

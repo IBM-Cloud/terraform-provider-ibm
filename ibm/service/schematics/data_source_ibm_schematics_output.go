@@ -6,7 +6,6 @@ package schematics
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -76,7 +75,7 @@ func dataSourceIBMSchematicsOutputRead(d *schema.ResourceData, meta interface{})
 
 	outputValuesList, response, err := schematicsClient.GetWorkspaceOutputs(getWorkspaceOutputsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetWorkspaceOutputs failed %s\n%s", err, response)
+
 		return err
 	}
 

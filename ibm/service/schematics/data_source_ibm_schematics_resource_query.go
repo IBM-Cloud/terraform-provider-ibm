@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -133,7 +132,7 @@ func dataSourceIBMSchematicsResourceQueryRead(context context.Context, d *schema
 
 	resourceQueryRecord, response, err := schematicsClient.GetResourcesQueryWithContext(context, getResourcesQueryOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetResourcesQueryWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetResourcesQueryWithContext failed %s\n%s", err, response))
 	}
 

@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -101,7 +100,7 @@ func resourceIbmSchematicsAgentPrsCreate(context context.Context, d *schema.Reso
 
 	agentPrsJob, response, err := schematicsClient.PrsAgentJobWithContext(context, prsAgentJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] PrsAgentJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("PrsAgentJobWithContext failed %s\n%s", err, response))
 	}
 
@@ -133,7 +132,7 @@ func resourceIbmSchematicsAgentPrsRead(context context.Context, d *schema.Resour
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAgentDataWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
 	}
 	if agentData.RecentPrsJob != nil {
@@ -207,7 +206,7 @@ func resourceIbmSchematicsAgentPrsUpdate(context context.Context, d *schema.Reso
 	if hasChange {
 		agentPrsJob, response, err := schematicsClient.PrsAgentJobWithContext(context, prsAgentJobOptions)
 		if err != nil {
-			log.Printf("[DEBUG] PrsAgentJobWithContext failed %s\n%s", err, response)
+
 			return diag.FromErr(fmt.Errorf("PrsAgentJobWithContext failed %s\n%s", err, response))
 		}
 		d.SetId(fmt.Sprintf("%s/%s", *prsAgentJobOptions.AgentID, *agentPrsJob.JobID))

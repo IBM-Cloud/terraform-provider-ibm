@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -2938,7 +2937,7 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 
 	job, response, err := schematicsClient.CreateJobWithContext(context, createJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("CreateJobWithContext failed %s\n%s", err, response))
 	}
 
@@ -3921,7 +3920,7 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("GetJobWithContext failed %s\n%s", err, response))
 	}
 	if err = d.Set("command_object", job.CommandObject); err != nil {
@@ -5061,7 +5060,7 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 
 	_, response, err := schematicsClient.UpdateJobWithContext(context, updateJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] UpdateJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("UpdateJobWithContext failed %s\n%s", err, response))
 	}
 
@@ -5094,7 +5093,7 @@ func resourceIBMSchematicsJobDelete(context context.Context, d *schema.ResourceD
 
 	response, err := schematicsClient.DeleteJobWithContext(context, deleteJobOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteJobWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("DeleteJobWithContext failed %s\n%s", err, response))
 	}
 

@@ -6,7 +6,6 @@ package schematics
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -195,7 +194,7 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 
 	agentList, response, err := schematicsClient.ListAgentWithContext(context, listAgentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListAgentWithContext failed %s\n%s", err, response)
+
 		return diag.FromErr(fmt.Errorf("ListAgentWithContext failed %s\n%s", err, response))
 	}
 
@@ -219,7 +218,7 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 
 	if suppliedFilter {
 		if len(agentList.Agents) == 0 {
-			log.Printf("[DEBUG] no Agents found with name %s\n", name)
+
 			// return diag.FromErr(fmt.Errorf("no Agents found with name %s", name))
 		}
 		d.SetId(name)
