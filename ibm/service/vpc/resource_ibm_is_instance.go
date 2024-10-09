@@ -400,7 +400,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.version_crn"},
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceVPC, isInstanceProfile},
+							RequiredWith:  []string{isInstanceZone, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a catalog offering by a unique CRN property",
 						},
 						isInstanceCatalogOfferingVersionCrn: {
@@ -408,7 +408,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Optional:      true,
 							ForceNew:      true,
 							ConflictsWith: []string{"catalog_offering.0.offering_crn"},
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceVPC, isInstanceProfile},
+							RequiredWith:  []string{isInstanceZone, isInstanceVPC, isInstanceProfile},
 							Description:   "Identifies a version of a catalog offering by a unique CRN property",
 						},
 						isInstanceCatalogOfferingPlanCrn: {

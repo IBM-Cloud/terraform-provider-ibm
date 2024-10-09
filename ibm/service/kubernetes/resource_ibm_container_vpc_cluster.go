@@ -828,8 +828,13 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, worker := range workers {
+				workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, worker.PoolID, targetEnv)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving worker pool: %s", err)
+				}
+
 				// check if change is present in MAJOR.MINOR version or in PATCH version
-				if worker.KubeVersion.Actual != worker.KubeVersion.Target {
+				if worker.KubeVersion.Actual != worker.KubeVersion.Target || worker.LifeCycle.ActualOperatingSystem != workerPool.OperatingSystem {
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {

@@ -234,10 +234,7 @@ func resourceReplaceZoneAddresses(context context.Context, d *schema.ResourceDat
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	var currentZone *contextbasedrestrictionsv1.Zone
-	var version string
-	var found bool
-	currentZone, version, found, err = getZone(contextBasedRestrictionsClient, context, zoneId)
+	currentZone, response, found, err := getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
 		return err
 	}
@@ -249,7 +246,7 @@ func resourceReplaceZoneAddresses(context context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, version)
+	replaceZoneOptions := contextBasedRestrictionsClient.NewReplaceZoneOptions(zoneId, response.Headers.Get("Etag"))
 	replaceZoneOptions.SetName(*currentZone.Name)
 	replaceZoneOptions.SetAccountID(*currentZone.AccountID)
 	if currentZone.Description != nil {
@@ -275,7 +272,7 @@ func resourceReplaceZoneAddresses(context context.Context, d *schema.ResourceDat
 	}
 	replaceZoneOptions.SetAddresses(addresses)
 
-	_, response, err := contextBasedRestrictionsClient.ReplaceZoneWithContext(context, replaceZoneOptions)
+	_, response, err = contextBasedRestrictionsClient.ReplaceZoneWithContext(context, replaceZoneOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ReplaceZoneWithContext failed %s\n%s", err, response)
 		return fmt.Errorf("ReplaceZoneWithContext failed %s\n%s", err, response)

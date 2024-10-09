@@ -244,7 +244,8 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"abort_incomplete_multipart_upload_days": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				MaxItems:    1,
+				MaxItems:    1000,
+				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable abort incomplete multipart upload to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -278,6 +279,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
+				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable configuration archive_rule (glacier/accelerated) to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -312,6 +314,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1000,
+				Deprecated:  "Use the ibm_cos_bucket_lifecycle_configuration resource instead",
 				Description: "Enable configuration expire_rule to COS Bucket after a defined period of time",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -759,7 +762,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1085,6 +1088,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	var keyProtectFlag bool
+	var archiveFlag, expireFlag, abortFlag, ncFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -1101,6 +1105,18 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := d.GetOk("key_protect"); ok {
 		keyProtectFlag = true
 	}
+	if _, ok := d.GetOk("expire_rule"); ok {
+		expireFlag = true
+	}
+	if _, ok := d.GetOk("archive_rule"); ok {
+		archiveFlag = true
+	}
+	if _, ok := d.GetOk("noncurrent_version_expiration"); ok {
+		archiveFlag = true
+	}
+	if _, ok := d.GetOk("abort_incomplete_multipart_upload_days"); ok {
+		abortFlag = true
+	}
 
 	//split satellite resource instance id to get the 1st value
 	if apiType == "sl" {
@@ -1108,13 +1124,12 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		bucketsatcrn := satloc_guid[0]
 		serviceID = bucketsatcrn
 	}
-
 	var apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint, visibility string
 	visibility = endpointType
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 	} else {
-		apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
 		apiEndpoint = apiEndpointPublic
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1202,6 +1217,8 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
 	d.Set("bucket_name", bucketName)
+
+	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, strings.Contains(apiEndpoint, "test"))
 	d.Set("s3_endpoint_public", apiEndpointPublic)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
 	d.Set("s3_endpoint_direct", directApiEndpoint)
@@ -1286,23 +1303,27 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
 		return err
 	}
-	if lifecycleptr != nil {
+
+	if lifecycleptr.Rules != nil {
 		archiveRules := flex.ArchiveRuleGet(lifecycleptr.Rules)
 		expireRules := flex.ExpireRuleGet(lifecycleptr.Rules)
 		nc_expRules := flex.Nc_exp_RuleGet(lifecycleptr.Rules)
 		abort_mpuRules := flex.Abort_mpu_RuleGet(lifecycleptr.Rules)
-		if len(archiveRules) > 0 {
+		if len(archiveRules) > 0 && archiveFlag == true {
+
 			d.Set("archive_rule", archiveRules)
 		}
-		if len(expireRules) > 0 {
+		if len(expireRules) > 0 && expireFlag == true {
 			d.Set("expire_rule", expireRules)
 		}
-		if len(nc_expRules) > 0 {
+		if len(nc_expRules) > 0 && ncFlag == true {
 			d.Set("noncurrent_version_expiration", nc_expRules)
 		}
-		if len(abort_mpuRules) > 0 {
+		if len(abort_mpuRules) > 0 && abortFlag == true {
 			d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 		}
+	} else {
+		fmt.Println("There is no lifecycle configuration on the bucket")
 	}
 
 	// Read retention rule
@@ -1401,13 +1422,12 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 
 	var endpointType = d.Get("endpoint_type").(string)
-
 	var apiEndpoint, privateApiEndpoint, directApiEndpoint, visibility string
 	if apiType == "sl" {
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
-		apiEndpoint, privateApiEndpoint, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpoint, privateApiEndpoint, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = privateApiEndpoint
@@ -1527,13 +1547,12 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		endpointType = d.Get("endpoint_type").(string)
 	}
 	var apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
-
 	if apiType == "sl" {
 
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -1662,13 +1681,12 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	}
 
 	var apiEndpoint, apiEndpointPrivate, directApiEndpoint string
-
 	if apiType == "sl" {
 
 		apiEndpoint = SelectSatlocCosApi(apiType, serviceID, bLocation)
 
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(apiType, bLocation, false)
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
 		}
@@ -1722,15 +1740,19 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	return false, nil
 }
 
-func SelectCosApi(apiType string, bLocation string) (string, string, string) {
+func SelectCosApi(apiType string, bLocation string, test bool) (string, string, string) {
+	hostUrl := "cloud-object-storage.appdomain.cloud"
+	if test {
+		hostUrl = "cloud-object-storage.test.appdomain.cloud"
+	}
 	if apiType == "crl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.private.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.direct.%s.%s", bLocation, hostUrl)
 	}
 	if apiType == "rl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.private.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.direct.%s.%s", bLocation, hostUrl)
 	}
 	if apiType == "ssl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.private.%s.%s", bLocation, hostUrl), fmt.Sprintf("s3.direct.%s.%s", bLocation, hostUrl)
 	}
 	return "", "", ""
 }

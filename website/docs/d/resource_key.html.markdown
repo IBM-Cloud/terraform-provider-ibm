@@ -57,7 +57,7 @@ Review the argument references that you can specify for your data source.
 - `most_recent` - (Optional, Bool) If there are multiple resource keys, you can set this argument to `true` to import only the most recently created key.
 - `name` - (Required, String) The name of the resource key. You can retrieve the value by executing the `ibmcloud resource service-keys` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 - `resource_instance_id` - (Optional, string) The ID of the resource instance that the resource key is associated with. You can retrieve the value by executing the `ibmcloud resource service-instances` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started). **Note**: Conflicts with `resource_alias_id`.
-- `resource_alias_id` - (Optional, String) The ID of the resource alias that the resource key is associated with. You can retrieve the value by executing the `ibmcloud resource service-alias` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started). **Note** Conflicts with `resource_instance_id`.
+- `resource_alias_id` - (Optional, String, Deprecated) The ID of the resource alias that the resource key is associated with. You can retrieve the value by executing the `ibmcloud resource service-alias` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started). **Note** Conflicts with `resource_instance_id`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.

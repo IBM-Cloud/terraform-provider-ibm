@@ -145,6 +145,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "Mark the trigger as a favorite.",
 			},
+			"enable_events_from_forks": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
+			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -357,6 +362,10 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 
 	if err = d.Set("favorite", trigger.Favorite); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting favorite: %s", err))
+	}
+
+	if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enable_events_from_forks: %s", err))
 	}
 
 	source := []map[string]interface{}{}

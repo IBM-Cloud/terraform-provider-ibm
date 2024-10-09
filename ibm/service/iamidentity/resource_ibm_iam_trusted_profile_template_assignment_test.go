@@ -30,8 +30,8 @@ func TestAccIBMTrustedProfileTemplateAssignmentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMTrustedProfileTemplateAssignmentResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:             testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 1),
-				ExpectNonEmptyPlan: true,
+
+				Config: testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTrustedProfileTemplateAssignmentExists("ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "id"),
@@ -54,8 +54,7 @@ func TestAccIBMTrustedProfileTemplateAssignmentBasic(t *testing.T) {
 				Config:      testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 3),
 			},
 			{
-				ExpectNonEmptyPlan: true,
-				Config:             testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 2),
+				Config: testAccCheckIBMTrustedProfileTemplateAssignmentConfigBasic(name, 2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance", "template_version", "2"),
 				),
