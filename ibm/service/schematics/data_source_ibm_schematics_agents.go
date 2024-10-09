@@ -224,7 +224,9 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 	if suppliedFilter {
 		if len(agentList.Agents) == 0 {
 
-			// return diag.FromErr(fmt.Errorf("no Agents found with name %s", name))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -232,15 +234,21 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 	}
 
 	if err = d.Set("total_count", flex.IntValue(agentList.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("limit", flex.IntValue(agentList.Limit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("offset", flex.IntValue(agentList.Offset)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting offset: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	agents := []map[string]interface{}{}
@@ -256,7 +264,9 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 		}
 	}
 	if err = d.Set("agents", agents); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting agents %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
