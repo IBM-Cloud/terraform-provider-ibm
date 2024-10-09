@@ -896,6 +896,7 @@ func Provider() *schema.Provider {
 			"ibm_en_slack_template":            eventnotification.DataSourceIBMEnSlackTemplate(),
 			"ibm_en_metrics":                   eventnotification.DataSourceIBMEnMetrics(),
 			"ibm_en_smtp_allowed_ips":          eventnotification.DataSourceIBMEnSMTPAllowedIps(),
+			"ibm_en_webhook_template":          eventnotification.DataSourceIBMEnWebhookTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1502,6 +1503,7 @@ func Provider() *schema.Provider {
 			"ibm_en_smtp_user":                 eventnotification.ResourceIBMEnSMTPUser(),
 			"ibm_en_slack_template":            eventnotification.ResourceIBMEnSlackTemplate(),
 			"ibm_en_smtp_setting":              eventnotification.ResourceIBMEnSMTPSetting(),
+			"ibm_en_webhook_template":          eventnotification.ResourceIBMEnWebhookTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
