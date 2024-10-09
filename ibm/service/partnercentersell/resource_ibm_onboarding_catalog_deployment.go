@@ -612,24 +612,6 @@ func resourceIbmOnboardingCatalogDeploymentRead(context context.Context, d *sche
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-url").GetDiag()
 		}
 	}
-	if parts[0] != "" {
-		if err = d.Set("product_id", parts[0]); err != nil {
-			err = fmt.Errorf("Error setting product_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-product_id").GetDiag()
-		}
-	}
-	if parts[1] != "" {
-		if err = d.Set("catalog_product_id", parts[1]); err != nil {
-			err = fmt.Errorf("Error setting catalog_product_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_product_id").GetDiag()
-		}
-	}
-	if parts[2] != "" {
-		if err = d.Set("catalog_plan_id", parts[2]); err != nil {
-			err = fmt.Errorf("Error setting catalog_plan_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_plan_id").GetDiag()
-		}
-	}
 	if !core.IsNil(globalCatalogDeployment.ID) {
 		if err = d.Set("catalog_deployment_id", globalCatalogDeployment.ID); err != nil {
 			err = fmt.Errorf("Error setting catalog_deployment_id: %s", err)
@@ -791,7 +773,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToCatalogProductProvider(modelMap 
 
 func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogOverviewUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogOverviewUI, error) {
 	model := &partnercentersellv1.GlobalCatalogOverviewUI{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
 		EnModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogOverviewUITranslatedContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -820,14 +802,14 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadata(
 	if modelMap["rc_compatible"] != nil {
 		model.RcCompatible = core.BoolPtr(modelMap["rc_compatible"].(bool))
 	}
-	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 && modelMap["ui"].([]interface{})[0] != nil {
+	if modelMap["ui"] != nil && len(modelMap["ui"].([]interface{})) > 0 {
 		UiModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(modelMap["ui"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Ui = UiModel
 	}
-	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 && modelMap["service"].([]interface{})[0] != nil {
+	if modelMap["service"] != nil && len(modelMap["service"].([]interface{})) > 0 {
 		ServiceModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataService(modelMap["service"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -846,14 +828,14 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadata(
 
 func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUI, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataUI{}
-	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 && modelMap["strings"].([]interface{})[0] != nil {
+	if modelMap["strings"] != nil && len(modelMap["strings"].([]interface{})) > 0 {
 		StringsModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrings(modelMap["strings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Strings = StringsModel
 	}
-	if modelMap["urls"] != nil && len(modelMap["urls"].([]interface{})) > 0 && modelMap["urls"].([]interface{})[0] != nil {
+	if modelMap["urls"] != nil && len(modelMap["urls"].([]interface{})) > 0 {
 		UrlsModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIUrls(modelMap["urls"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -871,7 +853,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUI(modelMap
 
 func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrings(modelMap map[string]interface{}) (*partnercentersellv1.GlobalCatalogMetadataUIStrings, error) {
 	model := &partnercentersellv1.GlobalCatalogMetadataUIStrings{}
-	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 && modelMap["en"].([]interface{})[0] != nil {
+	if modelMap["en"] != nil && len(modelMap["en"].([]interface{})) > 0 {
 		EnModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStringsContent(modelMap["en"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -917,13 +899,13 @@ func ResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(modelMap ma
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["description_i18n"] != nil {
-		model.DescriptionI18n = modelMap["description_i18n"].(map[string]string)
+		// TODO: handle DescriptionI18n, map with entry type 'string'
 	}
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
 	}
 	if modelMap["title_i18n"] != nil {
-		model.TitleI18n = modelMap["title_i18n"].(map[string]string)
+		// TODO: handle TitleI18n, map with entry type 'string'
 	}
 	return model, nil
 }
@@ -932,7 +914,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(modelMap
 	model := &partnercentersellv1.CatalogProductMediaItem{}
 	model.Caption = core.StringPtr(modelMap["caption"].(string))
 	if modelMap["caption_i18n"] != nil {
-		model.CaptionI18n = modelMap["title_i18n"].(map[string]string)
+		// TODO: handle CaptionI18n, map with entry type 'string'
 	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))

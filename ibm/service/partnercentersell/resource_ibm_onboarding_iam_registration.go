@@ -1212,10 +1212,23 @@ func resourceIbmOnboardingIamRegistrationRead(context context.Context, d *schema
 		return tfErr.GetDiag()
 	}
 
+	if parts[0] != "" {
+		if err = d.Set("product_id", parts[0]); err != nil {
+			err = fmt.Errorf("Error setting product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-product_id").GetDiag()
+		}
+	}
+	if parts[1] != "" {
+		if err = d.Set("programmatic_name", parts[1]); err != nil {
+			err = fmt.Errorf("Error setting product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-programmatic_name").GetDiag()
+		}
+	}
 	if err = d.Set("name", iamServiceRegistration.Name); err != nil {
-		err = fmt.Errorf("Error setting name: %s", err)
+		err = fmt.Errorf("Error setting programmatic_name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-name").GetDiag()
 	}
+
 	if !core.IsNil(iamServiceRegistration.Enabled) {
 		if err = d.Set("enabled", iamServiceRegistration.Enabled); err != nil {
 			err = fmt.Errorf("Error setting enabled: %s", err)

@@ -589,6 +589,18 @@ func resourceIbmOnboardingCatalogPlanRead(context context.Context, d *schema.Res
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_plan", "read", "set-url").GetDiag()
 		}
 	}
+	if parts[0] != "" {
+		if err = d.Set("product_id", parts[0]); err != nil {
+			err = fmt.Errorf("Error setting product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-product_id").GetDiag()
+		}
+	}
+	if parts[1] != "" {
+		if err = d.Set("catalog_product_id", parts[1]); err != nil {
+			err = fmt.Errorf("Error setting catalog_product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_product_id").GetDiag()
+		}
+	}
 	if !core.IsNil(globalCatalogPlan.ID) {
 		if err = d.Set("catalog_plan_id", globalCatalogPlan.ID); err != nil {
 			err = fmt.Errorf("Error setting catalog_plan_id: %s", err)

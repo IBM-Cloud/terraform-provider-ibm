@@ -29,7 +29,7 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
-	kindUpdate := "platform_service"
+	kindUpdate := "composite"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -70,7 +70,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	activeUpdate := "false"
 	disabledUpdate := "false"
-	kindUpdate := "platform_service"
+	kindUpdate := "composite"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -156,13 +156,13 @@ func testAccCheckIbmOnboardingCatalogProductConfig(env string, name string, acti
 						en {
 							bullets {
 								description = "description"
-								description_i18n = { "key" = "anything as a string" }
+								description_i18n = { "key" = "inner" }
 								title = "title"
-								title_i18n = { "key" = "anything as a string" }
+								title_i18n = { "key" = "inner" }
 							}
 							media {
 								caption = "caption"
-								caption_i18n = { "key" = "anything as a string" }
+								caption_i18n = { "key" = "inner" }
 								thumbnail = "thumbnail"
 								type = "image"
 								url = "url"
@@ -197,7 +197,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(env string, name string, acti
 							locations = [ "locations" ]
 							languages = [ "languages" ]
 							process = "process"
-							process_i18n = { "key" = "anything as a string" }
+							process_i18n = { "key" = "inner" }
 							support_type = "community"
 							support_escalation {
 								contact = "contact"
@@ -227,6 +227,14 @@ func testAccCheckIbmOnboardingCatalogProductConfig(env string, name string, acti
 									always_available = true
 								}
 							}
+						}
+					}
+					composite {
+						composite_kind = "service"
+						composite_tag = "composite_tag"
+						children {
+							kind = "service"
+							name = "name"
 						}
 					}
 				}
@@ -385,13 +393,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -457,7 +465,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogProductMetadataOtherPcSupportModel["locations"] = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["languages"] = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["process"] = "testString"
-		globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"key1": "testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["support_type"] = "community"
 		globalCatalogProductMetadataOtherPcSupportModel["support_escalation"] = []map[string]interface{}{supportEscalationModel}
 		globalCatalogProductMetadataOtherPcSupportModel["support_details"] = []map[string]interface{}{supportDetailsItemModel}
@@ -465,8 +473,18 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogProductMetadataOtherPcModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherPcModel["support"] = []map[string]interface{}{globalCatalogProductMetadataOtherPcSupportModel}
 
+		globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
+		globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
+		globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
+
+		globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
+		globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
+		globalCatalogProductMetadataOtherCompositeModel["composite_tag"] = "testString"
+		globalCatalogProductMetadataOtherCompositeModel["children"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeChildModel}
+
 		globalCatalogProductMetadataOtherModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherModel["pc"] = []map[string]interface{}{globalCatalogProductMetadataOtherPcModel}
+		globalCatalogProductMetadataOtherModel["composite"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeModel}
 
 		model := make(map[string]interface{})
 		model["rc_compatible"] = true
@@ -479,13 +497,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -551,7 +569,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"key1": "testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 	globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 	globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -559,8 +577,18 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogProductMetadataOtherPcModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherPC)
 	globalCatalogProductMetadataOtherPcModel.Support = globalCatalogProductMetadataOtherPcSupportModel
 
+	globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+	globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
+	globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
+
+	globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
+	globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
+	globalCatalogProductMetadataOtherCompositeModel.CompositeTag = core.StringPtr("testString")
+	globalCatalogProductMetadataOtherCompositeModel.Children = []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{*globalCatalogProductMetadataOtherCompositeChildModel}
+
 	globalCatalogProductMetadataOtherModel := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 	globalCatalogProductMetadataOtherModel.PC = globalCatalogProductMetadataOtherPcModel
+	globalCatalogProductMetadataOtherModel.Composite = globalCatalogProductMetadataOtherCompositeModel
 
 	model := new(partnercentersellv1.GlobalCatalogProductMetadata)
 	model.RcCompatible = core.BoolPtr(true)
@@ -577,13 +605,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIToMap(t *test
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -616,13 +644,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIToMap(t *test
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -659,13 +687,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsToMap(
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -683,13 +711,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsToMap(
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -711,13 +739,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsConten
 	checkResult := func(result map[string]interface{}) {
 		catalogHighlightItemModel := make(map[string]interface{})
 		catalogHighlightItemModel["description"] = "testString"
-		catalogHighlightItemModel["description_i18n"] = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogHighlightItemModel["title"] = "testString"
-		catalogHighlightItemModel["title_i18n"] = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		catalogProductMediaItemModel := make(map[string]interface{})
 		catalogProductMediaItemModel["caption"] = "testString"
-		catalogProductMediaItemModel["caption_i18n"] = map[string]string{"anyKey": "anyValue"}
+		catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		catalogProductMediaItemModel["thumbnail"] = "testString"
 		catalogProductMediaItemModel["type"] = "image"
 		catalogProductMediaItemModel["url"] = "testString"
@@ -732,13 +760,13 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsConten
 
 	catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 	catalogHighlightItemModel.Description = core.StringPtr("testString")
-	catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 	catalogHighlightItemModel.Title = core.StringPtr("testString")
-	catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+	catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 	catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 	catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-	catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+	catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 	catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 	catalogProductMediaItemModel.Type = core.StringPtr("image")
 	catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -757,18 +785,18 @@ func TestResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(t *testing
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["description"] = "testString"
-		model["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["description_i18n"] = map[string]interface{}{"key1": "testString"}
 		model["title"] = "testString"
-		model["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(partnercentersellv1.CatalogHighlightItem)
 	model.Description = core.StringPtr("testString")
-	model.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+	model.DescriptionI18n = map[string]string{"key1": "testString"}
 	model.Title = core.StringPtr("testString")
-	model.TitleI18n = map[string]string{"anyKey": "anyValue"}
+	model.TitleI18n = map[string]string{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductCatalogHighlightItemToMap(model)
 	assert.Nil(t, err)
@@ -779,7 +807,7 @@ func TestResourceIbmOnboardingCatalogProductCatalogProductMediaItemToMap(t *test
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["caption"] = "testString"
-		model["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 		model["thumbnail"] = "testString"
 		model["type"] = "image"
 		model["url"] = "testString"
@@ -789,7 +817,7 @@ func TestResourceIbmOnboardingCatalogProductCatalogProductMediaItemToMap(t *test
 
 	model := new(partnercentersellv1.CatalogProductMediaItem)
 	model.Caption = core.StringPtr("testString")
-	model.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+	model.CaptionI18n = map[string]string{"key1": "testString"}
 	model.Thumbnail = core.StringPtr("testString")
 	model.Type = core.StringPtr("image")
 	model.URL = core.StringPtr("testString")
@@ -884,7 +912,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 		globalCatalogProductMetadataOtherPcSupportModel["locations"] = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["languages"] = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["process"] = "testString"
-		globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"key1": "testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["support_type"] = "community"
 		globalCatalogProductMetadataOtherPcSupportModel["support_escalation"] = []map[string]interface{}{supportEscalationModel}
 		globalCatalogProductMetadataOtherPcSupportModel["support_details"] = []map[string]interface{}{supportDetailsItemModel}
@@ -892,8 +920,18 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 		globalCatalogProductMetadataOtherPcModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherPcModel["support"] = []map[string]interface{}{globalCatalogProductMetadataOtherPcSupportModel}
 
+		globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
+		globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
+		globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
+
+		globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
+		globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
+		globalCatalogProductMetadataOtherCompositeModel["composite_tag"] = "testString"
+		globalCatalogProductMetadataOtherCompositeModel["children"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeChildModel}
+
 		model := make(map[string]interface{})
 		model["pc"] = []map[string]interface{}{globalCatalogProductMetadataOtherPcModel}
+		model["composite"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -929,7 +967,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 	globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"key1": "testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 	globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 	globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -937,8 +975,18 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 	globalCatalogProductMetadataOtherPcModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherPC)
 	globalCatalogProductMetadataOtherPcModel.Support = globalCatalogProductMetadataOtherPcSupportModel
 
+	globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+	globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
+	globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
+
+	globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
+	globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
+	globalCatalogProductMetadataOtherCompositeModel.CompositeTag = core.StringPtr("testString")
+	globalCatalogProductMetadataOtherCompositeModel.Children = []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{*globalCatalogProductMetadataOtherCompositeChildModel}
+
 	model := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 	model.PC = globalCatalogProductMetadataOtherPcModel
+	model.Composite = globalCatalogProductMetadataOtherCompositeModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToMap(model)
 	assert.Nil(t, err)
@@ -978,7 +1026,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCT
 		globalCatalogProductMetadataOtherPcSupportModel["locations"] = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["languages"] = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["process"] = "testString"
-		globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"key1": "testString"}
 		globalCatalogProductMetadataOtherPcSupportModel["support_type"] = "community"
 		globalCatalogProductMetadataOtherPcSupportModel["support_escalation"] = []map[string]interface{}{supportEscalationModel}
 		globalCatalogProductMetadataOtherPcSupportModel["support_details"] = []map[string]interface{}{supportDetailsItemModel}
@@ -1020,7 +1068,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCT
 	globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"key1": "testString"}
 	globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 	globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 	globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1066,7 +1114,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCS
 		model["locations"] = []string{"testString"}
 		model["languages"] = []string{"testString"}
 		model["process"] = "testString"
-		model["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+		model["process_i18n"] = map[string]interface{}{"key1": "testString"}
 		model["support_type"] = "community"
 		model["support_escalation"] = []map[string]interface{}{supportEscalationModel}
 		model["support_details"] = []map[string]interface{}{supportDetailsItemModel}
@@ -1105,7 +1153,7 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCS
 	model.Locations = []string{"testString"}
 	model.Languages = []string{"testString"}
 	model.Process = core.StringPtr("testString")
-	model.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+	model.ProcessI18n = map[string]string{"key1": "testString"}
 	model.SupportType = core.StringPtr("community")
 	model.SupportEscalation = supportEscalationModel
 	model.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1261,6 +1309,52 @@ func TestResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeTo
 	checkResult(result)
 }
 
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
+		globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
+		globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
+
+		model := make(map[string]interface{})
+		model["composite_kind"] = "service"
+		model["composite_tag"] = "testString"
+		model["children"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeChildModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+	globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
+	globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
+
+	model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
+	model.CompositeKind = core.StringPtr("service")
+	model.CompositeTag = core.StringPtr("testString")
+	model.Children = []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{*globalCatalogProductMetadataOtherCompositeChildModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["kind"] = "service"
+		model["name"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+	model.Kind = core.StringPtr("service")
+	model.Name = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestResourceIbmOnboardingCatalogProductMapToCatalogProductProvider(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.CatalogProductProvider) {
 		model := new(partnercentersellv1.CatalogProductProvider)
@@ -1345,13 +1439,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 	checkResult := func(result *partnercentersellv1.GlobalCatalogProductMetadata) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1417,7 +1511,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 		globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"key1": "testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 		globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 		globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1425,8 +1519,18 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 		globalCatalogProductMetadataOtherPcModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherPC)
 		globalCatalogProductMetadataOtherPcModel.Support = globalCatalogProductMetadataOtherPcSupportModel
 
+		globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+		globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
+		globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
+
+		globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
+		globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
+		globalCatalogProductMetadataOtherCompositeModel.CompositeTag = core.StringPtr("testString")
+		globalCatalogProductMetadataOtherCompositeModel.Children = []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{*globalCatalogProductMetadataOtherCompositeChildModel}
+
 		globalCatalogProductMetadataOtherModel := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 		globalCatalogProductMetadataOtherModel.PC = globalCatalogProductMetadataOtherPcModel
+		globalCatalogProductMetadataOtherModel.Composite = globalCatalogProductMetadataOtherCompositeModel
 
 		model := new(partnercentersellv1.GlobalCatalogProductMetadata)
 		model.RcCompatible = core.BoolPtr(true)
@@ -1439,13 +1543,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1511,7 +1615,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 	globalCatalogProductMetadataOtherPcSupportModel["locations"] = []interface{}{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["languages"] = []interface{}{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["process"] = "testString"
-	globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"key1": "testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["support_type"] = "community"
 	globalCatalogProductMetadataOtherPcSupportModel["support_escalation"] = []interface{}{supportEscalationModel}
 	globalCatalogProductMetadataOtherPcSupportModel["support_details"] = []interface{}{supportDetailsItemModel}
@@ -1519,8 +1623,18 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadata(t 
 	globalCatalogProductMetadataOtherPcModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherPcModel["support"] = []interface{}{globalCatalogProductMetadataOtherPcSupportModel}
 
+	globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
+	globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
+	globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
+
+	globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
+	globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
+	globalCatalogProductMetadataOtherCompositeModel["composite_tag"] = "testString"
+	globalCatalogProductMetadataOtherCompositeModel["children"] = []interface{}{globalCatalogProductMetadataOtherCompositeChildModel}
+
 	globalCatalogProductMetadataOtherModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherModel["pc"] = []interface{}{globalCatalogProductMetadataOtherPcModel}
+	globalCatalogProductMetadataOtherModel["composite"] = []interface{}{globalCatalogProductMetadataOtherCompositeModel}
 
 	model := make(map[string]interface{})
 	model["rc_compatible"] = true
@@ -1537,13 +1651,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(t *test
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUI) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1576,13 +1690,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUI(t *test
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1619,13 +1733,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStrings(
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStrings) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1643,13 +1757,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStrings(
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1671,13 +1785,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStringsC
 	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataUIStringsContent) {
 		catalogHighlightItemModel := new(partnercentersellv1.CatalogHighlightItem)
 		catalogHighlightItemModel.Description = core.StringPtr("testString")
-		catalogHighlightItemModel.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.DescriptionI18n = map[string]string{"key1": "testString"}
 		catalogHighlightItemModel.Title = core.StringPtr("testString")
-		catalogHighlightItemModel.TitleI18n = map[string]string{"anyKey": "anyValue"}
+		catalogHighlightItemModel.TitleI18n = map[string]string{"key1": "testString"}
 
 		catalogProductMediaItemModel := new(partnercentersellv1.CatalogProductMediaItem)
 		catalogProductMediaItemModel.Caption = core.StringPtr("testString")
-		catalogProductMediaItemModel.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+		catalogProductMediaItemModel.CaptionI18n = map[string]string{"key1": "testString"}
 		catalogProductMediaItemModel.Thumbnail = core.StringPtr("testString")
 		catalogProductMediaItemModel.Type = core.StringPtr("image")
 		catalogProductMediaItemModel.URL = core.StringPtr("testString")
@@ -1692,13 +1806,13 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogMetadataUIStringsC
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1717,18 +1831,18 @@ func TestResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(t *testing
 	checkResult := func(result *partnercentersellv1.CatalogHighlightItem) {
 		model := new(partnercentersellv1.CatalogHighlightItem)
 		model.Description = core.StringPtr("testString")
-		model.DescriptionI18n = map[string]string{"anyKey": "anyValue"}
+		model.DescriptionI18n = map[string]string{"key1": "testString"}
 		model.Title = core.StringPtr("testString")
-		model.TitleI18n = map[string]string{"anyKey": "anyValue"}
+		model.TitleI18n = map[string]string{"key1": "testString"}
 
 		assert.Equal(t, result, model)
 	}
 
 	model := make(map[string]interface{})
 	model["description"] = "testString"
-	model["description_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["title"] = "testString"
-	model["title_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(model)
 	assert.Nil(t, err)
@@ -1739,7 +1853,7 @@ func TestResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(t *test
 	checkResult := func(result *partnercentersellv1.CatalogProductMediaItem) {
 		model := new(partnercentersellv1.CatalogProductMediaItem)
 		model.Caption = core.StringPtr("testString")
-		model.CaptionI18n = map[string]string{"anyKey": "anyValue"}
+		model.CaptionI18n = map[string]string{"key1": "testString"}
 		model.Thumbnail = core.StringPtr("testString")
 		model.Type = core.StringPtr("image")
 		model.URL = core.StringPtr("testString")
@@ -1749,7 +1863,7 @@ func TestResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(t *test
 
 	model := make(map[string]interface{})
 	model["caption"] = "testString"
-	model["caption_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["thumbnail"] = "testString"
 	model["type"] = "image"
 	model["url"] = "testString"
@@ -1844,7 +1958,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"key1": "testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 		globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 		globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1852,8 +1966,18 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherPcModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherPC)
 		globalCatalogProductMetadataOtherPcModel.Support = globalCatalogProductMetadataOtherPcSupportModel
 
+		globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+		globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
+		globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
+
+		globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
+		globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
+		globalCatalogProductMetadataOtherCompositeModel.CompositeTag = core.StringPtr("testString")
+		globalCatalogProductMetadataOtherCompositeModel.Children = []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{*globalCatalogProductMetadataOtherCompositeChildModel}
+
 		model := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 		model.PC = globalCatalogProductMetadataOtherPcModel
+		model.Composite = globalCatalogProductMetadataOtherCompositeModel
 
 		assert.Equal(t, result, model)
 	}
@@ -1889,7 +2013,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	globalCatalogProductMetadataOtherPcSupportModel["locations"] = []interface{}{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["languages"] = []interface{}{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["process"] = "testString"
-	globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"key1": "testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["support_type"] = "community"
 	globalCatalogProductMetadataOtherPcSupportModel["support_escalation"] = []interface{}{supportEscalationModel}
 	globalCatalogProductMetadataOtherPcSupportModel["support_details"] = []interface{}{supportDetailsItemModel}
@@ -1897,8 +2021,18 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	globalCatalogProductMetadataOtherPcModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherPcModel["support"] = []interface{}{globalCatalogProductMetadataOtherPcSupportModel}
 
+	globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
+	globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
+	globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
+
+	globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
+	globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
+	globalCatalogProductMetadataOtherCompositeModel["composite_tag"] = "testString"
+	globalCatalogProductMetadataOtherCompositeModel["children"] = []interface{}{globalCatalogProductMetadataOtherCompositeChildModel}
+
 	model := make(map[string]interface{})
 	model["pc"] = []interface{}{globalCatalogProductMetadataOtherPcModel}
+	model["composite"] = []interface{}{globalCatalogProductMetadataOtherCompositeModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(model)
 	assert.Nil(t, err)
@@ -1938,7 +2072,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherPcSupportModel.Locations = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Languages = []string{"testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.Process = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+		globalCatalogProductMetadataOtherPcSupportModel.ProcessI18n = map[string]string{"key1": "testString"}
 		globalCatalogProductMetadataOtherPcSupportModel.SupportType = core.StringPtr("community")
 		globalCatalogProductMetadataOtherPcSupportModel.SupportEscalation = supportEscalationModel
 		globalCatalogProductMetadataOtherPcSupportModel.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -1980,7 +2114,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	globalCatalogProductMetadataOtherPcSupportModel["locations"] = []interface{}{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["languages"] = []interface{}{"testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["process"] = "testString"
-	globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	globalCatalogProductMetadataOtherPcSupportModel["process_i18n"] = map[string]interface{}{"key1": "testString"}
 	globalCatalogProductMetadataOtherPcSupportModel["support_type"] = "community"
 	globalCatalogProductMetadataOtherPcSupportModel["support_escalation"] = []interface{}{supportEscalationModel}
 	globalCatalogProductMetadataOtherPcSupportModel["support_details"] = []interface{}{supportDetailsItemModel}
@@ -2026,7 +2160,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		model.Locations = []string{"testString"}
 		model.Languages = []string{"testString"}
 		model.Process = core.StringPtr("testString")
-		model.ProcessI18n = map[string]string{"anyKey": "anyValue"}
+		model.ProcessI18n = map[string]string{"key1": "testString"}
 		model.SupportType = core.StringPtr("community")
 		model.SupportEscalation = supportEscalationModel
 		model.SupportDetails = []partnercentersellv1.SupportDetailsItem{*supportDetailsItemModel}
@@ -2065,7 +2199,7 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	model["locations"] = []interface{}{"testString"}
 	model["languages"] = []interface{}{"testString"}
 	model["process"] = "testString"
-	model["process_i18n"] = map[string]interface{}{"anyKey": "anyValue"}
+	model["process_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["support_type"] = "community"
 	model["support_escalation"] = []interface{}{supportEscalationModel}
 	model["support_details"] = []interface{}{supportDetailsItemModel}
@@ -2217,6 +2351,52 @@ func TestResourceIbmOnboardingCatalogProductMapToSupportDetailsItemAvailabilityT
 	model["end_time"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToSupportDetailsItemAvailabilityTime(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherComposite(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogProductMetadataOtherComposite) {
+		globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+		globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
+		globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
+
+		model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
+		model.CompositeKind = core.StringPtr("service")
+		model.CompositeTag = core.StringPtr("testString")
+		model.Children = []partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild{*globalCatalogProductMetadataOtherCompositeChildModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
+	globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
+	globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
+
+	model := make(map[string]interface{})
+	model["composite_kind"] = "service"
+	model["composite_tag"] = "testString"
+	model["children"] = []interface{}{globalCatalogProductMetadataOtherCompositeChildModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherComposite(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherCompositeChild(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild) {
+		model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
+		model.Kind = core.StringPtr("service")
+		model.Name = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["kind"] = "service"
+	model["name"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherCompositeChild(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

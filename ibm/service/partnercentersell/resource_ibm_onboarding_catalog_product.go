@@ -807,6 +807,12 @@ func resourceIbmOnboardingCatalogProductRead(context context.Context, d *schema.
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-url").GetDiag()
 		}
 	}
+	if parts[0] != "" {
+		if err = d.Set("product_id", parts[0]); err != nil {
+			err = fmt.Errorf("Error setting product_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-product_id").GetDiag()
+		}
+	}
 	if !core.IsNil(globalCatalogProduct.ID) {
 		if err = d.Set("catalog_product_id", globalCatalogProduct.ID); err != nil {
 			err = fmt.Errorf("Error setting catalog_product_id: %s", err)

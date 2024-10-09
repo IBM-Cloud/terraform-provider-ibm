@@ -320,6 +320,12 @@ func resourceIbmOnboardingProductRead(context context.Context, d *schema.Resourc
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_product", "read", "set-approver_resource_id").GetDiag()
 		}
 	}
+	if !core.IsNil(onboardingProduct.IamRegistrationID) {
+		if err = d.Set("iam_registration_id", onboardingProduct.IamRegistrationID); err != nil {
+			err = fmt.Errorf("Error setting iam_registration_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_product", "read", "set-iam_registration_id").GetDiag()
+		}
+	}
 
 	return nil
 }
