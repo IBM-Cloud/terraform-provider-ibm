@@ -198,7 +198,9 @@ func dataSourceIbmSchematicsAgentsRead(context context.Context, d *schema.Resour
 	agentList, response, err := schematicsClient.ListAgentWithContext(context, listAgentOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("ListAgentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)

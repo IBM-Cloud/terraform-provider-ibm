@@ -2943,7 +2943,9 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 	job, response, err := schematicsClient.CreateJobWithContext(context, createJobOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreateJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*job.ID)
@@ -3928,7 +3930,9 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("command_object", job.CommandObject); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_object: %s", err))
@@ -5072,7 +5076,9 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 	_, response, err := schematicsClient.UpdateJobWithContext(context, updateJobOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("UpdateJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMSchematicsJobRead(context, d, meta)
@@ -5109,7 +5115,9 @@ func resourceIBMSchematicsJobDelete(context context.Context, d *schema.ResourceD
 	response, err := schematicsClient.DeleteJobWithContext(context, deleteJobOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("DeleteJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

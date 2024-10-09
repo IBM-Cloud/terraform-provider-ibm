@@ -79,7 +79,9 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 	_, response, _ := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
 	if response.StatusCode != 200 {
 
-		return diag.FromErr(fmt.Errorf("GetWorkspaceTemplateStateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMSchematicsStateID(d))

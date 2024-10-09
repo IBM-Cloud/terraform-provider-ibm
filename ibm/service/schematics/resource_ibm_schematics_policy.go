@@ -360,7 +360,9 @@ func resourceIbmSchematicsPolicyCreate(context context.Context, d *schema.Resour
 	policy, response, err := schematicsClient.CreatePolicyWithContext(context, createPolicyOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreatePolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*policy.ID)
@@ -387,7 +389,9 @@ func resourceIbmSchematicsPolicyRead(context context.Context, d *schema.Resource
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", policy.Name); err != nil {
@@ -550,7 +554,9 @@ func resourceIbmSchematicsPolicyUpdate(context context.Context, d *schema.Resour
 		_, response, err := schematicsClient.UpdatePolicyWithContext(context, updatePolicyOptions)
 		if err != nil {
 
-			return diag.FromErr(fmt.Errorf("UpdatePolicyWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -572,7 +578,9 @@ func resourceIbmSchematicsPolicyDelete(context context.Context, d *schema.Resour
 	response, err := schematicsClient.DeletePolicyWithContext(context, deletePolicyOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("DeletePolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

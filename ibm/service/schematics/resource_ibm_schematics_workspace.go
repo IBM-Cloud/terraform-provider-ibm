@@ -756,7 +756,9 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 	workspaceResponse, response, err := schematicsClient.CreateWorkspaceWithContext(context, createWorkspaceOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("CreateWorkspaceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*workspaceResponse.ID)
@@ -1100,7 +1102,9 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetWorkspaceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if workspaceResponse.AppliedShareddataIds != nil {
 		if err = d.Set("applied_shareddata_ids", workspaceResponse.AppliedShareddataIds); err != nil {
@@ -1821,7 +1825,9 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 			_, response, err := schematicsClient.ReplaceWorkspaceWithContext(context, replaceWorkspaceOptions)
 			if err != nil {
 
-				return diag.FromErr(fmt.Errorf("ReplaceWorkspaceWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -1829,7 +1835,9 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 			_, response, err := schematicsClient.UpdateWorkspaceWithContext(context, updateWorkspaceOptions)
 			if err != nil {
 
-				return diag.FromErr(fmt.Errorf("UpdateWorkspaceWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 
@@ -1856,7 +1864,9 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 				_, response, err := schematicsClient.ReplaceWorkspaceInputs(replaceWorkspaceInputsOptions)
 				if err != nil {
 
-					return diag.FromErr(fmt.Errorf("ReplaceWorkspaceInputs failed %s\n%s", err, response))
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 		}
@@ -1896,7 +1906,9 @@ func resourceIBMSchematicsWorkspaceDelete(context context.Context, d *schema.Res
 	_, response, err := schematicsClient.DeleteWorkspaceWithContext(context, deleteWorkspaceOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("DeleteWorkspaceWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

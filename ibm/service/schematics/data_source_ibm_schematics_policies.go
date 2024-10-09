@@ -155,7 +155,9 @@ func dataSourceIbmSchematicsPoliciesRead(context context.Context, d *schema.Reso
 	policyList, response, err := schematicsClient.ListPolicyWithContext(context, listPolicyOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("ListPolicyWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)

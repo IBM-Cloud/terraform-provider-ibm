@@ -2834,7 +2834,9 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	job, response, err := schematicsClient.GetJobWithContext(context, getJobOptions)
 	if err != nil {
 
-		return diag.FromErr(fmt.Errorf("GetJobWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*getJobOptions.JobID)

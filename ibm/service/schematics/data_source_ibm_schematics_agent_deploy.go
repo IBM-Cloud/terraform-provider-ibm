@@ -92,7 +92,9 @@ func dataSourceIbmSchematicsAgentDeployRead(context context.Context, d *schema.R
 			return nil
 		}
 
-		return diag.FromErr(fmt.Errorf("GetAgentDataWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(DataSourceIBMSchematicsAgentID(d))
 
