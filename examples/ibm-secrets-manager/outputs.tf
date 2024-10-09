@@ -102,6 +102,13 @@ output "ibm_sm_private_certificate_configuration_action_set_signed" {
   description = "sm_private_certificate_configuration_action_set_signed resource instance"
   sensitive   = true
 }
+// This allows sm_private_certificate_configuration_action_rotate_intermediate data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_sm_private_certificate_configuration_action_rotate_intermediate" {
+  value       = ibm_sm_private_certificate_configuration_action_rotate_intermediate.sm_private_certificate_configuration_action_rotate_intermediate_instance
+  description = "sm_private_certificate_configuration_action_rotate_intermediate resource instance"
+  sensitive   = true
+}
 // This allows sm_public_certificate_configuration_ca_lets_encrypt data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_sm_public_certificate_configuration_ca_lets_encrypt" {

@@ -236,6 +236,14 @@ resource "ibm_sm_private_certificate_configuration_action_set_signed" "sm_privat
   certificate           = var.sm_private_certificate_configuration_action_set_signed_certificate
 }
 
+// Provision ibm_sm_private_certificate_configuration_action_rotate_intermediate resource instance
+resource "ibm_sm_private_certificate_configuration_action_rotate_intermediate" "sm_private_certificate_configuration_action_rotate_intermediate_instance" {
+  instance_id           = var.secrets_manager_instance_id
+  region                = var.region
+  endpoint_type         = var.endpoint_type
+  name                  = var.sm_private_certificate_configuration_intermediate_ca_name
+}
+
 // Provision sm_public_certificate_configuration_ca_lets_encrypt resource instance
 resource "ibm_sm_public_certificate_configuration_ca_lets_encrypt" "sm_public_certificate_configuration_ca_lets_encrypt_instance" {
   instance_id   = var.secrets_manager_instance_id

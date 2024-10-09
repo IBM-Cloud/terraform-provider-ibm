@@ -45,6 +45,7 @@ const (
 	PrivateCertConfigTemplateResourceName                = "ibm_sm_private_certificate_configuration_template"
 	PrivateCertConfigActionSetSigned                     = "ibm_sm_private_certificate_configuration_action_set_signed"
 	PrivateCertConfigActionSignCsr                       = "ibm_sm_private_certificate_configuration_action_sign_csr"
+	PrivateCertConfigActionRotateIntermediate            = "ibm_sm_private_certificate_configuration_action_rotate_intermediate"
 	PublicCertConfigCALetsEncryptResourceName            = "ibm_sm_public_certificate_configuration_ca_lets_encrypt"
 	PublicCertConfigDnsCISResourceName                   = "ibm_sm_public_certificate_configuration_dns_cis"
 	PublicCertConfigDnsClassicInfrastructureResourceName = "ibm_sm_public_certificate_configuration_dns_classic_infrastructure"
