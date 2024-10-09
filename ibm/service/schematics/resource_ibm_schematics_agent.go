@@ -1013,7 +1013,8 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 
 		response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
 		if err != nil {
-
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		} else {
 			_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
@@ -1071,7 +1072,8 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 
 	response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
 	if err != nil {
-
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, response), "ibm_cloud", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 	} else {
 		_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
@@ -1083,8 +1085,7 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 
 	deleteresponse, err := schematicsClient.DeleteAgentDataWithContext(context, deleteAgentDataOptions)
 	if err != nil {
-
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s", err), "ibm_cloud", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCloudWithContext failed with error: %s and response:\n%s", err, deleteresponse), "ibm_cloud", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
