@@ -1,9 +1,10 @@
-# Examples for IBM Backup recovery API
+# Examples for IBM Backup Recovery API
 
-These examples illustrate how to use the resources and data sources associated with IBM Backup recovery API.
+These examples illustrate how to use the resources and data sources associated with IBM Backup Recovery API.
 
 The following resources are supported:
 * ibm_baas_connection_registration_token
+* ibm_baas_agent_upgrade_task
 * ibm_baas_protection_group_run_request
 * ibm_baas_data_source_connection
 * ibm_baas_recovery_download_files_folders
@@ -12,29 +13,31 @@ The following resources are supported:
 * ibm_baas_protection_group
 * ibm_baas_protection_policy
 * ibm_baas_recovery
-* ibm_baas_search_indexed_object
 * ibm_baas_source_registration
 * ibm_baas_update_protection_group_run_request
 
 The following data sources are supported:
 * ibm_baas_agent_upgrade_tasks
+* ibm_baas_connectors_metadata
 * ibm_baas_data_source_connections
 * ibm_baas_data_source_connectors
 * ibm_baas_download_agent
+* ibm_baas_download_indexed_files
 * ibm_baas_object_snapshots
-* ibm_baas_search_objects
-* ibm_baas_search_protected_objects
+* ibm_baas_protection_group_runs
 * ibm_baas_protection_group
 * ibm_baas_protection_groups
-* ibm_baas_protection_group_run
-* ibm_baas_protection_group_runs
 * ibm_baas_protection_policies
 * ibm_baas_protection_policy
-* ibm_baas_recovery
 * ibm_baas_recoveries
+* ibm_baas_recovery_download_files
+* ibm_baas_recovery
+* ibm_baas_search_indexed_object
+* ibm_baas_search_objects
+* ibm_baas_search_protected_objects
 * ibm_baas_source_registrations
 * ibm_baas_source_registration
-* ibm_baas_download_indexed_files
+
 
 ## Usage
 
@@ -72,6 +75,29 @@ resource "ibm_baas_connection_registration_token" "baas_connection_registration_
 | Name | Description |
 |------|-------------|
 | registration_token |  |
+
+### Resource: ibm_baas_agent_upgrade_task
+
+```hcl
+resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
+  x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
+  agent_ids = var.baas_agent_upgrade_tasks_ids
+  description = ""
+  name = ""
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| agent_ids | Specifies IDs of tasks to be fetched. | `list(number)` | false |
+| retry_task_id | Specifies the retry task id | `number` | false |
+| description | task description| `string` | false |
+| name | name of the task | `string` | false |
+| schedule_end_time_usecs | Specifies the end time specified as a Unix epoch Timestamp in microseconds. | `number` | false |
+| schedule_time_usecs | Specifies the schedule time specified as a Unix epoch Timestamp in microseconds. | `number` | false |
 
 ### Resource: ibm_baas_protection_group_run_request
 
@@ -453,7 +479,7 @@ resource "ibm_baas_source_registration" "baas_source_registration_instance" {
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | environment | Specifies the environment type of the Protection Source. | `string` | true |
 | name | The user specified name for this source. | `string` | false |
-| connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. This field will be depricated in future. Use connections field. | `number` | false |
+| connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. This field will be depricated in future. Use connections field. | `string` | false |
 | connections | Specfies the list of connections for the source. | `list()` | false |
 | connector_group_id | Specifies the connector group id of connector groups. | `number` | false |
 | data_source_connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision. | `string` | false |
@@ -512,6 +538,26 @@ data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
 |------|-------------|
 | tasks | Specifies the list of agent upgrade tasks. |
 
+### Data source: ibm_baas_connectors_metadata
+
+```hcl
+data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
+  x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| connector_image_metadata | Specifies the list of connector image medata that contains image type and connector image url. |
+
 ### Data source: ibm_baas_data_source_connections
 
 ```hcl
@@ -569,6 +615,7 @@ data "ibm_baas_download_agent" "baas_download_agent_instance" {
   x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
   platform = var.baas_download_agent_platform
   linux_params = var.baas_download_agent_linux_params
+  file_path = ""
 }
 ```
 
@@ -577,6 +624,7 @@ data "ibm_baas_download_agent" "baas_download_agent_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| file_path | Specifies file path. | `string` | true |
 | platform | Specifies the platform for which agent needs to be downloaded. | `string` | true |
 | linux_params | Linux agent parameters. | `` | false |
 
@@ -1113,6 +1161,36 @@ data "ibm_baas_recovery" "baas_recovery_instance" {
 | physical_params | Specifies the recovery options specific to Physical environment. |
 | mssql_params | Specifies the recovery options specific to Sql environment. |
 
+
+
+### Data source: ibm_baas_recovery_download_files
+
+```hcl
+data "ibm_baas_recovery_download_files" "baas_recovery_download_files_instance" {
+  recovery_download_files_id = "recovery_download_files_id"
+  x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
+  start_offset = 0
+  length = 0
+  file_type = "file_type"
+  source_name = "source_name"
+  start_time = "start_time"
+  include_tenants = false
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| recovery_download_files_id | Specifies the id of a Recovery. | `string` | true |
+| x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
+| start_offset | Specifies the start offset of file chunk to be downloaded. | `int` | false |
+| length | Specifies the length of bytes to download. This can not be greater than 8MB (8388608 byets). | `int` | false |
+| file_type | Specifies the downloaded type, i.e: error, success_files_list. | `string` | false |
+| source_name | Specifies the name of the source on which restore is done. | `string` | false |
+| start_time | Specifies the start time of restore task. | `string` | false |
+| include_tenants | Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned.| `bool` | false |
+
 ### Data source: ibm_baas_recoveries
 
 ```hcl
@@ -1253,6 +1331,23 @@ data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
 3. End user has BAAS cluster URL
 
 ## Notes
+
+### BAAS cluster URL can be set using environment variable or in endpoints.json respectively
+Example:  
+```
+  export BACKUP_RECOVERY_ENDPOINT=https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2
+  export BACKUP_RECOVERY_CONNECTOR_ENDPOINT=https://1.2.3.4
+```
+OR
+```
+  {
+    "BACKUP_RECOVERY_ENDPOINT" : {
+        "public" : {
+            "us-south": "https://brs-stage-us-south-01.backup-recovery.test.cloud.ibm.com/v2"
+        }
+    }
+}
+```
 
 ### Resources with Incomplete CRUD Operations
 This service includes certain resources that do not have fully implemented CRUD (Create, Read, Update, Delete) operations due to limitations in the underlying APIs. Specifically:

@@ -16,11 +16,16 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
+var (
+	tenantIdRegister = "dmb083pq5n/"
+)
+
 func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 	var conf backuprecoveryv1.SourceRegistrationReponseParams
+
 	environment := "kPhysical"
-	connectionId := "4980716806983529472"
-	endpoint := "172.26.1.24"
+	connectionId := "530243354208762051"
+	endpoint := "172.26.1.16"
 	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""
@@ -36,7 +41,7 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 				Config: testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType, connectionId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBaasSourceRegistrationExists("ibm_baas_source_registration.baas_source_registration_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
 					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "environment", environment),
 					resource.TestCheckResourceAttrSet("ibm_baas_source_registration.baas_source_registration_instance", "id"),
 					resource.TestCheckResourceAttrSet("ibm_baas_source_registration.baas_source_registration_instance", "last_refreshed_time_msecs"),
@@ -55,7 +60,7 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applicationsUpdate, endpoint, hostType, physicalType, connectionId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
 					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "environment", environment),
 				),
 			},
@@ -76,7 +81,7 @@ func testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications,
 				%s
 				}
 			}
-	`, tenantId, environment, connectionId, endpoint, hostType, physicalType, applications)
+	`, tenantIdRegister, environment, connectionId, endpoint, hostType, physicalType, applications)
 }
 
 func testAccCheckIbmBaasSourceRegistrationExists(n string, obj backuprecoveryv1.SourceRegistrationReponseParams) resource.TestCheckFunc {
@@ -96,7 +101,7 @@ func testAccCheckIbmBaasSourceRegistrationExists(n string, obj backuprecoveryv1.
 
 		num, _ := strconv.Atoi(rs.Primary.ID)
 		getProtectionSourceRegistrationOptions.SetID(int64(num))
-		getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
+		getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantIdRegister)
 
 		sourceRegistrationReponseParams, _, err := backupRecoveryClient.GetProtectionSourceRegistration(getProtectionSourceRegistrationOptions)
 		if err != nil {
@@ -122,7 +127,7 @@ func testAccCheckIbmBaasSourceRegistrationDestroy(s *terraform.State) error {
 
 		num, _ := strconv.Atoi(rs.Primary.ID)
 
-		getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
+		getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantIdRegister)
 		getProtectionSourceRegistrationOptions.SetID(int64(num))
 
 		// Try to find the key
