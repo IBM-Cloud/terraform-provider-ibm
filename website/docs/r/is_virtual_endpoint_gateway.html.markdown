@@ -77,6 +77,18 @@ resource "ibm_is_virtual_endpoint_gateway" "example4" {
   resource_group = data.ibm_resource_group.example.id
   security_groups = [ibm_is_security_group.example.id]
 }
+
+// Create endpoint gateway with target as private path service gateway
+resource "ibm_is_virtual_endpoint_gateway" "example5" {
+  name = "example-endpoint-gateway-4"
+  target {
+    crn           = "crn:v1:bluemix:public:is:us-south:a/123456::private-path-service-gateway:r134-fb880975-db45-4459-8548-64e3995ac213"
+    resource_type = "private_path_service_gateway"
+  }
+  vpc            = ibm_is_vpc.example.id
+  resource_group = data.ibm_resource_group.example.id
+  security_groups = [ibm_is_security_group.example.id]
+}
 ```
 
 ## Argument reference
