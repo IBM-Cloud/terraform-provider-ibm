@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmBackupRecoverySourceRegistrationDataSourceBasic(t *testing.T) {
 	// environment := "kPhysical"
-	objectId := 72
+	objectId := 23
 	// endpoint := "172.26.1.24"
 	// hostType := "kLinux"
 	// physicalType := "kHost"

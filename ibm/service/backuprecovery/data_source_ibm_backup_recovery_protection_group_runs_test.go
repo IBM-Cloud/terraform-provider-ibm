@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryProtectionGroupRunsDataSourceBasic(t *testing.T) {
-	groupName := "tf-pg-10"
+	groupName := "terra-test-group-1"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

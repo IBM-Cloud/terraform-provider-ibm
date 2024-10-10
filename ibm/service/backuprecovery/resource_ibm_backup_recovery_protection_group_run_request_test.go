@@ -17,9 +17,9 @@ import (
 )
 
 func TestAccIbmBackupRecoveryProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 72
+	objectId := 23
 	runType := "kRegular"
-	groupName := "tf-pg-10" //"tf-group-5"
+	groupName := "terra-test-group-1" //"tf-group-5"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                  func() { acc.TestAccPreCheck(t) },
@@ -110,7 +110,7 @@ func testAccCreateIbmBaasProtectionGroupRunCancelRequestConfigBasic(runType, gro
 	}
 
 	data "ibm_backup_recovery_protection_group_runs" "example_runs" {
-		x_ibm_tenant_id = "nhvbcdlnp8/"
+		x_ibm_tenant_id = "%[1]s"
 		protection_group_id = data.ibm_backup_recovery_protection_groups.baas_protection_group_existing_instance.protection_groups.0.id
 	}
 

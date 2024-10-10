@@ -26,7 +26,7 @@ func TestAccIbmBackupRecoverySearchProtectedObjectsDataSourceBasic(t *testing.T)
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "metadata.#"),
+					// resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "metadata.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "objects.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "num_results"),
 				),

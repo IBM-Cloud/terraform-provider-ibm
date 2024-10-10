@@ -25,7 +25,7 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 
 	environment := "kPhysical"
 	connectionId := "530243354208762051"
-	endpoint := "172.26.1.16"
+	endpoint := "172.26.1.18"
 	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""
@@ -91,7 +91,6 @@ func testAccCheckIbmBackupRecoverySourceRegistrationExists(n string, obj backupr
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-
 		backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 		if err != nil {
 			return err

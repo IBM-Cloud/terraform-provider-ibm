@@ -20,7 +20,7 @@ import (
 func TestAccIbmBackupRecoveryAgentUpgradeTaskBasic(t *testing.T) {
 	var conf backuprecoveryv1.AgentUpgradeTaskStates
 	name := fmt.Sprintf("tf_name_upgarde_task_%d", acctest.RandIntRange(10, 100))
-	agentId := 73
+	agentId := 24
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },

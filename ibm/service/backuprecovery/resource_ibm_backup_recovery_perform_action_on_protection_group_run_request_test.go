@@ -17,9 +17,9 @@ import (
 )
 
 func TestAccIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
-	objectId := 72
+	objectId := 23
 	runType := "kRegular"
-	groupName := "tf-pg-10" //"tf-group-5"
+	groupName := "terra-test-group-1" //"tf-group-5"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
