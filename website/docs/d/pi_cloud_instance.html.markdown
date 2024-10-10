@@ -45,11 +45,13 @@ In addition to the argument reference list, you can access the following attribu
 
   Nested scheme for `pvm_instances`:
   - `creation_date` - (String) Date of PVM instance creation.
+  - `crn` - (String) The CRN of this resource.
   - `href` - (String) Link to Cloud Instance resource.
   - `id` - (String) PVM Instance ID.
   - `name` - (String) Name of the server.
   - `status` - (String) The status of the instance.
   - `systype` - (string) System type used to host the instance.
+  - `user_tags` - (List) List of user tags attached to the resource.
 - `region` - (String) The region the cloud instance lives.
 - `tenant_id` - (String) The tenant ID that owns this cloud instance.
 - `total_instances` - (String) The count of lpars that belong to this specific cloud instance.

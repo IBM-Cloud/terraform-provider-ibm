@@ -300,6 +300,13 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeString,
 			},
+			Arg_UserTags: {
+				Description: "The user tags attached to this resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			Arg_VirtualCoresAssigned: {
 				Computed:    true,
 				Description: "Virtual Cores Assigned to the PVMInstance",
@@ -322,6 +329,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
 			Attr_HealthStatus: {
 				Computed:    true,
 				Description: "PI Instance health status",
@@ -472,6 +484,20 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
+
+	// If user tags are set, make sure tags are set correctly before moving on
+	if _, ok := d.GetOk(Arg_UserTags); ok {
+		oldList, newList := d.GetChange(Arg_UserTags)
+		for _, s := range *pvmList {
+			if s.Crn != "" {
+				err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(s.Crn), "", UserTagType)
+				if err != nil {
+					log.Printf("Error on update of pi instance (%s) pi_user_tags during creation: %s", *s.PvmInstanceID, err)
+				}
+			}
+		}
+	}
+
 	// If virtual optical device provided then update cloud initialization
 	if vod, ok := d.GetOk(Arg_VirtualOpticalDevice); ok {
 		for _, s := range *pvmList {
@@ -510,6 +536,14 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
+	if powervmdata.Crn != "" {
+		d.Set(Attr_CRN, powervmdata.Crn)
+		tags, err := flex.GetTagsUsingCRN(meta, string(powervmdata.Crn))
+		if err != nil {
+			log.Printf("Error on get of ibm pi instance (%s) pi_user_tags: %s", *powervmdata.PvmInstanceID, err)
+		}
+		d.Set(Arg_UserTags, tags)
+	}
 	d.Set(Arg_Memory, powervmdata.Memory)
 	d.Set(Arg_Processors, powervmdata.Processors)
 	if powervmdata.Status != nil {
@@ -882,6 +916,16 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi instance (%s) pi_user_tags: %s", instanceID, err)
+			}
+		}
+	}
+
 	return resourceIBMPIInstanceRead(ctx, d, meta)
 }
 
@@ -1416,6 +1460,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 	if deploymentTarget, ok := d.GetOk(Arg_DeploymentTarget); ok {
 		body.DeploymentTarget = expandDeploymentTarget(deploymentTarget.(*schema.Set).List())
 	}
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
+	}
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision: %v", err)
@@ -1609,6 +1656,9 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	}
 	if deploymentTarget, ok := d.GetOk(Arg_DeploymentTarget); ok {
 		body.DeploymentTarget = expandDeploymentTarget(deploymentTarget.(*schema.Set).List())
+	}
+	if tags, ok := d.GetOk(Arg_UserTags); ok {
+		body.UserTags = flex.FlattenSet(tags.(*schema.Set))
 	}
 	pvmList, err := client.Create(body)
 

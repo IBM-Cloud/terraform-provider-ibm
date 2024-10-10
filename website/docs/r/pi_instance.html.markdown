@@ -117,6 +117,7 @@ Review the argument references that you can specify for your resource.
 - `pi_sys_type` - (Optional, String) The type of system on which to create the VM (e880/e980/e1080/s922/s1022).
   - Supported SAP system types are (e880/e980/e1080).
 - `pi_user_data` - (Optional, String) The user data `cloud-init` to pass to the instance during creation. It can be a base64 encoded or an unencoded string. If it is an unencoded string, the provider will encode it before it passing it down.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
 - `pi_virtual_optical_device` - (Optional, String) Virtual Machine's Cloud Initialization Virtual Optical Device.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
@@ -125,6 +126,7 @@ Review the argument references that you can specify for your resource.
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `fault` - (Map) Fault information, if any.
   
    Nested scheme for `fault`:
