@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ */
 
 package contextbasedrestrictions
 

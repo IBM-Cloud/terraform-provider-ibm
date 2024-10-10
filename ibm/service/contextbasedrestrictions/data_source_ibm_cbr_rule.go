@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -10,7 +10,6 @@ package contextbasedrestrictions
 import (
 	"context"
 	"fmt"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 )
 
