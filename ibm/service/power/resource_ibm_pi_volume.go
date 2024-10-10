@@ -87,6 +87,14 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeBool,
 			},
+			Arg_ReplicationSites: {
+				Description: "List of replication sites for volume replication.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ForceNew:    true,
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			Arg_UserTags: {
 				Description: "The user tags attached to this resource.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -183,6 +191,12 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Description: "The replication status of the volume.",
 				Type:        schema.TypeString,
 			},
+			Attr_ReplicationSites: {
+				Computed:    true,
+				Description: "List of replication sites for volume replication.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+			},
 			Attr_ReplicationType: {
 				Computed:    true,
 				Description: "The replication type of the volume 'metro' or 'global'.",
@@ -251,6 +265,13 @@ func resourceIBMPIVolumeCreate(ctx context.Context, d *schema.ResourceData, meta
 	if v, ok := d.GetOk(Arg_ReplicationEnabled); ok {
 		replicationEnabled := v.(bool)
 		body.ReplicationEnabled = &replicationEnabled
+	}
+	if v, ok := d.GetOk(Arg_ReplicationSites); ok {
+		if d.Get(Arg_ReplicationEnabled).(bool) {
+			body.ReplicationSites = flex.FlattenSet(v.(*schema.Set))
+		} else {
+			return diag.Errorf("Replication (%s) must be enabled if replication sites are specified.", Arg_ReplicationEnabled)
+		}
 	}
 	if ap, ok := d.GetOk(Arg_AffinityPolicy); ok {
 		policy := ap.(string)
@@ -355,6 +376,7 @@ func resourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set(Attr_MirroringState, vol.MirroringState)
 	d.Set(Attr_PrimaryRole, vol.PrimaryRole)
 	d.Set(Arg_ReplicationEnabled, vol.ReplicationEnabled)
+	d.Set(Attr_ReplicationSites, vol.ReplicationSites)
 	d.Set(Attr_ReplicationStatus, vol.ReplicationStatus)
 	d.Set(Attr_ReplicationType, vol.ReplicationType)
 	d.Set(Attr_VolumeStatus, vol.State)

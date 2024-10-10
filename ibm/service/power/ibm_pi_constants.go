@@ -63,6 +63,7 @@ const (
 	Arg_Remove                              = "pi_remove"
 	Arg_Replicants                          = "pi_replicants"
 	Arg_ReplicationEnabled                  = "pi_replication_enabled"
+	Arg_ReplicationSites                    = "pi_replication_sites"
 	Arg_ReplicationPolicy                   = "pi_replication_policy"
 	Arg_ReplicationScheme                   = "pi_replication_scheme"
 	Arg_ResourceGroupID                     = "pi_resource_group_id"
