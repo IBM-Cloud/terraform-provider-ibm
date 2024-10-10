@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccIBMPIVolumeDataSource_basic(t *testing.T) {
+	volumeRes := "data.ibm_pi_volume.testacc_ds_volume"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -20,7 +21,7 @@ func TestAccIBMPIVolumeDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIVolumeDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_volume.testacc_ds_volume", "id"),
+					resource.TestCheckResourceAttrSet(volumeRes, "id"),
 				),
 			},
 		},
