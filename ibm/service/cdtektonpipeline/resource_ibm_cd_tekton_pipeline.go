@@ -275,13 +275,13 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Computed:    true,
 							Description: "Trigger type.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Computed:    true,
 							Description: "Trigger name.",
 						},
@@ -293,7 +293,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"event_listener": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Computed:    true,
 							Description: "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
 						},
@@ -609,10 +609,10 @@ func resourceIBMCdTektonPipelineCreate(context context.Context, d *schema.Resour
 	if _, ok := d.GetOk("next_build_number"); ok {
 		createTektonPipelineOptions.SetNextBuildNumber(int64(d.Get("next_build_number").(int)))
 	}
-	if _, ok := d.GetOkExists("enable_notifications"); ok {
+	if _, ok := d.GetOk("enable_notifications"); ok {
 		createTektonPipelineOptions.SetEnableNotifications(d.Get("enable_notifications").(bool))
 	}
-	if _, ok := d.GetOkExists("enable_partial_cloning"); ok {
+	if _, ok := d.GetOk("enable_partial_cloning"); ok {
 		createTektonPipelineOptions.SetEnablePartialCloning(d.Get("enable_partial_cloning").(bool))
 	}
 	if _, ok := d.GetOk("worker"); ok {
@@ -1342,11 +1342,11 @@ func ResourceIBMCdTektonPipelineTektonPipelinePatchAsPatch(patchVals *cdtektonpi
 		patch["next_build_number"] = nil
 	}
 	path = "enable_notifications"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_notifications"] = nil
 	}
 	path = "enable_partial_cloning"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_partial_cloning"] = nil
 	}
 	path = "worker"

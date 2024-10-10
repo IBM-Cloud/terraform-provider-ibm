@@ -69,7 +69,7 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cd_tekton_pipeline.cd_tekton_pipeline",
+				ResourceName:      "ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -423,6 +423,28 @@ func TestResourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 		workerModel["type"] = "testString"
 		workerModel["id"] = "testString"
 
+		toolModel := make(map[string]interface{})
+		toolModel["id"] = "testString"
+
+		triggerSourcePropertiesModel := make(map[string]interface{})
+		triggerSourcePropertiesModel["url"] = "testString"
+		triggerSourcePropertiesModel["branch"] = "testString"
+		triggerSourcePropertiesModel["pattern"] = "testString"
+		triggerSourcePropertiesModel["blind_connection"] = true
+		triggerSourcePropertiesModel["hook_id"] = "testString"
+		triggerSourcePropertiesModel["tool"] = []map[string]interface{}{toolModel}
+
+		triggerSourceModel := make(map[string]interface{})
+		triggerSourceModel["type"] = "testString"
+		triggerSourceModel["properties"] = []map[string]interface{}{triggerSourcePropertiesModel}
+
+		genericSecretModel := make(map[string]interface{})
+		genericSecretModel["type"] = "token_matches"
+		genericSecretModel["value"] = "testString"
+		genericSecretModel["source"] = "header"
+		genericSecretModel["key_name"] = "testString"
+		genericSecretModel["algorithm"] = "md4"
+
 		model := make(map[string]interface{})
 		model["type"] = "testString"
 		model["name"] = "start-deploy"
@@ -460,6 +482,28 @@ func TestResourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 	workerModel.Name = core.StringPtr("testString")
 	workerModel.Type = core.StringPtr("testString")
 	workerModel.ID = core.StringPtr("testString")
+
+	toolModel := new(cdtektonpipelinev2.Tool)
+	toolModel.ID = core.StringPtr("testString")
+
+	triggerSourcePropertiesModel := new(cdtektonpipelinev2.TriggerSourceProperties)
+	triggerSourcePropertiesModel.URL = core.StringPtr("testString")
+	triggerSourcePropertiesModel.Branch = core.StringPtr("testString")
+	triggerSourcePropertiesModel.Pattern = core.StringPtr("testString")
+	triggerSourcePropertiesModel.BlindConnection = core.BoolPtr(true)
+	triggerSourcePropertiesModel.HookID = core.StringPtr("testString")
+	triggerSourcePropertiesModel.Tool = toolModel
+
+	triggerSourceModel := new(cdtektonpipelinev2.TriggerSource)
+	triggerSourceModel.Type = core.StringPtr("testString")
+	triggerSourceModel.Properties = triggerSourcePropertiesModel
+
+	genericSecretModel := new(cdtektonpipelinev2.GenericSecret)
+	genericSecretModel.Type = core.StringPtr("token_matches")
+	genericSecretModel.Value = core.StringPtr("testString")
+	genericSecretModel.Source = core.StringPtr("header")
+	genericSecretModel.KeyName = core.StringPtr("testString")
+	genericSecretModel.Algorithm = core.StringPtr("md4")
 
 	model := new(cdtektonpipelinev2.Trigger)
 	model.Type = core.StringPtr("testString")

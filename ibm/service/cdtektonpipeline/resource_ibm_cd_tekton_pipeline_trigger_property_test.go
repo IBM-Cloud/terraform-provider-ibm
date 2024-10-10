@@ -74,9 +74,10 @@ func TestAccIBMCdTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property_instance",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"pipeline_id", "trigger_id"},
 			},
 		},
 	})

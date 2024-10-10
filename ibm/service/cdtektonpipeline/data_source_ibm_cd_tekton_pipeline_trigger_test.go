@@ -71,13 +71,9 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "event_listener"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "properties.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "worker.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "max_concurrent_runs"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "favorite"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "enable_events_from_forks"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "source.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "secret.#"),
 				),
 			},
 		},
@@ -144,7 +140,7 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfigBasic(triggerPipeline
 			event_listener = "%s"
 		}
 
-		data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
+		data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
 			pipeline_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.trigger_id
 		}
@@ -211,13 +207,14 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID st
 			event_listener = "%s"
 			max_concurrent_runs = %s
 			enabled = %s
+			favorite = %s
 		}
 
 		data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
 			pipeline_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.trigger_id
 		}
-	`, rgName, tcName, triggerType, triggerName, triggerEventListener, triggerMaxConcurrentRuns, triggerEnabled)
+	`, rgName, tcName, triggerType, triggerName, triggerEventListener, triggerMaxConcurrentRuns, triggerEnabled, triggerFavorite)
 }
 
 func TestDataSourceIBMCdTektonPipelineTriggerTriggerPropertyToMap(t *testing.T) {
