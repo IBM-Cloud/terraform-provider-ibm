@@ -1992,7 +1992,7 @@ data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
 
 // Create baas_object_snapshots data source
 data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
-  baas_object_snapshots_id = var.baas_object_snapshots_baas_object_snapshots_id
+  object_snapshots_id = var.baas_object_snapshots_baas_object_snapshots_id
   x_ibm_tenant_id = var.baas_object_snapshots_x_ibm_tenant_id
   from_time_usecs = var.baas_object_snapshots_from_time_usecs
   to_time_usecs = var.baas_object_snapshots_to_time_usecs
@@ -2072,7 +2072,7 @@ data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objec
 
 // Create baas_protection_group data source
 data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
-  baas_protection_group_id = var.data_baas_protection_group_baas_protection_group_id
+  protection_group_id = var.data_baas_protection_group_baas_protection_group_id
   x_ibm_tenant_id = var.data_baas_protection_group_x_ibm_tenant_id
   request_initiator_type = var.data_baas_protection_group_request_initiator_type
   include_last_run_info = var.data_baas_protection_group_include_last_run_info
@@ -2115,7 +2115,7 @@ data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
 
 // Create baas_protection_group_run data source
 data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_instance" {
-  baas_protection_group_run_id = var.baas_protection_group_run_baas_protection_group_run_id
+  protection_group_run_id = var.baas_protection_group_run_baas_protection_group_run_id
   x_ibm_tenant_id = var.baas_protection_group_run_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_group_run_request_initiator_type
   run_id = var.baas_protection_group_run_run_id
@@ -2143,7 +2143,7 @@ data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_insta
 
 // Create baas_protection_group_runs data source
 data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
-  baas_protection_group_runs_id = var.baas_protection_group_runs_baas_protection_group_runs_id
+  protection_group_runs_id = var.baas_protection_group_runs_baas_protection_group_runs_id
   x_ibm_tenant_id = var.baas_protection_group_runs_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_group_runs_request_initiator_type
   run_id = var.baas_protection_group_runs_run_id
@@ -2187,7 +2187,7 @@ data "ibm_backup_recovery_protection_policies" "baas_protection_policies_instanc
 
 // Create baas_protection_policy data source
 data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
-  baas_protection_policy_id = var.data_baas_protection_policy_baas_protection_policy_id
+  protection_policy_id = var.data_baas_protection_policy_baas_protection_policy_id
   x_ibm_tenant_id = var.data_baas_protection_policy_x_ibm_tenant_id
   request_initiator_type = var.data_baas_protection_policy_request_initiator_type
 }
@@ -2198,7 +2198,7 @@ data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 
 // Create baas_recovery data source
 data "ibm_backup_recovery_recovery" "baas_recovery_instance" {
-  baas_recovery_id = var.data_baas_recovery_baas_recovery_id
+  recovery_id = var.data_baas_recovery_baas_recovery_id
   x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
 }
 
@@ -2241,7 +2241,7 @@ data "ibm_backup_recovery_source_registrations" "baas_source_registrations_insta
 
 // Create baas_source_registration data source
 data "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
-  baas_source_registration_id = var.data_baas_source_registration_baas_source_registration_id
+  source_registration_id = var.data_baas_source_registration_baas_source_registration_id
   x_ibm_tenant_id = var.data_baas_source_registration_x_ibm_tenant_id
   request_initiator_type = var.data_baas_source_registration_request_initiator_type
 }

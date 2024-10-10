@@ -50,7 +50,7 @@ func testAccCheckIbmBackupRecoveryRecoveryDataSourceConfigBasic(objectId int, na
 
 	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
 		x_ibm_tenant_id = "%s"
-		baas_object_id = %d
+		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {

@@ -27,7 +27,7 @@ func DataSourceIbmBackupRecoveryObjectSnapshots() *schema.Resource {
 		ReadContext: dataSourceIbmBackupRecoveryObjectSnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
-			"baas_object_id": &schema.Schema{
+			"object_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "Specifies the id of the Object.",
@@ -630,7 +630,7 @@ func dataSourceIbmBackupRecoveryObjectSnapshotsRead(context context.Context, d *
 
 	getObjectSnapshotsOptions := &backuprecoveryv1.GetObjectSnapshotsOptions{}
 
-	getObjectSnapshotsOptions.SetID(int64(d.Get("baas_object_id").(int)))
+	getObjectSnapshotsOptions.SetID(int64(d.Get("object_id").(int)))
 	getObjectSnapshotsOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
 	if _, ok := d.GetOk("from_time_usecs"); ok {
 		getObjectSnapshotsOptions.SetFromTimeUsecs(int64(d.Get("from_time_usecs").(int)))

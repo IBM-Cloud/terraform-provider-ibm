@@ -40,7 +40,7 @@ func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, obje
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
-		baas_object_id = %d
+		object_id = %d
 	  }
 
 	resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {

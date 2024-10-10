@@ -56,9 +56,9 @@ Run `terraform destroy` when you don't need these resources.
 ### Resource: ibm_backup_recovery_connection_registration_token
 
 ```hcl
-resource "ibm_backup_recovery_connection_registration_token" "baas_connection_registration_token_instance" {
-  connection_id = var.baas_connection_registration_token_connection_id
-  x_ibm_tenant_id = var.baas_connection_registration_token_x_ibm_tenant_id
+resource "ibm_backup_recovery_connection_registration_token" "backup_recovery_connection_registration_token_instance" {
+  connection_id = var.backup_recovery_connection_registration_token_connection_id
+  x_ibm_tenant_id = var.backup_recovery_connection_registration_token_x_ibm_tenant_id
 }
 ```
 
@@ -79,9 +79,9 @@ resource "ibm_backup_recovery_connection_registration_token" "baas_connection_re
 ### Resource: ibm_backup_recovery_agent_upgrade_task
 
 ```hcl
-resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
-  x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
-  agent_ids = var.baas_agent_upgrade_tasks_ids
+resource "ibm_backup_recovery_agent_upgrade_task" "backup_recovery_agent_upgrade_task_instance" {
+  x_ibm_tenant_id = var.backup_recovery_agent_upgrade_tasks_x_ibm_tenant_id
+  agent_ids = var.backup_recovery_agent_upgrade_tasks_ids
   description = ""
   name = ""
 }
@@ -102,11 +102,11 @@ resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_insta
 ### Resource: ibm_backup_recovery_protection_group_run_request
 
 ```hcl
-resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
-  x_ibm_tenant_id = var.baas_protection_group_run_request_x_ibm_tenant_id
-  run_type = var.baas_protection_group_run_request_run_type
-  objects = var.baas_protection_group_run_request_objects
-  targets_config = var.baas_protection_group_run_request_targets_config
+resource "ibm_backup_recovery_protection_group_run_request" "backup_recovery_protection_group_run_request_instance" {
+  x_ibm_tenant_id = var.backup_recovery_protection_group_run_request_x_ibm_tenant_id
+  run_type = var.backup_recovery_protection_group_run_request_run_type
+  objects = var.backup_recovery_protection_group_run_request_objects
+  targets_config = var.backup_recovery_protection_group_run_request_targets_config
 }
 ```
 
@@ -123,9 +123,9 @@ resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_gro
 ### Resource: ibm_backup_recovery_data_source_connection
 
 ```hcl
-resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
-  x_ibm_tenant_id = var.baas_data_source_connection_x_ibm_tenant_id
-  connection_name = var.baas_data_source_connection_connection_name
+resource "ibm_backup_recovery_data_source_connection" "backup_recovery_data_source_connection_instance" {
+  x_ibm_tenant_id = var.backup_recovery_data_source_connection_x_ibm_tenant_id
+  connection_name = var.backup_recovery_data_source_connection_connection_name
 }
 ```
 
@@ -149,14 +149,14 @@ resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connecti
 ### Resource: ibm_backup_recovery_recovery_download_files_folders
 
 ```hcl
-resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
-  x_ibm_tenant_id = var.baas_recovery_download_files_folders_x_ibm_tenant_id
-  documents = var.baas_recovery_download_files_folders_documents
-  name = var.baas_recovery_download_files_folders_name
-  object = var.baas_recovery_download_files_folders_object
-  parent_recovery_id = var.baas_recovery_download_files_folders_parent_recovery_id
-  files_and_folders = var.baas_recovery_download_files_folders_files_and_folders
-  glacier_retrieval_type = var.baas_recovery_download_files_folders_glacier_retrieval_type
+resource "ibm_backup_recovery_recovery_download_files_folders" "backup_recovery_recovery_download_files_folders_instance" {
+  x_ibm_tenant_id = var.backup_recovery_recovery_download_files_folders_x_ibm_tenant_id
+  documents = var.backup_recovery_recovery_download_files_folders_documents
+  name = var.backup_recovery_recovery_download_files_folders_name
+  object = var.backup_recovery_recovery_download_files_folders_object
+  parent_recovery_id = var.backup_recovery_recovery_download_files_folders_parent_recovery_id
+  files_and_folders = var.backup_recovery_recovery_download_files_folders_files_and_folders
+  glacier_retrieval_type = var.backup_recovery_recovery_download_files_folders_glacier_retrieval_type
 }
 ```
 
@@ -176,13 +176,13 @@ resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_do
 ### Resource: ibm_backup_recovery_restore_points
 
 ```hcl
-resource "ibm_backup_recovery_restore_points" "baas_restore_points_instance" {
-  x_ibm_tenant_id = var.baas_restore_points_x_ibm_tenant_id
-  end_time_usecs = var.baas_restore_points_end_time_usecs
-  environment = var.baas_restore_points_environment
-  protection_group_ids = var.baas_restore_points_protection_group_ids
-  source_id = var.baas_restore_points_source_id
-  start_time_usecs = var.baas_restore_points_start_time_usecs
+resource "ibm_backup_recovery_restore_points" "backup_recovery_restore_points_instance" {
+  x_ibm_tenant_id = var.backup_recovery_restore_points_x_ibm_tenant_id
+  end_time_usecs = var.backup_recovery_restore_points_end_time_usecs
+  environment = var.backup_recovery_restore_points_environment
+  protection_group_ids = var.backup_recovery_restore_points_protection_group_ids
+  source_id = var.backup_recovery_restore_points_source_id
+  start_time_usecs = var.backup_recovery_restore_points_start_time_usecs
 }
 ```
 
@@ -201,12 +201,12 @@ resource "ibm_backup_recovery_restore_points" "baas_restore_points_instance" {
 ### Resource: ibm_backup_recovery_perform_action_on_protection_group_run_request
 
 ```hcl
-resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
-  x_ibm_tenant_id = var.baas_perform_action_on_protection_group_run_request_x_ibm_tenant_id
-  action = var.baas_perform_action_on_protection_group_run_request_action
-  pause_params = var.baas_perform_action_on_protection_group_run_request_pause_params
-  resume_params = var.baas_perform_action_on_protection_group_run_request_resume_params
-  cancel_params = var.baas_perform_action_on_protection_group_run_request_cancel_params
+resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "backup_recovery_perform_action_on_protection_group_run_request_instance" {
+  x_ibm_tenant_id = var.backup_recovery_perform_action_on_protection_group_run_request_x_ibm_tenant_id
+  action = var.backup_recovery_perform_action_on_protection_group_run_request_action
+  pause_params = var.backup_recovery_perform_action_on_protection_group_run_request_pause_params
+  resume_params = var.backup_recovery_perform_action_on_protection_group_run_request_resume_params
+  cancel_params = var.backup_recovery_perform_action_on_protection_group_run_request_cancel_params
 }
 ```
 
@@ -224,25 +224,25 @@ resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "b
 ### Resource: ibm_backup_recovery_protection_group
 
 ```hcl
-resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
-  x_ibm_tenant_id = var.baas_protection_group_x_ibm_tenant_id
-  name = var.baas_protection_group_name
-  policy_id = var.baas_protection_group_policy_id
-  priority = var.baas_protection_group_priority
-  description = var.baas_protection_group_description
-  start_time = var.baas_protection_group_start_time
-  end_time_usecs = var.baas_protection_group_end_time_usecs
-  last_modified_timestamp_usecs = var.baas_protection_group_last_modified_timestamp_usecs
-  alert_policy = var.baas_protection_group_alert_policy
-  sla = var.baas_protection_group_sla
-  qos_policy = var.baas_protection_group_qos_policy
-  abort_in_blackouts = var.baas_protection_group_abort_in_blackouts
-  pause_in_blackouts = var.baas_protection_group_pause_in_blackouts
-  is_paused = var.baas_protection_group_is_paused
-  environment = var.baas_protection_group_environment
-  advanced_configs = var.baas_protection_group_advanced_configs
-  physical_params = var.baas_protection_group_physical_params
-  mssql_params = var.baas_protection_group_mssql_params
+resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_group_instance" {
+  x_ibm_tenant_id = var.backup_recovery_protection_group_x_ibm_tenant_id
+  name = var.backup_recovery_protection_group_name
+  policy_id = var.backup_recovery_protection_group_policy_id
+  priority = var.backup_recovery_protection_group_priority
+  description = var.backup_recovery_protection_group_description
+  start_time = var.backup_recovery_protection_group_start_time
+  end_time_usecs = var.backup_recovery_protection_group_end_time_usecs
+  last_modified_timestamp_usecs = var.backup_recovery_protection_group_last_modified_timestamp_usecs
+  alert_policy = var.backup_recovery_protection_group_alert_policy
+  sla = var.backup_recovery_protection_group_sla
+  qos_policy = var.backup_recovery_protection_group_qos_policy
+  abort_in_blackouts = var.backup_recovery_protection_group_abort_in_blackouts
+  pause_in_blackouts = var.backup_recovery_protection_group_pause_in_blackouts
+  is_paused = var.backup_recovery_protection_group_is_paused
+  environment = var.backup_recovery_protection_group_environment
+  advanced_configs = var.backup_recovery_protection_group_advanced_configs
+  physical_params = var.backup_recovery_protection_group_physical_params
+  mssql_params = var.backup_recovery_protection_group_mssql_params
 }
 ```
 
@@ -288,21 +288,21 @@ resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance"
 ### Resource: ibm_backup_recovery_protection_policy
 
 ```hcl
-resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
-  x_ibm_tenant_id = var.baas_protection_policy_x_ibm_tenant_id
-  name = var.baas_protection_policy_name
-  backup_policy = var.baas_protection_policy_backup_policy
-  description = var.baas_protection_policy_description
-  blackout_window = var.baas_protection_policy_blackout_window
-  extended_retention = var.baas_protection_policy_extended_retention
-  remote_target_policy = var.baas_protection_policy_remote_target_policy
-  cascaded_targets_config = var.baas_protection_policy_cascaded_targets_config
-  retry_options = var.baas_protection_policy_retry_options
-  data_lock = var.baas_protection_policy_data_lock
-  version = var.baas_protection_policy_version
-  is_cbs_enabled = var.baas_protection_policy_is_cbs_enabled
-  last_modification_time_usecs = var.baas_protection_policy_last_modification_time_usecs
-  template_id = var.baas_protection_policy_template_id
+resource "ibm_backup_recovery_protection_policy" "backup_recovery_protection_policy_instance" {
+  x_ibm_tenant_id = var.backup_recovery_protection_policy_x_ibm_tenant_id
+  name = var.backup_recovery_protection_policy_name
+  backup_policy = var.backup_recovery_protection_policy_backup_policy
+  description = var.backup_recovery_protection_policy_description
+  blackout_window = var.backup_recovery_protection_policy_blackout_window
+  extended_retention = var.backup_recovery_protection_policy_extended_retention
+  remote_target_policy = var.backup_recovery_protection_policy_remote_target_policy
+  cascaded_targets_config = var.backup_recovery_protection_policy_cascaded_targets_config
+  retry_options = var.backup_recovery_protection_policy_retry_options
+  data_lock = var.backup_recovery_protection_policy_data_lock
+  version = var.backup_recovery_protection_policy_version
+  is_cbs_enabled = var.backup_recovery_protection_policy_is_cbs_enabled
+  last_modification_time_usecs = var.backup_recovery_protection_policy_last_modification_time_usecs
+  template_id = var.backup_recovery_protection_policy_template_id
 }
 ```
 
@@ -338,13 +338,13 @@ resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instanc
 ### Resource: ibm_backup_recovery_recovery
 
 ```hcl
-resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
-  x_ibm_tenant_id = var.baas_recovery_x_ibm_tenant_id
-  request_initiator_type = var.baas_recovery_request_initiator_type
-  name = var.baas_recovery_name
-  snapshot_environment = var.baas_recovery_snapshot_environment
-  physical_params = var.baas_recovery_physical_params
-  mssql_params = var.baas_recovery_mssql_params
+resource "ibm_backup_recovery_recovery" "backup_recovery_recovery_instance" {
+  x_ibm_tenant_id = var.backup_recovery_recovery_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_recovery_request_initiator_type
+  name = var.backup_recovery_recovery_name
+  snapshot_environment = var.backup_recovery_recovery_snapshot_environment
+  physical_params = var.backup_recovery_recovery_physical_params
+  mssql_params = var.backup_recovery_recovery_mssql_params
 }
 ```
 
@@ -383,38 +383,38 @@ resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
 ### Resource: ibm_backup_recovery_search_indexed_object
 
 ```hcl
-resource "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object_instance" {
-  x_ibm_tenant_id = var.baas_search_indexed_object_x_ibm_tenant_id
-  protection_group_ids = var.baas_search_indexed_object_protection_group_ids
-  storage_domain_ids = var.baas_search_indexed_object_storage_domain_ids
-  tenant_id = var.baas_search_indexed_object_tenant_id
-  include_tenants = var.baas_search_indexed_object_include_tenants
-  tags = var.baas_search_indexed_object_tags
-  snapshot_tags = var.baas_search_indexed_object_snapshot_tags
-  must_have_tag_ids = var.baas_search_indexed_object_must_have_tag_ids
-  might_have_tag_ids = var.baas_search_indexed_object_might_have_tag_ids
-  must_have_snapshot_tag_ids = var.baas_search_indexed_object_must_have_snapshot_tag_ids
-  might_have_snapshot_tag_ids = var.baas_search_indexed_object_might_have_snapshot_tag_ids
-  pagination_cookie = var.baas_search_indexed_object_pagination_cookie
-  count = var.baas_search_indexed_object_count
-  object_type = var.baas_search_indexed_object_object_type
-  use_cached_data = var.baas_search_indexed_object_use_cached_data
-  cassandra_params = var.baas_search_indexed_object_cassandra_params
-  couchbase_params = var.baas_search_indexed_object_couchbase_params
-  email_params = var.baas_search_indexed_object_email_params
-  exchange_params = var.baas_search_indexed_object_exchange_params
-  file_params = var.baas_search_indexed_object_file_params
-  hbase_params = var.baas_search_indexed_object_hbase_params
-  hdfs_params = var.baas_search_indexed_object_hdfs_params
-  hive_params = var.baas_search_indexed_object_hive_params
-  mongodb_params = var.baas_search_indexed_object_mongodb_params
-  ms_groups_params = var.baas_search_indexed_object_ms_groups_params
-  ms_teams_params = var.baas_search_indexed_object_ms_teams_params
-  one_drive_params = var.baas_search_indexed_object_one_drive_params
-  public_folder_params = var.baas_search_indexed_object_public_folder_params
-  sfdc_params = var.baas_search_indexed_object_sfdc_params
-  sharepoint_params = var.baas_search_indexed_object_sharepoint_params
-  uda_params = var.baas_search_indexed_object_uda_params
+resource "ibm_backup_recovery_search_indexed_object" "backup_recovery_search_indexed_object_instance" {
+  x_ibm_tenant_id = var.backup_recovery_search_indexed_object_x_ibm_tenant_id
+  protection_group_ids = var.backup_recovery_search_indexed_object_protection_group_ids
+  storage_domain_ids = var.backup_recovery_search_indexed_object_storage_domain_ids
+  tenant_id = var.backup_recovery_search_indexed_object_tenant_id
+  include_tenants = var.backup_recovery_search_indexed_object_include_tenants
+  tags = var.backup_recovery_search_indexed_object_tags
+  snapshot_tags = var.backup_recovery_search_indexed_object_snapshot_tags
+  must_have_tag_ids = var.backup_recovery_search_indexed_object_must_have_tag_ids
+  might_have_tag_ids = var.backup_recovery_search_indexed_object_might_have_tag_ids
+  must_have_snapshot_tag_ids = var.backup_recovery_search_indexed_object_must_have_snapshot_tag_ids
+  might_have_snapshot_tag_ids = var.backup_recovery_search_indexed_object_might_have_snapshot_tag_ids
+  pagination_cookie = var.backup_recovery_search_indexed_object_pagination_cookie
+  count = var.backup_recovery_search_indexed_object_count
+  object_type = var.backup_recovery_search_indexed_object_object_type
+  use_cached_data = var.backup_recovery_search_indexed_object_use_cached_data
+  cassandra_params = var.backup_recovery_search_indexed_object_cassandra_params
+  couchbase_params = var.backup_recovery_search_indexed_object_couchbase_params
+  email_params = var.backup_recovery_search_indexed_object_email_params
+  exchange_params = var.backup_recovery_search_indexed_object_exchange_params
+  file_params = var.backup_recovery_search_indexed_object_file_params
+  hbase_params = var.backup_recovery_search_indexed_object_hbase_params
+  hdfs_params = var.backup_recovery_search_indexed_object_hdfs_params
+  hive_params = var.backup_recovery_search_indexed_object_hive_params
+  mongodb_params = var.backup_recovery_search_indexed_object_mongodb_params
+  ms_groups_params = var.backup_recovery_search_indexed_object_ms_groups_params
+  ms_teams_params = var.backup_recovery_search_indexed_object_ms_teams_params
+  one_drive_params = var.backup_recovery_search_indexed_object_one_drive_params
+  public_folder_params = var.backup_recovery_search_indexed_object_public_folder_params
+  sfdc_params = var.backup_recovery_search_indexed_object_sfdc_params
+  sharepoint_params = var.backup_recovery_search_indexed_object_sharepoint_params
+  uda_params = var.backup_recovery_search_indexed_object_uda_params
 }
 ```
 
@@ -458,16 +458,16 @@ resource "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object
 ### Resource: ibm_backup_recovery_source_registration
 
 ```hcl
-resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
-  x_ibm_tenant_id = var.baas_source_registration_x_ibm_tenant_id
-  environment = var.baas_source_registration_environment
-  name = var.baas_source_registration_name
-  connection_id = var.baas_source_registration_connection_id
-  connections = var.baas_source_registration_connections
-  connector_group_id = var.baas_source_registration_connector_group_id
-  data_source_connection_id = var.baas_source_registration_data_source_connection_id
-  advanced_configs = var.baas_source_registration_advanced_configs
-  physical_params = var.baas_source_registration_physical_params
+resource "ibm_backup_recovery_source_registration" "backup_recovery_source_registration_instance" {
+  x_ibm_tenant_id = var.backup_recovery_source_registration_x_ibm_tenant_id
+  environment = var.backup_recovery_source_registration_environment
+  name = var.backup_recovery_source_registration_name
+  connection_id = var.backup_recovery_source_registration_connection_id
+  connections = var.backup_recovery_source_registration_connections
+  connector_group_id = var.backup_recovery_source_registration_connector_group_id
+  data_source_connection_id = var.backup_recovery_source_registration_data_source_connection_id
+  advanced_configs = var.backup_recovery_source_registration_advanced_configs
+  physical_params = var.backup_recovery_source_registration_physical_params
 }
 ```
 
@@ -500,9 +500,9 @@ resource "ibm_backup_recovery_source_registration" "baas_source_registration_ins
 ### Resource: ibm_backup_recovery_update_protection_group_run_request
 
 ```hcl
-resource "ibm_backup_recovery_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
-  x_ibm_tenant_id = var.baas_update_protection_group_run_request_x_ibm_tenant_id
-  update_protection_group_run_params = var.baas_update_protection_group_run_request_update_protection_group_run_params
+resource "ibm_backup_recovery_update_protection_group_run_request" "backup_recovery_update_protection_group_run_request_instance" {
+  x_ibm_tenant_id = var.backup_recovery_update_protection_group_run_request_x_ibm_tenant_id
+  update_protection_group_run_params = var.backup_recovery_update_protection_group_run_request_update_protection_group_run_params
 }
 ```
 
@@ -519,9 +519,9 @@ resource "ibm_backup_recovery_update_protection_group_run_request" "baas_update_
 ### Data source: ibm_backup_recovery_agent_upgrade_tasks
 
 ```hcl
-data "ibm_backup_recovery_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
-  x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
-  ids = var.baas_agent_upgrade_tasks_ids
+data "ibm_backup_recovery_agent_upgrade_tasks" "backup_recovery_agent_upgrade_tasks_instance" {
+  x_ibm_tenant_id = var.backup_recovery_agent_upgrade_tasks_x_ibm_tenant_id
+  ids = var.backup_recovery_agent_upgrade_tasks_ids
 }
 ```
 
@@ -541,8 +541,8 @@ data "ibm_backup_recovery_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instanc
 ### Data source: ibm_backup_recovery_connectors_metadata
 
 ```hcl
-data "ibm_backup_recovery_connectors_metadata" "baas_connectors_metadata_instance" {
-  x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
+data "ibm_backup_recovery_connectors_metadata" "backup_recovery_connectors_metadata_instance" {
+  x_ibm_tenant_id = var.backup_recovery_agent_upgrade_tasks_x_ibm_tenant_id
 }
 ```
 
@@ -561,10 +561,10 @@ data "ibm_backup_recovery_connectors_metadata" "baas_connectors_metadata_instanc
 ### Data source: ibm_backup_recovery_data_source_connections
 
 ```hcl
-data "ibm_backup_recovery_data_source_connections" "baas_data_source_connections_instance" {
-  x_ibm_tenant_id = var.baas_data_source_connections_x_ibm_tenant_id
-  connection_ids = var.baas_data_source_connections_connection_ids
-  connection_names = var.baas_data_source_connections_connection_names
+data "ibm_backup_recovery_data_source_connections" "backup_recovery_data_source_connections_instance" {
+  x_ibm_tenant_id = var.backup_recovery_data_source_connections_x_ibm_tenant_id
+  connection_ids = var.backup_recovery_data_source_connections_connection_ids
+  connection_names = var.backup_recovery_data_source_connections_connection_names
 }
 ```
 
@@ -585,11 +585,11 @@ data "ibm_backup_recovery_data_source_connections" "baas_data_source_connections
 ### Data source: ibm_backup_recovery_data_source_connectors
 
 ```hcl
-data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_instance" {
-  x_ibm_tenant_id = var.baas_data_source_connectors_x_ibm_tenant_id
-  connector_ids = var.baas_data_source_connectors_connector_ids
-  connector_names = var.baas_data_source_connectors_connector_names
-  connection_id = var.baas_data_source_connectors_connection_id
+data "ibm_backup_recovery_data_source_connectors" "backup_recovery_data_source_connectors_instance" {
+  x_ibm_tenant_id = var.backup_recovery_data_source_connectors_x_ibm_tenant_id
+  connector_ids = var.backup_recovery_data_source_connectors_connector_ids
+  connector_names = var.backup_recovery_data_source_connectors_connector_names
+  connection_id = var.backup_recovery_data_source_connectors_connection_id
 }
 ```
 
@@ -611,10 +611,10 @@ data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_i
 ### Data source: ibm_backup_recovery_download_agent
 
 ```hcl
-data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
-  x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
-  platform = var.baas_download_agent_platform
-  linux_params = var.baas_download_agent_linux_params
+data "ibm_backup_recovery_download_agent" "backup_recovery_download_agent_instance" {
+  x_ibm_tenant_id = var.backup_recovery_download_agent_x_ibm_tenant_id
+  platform = var.backup_recovery_download_agent_platform
+  linux_params = var.backup_recovery_download_agent_linux_params
   file_path = ""
 }
 ```
@@ -631,19 +631,19 @@ data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
 ### Data source: ibm_backup_recovery_object_snapshots
 
 ```hcl
-data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
-  baas_object_snapshots_id = var.baas_object_snapshots_baas_object_snapshots_id
-  x_ibm_tenant_id = var.baas_object_snapshots_x_ibm_tenant_id
-  from_time_usecs = var.baas_object_snapshots_from_time_usecs
-  to_time_usecs = var.baas_object_snapshots_to_time_usecs
-  run_start_from_time_usecs = var.baas_object_snapshots_run_start_from_time_usecs
-  run_start_to_time_usecs = var.baas_object_snapshots_run_start_to_time_usecs
-  snapshot_actions = var.baas_object_snapshots_snapshot_actions
-  run_types = var.baas_object_snapshots_run_types
-  protection_group_ids = var.baas_object_snapshots_protection_group_ids
-  run_instance_ids = var.baas_object_snapshots_run_instance_ids
-  region_ids = var.baas_object_snapshots_region_ids
-  object_action_keys = var.baas_object_snapshots_object_action_keys
+data "ibm_backup_recovery_object_snapshots" "backup_recovery_object_snapshots_instance" {
+  object_id = var.backup_recovery_object_snapshots_backup_recovery_object_snapshots_id
+  x_ibm_tenant_id = var.backup_recovery_object_snapshots_x_ibm_tenant_id
+  from_time_usecs = var.backup_recovery_object_snapshots_from_time_usecs
+  to_time_usecs = var.backup_recovery_object_snapshots_to_time_usecs
+  run_start_from_time_usecs = var.backup_recovery_object_snapshots_run_start_from_time_usecs
+  run_start_to_time_usecs = var.backup_recovery_object_snapshots_run_start_to_time_usecs
+  snapshot_actions = var.backup_recovery_object_snapshots_snapshot_actions
+  run_types = var.backup_recovery_object_snapshots_run_types
+  protection_group_ids = var.backup_recovery_object_snapshots_protection_group_ids
+  run_instance_ids = var.backup_recovery_object_snapshots_run_instance_ids
+  region_ids = var.backup_recovery_object_snapshots_region_ids
+  object_action_keys = var.backup_recovery_object_snapshots_object_action_keys
 }
 ```
 
@@ -651,7 +651,7 @@ data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_object_snapshots_id | Specifies the id of the Object. | `number` | true |
+| object_id | Specifies the id of the Object. | `number` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | from_time_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter Object's snapshots which were taken after this value. | `number` | false |
 | to_time_usecs | Specifies the timestamp in Unix time epoch in microseconds to filter Object's snapshots which were taken before this value. | `number` | false |
@@ -673,35 +673,35 @@ data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 ### Data source: ibm_backup_recovery_search_objects
 
 ```hcl
-data "ibm_backup_recovery_search_objects" "baas_search_objects_instance" {
-  x_ibm_tenant_id = var.baas_search_objects_x_ibm_tenant_id
-  request_initiator_type = var.baas_search_objects_request_initiator_type
-  search_string = var.baas_search_objects_search_string
-  environments = var.baas_search_objects_environments
-  protection_types = var.baas_search_objects_protection_types
-  protection_group_ids = var.baas_search_objects_protection_group_ids
-  object_ids = var.baas_search_objects_object_ids
-  os_types = var.baas_search_objects_os_types
-  source_ids = var.baas_search_objects_source_ids
-  source_uuids = var.baas_search_objects_source_uuids
-  is_protected = var.baas_search_objects_is_protected
-  is_deleted = var.baas_search_objects_is_deleted
-  last_run_status_list = var.baas_search_objects_last_run_status_list
-  cluster_identifiers = var.baas_search_objects_cluster_identifiers
-  include_deleted_objects = var.baas_search_objects_include_deleted_objects
-  pagination_cookie = var.baas_search_objects_pagination_cookie
-  count = var.baas_search_objects_count
-  must_have_tag_ids = var.baas_search_objects_must_have_tag_ids
-  might_have_tag_ids = var.baas_search_objects_might_have_tag_ids
-  must_have_snapshot_tag_ids = var.baas_search_objects_must_have_snapshot_tag_ids
-  might_have_snapshot_tag_ids = var.baas_search_objects_might_have_snapshot_tag_ids
-  tag_search_name = var.baas_search_objects_tag_search_name
-  tag_names = var.baas_search_objects_tag_names
-  tag_types = var.baas_search_objects_tag_types
-  tag_categories = var.baas_search_objects_tag_categories
-  tag_sub_categories = var.baas_search_objects_tag_sub_categories
-  include_helios_tag_info_for_objects = var.baas_search_objects_include_helios_tag_info_for_objects
-  external_filters = var.baas_search_objects_external_filters
+data "ibm_backup_recovery_search_objects" "backup_recovery_search_objects_instance" {
+  x_ibm_tenant_id = var.backup_recovery_search_objects_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_search_objects_request_initiator_type
+  search_string = var.backup_recovery_search_objects_search_string
+  environments = var.backup_recovery_search_objects_environments
+  protection_types = var.backup_recovery_search_objects_protection_types
+  protection_group_ids = var.backup_recovery_search_objects_protection_group_ids
+  object_ids = var.backup_recovery_search_objects_object_ids
+  os_types = var.backup_recovery_search_objects_os_types
+  source_ids = var.backup_recovery_search_objects_source_ids
+  source_uuids = var.backup_recovery_search_objects_source_uuids
+  is_protected = var.backup_recovery_search_objects_is_protected
+  is_deleted = var.backup_recovery_search_objects_is_deleted
+  last_run_status_list = var.backup_recovery_search_objects_last_run_status_list
+  cluster_identifiers = var.backup_recovery_search_objects_cluster_identifiers
+  include_deleted_objects = var.backup_recovery_search_objects_include_deleted_objects
+  pagination_cookie = var.backup_recovery_search_objects_pagination_cookie
+  count = var.backup_recovery_search_objects_count
+  must_have_tag_ids = var.backup_recovery_search_objects_must_have_tag_ids
+  might_have_tag_ids = var.backup_recovery_search_objects_might_have_tag_ids
+  must_have_snapshot_tag_ids = var.backup_recovery_search_objects_must_have_snapshot_tag_ids
+  might_have_snapshot_tag_ids = var.backup_recovery_search_objects_might_have_snapshot_tag_ids
+  tag_search_name = var.backup_recovery_search_objects_tag_search_name
+  tag_names = var.backup_recovery_search_objects_tag_names
+  tag_types = var.backup_recovery_search_objects_tag_types
+  tag_categories = var.backup_recovery_search_objects_tag_categories
+  tag_sub_categories = var.backup_recovery_search_objects_tag_sub_categories
+  include_helios_tag_info_for_objects = var.backup_recovery_search_objects_include_helios_tag_info_for_objects
+  external_filters = var.backup_recovery_search_objects_external_filters
 }
 ```
 
@@ -747,23 +747,23 @@ data "ibm_backup_recovery_search_objects" "baas_search_objects_instance" {
 ### Data source: ibm_backup_recovery_search_protected_objects
 
 ```hcl
-data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objects_instance" {
-  x_ibm_tenant_id = var.baas_search_protected_objects_x_ibm_tenant_id
-  request_initiator_type = var.baas_search_protected_objects_request_initiator_type
-  search_string = var.baas_search_protected_objects_search_string
-  environments = var.baas_search_protected_objects_environments
-  snapshot_actions = var.baas_search_protected_objects_snapshot_actions
-  object_action_key = var.baas_search_protected_objects_object_action_key
-  protection_group_ids = var.baas_search_protected_objects_protection_group_ids
-  object_ids = var.baas_search_protected_objects_object_ids
-  sub_result_size = var.baas_search_protected_objects_sub_result_size
-  filter_snapshot_from_usecs = var.baas_search_protected_objects_filter_snapshot_from_usecs
-  filter_snapshot_to_usecs = var.baas_search_protected_objects_filter_snapshot_to_usecs
-  os_types = var.baas_search_protected_objects_os_types
-  source_ids = var.baas_search_protected_objects_source_ids
-  run_instance_ids = var.baas_search_protected_objects_run_instance_ids
-  cdp_protected_only = var.baas_search_protected_objects_cdp_protected_only
-  use_cached_data = var.baas_search_protected_objects_use_cached_data
+data "ibm_backup_recovery_search_protected_objects" "backup_recovery_search_protected_objects_instance" {
+  x_ibm_tenant_id = var.backup_recovery_search_protected_objects_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_search_protected_objects_request_initiator_type
+  search_string = var.backup_recovery_search_protected_objects_search_string
+  environments = var.backup_recovery_search_protected_objects_environments
+  snapshot_actions = var.backup_recovery_search_protected_objects_snapshot_actions
+  object_action_key = var.backup_recovery_search_protected_objects_object_action_key
+  protection_group_ids = var.backup_recovery_search_protected_objects_protection_group_ids
+  object_ids = var.backup_recovery_search_protected_objects_object_ids
+  sub_result_size = var.backup_recovery_search_protected_objects_sub_result_size
+  filter_snapshot_from_usecs = var.backup_recovery_search_protected_objects_filter_snapshot_from_usecs
+  filter_snapshot_to_usecs = var.backup_recovery_search_protected_objects_filter_snapshot_to_usecs
+  os_types = var.backup_recovery_search_protected_objects_os_types
+  source_ids = var.backup_recovery_search_protected_objects_source_ids
+  run_instance_ids = var.backup_recovery_search_protected_objects_run_instance_ids
+  cdp_protected_only = var.backup_recovery_search_protected_objects_cdp_protected_only
+  use_cached_data = var.backup_recovery_search_protected_objects_use_cached_data
 }
 ```
 
@@ -799,13 +799,13 @@ data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objec
 ### Data source: ibm_backup_recovery_protection_group
 
 ```hcl
-data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
-  baas_protection_group_id = var.data_baas_protection_group_baas_protection_group_id
-  x_ibm_tenant_id = var.data_baas_protection_group_x_ibm_tenant_id
-  request_initiator_type = var.data_baas_protection_group_request_initiator_type
-  include_last_run_info = var.data_baas_protection_group_include_last_run_info
-  prune_excluded_source_ids = var.data_baas_protection_group_prune_excluded_source_ids
-  prune_source_ids = var.data_baas_protection_group_prune_source_ids
+data "ibm_backup_recovery_protection_group" "backup_recovery_protection_group_instance" {
+  protection_group_id = var.data_backup_recovery_protection_group_protection_group_id
+  x_ibm_tenant_id = var.data_backup_recovery_protection_group_x_ibm_tenant_id
+  request_initiator_type = var.data_backup_recovery_protection_group_request_initiator_type
+  include_last_run_info = var.data_backup_recovery_protection_group_include_last_run_info
+  prune_excluded_source_ids = var.data_backup_recovery_protection_group_prune_excluded_source_ids
+  prune_source_ids = var.data_backup_recovery_protection_group_prune_source_ids
 }
 ```
 
@@ -813,7 +813,7 @@ data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_protection_group_id | Specifies a unique id of the Protection Group. | `string` | true |
+| protection_group_id | Specifies a unique id of the Protection Group. | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | include_last_run_info | If true, the response will include last run info. If it is false or not specified, the last run info won't be returned. | `bool` | false |
@@ -855,28 +855,28 @@ data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 ### Data source: ibm_backup_recovery_protection_groups
 
 ```hcl
-data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
-  x_ibm_tenant_id = var.baas_protection_groups_x_ibm_tenant_id
-  request_initiator_type = var.baas_protection_groups_request_initiator_type
-  ids = var.baas_protection_groups_ids
-  names = var.baas_protection_groups_names
-  policy_ids = var.baas_protection_groups_policy_ids
-  include_groups_with_datalock_only = var.baas_protection_groups_include_groups_with_datalock_only
-  environments = var.baas_protection_groups_environments
-  is_active = var.baas_protection_groups_is_active
-  is_deleted = var.baas_protection_groups_is_deleted
-  is_paused = var.baas_protection_groups_is_paused
-  last_run_local_backup_status = var.baas_protection_groups_last_run_local_backup_status
-  last_run_replication_status = var.baas_protection_groups_last_run_replication_status
-  last_run_archival_status = var.baas_protection_groups_last_run_archival_status
-  last_run_cloud_spin_status = var.baas_protection_groups_last_run_cloud_spin_status
-  last_run_any_status = var.baas_protection_groups_last_run_any_status
-  is_last_run_sla_violated = var.baas_protection_groups_is_last_run_sla_violated
-  include_last_run_info = var.baas_protection_groups_include_last_run_info
-  prune_excluded_source_ids = var.baas_protection_groups_prune_excluded_source_ids
-  prune_source_ids = var.baas_protection_groups_prune_source_ids
-  use_cached_data = var.baas_protection_groups_use_cached_data
-  source_ids = var.baas_protection_groups_source_ids
+data "ibm_backup_recovery_protection_groups" "backup_recovery_protection_groups_instance" {
+  x_ibm_tenant_id = var.backup_recovery_protection_groups_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_protection_groups_request_initiator_type
+  ids = var.backup_recovery_protection_groups_ids
+  names = var.backup_recovery_protection_groups_names
+  policy_ids = var.backup_recovery_protection_groups_policy_ids
+  include_groups_with_datalock_only = var.backup_recovery_protection_groups_include_groups_with_datalock_only
+  environments = var.backup_recovery_protection_groups_environments
+  is_active = var.backup_recovery_protection_groups_is_active
+  is_deleted = var.backup_recovery_protection_groups_is_deleted
+  is_paused = var.backup_recovery_protection_groups_is_paused
+  last_run_local_backup_status = var.backup_recovery_protection_groups_last_run_local_backup_status
+  last_run_replication_status = var.backup_recovery_protection_groups_last_run_replication_status
+  last_run_archival_status = var.backup_recovery_protection_groups_last_run_archival_status
+  last_run_cloud_spin_status = var.backup_recovery_protection_groups_last_run_cloud_spin_status
+  last_run_any_status = var.backup_recovery_protection_groups_last_run_any_status
+  is_last_run_sla_violated = var.backup_recovery_protection_groups_is_last_run_sla_violated
+  include_last_run_info = var.backup_recovery_protection_groups_include_last_run_info
+  prune_excluded_source_ids = var.backup_recovery_protection_groups_prune_excluded_source_ids
+  prune_source_ids = var.backup_recovery_protection_groups_prune_source_ids
+  use_cached_data = var.backup_recovery_protection_groups_use_cached_data
+  source_ids = var.backup_recovery_protection_groups_source_ids
 }
 ```
 
@@ -915,27 +915,27 @@ data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
 ### Data source: ibm_backup_recovery_protection_group_run
 
 ```hcl
-data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_instance" {
-  baas_protection_group_run_id = var.baas_protection_group_run_baas_protection_group_run_id
-  x_ibm_tenant_id = var.baas_protection_group_run_x_ibm_tenant_id
-  request_initiator_type = var.baas_protection_group_run_request_initiator_type
-  run_id = var.baas_protection_group_run_run_id
-  start_time_usecs = var.baas_protection_group_run_start_time_usecs
-  end_time_usecs = var.baas_protection_group_run_end_time_usecs
-  run_types = var.baas_protection_group_run_run_types
-  include_object_details = var.baas_protection_group_run_include_object_details
-  local_backup_run_status = var.baas_protection_group_run_local_backup_run_status
-  replication_run_status = var.baas_protection_group_run_replication_run_status
-  archival_run_status = var.baas_protection_group_run_archival_run_status
-  cloud_spin_run_status = var.baas_protection_group_run_cloud_spin_run_status
-  num_runs = var.baas_protection_group_run_num_runs
-  exclude_non_restorable_runs = var.baas_protection_group_run_exclude_non_restorable_runs
-  run_tags = var.baas_protection_group_run_run_tags
-  use_cached_data = var.baas_protection_group_run_use_cached_data
-  filter_by_end_time = var.baas_protection_group_run_filter_by_end_time
-  snapshot_target_types = var.baas_protection_group_run_snapshot_target_types
-  only_return_successful_copy_run = var.baas_protection_group_run_only_return_successful_copy_run
-  filter_by_copy_task_end_time = var.baas_protection_group_run_filter_by_copy_task_end_time
+data "ibm_backup_recovery_protection_group_run" "backup_recovery_protection_group_run_instance" {
+  protection_group_run_id = var.backup_recovery_protection_group_run_protection_group_run_id
+  x_ibm_tenant_id = var.backup_recovery_protection_group_run_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_protection_group_run_request_initiator_type
+  run_id = var.backup_recovery_protection_group_run_run_id
+  start_time_usecs = var.backup_recovery_protection_group_run_start_time_usecs
+  end_time_usecs = var.backup_recovery_protection_group_run_end_time_usecs
+  run_types = var.backup_recovery_protection_group_run_run_types
+  include_object_details = var.backup_recovery_protection_group_run_include_object_details
+  local_backup_run_status = var.backup_recovery_protection_group_run_local_backup_run_status
+  replication_run_status = var.backup_recovery_protection_group_run_replication_run_status
+  archival_run_status = var.backup_recovery_protection_group_run_archival_run_status
+  cloud_spin_run_status = var.backup_recovery_protection_group_run_cloud_spin_run_status
+  num_runs = var.backup_recovery_protection_group_run_num_runs
+  exclude_non_restorable_runs = var.backup_recovery_protection_group_run_exclude_non_restorable_runs
+  run_tags = var.backup_recovery_protection_group_run_run_tags
+  use_cached_data = var.backup_recovery_protection_group_run_use_cached_data
+  filter_by_end_time = var.backup_recovery_protection_group_run_filter_by_end_time
+  snapshot_target_types = var.backup_recovery_protection_group_run_snapshot_target_types
+  only_return_successful_copy_run = var.backup_recovery_protection_group_run_only_return_successful_copy_run
+  filter_by_copy_task_end_time = var.backup_recovery_protection_group_run_filter_by_copy_task_end_time
 }
 ```
 
@@ -943,7 +943,7 @@ data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_insta
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_protection_group_run_id | Specifies a unique id of the Protection Group. | `string` | true |
+| protection_group_run_id | Specifies a unique id of the Protection Group. | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | run_id | Specifies the protection run id. | `string` | false |
@@ -991,27 +991,27 @@ data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_insta
 ### Data source: ibm_backup_recovery_protection_group_runs
 
 ```hcl
-data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
-  baas_protection_group_runs_id = var.baas_protection_group_runs_baas_protection_group_runs_id
-  x_ibm_tenant_id = var.baas_protection_group_runs_x_ibm_tenant_id
-  request_initiator_type = var.baas_protection_group_runs_request_initiator_type
-  run_id = var.baas_protection_group_runs_run_id
-  start_time_usecs = var.baas_protection_group_runs_start_time_usecs
-  end_time_usecs = var.baas_protection_group_runs_end_time_usecs
-  run_types = var.baas_protection_group_runs_run_types
-  include_object_details = var.baas_protection_group_runs_include_object_details
-  local_backup_run_status = var.baas_protection_group_runs_local_backup_run_status
-  replication_run_status = var.baas_protection_group_runs_replication_run_status
-  archival_run_status = var.baas_protection_group_runs_archival_run_status
-  cloud_spin_run_status = var.baas_protection_group_runs_cloud_spin_run_status
-  num_runs = var.baas_protection_group_runs_num_runs
-  exclude_non_restorable_runs = var.baas_protection_group_runs_exclude_non_restorable_runs
-  run_tags = var.baas_protection_group_runs_run_tags
-  use_cached_data = var.baas_protection_group_runs_use_cached_data
-  filter_by_end_time = var.baas_protection_group_runs_filter_by_end_time
-  snapshot_target_types = var.baas_protection_group_runs_snapshot_target_types
-  only_return_successful_copy_run = var.baas_protection_group_runs_only_return_successful_copy_run
-  filter_by_copy_task_end_time = var.baas_protection_group_runs_filter_by_copy_task_end_time
+data "ibm_backup_recovery_protection_group_runs" "backup_recovery_protection_group_runs_instance" {
+  protection_group_runs_id = var.backup_recovery_protection_group_runs_protection_group_runs_id
+  x_ibm_tenant_id = var.backup_recovery_protection_group_runs_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_protection_group_runs_request_initiator_type
+  run_id = var.backup_recovery_protection_group_runs_run_id
+  start_time_usecs = var.backup_recovery_protection_group_runs_start_time_usecs
+  end_time_usecs = var.backup_recovery_protection_group_runs_end_time_usecs
+  run_types = var.backup_recovery_protection_group_runs_run_types
+  include_object_details = var.backup_recovery_protection_group_runs_include_object_details
+  local_backup_run_status = var.backup_recovery_protection_group_runs_local_backup_run_status
+  replication_run_status = var.backup_recovery_protection_group_runs_replication_run_status
+  archival_run_status = var.backup_recovery_protection_group_runs_archival_run_status
+  cloud_spin_run_status = var.backup_recovery_protection_group_runs_cloud_spin_run_status
+  num_runs = var.backup_recovery_protection_group_runs_num_runs
+  exclude_non_restorable_runs = var.backup_recovery_protection_group_runs_exclude_non_restorable_runs
+  run_tags = var.backup_recovery_protection_group_runs_run_tags
+  use_cached_data = var.backup_recovery_protection_group_runs_use_cached_data
+  filter_by_end_time = var.backup_recovery_protection_group_runs_filter_by_end_time
+  snapshot_target_types = var.backup_recovery_protection_group_runs_snapshot_target_types
+  only_return_successful_copy_run = var.backup_recovery_protection_group_runs_only_return_successful_copy_run
+  filter_by_copy_task_end_time = var.backup_recovery_protection_group_runs_filter_by_copy_task_end_time
 }
 ```
 
@@ -1019,7 +1019,7 @@ data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_ins
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_protection_group_runs_id | Specifies a unique id of the Protection Group. | `string` | true |
+| protection_group_runs_id | Specifies a unique id of the Protection Group. | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | run_id | Specifies the protection run id. | `string` | false |
@@ -1050,15 +1050,15 @@ data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_ins
 ### Data source: ibm_backup_recovery_protection_policies
 
 ```hcl
-data "ibm_backup_recovery_protection_policies" "baas_protection_policies_instance" {
-  x_ibm_tenant_id = var.baas_protection_policies_x_ibm_tenant_id
-  request_initiator_type = var.baas_protection_policies_request_initiator_type
-  ids = var.baas_protection_policies_ids
-  policy_names = var.baas_protection_policies_policy_names
-  types = var.baas_protection_policies_types
-  exclude_linked_policies = var.baas_protection_policies_exclude_linked_policies
-  include_replicated_policies = var.baas_protection_policies_include_replicated_policies
-  include_stats = var.baas_protection_policies_include_stats
+data "ibm_backup_recovery_protection_policies" "backup_recovery_protection_policies_instance" {
+  x_ibm_tenant_id = var.backup_recovery_protection_policies_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_protection_policies_request_initiator_type
+  ids = var.backup_recovery_protection_policies_ids
+  policy_names = var.backup_recovery_protection_policies_policy_names
+  types = var.backup_recovery_protection_policies_types
+  exclude_linked_policies = var.backup_recovery_protection_policies_exclude_linked_policies
+  include_replicated_policies = var.backup_recovery_protection_policies_include_replicated_policies
+  include_stats = var.backup_recovery_protection_policies_include_stats
 }
 ```
 
@@ -1084,10 +1084,10 @@ data "ibm_backup_recovery_protection_policies" "baas_protection_policies_instanc
 ### Data source: ibm_backup_recovery_protection_policy
 
 ```hcl
-data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
-  baas_protection_policy_id = var.data_baas_protection_policy_baas_protection_policy_id
-  x_ibm_tenant_id = var.data_baas_protection_policy_x_ibm_tenant_id
-  request_initiator_type = var.data_baas_protection_policy_request_initiator_type
+data "ibm_backup_recovery_protection_policy" "backup_recovery_protection_policy_instance" {
+  protection_policy_id = var.data_backup_recovery_protection_policy_protection_policy_id
+  x_ibm_tenant_id = var.data_backup_recovery_protection_policy_x_ibm_tenant_id
+  request_initiator_type = var.data_backup_recovery_protection_policy_request_initiator_type
 }
 ```
 
@@ -1095,7 +1095,7 @@ data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_protection_policy_id | Specifies a unique id of the Protection Policy to return. | `string` | true |
+| protection_policy_id | Specifies a unique id of the Protection Policy to return. | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 
@@ -1124,9 +1124,9 @@ data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 ### Data source: ibm_backup_recovery_recovery
 
 ```hcl
-data "ibm_backup_recovery_recovery" "baas_recovery_instance" {
-  baas_recovery_id = var.data_baas_recovery_baas_recovery_id
-  x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
+data "ibm_backup_recovery_recovery" "backup_recovery_recovery_instance" {
+  recovery_id = var.data_backup_recovery_recovery_backup_recovery_recovery_id
+  x_ibm_tenant_id = var.data_backup_recovery_recovery_x_ibm_tenant_id
 }
 ```
 
@@ -1134,7 +1134,7 @@ data "ibm_backup_recovery_recovery" "baas_recovery_instance" {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_recovery_id | Specifies the id of a Recovery. | `string` | true |
+| recovery_id | Specifies the id of a Recovery. | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 
 #### Outputs
@@ -1166,9 +1166,9 @@ data "ibm_backup_recovery_recovery" "baas_recovery_instance" {
 ### Data source: ibm_backup_recovery_recovery_download_files
 
 ```hcl
-data "ibm_backup_recovery_recovery_download_files" "baas_recovery_download_files_instance" {
+data "ibm_backup_recovery_recovery_download_files" "backup_recovery_recovery_download_files_instance" {
   recovery_download_files_id = "recovery_download_files_id"
-  x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
+  x_ibm_tenant_id = var.data_backup_recovery_recovery_x_ibm_tenant_id
   start_offset = 0
   length = 0
   file_type = "file_type"
@@ -1194,17 +1194,17 @@ data "ibm_backup_recovery_recovery_download_files" "baas_recovery_download_files
 ### Data source: ibm_backup_recovery_recoveries
 
 ```hcl
-data "ibm_backup_recovery_recoveries" "baas_recoveries_instance" {
-  x_ibm_tenant_id = var.baas_recoveries_x_ibm_tenant_id
-  ids = var.baas_recoveries_ids
-  return_only_child_recoveries = var.baas_recoveries_return_only_child_recoveries
-  start_time_usecs = var.baas_recoveries_start_time_usecs
-  end_time_usecs = var.baas_recoveries_end_time_usecs
-  snapshot_target_type = var.baas_recoveries_snapshot_target_type
-  archival_target_type = var.baas_recoveries_archival_target_type
-  snapshot_environments = var.baas_recoveries_snapshot_environments
-  status = var.baas_recoveries_status
-  recovery_actions = var.baas_recoveries_recovery_actions
+data "ibm_backup_recovery_recoveries" "backup_recovery_recoveries_instance" {
+  x_ibm_tenant_id = var.backup_recovery_recoveries_x_ibm_tenant_id
+  ids = var.backup_recovery_recoveries_ids
+  return_only_child_recoveries = var.backup_recovery_recoveries_return_only_child_recoveries
+  start_time_usecs = var.backup_recovery_recoveries_start_time_usecs
+  end_time_usecs = var.backup_recovery_recoveries_end_time_usecs
+  snapshot_target_type = var.backup_recovery_recoveries_snapshot_target_type
+  archival_target_type = var.backup_recovery_recoveries_archival_target_type
+  snapshot_environments = var.backup_recovery_recoveries_snapshot_environments
+  status = var.backup_recovery_recoveries_status
+  recovery_actions = var.backup_recovery_recoveries_recovery_actions
 }
 ```
 
@@ -1232,14 +1232,14 @@ data "ibm_backup_recovery_recoveries" "baas_recoveries_instance" {
 ### Data source: ibm_backup_recovery_source_registrations
 
 ```hcl
-data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {
-  x_ibm_tenant_id = var.baas_source_registrations_x_ibm_tenant_id
-  ids = var.baas_source_registrations_ids
-  include_source_credentials = var.baas_source_registrations_include_source_credentials
-  encryption_key = var.baas_source_registrations_encryption_key
-  use_cached_data = var.baas_source_registrations_use_cached_data
-  include_external_metadata = var.baas_source_registrations_include_external_metadata
-  ignore_tenant_migration_in_progress_check = var.baas_source_registrations_ignore_tenant_migration_in_progress_check
+data "ibm_backup_recovery_source_registrations" "backup_recovery_source_registrations_instance" {
+  x_ibm_tenant_id = var.backup_recovery_source_registrations_x_ibm_tenant_id
+  ids = var.backup_recovery_source_registrations_ids
+  include_source_credentials = var.backup_recovery_source_registrations_include_source_credentials
+  encryption_key = var.backup_recovery_source_registrations_encryption_key
+  use_cached_data = var.backup_recovery_source_registrations_use_cached_data
+  include_external_metadata = var.backup_recovery_source_registrations_include_external_metadata
+  ignore_tenant_migration_in_progress_check = var.backup_recovery_source_registrations_ignore_tenant_migration_in_progress_check
 }
 ```
 
@@ -1264,10 +1264,10 @@ data "ibm_backup_recovery_source_registrations" "baas_source_registrations_insta
 ### Data source: ibm_backup_recovery_source_registration
 
 ```hcl
-data "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
-  baas_source_registration_id = var.data_baas_source_registration_baas_source_registration_id
-  x_ibm_tenant_id = var.data_baas_source_registration_x_ibm_tenant_id
-  request_initiator_type = var.data_baas_source_registration_request_initiator_type
+data "ibm_backup_recovery_source_registration" "backup_recovery_source_registration_instance" {
+  source_registration_id = var.data_backup_recovery_source_registration_source_registration_id
+  x_ibm_tenant_id = var.data_backup_recovery_source_registration_x_ibm_tenant_id
+  request_initiator_type = var.data_backup_recovery_source_registration_request_initiator_type
 }
 ```
 
@@ -1275,7 +1275,7 @@ data "ibm_backup_recovery_source_registration" "baas_source_registration_instanc
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| baas_source_registration_id | Specifies the id of the Protection Source registration. | `number` | true |
+| source_registration_id | Specifies the id of the Protection Source registration. | `number` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 
@@ -1301,14 +1301,14 @@ data "ibm_backup_recovery_source_registration" "baas_source_registration_instanc
 ### Data source: ibm_backup_recovery_download_indexed_files
 
 ```hcl
-data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_instance" {
-  snapshots_id = var.baas_download_indexed_files_snapshots_id
-  x_ibm_tenant_id = var.baas_download_indexed_files_x_ibm_tenant_id
-  file_path = var.baas_download_indexed_files_file_path
-  nvram_file = var.baas_download_indexed_files_nvram_file
-  retry_attempt = var.baas_download_indexed_files_retry_attempt
-  start_offset = var.baas_download_indexed_files_start_offset
-  length = var.baas_download_indexed_files_length
+data "ibm_backup_recovery_download_indexed_files" "backup_recovery_download_indexed_files_instance" {
+  snapshots_id = var.backup_recovery_download_indexed_files_snapshots_id
+  x_ibm_tenant_id = var.backup_recovery_download_indexed_files_x_ibm_tenant_id
+  file_path = var.backup_recovery_download_indexed_files_file_path
+  nvram_file = var.backup_recovery_download_indexed_files_nvram_file
+  retry_attempt = var.backup_recovery_download_indexed_files_retry_attempt
+  start_offset = var.backup_recovery_download_indexed_files_start_offset
+  length = var.backup_recovery_download_indexed_files_length
 }
 ```
 
@@ -1328,11 +1328,11 @@ data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_i
 
 1. End user has connector endpoint URL
 2. End user has tenantID
-3. End user has BAAS cluster URL
+3. End user has backup recovery cluster URL
 
 ## Notes
 
-### BAAS cluster URL can be set using environment variable or in endpoints.json respectively
+### Backup Recovery Cluster URL can be set using environment variable or in endpoints.json respectively
 Example:  
 ```
   export BACKUP_RECOVERY_ENDPOINT=https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2

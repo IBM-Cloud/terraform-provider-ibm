@@ -38,7 +38,7 @@ func testAccCheckIbmBackupRecoveryDownloadIndexedFilesDataSourceConfigBasic(obje
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 			x_ibm_tenant_id = "%s"
-			baas_object_id = %d
+			object_id = %d
 		}
 
 		data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_instance" {
