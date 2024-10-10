@@ -95,11 +95,13 @@ Review the argument references that you can specify for your resource.
   - `license_type` - (Required, String) Origin of the license of the product. Allowable value is: `byol`.
   - `product` - (Required, String) Product within the image.Allowable values are: `Hana`, `Netweaver`.
   - `vendor` - (Required, String) Vendor supporting the product. Allowable value is: `SAP`.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `id` - (String) The unique identifier of an image. The ID is composed of `<pi_cloud_instance_id>/<image_id>`.
 - `image_id` - (String) The unique identifier of an image.
 

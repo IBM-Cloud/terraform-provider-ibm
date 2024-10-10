@@ -48,6 +48,7 @@ In addition to the argument reference list, you can access the following attribu
 	- `architecture` - (String) The CPU architecture that the image is designed for.
 	- `container_format` - (String) The container format.
 	- `creation_date` - (String) Date of image creation.
+	- `crn` - (String) The CRN of this resource.
 	- `description` - (String) The description of an image.
 	- `disk_format` - (String) The disk format.
 	- `endianness` - (String) The `Endianness` order.
