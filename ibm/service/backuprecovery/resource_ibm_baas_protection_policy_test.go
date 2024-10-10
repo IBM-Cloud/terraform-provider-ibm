@@ -31,16 +31,16 @@ func TestAccIbmBaasProtectionPolicyBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionPolicyConfigBasic(name, duration),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasProtectionPolicyExists("ibm_baas_protection_policy.baas_protection_policy_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_protection_policy.baas_protection_policy_instance", "name", name),
+					testAccCheckIbmBaasProtectionPolicyExists("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", conf),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "name", name),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionPolicyConfigBasic(name, durationUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_baas_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_protection_policy.baas_protection_policy_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "name", name),
 				),
 			},
 		},
@@ -49,7 +49,7 @@ func TestAccIbmBaasProtectionPolicyBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionPolicyConfigBasic(name string, duration int) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
 			name = "%s"
 			backup_policy {
@@ -113,7 +113,7 @@ func testAccCheckIbmBaasProtectionPolicyDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_baas_protection_policy" {
+		if rs.Type != "ibm_backup_recovery_protection_policy" {
 			continue
 		}
 

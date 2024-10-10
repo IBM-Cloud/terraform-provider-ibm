@@ -4005,7 +4005,7 @@ func DataSourceIbmBaasProtectionPolicy() *schema.Resource {
 func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -4020,7 +4020,7 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 
 	protectionPolicyResponse, _, err := backupRecoveryClient.GetProtectionPolicyByIDWithContext(context, getProtectionPolicyByIdOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionPolicyByIDWithContext failed: %s", err.Error()), "(Data) ibm_baas_protection_policy", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionPolicyByIDWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_protection_policy", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -4028,22 +4028,22 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 	d.SetId(*getProtectionPolicyByIdOptions.ID)
 
 	if err = d.Set("name", protectionPolicyResponse.Name); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-name").GetDiag()
 	}
 
 	backupPolicy := []map[string]interface{}{}
 	backupPolicyMap, err := DataSourceIbmBaasProtectionPolicyBackupPolicyToMap(protectionPolicyResponse.BackupPolicy)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "backup_policy-to-map").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "backup_policy-to-map").GetDiag()
 	}
 	backupPolicy = append(backupPolicy, backupPolicyMap)
 	if err = d.Set("backup_policy", backupPolicy); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-backup_policy").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_policy: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-backup_policy").GetDiag()
 	}
 
 	if !core.IsNil(protectionPolicyResponse.Description) {
 		if err = d.Set("description", protectionPolicyResponse.Description); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-description").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-description").GetDiag()
 		}
 	}
 
@@ -4052,12 +4052,12 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 		for _, blackoutWindowItem := range protectionPolicyResponse.BlackoutWindow {
 			blackoutWindowItemMap, err := DataSourceIbmBaasProtectionPolicyBlackoutWindowToMap(&blackoutWindowItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "blackout_window-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "blackout_window-to-map").GetDiag()
 			}
 			blackoutWindow = append(blackoutWindow, blackoutWindowItemMap)
 		}
 		if err = d.Set("blackout_window", blackoutWindow); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting blackout_window: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-blackout_window").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting blackout_window: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-blackout_window").GetDiag()
 		}
 	}
 
@@ -4066,12 +4066,12 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 		for _, extendedRetentionItem := range protectionPolicyResponse.ExtendedRetention {
 			extendedRetentionItemMap, err := DataSourceIbmBaasProtectionPolicyExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "extended_retention-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "extended_retention-to-map").GetDiag()
 			}
 			extendedRetention = append(extendedRetention, extendedRetentionItemMap)
 		}
 		if err = d.Set("extended_retention", extendedRetention); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting extended_retention: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-extended_retention").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting extended_retention: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-extended_retention").GetDiag()
 		}
 	}
 
@@ -4079,11 +4079,11 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 		remoteTargetPolicy := []map[string]interface{}{}
 		remoteTargetPolicyMap, err := DataSourceIbmBaasProtectionPolicyTargetsConfigurationToMap(protectionPolicyResponse.RemoteTargetPolicy)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "remote_target_policy-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "remote_target_policy-to-map").GetDiag()
 		}
 		remoteTargetPolicy = append(remoteTargetPolicy, remoteTargetPolicyMap)
 		if err = d.Set("remote_target_policy", remoteTargetPolicy); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote_target_policy: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-remote_target_policy").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting remote_target_policy: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-remote_target_policy").GetDiag()
 		}
 	}
 
@@ -4092,12 +4092,12 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 		for _, cascadedTargetsConfigItem := range protectionPolicyResponse.CascadedTargetsConfig {
 			cascadedTargetsConfigItemMap, err := DataSourceIbmBaasProtectionPolicyCascadedTargetConfigurationToMap(&cascadedTargetsConfigItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "cascaded_targets_config-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "cascaded_targets_config-to-map").GetDiag()
 			}
 			cascadedTargetsConfig = append(cascadedTargetsConfig, cascadedTargetsConfigItemMap)
 		}
 		if err = d.Set("cascaded_targets_config", cascadedTargetsConfig); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cascaded_targets_config: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-cascaded_targets_config").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cascaded_targets_config: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-cascaded_targets_config").GetDiag()
 		}
 	}
 
@@ -4105,65 +4105,65 @@ func dataSourceIbmBaasProtectionPolicyRead(context context.Context, d *schema.Re
 		retryOptions := []map[string]interface{}{}
 		retryOptionsMap, err := DataSourceIbmBaasProtectionPolicyRetryOptionsToMap(protectionPolicyResponse.RetryOptions)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policy", "read", "retry_options-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policy", "read", "retry_options-to-map").GetDiag()
 		}
 		retryOptions = append(retryOptions, retryOptionsMap)
 		if err = d.Set("retry_options", retryOptions); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retry_options: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-retry_options").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retry_options: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-retry_options").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.DataLock) {
 		if err = d.Set("data_lock", protectionPolicyResponse.DataLock); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting data_lock: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-data_lock").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting data_lock: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-data_lock").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.Version) {
 		if err = d.Set("version", flex.IntValue(protectionPolicyResponse.Version)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting version: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-version").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting version: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-version").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.IsCBSEnabled) {
 		if err = d.Set("is_cbs_enabled", protectionPolicyResponse.IsCBSEnabled); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_cbs_enabled: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-is_cbs_enabled").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_cbs_enabled: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-is_cbs_enabled").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.LastModificationTimeUsecs) {
 		if err = d.Set("last_modification_time_usecs", flex.IntValue(protectionPolicyResponse.LastModificationTimeUsecs)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modification_time_usecs: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-last_modification_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_modification_time_usecs: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-last_modification_time_usecs").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.TemplateID) {
 		if err = d.Set("template_id", protectionPolicyResponse.TemplateID); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting template_id: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-template_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting template_id: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-template_id").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.IsUsable) {
 		if err = d.Set("is_usable", protectionPolicyResponse.IsUsable); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_usable: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-is_usable").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_usable: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-is_usable").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.IsReplicated) {
 		if err = d.Set("is_replicated", protectionPolicyResponse.IsReplicated); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_replicated: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-is_replicated").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_replicated: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-is_replicated").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.NumProtectionGroups) {
 		if err = d.Set("num_protection_groups", flex.IntValue(protectionPolicyResponse.NumProtectionGroups)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_protection_groups: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-num_protection_groups").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_protection_groups: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-num_protection_groups").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionPolicyResponse.NumProtectedObjects) {
 		if err = d.Set("num_protected_objects", flex.IntValue(protectionPolicyResponse.NumProtectedObjects)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_protected_objects: %s", err), "(Data) ibm_baas_protection_policy", "read", "set-num_protected_objects").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_protected_objects: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-num_protected_objects").GetDiag()
 		}
 	}
 

@@ -45,7 +45,7 @@ func ResourceIbmBaasProtectionGroupRunRequest() *schema.Resource {
 			"run_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_protection_group_run_request", "run_type"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_protection_group_run_request", "run_type"),
 				Description: "Type of protection run. 'kRegular' indicates an incremental (CBT) backup. Incremental backups utilizing CBT (if supported) are captured of the target protection objects. The first run of a kRegular schedule captures all the blocks. 'kFull' indicates a full (no CBT) backup. A complete backup (all blocks) of the target protection objects are always captured and Change Block Tracking (CBT) is not utilized. 'kLog' indicates a Database Log backup. Capture the database transaction logs to allow rolling back to a specific point in time. 'kSystem' indicates system volume backup. It produces an image for bare metal recovery.",
 			},
 			"objects": &schema.Schema{
@@ -415,7 +415,7 @@ func checkDiffResourceIbmBaasProtectionGroupRun(context context.Context, d *sche
 	// display a warning in the plan if resource is updated
 	for fieldName := range ResourceIbmBaasProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_protection_group_run_request cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_protection_group_run_request cannot be updated.")
 		}
 	}
 	return nil
@@ -439,14 +439,14 @@ func ResourceIbmBaasProtectionGroupRunRequestValidator() *validate.ResourceValid
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_protection_group_run_request", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_protection_group_run_request", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmBaasProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group_run_request", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group_run_request", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -463,7 +463,7 @@ func resourceIbmBaasProtectionGroupRunRequestCreate(context context.Context, d *
 			value := v.(map[string]interface{})
 			newObjectsItem, err := ResourceIbmBaasProtectionGroupRunRequestMapToRunObject(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group_run_request", "create", "parse-objects").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group_run_request", "create", "parse-objects").GetDiag()
 			}
 			newObjects = append(newObjects, *newObjectsItem)
 		}
@@ -472,14 +472,14 @@ func resourceIbmBaasProtectionGroupRunRequestCreate(context context.Context, d *
 	if _, ok := d.GetOk("targets_config"); ok {
 		newTargetsConfigModel, err := ResourceIbmBaasProtectionGroupRunRequestMapToRunTargetsConfiguration(d.Get("targets_config.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group_run_request", "create", "parse-targets_config").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group_run_request", "create", "parse-targets_config").GetDiag()
 		}
 		createProtectionGroupRunOptions.SetTargetsConfig(newTargetsConfigModel)
 	}
 
 	createProtectionGroupRunResponse, _, err := backupRecoveryClient.CreateProtectionGroupRunWithContext(context, createProtectionGroupRunOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProtectionGroupRunWithContext failed: %s", err.Error()), "ibm_baas_protection_group_run_request", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProtectionGroupRunWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_group_run_request", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -516,7 +516,7 @@ func resourceIbmBaasProtectionGroupRunRequestUpdate(context context.Context, d *
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
-		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource. Please use ibm_baas_update_protection_group_run_request resource for updates.",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource. Please use ibm_backup_recovery_update_protection_group_run_request resource for updates.",
 	}
 	// d.SetId("")
 	diags = append(diags, warning)

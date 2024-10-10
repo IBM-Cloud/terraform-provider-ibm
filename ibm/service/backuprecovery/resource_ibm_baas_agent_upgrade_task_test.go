@@ -30,8 +30,8 @@ func TestAccIbmBaasAgentUpgradeTaskBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasAgentUpgradeTaskConfigBasic(name, agentId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasAgentUpgradeTaskExists("ibm_baas_agent_upgrade_task.baas_agent_upgrade_task_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_agent_upgrade_task.baas_agent_upgrade_task_instance", "x_ibm_tenant_id", tenantId),
+					testAccCheckIbmBaasAgentUpgradeTaskExists("ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance", conf),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance", "x_ibm_tenant_id", tenantId),
 				),
 				Destroy: false,
 			},
@@ -41,7 +41,7 @@ func TestAccIbmBaasAgentUpgradeTaskBasic(t *testing.T) {
 
 func testAccCheckIbmBaasAgentUpgradeTaskConfigBasic(name string, agentId int) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
+		resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 			x_ibm_tenant_id = "%s"
 			agent_ids = [%d]
 			name = "%s"

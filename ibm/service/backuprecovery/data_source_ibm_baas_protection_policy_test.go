@@ -30,13 +30,13 @@ func TestAccIbmBaasProtectionPolicyDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionPolicyDataSourceConfigBasic(name, duration),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policy.baas_protection_policy_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_policy.baas_protection_policy_instance", "name", name),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.retention.0.duration", strconv.Itoa(duration)),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.retention.0.unit"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.incremental.0.schedule.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.incremental.0.schedule.0.unit"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "name", name),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.retention.0.duration", strconv.Itoa(duration)),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.retention.0.unit"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.incremental.0.schedule.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "backup_policy.0.regular.0.incremental.0.schedule.0.unit"),
 				),
 			},
 		},
@@ -45,7 +45,7 @@ func TestAccIbmBaasProtectionPolicyDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionPolicyDataSourceConfigBasic(name string, duration int) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
 			name = "%s"
 			backup_policy {
@@ -73,8 +73,8 @@ func testAccCheckIbmBaasProtectionPolicyDataSourceConfigBasic(name string, durat
 			}
 		}
 
-		data "ibm_baas_protection_policy" "baas_protection_policy_instance" {
-			protection_policy_id = ibm_baas_protection_policy.baas_protection_policy_instance.id
+		data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
+			protection_policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id
 			x_ibm_tenant_id = "%[1]s"
 		}
 

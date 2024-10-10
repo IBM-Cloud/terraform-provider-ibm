@@ -64,7 +64,7 @@ func checkDiffResourceIbmBaasConnectionRegistrationToken(context context.Context
 
 	for fieldName := range ResourceIbmBaasConnectionRegistrationToken().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_connection_registration_token cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_connection_registration_token cannot be updated.")
 		}
 	}
 	return nil
@@ -73,7 +73,7 @@ func checkDiffResourceIbmBaasConnectionRegistrationToken(context context.Context
 func resourceIbmBaasConnectionRegistrationTokenCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_connection_registration_token", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_connection_registration_token", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -85,7 +85,7 @@ func resourceIbmBaasConnectionRegistrationTokenCreate(context context.Context, d
 
 	connectionRegistrationTokenString, _, err := backupRecoveryClient.GenerateDataSourceConnectionRegistrationTokenWithContext(context, generateDataSourceConnectionRegistrationTokenOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GenerateDataSourceConnectionRegistrationTokenWithContext failed: %s", err.Error()), "ibm_baas_connection_registration_token", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GenerateDataSourceConnectionRegistrationTokenWithContext failed: %s", err.Error()), "ibm_backup_recovery_connection_registration_token", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

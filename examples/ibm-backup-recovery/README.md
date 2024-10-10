@@ -3,40 +3,40 @@
 These examples illustrate how to use the resources and data sources associated with IBM Backup Recovery API.
 
 The following resources are supported:
-* ibm_baas_connection_registration_token
-* ibm_baas_agent_upgrade_task
-* ibm_baas_protection_group_run_request
-* ibm_baas_data_source_connection
-* ibm_baas_recovery_download_files_folders
-* ibm_baas_restore_points
-* ibm_baas_perform_action_on_protection_group_run_request
-* ibm_baas_protection_group
-* ibm_baas_protection_policy
-* ibm_baas_recovery
-* ibm_baas_source_registration
-* ibm_baas_update_protection_group_run_request
+* ibm_backup_recovery_connection_registration_token
+* ibm_backup_recovery_agent_upgrade_task
+* ibm_backup_recovery_protection_group_run_request
+* ibm_backup_recovery_data_source_connection
+* ibm_backup_recovery_recovery_download_files_folders
+* ibm_backup_recovery_restore_points
+* ibm_backup_recovery_perform_action_on_protection_group_run_request
+* ibm_backup_recovery_protection_group
+* ibm_backup_recovery_protection_policy
+* ibm_backup_recovery_recovery
+* ibm_backup_recovery_source_registration
+* ibm_backup_recovery_update_protection_group_run_request
 
 The following data sources are supported:
-* ibm_baas_agent_upgrade_tasks
-* ibm_baas_connectors_metadata
-* ibm_baas_data_source_connections
-* ibm_baas_data_source_connectors
-* ibm_baas_download_agent
-* ibm_baas_download_indexed_files
-* ibm_baas_object_snapshots
-* ibm_baas_protection_group_runs
-* ibm_baas_protection_group
-* ibm_baas_protection_groups
-* ibm_baas_protection_policies
-* ibm_baas_protection_policy
-* ibm_baas_recoveries
-* ibm_baas_recovery_download_files
-* ibm_baas_recovery
-* ibm_baas_search_indexed_object
-* ibm_baas_search_objects
-* ibm_baas_search_protected_objects
-* ibm_baas_source_registrations
-* ibm_baas_source_registration
+* ibm_backup_recovery_agent_upgrade_tasks
+* ibm_backup_recovery_connectors_metadata
+* ibm_backup_recovery_data_source_connections
+* ibm_backup_recovery_data_source_connectors
+* ibm_backup_recovery_download_agent
+* ibm_backup_recovery_download_indexed_files
+* ibm_backup_recovery_object_snapshots
+* ibm_backup_recovery_protection_group_runs
+* ibm_backup_recovery_protection_group
+* ibm_backup_recovery_protection_groups
+* ibm_backup_recovery_protection_policies
+* ibm_backup_recovery_protection_policy
+* ibm_backup_recovery_recoveries
+* ibm_backup_recovery_recovery_download_files
+* ibm_backup_recovery_recovery
+* ibm_backup_recovery_search_indexed_object
+* ibm_backup_recovery_search_objects
+* ibm_backup_recovery_search_protected_objects
+* ibm_backup_recovery_source_registrations
+* ibm_backup_recovery_source_registration
 
 
 ## Usage
@@ -53,10 +53,10 @@ Run `terraform destroy` when you don't need these resources.
 
 ## IBM Backup recovery API resources
 
-### Resource: ibm_baas_connection_registration_token
+### Resource: ibm_backup_recovery_connection_registration_token
 
 ```hcl
-resource "ibm_baas_connection_registration_token" "baas_connection_registration_token_instance" {
+resource "ibm_backup_recovery_connection_registration_token" "baas_connection_registration_token_instance" {
   connection_id = var.baas_connection_registration_token_connection_id
   x_ibm_tenant_id = var.baas_connection_registration_token_x_ibm_tenant_id
 }
@@ -76,10 +76,10 @@ resource "ibm_baas_connection_registration_token" "baas_connection_registration_
 |------|-------------|
 | registration_token | Specifies a token that can be used to register a connector against this connection |
 
-### Resource: ibm_baas_agent_upgrade_task
+### Resource: ibm_backup_recovery_agent_upgrade_task
 
 ```hcl
-resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
+resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
   x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
   agent_ids = var.baas_agent_upgrade_tasks_ids
   description = ""
@@ -99,10 +99,10 @@ resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 | schedule_end_time_usecs | Specifies the end time specified as a Unix epoch Timestamp in microseconds. | `number` | false |
 | schedule_time_usecs | Specifies the schedule time specified as a Unix epoch Timestamp in microseconds. | `number` | false |
 
-### Resource: ibm_baas_protection_group_run_request
+### Resource: ibm_backup_recovery_protection_group_run_request
 
 ```hcl
-resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_request_instance" {
+resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
   x_ibm_tenant_id = var.baas_protection_group_run_request_x_ibm_tenant_id
   run_type = var.baas_protection_group_run_request_run_type
   objects = var.baas_protection_group_run_request_objects
@@ -120,10 +120,10 @@ resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_requ
 | objects | Specifies the list of objects to be protected by this Protection Group run. These can be leaf objects or non-leaf objects in the protection hierarchy. This must be specified only if a subset of objects from the Protection Groups needs to be protected. | `list()` | false |
 | targets_config | Specifies the replication and archival targets. | `` | false |
 
-### Resource: ibm_baas_data_source_connection
+### Resource: ibm_backup_recovery_data_source_connection
 
 ```hcl
-resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
+resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
   x_ibm_tenant_id = var.baas_data_source_connection_x_ibm_tenant_id
   connection_name = var.baas_data_source_connection_connection_name
 }
@@ -146,10 +146,10 @@ resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance
 | registration_token | Specifies a token that can be used to register a connector against this connection. |
 | tenant_id | Specifies the tenant ID of the connection. |
 
-### Resource: ibm_baas_recovery_download_files_folders
+### Resource: ibm_backup_recovery_recovery_download_files_folders
 
 ```hcl
-resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
   x_ibm_tenant_id = var.baas_recovery_download_files_folders_x_ibm_tenant_id
   documents = var.baas_recovery_download_files_folders_documents
   name = var.baas_recovery_download_files_folders_name
@@ -173,10 +173,10 @@ resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_file
 | files_and_folders | Specifies the list of files and folders to download. | `list()` | true |
 | glacier_retrieval_type | Specifies the glacier retrieval type when restoring or downloding files or folders from a Glacier-based cloud snapshot. | `string` | false |
 
-### Resource: ibm_baas_restore_points
+### Resource: ibm_backup_recovery_restore_points
 
 ```hcl
-resource "ibm_baas_restore_points" "baas_restore_points_instance" {
+resource "ibm_backup_recovery_restore_points" "baas_restore_points_instance" {
   x_ibm_tenant_id = var.baas_restore_points_x_ibm_tenant_id
   end_time_usecs = var.baas_restore_points_end_time_usecs
   environment = var.baas_restore_points_environment
@@ -198,10 +198,10 @@ resource "ibm_baas_restore_points" "baas_restore_points_instance" {
 | source_id | Specifies the id of the Protection Source which is to be restored. | `number` | false |
 | start_time_usecs | Specifies the start time specified as a Unix epoch Timestamp in microseconds. | `number` | true |
 
-### Resource: ibm_baas_perform_action_on_protection_group_run_request
+### Resource: ibm_backup_recovery_perform_action_on_protection_group_run_request
 
 ```hcl
-resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
+resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
   x_ibm_tenant_id = var.baas_perform_action_on_protection_group_run_request_x_ibm_tenant_id
   action = var.baas_perform_action_on_protection_group_run_request_action
   pause_params = var.baas_perform_action_on_protection_group_run_request_pause_params
@@ -221,10 +221,10 @@ resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform
 | resume_params | Specifies the resume action params for a protection run. | `list()` | false |
 | cancel_params | Specifies the cancel action params for a protection run. | `list()` | false |
 
-### Resource: ibm_baas_protection_group
+### Resource: ibm_backup_recovery_protection_group
 
 ```hcl
-resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
   x_ibm_tenant_id = var.baas_protection_group_x_ibm_tenant_id
   name = var.baas_protection_group_name
   policy_id = var.baas_protection_group_policy_id
@@ -285,10 +285,10 @@ resource "ibm_baas_protection_group" "baas_protection_group_instance" {
 | invalid_entities | Specifies the Information about invalid entities. An entity will be considered invalid if it is part of an active protection group but has lost compatibility for the given backup type. |
 | num_protected_objects | Specifies the number of protected objects of the Protection Group. |
 
-### Resource: ibm_baas_protection_policy
+### Resource: ibm_backup_recovery_protection_policy
 
 ```hcl
-resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
   x_ibm_tenant_id = var.baas_protection_policy_x_ibm_tenant_id
   name = var.baas_protection_policy_name
   backup_policy = var.baas_protection_policy_backup_policy
@@ -335,10 +335,10 @@ resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
 | num_protection_groups | Specifies the number of protection groups using the protection policy. |
 | num_protected_objects | Specifies the number of protected objects using the protection policy. |
 
-### Resource: ibm_baas_recovery
+### Resource: ibm_backup_recovery_recovery
 
 ```hcl
-resource "ibm_baas_recovery" "baas_recovery_instance" {
+resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
   x_ibm_tenant_id = var.baas_recovery_x_ibm_tenant_id
   request_initiator_type = var.baas_recovery_request_initiator_type
   name = var.baas_recovery_name
@@ -380,10 +380,10 @@ resource "ibm_baas_recovery" "baas_recovery_instance" {
 | retrieve_archive_tasks | Specifies the list of persistent state of a retrieve of an archive task. |
 | is_multi_stage_restore | Specifies whether the current recovery operation is a multi-stage restore operation. This is currently used by VMware recoveres for the migration/hot-standby use case. |
 
-### Resource: ibm_baas_search_indexed_object
+### Resource: ibm_backup_recovery_search_indexed_object
 
 ```hcl
-resource "ibm_baas_search_indexed_object" "baas_search_indexed_object_instance" {
+resource "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object_instance" {
   x_ibm_tenant_id = var.baas_search_indexed_object_x_ibm_tenant_id
   protection_group_ids = var.baas_search_indexed_object_protection_group_ids
   storage_domain_ids = var.baas_search_indexed_object_storage_domain_ids
@@ -455,10 +455,10 @@ resource "ibm_baas_search_indexed_object" "baas_search_indexed_object_instance" 
 | sharepoint_params | Specifies the request parameters to search for files/folders in document libraries. | `` | false |
 | uda_params | Parameters required to search Universal Data Adapter objects. | `` | false |
 
-### Resource: ibm_baas_source_registration
+### Resource: ibm_backup_recovery_source_registration
 
 ```hcl
-resource "ibm_baas_source_registration" "baas_source_registration_instance" {
+resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
   x_ibm_tenant_id = var.baas_source_registration_x_ibm_tenant_id
   environment = var.baas_source_registration_environment
   name = var.baas_source_registration_name
@@ -497,10 +497,10 @@ resource "ibm_baas_source_registration" "baas_source_registration_instance" {
 | last_refreshed_time_msecs | Specifies the time when the source was last refreshed in milliseconds. |
 | external_metadata | Specifies the External metadata of an entity. |
 
-### Resource: ibm_baas_update_protection_group_run_request
+### Resource: ibm_backup_recovery_update_protection_group_run_request
 
 ```hcl
-resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
+resource "ibm_backup_recovery_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
   x_ibm_tenant_id = var.baas_update_protection_group_run_request_x_ibm_tenant_id
   update_protection_group_run_params = var.baas_update_protection_group_run_request_update_protection_group_run_params
 }
@@ -516,10 +516,10 @@ resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_
 
 ## IBM Backup recovery API data sources
 
-### Data source: ibm_baas_agent_upgrade_tasks
+### Data source: ibm_backup_recovery_agent_upgrade_tasks
 
 ```hcl
-data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
+data "ibm_backup_recovery_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
   x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
   ids = var.baas_agent_upgrade_tasks_ids
 }
@@ -538,10 +538,10 @@ data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
 |------|-------------|
 | tasks | Specifies the list of agent upgrade tasks. |
 
-### Data source: ibm_baas_connectors_metadata
+### Data source: ibm_backup_recovery_connectors_metadata
 
 ```hcl
-data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
+data "ibm_backup_recovery_connectors_metadata" "baas_connectors_metadata_instance" {
   x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
 }
 ```
@@ -558,10 +558,10 @@ data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
 |------|-------------|
 | connector_image_metadata | Specifies the list of connector image medata that contains image type and connector image url. |
 
-### Data source: ibm_baas_data_source_connections
+### Data source: ibm_backup_recovery_data_source_connections
 
 ```hcl
-data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
+data "ibm_backup_recovery_data_source_connections" "baas_data_source_connections_instance" {
   x_ibm_tenant_id = var.baas_data_source_connections_x_ibm_tenant_id
   connection_ids = var.baas_data_source_connections_connection_ids
   connection_names = var.baas_data_source_connections_connection_names
@@ -582,10 +582,10 @@ data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" 
 |------|-------------|
 | connections |  |
 
-### Data source: ibm_baas_data_source_connectors
+### Data source: ibm_backup_recovery_data_source_connectors
 
 ```hcl
-data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
+data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_instance" {
   x_ibm_tenant_id = var.baas_data_source_connectors_x_ibm_tenant_id
   connector_ids = var.baas_data_source_connectors_connector_ids
   connector_names = var.baas_data_source_connectors_connector_names
@@ -608,10 +608,10 @@ data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
 |------|-------------|
 | connectors |  |
 
-### Data source: ibm_baas_download_agent
+### Data source: ibm_backup_recovery_download_agent
 
 ```hcl
-data "ibm_baas_download_agent" "baas_download_agent_instance" {
+data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
   x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
   platform = var.baas_download_agent_platform
   linux_params = var.baas_download_agent_linux_params
@@ -628,10 +628,10 @@ data "ibm_baas_download_agent" "baas_download_agent_instance" {
 | platform | Specifies the platform for which agent needs to be downloaded. | `string` | true |
 | linux_params | Linux agent parameters. | `` | false |
 
-### Data source: ibm_baas_object_snapshots
+### Data source: ibm_backup_recovery_object_snapshots
 
 ```hcl
-data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
   baas_object_snapshots_id = var.baas_object_snapshots_baas_object_snapshots_id
   x_ibm_tenant_id = var.baas_object_snapshots_x_ibm_tenant_id
   from_time_usecs = var.baas_object_snapshots_from_time_usecs
@@ -670,10 +670,10 @@ data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
 |------|-------------|
 | snapshots | Specifies the list of snapshots. |
 
-### Data source: ibm_baas_search_objects
+### Data source: ibm_backup_recovery_search_objects
 
 ```hcl
-data "ibm_baas_search_objects" "baas_search_objects_instance" {
+data "ibm_backup_recovery_search_objects" "baas_search_objects_instance" {
   x_ibm_tenant_id = var.baas_search_objects_x_ibm_tenant_id
   request_initiator_type = var.baas_search_objects_request_initiator_type
   search_string = var.baas_search_objects_search_string
@@ -744,10 +744,10 @@ data "ibm_baas_search_objects" "baas_search_objects_instance" {
 |------|-------------|
 | objects | Specifies the list of Objects. |
 
-### Data source: ibm_baas_search_protected_objects
+### Data source: ibm_backup_recovery_search_protected_objects
 
 ```hcl
-data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance" {
+data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objects_instance" {
   x_ibm_tenant_id = var.baas_search_protected_objects_x_ibm_tenant_id
   request_initiator_type = var.baas_search_protected_objects_request_initiator_type
   search_string = var.baas_search_protected_objects_search_string
@@ -796,10 +796,10 @@ data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance
 | metadata | Specifies the metadata information about the Protection Groups, Protection Policy etc., for search result. |
 | num_results | Specifies the total number of search results which matches the search criteria. |
 
-### Data source: ibm_baas_protection_group
+### Data source: ibm_backup_recovery_protection_group
 
 ```hcl
-data "ibm_baas_protection_group" "baas_protection_group_instance" {
+data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
   baas_protection_group_id = var.data_baas_protection_group_baas_protection_group_id
   x_ibm_tenant_id = var.data_baas_protection_group_x_ibm_tenant_id
   request_initiator_type = var.data_baas_protection_group_request_initiator_type
@@ -852,10 +852,10 @@ data "ibm_baas_protection_group" "baas_protection_group_instance" {
 | physical_params | Specifies the parameters for Physical object. |
 | mssql_params | Specifies the parameters specific to MSSQL Protection Group. |
 
-### Data source: ibm_baas_protection_groups
+### Data source: ibm_backup_recovery_protection_groups
 
 ```hcl
-data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
+data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
   x_ibm_tenant_id = var.baas_protection_groups_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_groups_request_initiator_type
   ids = var.baas_protection_groups_ids
@@ -912,10 +912,10 @@ data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
 |------|-------------|
 | protection_groups | Specifies the list of Protection Groups which were returned by the request. |
 
-### Data source: ibm_baas_protection_group_run
+### Data source: ibm_backup_recovery_protection_group_run
 
 ```hcl
-data "ibm_baas_protection_group_run" "baas_protection_group_run_instance" {
+data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_instance" {
   baas_protection_group_run_id = var.baas_protection_group_run_baas_protection_group_run_id
   x_ibm_tenant_id = var.baas_protection_group_run_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_group_run_request_initiator_type
@@ -988,10 +988,10 @@ data "ibm_baas_protection_group_run" "baas_protection_group_run_instance" {
 | environment | Specifies the environment of the Protection Group. |
 | externally_triggered_backup_tag | The tag of externally triggered backup job. |
 
-### Data source: ibm_baas_protection_group_runs
+### Data source: ibm_backup_recovery_protection_group_runs
 
 ```hcl
-data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
+data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
   baas_protection_group_runs_id = var.baas_protection_group_runs_baas_protection_group_runs_id
   x_ibm_tenant_id = var.baas_protection_group_runs_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_group_runs_request_initiator_type
@@ -1047,10 +1047,10 @@ data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
 | runs | Specifies the list of Protection Group runs. |
 | total_runs | Specifies the count of total runs exist for the given set of filters. The number of runs in single API call are limited and this count can be used to estimate query filter values to get next set of remaining runs. Please note that this field will only be populated if startTimeUsecs or endTimeUsecs or both are specified in query parameters. |
 
-### Data source: ibm_baas_protection_policies
+### Data source: ibm_backup_recovery_protection_policies
 
 ```hcl
-data "ibm_baas_protection_policies" "baas_protection_policies_instance" {
+data "ibm_backup_recovery_protection_policies" "baas_protection_policies_instance" {
   x_ibm_tenant_id = var.baas_protection_policies_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_policies_request_initiator_type
   ids = var.baas_protection_policies_ids
@@ -1081,10 +1081,10 @@ data "ibm_baas_protection_policies" "baas_protection_policies_instance" {
 |------|-------------|
 | policies | Specifies a list of protection policies. |
 
-### Data source: ibm_baas_protection_policy
+### Data source: ibm_backup_recovery_protection_policy
 
 ```hcl
-data "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
   baas_protection_policy_id = var.data_baas_protection_policy_baas_protection_policy_id
   x_ibm_tenant_id = var.data_baas_protection_policy_x_ibm_tenant_id
   request_initiator_type = var.data_baas_protection_policy_request_initiator_type
@@ -1121,10 +1121,10 @@ data "ibm_baas_protection_policy" "baas_protection_policy_instance" {
 | num_protection_groups | Specifies the number of protection groups using the protection policy. |
 | num_protected_objects | Specifies the number of protected objects using the protection policy. |
 
-### Data source: ibm_baas_recovery
+### Data source: ibm_backup_recovery_recovery
 
 ```hcl
-data "ibm_baas_recovery" "baas_recovery_instance" {
+data "ibm_backup_recovery_recovery" "baas_recovery_instance" {
   baas_recovery_id = var.data_baas_recovery_baas_recovery_id
   x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
 }
@@ -1163,10 +1163,10 @@ data "ibm_baas_recovery" "baas_recovery_instance" {
 
 
 
-### Data source: ibm_baas_recovery_download_files
+### Data source: ibm_backup_recovery_recovery_download_files
 
 ```hcl
-data "ibm_baas_recovery_download_files" "baas_recovery_download_files_instance" {
+data "ibm_backup_recovery_recovery_download_files" "baas_recovery_download_files_instance" {
   recovery_download_files_id = "recovery_download_files_id"
   x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
   start_offset = 0
@@ -1191,10 +1191,10 @@ data "ibm_baas_recovery_download_files" "baas_recovery_download_files_instance" 
 | start_time | Specifies the start time of restore task. | `string` | false |
 | include_tenants | Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned.| `bool` | false |
 
-### Data source: ibm_baas_recoveries
+### Data source: ibm_backup_recovery_recoveries
 
 ```hcl
-data "ibm_baas_recoveries" "baas_recoveries_instance" {
+data "ibm_backup_recovery_recoveries" "baas_recoveries_instance" {
   x_ibm_tenant_id = var.baas_recoveries_x_ibm_tenant_id
   ids = var.baas_recoveries_ids
   return_only_child_recoveries = var.baas_recoveries_return_only_child_recoveries
@@ -1229,10 +1229,10 @@ data "ibm_baas_recoveries" "baas_recoveries_instance" {
 |------|-------------|
 | recoveries | Specifies list of Recoveries. |
 
-### Data source: ibm_baas_source_registrations
+### Data source: ibm_backup_recovery_source_registrations
 
 ```hcl
-data "ibm_baas_source_registrations" "baas_source_registrations_instance" {
+data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {
   x_ibm_tenant_id = var.baas_source_registrations_x_ibm_tenant_id
   ids = var.baas_source_registrations_ids
   include_source_credentials = var.baas_source_registrations_include_source_credentials
@@ -1261,10 +1261,10 @@ data "ibm_baas_source_registrations" "baas_source_registrations_instance" {
 |------|-------------|
 | registrations | Specifies the list of Protection Source Registrations. |
 
-### Data source: ibm_baas_source_registration
+### Data source: ibm_backup_recovery_source_registration
 
 ```hcl
-data "ibm_baas_source_registration" "baas_source_registration_instance" {
+data "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
   baas_source_registration_id = var.data_baas_source_registration_baas_source_registration_id
   x_ibm_tenant_id = var.data_baas_source_registration_x_ibm_tenant_id
   request_initiator_type = var.data_baas_source_registration_request_initiator_type
@@ -1298,10 +1298,10 @@ data "ibm_baas_source_registration" "baas_source_registration_instance" {
 | external_metadata | Specifies the External metadata of an entity. |
 | physical_params | Specifies parameters to register physical server. |
 
-### Data source: ibm_baas_download_indexed_files
+### Data source: ibm_backup_recovery_download_indexed_files
 
 ```hcl
-data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
+data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_instance" {
   snapshots_id = var.baas_download_indexed_files_snapshots_id
   x_ibm_tenant_id = var.baas_download_indexed_files_x_ibm_tenant_id
   file_path = var.baas_download_indexed_files_file_path
@@ -1354,27 +1354,27 @@ This service includes certain resources that do not have fully implemented CRUD 
 
 #### Protection Group Run:
 
-***Create:*** A `ibm_baas_protection_group_run_request` resource is available for creating new protection group run.
+***Create:*** A `ibm_backup_recovery_protection_group_run_request` resource is available for creating new protection group run.
 
-***Update:*** protection group run updates are managed through a separate resource `ibm_baas_update_protection_group_run_request`. 
-Note that the `ibm_baas_protection_group_run_request` and `ibm_baas_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
+***Update:*** protection group run updates are managed through a separate resource `ibm_backup_recovery_update_protection_group_run_request`. 
+Note that the `ibm_backup_recovery_protection_group_run_request` and `ibm_backup_recovery_update_protection_group_run_request` resources must be used in tandem to manage Protection Group Runs.
 
-***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_baas_update_protection_group_run_request or ibm_baas_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
+***Delete:*** There is no delete operation available for the protection group run resource. If  ibm_backup_recovery_update_protection_group_run_request or ibm_backup_recovery_protection_group_run_request resource is removed from the `main.tf` file, Terraform will remove it from the state file but not from the backend. The resource will continue to exist in the backend system.
 
 
 #### Other resources that do not support update and delete:
 
 Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend. Similarly updating these resources will throw an error in the plan phase stating that the resource cannot be updated.
-- ibm_baas_perform_action_on_protection_group_run_request
-- ibm_baas_recovery_download_files_folders
-- ibm_baas_agent_upgrade_task
-- ibm_baas_protection_group_state
-- ibm_baas_connection_registration_token
-- ibm_baas_restore_points
-- ibm_baas_recovery
-- ibm_baas_data_source_connector_patch
-- ibm_baas_data_source_connector_registration
-- ibm_baas_update_protection_group_run_request
+- ibm_backup_recovery_perform_action_on_protection_group_run_request
+- ibm_backup_recovery_recovery_download_files_folders
+- ibm_backup_recovery_agent_upgrade_task
+- ibm_backup_recovery_protection_group_state
+- ibm_backup_recovery_connection_registration_token
+- ibm_backup_recovery_restore_points
+- ibm_backup_recovery_recovery
+- ibm_backup_recovery_data_source_connector_patch
+- ibm_backup_recovery_data_source_connector_registration
+- ibm_backup_recovery_update_protection_group_run_request
 
 
 **Important:** When managing resources that lack complete CRUD operations, users should exercise caution and consider the limitations described above. Manual intervention may be required to manage these resources in the backend if updates or deletions are necessary.**

@@ -31,28 +31,28 @@ func TestAccIbmBaasSourceRegistrationsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSourceRegistrationsDataSourceConfigBasic(objectId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_source_registrations.baas_source_registrations_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_baas_source_registrations.baas_source_registrations_instance", "ids.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.#", "1"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.source_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.environment"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.connection_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.connector_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.data_source_connection_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.authentication_status"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.registration_time_msecs"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.last_refreshed_time_msecs"),
-					resource.TestCheckResourceAttr("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.#", "1"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.os_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.object_type"),
-					resource.TestCheckResourceAttr("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.#", "1"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.0.endpoint"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.0.host_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.0.physical_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "ids.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.source_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.environment"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.connection_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.connector_group_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.data_source_connection_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.authentication_status"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.registration_time_msecs"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.last_refreshed_time_msecs"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.os_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.source_info.0.object_type"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.0.endpoint"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.0.host_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "registrations.0.physical_params.0.physical_type"),
 				),
 			},
 		},
@@ -62,7 +62,7 @@ func TestAccIbmBaasSourceRegistrationsDataSourceBasic(t *testing.T) {
 func testAccCheckIbmBaasSourceRegistrationsDataSourceConfigBasic(objectId int) string {
 	return fmt.Sprintf(`
 
-			data "ibm_baas_source_registrations" "baas_source_registrations_instance" {
+			data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {
 				ids = [%d]
 				x_ibm_tenant_id = "%s"
 			}

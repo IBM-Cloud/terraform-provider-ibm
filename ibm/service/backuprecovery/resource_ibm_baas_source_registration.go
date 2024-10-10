@@ -40,7 +40,7 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 			"environment": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_source_registration", "environment"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_source_registration", "environment"),
 				Description: "Specifies the environment type of the Protection Source.",
 			},
 			"name": &schema.Schema{
@@ -1077,14 +1077,14 @@ func ResourceIbmBaasSourceRegistrationValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_source_registration", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_source_registration", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1105,7 +1105,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 	if _, ok := d.GetOk("connection_id"); ok {
 		connId, err := strconv.ParseInt(d.Get("connection_id").(string), 10, 64)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "create", "parse-connection-id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-connection-id").GetDiag()
 		}
 		registerProtectionSourceOptions.SetConnectionID(connId)
 	}
@@ -1115,7 +1115,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 			value := v.(map[string]interface{})
 			connectionsItem, err := ResourceIbmBaasSourceRegistrationMapToConnectionConfig(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "create", "parse-connections").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-connections").GetDiag()
 			}
 			connections = append(connections, *connectionsItem)
 		}
@@ -1130,7 +1130,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 			value := v.(map[string]interface{})
 			advancedConfigsItem, err := ResourceIbmBaasSourceRegistrationMapToKeyValuePair(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "create", "parse-advanced_configs").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-advanced_configs").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
 		}
@@ -1142,14 +1142,14 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 	if _, ok := d.GetOk("physical_params"); ok {
 		physicalParamsModel, err := ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "create", "parse-physical_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-physical_params").GetDiag()
 		}
 		registerProtectionSourceOptions.SetPhysicalParams(physicalParamsModel)
 	}
 
 	sourceRegistrationReponseParams, _, err := backupRecoveryClient.RegisterProtectionSourceWithContext(context, registerProtectionSourceOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_baas_source_registration", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1161,7 +1161,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1182,25 +1182,25 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_baas_source_registration", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("environment", sourceRegistrationReponseParams.Environment); err != nil {
 		err = fmt.Errorf("Error setting environment: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-environment").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-environment").GetDiag()
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.Name) {
 		if err = d.Set("name", sourceRegistrationReponseParams.Name); err != nil {
 			err = fmt.Errorf("Error setting name: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-name").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ConnectionID) {
 		if err = d.Set("connection_id", strconv.Itoa(int(*sourceRegistrationReponseParams.ConnectionID))); err != nil {
 			err = fmt.Errorf("Error setting connection_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-connection_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-connection_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.Connections) {
@@ -1208,30 +1208,30 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		for _, connectionsItem := range sourceRegistrationReponseParams.Connections {
 			connectionsItemMap, err := ResourceIbmBaasSourceRegistrationConnectionConfigToMap(&connectionsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "connections-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "connections-to-map").GetDiag()
 			}
 			connections = append(connections, connectionsItemMap)
 		}
 		if err = d.Set("connections", connections); err != nil {
 			err = fmt.Errorf("Error setting connections: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-connections").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-connections").GetDiag()
 		}
 	} else {
 		if err = d.Set("connections", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting external_metadata: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-external_metadata").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-external_metadata").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ConnectorGroupID) {
 		if err = d.Set("connector_group_id", flex.IntValue(sourceRegistrationReponseParams.ConnectorGroupID)); err != nil {
 			err = fmt.Errorf("Error setting connector_group_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-connector_group_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-connector_group_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.DataSourceConnectionID) {
 		if err = d.Set("data_source_connection_id", sourceRegistrationReponseParams.DataSourceConnectionID); err != nil {
 			err = fmt.Errorf("Error setting data_source_connection_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-data_source_connection_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-data_source_connection_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.AdvancedConfigs) {
@@ -1239,72 +1239,72 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		for _, advancedConfigsItem := range sourceRegistrationReponseParams.AdvancedConfigs {
 			advancedConfigsItemMap, err := ResourceIbmBaasSourceRegistrationKeyValuePairToMap(&advancedConfigsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "advanced_configs-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "advanced_configs-to-map").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, advancedConfigsItemMap)
 		}
 		if err = d.Set("advanced_configs", advancedConfigs); err != nil {
 			err = fmt.Errorf("Error setting advanced_configs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-advanced_configs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-advanced_configs").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.PhysicalParams) {
 		physicalParamsMap, err := ResourceIbmBaasSourceRegistrationPhysicalSourceRegistrationParamsToMap(sourceRegistrationReponseParams.PhysicalParams)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "physical_params-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "physical_params-to-map").GetDiag()
 		}
 		if err = d.Set("physical_params", []map[string]interface{}{physicalParamsMap}); err != nil {
 			err = fmt.Errorf("Error setting physical_params: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-physical_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-physical_params").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.SourceID) {
 		if err = d.Set("source_id", flex.IntValue(sourceRegistrationReponseParams.SourceID)); err != nil {
 			err = fmt.Errorf("Error setting source_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-source_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-source_id").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.SourceInfo) {
 		sourceInfoMap, err := ResourceIbmBaasSourceRegistrationObjectToMap(sourceRegistrationReponseParams.SourceInfo)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "source_info-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "source_info-to-map").GetDiag()
 		}
 		if err = d.Set("source_info", []map[string]interface{}{sourceInfoMap}); err != nil {
 			err = fmt.Errorf("Error setting source_info: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-source_info").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-source_info").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.AuthenticationStatus) {
 		if err = d.Set("authentication_status", sourceRegistrationReponseParams.AuthenticationStatus); err != nil {
 			err = fmt.Errorf("Error setting authentication_status: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-authentication_status").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-authentication_status").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.RegistrationTimeMsecs) {
 		if err = d.Set("registration_time_msecs", flex.IntValue(sourceRegistrationReponseParams.RegistrationTimeMsecs)); err != nil {
 			err = fmt.Errorf("Error setting registration_time_msecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-registration_time_msecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-registration_time_msecs").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.LastRefreshedTimeMsecs) {
 		if err = d.Set("last_refreshed_time_msecs", flex.IntValue(sourceRegistrationReponseParams.LastRefreshedTimeMsecs)); err != nil {
 			err = fmt.Errorf("Error setting last_refreshed_time_msecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-last_refreshed_time_msecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-last_refreshed_time_msecs").GetDiag()
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ExternalMetadata) {
 		externalMetadataMap, err := ResourceIbmBaasSourceRegistrationEntityExternalMetadataToMap(sourceRegistrationReponseParams.ExternalMetadata)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "external_metadata-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "external_metadata-to-map").GetDiag()
 		}
 		if err = d.Set("external_metadata", []map[string]interface{}{externalMetadataMap}); err != nil {
 			err = fmt.Errorf("Error setting external_metadata: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-external_metadata").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-external_metadata").GetDiag()
 		}
 	} else {
 		if err = d.Set("external_metadata", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting external_metadata: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "read", "set-external_metadata").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-external_metadata").GetDiag()
 		}
 	}
 
@@ -1314,7 +1314,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "update", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1438,7 +1438,7 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 func resourceIbmBaasSourceRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_source_registration", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1457,7 +1457,7 @@ func resourceIbmBaasSourceRegistrationDelete(context context.Context, d *schema.
 
 	_, err = backupRecoveryClient.DeleteProtectionSourceRegistrationWithContext(context, deleteProtectionSourceRegistrationOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_baas_source_registration", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

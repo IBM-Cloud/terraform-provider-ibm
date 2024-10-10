@@ -101,7 +101,7 @@ func ResourceIbmBaasDataSourceConnectorPatch() *schema.Resource {
 func resourceIbmBaasDataSourceConnectorPatchCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -116,7 +116,7 @@ func resourceIbmBaasDataSourceConnectorPatchCreate(context context.Context, d *s
 
 	dataSourceConnector, _, err := backupRecoveryClient.PatchDataSourceConnectorWithContext(context, patchDataSourceConnectorOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchDataSourceConnectorWithContext failed: %s", err.Error()), "ibm_baas_data_source_connector_patch", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchDataSourceConnectorWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connector_patch", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -129,7 +129,7 @@ func resourceIbmBaasDataSourceConnectorPatchCreate(context context.Context, d *s
 func resourceIbmBaasDataSourceConnectorPatchRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -145,7 +145,7 @@ func resourceIbmBaasDataSourceConnectorPatchRead(context context.Context, d *sch
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectorsWithContext failed: %s", err.Error()), "ibm_baas_data_source_connector_patch", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectorsWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connector_patch", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -153,41 +153,41 @@ func resourceIbmBaasDataSourceConnectorPatchRead(context context.Context, d *sch
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].ConnectorName) {
 		if err = d.Set("connector_name", dataSourceConnectorList.Connectors[0].ConnectorName); err != nil {
 			err = fmt.Errorf("Error setting connector_name: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "set-connector_name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-connector_name").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].ClusterSideIp) {
 		if err = d.Set("cluster_side_ip", dataSourceConnectorList.Connectors[0].ClusterSideIp); err != nil {
 			err = fmt.Errorf("Error setting cluster_side_ip: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "set-cluster_side_ip").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-cluster_side_ip").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].ConnectionID) {
 		if err = d.Set("connection_id", dataSourceConnectorList.Connectors[0].ConnectionID); err != nil {
 			err = fmt.Errorf("Error setting connection_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "set-connection_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-connection_id").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].ConnectorStatus) {
 		connectorStatusMap, err := ResourceIbmBaasDataSourceConnectorPatchDataSourceConnectorStatusToMap(dataSourceConnectorList.Connectors[0].ConnectorStatus)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "connector_status-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "connector_status-to-map").GetDiag()
 		}
 		if err = d.Set("connector_status", []map[string]interface{}{connectorStatusMap}); err != nil {
 			err = fmt.Errorf("Error setting connector_status: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "set-connector_status").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-connector_status").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].SoftwareVersion) {
 		if err = d.Set("software_version", dataSourceConnectorList.Connectors[0].SoftwareVersion); err != nil {
 			err = fmt.Errorf("Error setting software_version: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "set-software_version").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-software_version").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].TenantSideIp) {
 		if err = d.Set("tenant_side_ip", dataSourceConnectorList.Connectors[0].TenantSideIp); err != nil {
 			err = fmt.Errorf("Error setting tenant_side_ip: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connector_patch", "read", "set-tenant_side_ip").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-tenant_side_ip").GetDiag()
 		}
 	}
 

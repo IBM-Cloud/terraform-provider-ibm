@@ -387,7 +387,7 @@ func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Con
 
 	for fieldName := range ResourceIbmBaasUpdateProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_update_protection_group_run_request cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_update_protection_group_run_request cannot be updated.")
 		}
 	}
 	return nil
@@ -396,7 +396,7 @@ func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Con
 func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_update_protection_group_run_request", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_update_protection_group_run_request", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -411,7 +411,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Contex
 		value := v.(map[string]interface{})
 		newUpdateProtectionGroupRunParamsItem, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunParams(value)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_update_protection_group_run_request", "create", "parse-update_protection_group_run_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_update_protection_group_run_request", "create", "parse-update_protection_group_run_params").GetDiag()
 		}
 		newUpdateProtectionGroupRunParams = append(newUpdateProtectionGroupRunParams, *newUpdateProtectionGroupRunParamsItem)
 	}
@@ -419,7 +419,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Contex
 
 	updateProtectionGroupRunResponse, _, err := backupRecoveryClient.UpdateProtectionGroupRunWithContext(context, updateProtectionGroupRunOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionGroupRunWithContext failed: %s", err.Error()), "ibm_baas_update_protection_group_run_request", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionGroupRunWithContext failed: %s", err.Error()), "ibm_backup_recovery_update_protection_group_run_request", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

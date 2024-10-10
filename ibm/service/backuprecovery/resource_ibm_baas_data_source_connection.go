@@ -99,7 +99,7 @@ func ResourceIbmBaasDataSourceConnection() *schema.Resource {
 func resourceIbmBaasDataSourceConnectionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -113,7 +113,7 @@ func resourceIbmBaasDataSourceConnectionCreate(context context.Context, d *schem
 
 	dataSourceConnection, _, err := backupRecoveryClient.CreateDataSourceConnectionWithContext(context, createDataSourceConnectionOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_baas_data_source_connection", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connection", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -127,7 +127,7 @@ func resourceIbmBaasDataSourceConnectionCreate(context context.Context, d *schem
 func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -142,56 +142,56 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectionsWithContext failed: %s", err.Error()), "ibm_baas_data_source_connection", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectionsWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connection", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("connection_id", dataSourceConnectionList.Connections[0].ConnectionID); err != nil {
 		err = fmt.Errorf("Error setting connection_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connection_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-connection_id").GetDiag()
 	}
 
 	if err = d.Set("connection_name", dataSourceConnectionList.Connections[0].ConnectionName); err != nil {
 		err = fmt.Errorf("Error setting connection_name: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connection_name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-connection_name").GetDiag()
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].ConnectorIds) {
 		if err = d.Set("connector_ids", dataSourceConnectionList.Connections[0].ConnectorIds); err != nil {
 			err = fmt.Errorf("Error setting connector_ids: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connector_ids").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-connector_ids").GetDiag()
 		}
 	} else {
 		if err = d.Set("connector_ids", []string{}); err != nil {
 			err = fmt.Errorf("Error setting connector_ids: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-connector_ids").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-connector_ids").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].NetworkSettings) {
 		networkSettingsMap, err := ResourceIbmBaasDataSourceConnectionNetworkSettingsToMap(dataSourceConnectionList.Connections[0].NetworkSettings)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "network_settings-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "network_settings-to-map").GetDiag()
 		}
 		if err = d.Set("network_settings", []map[string]interface{}{networkSettingsMap}); err != nil {
 			err = fmt.Errorf("Error setting network_settings: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-network_settings").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-network_settings").GetDiag()
 		}
 	} else {
 		if err = d.Set("network_settings", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting network_settings: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-network_settings").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-network_settings").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].RegistrationToken) {
 		if err = d.Set("registration_token", dataSourceConnectionList.Connections[0].RegistrationToken); err != nil {
 			err = fmt.Errorf("Error setting registration_token: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-registration_token").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-registration_token").GetDiag()
 		}
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].TenantID) {
 		if err = d.Set("tenant_id", dataSourceConnectionList.Connections[0].TenantID); err != nil {
 			err = fmt.Errorf("Error setting tenant_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "read", "set-tenant_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-tenant_id").GetDiag()
 		}
 	}
 
@@ -201,7 +201,7 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 func resourceIbmBaasDataSourceConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "update", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -221,7 +221,7 @@ func resourceIbmBaasDataSourceConnectionUpdate(context context.Context, d *schem
 	if hasChange {
 		_, _, err = backupRecoveryClient.PatchDataSourceConnectionWithContext(context, patchDataSourceConnectionOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_baas_data_source_connection", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connection", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -233,7 +233,7 @@ func resourceIbmBaasDataSourceConnectionUpdate(context context.Context, d *schem
 func resourceIbmBaasDataSourceConnectionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_data_source_connection", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -245,7 +245,7 @@ func resourceIbmBaasDataSourceConnectionDelete(context context.Context, d *schem
 
 	_, err = backupRecoveryClient.DeleteDataSourceConnectionWithContext(context, deleteDataSourceConnectionOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_baas_data_source_connection", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connection", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

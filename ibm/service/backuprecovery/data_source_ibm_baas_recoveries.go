@@ -2287,7 +2287,7 @@ func DataSourceIbmBaasRecoveries() *schema.Resource {
 func dataSourceIbmBaasRecoveriesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recoveries", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recoveries", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2355,7 +2355,7 @@ func dataSourceIbmBaasRecoveriesRead(context context.Context, d *schema.Resource
 
 	recoveriesResponse, _, err := backupRecoveryClient.GetRecoveriesWithContext(context, getRecoveriesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveriesWithContext failed: %s", err.Error()), "(Data) ibm_baas_recoveries", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveriesWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_recoveries", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2367,12 +2367,12 @@ func dataSourceIbmBaasRecoveriesRead(context context.Context, d *schema.Resource
 		for _, recoveriesItem := range recoveriesResponse.Recoveries {
 			recoveriesItemMap, err := DataSourceIbmBaasRecoveriesRecoveryToMap(&recoveriesItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recoveries", "read", "recoveries-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recoveries", "read", "recoveries-to-map").GetDiag()
 			}
 			recoveries = append(recoveries, recoveriesItemMap)
 		}
 		if err = d.Set("recoveries", recoveries); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting recoveries: %s", err), "(Data) ibm_baas_recoveries", "read", "set-recoveries").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting recoveries: %s", err), "(Data) ibm_backup_recovery_recoveries", "read", "set-recoveries").GetDiag()
 		}
 	}
 

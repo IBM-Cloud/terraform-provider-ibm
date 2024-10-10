@@ -32,14 +32,14 @@ func TestAccIbmBaasProtectionGroupDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionGroupDataSourceConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "physical_params.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.0.objects.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.0.objects.0.name"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.0.objects.0.id", strconv.Itoa(objectId)),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.0.objects.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.0.objects.0.name"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "physical_params.0.file_protection_type_params.0.objects.0.id", strconv.Itoa(objectId)),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
 				),
 			},
 		},
@@ -48,7 +48,7 @@ func TestAccIbmBaasProtectionGroupDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionGroupDataSourceConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
 			name = "%s"
 			backup_policy {
@@ -76,9 +76,9 @@ func testAccCheckIbmBaasProtectionGroupDataSourceConfigBasic(name, environment, 
 			}
 		}
 
-		resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+		resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 			x_ibm_tenant_id = "%s"
-			policy_id = ibm_baas_protection_policy.baas_protection_policy_instance.id
+			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id
 			name = "%s"
 			environment = "%s"
 			physical_params {
@@ -94,8 +94,8 @@ func testAccCheckIbmBaasProtectionGroupDataSourceConfigBasic(name, environment, 
 			}
 		}
 
-		data "ibm_baas_protection_group" "baas_protection_group_instance" {
-			protection_group_id = ibm_baas_protection_group.baas_protection_group_instance.id
+		data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
+			protection_group_id = ibm_backup_recovery_protection_group.baas_protection_group_instance.id
 			x_ibm_tenant_id = "%[1]s"
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)

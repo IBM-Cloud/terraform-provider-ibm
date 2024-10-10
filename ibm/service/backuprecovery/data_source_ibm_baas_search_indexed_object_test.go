@@ -23,9 +23,9 @@ func TestAccIbmBaasSearchIndexedObjectDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSearchIndexedObjectConfigBasic(objectType, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_baas_search_indexed_object.baas_search_indexed_object_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_baas_search_indexed_object.baas_search_indexed_object_instance", "object_type", objectType),
-					resource.TestCheckResourceAttr("data.ibm_baas_search_indexed_object.baas_search_indexed_object_instance", "file_params.0.source_ids.0", strconv.Itoa(objectId)),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_indexed_object.baas_search_indexed_object_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_indexed_object.baas_search_indexed_object_instance", "object_type", objectType),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_indexed_object.baas_search_indexed_object_instance", "file_params.0.source_ids.0", strconv.Itoa(objectId)),
 				),
 			},
 		},
@@ -35,7 +35,7 @@ func TestAccIbmBaasSearchIndexedObjectDataSourceBasic(t *testing.T) {
 func testAccCheckIbmBaasSearchIndexedObjectConfigBasic(objectType string, objectId int) string {
 	return fmt.Sprintf(`
 
-		data "ibm_baas_search_indexed_object" "baas_search_indexed_object_instance" {
+		data "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object_instance" {
 			x_ibm_tenant_id = "%s"
 			object_type = "%s"
 			file_params {

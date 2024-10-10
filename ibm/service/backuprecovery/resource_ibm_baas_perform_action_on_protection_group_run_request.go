@@ -42,7 +42,7 @@ func ResourceIbmBaasPerformActionOnProtectionGroupRunRequest() *schema.Resource 
 				Type:     schema.TypeString,
 				Required: true,
 				// ForceNew: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_perform_action_on_protection_group_run_request", "action"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_perform_action_on_protection_group_run_request", "action"),
 				Description: "Specifies the type of the action which will be performed on protection runs.",
 			},
 			"pause_params": &schema.Schema{
@@ -142,7 +142,7 @@ func checkDiffResourceIbmBaasPerformActionOnProtectionGroupRun(context context.C
 
 	for fieldName := range ResourceIbmBaasPerformActionOnProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_perform_action_on_protection_group_run_request cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_perform_action_on_protection_group_run_request cannot be updated.")
 		}
 	}
 	return nil
@@ -160,14 +160,14 @@ func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestValidator() *validat
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_perform_action_on_protection_group_run_request", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_perform_action_on_protection_group_run_request", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_perform_action_on_protection_group_run_request", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -182,7 +182,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 			value := v.(map[string]interface{})
 			newPauseParamsItem, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_perform_action_on_protection_group_run_request", "create", "parse-pause_params").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "parse-pause_params").GetDiag()
 			}
 			newPauseParams = append(newPauseParams, *newPauseParamsItem)
 		}
@@ -194,7 +194,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 			value := v.(map[string]interface{})
 			newResumeParamsItem, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_perform_action_on_protection_group_run_request", "create", "parse-resume_params").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "parse-resume_params").GetDiag()
 			}
 			newResumeParams = append(newResumeParams, *newResumeParamsItem)
 		}
@@ -206,7 +206,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 			value := v.(map[string]interface{})
 			newCancelParamsItem, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_perform_action_on_protection_group_run_request", "create", "parse-cancel_params").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "parse-cancel_params").GetDiag()
 			}
 			newCancelParams = append(newCancelParams, *newCancelParamsItem)
 		}

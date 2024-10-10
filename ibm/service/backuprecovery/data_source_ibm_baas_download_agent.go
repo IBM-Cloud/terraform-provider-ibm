@@ -66,7 +66,7 @@ func DataSourceIbmBaasDownloadAgent() *schema.Resource {
 func DataSourceIbmBaasDownloadAgentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_download_agent", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_download_agent", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -78,14 +78,14 @@ func DataSourceIbmBaasDownloadAgentRead(context context.Context, d *schema.Resou
 	if _, ok := d.GetOk("linux_params"); ok {
 		linuxParamsModel, err := ResourceIbmBaasDownloadAgentMapToLinuxAgentParams(d.Get("linux_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_download_agent", "read", "parse-linux_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_download_agent", "read", "parse-linux_params").GetDiag()
 		}
 		downloadAgentOptions.SetLinuxParams(linuxParamsModel)
 	}
 
 	typeString, _, err := backupRecoveryClient.DownloadAgentWithContext(context, downloadAgentOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DownloadAgentWithContext failed: %s", err.Error()), "ibm_baas_download_agent", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DownloadAgentWithContext failed: %s", err.Error()), "ibm_backup_recovery_download_agent", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -94,7 +94,7 @@ func DataSourceIbmBaasDownloadAgentRead(context context.Context, d *schema.Resou
 
 	err = saveToFile(typeString, d.Get("file_path").(string))
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_download_agent", "read", "parse-linux_params").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_download_agent", "read", "parse-linux_params").GetDiag()
 	}
 
 	return nil

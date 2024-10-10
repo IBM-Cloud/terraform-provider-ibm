@@ -3047,7 +3047,7 @@ func DataSourceIbmBaasProtectionGroupRuns() *schema.Resource {
 func dataSourceIbmBaasProtectionGroupRunsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_group_runs", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_group_runs", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -3148,7 +3148,7 @@ func dataSourceIbmBaasProtectionGroupRunsRead(context context.Context, d *schema
 
 	protectionGroupRunsResponse, _, err := backupRecoveryClient.GetProtectionGroupRunsWithContext(context, getProtectionGroupRunsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupRunsWithContext failed: %s", err.Error()), "(Data) ibm_baas_protection_group_runs", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupRunsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_protection_group_runs", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -3160,18 +3160,18 @@ func dataSourceIbmBaasProtectionGroupRunsRead(context context.Context, d *schema
 		for _, runsItem := range protectionGroupRunsResponse.Runs {
 			runsItemMap, err := DataSourceIbmBaasProtectionGroupRunsProtectionGroupRunToMap(&runsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_group_runs", "read", "runs-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_group_runs", "read", "runs-to-map").GetDiag()
 			}
 			runs = append(runs, runsItemMap)
 		}
 		if err = d.Set("runs", runs); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting runs: %s", err), "(Data) ibm_baas_protection_group_runs", "read", "set-runs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting runs: %s", err), "(Data) ibm_backup_recovery_protection_group_runs", "read", "set-runs").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectionGroupRunsResponse.TotalRuns) {
 		if err = d.Set("total_runs", flex.IntValue(protectionGroupRunsResponse.TotalRuns)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_runs: %s", err), "(Data) ibm_baas_protection_group_runs", "read", "set-total_runs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_runs: %s", err), "(Data) ibm_backup_recovery_protection_group_runs", "read", "set-total_runs").GetDiag()
 		}
 	}
 

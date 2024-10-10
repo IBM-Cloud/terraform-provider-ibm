@@ -24,12 +24,12 @@ func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.#", "1"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.image_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.url"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.image_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.url"),
 				),
 			},
 		},
@@ -38,7 +38,7 @@ func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-	data "ibm_baas_connectors_metadata" "baas_connectors_metadata_instance" {
+	data "ibm_backup_recovery_connectors_metadata" "baas_connectors_metadata_instance" {
 		x_ibm_tenant_id = "%s"
 	  }
 	`, tenantId)

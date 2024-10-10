@@ -67,7 +67,7 @@ func DataSourceIbmBaasConnectorsMetadata() *schema.Resource {
 func dataSourceIbmBaasConnectorsMetadataRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_connectors_metadata", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connectors_metadata", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -78,7 +78,7 @@ func dataSourceIbmBaasConnectorsMetadataRead(context context.Context, d *schema.
 
 	connectorMetadata, _, err := backupRecoveryClient.GetConnectorMetadataWithContext(context, getConnectorMetadataOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConnectorMetadataWithContext failed: %s", err.Error()), "(Data) ibm_baas_connectors_metadata", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConnectorMetadataWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_connectors_metadata", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -89,11 +89,11 @@ func dataSourceIbmBaasConnectorsMetadataRead(context context.Context, d *schema.
 		connectorImageMetadata := []map[string]interface{}{}
 		connectorImageMetadataMap, err := DataSourceIbmBaasConnectorsMetadataConnectorImageMetadataToMap(connectorMetadata.ConnectorImageMetadata)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_connectors_metadata", "read", "connector_image_metadata-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connectors_metadata", "read", "connector_image_metadata-to-map").GetDiag()
 		}
 		connectorImageMetadata = append(connectorImageMetadata, connectorImageMetadataMap)
 		if err = d.Set("connector_image_metadata", connectorImageMetadata); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connector_image_metadata: %s", err), "(Data) ibm_baas_connectors_metadata", "read", "set-connector_image_metadata").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connector_image_metadata: %s", err), "(Data) ibm_backup_recovery_connectors_metadata", "read", "set-connector_image_metadata").GetDiag()
 		}
 	}
 

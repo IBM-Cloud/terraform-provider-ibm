@@ -2214,7 +2214,7 @@ func DataSourceIbmBaasRecovery() *schema.Resource {
 func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recovery", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2226,7 +2226,7 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 
 	recovery, _, err := backupRecoveryClient.GetRecoveryByIDWithContext(context, getRecoveryByIdOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveryByIDWithContext failed: %s", err.Error()), "(Data) ibm_baas_recovery", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveryByIDWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_recovery", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2235,43 +2235,43 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 
 	if !core.IsNil(recovery.Name) {
 		if err = d.Set("name", recovery.Name); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_baas_recovery", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-name").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.StartTimeUsecs) {
 		if err = d.Set("start_time_usecs", flex.IntValue(recovery.StartTimeUsecs)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting start_time_usecs: %s", err), "(Data) ibm_baas_recovery", "read", "set-start_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting start_time_usecs: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-start_time_usecs").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.EndTimeUsecs) {
 		if err = d.Set("end_time_usecs", flex.IntValue(recovery.EndTimeUsecs)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting end_time_usecs: %s", err), "(Data) ibm_baas_recovery", "read", "set-end_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting end_time_usecs: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-end_time_usecs").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.Status) {
 		if err = d.Set("status", recovery.Status); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_baas_recovery", "read", "set-status").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-status").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.ProgressTaskID) {
 		if err = d.Set("progress_task_id", recovery.ProgressTaskID); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting progress_task_id: %s", err), "(Data) ibm_baas_recovery", "read", "set-progress_task_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting progress_task_id: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-progress_task_id").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.SnapshotEnvironment) {
 		if err = d.Set("snapshot_environment", recovery.SnapshotEnvironment); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_environment: %s", err), "(Data) ibm_baas_recovery", "read", "set-snapshot_environment").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshot_environment: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-snapshot_environment").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.RecoveryAction) {
 		if err = d.Set("recovery_action", recovery.RecoveryAction); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting recovery_action: %s", err), "(Data) ibm_baas_recovery", "read", "set-recovery_action").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting recovery_action: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-recovery_action").GetDiag()
 		}
 	}
 
@@ -2280,12 +2280,12 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 		for _, permissionsItem := range recovery.Permissions {
 			permissionsItemMap, err := DataSourceIbmBaasRecoveryTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recovery", "read", "permissions-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "permissions-to-map").GetDiag()
 			}
 			permissions = append(permissions, permissionsItemMap)
 		}
 		if err = d.Set("permissions", permissions); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting permissions: %s", err), "(Data) ibm_baas_recovery", "read", "set-permissions").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting permissions: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-permissions").GetDiag()
 		}
 	}
 
@@ -2293,29 +2293,29 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 		creationInfo := []map[string]interface{}{}
 		creationInfoMap, err := DataSourceIbmBaasRecoveryCreationInfoToMap(recovery.CreationInfo)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recovery", "read", "creation_info-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "creation_info-to-map").GetDiag()
 		}
 		creationInfo = append(creationInfo, creationInfoMap)
 		if err = d.Set("creation_info", creationInfo); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting creation_info: %s", err), "(Data) ibm_baas_recovery", "read", "set-creation_info").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting creation_info: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-creation_info").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.CanTearDown) {
 		if err = d.Set("can_tear_down", recovery.CanTearDown); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting can_tear_down: %s", err), "(Data) ibm_baas_recovery", "read", "set-can_tear_down").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting can_tear_down: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-can_tear_down").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.TearDownStatus) {
 		if err = d.Set("tear_down_status", recovery.TearDownStatus); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tear_down_status: %s", err), "(Data) ibm_baas_recovery", "read", "set-tear_down_status").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tear_down_status: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-tear_down_status").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.TearDownMessage) {
 		if err = d.Set("tear_down_message", recovery.TearDownMessage); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tear_down_message: %s", err), "(Data) ibm_baas_recovery", "read", "set-tear_down_message").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tear_down_message: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-tear_down_message").GetDiag()
 		}
 	}
 
@@ -2325,19 +2325,19 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 			messages = append(messages, messagesItem)
 		}
 		if err = d.Set("messages", messages); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting messages: %s", err), "(Data) ibm_baas_recovery", "read", "set-messages").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting messages: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-messages").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.IsParentRecovery) {
 		if err = d.Set("is_parent_recovery", recovery.IsParentRecovery); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_parent_recovery: %s", err), "(Data) ibm_baas_recovery", "read", "set-is_parent_recovery").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_parent_recovery: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-is_parent_recovery").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.ParentRecoveryID) {
 		if err = d.Set("parent_recovery_id", recovery.ParentRecoveryID); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting parent_recovery_id: %s", err), "(Data) ibm_baas_recovery", "read", "set-parent_recovery_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting parent_recovery_id: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-parent_recovery_id").GetDiag()
 		}
 	}
 
@@ -2346,18 +2346,18 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 		for _, retrieveArchiveTasksItem := range recovery.RetrieveArchiveTasks {
 			retrieveArchiveTasksItemMap, err := DataSourceIbmBaasRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recovery", "read", "retrieve_archive_tasks-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "retrieve_archive_tasks-to-map").GetDiag()
 			}
 			retrieveArchiveTasks = append(retrieveArchiveTasks, retrieveArchiveTasksItemMap)
 		}
 		if err = d.Set("retrieve_archive_tasks", retrieveArchiveTasks); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retrieve_archive_tasks: %s", err), "(Data) ibm_baas_recovery", "read", "set-retrieve_archive_tasks").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting retrieve_archive_tasks: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-retrieve_archive_tasks").GetDiag()
 		}
 	}
 
 	if !core.IsNil(recovery.IsMultiStageRestore) {
 		if err = d.Set("is_multi_stage_restore", recovery.IsMultiStageRestore); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_multi_stage_restore: %s", err), "(Data) ibm_baas_recovery", "read", "set-is_multi_stage_restore").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_multi_stage_restore: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-is_multi_stage_restore").GetDiag()
 		}
 	}
 
@@ -2365,11 +2365,11 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 		physicalParams := []map[string]interface{}{}
 		physicalParamsMap, err := DataSourceIbmBaasRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recovery", "read", "physical_params-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "physical_params-to-map").GetDiag()
 		}
 		physicalParams = append(physicalParams, physicalParamsMap)
 		if err = d.Set("physical_params", physicalParams); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting physical_params: %s", err), "(Data) ibm_baas_recovery", "read", "set-physical_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting physical_params: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-physical_params").GetDiag()
 		}
 	}
 
@@ -2377,11 +2377,11 @@ func dataSourceIbmBaasRecoveryRead(context context.Context, d *schema.ResourceDa
 		mssqlParams := []map[string]interface{}{}
 		mssqlParamsMap, err := DataSourceIbmBaasRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_recovery", "read", "mssql_params-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "mssql_params-to-map").GetDiag()
 		}
 		mssqlParams = append(mssqlParams, mssqlParamsMap)
 		if err = d.Set("mssql_params", mssqlParams); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mssql_params: %s", err), "(Data) ibm_baas_recovery", "read", "set-mssql_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mssql_params: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-mssql_params").GetDiag()
 		}
 	}
 

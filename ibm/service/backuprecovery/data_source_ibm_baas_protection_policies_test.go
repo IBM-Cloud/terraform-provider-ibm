@@ -28,11 +28,11 @@ func TestAccIbmBaasProtectionPoliciesDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionPoliciesDataSourceConfigBasic(name, duration),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policies.baas_protection_policies_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policies.baas_protection_policies_instance", "x_ibm_tenant_id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_policies.baas_protection_policies_instance", "policies.#", "1"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_policies.baas_protection_policies_instance", "policies.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_policies.baas_protection_policies_instance", "policies.0.name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "policies.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "policies.0.id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "policies.0.name", name),
 				),
 			},
 		},
@@ -41,7 +41,7 @@ func TestAccIbmBaasProtectionPoliciesDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionPoliciesDataSourceConfigBasic(name string, duration int) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
 			name = "%s"
 			backup_policy {
@@ -69,8 +69,8 @@ func testAccCheckIbmBaasProtectionPoliciesDataSourceConfigBasic(name string, dur
 			}
 		}
 
-		data "ibm_baas_protection_policies" "baas_protection_policies_instance" {
-			ids = [ibm_baas_protection_policy.baas_protection_policy_instance.id]
+		data "ibm_backup_recovery_protection_policies" "baas_protection_policies_instance" {
+			ids = [ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id]
 			x_ibm_tenant_id = "%[1]s"
 		}
 

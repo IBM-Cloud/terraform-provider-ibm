@@ -1805,7 +1805,7 @@ func DataSourceIbmBaasSearchObjects() *schema.Resource {
 func dataSourceIbmBaasSearchObjectsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_search_objects", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_objects", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1987,7 +1987,7 @@ func dataSourceIbmBaasSearchObjectsRead(context context.Context, d *schema.Resou
 
 	objectsSearchResponseBody, _, err := backupRecoveryClient.SearchObjectsWithContext(context, searchObjectsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SearchObjectsWithContext failed: %s", err.Error()), "(Data) ibm_baas_search_objects", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SearchObjectsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_search_objects", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1999,12 +1999,12 @@ func dataSourceIbmBaasSearchObjectsRead(context context.Context, d *schema.Resou
 		for _, objectsItem := range objectsSearchResponseBody.Objects {
 			objectsItemMap, err := DataSourceIbmBaasSearchObjectsSearchObjectToMap(&objectsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_search_objects", "read", "objects-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_objects", "read", "objects-to-map").GetDiag()
 			}
 			objects = append(objects, objectsItemMap)
 		}
 		if err = d.Set("objects", objects); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting objects: %s", err), "(Data) ibm_baas_search_objects", "read", "set-objects").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting objects: %s", err), "(Data) ibm_backup_recovery_search_objects", "read", "set-objects").GetDiag()
 		}
 	}
 

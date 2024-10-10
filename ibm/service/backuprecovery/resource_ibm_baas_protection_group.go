@@ -49,7 +49,7 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 			"priority": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_protection_group", "priority"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_protection_group", "priority"),
 				Description: "Specifies the priority of the Protection Group.",
 			},
 			"description": &schema.Schema{
@@ -172,7 +172,7 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 			"qos_policy": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_protection_group", "qos_policy"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_protection_group", "qos_policy"),
 				Description: "Specifies whether the Protection Group will be written to HDD or SSD.",
 			},
 			"abort_in_blackouts": &schema.Schema{
@@ -193,7 +193,7 @@ func ResourceIbmBaasProtectionGroup() *schema.Resource {
 			"environment": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_protection_group", "environment"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_protection_group", "environment"),
 				Description: "Specifies the environment of the Protection Group.",
 			},
 			"advanced_configs": &schema.Schema{
@@ -5093,14 +5093,14 @@ func ResourceIbmBaasProtectionGroupValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_protection_group", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_protection_group", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -5120,7 +5120,7 @@ func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("start_time"); ok {
 		startTimeModel, err := ResourceIbmBaasProtectionGroupMapToTimeOfDay(d.Get("start_time.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "parse-start_time").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-start_time").GetDiag()
 		}
 		createProtectionGroupOptions.SetStartTime(startTimeModel)
 	}
@@ -5133,7 +5133,7 @@ func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("alert_policy"); ok {
 		alertPolicyModel, err := ResourceIbmBaasProtectionGroupMapToProtectionGroupAlertingPolicy(d.Get("alert_policy.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "parse-alert_policy").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-alert_policy").GetDiag()
 		}
 		createProtectionGroupOptions.SetAlertPolicy(alertPolicyModel)
 	}
@@ -5143,7 +5143,7 @@ func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.Res
 			value := v.(map[string]interface{})
 			slaItem, err := ResourceIbmBaasProtectionGroupMapToSlaRule(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "parse-sla").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-sla").GetDiag()
 			}
 			sla = append(sla, *slaItem)
 		}
@@ -5167,7 +5167,7 @@ func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.Res
 			value := v.(map[string]interface{})
 			advancedConfigsItem, err := ResourceIbmBaasProtectionGroupMapToKeyValuePair(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "parse-advanced_configs").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-advanced_configs").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
 		}
@@ -5176,21 +5176,21 @@ func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("physical_params"); ok {
 		physicalParamsModel, err := ResourceIbmBaasProtectionGroupMapToPhysicalProtectionGroupParams(d.Get("physical_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "parse-physical_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-physical_params").GetDiag()
 		}
 		createProtectionGroupOptions.SetPhysicalParams(physicalParamsModel)
 	}
 	if _, ok := d.GetOk("mssql_params"); ok {
 		mssqlParamsModel, err := ResourceIbmBaasProtectionGroupMapToMSSQLProtectionGroupParams(d.Get("mssql_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "create", "parse-mssql_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-mssql_params").GetDiag()
 		}
 		createProtectionGroupOptions.SetMssqlParams(mssqlParamsModel)
 	}
 
 	protectionGroupResponse, _, err := backupRecoveryClient.CreateProtectionGroupWithContext(context, createProtectionGroupOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProtectionGroupWithContext failed: %s", err.Error()), "ibm_baas_protection_group", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProtectionGroupWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_group", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -5203,7 +5203,7 @@ func resourceIbmBaasProtectionGroupCreate(context context.Context, d *schema.Res
 func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -5219,61 +5219,61 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupByIDWithContext failed: %s", err.Error()), "ibm_baas_protection_group", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupByIDWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_group", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", protectionGroupResponse.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("policy_id", protectionGroupResponse.PolicyID); err != nil {
 		err = fmt.Errorf("Error setting policy_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-policy_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-policy_id").GetDiag()
 	}
 	if !core.IsNil(protectionGroupResponse.Priority) {
 		if err = d.Set("priority", protectionGroupResponse.Priority); err != nil {
 			err = fmt.Errorf("Error setting priority: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-priority").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-priority").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.Description) {
 		if err = d.Set("description", protectionGroupResponse.Description); err != nil {
 			err = fmt.Errorf("Error setting description: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-description").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-description").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.StartTime) {
 		startTimeMap, err := ResourceIbmBaasProtectionGroupTimeOfDayToMap(protectionGroupResponse.StartTime)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "start_time-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "start_time-to-map").GetDiag()
 		}
 		if err = d.Set("start_time", []map[string]interface{}{startTimeMap}); err != nil {
 			err = fmt.Errorf("Error setting start_time: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-start_time").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-start_time").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.EndTimeUsecs) {
 		if err = d.Set("end_time_usecs", flex.IntValue(protectionGroupResponse.EndTimeUsecs)); err != nil {
 			err = fmt.Errorf("Error setting end_time_usecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-end_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-end_time_usecs").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.LastModifiedTimestampUsecs) {
 		if err = d.Set("last_modified_timestamp_usecs", flex.IntValue(protectionGroupResponse.LastModifiedTimestampUsecs)); err != nil {
 			err = fmt.Errorf("Error setting last_modified_timestamp_usecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-last_modified_timestamp_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-last_modified_timestamp_usecs").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.AlertPolicy) {
 		alertPolicyMap, err := ResourceIbmBaasProtectionGroupProtectionGroupAlertingPolicyToMap(protectionGroupResponse.AlertPolicy)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "alert_policy-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "alert_policy-to-map").GetDiag()
 		}
 		if err = d.Set("alert_policy", []map[string]interface{}{alertPolicyMap}); err != nil {
 			err = fmt.Errorf("Error setting alert_policy: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-alert_policy").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-alert_policy").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.Sla) {
@@ -5281,114 +5281,114 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 		for _, slaItem := range protectionGroupResponse.Sla {
 			slaItemMap, err := ResourceIbmBaasProtectionGroupSlaRuleToMap(&slaItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "sla-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "sla-to-map").GetDiag()
 			}
 			sla = append(sla, slaItemMap)
 		}
 		if err = d.Set("sla", sla); err != nil {
 			err = fmt.Errorf("Error setting sla: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-sla").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-sla").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.QosPolicy) {
 		if err = d.Set("qos_policy", protectionGroupResponse.QosPolicy); err != nil {
 			err = fmt.Errorf("Error setting qos_policy: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-qos_policy").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-qos_policy").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.AbortInBlackouts) {
 		if err = d.Set("abort_in_blackouts", protectionGroupResponse.AbortInBlackouts); err != nil {
 			err = fmt.Errorf("Error setting abort_in_blackouts: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-abort_in_blackouts").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-abort_in_blackouts").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.PauseInBlackouts) {
 		if err = d.Set("pause_in_blackouts", protectionGroupResponse.PauseInBlackouts); err != nil {
 			err = fmt.Errorf("Error setting pause_in_blackouts: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-pause_in_blackouts").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-pause_in_blackouts").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.IsPaused) {
 		if err = d.Set("is_paused", protectionGroupResponse.IsPaused); err != nil {
 			err = fmt.Errorf("Error setting is_paused: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-is_paused").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-is_paused").GetDiag()
 		}
 	}
 	if err = d.Set("environment", protectionGroupResponse.Environment); err != nil {
 		err = fmt.Errorf("Error setting environment: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-environment").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-environment").GetDiag()
 	}
 	if !core.IsNil(protectionGroupResponse.AdvancedConfigs) {
 		advancedConfigs := []map[string]interface{}{}
 		for _, advancedConfigsItem := range protectionGroupResponse.AdvancedConfigs {
 			advancedConfigsItemMap, err := ResourceIbmBaasProtectionGroupKeyValuePairToMap(&advancedConfigsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "advanced_configs-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "advanced_configs-to-map").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, advancedConfigsItemMap)
 		}
 		if err = d.Set("advanced_configs", advancedConfigs); err != nil {
 			err = fmt.Errorf("Error setting advanced_configs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-advanced_configs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-advanced_configs").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.PhysicalParams) {
 		physicalParamsMap, err := ResourceIbmBaasProtectionGroupPhysicalProtectionGroupParamsToMap(protectionGroupResponse.PhysicalParams)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "physical_params-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "physical_params-to-map").GetDiag()
 		}
 		if err = d.Set("physical_params", []map[string]interface{}{physicalParamsMap}); err != nil {
 			err = fmt.Errorf("Error setting physical_params: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-physical_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-physical_params").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.MssqlParams) {
 		mssqlParamsMap, err := ResourceIbmBaasProtectionGroupMSSQLProtectionGroupParamsToMap(protectionGroupResponse.MssqlParams)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "mssql_params-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "mssql_params-to-map").GetDiag()
 		}
 		if err = d.Set("mssql_params", []map[string]interface{}{mssqlParamsMap}); err != nil {
 			err = fmt.Errorf("Error setting mssql_params: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-mssql_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-mssql_params").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.ClusterID) {
 		if err = d.Set("cluster_id", protectionGroupResponse.ClusterID); err != nil {
 			err = fmt.Errorf("Error setting cluster_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-cluster_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-cluster_id").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.RegionID) {
 		if err = d.Set("region_id", protectionGroupResponse.RegionID); err != nil {
 			err = fmt.Errorf("Error setting region_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-region_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-region_id").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.IsActive) {
 		if err = d.Set("is_active", protectionGroupResponse.IsActive); err != nil {
 			err = fmt.Errorf("Error setting is_active: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-is_active").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-is_active").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.IsDeleted) {
 		if err = d.Set("is_deleted", protectionGroupResponse.IsDeleted); err != nil {
 			err = fmt.Errorf("Error setting is_deleted: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-is_deleted").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-is_deleted").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.LastRun) {
 		lastRunMap, err := ResourceIbmBaasProtectionGroupProtectionGroupRunToMap(protectionGroupResponse.LastRun)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "last_run-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "last_run-to-map").GetDiag()
 		}
 		if err = d.Set("last_run", []map[string]interface{}{lastRunMap}); err != nil {
 			err = fmt.Errorf("Error setting last_run: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-last_run").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-last_run").GetDiag()
 		}
 	} else {
 		if err = d.Set("last_run", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting last_run: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-last_run").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-last_run").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.Permissions) {
@@ -5396,19 +5396,19 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 		for _, permissionsItem := range protectionGroupResponse.Permissions {
 			permissionsItemMap, err := ResourceIbmBaasProtectionGroupTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "permissions-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "permissions-to-map").GetDiag()
 			}
 			permissions = append(permissions, permissionsItemMap)
 		}
 		if err = d.Set("permissions", permissions); err != nil {
 			err = fmt.Errorf("Error setting permissions: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-permissions").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-permissions").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.IsProtectOnce) {
 		if err = d.Set("is_protect_once", protectionGroupResponse.IsProtectOnce); err != nil {
 			err = fmt.Errorf("Error setting is_protect_once: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-is_protect_once").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-is_protect_once").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.MissingEntities) {
@@ -5416,18 +5416,18 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 		for _, missingEntitiesItem := range protectionGroupResponse.MissingEntities {
 			missingEntitiesItemMap, err := ResourceIbmBaasProtectionGroupMissingEntityParamsToMap(&missingEntitiesItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "missing_entities-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "missing_entities-to-map").GetDiag()
 			}
 			missingEntities = append(missingEntities, missingEntitiesItemMap)
 		}
 		if err = d.Set("missing_entities", missingEntities); err != nil {
 			err = fmt.Errorf("Error setting missing_entities: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-missing_entities").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-missing_entities").GetDiag()
 		}
 	} else {
 		if err = d.Set("missing_entities", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting missing_entities: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-missing_entities").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-missing_entities").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.InvalidEntities) {
@@ -5435,24 +5435,24 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 		for _, invalidEntitiesItem := range protectionGroupResponse.InvalidEntities {
 			invalidEntitiesItemMap, err := ResourceIbmBaasProtectionGroupMissingEntityParamsToMap(&invalidEntitiesItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "invalid_entities-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "invalid_entities-to-map").GetDiag()
 			}
 			invalidEntities = append(invalidEntities, invalidEntitiesItemMap)
 		}
 		if err = d.Set("invalid_entities", invalidEntities); err != nil {
 			err = fmt.Errorf("Error setting invalid_entities: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-invalid_entities").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-invalid_entities").GetDiag()
 		}
 	} else {
 		if err = d.Set("invalid_entities", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting invalid_entities: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-invalid_entities").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-invalid_entities").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.NumProtectedObjects) {
 		if err = d.Set("num_protected_objects", flex.IntValue(protectionGroupResponse.NumProtectedObjects)); err != nil {
 			err = fmt.Errorf("Error setting num_protected_objects: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "read", "set-num_protected_objects").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-num_protected_objects").GetDiag()
 		}
 	}
 
@@ -5462,7 +5462,7 @@ func resourceIbmBaasProtectionGroupRead(context context.Context, d *schema.Resou
 func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -5483,7 +5483,7 @@ func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("start_time"); ok {
 		startTime, err := ResourceIbmBaasProtectionGroupMapToTimeOfDay(d.Get("start_time.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "parse-start_time").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-start_time").GetDiag()
 		}
 		updateProtectionGroupOptions.SetStartTime(startTime)
 	}
@@ -5496,7 +5496,7 @@ func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("alert_policy"); ok {
 		alertPolicy, err := ResourceIbmBaasProtectionGroupMapToProtectionGroupAlertingPolicy(d.Get("alert_policy.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "parse-alert_policy").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-alert_policy").GetDiag()
 		}
 		updateProtectionGroupOptions.SetAlertPolicy(alertPolicy)
 	}
@@ -5506,7 +5506,7 @@ func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.Res
 			value := v.(map[string]interface{})
 			slaItem, err := ResourceIbmBaasProtectionGroupMapToSlaRule(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "parse-sla").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-sla").GetDiag()
 			}
 			sla = append(sla, *slaItem)
 		}
@@ -5530,7 +5530,7 @@ func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.Res
 			value := v.(map[string]interface{})
 			advancedConfigsItem, err := ResourceIbmBaasProtectionGroupMapToKeyValuePair(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "parse-advanced_configs").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-advanced_configs").GetDiag()
 			}
 			advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
 		}
@@ -5539,21 +5539,21 @@ func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("physical_params"); ok {
 		physicalParams, err := ResourceIbmBaasProtectionGroupMapToPhysicalProtectionGroupParams(d.Get("physical_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "parse-physical_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-physical_params").GetDiag()
 		}
 		updateProtectionGroupOptions.SetPhysicalParams(physicalParams)
 	}
 	if _, ok := d.GetOk("mssql_params"); ok {
 		mssqlParams, err := ResourceIbmBaasProtectionGroupMapToMSSQLProtectionGroupParams(d.Get("mssql_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "update", "parse-mssql_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-mssql_params").GetDiag()
 		}
 		updateProtectionGroupOptions.SetMssqlParams(mssqlParams)
 	}
 
 	_, _, err = backupRecoveryClient.UpdateProtectionGroupWithContext(context, updateProtectionGroupOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionGroupWithContext failed: %s", err.Error()), "ibm_baas_protection_group", "update")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionGroupWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_group", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -5564,7 +5564,7 @@ func resourceIbmBaasProtectionGroupUpdate(context context.Context, d *schema.Res
 func resourceIbmBaasProtectionGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_protection_group", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -5576,7 +5576,7 @@ func resourceIbmBaasProtectionGroupDelete(context context.Context, d *schema.Res
 
 	_, err = backupRecoveryClient.DeleteProtectionGroupWithContext(context, deleteProtectionGroupOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProtectionGroupWithContext failed: %s", err.Error()), "ibm_baas_protection_group", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProtectionGroupWithContext failed: %s", err.Error()), "ibm_backup_recovery_protection_group", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

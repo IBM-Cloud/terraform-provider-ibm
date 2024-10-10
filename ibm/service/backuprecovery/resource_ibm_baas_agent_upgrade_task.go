@@ -235,7 +235,7 @@ func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *
 
 	for fieldName := range ResourceIbmBaasAgentUpgradeTask().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_agent_upgrade_task cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_agent_upgrade_task cannot be updated.")
 		}
 	}
 	return nil
@@ -244,7 +244,7 @@ func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *
 func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -279,7 +279,7 @@ func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.Re
 
 	agentUpgradeTaskState, _, err := backupRecoveryClient.CreateUpgradeTaskWithContext(context, createUpgradeTaskOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateUpgradeTaskWithContext failed: %s", err.Error()), "ibm_baas_agent_upgrade_task", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateUpgradeTaskWithContext failed: %s", err.Error()), "ibm_backup_recovery_agent_upgrade_task", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -292,7 +292,7 @@ func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.Re
 func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -314,7 +314,7 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetUpgradeTasksWithContext failed: %s", err.Error()), "ibm_baas_agent_upgrade_task", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetUpgradeTasksWithContext failed: %s", err.Error()), "ibm_backup_recovery_agent_upgrade_task", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -326,31 +326,31 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 		}
 		if err = d.Set("agent_ids", agentIDs); err != nil {
 			err = fmt.Errorf("Error setting agent_ids: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-agent_ids").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-agent_ids").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Description) {
 		if err = d.Set("description", agentUpgradeTaskStates.Tasks[0].Description); err != nil {
 			err = fmt.Errorf("Error setting description: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-description").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-description").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Name) {
 		if err = d.Set("name", agentUpgradeTaskStates.Tasks[0].Name); err != nil {
 			err = fmt.Errorf("Error setting name: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-name").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-name").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].ScheduleEndTimeUsecs) {
 		if err = d.Set("schedule_end_time_usecs", flex.IntValue(agentUpgradeTaskStates.Tasks[0].ScheduleEndTimeUsecs)); err != nil {
 			err = fmt.Errorf("Error setting schedule_end_time_usecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-schedule_end_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-schedule_end_time_usecs").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].ScheduleTimeUsecs) {
 		if err = d.Set("schedule_time_usecs", flex.IntValue(agentUpgradeTaskStates.Tasks[0].ScheduleTimeUsecs)); err != nil {
 			err = fmt.Errorf("Error setting schedule_time_usecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-schedule_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-schedule_time_usecs").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Agents) {
@@ -358,70 +358,70 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 		for _, agentsItem := range agentUpgradeTaskStates.Tasks[0].Agents {
 			agentsItemMap, err := ResourceIbmBaasAgentUpgradeTaskAgentUpgradeInfoObjectToMap(&agentsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "agents-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "agents-to-map").GetDiag()
 			}
 			agents = append(agents, agentsItemMap)
 		}
 		if err = d.Set("agents", agents); err != nil {
 			err = fmt.Errorf("Error setting agents: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-agents").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-agents").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].ClusterVersion) {
 		if err = d.Set("cluster_version", agentUpgradeTaskStates.Tasks[0].ClusterVersion); err != nil {
 			err = fmt.Errorf("Error setting cluster_version: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-cluster_version").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-cluster_version").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].EndTimeUsecs) {
 		if err = d.Set("end_time_usecs", flex.IntValue(agentUpgradeTaskStates.Tasks[0].EndTimeUsecs)); err != nil {
 			err = fmt.Errorf("Error setting end_time_usecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-end_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-end_time_usecs").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Error) {
 		errorMap, err := ResourceIbmBaasAgentUpgradeTaskErrorToMap(agentUpgradeTaskStates.Tasks[0].Error)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "error-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "error-to-map").GetDiag()
 		}
 		if err = d.Set("error", []map[string]interface{}{errorMap}); err != nil {
 			err = fmt.Errorf("Error setting error: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-error").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-error").GetDiag()
 		}
 	} else {
 		if err = d.Set("error", []interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting error: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-error").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-error").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].IsRetryable) {
 		if err = d.Set("is_retryable", agentUpgradeTaskStates.Tasks[0].IsRetryable); err != nil {
 			err = fmt.Errorf("Error setting is_retryable: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-is_retryable").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-is_retryable").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].RetriedTaskID) {
 		if err = d.Set("retried_task_id", flex.IntValue(agentUpgradeTaskStates.Tasks[0].RetriedTaskID)); err != nil {
 			err = fmt.Errorf("Error setting retried_task_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-retried_task_id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-retried_task_id").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].StartTimeUsecs) {
 		if err = d.Set("start_time_usecs", flex.IntValue(agentUpgradeTaskStates.Tasks[0].StartTimeUsecs)); err != nil {
 			err = fmt.Errorf("Error setting start_time_usecs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-start_time_usecs").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-start_time_usecs").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Status) {
 		if err = d.Set("status", agentUpgradeTaskStates.Tasks[0].Status); err != nil {
 			err = fmt.Errorf("Error setting status: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-status").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-status").GetDiag()
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Type) {
 		if err = d.Set("type", agentUpgradeTaskStates.Tasks[0].Type); err != nil {
 			err = fmt.Errorf("Error setting type: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_agent_upgrade_task", "read", "set-type").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "set-type").GetDiag()
 		}
 	}
 

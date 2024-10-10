@@ -24,9 +24,9 @@ func TestAccIbmBaasSearchObjectsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSearchObjectsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_objects.baas_search_objects_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_search_objects.baas_search_objects_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_objects.baas_search_objects_instance", "objects.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_objects.baas_search_objects_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_objects.baas_search_objects_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_objects.baas_search_objects_instance", "objects.#"),
 				),
 			},
 		},
@@ -35,7 +35,7 @@ func TestAccIbmBaasSearchObjectsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasSearchObjectsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_baas_search_objects" "baas_search_objects_instance" {
+		data "ibm_backup_recovery_search_objects" "baas_search_objects_instance" {
 			x_ibm_tenant_id = "%s"
 		}
 	`, tenantId)

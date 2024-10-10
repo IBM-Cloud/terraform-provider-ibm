@@ -623,7 +623,7 @@ func DataSourceIbmBaasObjectSnapshots() *schema.Resource {
 func dataSourceIbmBaasObjectSnapshotsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_object_snapshots", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_object_snapshots", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -695,7 +695,7 @@ func dataSourceIbmBaasObjectSnapshotsRead(context context.Context, d *schema.Res
 
 	getObjectSnapshotsResponse, _, err := backupRecoveryClient.GetObjectSnapshotsWithContext(context, getObjectSnapshotsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetObjectSnapshotsWithContext failed: %s", err.Error()), "(Data) ibm_baas_object_snapshots", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetObjectSnapshotsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_object_snapshots", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -707,12 +707,12 @@ func dataSourceIbmBaasObjectSnapshotsRead(context context.Context, d *schema.Res
 		for _, snapshotsItem := range getObjectSnapshotsResponse.Snapshots {
 			snapshotsItemMap, err := DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(&snapshotsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_object_snapshots", "read", "snapshots-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_object_snapshots", "read", "snapshots-to-map").GetDiag()
 			}
 			snapshots = append(snapshots, snapshotsItemMap)
 		}
 		if err = d.Set("snapshots", snapshots); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshots: %s", err), "(Data) ibm_baas_object_snapshots", "read", "set-snapshots").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting snapshots: %s", err), "(Data) ibm_backup_recovery_object_snapshots", "read", "set-snapshots").GetDiag()
 		}
 	}
 

@@ -27,9 +27,9 @@ func TestAccIbmRecoveryDownloadFilesDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name, objectId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_recovery_download_files.recovery_download_files_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_recovery_download_files.recovery_download_files_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recovery_download_files.recovery_download_files_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recovery_download_files.recovery_download_files_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
 				),
 			},
 		},
@@ -38,24 +38,24 @@ func TestAccIbmRecoveryDownloadFilesDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, objectId int) string {
 	return fmt.Sprintf(`
-	data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
 		baas_object_id = %d
 	  }
 
-	resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+	resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
 		object {
-		  snapshot_id = data.ibm_baas_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
+		  snapshot_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
 		}
 		files_and_folders {
 			absolute_path = "/data/"
 		}
 	  }
-	  data "ibm_baas_recovery_download_files" "recovery_download_files_instance" {
+	  data "ibm_backup_recovery_recovery_download_files" "recovery_download_files_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		recovery_download_files_id = ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance.id
+		recovery_download_files_id = ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance.id
 	}
 	`, tenantId, objectId, tenantId, name)
 

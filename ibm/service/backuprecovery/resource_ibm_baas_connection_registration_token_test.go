@@ -23,9 +23,9 @@ func TestAccIbmBaasConnectionRegistrationTokenBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasConnectionRegistrationTokenConfigBasic(connectionName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_baas_connection_registration_token.baas_connection_registration_token_instance", "connection_id"),
-					resource.TestCheckResourceAttr("ibm_baas_connection_registration_token.baas_connection_registration_token_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("ibm_baas_connection_registration_token.baas_connection_registration_token_instance", "registration_token"),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_connection_registration_token.baas_connection_registration_token_instance", "connection_id"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_connection_registration_token.baas_connection_registration_token_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_connection_registration_token.baas_connection_registration_token_instance", "registration_token"),
 				),
 				Destroy: false,
 			},
@@ -36,12 +36,12 @@ func TestAccIbmBaasConnectionRegistrationTokenBasic(t *testing.T) {
 func testAccCheckIbmBaasConnectionRegistrationTokenConfigBasic(connectionName string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance_1" {
+		resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance_1" {
 			x_ibm_tenant_id = "%s"
 			connection_name = "%s"
 		}
-		resource "ibm_baas_connection_registration_token" "baas_connection_registration_token_instance" {
-			connection_id = ibm_baas_data_source_connection.baas_data_source_connection_instance_1.connection_id
+		resource "ibm_backup_recovery_connection_registration_token" "baas_connection_registration_token_instance" {
+			connection_id = ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance_1.connection_id
 			x_ibm_tenant_id = "%s"
 		}
 	`, tenantId, connectionName, tenantId)

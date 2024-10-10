@@ -29,14 +29,14 @@ func TestAccIbmBaasAgentUpgradeTasksDataSourceBasic(t *testing.T) {
 				Config:  testAccCheckIbmBaasAgentUpgradeTasksDataSourceConfigBasic(name, agentId),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.#", "1"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.description"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.name"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "x_ibm_tenant_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.status"),
-					resource.TestCheckResourceAttr("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.agent_i_ds.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_baas_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.agent_i_ds.0", strconv.Itoa(agentId)),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.#", "1"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.description"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.status"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.agent_i_ds.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "tasks.0.agent_i_ds.0", strconv.Itoa(agentId)),
 				),
 			},
 		},
@@ -45,15 +45,15 @@ func TestAccIbmBaasAgentUpgradeTasksDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasAgentUpgradeTasksDataSourceConfigBasic(name string, agentId int) string {
 	return fmt.Sprintf(`
-		resource "ibm_baas_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
+		resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 			x_ibm_tenant_id = "%s"
 			agent_ids = [%d]
 			name = "%s"
 			description = "Includes Agents for Sources RHEL, Win Server and MS SQL"
 		}
-		data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
+		data "ibm_backup_recovery_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
 			x_ibm_tenant_id = "%[1]s"
-			ids = [ibm_baas_agent_upgrade_task.baas_agent_upgrade_task_instance.id]
+			ids = [ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance.id]
 		}
 	`, tenantId, agentId, name)
 }

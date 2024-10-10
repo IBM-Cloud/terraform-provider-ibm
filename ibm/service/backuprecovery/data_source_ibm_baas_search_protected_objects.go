@@ -1287,7 +1287,7 @@ func DataSourceIbmBaasSearchProtectedObjects() *schema.Resource {
 func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_search_protected_objects", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1378,7 +1378,7 @@ func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *sch
 
 	protectedObjectsSearchResponse, _, err := backupRecoveryClient.SearchProtectedObjectsWithContext(context, searchProtectedObjectsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SearchProtectedObjectsWithContext failed: %s", err.Error()), "(Data) ibm_baas_search_protected_objects", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SearchProtectedObjectsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_search_protected_objects", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1390,12 +1390,12 @@ func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *sch
 		for _, objectsItem := range protectedObjectsSearchResponse.Objects {
 			objectsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(&objectsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_search_protected_objects", "read", "objects-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "objects-to-map").GetDiag()
 			}
 			objects = append(objects, objectsItemMap)
 		}
 		if err = d.Set("objects", objects); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting objects: %s", err), "(Data) ibm_baas_search_protected_objects", "read", "set-objects").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting objects: %s", err), "(Data) ibm_backup_recovery_search_protected_objects", "read", "set-objects").GetDiag()
 		}
 	}
 
@@ -1403,17 +1403,17 @@ func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *sch
 		metadata := []map[string]interface{}{}
 		metadataMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectsSearchResponseMetadataToMap(protectedObjectsSearchResponse.Metadata)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_search_protected_objects", "read", "metadata-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "metadata-to-map").GetDiag()
 		}
 		metadata = append(metadata, metadataMap)
 		if err = d.Set("metadata", metadata); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata: %s", err), "(Data) ibm_baas_search_protected_objects", "read", "set-metadata").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata: %s", err), "(Data) ibm_backup_recovery_search_protected_objects", "read", "set-metadata").GetDiag()
 		}
 	}
 
 	if !core.IsNil(protectedObjectsSearchResponse.NumResults) {
 		if err = d.Set("num_results", flex.IntValue(protectedObjectsSearchResponse.NumResults)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_results: %s", err), "(Data) ibm_baas_search_protected_objects", "read", "set-num_results").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting num_results: %s", err), "(Data) ibm_backup_recovery_search_protected_objects", "read", "set-num_results").GetDiag()
 		}
 	}
 

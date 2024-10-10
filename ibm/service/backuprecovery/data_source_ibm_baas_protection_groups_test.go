@@ -32,16 +32,16 @@ func TestAccIbmBaasProtectionGroupsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "x_ibm_tenant_id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.name", groupName),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.permissions.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.physical_params.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.sla.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.start_time.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_groups.baas_protection_groups_instance", "protection_groups.0.policy_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.name", groupName),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.permissions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.physical_params.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.sla.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.start_time.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "protection_groups.0.policy_id"),
 				),
 			},
 		},
@@ -50,7 +50,7 @@ func TestAccIbmBaasProtectionGroupsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
-	resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+	resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
 		backup_policy {
@@ -78,9 +78,9 @@ func testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(name, environment,
 		}
 	}
 
-	resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+	resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 		x_ibm_tenant_id = "%s"
-		policy_id = ibm_baas_protection_policy.baas_protection_policy_instance.id
+		policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id
 		name = "%s"
 		environment = "%s"
 		physical_params {
@@ -95,9 +95,9 @@ func testAccCheckIbmBaasProtectionGroupsDataSourceConfigBasic(name, environment,
 			}
 		}
 	}
-		data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
+		data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
 			x_ibm_tenant_id = "%[1]s"
-			ids = [ ibm_baas_protection_group.baas_protection_group_instance.id ]
+			ids = [ ibm_backup_recovery_protection_group.baas_protection_group_instance.id ]
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)
 }

@@ -25,22 +25,22 @@ func TestAccIbmBaasProtectionGroupRunsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(groupName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "x_ibm_tenant_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "total_runs"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.#"),
-					resource.TestCheckResourceAttr("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_name", groupName),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.permissions.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.archival_info.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_cloud_archival_direct"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_local_snapshots_deleted"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.environment"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_replication_run"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance", "runs.0.on_legal_hold"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "x_ibm_tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "total_runs"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.#"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_name", groupName),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.protection_group_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.permissions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.archival_info.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_cloud_archival_direct"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_local_snapshots_deleted"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.environment"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.is_replication_run"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "runs.0.on_legal_hold"),
 				),
 			},
 		},
@@ -49,14 +49,14 @@ func TestAccIbmBaasProtectionGroupRunsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(groupName string) string {
 	return fmt.Sprintf(`
-	data "ibm_baas_protection_groups" "ibm_baas_protection_groups_instance" {
+	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 		x_ibm_tenant_id = "%s"
 		names = ["%s"]
 	}
 
-	data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
+	data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		protection_group_id = data.ibm_baas_protection_groups.ibm_baas_protection_groups_instance.protection_groups.0.id
+		protection_group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 	}
 	`, tenantId, groupName)
 }

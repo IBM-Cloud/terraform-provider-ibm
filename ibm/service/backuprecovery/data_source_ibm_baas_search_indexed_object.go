@@ -117,7 +117,7 @@ func DataSourceIbmBaasSearchIndexedObject() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				// ForceNew:     true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_search_indexed_object", "object_type"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_search_indexed_object", "object_type"),
 				Description: "Specifies the object type to be searched for.",
 			},
 			"use_cached_data": &schema.Schema{
@@ -8095,7 +8095,7 @@ func DataSourceIbmBaasSearchIndexedObject() *schema.Resource {
 func dataSourceIbmBaasSearchIndexedObjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -8186,112 +8186,112 @@ func dataSourceIbmBaasSearchIndexedObjectRead(context context.Context, d *schema
 	if _, ok := d.GetOk("cassandra_params"); ok {
 		cassandraParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToCassandraOnPremSearchParams(d.Get("cassandra_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-cassandra_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-cassandra_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetCassandraParams(cassandraParamsModel)
 	}
 	if _, ok := d.GetOk("couchbase_params"); ok {
 		couchbaseParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToCouchBaseOnPremSearchParams(d.Get("couchbase_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-couchbase_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-couchbase_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetCouchbaseParams(couchbaseParamsModel)
 	}
 	if _, ok := d.GetOk("email_params"); ok {
 		emailParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchEmailRequestParams(d.Get("email_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-email_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-email_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetEmailParams(emailParamsModel)
 	}
 	if _, ok := d.GetOk("exchange_params"); ok {
 		exchangeParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchExchangeObjectsRequestParams(d.Get("exchange_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-exchange_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-exchange_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetExchangeParams(exchangeParamsModel)
 	}
 	if _, ok := d.GetOk("file_params"); ok {
 		fileParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchFileRequestParams(d.Get("file_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-file_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-file_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetFileParams(fileParamsModel)
 	}
 	if _, ok := d.GetOk("hbase_params"); ok {
 		hbaseParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToHbaseOnPremSearchParams(d.Get("hbase_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-hbase_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-hbase_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetHbaseParams(hbaseParamsModel)
 	}
 	if _, ok := d.GetOk("hdfs_params"); ok {
 		hdfsParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToHDFSOnPremSearchParams(d.Get("hdfs_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-hdfs_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-hdfs_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetHdfsParams(hdfsParamsModel)
 	}
 	if _, ok := d.GetOk("hive_params"); ok {
 		hiveParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToHiveOnPremSearchParams(d.Get("hive_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-hive_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-hive_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetHiveParams(hiveParamsModel)
 	}
 	if _, ok := d.GetOk("mongodb_params"); ok {
 		mongodbParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToMongoDbOnPremSearchParams(d.Get("mongodb_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-mongodb_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-mongodb_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetMongodbParams(mongodbParamsModel)
 	}
 	if _, ok := d.GetOk("ms_groups_params"); ok {
 		msGroupsParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchMsGroupsRequestParams(d.Get("ms_groups_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-ms_groups_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-ms_groups_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetMsGroupsParams(msGroupsParamsModel)
 	}
 	if _, ok := d.GetOk("ms_teams_params"); ok {
 		msTeamsParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchMsTeamsRequestParams(d.Get("ms_teams_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-ms_teams_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-ms_teams_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetMsTeamsParams(msTeamsParamsModel)
 	}
 	if _, ok := d.GetOk("one_drive_params"); ok {
 		oneDriveParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchDocumentLibraryRequestParams(d.Get("one_drive_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-one_drive_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-one_drive_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetOneDriveParams(oneDriveParamsModel)
 	}
 	if _, ok := d.GetOk("public_folder_params"); ok {
 		publicFolderParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchPublicFolderRequestParams(d.Get("public_folder_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-public_folder_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-public_folder_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetPublicFolderParams(publicFolderParamsModel)
 	}
 	if _, ok := d.GetOk("sfdc_params"); ok {
 		sfdcParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchSfdcRecordsRequestParams(d.Get("sfdc_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-sfdc_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-sfdc_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetSfdcParams(sfdcParamsModel)
 	}
 	if _, ok := d.GetOk("sharepoint_params"); ok {
 		sharepointParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToSearchDocumentLibraryRequestParams(d.Get("sharepoint_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-sharepoint_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-sharepoint_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetSharepointParams(sharepointParamsModel)
 	}
 	if _, ok := d.GetOk("uda_params"); ok {
 		udaParamsModel, err := ResourceIbmBaasSearchIndexedObjectMapToUdaOnPremSearchParams(d.Get("uda_params.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_search_indexed_object", "create", "parse-uda_params").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "parse-uda_params").GetDiag()
 		}
 		searchIndexedObjectsOptions.SetUdaParams(udaParamsModel)
 	}

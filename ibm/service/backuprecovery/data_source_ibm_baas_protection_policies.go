@@ -4054,7 +4054,7 @@ func DataSourceIbmBaasProtectionPolicies() *schema.Resource {
 func dataSourceIbmBaasProtectionPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policies", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policies", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -4101,7 +4101,7 @@ func dataSourceIbmBaasProtectionPoliciesRead(context context.Context, d *schema.
 
 	protectionPoliciesResponse, _, err := backupRecoveryClient.GetProtectionPoliciesWithContext(context, getProtectionPoliciesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionPoliciesWithContext failed: %s", err.Error()), "(Data) ibm_baas_protection_policies", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionPoliciesWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_protection_policies", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -4113,12 +4113,12 @@ func dataSourceIbmBaasProtectionPoliciesRead(context context.Context, d *schema.
 		for _, policiesItem := range protectionPoliciesResponse.Policies {
 			policiesItemMap, err := DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(&policiesItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_policies", "read", "policies-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policies", "read", "policies-to-map").GetDiag()
 			}
 			policies = append(policies, policiesItemMap)
 		}
 		if err = d.Set("policies", policies); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_baas_protection_policies", "read", "set-policies").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_backup_recovery_protection_policies", "read", "set-policies").GetDiag()
 		}
 	}
 

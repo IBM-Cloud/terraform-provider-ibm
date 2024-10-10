@@ -4752,7 +4752,7 @@ func DataSourceIbmBaasProtectionGroups() *schema.Resource {
 func dataSourceIbmBaasProtectionGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_groups", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_groups", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -4873,7 +4873,7 @@ func dataSourceIbmBaasProtectionGroupsRead(context context.Context, d *schema.Re
 
 	protectionGroupsResponse, _, err := backupRecoveryClient.GetProtectionGroupsWithContext(context, getProtectionGroupsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupsWithContext failed: %s", err.Error()), "(Data) ibm_baas_protection_groups", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProtectionGroupsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_protection_groups", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -4885,12 +4885,12 @@ func dataSourceIbmBaasProtectionGroupsRead(context context.Context, d *schema.Re
 		for _, protectionGroupsItem := range protectionGroupsResponse.ProtectionGroups {
 			protectionGroupsItemMap, err := DataSourceIbmBaasProtectionGroupsProtectionGroupResponseToMap(&protectionGroupsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_protection_groups", "read", "protection_groups-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_groups", "read", "protection_groups-to-map").GetDiag()
 			}
 			protectionGroups = append(protectionGroups, protectionGroupsItemMap)
 		}
 		if err = d.Set("protection_groups", protectionGroups); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_groups: %s", err), "(Data) ibm_baas_protection_groups", "read", "set-protection_groups").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_groups: %s", err), "(Data) ibm_backup_recovery_protection_groups", "read", "set-protection_groups").GetDiag()
 		}
 	}
 

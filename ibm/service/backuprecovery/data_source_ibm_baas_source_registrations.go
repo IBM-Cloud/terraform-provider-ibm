@@ -987,7 +987,7 @@ func DataSourceIbmBaasSourceRegistrations() *schema.Resource {
 func dataSourceIbmBaasSourceRegistrationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_source_registrations", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_source_registrations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1021,7 +1021,7 @@ func dataSourceIbmBaasSourceRegistrationsRead(context context.Context, d *schema
 
 	sourceRegistrations, _, err := backupRecoveryClient.GetSourceRegistrationsWithContext(context, getSourceRegistrationsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSourceRegistrationsWithContext failed: %s", err.Error()), "(Data) ibm_baas_source_registrations", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSourceRegistrationsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_source_registrations", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -1033,12 +1033,12 @@ func dataSourceIbmBaasSourceRegistrationsRead(context context.Context, d *schema
 		for _, registrationsItem := range sourceRegistrations.Registrations {
 			registrationsItemMap, err := DataSourceIbmBaasSourceRegistrationsSourceRegistrationReponseParamsToMap(&registrationsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_source_registrations", "read", "registrations-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_source_registrations", "read", "registrations-to-map").GetDiag()
 			}
 			registrations = append(registrations, registrationsItemMap)
 		}
 		if err = d.Set("registrations", registrations); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting registrations: %s", err), "(Data) ibm_baas_source_registrations", "read", "set-registrations").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting registrations: %s", err), "(Data) ibm_backup_recovery_source_registrations", "read", "set-registrations").GetDiag()
 		}
 	}
 

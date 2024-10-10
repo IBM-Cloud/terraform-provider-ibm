@@ -26,15 +26,15 @@ func TestAccIbmBaasDataSourceConnectorsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasDataSourceConnectorsDataSourceConfigBasic(dataSourceConnectorConnectionId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connection_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connector_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.tenant_side_ip"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.cluster_side_ip"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.software_version"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connector_status.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connection_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connector_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.tenant_side_ip"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.cluster_side_ip"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.software_version"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connector_status.#"),
 				),
 			},
 		},
@@ -43,7 +43,7 @@ func TestAccIbmBaasDataSourceConnectorsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasDataSourceConnectorsDataSourceConfigBasic(dataSourceConnectorConnectioID string) string {
 	return fmt.Sprintf(`
-		data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
+		data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_instance" {
 			x_ibm_tenant_id = "%s"
 			connection_id = "%s"
 		  }

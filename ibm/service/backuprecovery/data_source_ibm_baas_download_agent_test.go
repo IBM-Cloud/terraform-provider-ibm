@@ -29,10 +29,10 @@ func TestAccIbmBaasDownloadAgentDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmBaasDownloadAgentDataSourceConfigBasic(filePath),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckFileNameExists(filePath),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_download_agent.baas_download_agent_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_download_agent.baas_download_agent_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_baas_download_agent.baas_download_agent_instance", "platform", "kWindows"),
-					resource.TestCheckResourceAttr("data.ibm_baas_download_agent.baas_download_agent_instance", "file_path", filePath),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_download_agent.baas_download_agent_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_download_agent.baas_download_agent_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_download_agent.baas_download_agent_instance", "platform", "kWindows"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_download_agent.baas_download_agent_instance", "file_path", filePath),
 				),
 			},
 		},
@@ -62,7 +62,7 @@ func testCheckFileNameExists(path string) resource.TestCheckFunc {
 
 func testAccCheckIbmBaasDownloadAgentDataSourceConfigBasic(filePath string) string {
 	return fmt.Sprintf(`
-		data "ibm_baas_download_agent" "baas_download_agent_instance" {
+		data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
 			x_ibm_tenant_id = "%s"
 			platform = "kWindows"
 			file_path = "%s"

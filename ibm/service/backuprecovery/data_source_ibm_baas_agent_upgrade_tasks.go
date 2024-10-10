@@ -220,7 +220,7 @@ func DataSourceIbmBaasAgentUpgradeTasks() *schema.Resource {
 func dataSourceIbmBaasAgentUpgradeTasksRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_agent_upgrade_tasks", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -239,7 +239,7 @@ func dataSourceIbmBaasAgentUpgradeTasksRead(context context.Context, d *schema.R
 
 	agentUpgradeTaskStates, _, err := backupRecoveryClient.GetUpgradeTasksWithContext(context, getUpgradeTasksOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetUpgradeTasksWithContext failed: %s", err.Error()), "(Data) ibm_baas_agent_upgrade_tasks", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetUpgradeTasksWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -251,12 +251,12 @@ func dataSourceIbmBaasAgentUpgradeTasksRead(context context.Context, d *schema.R
 		for _, tasksItem := range agentUpgradeTaskStates.Tasks {
 			tasksItemMap, err := DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeTaskStateToMap(&tasksItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_agent_upgrade_tasks", "read", "tasks-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read", "tasks-to-map").GetDiag()
 			}
 			tasks = append(tasks, tasksItemMap)
 		}
 		if err = d.Set("tasks", tasks); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tasks: %s", err), "(Data) ibm_baas_agent_upgrade_tasks", "read", "set-tasks").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tasks: %s", err), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read", "set-tasks").GetDiag()
 		}
 	}
 

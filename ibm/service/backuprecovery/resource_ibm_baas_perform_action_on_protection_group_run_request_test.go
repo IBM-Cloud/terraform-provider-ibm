@@ -30,14 +30,14 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 				Destroy: false,
 				Config:  testAccCheckIbmBaasProtectionGroupRunRequest(groupName, runType, objectId),
 				Check: resource.ComposeTestCheckFunc(
-					testPerformRunExists("ibm_baas_protection_group_run_request.baas_protection_group_run_request_instance"),
+					testPerformRunExists("ibm_backup_recovery_protection_group_run_request.baas_protection_group_run_request_instance"),
 				),
 			},
 			{
 				Destroy: false,
 				Config:  testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(objectId, groupName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckProtectionRunPerformActionCancelled("ibm_baas_perform_action_on_protection_group_run_request.baas_perform_action_on_protection_group_run_request_instance"),
+					testAccCheckProtectionRunPerformActionCancelled("ibm_backup_recovery_perform_action_on_protection_group_run_request.baas_perform_action_on_protection_group_run_request_instance"),
 				),
 			},
 		},
@@ -47,15 +47,15 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 func testAccCheckIbmBaasProtectionGroupRunRequest(groupName, runType string, objectID int) string {
 	return fmt.Sprintf(`
 
-		data "ibm_baas_protection_groups" "ibm_baas_protection_groups_instance" {
+		data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 			x_ibm_tenant_id = "%s"
 			names = ["%s"]
 		}
 
-		resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_request_instance" {
+		resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
 			x_ibm_tenant_id = "%s"
 			run_type = "%s"
-			group_id = data.ibm_baas_protection_groups.ibm_baas_protection_groups_instance.protection_groups.0.id
+			group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 			lifecycle {
 				ignore_changes = ["x_ibm_tenant_id","run_type","group_id"]
 			}
@@ -104,23 +104,23 @@ func testPerformRunExists(n string) resource.TestCheckFunc {
 func testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(objectId int, groupName string) string {
 	return fmt.Sprintf(`
 
-	data "ibm_baas_protection_groups" "ibm_baas_protection_groups_instance" {
+	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 		x_ibm_tenant_id = "%s"
 		names = ["%s"]
 	  }
 
-	data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
+	data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
 		x_ibm_tenant_id = "%s"
-		protection_group_id = data.ibm_baas_protection_groups.ibm_baas_protection_groups_instance.protection_groups.0.id
+		protection_group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 	}
 
-	resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
+	resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
 		x_ibm_tenant_id = "%s"
-		group_id = data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance.protection_group_id
+		group_id = data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance.protection_group_id
 		action = "Cancel"
 		cancel_params {
-		  run_id = data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance.runs.0.id
-		  local_task_id = data.ibm_baas_protection_group_runs.baas_protection_group_runs_instance.runs.0.archival_info.0.archival_target_results.0.archival_task_id
+		  run_id = data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance.runs.0.id
+		  local_task_id = data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance.runs.0.archival_info.0.archival_target_results.0.archival_task_id
 		}
 		lifecycle {
 			ignore_changes = ["x_ibm_tenant_id","group_id","action", "cancel_params"]

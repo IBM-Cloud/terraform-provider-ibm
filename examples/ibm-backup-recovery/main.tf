@@ -3,13 +3,13 @@ provider "ibm" {
 }
 
 // Provision baas_connection_registration_token resource instance
-resource "ibm_baas_connection_registration_token" "baas_connection_registration_token_instance" {
+resource "ibm_backup_recovery_connection_registration_token" "baas_connection_registration_token_instance" {
   connection_id = var.baas_connection_registration_token_connection_id
   x_ibm_tenant_id = var.baas_connection_registration_token_x_ibm_tenant_id
 }
 
 // Provision baas_protection_group_run_request resource instance
-resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_request_instance" {
+resource "ibm_backup_recovery_protection_group_run_request" "baas_protection_group_run_request_instance" {
   x_ibm_tenant_id = var.baas_protection_group_run_request_x_ibm_tenant_id
   run_type = var.baas_protection_group_run_request_run_type
   objects {
@@ -74,13 +74,13 @@ resource "ibm_baas_protection_group_run_request" "baas_protection_group_run_requ
 }
 
 // Provision baas_data_source_connection resource instance
-resource "ibm_baas_data_source_connection" "baas_data_source_connection_instance" {
+resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
   x_ibm_tenant_id = var.baas_data_source_connection_x_ibm_tenant_id
   connection_name = var.baas_data_source_connection_connection_name
 }
 
 // Provision baas_recovery_download_files_folders resource instance
-resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
   x_ibm_tenant_id = var.baas_recovery_download_files_folders_x_ibm_tenant_id
   documents {
     is_directory = true
@@ -189,7 +189,7 @@ resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_file
 }
 
 // Provision baas_restore_points resource instance
-resource "ibm_baas_restore_points" "baas_restore_points_instance" {
+resource "ibm_backup_recovery_restore_points" "baas_restore_points_instance" {
   x_ibm_tenant_id = var.baas_restore_points_x_ibm_tenant_id
   end_time_usecs = var.baas_restore_points_end_time_usecs
   environment = var.baas_restore_points_environment
@@ -199,7 +199,7 @@ resource "ibm_baas_restore_points" "baas_restore_points_instance" {
 }
 
 // Provision baas_perform_action_on_protection_group_run_request resource instance
-resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
+resource "ibm_backup_recovery_perform_action_on_protection_group_run_request" "baas_perform_action_on_protection_group_run_request_instance" {
   x_ibm_tenant_id = var.baas_perform_action_on_protection_group_run_request_x_ibm_tenant_id
   action = var.baas_perform_action_on_protection_group_run_request_action
   pause_params {
@@ -219,7 +219,7 @@ resource "ibm_baas_perform_action_on_protection_group_run_request" "baas_perform
 }
 
 // Provision baas_protection_group resource instance
-resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
   x_ibm_tenant_id = var.baas_protection_group_x_ibm_tenant_id
   name = var.baas_protection_group_name
   policy_id = var.baas_protection_group_policy_id
@@ -487,7 +487,7 @@ resource "ibm_baas_protection_group" "baas_protection_group_instance" {
 }
 
 // Provision baas_protection_policy resource instance
-resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
   x_ibm_tenant_id = var.baas_protection_policy_x_ibm_tenant_id
   name = var.baas_protection_policy_name
   backup_policy {
@@ -1282,7 +1282,7 @@ resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
 }
 
 // Provision baas_recovery resource instance
-resource "ibm_baas_recovery" "baas_recovery_instance" {
+resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
   x_ibm_tenant_id = var.baas_recovery_x_ibm_tenant_id
   request_initiator_type = var.baas_recovery_request_initiator_type
   name = var.baas_recovery_name
@@ -1627,7 +1627,7 @@ resource "ibm_baas_recovery" "baas_recovery_instance" {
 }
 
 // Provision baas_search_indexed_object resource instance
-resource "ibm_baas_search_indexed_object" "baas_search_indexed_object_instance" {
+resource "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object_instance" {
   x_ibm_tenant_id = var.baas_search_indexed_object_x_ibm_tenant_id
   protection_group_ids = var.baas_search_indexed_object_protection_group_ids
   storage_domain_ids = var.baas_search_indexed_object_storage_domain_ids
@@ -1851,7 +1851,7 @@ resource "ibm_baas_search_indexed_object" "baas_search_indexed_object_instance" 
 }
 
 // Provision baas_source_registration resource instance
-resource "ibm_baas_source_registration" "baas_source_registration_instance" {
+resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
   x_ibm_tenant_id = var.baas_source_registration_x_ibm_tenant_id
   environment = var.baas_source_registration_environment
   name = var.baas_source_registration_name
@@ -1878,7 +1878,7 @@ resource "ibm_baas_source_registration" "baas_source_registration_instance" {
 }
 
 // Provision baas_update_protection_group_run_request resource instance
-resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
+resource "ibm_backup_recovery_update_protection_group_run_request" "baas_update_protection_group_run_request_instance" {
   x_ibm_tenant_id = var.baas_update_protection_group_run_request_x_ibm_tenant_id
   update_protection_group_run_params {
     run_id = "run_id"
@@ -1946,7 +1946,7 @@ resource "ibm_baas_update_protection_group_run_request" "baas_update_protection_
 // Uncomment if an existing data source instance exists
 
 // Create baas_agent_upgrade_tasks data source
-data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
+data "ibm_backup_recovery_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
   x_ibm_tenant_id = var.baas_agent_upgrade_tasks_x_ibm_tenant_id
   ids = var.baas_agent_upgrade_tasks_ids
 }
@@ -1956,7 +1956,7 @@ data "ibm_baas_agent_upgrade_tasks" "baas_agent_upgrade_tasks_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_data_source_connections data source
-data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" {
+data "ibm_backup_recovery_data_source_connections" "baas_data_source_connections_instance" {
   x_ibm_tenant_id = var.baas_data_source_connections_x_ibm_tenant_id
   connection_ids = var.baas_data_source_connections_connection_ids
   connection_names = var.baas_data_source_connections_connection_names
@@ -1967,7 +1967,7 @@ data "ibm_baas_data_source_connections" "baas_data_source_connections_instance" 
 // Uncomment if an existing data source instance exists
 
 // Create baas_data_source_connectors data source
-data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
+data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_instance" {
   x_ibm_tenant_id = var.baas_data_source_connectors_x_ibm_tenant_id
   connector_ids = var.baas_data_source_connectors_connector_ids
   connector_names = var.baas_data_source_connectors_connector_names
@@ -1979,7 +1979,7 @@ data "ibm_baas_data_source_connectors" "baas_data_source_connectors_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_download_agent data source
-data "ibm_baas_download_agent" "baas_download_agent_instance" {
+data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
   x_ibm_tenant_id = var.baas_download_agent_x_ibm_tenant_id
   platform = var.baas_download_agent_platform
   linux_params = var.baas_download_agent_linux_params
@@ -1991,7 +1991,7 @@ data "ibm_baas_download_agent" "baas_download_agent_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_object_snapshots data source
-data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
   baas_object_snapshots_id = var.baas_object_snapshots_baas_object_snapshots_id
   x_ibm_tenant_id = var.baas_object_snapshots_x_ibm_tenant_id
   from_time_usecs = var.baas_object_snapshots_from_time_usecs
@@ -2011,7 +2011,7 @@ data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_search_objects data source
-data "ibm_baas_search_objects" "baas_search_objects_instance" {
+data "ibm_backup_recovery_search_objects" "baas_search_objects_instance" {
   x_ibm_tenant_id = var.baas_search_objects_x_ibm_tenant_id
   request_initiator_type = var.baas_search_objects_request_initiator_type
   search_string = var.baas_search_objects_search_string
@@ -2047,7 +2047,7 @@ data "ibm_baas_search_objects" "baas_search_objects_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_search_protected_objects data source
-data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance" {
+data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objects_instance" {
   x_ibm_tenant_id = var.baas_search_protected_objects_x_ibm_tenant_id
   request_initiator_type = var.baas_search_protected_objects_request_initiator_type
   search_string = var.baas_search_protected_objects_search_string
@@ -2071,7 +2071,7 @@ data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance
 // Uncomment if an existing data source instance exists
 
 // Create baas_protection_group data source
-data "ibm_baas_protection_group" "baas_protection_group_instance" {
+data "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
   baas_protection_group_id = var.data_baas_protection_group_baas_protection_group_id
   x_ibm_tenant_id = var.data_baas_protection_group_x_ibm_tenant_id
   request_initiator_type = var.data_baas_protection_group_request_initiator_type
@@ -2085,7 +2085,7 @@ data "ibm_baas_protection_group" "baas_protection_group_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_protection_groups data source
-data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
+data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
   x_ibm_tenant_id = var.baas_protection_groups_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_groups_request_initiator_type
   ids = var.baas_protection_groups_ids
@@ -2114,7 +2114,7 @@ data "ibm_baas_protection_groups" "baas_protection_groups_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_protection_group_run data source
-data "ibm_baas_protection_group_run" "baas_protection_group_run_instance" {
+data "ibm_backup_recovery_protection_group_run" "baas_protection_group_run_instance" {
   baas_protection_group_run_id = var.baas_protection_group_run_baas_protection_group_run_id
   x_ibm_tenant_id = var.baas_protection_group_run_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_group_run_request_initiator_type
@@ -2142,7 +2142,7 @@ data "ibm_baas_protection_group_run" "baas_protection_group_run_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_protection_group_runs data source
-data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
+data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
   baas_protection_group_runs_id = var.baas_protection_group_runs_baas_protection_group_runs_id
   x_ibm_tenant_id = var.baas_protection_group_runs_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_group_runs_request_initiator_type
@@ -2170,7 +2170,7 @@ data "ibm_baas_protection_group_runs" "baas_protection_group_runs_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_protection_policies data source
-data "ibm_baas_protection_policies" "baas_protection_policies_instance" {
+data "ibm_backup_recovery_protection_policies" "baas_protection_policies_instance" {
   x_ibm_tenant_id = var.baas_protection_policies_x_ibm_tenant_id
   request_initiator_type = var.baas_protection_policies_request_initiator_type
   ids = var.baas_protection_policies_ids
@@ -2186,7 +2186,7 @@ data "ibm_baas_protection_policies" "baas_protection_policies_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_protection_policy data source
-data "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
   baas_protection_policy_id = var.data_baas_protection_policy_baas_protection_policy_id
   x_ibm_tenant_id = var.data_baas_protection_policy_x_ibm_tenant_id
   request_initiator_type = var.data_baas_protection_policy_request_initiator_type
@@ -2197,7 +2197,7 @@ data "ibm_baas_protection_policy" "baas_protection_policy_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_recovery data source
-data "ibm_baas_recovery" "baas_recovery_instance" {
+data "ibm_backup_recovery_recovery" "baas_recovery_instance" {
   baas_recovery_id = var.data_baas_recovery_baas_recovery_id
   x_ibm_tenant_id = var.data_baas_recovery_x_ibm_tenant_id
 }
@@ -2207,7 +2207,7 @@ data "ibm_baas_recovery" "baas_recovery_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_recoveries data source
-data "ibm_baas_recoveries" "baas_recoveries_instance" {
+data "ibm_backup_recovery_recoveries" "baas_recoveries_instance" {
   x_ibm_tenant_id = var.baas_recoveries_x_ibm_tenant_id
   ids = var.baas_recoveries_ids
   return_only_child_recoveries = var.baas_recoveries_return_only_child_recoveries
@@ -2225,7 +2225,7 @@ data "ibm_baas_recoveries" "baas_recoveries_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_source_registrations data source
-data "ibm_baas_source_registrations" "baas_source_registrations_instance" {
+data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {
   x_ibm_tenant_id = var.baas_source_registrations_x_ibm_tenant_id
   ids = var.baas_source_registrations_ids
   include_source_credentials = var.baas_source_registrations_include_source_credentials
@@ -2240,7 +2240,7 @@ data "ibm_baas_source_registrations" "baas_source_registrations_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_source_registration data source
-data "ibm_baas_source_registration" "baas_source_registration_instance" {
+data "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
   baas_source_registration_id = var.data_baas_source_registration_baas_source_registration_id
   x_ibm_tenant_id = var.data_baas_source_registration_x_ibm_tenant_id
   request_initiator_type = var.data_baas_source_registration_request_initiator_type
@@ -2251,7 +2251,7 @@ data "ibm_baas_source_registration" "baas_source_registration_instance" {
 // Uncomment if an existing data source instance exists
 
 // Create baas_download_indexed_files data source
-data "ibm_baas_download_indexed_files" "baas_download_indexed_files_instance" {
+data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_instance" {
   snapshots_id = var.baas_download_indexed_files_snapshots_id
   x_ibm_tenant_id = var.baas_download_indexed_files_x_ibm_tenant_id
   file_path = var.baas_download_indexed_files_file_path

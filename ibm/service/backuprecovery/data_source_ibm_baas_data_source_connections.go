@@ -123,7 +123,7 @@ func DataSourceIbmBaasDataSourceConnections() *schema.Resource {
 func dataSourceIbmBaasDataSourceConnectionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_data_source_connections", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_data_source_connections", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -150,7 +150,7 @@ func dataSourceIbmBaasDataSourceConnectionsRead(context context.Context, d *sche
 
 	dataSourceConnectionList, _, err := backupRecoveryClient.GetDataSourceConnectionsWithContext(context, getDataSourceConnectionsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectionsWithContext failed: %s", err.Error()), "(Data) ibm_baas_data_source_connections", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectionsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_data_source_connections", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -162,12 +162,12 @@ func dataSourceIbmBaasDataSourceConnectionsRead(context context.Context, d *sche
 		for _, connectionsItem := range dataSourceConnectionList.Connections {
 			connectionsItemMap, err := DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(&connectionsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_data_source_connections", "read", "connections-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_data_source_connections", "read", "connections-to-map").GetDiag()
 			}
 			connections = append(connections, connectionsItemMap)
 		}
 		if err = d.Set("connections", connections); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connections: %s", err), "(Data) ibm_baas_data_source_connections", "read", "set-connections").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connections: %s", err), "(Data) ibm_backup_recovery_data_source_connections", "read", "set-connections").GetDiag()
 		}
 	}
 

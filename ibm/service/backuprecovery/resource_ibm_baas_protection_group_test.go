@@ -35,16 +35,16 @@ func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasProtectionGroupExists("ibm_baas_protection_group.baas_protection_group_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "name", groupName),
+					testAccCheckIbmBaasProtectionGroupExists("ibm_backup_recovery_protection_group.baas_protection_group_instance", conf),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "name", groupName),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(groupName, environment, includedPathUpdate, protectionType, policyName, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_protection_group.baas_protection_group_instance", "name", groupName),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "name", groupName),
 				),
 			},
 		},
@@ -53,7 +53,7 @@ func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
 
 func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
-			resource "ibm_baas_protection_policy" "baas_protection_policy_instance" {
+			resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 				x_ibm_tenant_id = "%s"
 				name = "%s"
 				backup_policy {
@@ -81,9 +81,9 @@ func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPa
 				}
 			}
 
-		resource "ibm_baas_protection_group" "baas_protection_group_instance" {
+		resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 			x_ibm_tenant_id = "%s"
-			policy_id = ibm_baas_protection_policy.baas_protection_policy_instance.id
+			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.id
 			name = "%s"
 			environment = "%s"
 			physical_params {
@@ -135,7 +135,7 @@ func testAccCheckIbmBaasProtectionGroupDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_baas_protection_group" {
+		if rs.Type != "ibm_backup_recovery_protection_group" {
 			continue
 		}
 

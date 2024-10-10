@@ -588,7 +588,7 @@ func ResourceIbmBaasRecoveryDownloadFilesFolders() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_recovery_download_files_folders", "parent_recovery_id"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_recovery_download_files_folders", "parent_recovery_id"),
 				Description: "If current recovery is child task triggered through another parent recovery operation, then this field will specify the id of the parent recovery.",
 			},
 			"files_and_folders": &schema.Schema{
@@ -615,13 +615,13 @@ func ResourceIbmBaasRecoveryDownloadFilesFolders() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_recovery_download_files_folders", "glacier_retrieval_type"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_recovery_download_files_folders", "glacier_retrieval_type"),
 				Description: "Specifies the glacier retrieval type when restoring or downloding files or folders from a Glacier-based cloud snapshot.",
 			},
 			"recovery_request_initiator_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_recovery", "request_initiator_type"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_recovery", "request_initiator_type"),
 				Description: "Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests.",
 			},
 			"recovery_name": &schema.Schema{
@@ -634,7 +634,7 @@ func ResourceIbmBaasRecoveryDownloadFilesFolders() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 				// ForceNew:     true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_recovery", "snapshot_environment"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_recovery", "snapshot_environment"),
 				Description: "Specifies the type of snapshot environment for which the Recovery was performed.",
 			},
 			"recovery_physical_params": &schema.Schema{
@@ -2816,7 +2816,7 @@ func checkDiffResourceIbmBaasRecoveryDownloadFilesFolders(context context.Contex
 
 	for fieldName := range ResourceIbmBaasRecoveryDownloadFilesFolders().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_recovery_download_files_folders cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_recovery_download_files_folders cannot be updated.")
 		}
 	}
 	return nil
@@ -2841,14 +2841,14 @@ func ResourceIbmBaasRecoveryDownloadFilesFoldersValidator() *validate.ResourceVa
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_recovery_download_files_folders", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_recovery_download_files_folders", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmBaasRecoveryDownloadFilesFoldersCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery_download_files_folders", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2859,7 +2859,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersCreate(context context.Context, 
 	createDownloadFilesAndFoldersRecoveryOptions.SetName(d.Get("name").(string))
 	objectModel, err := ResourceIbmBaasRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParams(d.Get("object.0").(map[string]interface{}))
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery_download_files_folders", "create", "parse-object").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "parse-object").GetDiag()
 	}
 	createDownloadFilesAndFoldersRecoveryOptions.SetObject(objectModel)
 	var filesAndFolders []backuprecoveryv1.FilesAndFoldersObject
@@ -2867,7 +2867,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersCreate(context context.Context, 
 		value := v.(map[string]interface{})
 		filesAndFoldersItem, err := ResourceIbmBaasRecoveryDownloadFilesFoldersMapToFilesAndFoldersObject(value)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery_download_files_folders", "create", "parse-files_and_folders").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "parse-files_and_folders").GetDiag()
 		}
 		filesAndFolders = append(filesAndFolders, *filesAndFoldersItem)
 	}
@@ -2878,7 +2878,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersCreate(context context.Context, 
 			value := v.(map[string]interface{})
 			documentsItem, err := ResourceIbmBaasRecoveryDownloadFilesFoldersMapToDocumentObject(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery_download_files_folders", "create", "parse-documents").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "parse-documents").GetDiag()
 			}
 			documents = append(documents, *documentsItem)
 		}
@@ -2893,7 +2893,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersCreate(context context.Context, 
 
 	recovery, _, err := backupRecoveryClient.CreateDownloadFilesAndFoldersRecoveryWithContext(context, createDownloadFilesAndFoldersRecoveryOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateDownloadFilesAndFoldersRecoveryWithContext failed: %s", err.Error()), "ibm_baas_recovery_download_files_folders", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateDownloadFilesAndFoldersRecoveryWithContext failed: %s", err.Error()), "ibm_backup_recovery_recovery_download_files_folders", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2906,7 +2906,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersCreate(context context.Context, 
 func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_recovery_download_files_folders", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -2922,7 +2922,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveryByIDWithContext failed: %s", err.Error()), "ibm_baas_recovery_download_files_folders", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRecoveryByIDWithContext failed: %s", err.Error()), "ibm_backup_recovery_recovery_download_files_folders", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

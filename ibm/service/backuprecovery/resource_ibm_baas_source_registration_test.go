@@ -40,28 +40,28 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType, connectionId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasSourceRegistrationExists("ibm_baas_source_registration.baas_source_registration_instance", conf),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "environment", environment),
-					resource.TestCheckResourceAttrSet("ibm_baas_source_registration.baas_source_registration_instance", "id"),
-					resource.TestCheckResourceAttrSet("ibm_baas_source_registration.baas_source_registration_instance", "last_refreshed_time_msecs"),
-					resource.TestCheckResourceAttrSet("ibm_baas_source_registration.baas_source_registration_instance", "connections.#"),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "connection_id", connectionId),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "source_info.#", "1"),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "source_info.0.name", endpoint),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "source_info.0.os_type", hostType),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "source_info.0.object_type", physicalType),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "physical_params.#", "1"),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "physical_params.0.endpoint", endpoint),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "physical_params.0.host_type", hostType),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "physical_params.0.physical_type", physicalType),
+					testAccCheckIbmBaasSourceRegistrationExists("ibm_backup_recovery_source_registration.baas_source_registration_instance", conf),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "environment", environment),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "id"),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "last_refreshed_time_msecs"),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "connections.#"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "connection_id", connectionId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_info.#", "1"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_info.0.name", endpoint),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_info.0.os_type", hostType),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_info.0.object_type", physicalType),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "physical_params.#", "1"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "physical_params.0.endpoint", endpoint),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "physical_params.0.host_type", hostType),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "physical_params.0.physical_type", physicalType),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applicationsUpdate, endpoint, hostType, physicalType, connectionId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
-					resource.TestCheckResourceAttr("ibm_baas_source_registration.baas_source_registration_instance", "environment", environment),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "environment", environment),
 				),
 			},
 		},
@@ -70,7 +70,7 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 
 func testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType string, connectionId string) string {
 	return fmt.Sprintf(`
-			resource "ibm_baas_source_registration" "baas_source_registration_instance" {
+			resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
 				x_ibm_tenant_id = "%s"
 				environment = "%s"
 				connection_id = "%s"
@@ -119,7 +119,7 @@ func testAccCheckIbmBaasSourceRegistrationDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_baas_source_registration" {
+		if rs.Type != "ibm_backup_recovery_source_registration" {
 			continue
 		}
 

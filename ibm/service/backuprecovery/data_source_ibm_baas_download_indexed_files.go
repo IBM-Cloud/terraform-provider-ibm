@@ -68,7 +68,7 @@ func DataSourceIbmBaasDownloadIndexedFiles() *schema.Resource {
 func dataSourceIbmBaasDownloadIndexedFilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_baas_download_indexed_files", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_download_indexed_files", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -95,7 +95,7 @@ func dataSourceIbmBaasDownloadIndexedFilesRead(context context.Context, d *schem
 
 	_, err = backupRecoveryClient.DownloadIndexedFileWithContext(context, downloadIndexedFileOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DownloadIndexedFileWithContext failed: %s", err.Error()), "(Data) ibm_baas_download_indexed_files", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DownloadIndexedFileWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_download_indexed_files", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

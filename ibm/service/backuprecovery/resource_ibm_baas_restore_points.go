@@ -48,7 +48,7 @@ func ResourceIbmBaasRestorePoints() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				// ForceNew: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_baas_restore_points", "environment"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_restore_points", "environment"),
 				Description: "Specifies the protection source environment type.",
 			},
 			"protection_group_ids": &schema.Schema{
@@ -3359,7 +3359,7 @@ func checkDiffResourceIbmBaasRestorePoints(context context.Context, d *schema.Re
 
 	for fieldName := range ResourceIbmBaasRestorePoints().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_baas_restore_points cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_restore_points cannot be updated.")
 		}
 	}
 	return nil
@@ -3377,14 +3377,14 @@ func ResourceIbmBaasRestorePointsValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_baas_restore_points", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_backup_recovery_restore_points", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_baas_restore_points", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_restore_points", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -3410,7 +3410,7 @@ func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.Resou
 
 	getRestorePointsInTimeRangeResponse, _, err := backupRecoveryClient.GetRestorePointsInTimeRangeWithContext(context, getRestorePointsInTimeRangeOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRestorePointsInTimeRangeWithContext failed: %s", err.Error()), "ibm_baas_restore_points", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRestorePointsInTimeRangeWithContext failed: %s", err.Error()), "ibm_backup_recovery_restore_points", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

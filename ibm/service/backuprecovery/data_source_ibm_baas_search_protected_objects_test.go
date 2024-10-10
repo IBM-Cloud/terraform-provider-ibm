@@ -24,11 +24,11 @@ func TestAccIbmBaasSearchProtectedObjectsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBaasSearchProtectedObjectsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "metadata.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "objects.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_search_protected_objects.baas_search_protected_objects_instance", "num_results"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "metadata.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "objects.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_protected_objects.baas_search_protected_objects_instance", "num_results"),
 				),
 			},
 		},
@@ -37,7 +37,7 @@ func TestAccIbmBaasSearchProtectedObjectsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmBaasSearchProtectedObjectsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-	data "ibm_baas_search_protected_objects" "baas_search_protected_objects_instance" {
+	data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objects_instance" {
 		x_ibm_tenant_id = "%s"
 	  }
 	`, tenantId)

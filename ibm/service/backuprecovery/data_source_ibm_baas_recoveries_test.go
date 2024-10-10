@@ -34,11 +34,11 @@ func TestAccIbmBaasRecoveriesDataSourceBasic(t *testing.T) {
 				Destroy: false,
 				Config:  testAccCheckIbmBaasRecoveriesDataSourceConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_baas_recoveries.baas_recoveries_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_baas_recoveries.baas_recoveries_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_baas_recoveries.baas_recoveries_instance", "recoveries.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_baas_recoveries.baas_recoveries_instance", "recoveries.0.name", name),
-					resource.TestCheckResourceAttrSet("data.ibm_baas_recoveries.baas_recoveries_instance", "recoveries.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "recoveries.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "recoveries.0.name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "recoveries.0.id"),
 				),
 			},
 		},
@@ -49,19 +49,19 @@ func testAccCheckIbmBaasRecoveriesDataSourceConfigBasic(objectId int, name, snap
 
 	return fmt.Sprintf(`
 
-	data "ibm_baas_object_snapshots" "object_snapshot" {
+	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
 		x_ibm_tenant_id = "%s"
 		baas_object_id = %d
 	  }
 
-	resource "ibm_baas_recovery" "baas_recovery_instance" {
+	resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
 		x_ibm_tenant_id = "%s"
 		snapshot_environment = "%s"
 		name = "%s"
 		physical_params {
 		  recovery_action = "%s"
 		  objects {
-			snapshot_id = data.ibm_baas_object_snapshots.object_snapshot.snapshots.0.id
+			snapshot_id = data.ibm_backup_recovery_object_snapshots.object_snapshot.snapshots.0.id
 		  }
 		  recover_file_and_folder_params {
 			 target_environment = "%s"
@@ -79,9 +79,9 @@ func testAccCheckIbmBaasRecoveriesDataSourceConfigBasic(objectId int, name, snap
 		}
 	  }
 
-	  data "ibm_baas_recoveries" "baas_recoveries_instance" {
+	  data "ibm_backup_recovery_recoveries" "baas_recoveries_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		ids = [ ibm_baas_recovery.baas_recovery_instance.id ]
+		ids = [ ibm_backup_recovery_recovery.baas_recovery_instance.id ]
 	}
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)
 

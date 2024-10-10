@@ -27,14 +27,14 @@ func TestAccIbmBaasRecoveryDownloadFilesFoldersBasic(t *testing.T) {
 			{
 				Config: testAccCheckIbmBaasRecoveryDownloadFilesFoldersConfigBasic(name, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasRecoveryDownloadFilesFoldersExists("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance"),
-					resource.TestCheckResourceAttr("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "name", name),
-					resource.TestCheckResourceAttrSet("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "id"),
-					resource.TestCheckResourceAttr("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.#", "1"),
-					resource.TestCheckResourceAttr("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.0.objects.#", "1"),
-					resource.TestCheckResourceAttr("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.0.objects.0.object_info.#", "1"),
-					resource.TestCheckResourceAttr("ibm_baas_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.0.objects.0.object_info.0.id", strconv.Itoa(objectId)),
+					testAccCheckIbmBaasRecoveryDownloadFilesFoldersExists("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "id"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.#", "1"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.0.objects.#", "1"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.0.objects.0.object_info.#", "1"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "recovery_physical_params.0.objects.0.object_info.0.id", strconv.Itoa(objectId)),
 				),
 				Destroy: false,
 			},
@@ -45,16 +45,16 @@ func TestAccIbmBaasRecoveryDownloadFilesFoldersBasic(t *testing.T) {
 func testAccCheckIbmBaasRecoveryDownloadFilesFoldersConfigBasic(name string, objectId int) string {
 	return fmt.Sprintf(`
 	
-	data "ibm_baas_object_snapshots" "baas_object_snapshots_instance" {
+	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 		x_ibm_tenant_id = "%s"
 		baas_object_id = %d
 	  }
 
-	resource "ibm_baas_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+	resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
 		object {
-		  snapshot_id = data.ibm_baas_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
+		  snapshot_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots[0].id
 		}
 		files_and_folders {
 			absolute_path = "/data/"
