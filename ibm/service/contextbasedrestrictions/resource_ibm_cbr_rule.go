@@ -283,7 +283,7 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 			value := v.(map[string]interface{})
 			contextsItem, err := ResourceIBMCbrRuleMapToRuleContext(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "parse-contexts").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "ResourceIBMCbrRuleMapToRuleContext").GetDiag()
 			}
 			contexts = append(contexts, *contextsItem)
 		}
@@ -295,7 +295,7 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 			value := v.(map[string]interface{})
 			resourcesItem, err := ResourceIBMCbrRuleMapToResource(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "parse-resources").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "ResourceIBMCbrRuleMapToResource").GetDiag()
 			}
 			resources = append(resources, *resourcesItem)
 		}
@@ -304,7 +304,7 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("operations"); ok {
 		operationsModel, err := ResourceIBMCbrRuleMapToNewRuleOperations(d.Get("operations.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "parse-operations").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "ResourceIBMCbrRuleMapToNewRuleOperations").GetDiag()
 		}
 		createRuleOptions.SetOperations(operationsModel)
 	}
@@ -327,8 +327,8 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	d.SetId(*rule.ID)
 
-	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "rule-set-data").GetDiag()
+	if err := ResourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "create", "resourceIBMCbrRuleSetData").GetDiag()
 	}
 
 	return nil
@@ -357,8 +357,8 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 		return tfErr.GetDiag()
 	}
 
-	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "read", "rule-set-data").GetDiag()
+	if err := ResourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "read", "resourceIBMCbrRuleSetData").GetDiag()
 	}
 
 	return nil
@@ -390,7 +390,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 			value := v.(map[string]interface{})
 			contextsItem, err := ResourceIBMCbrRuleMapToRuleContext(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "parse-contexts").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "ResourceIBMCbrRuleMapToRuleContext").GetDiag()
 			}
 			contexts = append(contexts, *contextsItem)
 		}
@@ -402,7 +402,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 			value := v.(map[string]interface{})
 			resourcesItem, err := ResourceIBMCbrRuleMapToResource(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "parse-resources").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "ResourceIBMCbrRuleMapToResource").GetDiag()
 			}
 			resources = append(resources, *resourcesItem)
 		}
@@ -411,7 +411,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("operations"); ok {
 		operations, err := ResourceIBMCbrRuleMapToNewRuleOperations(d.Get("operations.0").(map[string]interface{}))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "parse-operations").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "ResourceIBMCbrRuleMapToNewRuleOperations").GetDiag()
 		}
 		replaceRuleOptions.SetOperations(operations)
 	}
@@ -427,8 +427,8 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 		return tfErr.GetDiag()
 	}
 
-	if err := resourceIBMCbrRuleSetData(rule, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "rule-set-data").GetDiag()
+	if err := ResourceIBMCbrRuleSetData(rule, response, d); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_rule", "update", "resourceIBMCbrRuleSetData").GetDiag()
 	}
 
 	return nil
@@ -458,7 +458,7 @@ func resourceIBMCbrRuleDelete(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceIBMCbrRuleSetData(rule *contextbasedrestrictionsv1.Rule, response *core.DetailedResponse, d *schema.ResourceData) error {
+func ResourceIBMCbrRuleSetData(rule *contextbasedrestrictionsv1.Rule, response *core.DetailedResponse, d *schema.ResourceData) error {
 	if !core.IsNil(rule.Description) {
 		if err := d.Set("description", rule.Description); err != nil {
 			return fmt.Errorf("Error setting description: %s", err)

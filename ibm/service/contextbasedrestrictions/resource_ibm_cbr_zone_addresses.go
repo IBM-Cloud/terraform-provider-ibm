@@ -192,7 +192,7 @@ func resourceIBMCbrZoneAddressesRead(context context.Context, d *schema.Resource
 	var addresses []map[string]interface{}
 	addresses, err = ResourceDecodeAddressList(zone.Addresses, addressesId)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone_addresses", "read", "decode-address-list").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone_addresses", "read", "ResourceDecodeAddressList").GetDiag()
 	}
 	if len(addresses) == 0 {
 		d.SetId("")

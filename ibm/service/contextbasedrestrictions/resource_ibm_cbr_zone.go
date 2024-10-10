@@ -287,7 +287,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("addresses"); ok {
 		addresses, err = ResourceEncodeAddressList(d.Get("addresses").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "create", "list-address").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "create", "ResourceEncodeAddressList").GetDiag()
 		}
 	}
 	createZoneOptions.SetAddresses(addresses)
@@ -295,7 +295,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 		var excluded []contextbasedrestrictionsv1.AddressIntf
 		excluded, err = ResourceEncodeAddressList(d.Get("excluded").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "create", "list-excluded").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "create", "ResourceEncodeAddressList_excluded-address").GetDiag()
 		}
 		createZoneOptions.SetExcluded(excluded)
 	}
@@ -316,7 +316,7 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 	d.SetId(*zone.ID)
 
 	if err := ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "create", "zone-set-data").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "create", "ResourceIBMCbrZoneSetData").GetDiag()
 	}
 	return nil
 }
@@ -341,7 +341,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 	}
 
 	if err = ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "read", "zone-set-data").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "read", "ResourceIBMCbrZoneSetData").GetDiag()
 	}
 
 	return nil
@@ -388,7 +388,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("addresses"); ok {
 		addresses, err = ResourceEncodeAddressList(d.Get("addresses").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "update", "encode-address-list").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "update", "ResourceEncodeAddressList").GetDiag()
 		}
 	}
 	preservedAddresses := FilterAddressList(currentZone.Addresses, func(id string) bool {
@@ -402,7 +402,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 		var excluded []contextbasedrestrictionsv1.AddressIntf
 		excluded, err = ResourceEncodeAddressList(d.Get("excluded").([]interface{}), cbrZoneAddressIdDefault)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "update", "encode-excluded-address-list").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "update", "ResourceEncodeAddressList_excluded-address").GetDiag()
 		}
 		replaceZoneOptions.SetExcluded(excluded)
 	}
@@ -421,7 +421,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if err := ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "read", "zone-set-data").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "read", "ResourceIBMCbrZoneSetData").GetDiag()
 	}
 
 	return nil
