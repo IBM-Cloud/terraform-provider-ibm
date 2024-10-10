@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasProtectionPolicies() *schema.Resource {
+func DataSourceIbmBackupRecoveryProtectionPolicies() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasProtectionPoliciesRead,
+		ReadContext: dataSourceIbmBackupRecoveryProtectionPoliciesRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
@@ -4051,7 +4051,7 @@ func DataSourceIbmBaasProtectionPolicies() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasProtectionPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryProtectionPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policies", "read", "initialize-client")
@@ -4106,12 +4106,12 @@ func dataSourceIbmBaasProtectionPoliciesRead(context context.Context, d *schema.
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasProtectionPoliciesID(d))
+	d.SetId(dataSourceIbmBackupRecoveryProtectionPoliciesID(d))
 
 	if !core.IsNil(protectionPoliciesResponse.Policies) {
 		policies := []map[string]interface{}{}
 		for _, policiesItem := range protectionPoliciesResponse.Policies {
-			policiesItemMap, err := DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(&policiesItem) // #nosec G601
+			policiesItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesProtectionPolicyResponseToMap(&policiesItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_protection_policies", "read", "policies-to-map").GetDiag()
 			}
@@ -4125,15 +4125,15 @@ func dataSourceIbmBaasProtectionPoliciesRead(context context.Context, d *schema.
 	return nil
 }
 
-// dataSourceIbmBaasProtectionPoliciesID returns a reasonable ID for the list.
-func dataSourceIbmBaasProtectionPoliciesID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryProtectionPoliciesID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryProtectionPoliciesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *backuprecoveryv1.ProtectionPolicyResponse) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesProtectionPolicyResponseToMap(model *backuprecoveryv1.ProtectionPolicyResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = *model.Name
-	backupPolicyMap, err := DataSourceIbmBaasProtectionPoliciesBackupPolicyToMap(model.BackupPolicy)
+	backupPolicyMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesBackupPolicyToMap(model.BackupPolicy)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4144,7 +4144,7 @@ func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *bac
 	if model.BlackoutWindow != nil {
 		blackoutWindow := []map[string]interface{}{}
 		for _, blackoutWindowItem := range model.BlackoutWindow {
-			blackoutWindowItemMap, err := DataSourceIbmBaasProtectionPoliciesBlackoutWindowToMap(&blackoutWindowItem) // #nosec G601
+			blackoutWindowItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesBlackoutWindowToMap(&blackoutWindowItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4155,7 +4155,7 @@ func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *bac
 	if model.ExtendedRetention != nil {
 		extendedRetention := []map[string]interface{}{}
 		for _, extendedRetentionItem := range model.ExtendedRetention {
-			extendedRetentionItemMap, err := DataSourceIbmBaasProtectionPoliciesExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
+			extendedRetentionItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4164,7 +4164,7 @@ func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *bac
 		modelMap["extended_retention"] = extendedRetention
 	}
 	if model.RemoteTargetPolicy != nil {
-		remoteTargetPolicyMap, err := DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model.RemoteTargetPolicy)
+		remoteTargetPolicyMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetsConfigurationToMap(model.RemoteTargetPolicy)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4173,7 +4173,7 @@ func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *bac
 	if model.CascadedTargetsConfig != nil {
 		cascadedTargetsConfig := []map[string]interface{}{}
 		for _, cascadedTargetsConfigItem := range model.CascadedTargetsConfig {
-			cascadedTargetsConfigItemMap, err := DataSourceIbmBaasProtectionPoliciesCascadedTargetConfigurationToMap(&cascadedTargetsConfigItem) // #nosec G601
+			cascadedTargetsConfigItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCascadedTargetConfigurationToMap(&cascadedTargetsConfigItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4182,7 +4182,7 @@ func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *bac
 		modelMap["cascaded_targets_config"] = cascadedTargetsConfig
 	}
 	if model.RetryOptions != nil {
-		retryOptionsMap, err := DataSourceIbmBaasProtectionPoliciesRetryOptionsToMap(model.RetryOptions)
+		retryOptionsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetryOptionsToMap(model.RetryOptions)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4221,36 +4221,36 @@ func DataSourceIbmBaasProtectionPoliciesProtectionPolicyResponseToMap(model *bac
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesBackupPolicyToMap(model *backuprecoveryv1.BackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesBackupPolicyToMap(model *backuprecoveryv1.BackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	regularMap, err := DataSourceIbmBaasProtectionPoliciesRegularBackupPolicyToMap(model.Regular)
+	regularMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRegularBackupPolicyToMap(model.Regular)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["regular"] = []map[string]interface{}{regularMap}
 	if model.Log != nil {
-		logMap, err := DataSourceIbmBaasProtectionPoliciesLogBackupPolicyToMap(model.Log)
+		logMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogBackupPolicyToMap(model.Log)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log"] = []map[string]interface{}{logMap}
 	}
 	if model.Bmr != nil {
-		bmrMap, err := DataSourceIbmBaasProtectionPoliciesBmrBackupPolicyToMap(model.Bmr)
+		bmrMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesBmrBackupPolicyToMap(model.Bmr)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["bmr"] = []map[string]interface{}{bmrMap}
 	}
 	if model.Cdp != nil {
-		cdpMap, err := DataSourceIbmBaasProtectionPoliciesCdpBackupPolicyToMap(model.Cdp)
+		cdpMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCdpBackupPolicyToMap(model.Cdp)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cdp"] = []map[string]interface{}{cdpMap}
 	}
 	if model.StorageArraySnapshot != nil {
-		storageArraySnapshotMap, err := DataSourceIbmBaasProtectionPoliciesStorageArraySnapshotBackupPolicyToMap(model.StorageArraySnapshot)
+		storageArraySnapshotMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesStorageArraySnapshotBackupPolicyToMap(model.StorageArraySnapshot)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4259,7 +4259,7 @@ func DataSourceIbmBaasProtectionPoliciesBackupPolicyToMap(model *backuprecoveryv
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4270,17 +4270,17 @@ func DataSourceIbmBaasProtectionPoliciesBackupPolicyToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesRegularBackupPolicyToMap(model *backuprecoveryv1.RegularBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesRegularBackupPolicyToMap(model *backuprecoveryv1.RegularBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Incremental != nil {
-		incrementalMap, err := DataSourceIbmBaasProtectionPoliciesIncrementalBackupPolicyToMap(model.Incremental)
+		incrementalMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesIncrementalBackupPolicyToMap(model.Incremental)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["incremental"] = []map[string]interface{}{incrementalMap}
 	}
 	if model.Full != nil {
-		fullMap, err := DataSourceIbmBaasProtectionPoliciesFullBackupPolicyToMap(model.Full)
+		fullMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesFullBackupPolicyToMap(model.Full)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4289,7 +4289,7 @@ func DataSourceIbmBaasProtectionPoliciesRegularBackupPolicyToMap(model *backupre
 	if model.FullBackups != nil {
 		fullBackups := []map[string]interface{}{}
 		for _, fullBackupsItem := range model.FullBackups {
-			fullBackupsItemMap, err := DataSourceIbmBaasProtectionPoliciesFullScheduleAndRetentionToMap(&fullBackupsItem) // #nosec G601
+			fullBackupsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesFullScheduleAndRetentionToMap(&fullBackupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4298,14 +4298,14 @@ func DataSourceIbmBaasProtectionPoliciesRegularBackupPolicyToMap(model *backupre
 		modelMap["full_backups"] = fullBackups
 	}
 	if model.Retention != nil {
-		retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+		retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["retention"] = []map[string]interface{}{retentionMap}
 	}
 	if model.PrimaryBackupTarget != nil {
-		primaryBackupTargetMap, err := DataSourceIbmBaasProtectionPoliciesPrimaryBackupTargetToMap(model.PrimaryBackupTarget)
+		primaryBackupTargetMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesPrimaryBackupTargetToMap(model.PrimaryBackupTarget)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4314,9 +4314,9 @@ func DataSourceIbmBaasProtectionPoliciesRegularBackupPolicyToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesIncrementalBackupPolicyToMap(model *backuprecoveryv1.IncrementalBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesIncrementalBackupPolicyToMap(model *backuprecoveryv1.IncrementalBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesIncrementalScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesIncrementalScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4324,46 +4324,46 @@ func DataSourceIbmBaasProtectionPoliciesIncrementalBackupPolicyToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesIncrementalScheduleToMap(model *backuprecoveryv1.IncrementalSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesIncrementalScheduleToMap(model *backuprecoveryv1.IncrementalSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
-		minuteScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMinuteScheduleToMap(model.MinuteSchedule)
+		minuteScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMinuteScheduleToMap(model.MinuteSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["minute_schedule"] = []map[string]interface{}{minuteScheduleMap}
 	}
 	if model.HourSchedule != nil {
-		hourScheduleMap, err := DataSourceIbmBaasProtectionPoliciesHourScheduleToMap(model.HourSchedule)
+		hourScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesHourScheduleToMap(model.HourSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["hour_schedule"] = []map[string]interface{}{hourScheduleMap}
 	}
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := DataSourceIbmBaasProtectionPoliciesDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := DataSourceIbmBaasProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := DataSourceIbmBaasProtectionPoliciesYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4372,31 +4372,31 @@ func DataSourceIbmBaasProtectionPoliciesIncrementalScheduleToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesMinuteScheduleToMap(model *backuprecoveryv1.MinuteSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesMinuteScheduleToMap(model *backuprecoveryv1.MinuteSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesHourScheduleToMap(model *backuprecoveryv1.HourSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesHourScheduleToMap(model *backuprecoveryv1.HourSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesDayScheduleToMap(model *backuprecoveryv1.DaySchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesDayScheduleToMap(model *backuprecoveryv1.DaySchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesWeekScheduleToMap(model *backuprecoveryv1.WeekSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesWeekScheduleToMap(model *backuprecoveryv1.WeekSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_week"] = model.DayOfWeek
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesMonthScheduleToMap(model *backuprecoveryv1.MonthSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesMonthScheduleToMap(model *backuprecoveryv1.MonthSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DayOfWeek != nil {
 		modelMap["day_of_week"] = model.DayOfWeek
@@ -4410,16 +4410,16 @@ func DataSourceIbmBaasProtectionPoliciesMonthScheduleToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesYearScheduleToMap(model *backuprecoveryv1.YearSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesYearScheduleToMap(model *backuprecoveryv1.YearSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_year"] = *model.DayOfYear
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesFullBackupPolicyToMap(model *backuprecoveryv1.FullBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesFullBackupPolicyToMap(model *backuprecoveryv1.FullBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Schedule != nil {
-		scheduleMap, err := DataSourceIbmBaasProtectionPoliciesFullScheduleToMap(model.Schedule)
+		scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesFullScheduleToMap(model.Schedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4428,32 +4428,32 @@ func DataSourceIbmBaasProtectionPoliciesFullBackupPolicyToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesFullScheduleToMap(model *backuprecoveryv1.FullSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesFullScheduleToMap(model *backuprecoveryv1.FullSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := DataSourceIbmBaasProtectionPoliciesDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := DataSourceIbmBaasProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := DataSourceIbmBaasProtectionPoliciesYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4462,14 +4462,14 @@ func DataSourceIbmBaasProtectionPoliciesFullScheduleToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesFullScheduleAndRetentionToMap(model *backuprecoveryv1.FullScheduleAndRetention) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesFullScheduleAndRetentionToMap(model *backuprecoveryv1.FullScheduleAndRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesFullScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesFullScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4477,12 +4477,12 @@ func DataSourceIbmBaasProtectionPoliciesFullScheduleAndRetentionToMap(model *bac
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := DataSourceIbmBaasProtectionPoliciesDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4491,7 +4491,7 @@ func DataSourceIbmBaasProtectionPoliciesRetentionToMap(model *backuprecoveryv1.R
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mode"] = *model.Mode
 	modelMap["unit"] = *model.Unit
@@ -4502,13 +4502,13 @@ func DataSourceIbmBaasProtectionPoliciesDataLockConfigToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesPrimaryBackupTargetToMap(model *backuprecoveryv1.PrimaryBackupTarget) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesPrimaryBackupTargetToMap(model *backuprecoveryv1.PrimaryBackupTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetType != nil {
 		modelMap["target_type"] = *model.TargetType
 	}
 	if model.ArchivalTargetSettings != nil {
-		archivalTargetSettingsMap, err := DataSourceIbmBaasProtectionPoliciesPrimaryArchivalTargetToMap(model.ArchivalTargetSettings)
+		archivalTargetSettingsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesPrimaryArchivalTargetToMap(model.ArchivalTargetSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4520,14 +4520,14 @@ func DataSourceIbmBaasProtectionPoliciesPrimaryBackupTargetToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesPrimaryArchivalTargetToMap(model *backuprecoveryv1.PrimaryArchivalTarget) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesPrimaryArchivalTargetToMap(model *backuprecoveryv1.PrimaryArchivalTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_id"] = flex.IntValue(model.TargetID)
 	if model.TargetName != nil {
 		modelMap["target_name"] = *model.TargetName
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := DataSourceIbmBaasProtectionPoliciesTierLevelSettingsToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTierLevelSettingsToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4536,17 +4536,17 @@ func DataSourceIbmBaasProtectionPoliciesPrimaryArchivalTargetToMap(model *backup
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesTierLevelSettingsToMap(model *backuprecoveryv1.TierLevelSettings) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesTierLevelSettingsToMap(model *backuprecoveryv1.TierLevelSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := DataSourceIbmBaasProtectionPoliciesAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := DataSourceIbmBaasProtectionPoliciesAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4554,14 +4554,14 @@ func DataSourceIbmBaasProtectionPoliciesTierLevelSettingsToMap(model *backupreco
 	}
 	modelMap["cloud_platform"] = *model.CloudPlatform
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := DataSourceIbmBaasProtectionPoliciesGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := DataSourceIbmBaasProtectionPoliciesOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4570,11 +4570,11 @@ func DataSourceIbmBaasProtectionPoliciesTierLevelSettingsToMap(model *backupreco
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasProtectionPoliciesAWSTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -4584,7 +4584,7 @@ func DataSourceIbmBaasProtectionPoliciesAWSTiersToMap(model *backuprecoveryv1.AW
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -4596,12 +4596,12 @@ func DataSourceIbmBaasProtectionPoliciesAWSTierToMap(model *backuprecoveryv1.AWS
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Tiers != nil {
 		tiers := []map[string]interface{}{}
 		for _, tiersItem := range model.Tiers {
-			tiersItemMap, err := DataSourceIbmBaasProtectionPoliciesAzureTierToMap(&tiersItem) // #nosec G601
+			tiersItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAzureTierToMap(&tiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4612,7 +4612,7 @@ func DataSourceIbmBaasProtectionPoliciesAzureTiersToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -4624,11 +4624,11 @@ func DataSourceIbmBaasProtectionPoliciesAzureTierToMap(model *backuprecoveryv1.A
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasProtectionPoliciesGoogleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesGoogleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -4638,7 +4638,7 @@ func DataSourceIbmBaasProtectionPoliciesGoogleTiersToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -4650,11 +4650,11 @@ func DataSourceIbmBaasProtectionPoliciesGoogleTierToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasProtectionPoliciesOracleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesOracleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -4664,7 +4664,7 @@ func DataSourceIbmBaasProtectionPoliciesOracleTiersToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -4676,14 +4676,14 @@ func DataSourceIbmBaasProtectionPoliciesOracleTierToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesLogBackupPolicyToMap(model *backuprecoveryv1.LogBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesLogBackupPolicyToMap(model *backuprecoveryv1.LogBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesLogScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4691,18 +4691,18 @@ func DataSourceIbmBaasProtectionPoliciesLogBackupPolicyToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesLogScheduleToMap(model *backuprecoveryv1.LogSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesLogScheduleToMap(model *backuprecoveryv1.LogSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
-		minuteScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMinuteScheduleToMap(model.MinuteSchedule)
+		minuteScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMinuteScheduleToMap(model.MinuteSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["minute_schedule"] = []map[string]interface{}{minuteScheduleMap}
 	}
 	if model.HourSchedule != nil {
-		hourScheduleMap, err := DataSourceIbmBaasProtectionPoliciesHourScheduleToMap(model.HourSchedule)
+		hourScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesHourScheduleToMap(model.HourSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4711,14 +4711,14 @@ func DataSourceIbmBaasProtectionPoliciesLogScheduleToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesBmrBackupPolicyToMap(model *backuprecoveryv1.BmrBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesBmrBackupPolicyToMap(model *backuprecoveryv1.BmrBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesBmrScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesBmrScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4726,32 +4726,32 @@ func DataSourceIbmBaasProtectionPoliciesBmrBackupPolicyToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesBmrScheduleToMap(model *backuprecoveryv1.BmrSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesBmrScheduleToMap(model *backuprecoveryv1.BmrSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := DataSourceIbmBaasProtectionPoliciesDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := DataSourceIbmBaasProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := DataSourceIbmBaasProtectionPoliciesYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4760,9 +4760,9 @@ func DataSourceIbmBaasProtectionPoliciesBmrScheduleToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCdpBackupPolicyToMap(model *backuprecoveryv1.CdpBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCdpBackupPolicyToMap(model *backuprecoveryv1.CdpBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesCdpRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCdpRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4770,12 +4770,12 @@ func DataSourceIbmBaasProtectionPoliciesCdpBackupPolicyToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCdpRetentionToMap(model *backuprecoveryv1.CdpRetention) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCdpRetentionToMap(model *backuprecoveryv1.CdpRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := DataSourceIbmBaasProtectionPoliciesDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4784,14 +4784,14 @@ func DataSourceIbmBaasProtectionPoliciesCdpRetentionToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesStorageArraySnapshotBackupPolicyToMap(model *backuprecoveryv1.StorageArraySnapshotBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesStorageArraySnapshotBackupPolicyToMap(model *backuprecoveryv1.StorageArraySnapshotBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesStorageArraySnapshotScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesStorageArraySnapshotScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4799,46 +4799,46 @@ func DataSourceIbmBaasProtectionPoliciesStorageArraySnapshotBackupPolicyToMap(mo
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesStorageArraySnapshotScheduleToMap(model *backuprecoveryv1.StorageArraySnapshotSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesStorageArraySnapshotScheduleToMap(model *backuprecoveryv1.StorageArraySnapshotSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
-		minuteScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMinuteScheduleToMap(model.MinuteSchedule)
+		minuteScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMinuteScheduleToMap(model.MinuteSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["minute_schedule"] = []map[string]interface{}{minuteScheduleMap}
 	}
 	if model.HourSchedule != nil {
-		hourScheduleMap, err := DataSourceIbmBaasProtectionPoliciesHourScheduleToMap(model.HourSchedule)
+		hourScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesHourScheduleToMap(model.HourSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["hour_schedule"] = []map[string]interface{}{hourScheduleMap}
 	}
 	if model.DaySchedule != nil {
-		dayScheduleMap, err := DataSourceIbmBaasProtectionPoliciesDayScheduleToMap(model.DaySchedule)
+		dayScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDayScheduleToMap(model.DaySchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["day_schedule"] = []map[string]interface{}{dayScheduleMap}
 	}
 	if model.WeekSchedule != nil {
-		weekScheduleMap, err := DataSourceIbmBaasProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
+		weekScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesWeekScheduleToMap(model.WeekSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["week_schedule"] = []map[string]interface{}{weekScheduleMap}
 	}
 	if model.MonthSchedule != nil {
-		monthScheduleMap, err := DataSourceIbmBaasProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
+		monthScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesMonthScheduleToMap(model.MonthSchedule)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["month_schedule"] = []map[string]interface{}{monthScheduleMap}
 	}
 	if model.YearSchedule != nil {
-		yearScheduleMap, err := DataSourceIbmBaasProtectionPoliciesYearScheduleToMap(model.YearSchedule)
+		yearScheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesYearScheduleToMap(model.YearSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4847,7 +4847,7 @@ func DataSourceIbmBaasProtectionPoliciesStorageArraySnapshotScheduleToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(model *backuprecoveryv1.CancellationTimeoutParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(model *backuprecoveryv1.CancellationTimeoutParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TimeoutMins != nil {
 		modelMap["timeout_mins"] = flex.IntValue(model.TimeoutMins)
@@ -4858,15 +4858,15 @@ func DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(model *ba
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesBlackoutWindowToMap(model *backuprecoveryv1.BlackoutWindow) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesBlackoutWindowToMap(model *backuprecoveryv1.BlackoutWindow) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day"] = *model.Day
-	startTimeMap, err := DataSourceIbmBaasProtectionPoliciesTimeOfDayToMap(model.StartTime)
+	startTimeMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTimeOfDayToMap(model.StartTime)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["start_time"] = []map[string]interface{}{startTimeMap}
-	endTimeMap, err := DataSourceIbmBaasProtectionPoliciesTimeOfDayToMap(model.EndTime)
+	endTimeMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTimeOfDayToMap(model.EndTime)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4877,7 +4877,7 @@ func DataSourceIbmBaasProtectionPoliciesBlackoutWindowToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesTimeOfDayToMap(model *backuprecoveryv1.TimeOfDay) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesTimeOfDayToMap(model *backuprecoveryv1.TimeOfDay) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["hour"] = flex.IntValue(model.Hour)
 	modelMap["minute"] = flex.IntValue(model.Minute)
@@ -4887,14 +4887,14 @@ func DataSourceIbmBaasProtectionPoliciesTimeOfDayToMap(model *backuprecoveryv1.T
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesExtendedRetentionPolicyToMap(model *backuprecoveryv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesExtendedRetentionPolicyToMap(model *backuprecoveryv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesExtendedRetentionScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesExtendedRetentionScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4908,7 +4908,7 @@ func DataSourceIbmBaasProtectionPoliciesExtendedRetentionPolicyToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesExtendedRetentionScheduleToMap(model *backuprecoveryv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesExtendedRetentionScheduleToMap(model *backuprecoveryv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
@@ -4917,12 +4917,12 @@ func DataSourceIbmBaasProtectionPoliciesExtendedRetentionScheduleToMap(model *ba
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model *backuprecoveryv1.TargetsConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesTargetsConfigurationToMap(model *backuprecoveryv1.TargetsConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ReplicationTargets != nil {
 		replicationTargets := []map[string]interface{}{}
 		for _, replicationTargetsItem := range model.ReplicationTargets {
-			replicationTargetsItemMap, err := DataSourceIbmBaasProtectionPoliciesReplicationTargetConfigurationToMap(&replicationTargetsItem) // #nosec G601
+			replicationTargetsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesReplicationTargetConfigurationToMap(&replicationTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4933,7 +4933,7 @@ func DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model *backupr
 	if model.ArchivalTargets != nil {
 		archivalTargets := []map[string]interface{}{}
 		for _, archivalTargetsItem := range model.ArchivalTargets {
-			archivalTargetsItemMap, err := DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(&archivalTargetsItem) // #nosec G601
+			archivalTargetsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesArchivalTargetConfigurationToMap(&archivalTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4944,7 +4944,7 @@ func DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model *backupr
 	if model.CloudSpinTargets != nil {
 		cloudSpinTargets := []map[string]interface{}{}
 		for _, cloudSpinTargetsItem := range model.CloudSpinTargets {
-			cloudSpinTargetsItemMap, err := DataSourceIbmBaasProtectionPoliciesCloudSpinTargetConfigurationToMap(&cloudSpinTargetsItem) // #nosec G601
+			cloudSpinTargetsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCloudSpinTargetConfigurationToMap(&cloudSpinTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4955,7 +4955,7 @@ func DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model *backupr
 	if model.OnpremDeployTargets != nil {
 		onpremDeployTargets := []map[string]interface{}{}
 		for _, onpremDeployTargetsItem := range model.OnpremDeployTargets {
-			onpremDeployTargetsItemMap, err := DataSourceIbmBaasProtectionPoliciesOnpremDeployTargetConfigurationToMap(&onpremDeployTargetsItem) // #nosec G601
+			onpremDeployTargetsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesOnpremDeployTargetConfigurationToMap(&onpremDeployTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4966,7 +4966,7 @@ func DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model *backupr
 	if model.RpaasTargets != nil {
 		rpaasTargets := []map[string]interface{}{}
 		for _, rpaasTargetsItem := range model.RpaasTargets {
-			rpaasTargetsItemMap, err := DataSourceIbmBaasProtectionPoliciesRpaasTargetConfigurationToMap(&rpaasTargetsItem) // #nosec G601
+			rpaasTargetsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRpaasTargetConfigurationToMap(&rpaasTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4977,14 +4977,14 @@ func DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model *backupr
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesReplicationTargetConfigurationToMap(model *backuprecoveryv1.ReplicationTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesReplicationTargetConfigurationToMap(model *backuprecoveryv1.ReplicationTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5001,7 +5001,7 @@ func DataSourceIbmBaasProtectionPoliciesReplicationTargetConfigurationToMap(mode
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5010,21 +5010,21 @@ func DataSourceIbmBaasProtectionPoliciesReplicationTargetConfigurationToMap(mode
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
 	if model.AwsTargetConfig != nil {
-		awsTargetConfigMap, err := DataSourceIbmBaasProtectionPoliciesAWSTargetConfigToMap(model.AwsTargetConfig)
+		awsTargetConfigMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAWSTargetConfigToMap(model.AwsTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_target_config"] = []map[string]interface{}{awsTargetConfigMap}
 	}
 	if model.AzureTargetConfig != nil {
-		azureTargetConfigMap, err := DataSourceIbmBaasProtectionPoliciesAzureTargetConfigToMap(model.AzureTargetConfig)
+		azureTargetConfigMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAzureTargetConfigToMap(model.AzureTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5032,7 +5032,7 @@ func DataSourceIbmBaasProtectionPoliciesReplicationTargetConfigurationToMap(mode
 	}
 	modelMap["target_type"] = *model.TargetType
 	if model.RemoteTargetConfig != nil {
-		remoteTargetConfigMap, err := DataSourceIbmBaasProtectionPoliciesRemoteTargetConfigToMap(model.RemoteTargetConfig)
+		remoteTargetConfigMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRemoteTargetConfigToMap(model.RemoteTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5041,7 +5041,7 @@ func DataSourceIbmBaasProtectionPoliciesReplicationTargetConfigurationToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model *backuprecoveryv1.TargetSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesTargetScheduleToMap(model *backuprecoveryv1.TargetSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
@@ -5050,12 +5050,12 @@ func DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model *backuprecoveryv1.LogRetention) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesLogRetentionToMap(model *backuprecoveryv1.LogRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := DataSourceIbmBaasProtectionPoliciesDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5064,7 +5064,7 @@ func DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -5077,7 +5077,7 @@ func DataSourceIbmBaasProtectionPoliciesAWSTargetConfigToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -5110,7 +5110,7 @@ func DataSourceIbmBaasProtectionPoliciesAzureTargetConfigToMap(model *backupreco
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesRemoteTargetConfigToMap(model *backuprecoveryv1.RemoteTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesRemoteTargetConfigToMap(model *backuprecoveryv1.RemoteTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
 	if model.ClusterName != nil {
@@ -5119,14 +5119,14 @@ func DataSourceIbmBaasProtectionPoliciesRemoteTargetConfigToMap(model *backuprec
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(model *backuprecoveryv1.ArchivalTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesArchivalTargetConfigurationToMap(model *backuprecoveryv1.ArchivalTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5143,7 +5143,7 @@ func DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(model *
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5152,7 +5152,7 @@ func DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(model *
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5166,7 +5166,7 @@ func DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(model *
 		modelMap["target_type"] = *model.TargetType
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := DataSourceIbmBaasProtectionPoliciesTierLevelSettingsToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTierLevelSettingsToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5175,7 +5175,7 @@ func DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(model *
 	if model.ExtendedRetention != nil {
 		extendedRetention := []map[string]interface{}{}
 		for _, extendedRetentionItem := range model.ExtendedRetention {
-			extendedRetentionItemMap, err := DataSourceIbmBaasProtectionPoliciesExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
+			extendedRetentionItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5186,14 +5186,14 @@ func DataSourceIbmBaasProtectionPoliciesArchivalTargetConfigurationToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCloudSpinTargetConfigurationToMap(model *backuprecoveryv1.CloudSpinTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCloudSpinTargetConfigurationToMap(model *backuprecoveryv1.CloudSpinTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5210,7 +5210,7 @@ func DataSourceIbmBaasProtectionPoliciesCloudSpinTargetConfigurationToMap(model 
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5219,13 +5219,13 @@ func DataSourceIbmBaasProtectionPoliciesCloudSpinTargetConfigurationToMap(model 
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
-	targetMap, err := DataSourceIbmBaasProtectionPoliciesCloudSpinTargetToMap(model.Target)
+	targetMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCloudSpinTargetToMap(model.Target)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5233,17 +5233,17 @@ func DataSourceIbmBaasProtectionPoliciesCloudSpinTargetConfigurationToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCloudSpinTargetToMap(model *backuprecoveryv1.CloudSpinTarget) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCloudSpinTargetToMap(model *backuprecoveryv1.CloudSpinTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsParams != nil {
-		awsParamsMap, err := DataSourceIbmBaasProtectionPoliciesAwsCloudSpinParamsToMap(model.AwsParams)
+		awsParamsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAwsCloudSpinParamsToMap(model.AwsParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_params"] = []map[string]interface{}{awsParamsMap}
 	}
 	if model.AzureParams != nil {
-		azureParamsMap, err := DataSourceIbmBaasProtectionPoliciesAzureCloudSpinParamsToMap(model.AzureParams)
+		azureParamsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesAzureCloudSpinParamsToMap(model.AzureParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5258,12 +5258,12 @@ func DataSourceIbmBaasProtectionPoliciesCloudSpinTargetToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAwsCloudSpinParamsToMap(model *backuprecoveryv1.AwsCloudSpinParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAwsCloudSpinParamsToMap(model *backuprecoveryv1.AwsCloudSpinParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CustomTagList != nil {
 		customTagList := []map[string]interface{}{}
 		for _, customTagListItem := range model.CustomTagList {
-			customTagListItemMap, err := DataSourceIbmBaasProtectionPoliciesCustomTagParamsToMap(&customTagListItem) // #nosec G601
+			customTagListItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCustomTagParamsToMap(&customTagListItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5281,14 +5281,14 @@ func DataSourceIbmBaasProtectionPoliciesAwsCloudSpinParamsToMap(model *backuprec
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCustomTagParamsToMap(model *backuprecoveryv1.CustomTagParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCustomTagParamsToMap(model *backuprecoveryv1.CustomTagParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["key"] = *model.Key
 	modelMap["value"] = *model.Value
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesAzureCloudSpinParamsToMap(model *backuprecoveryv1.AzureCloudSpinParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesAzureCloudSpinParamsToMap(model *backuprecoveryv1.AzureCloudSpinParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AvailabilitySetID != nil {
 		modelMap["availability_set_id"] = flex.IntValue(model.AvailabilitySetID)
@@ -5326,14 +5326,14 @@ func DataSourceIbmBaasProtectionPoliciesAzureCloudSpinParamsToMap(model *backupr
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesOnpremDeployTargetConfigurationToMap(model *backuprecoveryv1.OnpremDeployTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesOnpremDeployTargetConfigurationToMap(model *backuprecoveryv1.OnpremDeployTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5350,7 +5350,7 @@ func DataSourceIbmBaasProtectionPoliciesOnpremDeployTargetConfigurationToMap(mod
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5359,14 +5359,14 @@ func DataSourceIbmBaasProtectionPoliciesOnpremDeployTargetConfigurationToMap(mod
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
 	if model.Params != nil {
-		paramsMap, err := DataSourceIbmBaasProtectionPoliciesOnpremDeployParamsToMap(model.Params)
+		paramsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesOnpremDeployParamsToMap(model.Params)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5375,7 +5375,7 @@ func DataSourceIbmBaasProtectionPoliciesOnpremDeployTargetConfigurationToMap(mod
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesOnpremDeployParamsToMap(model *backuprecoveryv1.OnpremDeployParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesOnpremDeployParamsToMap(model *backuprecoveryv1.OnpremDeployParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -5383,14 +5383,14 @@ func DataSourceIbmBaasProtectionPoliciesOnpremDeployParamsToMap(model *backuprec
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesRpaasTargetConfigurationToMap(model *backuprecoveryv1.RpaasTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesRpaasTargetConfigurationToMap(model *backuprecoveryv1.RpaasTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := DataSourceIbmBaasProtectionPoliciesTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := DataSourceIbmBaasProtectionPoliciesRetentionToMap(model.Retention)
+	retentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5407,7 +5407,7 @@ func DataSourceIbmBaasProtectionPoliciesRpaasTargetConfigurationToMap(model *bac
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := DataSourceIbmBaasProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -5416,7 +5416,7 @@ func DataSourceIbmBaasProtectionPoliciesRpaasTargetConfigurationToMap(model *bac
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := DataSourceIbmBaasProtectionPoliciesLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -5432,10 +5432,10 @@ func DataSourceIbmBaasProtectionPoliciesRpaasTargetConfigurationToMap(model *bac
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesCascadedTargetConfigurationToMap(model *backuprecoveryv1.CascadedTargetConfiguration) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesCascadedTargetConfigurationToMap(model *backuprecoveryv1.CascadedTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["source_cluster_id"] = flex.IntValue(model.SourceClusterID)
-	remoteTargetsMap, err := DataSourceIbmBaasProtectionPoliciesTargetsConfigurationToMap(model.RemoteTargets)
+	remoteTargetsMap, err := DataSourceIbmBackupRecoveryProtectionPoliciesTargetsConfigurationToMap(model.RemoteTargets)
 	if err != nil {
 		return modelMap, err
 	}
@@ -5443,7 +5443,7 @@ func DataSourceIbmBaasProtectionPoliciesCascadedTargetConfigurationToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasProtectionPoliciesRetryOptionsToMap(model *backuprecoveryv1.RetryOptions) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryProtectionPoliciesRetryOptionsToMap(model *backuprecoveryv1.RetryOptions) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Retries != nil {
 		modelMap["retries"] = flex.IntValue(model.Retries)

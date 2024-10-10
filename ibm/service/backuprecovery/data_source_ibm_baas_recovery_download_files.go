@@ -21,9 +21,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasRecoveryDownloadFiles() *schema.Resource {
+func DataSourceIbmBackupRecoveryRecoveryDownloadFiles() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasRecoveryDownloadFilesRead,
+		ReadContext: dataSourceIbmBackupRecoveryRecoveryDownloadFilesRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": {
@@ -70,7 +70,7 @@ func DataSourceIbmBaasRecoveryDownloadFiles() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasRecoveryDownloadFilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryRecoveryDownloadFilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery_download_files", "read", "initialize-client")
@@ -108,12 +108,12 @@ func dataSourceIbmBaasRecoveryDownloadFilesRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasRecoveryDownloadFilesID(d))
+	d.SetId(dataSourceIbmBackupRecoveryRecoveryDownloadFilesID(d))
 
 	return nil
 }
 
-// dataSourceIbmBaasRecoveryDownloadFilesID returns a reasonable ID for the list.
-func dataSourceIbmBaasRecoveryDownloadFilesID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryRecoveryDownloadFilesID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryRecoveryDownloadFilesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }

@@ -24,9 +24,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasDownloadAgent() *schema.Resource {
+func DataSourceIbmBackupRecoveryDownloadAgent() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIbmBaasDownloadAgentRead,
+		ReadContext: DataSourceIbmBackupRecoveryDownloadAgentRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
@@ -63,7 +63,7 @@ func DataSourceIbmBaasDownloadAgent() *schema.Resource {
 	}
 }
 
-func DataSourceIbmBaasDownloadAgentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_download_agent", "read", "initialize-client")
@@ -132,7 +132,7 @@ func saveToFile(response io.ReadCloser, filePath string) error {
 	return nil
 }
 
-// dataSourceIbmBaasDownloadAgentID returns a reasonable ID for the list.
+// dataSourceIbmBackupRecoveryDownloadAgentID returns a reasonable ID for the list.
 func resourceIbmBaasAgentDownloadID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }

@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasDataSourceConnections() *schema.Resource {
+func DataSourceIbmBackupRecoveryDataSourceConnections() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasDataSourceConnectionsRead,
+		ReadContext: dataSourceIbmBackupRecoveryDataSourceConnectionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
@@ -120,7 +120,7 @@ func DataSourceIbmBaasDataSourceConnections() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasDataSourceConnectionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryDataSourceConnectionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_data_source_connections", "read", "initialize-client")
@@ -155,12 +155,12 @@ func dataSourceIbmBaasDataSourceConnectionsRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasDataSourceConnectionsID(d))
+	d.SetId(dataSourceIbmBackupRecoveryDataSourceConnectionsID(d))
 
 	if !core.IsNil(dataSourceConnectionList.Connections) {
 		connections := []map[string]interface{}{}
 		for _, connectionsItem := range dataSourceConnectionList.Connections {
-			connectionsItemMap, err := DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(&connectionsItem) // #nosec G601
+			connectionsItemMap, err := DataSourceIbmBackupRecoveryDataSourceConnectionsDataSourceConnectionToMap(&connectionsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_data_source_connections", "read", "connections-to-map").GetDiag()
 			}
@@ -174,12 +174,12 @@ func dataSourceIbmBaasDataSourceConnectionsRead(context context.Context, d *sche
 	return nil
 }
 
-// dataSourceIbmBaasDataSourceConnectionsID returns a reasonable ID for the list.
-func dataSourceIbmBaasDataSourceConnectionsID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryDataSourceConnectionsID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryDataSourceConnectionsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(model *backuprecoveryv1.DataSourceConnection) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryDataSourceConnectionsDataSourceConnectionToMap(model *backuprecoveryv1.DataSourceConnection) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ConnectionID != nil {
 		modelMap["connection_id"] = *model.ConnectionID
@@ -189,7 +189,7 @@ func DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(model *back
 		modelMap["connector_ids"] = model.ConnectorIds
 	}
 	if model.NetworkSettings != nil {
-		networkSettingsMap, err := DataSourceIbmBaasDataSourceConnectionsNetworkSettingsToMap(model.NetworkSettings)
+		networkSettingsMap, err := DataSourceIbmBackupRecoveryDataSourceConnectionsNetworkSettingsToMap(model.NetworkSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -205,7 +205,7 @@ func DataSourceIbmBaasDataSourceConnectionsDataSourceConnectionToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasDataSourceConnectionsNetworkSettingsToMap(model *backuprecoveryv1.NetworkSettings) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryDataSourceConnectionsNetworkSettingsToMap(model *backuprecoveryv1.NetworkSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterFqdn != nil {
 		modelMap["cluster_fqdn"] = *model.ClusterFqdn

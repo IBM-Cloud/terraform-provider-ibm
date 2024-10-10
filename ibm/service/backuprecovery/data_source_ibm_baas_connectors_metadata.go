@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasConnectorsMetadata() *schema.Resource {
+func DataSourceIbmBackupRecoveryConnectorsMetadata() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasConnectorsMetadataRead,
+		ReadContext: dataSourceIbmBackupRecoveryConnectorsMetadataRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
@@ -64,7 +64,7 @@ func DataSourceIbmBaasConnectorsMetadata() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasConnectorsMetadataRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryConnectorsMetadataRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connectors_metadata", "read", "initialize-client")
@@ -83,11 +83,11 @@ func dataSourceIbmBaasConnectorsMetadataRead(context context.Context, d *schema.
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasConnectorsMetadataID(d))
+	d.SetId(dataSourceIbmBackupRecoveryConnectorsMetadataID(d))
 
 	if !core.IsNil(connectorMetadata.ConnectorImageMetadata) {
 		connectorImageMetadata := []map[string]interface{}{}
-		connectorImageMetadataMap, err := DataSourceIbmBaasConnectorsMetadataConnectorImageMetadataToMap(connectorMetadata.ConnectorImageMetadata)
+		connectorImageMetadataMap, err := DataSourceIbmBackupRecoveryConnectorsMetadataConnectorImageMetadataToMap(connectorMetadata.ConnectorImageMetadata)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connectors_metadata", "read", "connector_image_metadata-to-map").GetDiag()
 		}
@@ -100,16 +100,16 @@ func dataSourceIbmBaasConnectorsMetadataRead(context context.Context, d *schema.
 	return nil
 }
 
-// dataSourceIbmBaasConnectorsMetadataID returns a reasonable ID for the list.
-func dataSourceIbmBaasConnectorsMetadataID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryConnectorsMetadataID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryConnectorsMetadataID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBaasConnectorsMetadataConnectorImageMetadataToMap(model *backuprecoveryv1.ConnectorImageMetadata) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryConnectorsMetadataConnectorImageMetadataToMap(model *backuprecoveryv1.ConnectorImageMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	connectorImageFileList := []map[string]interface{}{}
 	for _, connectorImageFileListItem := range model.ConnectorImageFileList {
-		connectorImageFileListItemMap, err := DataSourceIbmBaasConnectorsMetadataConnectorImageFileToMap(&connectorImageFileListItem) // #nosec G601
+		connectorImageFileListItemMap, err := DataSourceIbmBackupRecoveryConnectorsMetadataConnectorImageFileToMap(&connectorImageFileListItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -119,7 +119,7 @@ func DataSourceIbmBaasConnectorsMetadataConnectorImageMetadataToMap(model *backu
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasConnectorsMetadataConnectorImageFileToMap(model *backuprecoveryv1.ConnectorImageFile) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryConnectorsMetadataConnectorImageFileToMap(model *backuprecoveryv1.ConnectorImageFile) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["image_type"] = *model.ImageType
 	modelMap["url"] = *model.URL

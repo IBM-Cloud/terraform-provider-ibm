@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasSearchProtectedObjects() *schema.Resource {
+func DataSourceIbmBackupRecoverySearchProtectedObjects() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasSearchProtectedObjectsRead,
+		ReadContext: dataSourceIbmBackupRecoverySearchProtectedObjectsRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
@@ -1284,7 +1284,7 @@ func DataSourceIbmBaasSearchProtectedObjects() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "initialize-client")
@@ -1383,12 +1383,12 @@ func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *sch
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasSearchProtectedObjectsID(d))
+	d.SetId(dataSourceIbmBackupRecoverySearchProtectedObjectsID(d))
 
 	if !core.IsNil(protectedObjectsSearchResponse.Objects) {
 		objects := []map[string]interface{}{}
 		for _, objectsItem := range protectedObjectsSearchResponse.Objects {
-			objectsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(&objectsItem) // #nosec G601
+			objectsItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectToMap(&objectsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "objects-to-map").GetDiag()
 			}
@@ -1401,7 +1401,7 @@ func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *sch
 
 	if !core.IsNil(protectedObjectsSearchResponse.Metadata) {
 		metadata := []map[string]interface{}{}
-		metadataMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectsSearchResponseMetadataToMap(protectedObjectsSearchResponse.Metadata)
+		metadataMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectsSearchResponseMetadataToMap(protectedObjectsSearchResponse.Metadata)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_search_protected_objects", "read", "metadata-to-map").GetDiag()
 		}
@@ -1420,12 +1420,12 @@ func dataSourceIbmBaasSearchProtectedObjectsRead(context context.Context, d *sch
 	return nil
 }
 
-// dataSourceIbmBaasSearchProtectedObjectsID returns a reasonable ID for the list.
-func dataSourceIbmBaasSearchProtectedObjectsID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoverySearchProtectedObjectsID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoverySearchProtectedObjectsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backuprecoveryv1.ProtectedObject) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectToMap(model *backuprecoveryv1.ProtectedObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -1461,7 +1461,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1473,7 +1473,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1482,14 +1482,14 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1498,7 +1498,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
-			protectionStatsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
+			protectionStatsItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1507,28 +1507,28 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 		modelMap["protection_stats"] = protectionStats
 	}
 	if model.Permissions != nil {
-		permissionsMap, err := DataSourceIbmBaasSearchProtectedObjectsPermissionInfoToMap(model.Permissions)
+		permissionsMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsPermissionInfoToMap(model.Permissions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
 	if model.MssqlParams != nil {
-		mssqlParamsMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectMssqlParamsToMap(model.MssqlParams)
+		mssqlParamsMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectMssqlParamsToMap(model.MssqlParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["mssql_params"] = []map[string]interface{}{mssqlParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["physical_params"] = []map[string]interface{}{physicalParamsMap}
 	}
 	if model.SourceInfo != nil {
-		sourceInfoMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectedObjectSourceInfoToMap(model.SourceInfo)
+		sourceInfoMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectSourceInfoToMap(model.SourceInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1537,7 +1537,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 	if model.LatestSnapshotsInfo != nil {
 		latestSnapshotsInfo := []map[string]interface{}{}
 		for _, latestSnapshotsInfoItem := range model.LatestSnapshotsInfo {
-			latestSnapshotsInfoItemMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoToMap(&latestSnapshotsInfoItem) // #nosec G601
+			latestSnapshotsInfoItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSnapshotsInfoToMap(&latestSnapshotsInfoItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1548,7 +1548,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SiteWebURL != nil {
 		modelMap["site_web_url"] = *model.SiteWebURL
@@ -1556,7 +1556,7 @@ func DataSourceIbmBaasSearchProtectedObjectsSharepointObjectParamsToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -1592,7 +1592,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(model *backupreco
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1604,7 +1604,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(model *backupreco
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1613,14 +1613,14 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(model *backupreco
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1629,7 +1629,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(model *backupreco
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsCloudEnv != nil {
 		modelMap["is_cloud_env"] = *model.IsCloudEnv
@@ -1637,7 +1637,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectTypeVCenterParamsToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterSourceType != nil {
 		modelMap["cluster_source_type"] = *model.ClusterSourceType
@@ -1645,7 +1645,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Environment != nil {
 		modelMap["environment"] = *model.Environment
@@ -1668,7 +1668,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectProtectionStatsSummaryToMap(mo
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -1676,7 +1676,7 @@ func DataSourceIbmBaasSearchProtectedObjectsPermissionInfoToMap(model *backuprec
 	if model.Users != nil {
 		users := []map[string]interface{}{}
 		for _, usersItem := range model.Users {
-			usersItemMap, err := DataSourceIbmBaasSearchProtectedObjectsUserToMap(&usersItem) // #nosec G601
+			usersItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsUserToMap(&usersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1687,7 +1687,7 @@ func DataSourceIbmBaasSearchProtectedObjectsPermissionInfoToMap(model *backuprec
 	if model.Groups != nil {
 		groups := []map[string]interface{}{}
 		for _, groupsItem := range model.Groups {
-			groupsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsGroupToMap(&groupsItem) // #nosec G601
+			groupsItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsGroupToMap(&groupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1696,7 +1696,7 @@ func DataSourceIbmBaasSearchProtectedObjectsPermissionInfoToMap(model *backuprec
 		modelMap["groups"] = groups
 	}
 	if model.Tenant != nil {
-		tenantMap, err := DataSourceIbmBaasSearchProtectedObjectsTenantToMap(model.Tenant)
+		tenantMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsTenantToMap(model.Tenant)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1705,7 +1705,7 @@ func DataSourceIbmBaasSearchProtectedObjectsPermissionInfoToMap(model *backuprec
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1719,7 +1719,7 @@ func DataSourceIbmBaasSearchProtectedObjectsUserToMap(model *backuprecoveryv1.Us
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1733,7 +1733,7 @@ func DataSourceIbmBaasSearchProtectedObjectsGroupToMap(model *backuprecoveryv1.G
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CreatedAtTimeMsecs != nil && *(model.CreatedAtTimeMsecs) != 0 {
 		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
@@ -1745,7 +1745,7 @@ func DataSourceIbmBaasSearchProtectedObjectsTenantToMap(model *backuprecoveryv1.
 		modelMap["description"] = *model.Description
 	}
 	if model.ExternalVendorMetadata != nil {
-		externalVendorMetadataMap, err := DataSourceIbmBaasSearchProtectedObjectsExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
+		externalVendorMetadataMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1764,7 +1764,7 @@ func DataSourceIbmBaasSearchProtectedObjectsTenantToMap(model *backuprecoveryv1.
 		modelMap["name"] = *model.Name
 	}
 	if model.Network != nil {
-		networkMap, err := DataSourceIbmBaasSearchProtectedObjectsTenantNetworkToMap(model.Network)
+		networkMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsTenantNetworkToMap(model.Network)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1776,10 +1776,10 @@ func DataSourceIbmBaasSearchProtectedObjectsTenantToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IbmTenantMetadataParams != nil {
-		ibmTenantMetadataParamsMap, err := DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		ibmTenantMetadataParamsMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1789,7 +1789,7 @@ func DataSourceIbmBaasSearchProtectedObjectsExternalVendorTenantMetadataToMap(mo
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AccountID != nil {
 		modelMap["account_id"] = *model.AccountID
@@ -1800,7 +1800,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetadataParamsToMap(model *
 	if model.CustomProperties != nil {
 		customProperties := []map[string]interface{}{}
 		for _, customPropertiesItem := range model.CustomProperties {
-			customPropertiesItemMap, err := DataSourceIbmBaasSearchProtectedObjectsExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			customPropertiesItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1812,7 +1812,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetadataParamsToMap(model *
 		modelMap["liveness_mode"] = *model.LivenessMode
 	}
 	if model.MetricsConfig != nil {
-		metricsConfigMap, err := DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetricsConfigToMap(model.MetricsConfig)
+		metricsConfigMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantMetricsConfigToMap(model.MetricsConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1833,7 +1833,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetadataParamsToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Key != nil {
 		modelMap["key"] = *model.Key
@@ -1844,24 +1844,24 @@ func DataSourceIbmBaasSearchProtectedObjectsExternalVendorCustomPropertiesToMap(
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CosResourceConfig != nil {
-		cosResourceConfigMap, err := DataSourceIbmBaasSearchProtectedObjectsIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
+		cosResourceConfigMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cos_resource_config"] = []map[string]interface{}{cosResourceConfigMap}
 	}
 	if model.IamMetricsConfig != nil {
-		iamMetricsConfigMap, err := DataSourceIbmBaasSearchProtectedObjectsIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
+		iamMetricsConfigMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["iam_metrics_config"] = []map[string]interface{}{iamMetricsConfigMap}
 	}
 	if model.MeteringConfig != nil {
-		meteringConfigMap, err := DataSourceIbmBaasSearchProtectedObjectsIbmTenantMeteringConfigToMap(model.MeteringConfig)
+		meteringConfigMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantMeteringConfigToMap(model.MeteringConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1870,7 +1870,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMetricsConfigToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ResourceURL != nil {
 		modelMap["resource_url"] = *model.ResourceURL
@@ -1878,7 +1878,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantCOSResourceConfigToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IAMURL != nil {
 		modelMap["iam_url"] = *model.IAMURL
@@ -1889,7 +1889,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantIAMMetricsConfigToMap(model
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.PartIds != nil {
 		modelMap["part_ids"] = model.PartIds
@@ -1903,7 +1903,7 @@ func DataSourceIbmBaasSearchProtectedObjectsIbmTenantMeteringConfigToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["connector_enabled"] = *model.ConnectorEnabled
 	if model.ClusterHostname != nil {
@@ -1915,17 +1915,17 @@ func DataSourceIbmBaasSearchProtectedObjectsTenantNetworkToMap(model *backupreco
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectMssqlParamsToMap(model *backuprecoveryv1.ProtectedObjectMssqlParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectMssqlParamsToMap(model *backuprecoveryv1.ProtectedObjectMssqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AagInfo != nil {
-		aagInfoMap, err := DataSourceIbmBaasSearchProtectedObjectsAAGInfoToMap(model.AagInfo)
+		aagInfoMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsAAGInfoToMap(model.AagInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := DataSourceIbmBaasSearchProtectedObjectsHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1937,7 +1937,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectMssqlParamsToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1948,7 +1948,7 @@ func DataSourceIbmBaasSearchProtectedObjectsAAGInfoToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -1962,7 +1962,7 @@ func DataSourceIbmBaasSearchProtectedObjectsHostInformationToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectPhysicalParamsToMap(model *backuprecoveryv1.ProtectedObjectPhysicalParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectPhysicalParamsToMap(model *backuprecoveryv1.ProtectedObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = *model.EnableSystemBackup
@@ -1970,7 +1970,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectPhysicalParamsToMap(m
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectSourceInfoToMap(model *backuprecoveryv1.ProtectedObjectSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectSourceInfoToMap(model *backuprecoveryv1.ProtectedObjectSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -2006,7 +2006,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectSourceInfoToMap(model
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2018,7 +2018,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectSourceInfoToMap(model
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2027,14 +2027,14 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectSourceInfoToMap(model
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2043,10 +2043,10 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectSourceInfoToMap(model
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoToMap(model *backuprecoveryv1.ObjectSnapshotsInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSnapshotsInfoToMap(model *backuprecoveryv1.ObjectSnapshotsInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.LocalSnapshotInfo != nil {
-		localSnapshotInfoMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoLocalSnapshotInfoToMap(model.LocalSnapshotInfo)
+		localSnapshotInfoMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSnapshotsInfoLocalSnapshotInfoToMap(model.LocalSnapshotInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2055,7 +2055,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoToMap(model *back
 	if model.ArchivalSnapshotsInfo != nil {
 		archivalSnapshotsInfo := []map[string]interface{}{}
 		for _, archivalSnapshotsInfoItem := range model.ArchivalSnapshotsInfo {
-			archivalSnapshotsInfoItemMap, err := DataSourceIbmBaasSearchProtectedObjectsObjectArchivalSnapshotInfoToMap(&archivalSnapshotsInfoItem) // #nosec G601
+			archivalSnapshotsInfoItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsObjectArchivalSnapshotInfoToMap(&archivalSnapshotsInfoItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2093,7 +2093,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoLocalSnapshotInfoToMap(model *backuprecoveryv1.ObjectSnapshotsInfoLocalSnapshotInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectSnapshotsInfoLocalSnapshotInfoToMap(model *backuprecoveryv1.ObjectSnapshotsInfoLocalSnapshotInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SnapshotID != nil {
 		modelMap["snapshot_id"] = *model.SnapshotID
@@ -2104,7 +2104,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectSnapshotsInfoLocalSnapshotInfo
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsObjectArchivalSnapshotInfoToMap(model *backuprecoveryv1.ObjectArchivalSnapshotInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsObjectArchivalSnapshotInfoToMap(model *backuprecoveryv1.ObjectArchivalSnapshotInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
@@ -2125,7 +2125,7 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectArchivalSnapshotInfoToMap(mode
 		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := DataSourceIbmBaasSearchProtectedObjectsArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2140,17 +2140,17 @@ func DataSourceIbmBaasSearchProtectedObjectsObjectArchivalSnapshotInfoToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := DataSourceIbmBaasSearchProtectedObjectsAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := DataSourceIbmBaasSearchProtectedObjectsAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2160,14 +2160,14 @@ func DataSourceIbmBaasSearchProtectedObjectsArchivalTargetTierInfoToMap(model *b
 		modelMap["cloud_platform"] = *model.CloudPlatform
 	}
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := DataSourceIbmBaasSearchProtectedObjectsGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := DataSourceIbmBaasSearchProtectedObjectsOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2179,11 +2179,11 @@ func DataSourceIbmBaasSearchProtectedObjectsArchivalTargetTierInfoToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasSearchProtectedObjectsAWSTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2193,7 +2193,7 @@ func DataSourceIbmBaasSearchProtectedObjectsAWSTiersToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -2205,12 +2205,12 @@ func DataSourceIbmBaasSearchProtectedObjectsAWSTierToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Tiers != nil {
 		tiers := []map[string]interface{}{}
 		for _, tiersItem := range model.Tiers {
-			tiersItemMap, err := DataSourceIbmBaasSearchProtectedObjectsAzureTierToMap(&tiersItem) // #nosec G601
+			tiersItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsAzureTierToMap(&tiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2221,7 +2221,7 @@ func DataSourceIbmBaasSearchProtectedObjectsAzureTiersToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -2233,11 +2233,11 @@ func DataSourceIbmBaasSearchProtectedObjectsAzureTierToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasSearchProtectedObjectsGoogleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsGoogleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2247,7 +2247,7 @@ func DataSourceIbmBaasSearchProtectedObjectsGoogleTiersToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -2259,11 +2259,11 @@ func DataSourceIbmBaasSearchProtectedObjectsGoogleTierToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasSearchProtectedObjectsOracleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsOracleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2273,7 +2273,7 @@ func DataSourceIbmBaasSearchProtectedObjectsOracleTiersToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -2285,12 +2285,12 @@ func DataSourceIbmBaasSearchProtectedObjectsOracleTierToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectsSearchResponseMetadataToMap(model *backuprecoveryv1.ProtectedObjectsSearchResponseMetadata) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsProtectedObjectsSearchResponseMetadataToMap(model *backuprecoveryv1.ProtectedObjectsSearchResponseMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UniqueProtectionGroupIdentifiers != nil {
 		uniqueProtectionGroupIdentifiers := []map[string]interface{}{}
 		for _, uniqueProtectionGroupIdentifiersItem := range model.UniqueProtectionGroupIdentifiers {
-			uniqueProtectionGroupIdentifiersItemMap, err := DataSourceIbmBaasSearchProtectedObjectsProtectionGroupIdentifierToMap(&uniqueProtectionGroupIdentifiersItem) // #nosec G601
+			uniqueProtectionGroupIdentifiersItemMap, err := DataSourceIbmBackupRecoverySearchProtectedObjectsProtectionGroupIdentifierToMap(&uniqueProtectionGroupIdentifiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2301,7 +2301,7 @@ func DataSourceIbmBaasSearchProtectedObjectsProtectedObjectsSearchResponseMetada
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasSearchProtectedObjectsProtectionGroupIdentifierToMap(model *backuprecoveryv1.ProtectionGroupIdentifier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchProtectedObjectsProtectionGroupIdentifierToMap(model *backuprecoveryv1.ProtectionGroupIdentifier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ProtectionGroupID != nil {
 		modelMap["protection_group_id"] = *model.ProtectionGroupID

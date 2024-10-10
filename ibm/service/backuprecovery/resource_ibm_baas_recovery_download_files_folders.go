@@ -2974,7 +2974,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 	if !core.IsNil(recovery.Permissions) {
 		permissions := []map[string]interface{}{}
 		for _, permissionsItem := range recovery.Permissions {
-			permissionsItemMap, err := DataSourceIbmBaasRecoveryTenantToMap(&permissionsItem) // #nosec G601
+			permissionsItemMap, err := DataSourceIbmBackupRecoveryRecoveryTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "permissions-to-map").GetDiag()
 			}
@@ -2987,7 +2987,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 
 	if !core.IsNil(recovery.CreationInfo) {
 		creationInfo := []map[string]interface{}{}
-		creationInfoMap, err := DataSourceIbmBaasRecoveryCreationInfoToMap(recovery.CreationInfo)
+		creationInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCreationInfoToMap(recovery.CreationInfo)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "creation_info-to-map").GetDiag()
 		}
@@ -3044,7 +3044,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 	if !core.IsNil(recovery.RetrieveArchiveTasks) {
 		retrieveArchiveTasks := []map[string]interface{}{}
 		for _, retrieveArchiveTasksItem := range recovery.RetrieveArchiveTasks {
-			retrieveArchiveTasksItemMap, err := DataSourceIbmBaasRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
+			retrieveArchiveTasksItemMap, err := DataSourceIbmBackupRecoveryRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "retrieve_archive_tasks-to-map").GetDiag()
 			}
@@ -3067,7 +3067,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 
 	if !core.IsNil(recovery.PhysicalParams) {
 		physicalParams := []map[string]interface{}{}
-		physicalParamsMap, err := DataSourceIbmBaasRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "physical_params-to-map").GetDiag()
 		}
@@ -3079,7 +3079,7 @@ func resourceIbmBaasRecoveryDownloadFilesFoldersRead(context context.Context, d 
 
 	if !core.IsNil(recovery.MssqlParams) {
 		mssqlParams := []map[string]interface{}{}
-		mssqlParamsMap, err := DataSourceIbmBaasRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
+		mssqlParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "mssql_params-to-map").GetDiag()
 		}

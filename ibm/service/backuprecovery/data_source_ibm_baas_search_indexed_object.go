@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasSearchIndexedObject() *schema.Resource {
+func DataSourceIbmBackupRecoverySearchIndexedObject() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasSearchIndexedObjectRead,
+		ReadContext: dataSourceIbmBackupRecoverySearchIndexedObjectRead,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -8092,7 +8092,7 @@ func DataSourceIbmBaasSearchIndexedObject() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasSearchIndexedObjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoverySearchIndexedObjectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_search_indexed_object", "create", "initialize-client")

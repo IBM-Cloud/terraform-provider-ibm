@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasAgentUpgradeTasks() *schema.Resource {
+func DataSourceIbmBackupRecoveryAgentUpgradeTasks() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasAgentUpgradeTasksRead,
+		ReadContext: dataSourceIbmBackupRecoveryAgentUpgradeTasksRead,
 
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
@@ -217,7 +217,7 @@ func DataSourceIbmBaasAgentUpgradeTasks() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasAgentUpgradeTasksRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryAgentUpgradeTasksRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read", "initialize-client")
@@ -244,12 +244,12 @@ func dataSourceIbmBaasAgentUpgradeTasksRead(context context.Context, d *schema.R
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasAgentUpgradeTasksID(d))
+	d.SetId(dataSourceIbmBackupRecoveryAgentUpgradeTasksID(d))
 
 	if !core.IsNil(agentUpgradeTaskStates.Tasks) {
 		tasks := []map[string]interface{}{}
 		for _, tasksItem := range agentUpgradeTaskStates.Tasks {
-			tasksItemMap, err := DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeTaskStateToMap(&tasksItem) // #nosec G601
+			tasksItemMap, err := DataSourceIbmBackupRecoveryAgentUpgradeTasksAgentUpgradeTaskStateToMap(&tasksItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_agent_upgrade_tasks", "read", "tasks-to-map").GetDiag()
 			}
@@ -263,12 +263,12 @@ func dataSourceIbmBaasAgentUpgradeTasksRead(context context.Context, d *schema.R
 	return nil
 }
 
-// dataSourceIbmBaasAgentUpgradeTasksID returns a reasonable ID for the list.
-func dataSourceIbmBaasAgentUpgradeTasksID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryAgentUpgradeTasksID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryAgentUpgradeTasksID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeTaskStateToMap(model *backuprecoveryv1.AgentUpgradeTaskState) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAgentUpgradeTasksAgentUpgradeTaskStateToMap(model *backuprecoveryv1.AgentUpgradeTaskState) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AgentIDs != nil {
 		modelMap["agent_i_ds"] = model.AgentIDs
@@ -276,7 +276,7 @@ func DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeTaskStateToMap(model *backupr
 	if model.Agents != nil {
 		agents := []map[string]interface{}{}
 		for _, agentsItem := range model.Agents {
-			agentsItemMap, err := DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeInfoObjectToMap(&agentsItem) // #nosec G601
+			agentsItemMap, err := DataSourceIbmBackupRecoveryAgentUpgradeTasksAgentUpgradeInfoObjectToMap(&agentsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -294,7 +294,7 @@ func DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeTaskStateToMap(model *backupr
 		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
 	}
 	if model.Error != nil {
-		errorMap, err := DataSourceIbmBaasAgentUpgradeTasksErrorToMap(model.Error)
+		errorMap, err := DataSourceIbmBackupRecoveryAgentUpgradeTasksErrorToMap(model.Error)
 		if err != nil {
 			return modelMap, err
 		}
@@ -330,13 +330,13 @@ func DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeTaskStateToMap(model *backupr
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeInfoObjectToMap(model *backuprecoveryv1.AgentUpgradeInfoObject) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAgentUpgradeTasksAgentUpgradeInfoObjectToMap(model *backuprecoveryv1.AgentUpgradeInfoObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Info != nil {
-		infoMap, err := DataSourceIbmBaasAgentUpgradeTasksAgentInfoObjectToMap(model.Info)
+		infoMap, err := DataSourceIbmBackupRecoveryAgentUpgradeTasksAgentInfoObjectToMap(model.Info)
 		if err != nil {
 			return modelMap, err
 		}
@@ -345,13 +345,13 @@ func DataSourceIbmBaasAgentUpgradeTasksAgentUpgradeInfoObjectToMap(model *backup
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasAgentUpgradeTasksAgentInfoObjectToMap(model *backuprecoveryv1.AgentInfoObject) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAgentUpgradeTasksAgentInfoObjectToMap(model *backuprecoveryv1.AgentInfoObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EndTimeUsecs != nil {
 		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
 	}
 	if model.Error != nil {
-		errorMap, err := DataSourceIbmBaasAgentUpgradeTasksErrorToMap(model.Error)
+		errorMap, err := DataSourceIbmBackupRecoveryAgentUpgradeTasksErrorToMap(model.Error)
 		if err != nil {
 			return modelMap, err
 		}
@@ -372,7 +372,7 @@ func DataSourceIbmBaasAgentUpgradeTasksAgentInfoObjectToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasAgentUpgradeTasksErrorToMap(model *backuprecoveryv1.Error) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAgentUpgradeTasksErrorToMap(model *backuprecoveryv1.Error) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ErrorCode != nil {
 		modelMap["error_code"] = *model.ErrorCode

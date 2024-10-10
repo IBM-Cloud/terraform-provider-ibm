@@ -22,9 +22,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBaasObjectSnapshots() *schema.Resource {
+func DataSourceIbmBackupRecoveryObjectSnapshots() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBaasObjectSnapshotsRead,
+		ReadContext: dataSourceIbmBackupRecoveryObjectSnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
 			"baas_object_id": &schema.Schema{
@@ -620,7 +620,7 @@ func DataSourceIbmBaasObjectSnapshots() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBaasObjectSnapshotsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryObjectSnapshotsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_object_snapshots", "read", "initialize-client")
@@ -700,12 +700,12 @@ func dataSourceIbmBaasObjectSnapshotsRead(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBaasObjectSnapshotsID(d))
+	d.SetId(dataSourceIbmBackupRecoveryObjectSnapshotsID(d))
 
 	if !core.IsNil(getObjectSnapshotsResponse.Snapshots) {
 		snapshots := []map[string]interface{}{}
 		for _, snapshotsItem := range getObjectSnapshotsResponse.Snapshots {
-			snapshotsItemMap, err := DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(&snapshotsItem) // #nosec G601
+			snapshotsItemMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsObjectSnapshotToMap(&snapshotsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_object_snapshots", "read", "snapshots-to-map").GetDiag()
 			}
@@ -719,22 +719,22 @@ func dataSourceIbmBaasObjectSnapshotsRead(context context.Context, d *schema.Res
 	return nil
 }
 
-// dataSourceIbmBaasObjectSnapshotsID returns a reasonable ID for the list.
-func dataSourceIbmBaasObjectSnapshotsID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryObjectSnapshotsID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryObjectSnapshotsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1.ObjectSnapshot) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1.ObjectSnapshot) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsParams != nil {
-		awsParamsMap, err := DataSourceIbmBaasObjectSnapshotsAwsSnapshotParamsToMap(model.AwsParams)
+		awsParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsAwsSnapshotParamsToMap(model.AwsParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_params"] = []map[string]interface{}{awsParamsMap}
 	}
 	if model.AzureParams != nil {
-		azureParamsMap, err := DataSourceIbmBaasObjectSnapshotsAzureSnapshotParamsToMap(model.AzureParams)
+		azureParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsAzureSnapshotParamsToMap(model.AzureParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -747,7 +747,7 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 		modelMap["cluster_incarnation_id"] = flex.IntValue(model.ClusterIncarnationID)
 	}
 	if model.ElastifileParams != nil {
-		elastifileParamsMap, err := DataSourceIbmBaasObjectSnapshotsCommonNasObjectParamsToMap(model.ElastifileParams)
+		elastifileParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsCommonNasObjectParamsToMap(model.ElastifileParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -760,28 +760,28 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
 	}
 	if model.ExternalTargetInfo != nil {
-		externalTargetInfoMap, err := DataSourceIbmBaasObjectSnapshotsArchivalTargetSummaryInfoToMap(model.ExternalTargetInfo)
+		externalTargetInfoMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsArchivalTargetSummaryInfoToMap(model.ExternalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["external_target_info"] = []map[string]interface{}{externalTargetInfoMap}
 	}
 	if model.FlashbladeParams != nil {
-		flashbladeParamsMap, err := DataSourceIbmBaasObjectSnapshotsFlashbladeObjectParamsToMap(model.FlashbladeParams)
+		flashbladeParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsFlashbladeObjectParamsToMap(model.FlashbladeParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["flashblade_params"] = []map[string]interface{}{flashbladeParamsMap}
 	}
 	if model.GenericNasParams != nil {
-		genericNasParamsMap, err := DataSourceIbmBaasObjectSnapshotsCommonNasObjectParamsToMap(model.GenericNasParams)
+		genericNasParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsCommonNasObjectParamsToMap(model.GenericNasParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["generic_nas_params"] = []map[string]interface{}{genericNasParamsMap}
 	}
 	if model.GpfsParams != nil {
-		gpfsParamsMap, err := DataSourceIbmBaasObjectSnapshotsCommonNasObjectParamsToMap(model.GpfsParams)
+		gpfsParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsCommonNasObjectParamsToMap(model.GpfsParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -791,7 +791,7 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 		modelMap["has_data_lock"] = *model.HasDataLock
 	}
 	if model.HypervParams != nil {
-		hypervParamsMap, err := DataSourceIbmBaasObjectSnapshotsHypervSnapshotParamsToMap(model.HypervParams)
+		hypervParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsHypervSnapshotParamsToMap(model.HypervParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -804,14 +804,14 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 		modelMap["indexing_status"] = *model.IndexingStatus
 	}
 	if model.IsilonParams != nil {
-		isilonParamsMap, err := DataSourceIbmBaasObjectSnapshotsIsilonObjectParamsToMap(model.IsilonParams)
+		isilonParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsIsilonObjectParamsToMap(model.IsilonParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["isilon_params"] = []map[string]interface{}{isilonParamsMap}
 	}
 	if model.NetappParams != nil {
-		netappParamsMap, err := DataSourceIbmBaasObjectSnapshotsNetappObjectParamsToMap(model.NetappParams)
+		netappParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsNetappObjectParamsToMap(model.NetappParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -830,7 +830,7 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := DataSourceIbmBaasObjectSnapshotsPhysicalSnapshotParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsPhysicalSnapshotParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -858,7 +858,7 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 		modelMap["run_type"] = *model.RunType
 	}
 	if model.SfdcParams != nil {
-		sfdcParamsMap, err := DataSourceIbmBaasObjectSnapshotsSfdcObjectParamsToMap(model.SfdcParams)
+		sfdcParamsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsSfdcObjectParamsToMap(model.SfdcParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -882,7 +882,7 @@ func DataSourceIbmBaasObjectSnapshotsObjectSnapshotToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsAwsSnapshotParamsToMap(model *backuprecoveryv1.AwsSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsAwsSnapshotParamsToMap(model *backuprecoveryv1.AwsSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ProtectionType != nil {
 		modelMap["protection_type"] = *model.ProtectionType
@@ -890,7 +890,7 @@ func DataSourceIbmBaasObjectSnapshotsAwsSnapshotParamsToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsAzureSnapshotParamsToMap(model *backuprecoveryv1.AzureSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsAzureSnapshotParamsToMap(model *backuprecoveryv1.AzureSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ProtectionType != nil {
 		modelMap["protection_type"] = *model.ProtectionType
@@ -898,7 +898,7 @@ func DataSourceIbmBaasObjectSnapshotsAzureSnapshotParamsToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsCommonNasObjectParamsToMap(model *backuprecoveryv1.CommonNasObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsCommonNasObjectParamsToMap(model *backuprecoveryv1.CommonNasObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SupportedNasMountProtocols != nil {
 		modelMap["supported_nas_mount_protocols"] = model.SupportedNasMountProtocols
@@ -906,7 +906,7 @@ func DataSourceIbmBaasObjectSnapshotsCommonNasObjectParamsToMap(model *backuprec
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsArchivalTargetSummaryInfoToMap(model *backuprecoveryv1.ArchivalTargetSummaryInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsArchivalTargetSummaryInfoToMap(model *backuprecoveryv1.ArchivalTargetSummaryInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
@@ -927,7 +927,7 @@ func DataSourceIbmBaasObjectSnapshotsArchivalTargetSummaryInfoToMap(model *backu
 		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := DataSourceIbmBaasObjectSnapshotsArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -936,17 +936,17 @@ func DataSourceIbmBaasObjectSnapshotsArchivalTargetSummaryInfoToMap(model *backu
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := DataSourceIbmBaasObjectSnapshotsAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := DataSourceIbmBaasObjectSnapshotsAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -956,14 +956,14 @@ func DataSourceIbmBaasObjectSnapshotsArchivalTargetTierInfoToMap(model *backupre
 		modelMap["cloud_platform"] = *model.CloudPlatform
 	}
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := DataSourceIbmBaasObjectSnapshotsGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := DataSourceIbmBaasObjectSnapshotsOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -975,11 +975,11 @@ func DataSourceIbmBaasObjectSnapshotsArchivalTargetTierInfoToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasObjectSnapshotsAWSTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -989,7 +989,7 @@ func DataSourceIbmBaasObjectSnapshotsAWSTiersToMap(model *backuprecoveryv1.AWSTi
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -1001,12 +1001,12 @@ func DataSourceIbmBaasObjectSnapshotsAWSTierToMap(model *backuprecoveryv1.AWSTie
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Tiers != nil {
 		tiers := []map[string]interface{}{}
 		for _, tiersItem := range model.Tiers {
-			tiersItemMap, err := DataSourceIbmBaasObjectSnapshotsAzureTierToMap(&tiersItem) // #nosec G601
+			tiersItemMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsAzureTierToMap(&tiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1017,7 +1017,7 @@ func DataSourceIbmBaasObjectSnapshotsAzureTiersToMap(model *backuprecoveryv1.Azu
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -1029,11 +1029,11 @@ func DataSourceIbmBaasObjectSnapshotsAzureTierToMap(model *backuprecoveryv1.Azur
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasObjectSnapshotsGoogleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsGoogleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -1043,7 +1043,7 @@ func DataSourceIbmBaasObjectSnapshotsGoogleTiersToMap(model *backuprecoveryv1.Go
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -1055,11 +1055,11 @@ func DataSourceIbmBaasObjectSnapshotsGoogleTierToMap(model *backuprecoveryv1.Goo
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBaasObjectSnapshotsOracleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryObjectSnapshotsOracleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -1069,7 +1069,7 @@ func DataSourceIbmBaasObjectSnapshotsOracleTiersToMap(model *backuprecoveryv1.Or
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -1081,7 +1081,7 @@ func DataSourceIbmBaasObjectSnapshotsOracleTierToMap(model *backuprecoveryv1.Ora
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsFlashbladeObjectParamsToMap(model *backuprecoveryv1.FlashbladeObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsFlashbladeObjectParamsToMap(model *backuprecoveryv1.FlashbladeObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SupportedNasMountProtocols != nil {
 		modelMap["supported_nas_mount_protocols"] = model.SupportedNasMountProtocols
@@ -1089,7 +1089,7 @@ func DataSourceIbmBaasObjectSnapshotsFlashbladeObjectParamsToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsHypervSnapshotParamsToMap(model *backuprecoveryv1.HypervSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsHypervSnapshotParamsToMap(model *backuprecoveryv1.HypervSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ProtectionType != nil {
 		modelMap["protection_type"] = *model.ProtectionType
@@ -1097,7 +1097,7 @@ func DataSourceIbmBaasObjectSnapshotsHypervSnapshotParamsToMap(model *backupreco
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsIsilonObjectParamsToMap(model *backuprecoveryv1.IsilonObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsIsilonObjectParamsToMap(model *backuprecoveryv1.IsilonObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SupportedNasMountProtocols != nil {
 		modelMap["supported_nas_mount_protocols"] = model.SupportedNasMountProtocols
@@ -1105,7 +1105,7 @@ func DataSourceIbmBaasObjectSnapshotsIsilonObjectParamsToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsNetappObjectParamsToMap(model *backuprecoveryv1.NetappObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsNetappObjectParamsToMap(model *backuprecoveryv1.NetappObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SupportedNasMountProtocols != nil {
 		modelMap["supported_nas_mount_protocols"] = model.SupportedNasMountProtocols
@@ -1119,7 +1119,7 @@ func DataSourceIbmBaasObjectSnapshotsNetappObjectParamsToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsPhysicalSnapshotParamsToMap(model *backuprecoveryv1.PhysicalSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsPhysicalSnapshotParamsToMap(model *backuprecoveryv1.PhysicalSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = *model.EnableSystemBackup
@@ -1130,7 +1130,7 @@ func DataSourceIbmBaasObjectSnapshotsPhysicalSnapshotParamsToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBaasObjectSnapshotsSfdcObjectParamsToMap(model *backuprecoveryv1.SfdcObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSnapshotsSfdcObjectParamsToMap(model *backuprecoveryv1.SfdcObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RecordsAdded != nil {
 		modelMap["records_added"] = flex.IntValue(model.RecordsAdded)
