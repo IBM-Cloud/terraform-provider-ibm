@@ -53,7 +53,43 @@ func TestAccIBMPICaptureWithVolume(t *testing.T) {
 					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
 					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
 				),
-				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMPICaptureUserTags(t *testing.T) {
+	captureRes := "ibm_pi_capture.capture_instance"
+	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
+	userTagsString := `["env:dev", "test_tag"]`
+	userTagsStringUpdated := `["env:dev", "test_tag","test_tag2"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPICaptureDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPICaptureUserTagsConfig(name, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPICaptureExists(captureRes),
+					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
+					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPICaptureUserTagsConfig(name, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPICaptureExists(captureRes),
+					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
+					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(captureRes, "pi_user_tags.*", "test_tag2"),
+				),
 			},
 		},
 	})
@@ -175,6 +211,18 @@ func testAccCheckIBMPICaptureConfigBasic(name string) string {
 		pi_capture_destination = "image-catalog"
 	}
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name)
+}
+
+func testAccCheckIBMPICaptureUserTagsConfig(name string, userTagsString string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_capture" "capture_instance" {
+		pi_cloud_instance_id="%[1]s"
+		pi_capture_name = "%s"
+		pi_instance_name = "%s"
+		pi_capture_destination = "image-catalog"
+		pi_user_tags = %s
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, userTagsString)
 }
 
 func testAccCheckIBMPICaptureCloudStorageConfig(name string) string {
