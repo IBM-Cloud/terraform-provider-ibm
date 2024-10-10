@@ -51,6 +51,11 @@ func DataSourceIBMISLB() *schema.Resource {
 				Required:    true,
 				Description: "Load Balancer name",
 			},
+			isLBAccessMode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The access mode of this load balancer",
+			},
 			"dns": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -375,6 +380,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.SetId(*lb.ID)
 			if lb.Availability != nil {
 				d.Set(isLBAvailability, *lb.Availability)
+			}
+			if lb.AccessMode != nil {
+				d.Set(isLBAccessMode, *lb.AccessMode)
 			}
 			if lb.InstanceGroupsSupported != nil {
 				d.Set(isLBInstanceGroupsSupported, *lb.InstanceGroupsSupported)

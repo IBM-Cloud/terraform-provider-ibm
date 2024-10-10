@@ -20,6 +20,8 @@ import (
 
 const (
 	isLBAvailability                 = "availability"
+	isLBAccessMode                   = "access_mode"
+	isLBAccessModes                  = "access_modes"
 	isLBInstanceGroupsSupported      = "instance_groups_supported"
 	isLBSourceIPPersistenceSupported = "source_ip_session_persistence_supported"
 	isLBName                         = "name"
@@ -103,6 +105,11 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The availability of this load balancer",
+			},
+			isLBAccessMode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The access mode of this load balancer",
 			},
 			isLBInstanceGroupsSupported: {
 				Type:        schema.TypeBool,
@@ -543,6 +550,9 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if lb.Availability != nil {
 		d.Set(isLBAvailability, *lb.Availability)
+	}
+	if lb.AccessMode != nil {
+		d.Set(isLBAccessMode, *lb.AccessMode)
 	}
 	if lb.InstanceGroupsSupported != nil {
 		d.Set(isLBInstanceGroupsSupported, *lb.InstanceGroupsSupported)

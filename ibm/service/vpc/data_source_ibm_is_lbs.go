@@ -32,6 +32,11 @@ func DataSourceIBMISLBS() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isLBAccessMode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The access mode of this load balancer",
+						},
 						ID: {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -338,6 +343,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		lbInfo[ID] = *lb.ID
 		if lb.Availability != nil {
 			lbInfo[isLBAvailability] = *lb.Availability
+		}
+		if lb.AccessMode != nil {
+			lbInfo[isLBAccessMode] = *lb.AccessMode
 		}
 		if lb.InstanceGroupsSupported != nil {
 			lbInfo[isLBInstanceGroupsSupported] = *lb.InstanceGroupsSupported
