@@ -22,14 +22,14 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
+func ResourceIbmBackupRecoveryAgentUpgradeTask() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasAgentUpgradeTaskCreate,
-		ReadContext:   resourceIbmBaasAgentUpgradeTaskRead,
-		DeleteContext: resourceIbmBaasAgentUpgradeTaskDelete,
-		UpdateContext: resourceIbmBaasAgentUpgradeTaskUpdate,
+		CreateContext: resourceIbmBackupRecoveryAgentUpgradeTaskCreate,
+		ReadContext:   resourceIbmBackupRecoveryAgentUpgradeTaskRead,
+		DeleteContext: resourceIbmBackupRecoveryAgentUpgradeTaskDelete,
+		UpdateContext: resourceIbmBackupRecoveryAgentUpgradeTaskUpdate,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBaasAgentUpgradeTaskCreate,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryAgentUpgradeTaskCreate,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -222,7 +222,7 @@ func ResourceIbmBaasAgentUpgradeTask() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func checkDiffResourceIbmBackupRecoveryAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
 	// 	return nil
@@ -233,7 +233,7 @@ func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *
 		return nil
 	}
 
-	for fieldName := range ResourceIbmBaasAgentUpgradeTask().Schema {
+	for fieldName := range ResourceIbmBackupRecoveryAgentUpgradeTask().Schema {
 		if d.HasChange(fieldName) {
 			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_agent_upgrade_task cannot be updated.")
 		}
@@ -241,7 +241,7 @@ func checkDiffResourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *
 	return nil
 }
 
-func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryAgentUpgradeTaskCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "create", "initialize-client")
@@ -286,10 +286,10 @@ func resourceIbmBaasAgentUpgradeTaskCreate(context context.Context, d *schema.Re
 
 	d.SetId(strconv.Itoa(int(*agentUpgradeTaskState.ID)))
 
-	return resourceIbmBaasAgentUpgradeTaskRead(context, d, meta)
+	return resourceIbmBackupRecoveryAgentUpgradeTaskRead(context, d, meta)
 }
 
-func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryAgentUpgradeTaskRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "initialize-client")
@@ -356,7 +356,7 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Agents) {
 		agents := []map[string]interface{}{}
 		for _, agentsItem := range agentUpgradeTaskStates.Tasks[0].Agents {
-			agentsItemMap, err := ResourceIbmBaasAgentUpgradeTaskAgentUpgradeInfoObjectToMap(&agentsItem) // #nosec G601
+			agentsItemMap, err := ResourceIbmBackupRecoveryAgentUpgradeTaskAgentUpgradeInfoObjectToMap(&agentsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "agents-to-map").GetDiag()
 			}
@@ -380,7 +380,7 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 		}
 	}
 	if !core.IsNil(agentUpgradeTaskStates.Tasks[0].Error) {
-		errorMap, err := ResourceIbmBaasAgentUpgradeTaskErrorToMap(agentUpgradeTaskStates.Tasks[0].Error)
+		errorMap, err := ResourceIbmBackupRecoveryAgentUpgradeTaskErrorToMap(agentUpgradeTaskStates.Tasks[0].Error)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_agent_upgrade_task", "read", "error-to-map").GetDiag()
 		}
@@ -428,7 +428,7 @@ func resourceIbmBaasAgentUpgradeTaskRead(context context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceIbmBaasAgentUpgradeTaskDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryAgentUpgradeTaskDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 
 	var diags diag.Diagnostics
@@ -442,7 +442,7 @@ func resourceIbmBaasAgentUpgradeTaskDelete(context context.Context, d *schema.Re
 	return diags
 }
 
-func resourceIbmBaasAgentUpgradeTaskUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryAgentUpgradeTaskUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
@@ -454,13 +454,13 @@ func resourceIbmBaasAgentUpgradeTaskUpdate(context context.Context, d *schema.Re
 	return diags
 }
 
-func ResourceIbmBaasAgentUpgradeTaskAgentUpgradeInfoObjectToMap(model *backuprecoveryv1.AgentUpgradeInfoObject) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryAgentUpgradeTaskAgentUpgradeInfoObjectToMap(model *backuprecoveryv1.AgentUpgradeInfoObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Info != nil {
-		infoMap, err := ResourceIbmBaasAgentUpgradeTaskAgentInfoObjectToMap(model.Info)
+		infoMap, err := ResourceIbmBackupRecoveryAgentUpgradeTaskAgentInfoObjectToMap(model.Info)
 		if err != nil {
 			return modelMap, err
 		}
@@ -469,13 +469,13 @@ func ResourceIbmBaasAgentUpgradeTaskAgentUpgradeInfoObjectToMap(model *backuprec
 	return modelMap, nil
 }
 
-func ResourceIbmBaasAgentUpgradeTaskAgentInfoObjectToMap(model *backuprecoveryv1.AgentInfoObject) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryAgentUpgradeTaskAgentInfoObjectToMap(model *backuprecoveryv1.AgentInfoObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EndTimeUsecs != nil {
 		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
 	}
 	if model.Error != nil {
-		errorMap, err := ResourceIbmBaasAgentUpgradeTaskErrorToMap(model.Error)
+		errorMap, err := ResourceIbmBackupRecoveryAgentUpgradeTaskErrorToMap(model.Error)
 		if err != nil {
 			return modelMap, err
 		}
@@ -496,7 +496,7 @@ func ResourceIbmBaasAgentUpgradeTaskAgentInfoObjectToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func ResourceIbmBaasAgentUpgradeTaskErrorToMap(model *backuprecoveryv1.Error) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryAgentUpgradeTaskErrorToMap(model *backuprecoveryv1.Error) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ErrorCode != nil {
 		modelMap["error_code"] = *model.ErrorCode

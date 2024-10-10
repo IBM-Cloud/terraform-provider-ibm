@@ -21,12 +21,12 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasDataSourceConnection() *schema.Resource {
+func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasDataSourceConnectionCreate,
-		ReadContext:   resourceIbmBaasDataSourceConnectionRead,
-		UpdateContext: resourceIbmBaasDataSourceConnectionUpdate,
-		DeleteContext: resourceIbmBaasDataSourceConnectionDelete,
+		CreateContext: resourceIbmBackupRecoveryDataSourceConnectionCreate,
+		ReadContext:   resourceIbmBackupRecoveryDataSourceConnectionRead,
+		UpdateContext: resourceIbmBackupRecoveryDataSourceConnectionUpdate,
+		DeleteContext: resourceIbmBackupRecoveryDataSourceConnectionDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -96,7 +96,7 @@ func ResourceIbmBaasDataSourceConnection() *schema.Resource {
 	}
 }
 
-func resourceIbmBaasDataSourceConnectionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDataSourceConnectionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "create", "initialize-client")
@@ -121,10 +121,10 @@ func resourceIbmBaasDataSourceConnectionCreate(context context.Context, d *schem
 	d.SetId(*dataSourceConnection.ConnectionID)
 	d.Set("registration_token", dataSourceConnection.RegistrationToken)
 
-	return resourceIbmBaasDataSourceConnectionRead(context, d, meta)
+	return resourceIbmBackupRecoveryDataSourceConnectionRead(context, d, meta)
 }
 
-func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "initialize-client")
@@ -168,7 +168,7 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 		}
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].NetworkSettings) {
-		networkSettingsMap, err := ResourceIbmBaasDataSourceConnectionNetworkSettingsToMap(dataSourceConnectionList.Connections[0].NetworkSettings)
+		networkSettingsMap, err := ResourceIbmBackupRecoveryDataSourceConnectionNetworkSettingsToMap(dataSourceConnectionList.Connections[0].NetworkSettings)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "network_settings-to-map").GetDiag()
 		}
@@ -198,7 +198,7 @@ func resourceIbmBaasDataSourceConnectionRead(context context.Context, d *schema.
 	return nil
 }
 
-func resourceIbmBaasDataSourceConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDataSourceConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "update", "initialize-client")
@@ -227,10 +227,10 @@ func resourceIbmBaasDataSourceConnectionUpdate(context context.Context, d *schem
 		}
 	}
 
-	return resourceIbmBaasDataSourceConnectionRead(context, d, meta)
+	return resourceIbmBackupRecoveryDataSourceConnectionRead(context, d, meta)
 }
 
-func resourceIbmBaasDataSourceConnectionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDataSourceConnectionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "delete", "initialize-client")
@@ -254,7 +254,7 @@ func resourceIbmBaasDataSourceConnectionDelete(context context.Context, d *schem
 	return nil
 }
 
-func ResourceIbmBaasDataSourceConnectionNetworkSettingsToMap(model *backuprecoveryv1.NetworkSettings) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDataSourceConnectionNetworkSettingsToMap(model *backuprecoveryv1.NetworkSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterFqdn != nil {
 		modelMap["cluster_fqdn"] = *model.ClusterFqdn

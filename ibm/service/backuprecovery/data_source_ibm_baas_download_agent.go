@@ -76,7 +76,7 @@ func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *sc
 	downloadAgentOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
 	downloadAgentOptions.SetPlatform(d.Get("platform").(string))
 	if _, ok := d.GetOk("linux_params"); ok {
-		linuxParamsModel, err := ResourceIbmBaasDownloadAgentMapToLinuxAgentParams(d.Get("linux_params.0").(map[string]interface{}))
+		linuxParamsModel, err := dataSourceIbmBackupRecoveryDownloadAgentMapToLinuxAgentParams(d.Get("linux_params.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_download_agent", "read", "parse-linux_params").GetDiag()
 		}
@@ -90,7 +90,7 @@ func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *sc
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(resourceIbmBaasAgentDownloadID(d))
+	d.SetId(dataSourceIbmBackupRecoveryAgentDownloadID(d))
 
 	err = saveToFile(typeString, d.Get("file_path").(string))
 	if err != nil {
@@ -100,13 +100,13 @@ func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *sc
 	return nil
 }
 
-func ResourceIbmBaasDownloadAgentMapToLinuxAgentParams(modelMap map[string]interface{}) (*backuprecoveryv1.LinuxAgentParams, error) {
+func dataSourceIbmBackupRecoveryDownloadAgentMapToLinuxAgentParams(modelMap map[string]interface{}) (*backuprecoveryv1.LinuxAgentParams, error) {
 	model := &backuprecoveryv1.LinuxAgentParams{}
 	model.PackageType = core.StringPtr(modelMap["package_type"].(string))
 	return model, nil
 }
 
-func ResourceIbmBaasDownloadAgentLinuxAgentParamsToMap(model *backuprecoveryv1.LinuxAgentParams) (map[string]interface{}, error) {
+func dataSourceIbmBackupRecoveryDownloadAgentLinuxAgentParamsToMap(model *backuprecoveryv1.LinuxAgentParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["package_type"] = *model.PackageType
 	return modelMap, nil
@@ -133,6 +133,6 @@ func saveToFile(response io.ReadCloser, filePath string) error {
 }
 
 // dataSourceIbmBackupRecoveryDownloadAgentID returns a reasonable ID for the list.
-func resourceIbmBaasAgentDownloadID(d *schema.ResourceData) string {
+func dataSourceIbmBackupRecoveryAgentDownloadID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }

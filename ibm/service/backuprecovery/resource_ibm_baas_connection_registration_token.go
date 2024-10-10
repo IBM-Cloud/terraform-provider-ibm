@@ -22,14 +22,14 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasConnectionRegistrationToken() *schema.Resource {
+func ResourceIbmBackupRecoveryConnectionRegistrationToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasConnectionRegistrationTokenCreate,
-		ReadContext:   resourceIbmBaasConnectionRegistrationTokenRead,
-		DeleteContext: resourceIbmBaasConnectionRegistrationTokenDelete,
-		UpdateContext: resourceIbmBaasConnectionRegistrationTokenUpdate,
+		CreateContext: resourceIbmBackupRecoveryConnectionRegistrationTokenCreate,
+		ReadContext:   resourceIbmBackupRecoveryConnectionRegistrationTokenRead,
+		DeleteContext: resourceIbmBackupRecoveryConnectionRegistrationTokenDelete,
+		UpdateContext: resourceIbmBackupRecoveryConnectionRegistrationTokenUpdate,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBaasConnectionRegistrationToken,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryConnectionRegistrationToken,
 		Schema: map[string]*schema.Schema{
 			"connection_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -51,7 +51,7 @@ func ResourceIbmBaasConnectionRegistrationToken() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBaasConnectionRegistrationToken(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func checkDiffResourceIbmBackupRecoveryConnectionRegistrationToken(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
 	// 	return nil
@@ -62,7 +62,7 @@ func checkDiffResourceIbmBaasConnectionRegistrationToken(context context.Context
 		return nil
 	}
 
-	for fieldName := range ResourceIbmBaasConnectionRegistrationToken().Schema {
+	for fieldName := range ResourceIbmBackupRecoveryConnectionRegistrationToken().Schema {
 		if d.HasChange(fieldName) {
 			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_connection_registration_token cannot be updated.")
 		}
@@ -70,7 +70,7 @@ func checkDiffResourceIbmBaasConnectionRegistrationToken(context context.Context
 	return nil
 }
 
-func resourceIbmBaasConnectionRegistrationTokenCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryConnectionRegistrationTokenCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_connection_registration_token", "read", "initialize-client")
@@ -90,7 +90,7 @@ func resourceIbmBaasConnectionRegistrationTokenCreate(context context.Context, d
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(resourceIbmBaasConnectionRegistrationTokenID(d))
+	d.SetId(resourceIbmBackupRecoveryConnectionRegistrationTokenID(d))
 
 	if !core.IsNil(connectionRegistrationTokenString) {
 		if err = d.Set("registration_token", connectionRegistrationTokenString); err != nil {
@@ -99,18 +99,18 @@ func resourceIbmBaasConnectionRegistrationTokenCreate(context context.Context, d
 		}
 	}
 
-	return resourceIbmBaasConnectionRegistrationTokenRead(context, d, meta)
+	return resourceIbmBackupRecoveryConnectionRegistrationTokenRead(context, d, meta)
 }
 
-func resourceIbmBaasConnectionRegistrationTokenRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryConnectionRegistrationTokenRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	return nil
 }
-func resourceIbmBaasConnectionRegistrationTokenID(d *schema.ResourceData) string {
+func resourceIbmBackupRecoveryConnectionRegistrationTokenID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func resourceIbmBaasConnectionRegistrationTokenDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryConnectionRegistrationTokenDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 
 	var diags diag.Diagnostics
@@ -124,7 +124,7 @@ func resourceIbmBaasConnectionRegistrationTokenDelete(context context.Context, d
 	return diags
 }
 
-func resourceIbmBaasConnectionRegistrationTokenUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryConnectionRegistrationTokenUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{

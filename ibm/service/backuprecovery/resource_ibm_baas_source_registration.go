@@ -23,12 +23,12 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasSourceRegistration() *schema.Resource {
+func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasSourceRegistrationCreate,
-		ReadContext:   resourceIbmBaasSourceRegistrationRead,
-		UpdateContext: resourceIbmBaasSourceRegistrationUpdate,
-		DeleteContext: resourceIbmBaasSourceRegistrationDelete,
+		CreateContext: resourceIbmBackupRecoverySourceRegistrationCreate,
+		ReadContext:   resourceIbmBackupRecoverySourceRegistrationRead,
+		UpdateContext: resourceIbmBackupRecoverySourceRegistrationUpdate,
+		DeleteContext: resourceIbmBackupRecoverySourceRegistrationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -1065,7 +1065,7 @@ func ResourceIbmBaasSourceRegistration() *schema.Resource {
 	}
 }
 
-func ResourceIbmBaasSourceRegistrationValidator() *validate.ResourceValidator {
+func ResourceIbmBackupRecoverySourceRegistrationValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1081,7 +1081,7 @@ func ResourceIbmBaasSourceRegistrationValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "initialize-client")
@@ -1113,7 +1113,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 		var connections []backuprecoveryv1.ConnectionConfig
 		for _, v := range d.Get("connections").([]interface{}) {
 			value := v.(map[string]interface{})
-			connectionsItem, err := ResourceIbmBaasSourceRegistrationMapToConnectionConfig(value)
+			connectionsItem, err := ResourceIbmBackupRecoverySourceRegistrationMapToConnectionConfig(value)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-connections").GetDiag()
 			}
@@ -1128,7 +1128,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 		var advancedConfigs []backuprecoveryv1.KeyValuePair
 		for _, v := range d.Get("advanced_configs").([]interface{}) {
 			value := v.(map[string]interface{})
-			advancedConfigsItem, err := ResourceIbmBaasSourceRegistrationMapToKeyValuePair(value)
+			advancedConfigsItem, err := ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(value)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-advanced_configs").GetDiag()
 			}
@@ -1140,7 +1140,7 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 		registerProtectionSourceOptions.SetDataSourceConnectionID(d.Get("data_source_connection_id").(string))
 	}
 	if _, ok := d.GetOk("physical_params"); ok {
-		physicalParamsModel, err := ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
+		physicalParamsModel, err := ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-physical_params").GetDiag()
 		}
@@ -1155,10 +1155,10 @@ func resourceIbmBaasSourceRegistrationCreate(context context.Context, d *schema.
 	}
 
 	d.SetId(strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
-	return resourceIbmBaasSourceRegistrationRead(context, d, meta)
+	return resourceIbmBackupRecoverySourceRegistrationRead(context, d, meta)
 }
 
-func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "initialize-client")
@@ -1206,7 +1206,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 	if !core.IsNil(sourceRegistrationReponseParams.Connections) {
 		connections := []map[string]interface{}{}
 		for _, connectionsItem := range sourceRegistrationReponseParams.Connections {
-			connectionsItemMap, err := ResourceIbmBaasSourceRegistrationConnectionConfigToMap(&connectionsItem) // #nosec G601
+			connectionsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationConnectionConfigToMap(&connectionsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "connections-to-map").GetDiag()
 			}
@@ -1237,7 +1237,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 	if !core.IsNil(sourceRegistrationReponseParams.AdvancedConfigs) {
 		advancedConfigs := []map[string]interface{}{}
 		for _, advancedConfigsItem := range sourceRegistrationReponseParams.AdvancedConfigs {
-			advancedConfigsItemMap, err := ResourceIbmBaasSourceRegistrationKeyValuePairToMap(&advancedConfigsItem) // #nosec G601
+			advancedConfigsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationKeyValuePairToMap(&advancedConfigsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "advanced_configs-to-map").GetDiag()
 			}
@@ -1249,7 +1249,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.PhysicalParams) {
-		physicalParamsMap, err := ResourceIbmBaasSourceRegistrationPhysicalSourceRegistrationParamsToMap(sourceRegistrationReponseParams.PhysicalParams)
+		physicalParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationPhysicalSourceRegistrationParamsToMap(sourceRegistrationReponseParams.PhysicalParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "physical_params-to-map").GetDiag()
 		}
@@ -1265,7 +1265,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.SourceInfo) {
-		sourceInfoMap, err := ResourceIbmBaasSourceRegistrationObjectToMap(sourceRegistrationReponseParams.SourceInfo)
+		sourceInfoMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectToMap(sourceRegistrationReponseParams.SourceInfo)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "source_info-to-map").GetDiag()
 		}
@@ -1293,7 +1293,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.ExternalMetadata) {
-		externalMetadataMap, err := ResourceIbmBaasSourceRegistrationEntityExternalMetadataToMap(sourceRegistrationReponseParams.ExternalMetadata)
+		externalMetadataMap, err := ResourceIbmBackupRecoverySourceRegistrationEntityExternalMetadataToMap(sourceRegistrationReponseParams.ExternalMetadata)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "external_metadata-to-map").GetDiag()
 		}
@@ -1311,7 +1311,7 @@ func resourceIbmBaasSourceRegistrationRead(context context.Context, d *schema.Re
 	return nil
 }
 
-func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "update", "initialize-client")
@@ -1391,7 +1391,7 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 			var connections []backuprecoveryv1.ConnectionConfig
 			for _, v := range d.Get("connections").([]interface{}) {
 				value := v.(map[string]interface{})
-				connectionsItem, err := ResourceIbmBaasSourceRegistrationMapToConnectionConfig(value)
+				connectionsItem, err := ResourceIbmBackupRecoverySourceRegistrationMapToConnectionConfig(value)
 				if err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-connections").GetDiag()
 				}
@@ -1406,7 +1406,7 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 			var advancedConfigs []backuprecoveryv1.KeyValuePair
 			for _, v := range d.Get("advanced_configs").([]interface{}) {
 				value := v.(map[string]interface{})
-				advancedConfigsItem, err := ResourceIbmBaasSourceRegistrationMapToKeyValuePair(value)
+				advancedConfigsItem, err := ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(value)
 				if err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-advanced_configs").GetDiag()
 				}
@@ -1416,7 +1416,7 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 		}
 
 		if _, ok := d.GetOk("physical_params"); ok {
-			physicalParams, err := ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
+			physicalParams, err := ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-physical_params").GetDiag()
 			}
@@ -1432,10 +1432,10 @@ func resourceIbmBaasSourceRegistrationUpdate(context context.Context, d *schema.
 	}
 
 	d.SetId(d.Id())
-	return resourceIbmBaasSourceRegistrationRead(context, d, meta)
+	return resourceIbmBackupRecoverySourceRegistrationRead(context, d, meta)
 }
 
-func resourceIbmBaasSourceRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "delete", "initialize-client")
@@ -1467,7 +1467,7 @@ func resourceIbmBaasSourceRegistrationDelete(context context.Context, d *schema.
 	return nil
 }
 
-func ResourceIbmBaasSourceRegistrationMapToConnectionConfig(modelMap map[string]interface{}) (*backuprecoveryv1.ConnectionConfig, error) {
+func ResourceIbmBackupRecoverySourceRegistrationMapToConnectionConfig(modelMap map[string]interface{}) (*backuprecoveryv1.ConnectionConfig, error) {
 	model := &backuprecoveryv1.ConnectionConfig{}
 	if modelMap["connection_id"] != nil {
 		model.ConnectionID = core.Int64Ptr(int64(modelMap["connection_id"].(int)))
@@ -1484,14 +1484,14 @@ func ResourceIbmBaasSourceRegistrationMapToConnectionConfig(modelMap map[string]
 	return model, nil
 }
 
-func ResourceIbmBaasSourceRegistrationMapToKeyValuePair(modelMap map[string]interface{}) (*backuprecoveryv1.KeyValuePair, error) {
+func ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(modelMap map[string]interface{}) (*backuprecoveryv1.KeyValuePair, error) {
 	model := &backuprecoveryv1.KeyValuePair{}
 	model.Key = core.StringPtr(modelMap["key"].(string))
 	model.Value = core.StringPtr(modelMap["value"].(string))
 	return model, nil
 }
 
-func ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.PhysicalSourceRegistrationParams, error) {
+func ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.PhysicalSourceRegistrationParams, error) {
 	model := &backuprecoveryv1.PhysicalSourceRegistrationParams{}
 	model.Endpoint = core.StringPtr(modelMap["endpoint"].(string))
 	if modelMap["force_register"] != nil {
@@ -1513,7 +1513,7 @@ func ResourceIbmBaasSourceRegistrationMapToPhysicalSourceRegistrationParams(mode
 	return model, nil
 }
 
-func ResourceIbmBaasSourceRegistrationConnectionConfigToMap(model *backuprecoveryv1.ConnectionConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationConnectionConfigToMap(model *backuprecoveryv1.ConnectionConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ConnectionID != nil {
 		connId := strconv.Itoa(int(*model.ConnectionID))
@@ -1531,14 +1531,14 @@ func ResourceIbmBaasSourceRegistrationConnectionConfigToMap(model *backuprecover
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationKeyValuePairToMap(model *backuprecoveryv1.KeyValuePair) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationKeyValuePairToMap(model *backuprecoveryv1.KeyValuePair) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["key"] = *model.Key
 	modelMap["value"] = *model.Value
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationPhysicalSourceRegistrationParamsToMap(model *backuprecoveryv1.PhysicalSourceRegistrationParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationPhysicalSourceRegistrationParamsToMap(model *backuprecoveryv1.PhysicalSourceRegistrationParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["endpoint"] = *model.Endpoint
 	if model.ForceRegister != nil {
@@ -1556,7 +1556,7 @@ func ResourceIbmBaasSourceRegistrationPhysicalSourceRegistrationParamsToMap(mode
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectToMap(model *backuprecoveryv1.Object) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -1592,7 +1592,7 @@ func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := ResourceIbmBaasSourceRegistrationSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoverySourceRegistrationSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1604,7 +1604,7 @@ func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := ResourceIbmBaasSourceRegistrationObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1613,14 +1613,14 @@ func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := ResourceIbmBaasSourceRegistrationObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := ResourceIbmBaasSourceRegistrationObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1629,7 +1629,7 @@ func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
-			protectionStatsItemMap, err := ResourceIbmBaasSourceRegistrationObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
+			protectionStatsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1638,21 +1638,21 @@ func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object
 		modelMap["protection_stats"] = protectionStats
 	}
 	if model.Permissions != nil {
-		permissionsMap, err := ResourceIbmBaasSourceRegistrationPermissionInfoToMap(model.Permissions)
+		permissionsMap, err := ResourceIbmBackupRecoverySourceRegistrationPermissionInfoToMap(model.Permissions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
 	if model.MssqlParams != nil {
-		mssqlParamsMap, err := ResourceIbmBaasSourceRegistrationObjectMssqlParamsToMap(model.MssqlParams)
+		mssqlParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectMssqlParamsToMap(model.MssqlParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["mssql_params"] = []map[string]interface{}{mssqlParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := ResourceIbmBaasSourceRegistrationObjectPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1661,7 +1661,7 @@ func ResourceIbmBaasSourceRegistrationObjectToMap(model *backuprecoveryv1.Object
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SiteWebURL != nil {
 		modelMap["site_web_url"] = *model.SiteWebURL
@@ -1669,7 +1669,7 @@ func ResourceIbmBaasSourceRegistrationSharepointObjectParamsToMap(model *backupr
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -1705,7 +1705,7 @@ func ResourceIbmBaasSourceRegistrationObjectSummaryToMap(model *backuprecoveryv1
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := ResourceIbmBaasSourceRegistrationSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoverySourceRegistrationSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1717,7 +1717,7 @@ func ResourceIbmBaasSourceRegistrationObjectSummaryToMap(model *backuprecoveryv1
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := ResourceIbmBaasSourceRegistrationObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1726,14 +1726,14 @@ func ResourceIbmBaasSourceRegistrationObjectSummaryToMap(model *backuprecoveryv1
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := ResourceIbmBaasSourceRegistrationObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := ResourceIbmBaasSourceRegistrationObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := ResourceIbmBackupRecoverySourceRegistrationObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1742,7 +1742,7 @@ func ResourceIbmBaasSourceRegistrationObjectSummaryToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsCloudEnv != nil {
 		modelMap["is_cloud_env"] = *model.IsCloudEnv
@@ -1750,7 +1750,7 @@ func ResourceIbmBaasSourceRegistrationObjectTypeVCenterParamsToMap(model *backup
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterSourceType != nil {
 		modelMap["cluster_source_type"] = *model.ClusterSourceType
@@ -1758,7 +1758,7 @@ func ResourceIbmBaasSourceRegistrationObjectTypeWindowsClusterParamsToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Environment != nil {
 		modelMap["environment"] = *model.Environment
@@ -1781,7 +1781,7 @@ func ResourceIbmBaasSourceRegistrationObjectProtectionStatsSummaryToMap(model *b
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -1789,7 +1789,7 @@ func ResourceIbmBaasSourceRegistrationPermissionInfoToMap(model *backuprecoveryv
 	if model.Users != nil {
 		users := []map[string]interface{}{}
 		for _, usersItem := range model.Users {
-			usersItemMap, err := ResourceIbmBaasSourceRegistrationUserToMap(&usersItem) // #nosec G601
+			usersItemMap, err := ResourceIbmBackupRecoverySourceRegistrationUserToMap(&usersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1800,7 +1800,7 @@ func ResourceIbmBaasSourceRegistrationPermissionInfoToMap(model *backuprecoveryv
 	if model.Groups != nil {
 		groups := []map[string]interface{}{}
 		for _, groupsItem := range model.Groups {
-			groupsItemMap, err := ResourceIbmBaasSourceRegistrationGroupToMap(&groupsItem) // #nosec G601
+			groupsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationGroupToMap(&groupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1809,7 +1809,7 @@ func ResourceIbmBaasSourceRegistrationPermissionInfoToMap(model *backuprecoveryv
 		modelMap["groups"] = groups
 	}
 	if model.Tenant != nil {
-		tenantMap, err := ResourceIbmBaasSourceRegistrationTenantToMap(model.Tenant)
+		tenantMap, err := ResourceIbmBackupRecoverySourceRegistrationTenantToMap(model.Tenant)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1818,7 +1818,7 @@ func ResourceIbmBaasSourceRegistrationPermissionInfoToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1832,7 +1832,7 @@ func ResourceIbmBaasSourceRegistrationUserToMap(model *backuprecoveryv1.User) (m
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1846,7 +1846,7 @@ func ResourceIbmBaasSourceRegistrationGroupToMap(model *backuprecoveryv1.Group) 
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CreatedAtTimeMsecs != nil && *(model.CreatedAtTimeMsecs) != 0 {
 		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
@@ -1858,7 +1858,7 @@ func ResourceIbmBaasSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant
 		modelMap["description"] = *model.Description
 	}
 	if model.ExternalVendorMetadata != nil {
-		externalVendorMetadataMap, err := ResourceIbmBaasSourceRegistrationExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
+		externalVendorMetadataMap, err := ResourceIbmBackupRecoverySourceRegistrationExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1877,7 +1877,7 @@ func ResourceIbmBaasSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant
 		modelMap["name"] = *model.Name
 	}
 	if model.Network != nil {
-		networkMap, err := ResourceIbmBaasSourceRegistrationTenantNetworkToMap(model.Network)
+		networkMap, err := ResourceIbmBackupRecoverySourceRegistrationTenantNetworkToMap(model.Network)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1889,10 +1889,10 @@ func ResourceIbmBaasSourceRegistrationTenantToMap(model *backuprecoveryv1.Tenant
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IbmTenantMetadataParams != nil {
-		ibmTenantMetadataParamsMap, err := ResourceIbmBaasSourceRegistrationIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		ibmTenantMetadataParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1902,7 +1902,7 @@ func ResourceIbmBaasSourceRegistrationExternalVendorTenantMetadataToMap(model *b
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AccountID != nil {
 		modelMap["account_id"] = *model.AccountID
@@ -1913,7 +1913,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantMetadataParamsToMap(model *backup
 	if model.CustomProperties != nil {
 		customProperties := []map[string]interface{}{}
 		for _, customPropertiesItem := range model.CustomProperties {
-			customPropertiesItemMap, err := ResourceIbmBaasSourceRegistrationExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			customPropertiesItemMap, err := ResourceIbmBackupRecoverySourceRegistrationExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -1925,7 +1925,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantMetadataParamsToMap(model *backup
 		modelMap["liveness_mode"] = *model.LivenessMode
 	}
 	if model.MetricsConfig != nil {
-		metricsConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantMetricsConfigToMap(model.MetricsConfig)
+		metricsConfigMap, err := ResourceIbmBackupRecoverySourceRegistrationIbmTenantMetricsConfigToMap(model.MetricsConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1946,7 +1946,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantMetadataParamsToMap(model *backup
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Key != nil {
 		modelMap["key"] = *model.Key
@@ -1957,24 +1957,24 @@ func ResourceIbmBaasSourceRegistrationExternalVendorCustomPropertiesToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CosResourceConfig != nil {
-		cosResourceConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
+		cosResourceConfigMap, err := ResourceIbmBackupRecoverySourceRegistrationIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cos_resource_config"] = []map[string]interface{}{cosResourceConfigMap}
 	}
 	if model.IamMetricsConfig != nil {
-		iamMetricsConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
+		iamMetricsConfigMap, err := ResourceIbmBackupRecoverySourceRegistrationIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["iam_metrics_config"] = []map[string]interface{}{iamMetricsConfigMap}
 	}
 	if model.MeteringConfig != nil {
-		meteringConfigMap, err := ResourceIbmBaasSourceRegistrationIbmTenantMeteringConfigToMap(model.MeteringConfig)
+		meteringConfigMap, err := ResourceIbmBackupRecoverySourceRegistrationIbmTenantMeteringConfigToMap(model.MeteringConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1983,7 +1983,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantMetricsConfigToMap(model *backupr
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ResourceURL != nil {
 		modelMap["resource_url"] = *model.ResourceURL
@@ -1991,7 +1991,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantCOSResourceConfigToMap(model *bac
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IAMURL != nil {
 		modelMap["iam_url"] = *model.IAMURL
@@ -2002,7 +2002,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantIAMMetricsConfigToMap(model *back
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.PartIds != nil {
 		modelMap["part_ids"] = model.PartIds
@@ -2016,7 +2016,7 @@ func ResourceIbmBaasSourceRegistrationIbmTenantMeteringConfigToMap(model *backup
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["connector_enabled"] = *model.ConnectorEnabled
 	if model.ClusterHostname != nil {
@@ -2028,17 +2028,17 @@ func ResourceIbmBaasSourceRegistrationTenantNetworkToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectMssqlParamsToMap(model *backuprecoveryv1.ObjectMssqlParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectMssqlParamsToMap(model *backuprecoveryv1.ObjectMssqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AagInfo != nil {
-		aagInfoMap, err := ResourceIbmBaasSourceRegistrationAAGInfoToMap(model.AagInfo)
+		aagInfoMap, err := ResourceIbmBackupRecoverySourceRegistrationAAGInfoToMap(model.AagInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := ResourceIbmBaasSourceRegistrationHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := ResourceIbmBackupRecoverySourceRegistrationHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2050,7 +2050,7 @@ func ResourceIbmBaasSourceRegistrationObjectMssqlParamsToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -2061,7 +2061,7 @@ func ResourceIbmBaasSourceRegistrationAAGInfoToMap(model *backuprecoveryv1.AAGIn
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -2075,7 +2075,7 @@ func ResourceIbmBaasSourceRegistrationHostInformationToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = *model.EnableSystemBackup
@@ -2083,10 +2083,10 @@ func ResourceIbmBaasSourceRegistrationObjectPhysicalParamsToMap(model *backuprec
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationEntityExternalMetadataToMap(model *backuprecoveryv1.EntityExternalMetadata) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationEntityExternalMetadataToMap(model *backuprecoveryv1.EntityExternalMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MaintenanceModeConfig != nil {
-		maintenanceModeConfigMap, err := ResourceIbmBaasSourceRegistrationMaintenanceModeConfigToMap(model.MaintenanceModeConfig)
+		maintenanceModeConfigMap, err := ResourceIbmBackupRecoverySourceRegistrationMaintenanceModeConfigToMap(model.MaintenanceModeConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2095,12 +2095,12 @@ func ResourceIbmBaasSourceRegistrationEntityExternalMetadataToMap(model *backupr
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationMaintenanceModeConfigToMap(model *backuprecoveryv1.MaintenanceModeConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationMaintenanceModeConfigToMap(model *backuprecoveryv1.MaintenanceModeConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ActivationTimeIntervals != nil {
 		activationTimeIntervals := []map[string]interface{}{}
 		for _, activationTimeIntervalsItem := range model.ActivationTimeIntervals {
-			activationTimeIntervalsItemMap, err := ResourceIbmBaasSourceRegistrationTimeRangeUsecsToMap(&activationTimeIntervalsItem) // #nosec G601
+			activationTimeIntervalsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationTimeRangeUsecsToMap(&activationTimeIntervalsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2109,7 +2109,7 @@ func ResourceIbmBaasSourceRegistrationMaintenanceModeConfigToMap(model *backupre
 		modelMap["activation_time_intervals"] = activationTimeIntervals
 	}
 	if model.MaintenanceSchedule != nil {
-		maintenanceScheduleMap, err := ResourceIbmBaasSourceRegistrationScheduleToMap(model.MaintenanceSchedule)
+		maintenanceScheduleMap, err := ResourceIbmBackupRecoverySourceRegistrationScheduleToMap(model.MaintenanceSchedule)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2121,7 +2121,7 @@ func ResourceIbmBaasSourceRegistrationMaintenanceModeConfigToMap(model *backupre
 	if model.WorkflowInterventionSpecList != nil {
 		workflowInterventionSpecList := []map[string]interface{}{}
 		for _, workflowInterventionSpecListItem := range model.WorkflowInterventionSpecList {
-			workflowInterventionSpecListItemMap, err := ResourceIbmBaasSourceRegistrationWorkflowInterventionSpecToMap(&workflowInterventionSpecListItem) // #nosec G601
+			workflowInterventionSpecListItemMap, err := ResourceIbmBackupRecoverySourceRegistrationWorkflowInterventionSpecToMap(&workflowInterventionSpecListItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2132,19 +2132,19 @@ func ResourceIbmBaasSourceRegistrationMaintenanceModeConfigToMap(model *backupre
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationTimeRangeUsecsToMap(model *backuprecoveryv1.TimeRangeUsecs) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationTimeRangeUsecsToMap(model *backuprecoveryv1.TimeRangeUsecs) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
 	modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationScheduleToMap(model *backuprecoveryv1.Schedule) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationScheduleToMap(model *backuprecoveryv1.Schedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.PeriodicTimeWindows != nil {
 		periodicTimeWindows := []map[string]interface{}{}
 		for _, periodicTimeWindowsItem := range model.PeriodicTimeWindows {
-			periodicTimeWindowsItemMap, err := ResourceIbmBaasSourceRegistrationTimeWindowToMap(&periodicTimeWindowsItem) // #nosec G601
+			periodicTimeWindowsItemMap, err := ResourceIbmBackupRecoverySourceRegistrationTimeWindowToMap(&periodicTimeWindowsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2158,7 +2158,7 @@ func ResourceIbmBaasSourceRegistrationScheduleToMap(model *backuprecoveryv1.Sche
 	if model.TimeRanges != nil {
 		timeRanges := []map[string]interface{}{}
 		for _, timeRangesItem := range model.TimeRanges {
-			timeRangesItemMap, err := ResourceIbmBaasSourceRegistrationTimeRangeUsecsToMap(&timeRangesItem) // #nosec G601
+			timeRangesItemMap, err := ResourceIbmBackupRecoverySourceRegistrationTimeRangeUsecsToMap(&timeRangesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2172,20 +2172,20 @@ func ResourceIbmBaasSourceRegistrationScheduleToMap(model *backuprecoveryv1.Sche
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationTimeWindowToMap(model *backuprecoveryv1.TimeWindow) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationTimeWindowToMap(model *backuprecoveryv1.TimeWindow) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.DayOfTheWeek != nil {
 		modelMap["day_of_the_week"] = *model.DayOfTheWeek
 	}
 	if model.EndTime != nil {
-		endTimeMap, err := ResourceIbmBaasSourceRegistrationTimeToMap(model.EndTime)
+		endTimeMap, err := ResourceIbmBackupRecoverySourceRegistrationTimeToMap(model.EndTime)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["end_time"] = []map[string]interface{}{endTimeMap}
 	}
 	if model.StartTime != nil {
-		startTimeMap, err := ResourceIbmBaasSourceRegistrationTimeToMap(model.StartTime)
+		startTimeMap, err := ResourceIbmBackupRecoverySourceRegistrationTimeToMap(model.StartTime)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2194,7 +2194,7 @@ func ResourceIbmBaasSourceRegistrationTimeWindowToMap(model *backuprecoveryv1.Ti
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationTimeToMap(model *backuprecoveryv1.Time) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationTimeToMap(model *backuprecoveryv1.Time) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Hour != nil {
 		modelMap["hour"] = flex.IntValue(model.Hour)
@@ -2205,7 +2205,7 @@ func ResourceIbmBaasSourceRegistrationTimeToMap(model *backuprecoveryv1.Time) (m
 	return modelMap, nil
 }
 
-func ResourceIbmBaasSourceRegistrationWorkflowInterventionSpecToMap(model *backuprecoveryv1.WorkflowInterventionSpec) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoverySourceRegistrationWorkflowInterventionSpecToMap(model *backuprecoveryv1.WorkflowInterventionSpec) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["intervention"] = *model.Intervention
 	modelMap["workflow_type"] = *model.WorkflowType

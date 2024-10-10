@@ -23,14 +23,14 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasRestorePoints() *schema.Resource {
+func ResourceIbmBackupRecoveryRestorePoints() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasRestorePointsCreate,
-		ReadContext:   resourceIbmBaasRestorePointsRead,
-		DeleteContext: resourceIbmBaasRestorePointsDelete,
-		UpdateContext: resourceIbmBaasRestorePointsUpdate,
+		CreateContext: resourceIbmBackupRecoveryRestorePointsCreate,
+		ReadContext:   resourceIbmBackupRecoveryRestorePointsRead,
+		DeleteContext: resourceIbmBackupRecoveryRestorePointsDelete,
+		UpdateContext: resourceIbmBackupRecoveryRestorePointsUpdate,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBaasRestorePoints,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryRestorePoints,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -3346,7 +3346,7 @@ func ResourceIbmBaasRestorePoints() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBaasRestorePoints(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func checkDiffResourceIbmBackupRecoveryRestorePoints(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
 	// 	return nil
@@ -3357,7 +3357,7 @@ func checkDiffResourceIbmBaasRestorePoints(context context.Context, d *schema.Re
 		return nil
 	}
 
-	for fieldName := range ResourceIbmBaasRestorePoints().Schema {
+	for fieldName := range ResourceIbmBackupRecoveryRestorePoints().Schema {
 		if d.HasChange(fieldName) {
 			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_restore_points cannot be updated.")
 		}
@@ -3365,7 +3365,7 @@ func checkDiffResourceIbmBaasRestorePoints(context context.Context, d *schema.Re
 	return nil
 }
 
-func ResourceIbmBaasRestorePointsValidator() *validate.ResourceValidator {
+func ResourceIbmBackupRecoveryRestorePointsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -3381,7 +3381,7 @@ func ResourceIbmBaasRestorePointsValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryRestorePointsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_restore_points", "read", "initialize-client")
@@ -3415,12 +3415,12 @@ func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(resourceIbmBaasRestorePointsID(d))
+	d.SetId(resourceIbmBackupRecoveryRestorePointsID(d))
 
 	if !core.IsNil(getRestorePointsInTimeRangeResponse.FullSnapshotInfo) {
 		fullSnapshotInfo := []map[string]interface{}{}
 		for _, fullSnapshotInfoItem := range getRestorePointsInTimeRangeResponse.FullSnapshotInfo {
-			fullSnapshotInfoItemMap, err := ResourceIbmBaasRestorePointsFullSnapshotInfoToMap(&fullSnapshotInfoItem) // #nosec G601
+			fullSnapshotInfoItemMap, err := ResourceIbmBackupRecoveryRestorePointsFullSnapshotInfoToMap(&fullSnapshotInfoItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_restore_points", "read", "full_snapshot_info-to-map").GetDiag()
 			}
@@ -3432,7 +3432,7 @@ func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.Resou
 		}
 	}
 	if !core.IsNil(getRestorePointsInTimeRangeResponse.TimeRangeInfo) {
-		timeRangeInfoMap, err := ResourceIbmBaasRestorePointsTimeRangeInfoToMap(getRestorePointsInTimeRangeResponse.TimeRangeInfo)
+		timeRangeInfoMap, err := ResourceIbmBackupRecoveryRestorePointsTimeRangeInfoToMap(getRestorePointsInTimeRangeResponse.TimeRangeInfo)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_restore_points", "read", "time_range_info-to-map").GetDiag()
 		}
@@ -3442,18 +3442,18 @@ func resourceIbmBaasRestorePointsCreate(context context.Context, d *schema.Resou
 		}
 	}
 
-	return resourceIbmBaasRestorePointsRead(context, d, meta)
+	return resourceIbmBackupRecoveryRestorePointsRead(context, d, meta)
 }
 
-func resourceIbmBaasRestorePointsID(d *schema.ResourceData) string {
+func resourceIbmBackupRecoveryRestorePointsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func resourceIbmBaasRestorePointsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryRestorePointsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceIbmBaasRestorePointsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryRestorePointsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 
 	var diags diag.Diagnostics
@@ -3467,7 +3467,7 @@ func resourceIbmBaasRestorePointsDelete(context context.Context, d *schema.Resou
 	return diags
 }
 
-func resourceIbmBaasRestorePointsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryRestorePointsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "update" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
@@ -3479,10 +3479,10 @@ func resourceIbmBaasRestorePointsUpdate(context context.Context, d *schema.Resou
 	return diags
 }
 
-func ResourceIbmBaasRestorePointsFullSnapshotInfoToMap(model *backuprecoveryv1.FullSnapshotInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsFullSnapshotInfoToMap(model *backuprecoveryv1.FullSnapshotInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RestoreInfo != nil {
-		restoreInfoMap, err := ResourceIbmBaasRestorePointsRestoreInfoToMap(model.RestoreInfo)
+		restoreInfoMap, err := ResourceIbmBackupRecoveryRestorePointsRestoreInfoToMap(model.RestoreInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3491,7 +3491,7 @@ func ResourceIbmBaasRestorePointsFullSnapshotInfoToMap(model *backuprecoveryv1.F
 	if model.TargetsConfiguration != nil {
 		targetsConfiguration := []map[string]interface{}{}
 		for _, targetsConfigurationItem := range model.TargetsConfiguration {
-			targetsConfigurationItemMap, err := ResourceIbmBaasRestorePointsTargetsConfigurationToMap(&targetsConfigurationItem) // #nosec G601
+			targetsConfigurationItemMap, err := ResourceIbmBackupRecoveryRestorePointsTargetsConfigurationToMap(&targetsConfigurationItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3502,10 +3502,10 @@ func ResourceIbmBaasRestorePointsFullSnapshotInfoToMap(model *backuprecoveryv1.F
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsRestoreInfoToMap(model *backuprecoveryv1.RestoreInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsRestoreInfoToMap(model *backuprecoveryv1.RestoreInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ArchivalTargetInfo != nil {
-		archivalTargetInfoMap, err := ResourceIbmBaasRestorePointsArchivalTargetSummaryInfoToMap(model.ArchivalTargetInfo)
+		archivalTargetInfoMap, err := ResourceIbmBackupRecoveryRestorePointsArchivalTargetSummaryInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3515,28 +3515,28 @@ func ResourceIbmBaasRestorePointsRestoreInfoToMap(model *backuprecoveryv1.Restor
 		modelMap["attempt_number"] = flex.IntValue(model.AttemptNumber)
 	}
 	if model.CloudDeployTarget != nil {
-		cloudDeployTargetMap, err := ResourceIbmBaasRestorePointsCloudSpinTargetToMap(model.CloudDeployTarget)
+		cloudDeployTargetMap, err := ResourceIbmBackupRecoveryRestorePointsCloudSpinTargetToMap(model.CloudDeployTarget)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cloud_deploy_target"] = []map[string]interface{}{cloudDeployTargetMap}
 	}
 	if model.CloudReplicationTarget != nil {
-		cloudReplicationTargetMap, err := ResourceIbmBaasRestorePointsCloudSpinTargetToMap(model.CloudReplicationTarget)
+		cloudReplicationTargetMap, err := ResourceIbmBackupRecoveryRestorePointsCloudSpinTargetToMap(model.CloudReplicationTarget)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cloud_replication_target"] = []map[string]interface{}{cloudReplicationTargetMap}
 	}
 	if model.ObjectInfo != nil {
-		objectInfoMap, err := ResourceIbmBaasRestorePointsObjectToMap(model.ObjectInfo)
+		objectInfoMap, err := ResourceIbmBackupRecoveryRestorePointsObjectToMap(model.ObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["object_info"] = []map[string]interface{}{objectInfoMap}
 	}
 	if model.ParentObjectInfo != nil {
-		parentObjectInfoMap, err := ResourceIbmBaasRestorePointsObjectToMap(model.ParentObjectInfo)
+		parentObjectInfoMap, err := ResourceIbmBackupRecoveryRestorePointsObjectToMap(model.ParentObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3560,7 +3560,7 @@ func ResourceIbmBaasRestorePointsRestoreInfoToMap(model *backuprecoveryv1.Restor
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsArchivalTargetSummaryInfoToMap(model *backuprecoveryv1.ArchivalTargetSummaryInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsArchivalTargetSummaryInfoToMap(model *backuprecoveryv1.ArchivalTargetSummaryInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
@@ -3581,7 +3581,7 @@ func ResourceIbmBaasRestorePointsArchivalTargetSummaryInfoToMap(model *backuprec
 		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := ResourceIbmBaasRestorePointsArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := ResourceIbmBackupRecoveryRestorePointsArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3590,17 +3590,17 @@ func ResourceIbmBaasRestorePointsArchivalTargetSummaryInfoToMap(model *backuprec
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := ResourceIbmBaasRestorePointsAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := ResourceIbmBackupRecoveryRestorePointsAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := ResourceIbmBaasRestorePointsAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := ResourceIbmBackupRecoveryRestorePointsAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3608,14 +3608,14 @@ func ResourceIbmBaasRestorePointsArchivalTargetTierInfoToMap(model *backuprecove
 	}
 	modelMap["cloud_platform"] = *model.CloudPlatform
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := ResourceIbmBaasRestorePointsGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := ResourceIbmBackupRecoveryRestorePointsGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := ResourceIbmBaasRestorePointsOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := ResourceIbmBackupRecoveryRestorePointsOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3627,11 +3627,11 @@ func ResourceIbmBaasRestorePointsArchivalTargetTierInfoToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := ResourceIbmBaasRestorePointsAWSTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := ResourceIbmBackupRecoveryRestorePointsAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3641,7 +3641,7 @@ func ResourceIbmBaasRestorePointsAWSTiersToMap(model *backuprecoveryv1.AWSTiers)
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3653,12 +3653,12 @@ func ResourceIbmBaasRestorePointsAWSTierToMap(model *backuprecoveryv1.AWSTier) (
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Tiers != nil {
 		tiers := []map[string]interface{}{}
 		for _, tiersItem := range model.Tiers {
-			tiersItemMap, err := ResourceIbmBaasRestorePointsAzureTierToMap(&tiersItem) // #nosec G601
+			tiersItemMap, err := ResourceIbmBackupRecoveryRestorePointsAzureTierToMap(&tiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3669,7 +3669,7 @@ func ResourceIbmBaasRestorePointsAzureTiersToMap(model *backuprecoveryv1.AzureTi
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3681,11 +3681,11 @@ func ResourceIbmBaasRestorePointsAzureTierToMap(model *backuprecoveryv1.AzureTie
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := ResourceIbmBaasRestorePointsGoogleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := ResourceIbmBackupRecoveryRestorePointsGoogleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3695,7 +3695,7 @@ func ResourceIbmBaasRestorePointsGoogleTiersToMap(model *backuprecoveryv1.Google
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3707,11 +3707,11 @@ func ResourceIbmBaasRestorePointsGoogleTierToMap(model *backuprecoveryv1.GoogleT
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := ResourceIbmBaasRestorePointsOracleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := ResourceIbmBackupRecoveryRestorePointsOracleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3721,7 +3721,7 @@ func ResourceIbmBaasRestorePointsOracleTiersToMap(model *backuprecoveryv1.Oracle
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3733,17 +3733,17 @@ func ResourceIbmBaasRestorePointsOracleTierToMap(model *backuprecoveryv1.OracleT
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsCloudSpinTargetToMap(model *backuprecoveryv1.CloudSpinTarget) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsCloudSpinTargetToMap(model *backuprecoveryv1.CloudSpinTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsParams != nil {
-		awsParamsMap, err := ResourceIbmBaasRestorePointsAwsCloudSpinParamsToMap(model.AwsParams)
+		awsParamsMap, err := ResourceIbmBackupRecoveryRestorePointsAwsCloudSpinParamsToMap(model.AwsParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_params"] = []map[string]interface{}{awsParamsMap}
 	}
 	if model.AzureParams != nil {
-		azureParamsMap, err := ResourceIbmBaasRestorePointsAzureCloudSpinParamsToMap(model.AzureParams)
+		azureParamsMap, err := ResourceIbmBackupRecoveryRestorePointsAzureCloudSpinParamsToMap(model.AzureParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3758,12 +3758,12 @@ func ResourceIbmBaasRestorePointsCloudSpinTargetToMap(model *backuprecoveryv1.Cl
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAwsCloudSpinParamsToMap(model *backuprecoveryv1.AwsCloudSpinParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAwsCloudSpinParamsToMap(model *backuprecoveryv1.AwsCloudSpinParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CustomTagList != nil {
 		customTagList := []map[string]interface{}{}
 		for _, customTagListItem := range model.CustomTagList {
-			customTagListItemMap, err := ResourceIbmBaasRestorePointsCustomTagParamsToMap(&customTagListItem) // #nosec G601
+			customTagListItemMap, err := ResourceIbmBackupRecoveryRestorePointsCustomTagParamsToMap(&customTagListItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3781,14 +3781,14 @@ func ResourceIbmBaasRestorePointsAwsCloudSpinParamsToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsCustomTagParamsToMap(model *backuprecoveryv1.CustomTagParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsCustomTagParamsToMap(model *backuprecoveryv1.CustomTagParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["key"] = *model.Key
 	modelMap["value"] = *model.Value
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAzureCloudSpinParamsToMap(model *backuprecoveryv1.AzureCloudSpinParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAzureCloudSpinParamsToMap(model *backuprecoveryv1.AzureCloudSpinParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AvailabilitySetID != nil {
 		modelMap["availability_set_id"] = flex.IntValue(model.AvailabilitySetID)
@@ -3826,7 +3826,7 @@ func ResourceIbmBaasRestorePointsAzureCloudSpinParamsToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectToMap(model *backuprecoveryv1.Object) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3862,7 +3862,7 @@ func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (ma
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := ResourceIbmBaasRestorePointsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoveryRestorePointsSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3874,7 +3874,7 @@ func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (ma
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := ResourceIbmBaasRestorePointsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := ResourceIbmBackupRecoveryRestorePointsObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3883,14 +3883,14 @@ func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (ma
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := ResourceIbmBaasRestorePointsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := ResourceIbmBackupRecoveryRestorePointsObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := ResourceIbmBaasRestorePointsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := ResourceIbmBackupRecoveryRestorePointsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3899,7 +3899,7 @@ func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (ma
 	if model.ProtectionStats != nil {
 		protectionStats := []map[string]interface{}{}
 		for _, protectionStatsItem := range model.ProtectionStats {
-			protectionStatsItemMap, err := ResourceIbmBaasRestorePointsObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
+			protectionStatsItemMap, err := ResourceIbmBackupRecoveryRestorePointsObjectProtectionStatsSummaryToMap(&protectionStatsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3908,21 +3908,21 @@ func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (ma
 		modelMap["protection_stats"] = protectionStats
 	}
 	if model.Permissions != nil {
-		permissionsMap, err := ResourceIbmBaasRestorePointsPermissionInfoToMap(model.Permissions)
+		permissionsMap, err := ResourceIbmBackupRecoveryRestorePointsPermissionInfoToMap(model.Permissions)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["permissions"] = []map[string]interface{}{permissionsMap}
 	}
 	if model.MssqlParams != nil {
-		mssqlParamsMap, err := ResourceIbmBaasRestorePointsObjectMssqlParamsToMap(model.MssqlParams)
+		mssqlParamsMap, err := ResourceIbmBackupRecoveryRestorePointsObjectMssqlParamsToMap(model.MssqlParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["mssql_params"] = []map[string]interface{}{mssqlParamsMap}
 	}
 	if model.PhysicalParams != nil {
-		physicalParamsMap, err := ResourceIbmBaasRestorePointsObjectPhysicalParamsToMap(model.PhysicalParams)
+		physicalParamsMap, err := ResourceIbmBackupRecoveryRestorePointsObjectPhysicalParamsToMap(model.PhysicalParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3931,7 +3931,7 @@ func ResourceIbmBaasRestorePointsObjectToMap(model *backuprecoveryv1.Object) (ma
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SiteWebURL != nil {
 		modelMap["site_web_url"] = *model.SiteWebURL
@@ -3939,7 +3939,7 @@ func ResourceIbmBaasRestorePointsSharepointObjectParamsToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3975,7 +3975,7 @@ func ResourceIbmBaasRestorePointsObjectSummaryToMap(model *backuprecoveryv1.Obje
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := ResourceIbmBaasRestorePointsSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoveryRestorePointsSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3987,7 +3987,7 @@ func ResourceIbmBaasRestorePointsObjectSummaryToMap(model *backuprecoveryv1.Obje
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := ResourceIbmBaasRestorePointsObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := ResourceIbmBackupRecoveryRestorePointsObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3996,14 +3996,14 @@ func ResourceIbmBaasRestorePointsObjectSummaryToMap(model *backuprecoveryv1.Obje
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := ResourceIbmBaasRestorePointsObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := ResourceIbmBackupRecoveryRestorePointsObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := ResourceIbmBaasRestorePointsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := ResourceIbmBackupRecoveryRestorePointsObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4012,7 +4012,7 @@ func ResourceIbmBaasRestorePointsObjectSummaryToMap(model *backuprecoveryv1.Obje
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsCloudEnv != nil {
 		modelMap["is_cloud_env"] = *model.IsCloudEnv
@@ -4020,7 +4020,7 @@ func ResourceIbmBaasRestorePointsObjectTypeVCenterParamsToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterSourceType != nil {
 		modelMap["cluster_source_type"] = *model.ClusterSourceType
@@ -4028,7 +4028,7 @@ func ResourceIbmBaasRestorePointsObjectTypeWindowsClusterParamsToMap(model *back
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectProtectionStatsSummaryToMap(model *backuprecoveryv1.ObjectProtectionStatsSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Environment != nil {
 		modelMap["environment"] = *model.Environment
@@ -4051,7 +4051,7 @@ func ResourceIbmBaasRestorePointsObjectProtectionStatsSummaryToMap(model *backup
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsPermissionInfoToMap(model *backuprecoveryv1.PermissionInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ObjectID != nil {
 		modelMap["object_id"] = flex.IntValue(model.ObjectID)
@@ -4059,7 +4059,7 @@ func ResourceIbmBaasRestorePointsPermissionInfoToMap(model *backuprecoveryv1.Per
 	if model.Users != nil {
 		users := []map[string]interface{}{}
 		for _, usersItem := range model.Users {
-			usersItemMap, err := ResourceIbmBaasRestorePointsUserToMap(&usersItem) // #nosec G601
+			usersItemMap, err := ResourceIbmBackupRecoveryRestorePointsUserToMap(&usersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4070,7 +4070,7 @@ func ResourceIbmBaasRestorePointsPermissionInfoToMap(model *backuprecoveryv1.Per
 	if model.Groups != nil {
 		groups := []map[string]interface{}{}
 		for _, groupsItem := range model.Groups {
-			groupsItemMap, err := ResourceIbmBaasRestorePointsGroupToMap(&groupsItem) // #nosec G601
+			groupsItemMap, err := ResourceIbmBackupRecoveryRestorePointsGroupToMap(&groupsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4079,7 +4079,7 @@ func ResourceIbmBaasRestorePointsPermissionInfoToMap(model *backuprecoveryv1.Per
 		modelMap["groups"] = groups
 	}
 	if model.Tenant != nil {
-		tenantMap, err := ResourceIbmBaasRestorePointsTenantToMap(model.Tenant)
+		tenantMap, err := ResourceIbmBackupRecoveryRestorePointsTenantToMap(model.Tenant)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4088,7 +4088,7 @@ func ResourceIbmBaasRestorePointsPermissionInfoToMap(model *backuprecoveryv1.Per
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsUserToMap(model *backuprecoveryv1.User) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -4102,7 +4102,7 @@ func ResourceIbmBaasRestorePointsUserToMap(model *backuprecoveryv1.User) (map[st
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsGroupToMap(model *backuprecoveryv1.Group) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -4116,7 +4116,7 @@ func ResourceIbmBaasRestorePointsGroupToMap(model *backuprecoveryv1.Group) (map[
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CreatedAtTimeMsecs != nil && *(model.CreatedAtTimeMsecs) != 0 {
 		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
@@ -4128,7 +4128,7 @@ func ResourceIbmBaasRestorePointsTenantToMap(model *backuprecoveryv1.Tenant) (ma
 		modelMap["description"] = *model.Description
 	}
 	if model.ExternalVendorMetadata != nil {
-		externalVendorMetadataMap, err := ResourceIbmBaasRestorePointsExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
+		externalVendorMetadataMap, err := ResourceIbmBackupRecoveryRestorePointsExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4147,7 +4147,7 @@ func ResourceIbmBaasRestorePointsTenantToMap(model *backuprecoveryv1.Tenant) (ma
 		modelMap["name"] = *model.Name
 	}
 	if model.Network != nil {
-		networkMap, err := ResourceIbmBaasRestorePointsTenantNetworkToMap(model.Network)
+		networkMap, err := ResourceIbmBackupRecoveryRestorePointsTenantNetworkToMap(model.Network)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4159,10 +4159,10 @@ func ResourceIbmBaasRestorePointsTenantToMap(model *backuprecoveryv1.Tenant) (ma
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IbmTenantMetadataParams != nil {
-		ibmTenantMetadataParamsMap, err := ResourceIbmBaasRestorePointsIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		ibmTenantMetadataParamsMap, err := ResourceIbmBackupRecoveryRestorePointsIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4172,7 +4172,7 @@ func ResourceIbmBaasRestorePointsExternalVendorTenantMetadataToMap(model *backup
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AccountID != nil {
 		modelMap["account_id"] = *model.AccountID
@@ -4183,7 +4183,7 @@ func ResourceIbmBaasRestorePointsIbmTenantMetadataParamsToMap(model *backuprecov
 	if model.CustomProperties != nil {
 		customProperties := []map[string]interface{}{}
 		for _, customPropertiesItem := range model.CustomProperties {
-			customPropertiesItemMap, err := ResourceIbmBaasRestorePointsExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			customPropertiesItemMap, err := ResourceIbmBackupRecoveryRestorePointsExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4203,7 +4203,7 @@ func ResourceIbmBaasRestorePointsIbmTenantMetadataParamsToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Key != nil {
 		modelMap["key"] = *model.Key
@@ -4214,7 +4214,7 @@ func ResourceIbmBaasRestorePointsExternalVendorCustomPropertiesToMap(model *back
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["connector_enabled"] = *model.ConnectorEnabled
 	if model.ClusterHostname != nil {
@@ -4226,17 +4226,17 @@ func ResourceIbmBaasRestorePointsTenantNetworkToMap(model *backuprecoveryv1.Tena
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectMssqlParamsToMap(model *backuprecoveryv1.ObjectMssqlParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectMssqlParamsToMap(model *backuprecoveryv1.ObjectMssqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AagInfo != nil {
-		aagInfoMap, err := ResourceIbmBaasRestorePointsAAGInfoToMap(model.AagInfo)
+		aagInfoMap, err := ResourceIbmBackupRecoveryRestorePointsAAGInfoToMap(model.AagInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := ResourceIbmBaasRestorePointsHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := ResourceIbmBackupRecoveryRestorePointsHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4248,7 +4248,7 @@ func ResourceIbmBaasRestorePointsObjectMssqlParamsToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -4259,7 +4259,7 @@ func ResourceIbmBaasRestorePointsAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -4273,7 +4273,7 @@ func ResourceIbmBaasRestorePointsHostInformationToMap(model *backuprecoveryv1.Ho
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = *model.EnableSystemBackup
@@ -4281,12 +4281,12 @@ func ResourceIbmBaasRestorePointsObjectPhysicalParamsToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsTargetsConfigurationToMap(model *backuprecoveryv1.TargetsConfiguration) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsTargetsConfigurationToMap(model *backuprecoveryv1.TargetsConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ReplicationTargets != nil {
 		replicationTargets := []map[string]interface{}{}
 		for _, replicationTargetsItem := range model.ReplicationTargets {
-			replicationTargetsItemMap, err := ResourceIbmBaasRestorePointsReplicationTargetConfigurationToMap(&replicationTargetsItem) // #nosec G601
+			replicationTargetsItemMap, err := ResourceIbmBackupRecoveryRestorePointsReplicationTargetConfigurationToMap(&replicationTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4297,7 +4297,7 @@ func ResourceIbmBaasRestorePointsTargetsConfigurationToMap(model *backuprecovery
 	if model.ArchivalTargets != nil {
 		archivalTargets := []map[string]interface{}{}
 		for _, archivalTargetsItem := range model.ArchivalTargets {
-			archivalTargetsItemMap, err := ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(&archivalTargetsItem) // #nosec G601
+			archivalTargetsItemMap, err := ResourceIbmBackupRecoveryRestorePointsArchivalTargetConfigurationToMap(&archivalTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4308,7 +4308,7 @@ func ResourceIbmBaasRestorePointsTargetsConfigurationToMap(model *backuprecovery
 	if model.CloudSpinTargets != nil {
 		cloudSpinTargets := []map[string]interface{}{}
 		for _, cloudSpinTargetsItem := range model.CloudSpinTargets {
-			cloudSpinTargetsItemMap, err := ResourceIbmBaasRestorePointsCloudSpinTargetConfigurationToMap(&cloudSpinTargetsItem) // #nosec G601
+			cloudSpinTargetsItemMap, err := ResourceIbmBackupRecoveryRestorePointsCloudSpinTargetConfigurationToMap(&cloudSpinTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4319,7 +4319,7 @@ func ResourceIbmBaasRestorePointsTargetsConfigurationToMap(model *backuprecovery
 	if model.OnpremDeployTargets != nil {
 		onpremDeployTargets := []map[string]interface{}{}
 		for _, onpremDeployTargetsItem := range model.OnpremDeployTargets {
-			onpremDeployTargetsItemMap, err := ResourceIbmBaasRestorePointsOnpremDeployTargetConfigurationToMap(&onpremDeployTargetsItem) // #nosec G601
+			onpremDeployTargetsItemMap, err := ResourceIbmBackupRecoveryRestorePointsOnpremDeployTargetConfigurationToMap(&onpremDeployTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4330,7 +4330,7 @@ func ResourceIbmBaasRestorePointsTargetsConfigurationToMap(model *backuprecovery
 	if model.RpaasTargets != nil {
 		rpaasTargets := []map[string]interface{}{}
 		for _, rpaasTargetsItem := range model.RpaasTargets {
-			rpaasTargetsItemMap, err := ResourceIbmBaasRestorePointsRpaasTargetConfigurationToMap(&rpaasTargetsItem) // #nosec G601
+			rpaasTargetsItemMap, err := ResourceIbmBackupRecoveryRestorePointsRpaasTargetConfigurationToMap(&rpaasTargetsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4341,14 +4341,14 @@ func ResourceIbmBaasRestorePointsTargetsConfigurationToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsReplicationTargetConfigurationToMap(model *backuprecoveryv1.ReplicationTargetConfiguration) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsReplicationTargetConfigurationToMap(model *backuprecoveryv1.ReplicationTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := ResourceIbmBaasRestorePointsTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := ResourceIbmBackupRecoveryRestorePointsTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := ResourceIbmBaasRestorePointsRetentionToMap(model.Retention)
+	retentionMap, err := ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4365,7 +4365,7 @@ func ResourceIbmBaasRestorePointsReplicationTargetConfigurationToMap(model *back
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := ResourceIbmBackupRecoveryRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4374,21 +4374,21 @@ func ResourceIbmBaasRestorePointsReplicationTargetConfigurationToMap(model *back
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := ResourceIbmBaasRestorePointsLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := ResourceIbmBackupRecoveryRestorePointsLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
 	if model.AwsTargetConfig != nil {
-		awsTargetConfigMap, err := ResourceIbmBaasRestorePointsAWSTargetConfigToMap(model.AwsTargetConfig)
+		awsTargetConfigMap, err := ResourceIbmBackupRecoveryRestorePointsAWSTargetConfigToMap(model.AwsTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_target_config"] = []map[string]interface{}{awsTargetConfigMap}
 	}
 	if model.AzureTargetConfig != nil {
-		azureTargetConfigMap, err := ResourceIbmBaasRestorePointsAzureTargetConfigToMap(model.AzureTargetConfig)
+		azureTargetConfigMap, err := ResourceIbmBackupRecoveryRestorePointsAzureTargetConfigToMap(model.AzureTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4396,7 +4396,7 @@ func ResourceIbmBaasRestorePointsReplicationTargetConfigurationToMap(model *back
 	}
 	modelMap["target_type"] = *model.TargetType
 	if model.RemoteTargetConfig != nil {
-		remoteTargetConfigMap, err := ResourceIbmBaasRestorePointsRemoteTargetConfigToMap(model.RemoteTargetConfig)
+		remoteTargetConfigMap, err := ResourceIbmBackupRecoveryRestorePointsRemoteTargetConfigToMap(model.RemoteTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4405,7 +4405,7 @@ func ResourceIbmBaasRestorePointsReplicationTargetConfigurationToMap(model *back
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsTargetScheduleToMap(model *backuprecoveryv1.TargetSchedule) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsTargetScheduleToMap(model *backuprecoveryv1.TargetSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
@@ -4414,12 +4414,12 @@ func ResourceIbmBaasRestorePointsTargetScheduleToMap(model *backuprecoveryv1.Tar
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := ResourceIbmBaasRestorePointsDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := ResourceIbmBackupRecoveryRestorePointsDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4428,7 +4428,7 @@ func ResourceIbmBaasRestorePointsRetentionToMap(model *backuprecoveryv1.Retentio
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mode"] = *model.Mode
 	modelMap["unit"] = *model.Unit
@@ -4439,7 +4439,7 @@ func ResourceIbmBaasRestorePointsDataLockConfigToMap(model *backuprecoveryv1.Dat
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(model *backuprecoveryv1.CancellationTimeoutParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsCancellationTimeoutParamsToMap(model *backuprecoveryv1.CancellationTimeoutParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TimeoutMins != nil {
 		modelMap["timeout_mins"] = flex.IntValue(model.TimeoutMins)
@@ -4450,12 +4450,12 @@ func ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(model *backuprec
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsLogRetentionToMap(model *backuprecoveryv1.LogRetention) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsLogRetentionToMap(model *backuprecoveryv1.LogRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := ResourceIbmBaasRestorePointsDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := ResourceIbmBackupRecoveryRestorePointsDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4464,7 +4464,7 @@ func ResourceIbmBaasRestorePointsLogRetentionToMap(model *backuprecoveryv1.LogRe
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAWSTargetConfigToMap(model *backuprecoveryv1.AWSTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -4477,7 +4477,7 @@ func ResourceIbmBaasRestorePointsAWSTargetConfigToMap(model *backuprecoveryv1.AW
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsAzureTargetConfigToMap(model *backuprecoveryv1.AzureTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -4510,7 +4510,7 @@ func ResourceIbmBaasRestorePointsAzureTargetConfigToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsRemoteTargetConfigToMap(model *backuprecoveryv1.RemoteTargetConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsRemoteTargetConfigToMap(model *backuprecoveryv1.RemoteTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["cluster_id"] = flex.IntValue(model.ClusterID)
 	if model.ClusterName != nil {
@@ -4519,14 +4519,14 @@ func ResourceIbmBaasRestorePointsRemoteTargetConfigToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(model *backuprecoveryv1.ArchivalTargetConfiguration) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsArchivalTargetConfigurationToMap(model *backuprecoveryv1.ArchivalTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := ResourceIbmBaasRestorePointsTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := ResourceIbmBackupRecoveryRestorePointsTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := ResourceIbmBaasRestorePointsRetentionToMap(model.Retention)
+	retentionMap, err := ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4543,7 +4543,7 @@ func ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(model *backupr
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := ResourceIbmBackupRecoveryRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4552,7 +4552,7 @@ func ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(model *backupr
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := ResourceIbmBaasRestorePointsLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := ResourceIbmBackupRecoveryRestorePointsLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4566,7 +4566,7 @@ func ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(model *backupr
 		modelMap["target_type"] = *model.TargetType
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := ResourceIbmBaasRestorePointsTierLevelSettingsToMap(model.TierSettings)
+		tierSettingsMap, err := ResourceIbmBackupRecoveryRestorePointsTierLevelSettingsToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4575,7 +4575,7 @@ func ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(model *backupr
 	if model.ExtendedRetention != nil {
 		extendedRetention := []map[string]interface{}{}
 		for _, extendedRetentionItem := range model.ExtendedRetention {
-			extendedRetentionItemMap, err := ResourceIbmBaasRestorePointsExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
+			extendedRetentionItemMap, err := ResourceIbmBackupRecoveryRestorePointsExtendedRetentionPolicyToMap(&extendedRetentionItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4586,17 +4586,17 @@ func ResourceIbmBaasRestorePointsArchivalTargetConfigurationToMap(model *backupr
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsTierLevelSettingsToMap(model *backuprecoveryv1.TierLevelSettings) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsTierLevelSettingsToMap(model *backuprecoveryv1.TierLevelSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := ResourceIbmBaasRestorePointsAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := ResourceIbmBackupRecoveryRestorePointsAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := ResourceIbmBaasRestorePointsAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := ResourceIbmBackupRecoveryRestorePointsAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4604,14 +4604,14 @@ func ResourceIbmBaasRestorePointsTierLevelSettingsToMap(model *backuprecoveryv1.
 	}
 	modelMap["cloud_platform"] = *model.CloudPlatform
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := ResourceIbmBaasRestorePointsGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := ResourceIbmBackupRecoveryRestorePointsGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := ResourceIbmBaasRestorePointsOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := ResourceIbmBackupRecoveryRestorePointsOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4620,14 +4620,14 @@ func ResourceIbmBaasRestorePointsTierLevelSettingsToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsExtendedRetentionPolicyToMap(model *backuprecoveryv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsExtendedRetentionPolicyToMap(model *backuprecoveryv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := ResourceIbmBaasRestorePointsExtendedRetentionScheduleToMap(model.Schedule)
+	scheduleMap, err := ResourceIbmBackupRecoveryRestorePointsExtendedRetentionScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := ResourceIbmBaasRestorePointsRetentionToMap(model.Retention)
+	retentionMap, err := ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4641,7 +4641,7 @@ func ResourceIbmBaasRestorePointsExtendedRetentionPolicyToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsExtendedRetentionScheduleToMap(model *backuprecoveryv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsExtendedRetentionScheduleToMap(model *backuprecoveryv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
@@ -4650,14 +4650,14 @@ func ResourceIbmBaasRestorePointsExtendedRetentionScheduleToMap(model *backuprec
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsCloudSpinTargetConfigurationToMap(model *backuprecoveryv1.CloudSpinTargetConfiguration) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsCloudSpinTargetConfigurationToMap(model *backuprecoveryv1.CloudSpinTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := ResourceIbmBaasRestorePointsTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := ResourceIbmBackupRecoveryRestorePointsTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := ResourceIbmBaasRestorePointsRetentionToMap(model.Retention)
+	retentionMap, err := ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4674,7 +4674,7 @@ func ResourceIbmBaasRestorePointsCloudSpinTargetConfigurationToMap(model *backup
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := ResourceIbmBackupRecoveryRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4683,13 +4683,13 @@ func ResourceIbmBaasRestorePointsCloudSpinTargetConfigurationToMap(model *backup
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := ResourceIbmBaasRestorePointsLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := ResourceIbmBackupRecoveryRestorePointsLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
-	targetMap, err := ResourceIbmBaasRestorePointsCloudSpinTargetToMap(model.Target)
+	targetMap, err := ResourceIbmBackupRecoveryRestorePointsCloudSpinTargetToMap(model.Target)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4697,14 +4697,14 @@ func ResourceIbmBaasRestorePointsCloudSpinTargetConfigurationToMap(model *backup
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsOnpremDeployTargetConfigurationToMap(model *backuprecoveryv1.OnpremDeployTargetConfiguration) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsOnpremDeployTargetConfigurationToMap(model *backuprecoveryv1.OnpremDeployTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := ResourceIbmBaasRestorePointsTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := ResourceIbmBackupRecoveryRestorePointsTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := ResourceIbmBaasRestorePointsRetentionToMap(model.Retention)
+	retentionMap, err := ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4721,7 +4721,7 @@ func ResourceIbmBaasRestorePointsOnpremDeployTargetConfigurationToMap(model *bac
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := ResourceIbmBackupRecoveryRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4730,14 +4730,14 @@ func ResourceIbmBaasRestorePointsOnpremDeployTargetConfigurationToMap(model *bac
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := ResourceIbmBaasRestorePointsLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := ResourceIbmBackupRecoveryRestorePointsLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["log_retention"] = []map[string]interface{}{logRetentionMap}
 	}
 	if model.Params != nil {
-		paramsMap, err := ResourceIbmBaasRestorePointsOnpremDeployParamsToMap(model.Params)
+		paramsMap, err := ResourceIbmBackupRecoveryRestorePointsOnpremDeployParamsToMap(model.Params)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4746,7 +4746,7 @@ func ResourceIbmBaasRestorePointsOnpremDeployTargetConfigurationToMap(model *bac
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsOnpremDeployParamsToMap(model *backuprecoveryv1.OnpremDeployParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsOnpremDeployParamsToMap(model *backuprecoveryv1.OnpremDeployParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -4754,14 +4754,14 @@ func ResourceIbmBaasRestorePointsOnpremDeployParamsToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsRpaasTargetConfigurationToMap(model *backuprecoveryv1.RpaasTargetConfiguration) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsRpaasTargetConfigurationToMap(model *backuprecoveryv1.RpaasTargetConfiguration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scheduleMap, err := ResourceIbmBaasRestorePointsTargetScheduleToMap(model.Schedule)
+	scheduleMap, err := ResourceIbmBackupRecoveryRestorePointsTargetScheduleToMap(model.Schedule)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["schedule"] = []map[string]interface{}{scheduleMap}
-	retentionMap, err := ResourceIbmBaasRestorePointsRetentionToMap(model.Retention)
+	retentionMap, err := ResourceIbmBackupRecoveryRestorePointsRetentionToMap(model.Retention)
 	if err != nil {
 		return modelMap, err
 	}
@@ -4778,7 +4778,7 @@ func ResourceIbmBaasRestorePointsRpaasTargetConfigurationToMap(model *backupreco
 	if model.RunTimeouts != nil {
 		runTimeouts := []map[string]interface{}{}
 		for _, runTimeoutsItem := range model.RunTimeouts {
-			runTimeoutsItemMap, err := ResourceIbmBaasRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
+			runTimeoutsItemMap, err := ResourceIbmBackupRecoveryRestorePointsCancellationTimeoutParamsToMap(&runTimeoutsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4787,7 +4787,7 @@ func ResourceIbmBaasRestorePointsRpaasTargetConfigurationToMap(model *backupreco
 		modelMap["run_timeouts"] = runTimeouts
 	}
 	if model.LogRetention != nil {
-		logRetentionMap, err := ResourceIbmBaasRestorePointsLogRetentionToMap(model.LogRetention)
+		logRetentionMap, err := ResourceIbmBackupRecoveryRestorePointsLogRetentionToMap(model.LogRetention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -4803,7 +4803,7 @@ func ResourceIbmBaasRestorePointsRpaasTargetConfigurationToMap(model *backupreco
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsTimeRangeInfoToMap(model *backuprecoveryv1.TimeRangeInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsTimeRangeInfoToMap(model *backuprecoveryv1.TimeRangeInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ErrorMessage != nil {
 		modelMap["error_message"] = *model.ErrorMessage
@@ -4811,7 +4811,7 @@ func ResourceIbmBaasRestorePointsTimeRangeInfoToMap(model *backuprecoveryv1.Time
 	if model.TimeRanges != nil {
 		timeRanges := []map[string]interface{}{}
 		for _, timeRangesItem := range model.TimeRanges {
-			timeRangesItemMap, err := ResourceIbmBaasRestorePointsRecoveryTimeRangeInfoToMap(&timeRangesItem) // #nosec G601
+			timeRangesItemMap, err := ResourceIbmBackupRecoveryRestorePointsRecoveryTimeRangeInfoToMap(&timeRangesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -4825,7 +4825,7 @@ func ResourceIbmBaasRestorePointsTimeRangeInfoToMap(model *backuprecoveryv1.Time
 	return modelMap, nil
 }
 
-func ResourceIbmBaasRestorePointsRecoveryTimeRangeInfoToMap(model *backuprecoveryv1.RecoveryTimeRangeInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryRestorePointsRecoveryTimeRangeInfoToMap(model *backuprecoveryv1.RecoveryTimeRangeInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EndTimeUsecs != nil {
 		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)

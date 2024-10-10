@@ -22,13 +22,13 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequest() *schema.Resource {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasUpdateProtectionGroupRunRequestCreate,
-		ReadContext:   resourceIbmBaasUpdateProtectionGroupRunRequestRead,
-		DeleteContext: resourceIbmBaasUpdateProtectionGroupRunRequestDelete,
-		UpdateContext: resourceIbmBaasUpdateProtectionGroupRunRequestUpdate,
-		CustomizeDiff: checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest,
+		CreateContext: resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestCreate,
+		ReadContext:   resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRead,
+		DeleteContext: resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestDelete,
+		UpdateContext: resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdate,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -374,7 +374,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequest() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func checkDiffResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
 	// 	return nil
@@ -385,7 +385,7 @@ func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Con
 		return nil
 	}
 
-	for fieldName := range ResourceIbmBaasUpdateProtectionGroupRunRequest().Schema {
+	for fieldName := range ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
 			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_update_protection_group_run_request cannot be updated.")
 		}
@@ -393,7 +393,7 @@ func checkDiffResourceIbmBaasUpdateProtectionGroupRunRequest(context context.Con
 	return nil
 }
 
-func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_update_protection_group_run_request", "create", "initialize-client")
@@ -409,7 +409,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Contex
 	var newUpdateProtectionGroupRunParams []backuprecoveryv1.UpdateProtectionGroupRunParams
 	for _, v := range d.Get("update_protection_group_run_params").([]interface{}) {
 		value := v.(map[string]interface{})
-		newUpdateProtectionGroupRunParamsItem, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunParams(value)
+		newUpdateProtectionGroupRunParamsItem, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunParams(value)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_update_protection_group_run_request", "create", "parse-update_protection_group_run_params").GetDiag()
 		}
@@ -429,7 +429,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Contex
 	if !core.IsNil(updateProtectionGroupRunResponse.FailedRuns) {
 		failedRuns := []map[string]interface{}{}
 		for _, failedRun := range updateProtectionGroupRunResponse.FailedRuns {
-			failedRunsMap, err := resourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunFailedRuns(&failedRun)
+			failedRunsMap, err := resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunFailedRuns(&failedRun)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -442,10 +442,10 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestCreate(context context.Contex
 
 	d.SetId(*updateProtectionGroupRunOptions.ID)
 
-	return resourceIbmBaasUpdateProtectionGroupRunRequestRead(context, d, meta)
+	return resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRead(context, d, meta)
 }
 
-func resourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunFailedRuns(model *backuprecoveryv1.FailedRunDetails) (map[string]interface{}, error) {
+func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunFailedRuns(model *backuprecoveryv1.FailedRunDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RunID != nil {
 		modelMap["run_id"] = model.RunID
@@ -456,12 +456,12 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRun
 	return modelMap, nil
 }
 
-func resourceIbmBaasUpdateProtectionGroupRunRequestRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	return nil
 }
 
-func resourceIbmBaasUpdateProtectionGroupRunRequestDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 
 	var diags diag.Diagnostics
@@ -475,7 +475,7 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestDelete(context context.Contex
 	return diags
 }
 
-func resourceIbmBaasUpdateProtectionGroupRunRequestUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
@@ -488,25 +488,25 @@ func resourceIbmBaasUpdateProtectionGroupRunRequestUpdate(context context.Contex
 	return diags
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunParams(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateProtectionGroupRunParams, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRunParams(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateProtectionGroupRunParams, error) {
 	model := &backuprecoveryv1.UpdateProtectionGroupRunParams{}
 	model.RunID = core.StringPtr(modelMap["run_id"].(string))
 	if modelMap["local_snapshot_config"] != nil && len(modelMap["local_snapshot_config"].([]interface{})) > 0 {
-		LocalSnapshotConfigModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateLocalSnapshotConfig(modelMap["local_snapshot_config"].([]interface{})[0].(map[string]interface{}))
+		LocalSnapshotConfigModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateLocalSnapshotConfig(modelMap["local_snapshot_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.LocalSnapshotConfig = LocalSnapshotConfigModel
 	}
 	if modelMap["replication_snapshot_config"] != nil && len(modelMap["replication_snapshot_config"].([]interface{})) > 0 {
-		ReplicationSnapshotConfigModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateReplicationSnapshotConfig(modelMap["replication_snapshot_config"].([]interface{})[0].(map[string]interface{}))
+		ReplicationSnapshotConfigModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateReplicationSnapshotConfig(modelMap["replication_snapshot_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.ReplicationSnapshotConfig = ReplicationSnapshotConfigModel
 	}
 	if modelMap["archival_snapshot_config"] != nil && len(modelMap["archival_snapshot_config"].([]interface{})) > 0 {
-		ArchivalSnapshotConfigModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateArchivalSnapshotConfig(modelMap["archival_snapshot_config"].([]interface{})[0].(map[string]interface{}))
+		ArchivalSnapshotConfigModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateArchivalSnapshotConfig(modelMap["archival_snapshot_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -515,7 +515,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateProtectionGroupRun
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateLocalSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateLocalSnapshotConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateLocalSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateLocalSnapshotConfig, error) {
 	model := &backuprecoveryv1.UpdateLocalSnapshotConfig{}
 	if modelMap["enable_legal_hold"] != nil {
 		model.EnableLegalHold = core.BoolPtr(modelMap["enable_legal_hold"].(bool))
@@ -532,12 +532,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateLocalSnapshotConfi
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateReplicationSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateReplicationSnapshotConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateReplicationSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateReplicationSnapshotConfig, error) {
 	model := &backuprecoveryv1.UpdateReplicationSnapshotConfig{}
 	if modelMap["new_snapshot_config"] != nil {
 		newSnapshotConfig := []backuprecoveryv1.RunReplicationConfig{}
 		for _, newSnapshotConfigItem := range modelMap["new_snapshot_config"].([]interface{}) {
-			newSnapshotConfigItemModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRunReplicationConfig(newSnapshotConfigItem.(map[string]interface{}))
+			newSnapshotConfigItemModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRunReplicationConfig(newSnapshotConfigItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -548,7 +548,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateReplicationSnapsho
 	if modelMap["update_existing_snapshot_config"] != nil {
 		updateExistingSnapshotConfig := []backuprecoveryv1.UpdateExistingReplicationSnapshotConfig{}
 		for _, updateExistingSnapshotConfigItem := range modelMap["update_existing_snapshot_config"].([]interface{}) {
-			updateExistingSnapshotConfigItemModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateExistingReplicationSnapshotConfig(updateExistingSnapshotConfigItem.(map[string]interface{}))
+			updateExistingSnapshotConfigItemModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateExistingReplicationSnapshotConfig(updateExistingSnapshotConfigItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -559,11 +559,11 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateReplicationSnapsho
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRunReplicationConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunReplicationConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRunReplicationConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunReplicationConfig, error) {
 	model := &backuprecoveryv1.RunReplicationConfig{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	if modelMap["retention"] != nil && len(modelMap["retention"].([]interface{})) > 0 {
-		RetentionModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
+		RetentionModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -572,12 +572,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRunReplicationConfig(mod
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRetention(modelMap map[string]interface{}) (*backuprecoveryv1.Retention, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRetention(modelMap map[string]interface{}) (*backuprecoveryv1.Retention, error) {
 	model := &backuprecoveryv1.Retention{}
 	model.Unit = core.StringPtr(modelMap["unit"].(string))
 	model.Duration = core.Int64Ptr(int64(modelMap["duration"].(int)))
 	if modelMap["data_lock_config"] != nil && len(modelMap["data_lock_config"].([]interface{})) > 0 {
-		DataLockConfigModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToDataLockConfig(modelMap["data_lock_config"].([]interface{})[0].(map[string]interface{}))
+		DataLockConfigModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToDataLockConfig(modelMap["data_lock_config"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -586,7 +586,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRetention(modelMap map[s
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToDataLockConfig(modelMap map[string]interface{}) (*backuprecoveryv1.DataLockConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToDataLockConfig(modelMap map[string]interface{}) (*backuprecoveryv1.DataLockConfig, error) {
 	model := &backuprecoveryv1.DataLockConfig{}
 	model.Mode = core.StringPtr(modelMap["mode"].(string))
 	model.Unit = core.StringPtr(modelMap["unit"].(string))
@@ -597,7 +597,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToDataLockConfig(modelMap 
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateExistingReplicationSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateExistingReplicationSnapshotConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateExistingReplicationSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateExistingReplicationSnapshotConfig, error) {
 	model := &backuprecoveryv1.UpdateExistingReplicationSnapshotConfig{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
@@ -621,12 +621,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateExistingReplicatio
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateArchivalSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateArchivalSnapshotConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateArchivalSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateArchivalSnapshotConfig, error) {
 	model := &backuprecoveryv1.UpdateArchivalSnapshotConfig{}
 	if modelMap["new_snapshot_config"] != nil {
 		newSnapshotConfig := []backuprecoveryv1.RunArchivalConfig{}
 		for _, newSnapshotConfigItem := range modelMap["new_snapshot_config"].([]interface{}) {
-			newSnapshotConfigItemModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRunArchivalConfig(newSnapshotConfigItem.(map[string]interface{}))
+			newSnapshotConfigItemModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRunArchivalConfig(newSnapshotConfigItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -637,7 +637,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateArchivalSnapshotCo
 	if modelMap["update_existing_snapshot_config"] != nil {
 		updateExistingSnapshotConfig := []backuprecoveryv1.UpdateExistingArchivalSnapshotConfig{}
 		for _, updateExistingSnapshotConfigItem := range modelMap["update_existing_snapshot_config"].([]interface{}) {
-			updateExistingSnapshotConfigItemModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateExistingArchivalSnapshotConfig(updateExistingSnapshotConfigItem.(map[string]interface{}))
+			updateExistingSnapshotConfigItemModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateExistingArchivalSnapshotConfig(updateExistingSnapshotConfigItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -648,12 +648,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateArchivalSnapshotCo
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRunArchivalConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunArchivalConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRunArchivalConfig(modelMap map[string]interface{}) (*backuprecoveryv1.RunArchivalConfig, error) {
 	model := &backuprecoveryv1.RunArchivalConfig{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	model.ArchivalTargetType = core.StringPtr(modelMap["archival_target_type"].(string))
 	if modelMap["retention"] != nil && len(modelMap["retention"].([]interface{})) > 0 {
-		RetentionModel, err := ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
+		RetentionModel, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToRetention(modelMap["retention"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -665,7 +665,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToRunArchivalConfig(modelM
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateExistingArchivalSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateExistingArchivalSnapshotConfig, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestMapToUpdateExistingArchivalSnapshotConfig(modelMap map[string]interface{}) (*backuprecoveryv1.UpdateExistingArchivalSnapshotConfig, error) {
 	model := &backuprecoveryv1.UpdateExistingArchivalSnapshotConfig{}
 	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
@@ -690,25 +690,25 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestMapToUpdateExistingArchivalSn
 	return model, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateProtectionGroupRunParamsToMap(model *backuprecoveryv1.UpdateProtectionGroupRunParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateProtectionGroupRunParamsToMap(model *backuprecoveryv1.UpdateProtectionGroupRunParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["run_id"] = *model.RunID
 	if model.LocalSnapshotConfig != nil {
-		localSnapshotConfigMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateLocalSnapshotConfigToMap(model.LocalSnapshotConfig)
+		localSnapshotConfigMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateLocalSnapshotConfigToMap(model.LocalSnapshotConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["local_snapshot_config"] = []map[string]interface{}{localSnapshotConfigMap}
 	}
 	if model.ReplicationSnapshotConfig != nil {
-		replicationSnapshotConfigMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateReplicationSnapshotConfigToMap(model.ReplicationSnapshotConfig)
+		replicationSnapshotConfigMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateReplicationSnapshotConfigToMap(model.ReplicationSnapshotConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["replication_snapshot_config"] = []map[string]interface{}{replicationSnapshotConfigMap}
 	}
 	if model.ArchivalSnapshotConfig != nil {
-		archivalSnapshotConfigMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateArchivalSnapshotConfigToMap(model.ArchivalSnapshotConfig)
+		archivalSnapshotConfigMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateArchivalSnapshotConfigToMap(model.ArchivalSnapshotConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -717,7 +717,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateProtectionGroupRunParam
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateLocalSnapshotConfigToMap(model *backuprecoveryv1.UpdateLocalSnapshotConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateLocalSnapshotConfigToMap(model *backuprecoveryv1.UpdateLocalSnapshotConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableLegalHold != nil {
 		modelMap["enable_legal_hold"] = *model.EnableLegalHold
@@ -734,12 +734,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateLocalSnapshotConfigToMa
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateReplicationSnapshotConfigToMap(model *backuprecoveryv1.UpdateReplicationSnapshotConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateReplicationSnapshotConfigToMap(model *backuprecoveryv1.UpdateReplicationSnapshotConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.NewSnapshotConfig != nil {
 		newSnapshotConfig := []map[string]interface{}{}
 		for _, newSnapshotConfigItem := range model.NewSnapshotConfig {
-			newSnapshotConfigItemMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestRunReplicationConfigToMap(&newSnapshotConfigItem) // #nosec G601
+			newSnapshotConfigItemMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRunReplicationConfigToMap(&newSnapshotConfigItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -750,7 +750,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateReplicationSnapshotConf
 	if model.UpdateExistingSnapshotConfig != nil {
 		updateExistingSnapshotConfig := []map[string]interface{}{}
 		for _, updateExistingSnapshotConfigItem := range model.UpdateExistingSnapshotConfig {
-			updateExistingSnapshotConfigItemMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateExistingReplicationSnapshotConfigToMap(&updateExistingSnapshotConfigItem) // #nosec G601
+			updateExistingSnapshotConfigItemMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateExistingReplicationSnapshotConfigToMap(&updateExistingSnapshotConfigItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -761,11 +761,11 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateReplicationSnapshotConf
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestRunReplicationConfigToMap(model *backuprecoveryv1.RunReplicationConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRunReplicationConfigToMap(model *backuprecoveryv1.RunReplicationConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Retention != nil {
-		retentionMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestRetentionToMap(model.Retention)
+		retentionMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRetentionToMap(model.Retention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -774,12 +774,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestRunReplicationConfigToMap(mod
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRetentionToMap(model *backuprecoveryv1.Retention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	if model.DataLockConfig != nil {
-		dataLockConfigMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestDataLockConfigToMap(model.DataLockConfig)
+		dataLockConfigMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestDataLockConfigToMap(model.DataLockConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -788,7 +788,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestRetentionToMap(model *backupr
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestDataLockConfigToMap(model *backuprecoveryv1.DataLockConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mode"] = *model.Mode
 	modelMap["unit"] = *model.Unit
@@ -799,7 +799,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestDataLockConfigToMap(model *ba
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateExistingReplicationSnapshotConfigToMap(model *backuprecoveryv1.UpdateExistingReplicationSnapshotConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateExistingReplicationSnapshotConfigToMap(model *backuprecoveryv1.UpdateExistingReplicationSnapshotConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
@@ -823,12 +823,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateExistingReplicationSnap
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateArchivalSnapshotConfigToMap(model *backuprecoveryv1.UpdateArchivalSnapshotConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateArchivalSnapshotConfigToMap(model *backuprecoveryv1.UpdateArchivalSnapshotConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.NewSnapshotConfig != nil {
 		newSnapshotConfig := []map[string]interface{}{}
 		for _, newSnapshotConfigItem := range model.NewSnapshotConfig {
-			newSnapshotConfigItemMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestRunArchivalConfigToMap(&newSnapshotConfigItem) // #nosec G601
+			newSnapshotConfigItemMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRunArchivalConfigToMap(&newSnapshotConfigItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -839,7 +839,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateArchivalSnapshotConfigT
 	if model.UpdateExistingSnapshotConfig != nil {
 		updateExistingSnapshotConfig := []map[string]interface{}{}
 		for _, updateExistingSnapshotConfigItem := range model.UpdateExistingSnapshotConfig {
-			updateExistingSnapshotConfigItemMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateExistingArchivalSnapshotConfigToMap(&updateExistingSnapshotConfigItem) // #nosec G601
+			updateExistingSnapshotConfigItemMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateExistingArchivalSnapshotConfigToMap(&updateExistingSnapshotConfigItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -850,12 +850,12 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateArchivalSnapshotConfigT
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestRunArchivalConfigToMap(model *backuprecoveryv1.RunArchivalConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRunArchivalConfigToMap(model *backuprecoveryv1.RunArchivalConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	modelMap["archival_target_type"] = *model.ArchivalTargetType
 	if model.Retention != nil {
-		retentionMap, err := ResourceIbmBaasUpdateProtectionGroupRunRequestRetentionToMap(model.Retention)
+		retentionMap, err := ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestRetentionToMap(model.Retention)
 		if err != nil {
 			return modelMap, err
 		}
@@ -867,7 +867,7 @@ func ResourceIbmBaasUpdateProtectionGroupRunRequestRunArchivalConfigToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmBaasUpdateProtectionGroupRunRequestUpdateExistingArchivalSnapshotConfigToMap(model *backuprecoveryv1.UpdateExistingArchivalSnapshotConfig) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequestUpdateExistingArchivalSnapshotConfigToMap(model *backuprecoveryv1.UpdateExistingArchivalSnapshotConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {

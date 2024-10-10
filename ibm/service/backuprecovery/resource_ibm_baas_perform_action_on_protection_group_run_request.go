@@ -23,14 +23,14 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequest() *schema.Resource {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequest() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate,
-		ReadContext:   resourceIbmBaasPerformActionOnProtectionGroupRunRequestRead,
-		DeleteContext: resourceIbmBaasPerformActionOnProtectionGroupRunRequestDelete,
-		UpdateContext: resourceIbmBaasPerformActionOnProtectionGroupRunRequestUpdate,
+		CreateContext: resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCreate,
+		ReadContext:   resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestRead,
+		DeleteContext: resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestDelete,
+		UpdateContext: resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestUpdate,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBaasPerformActionOnProtectionGroupRun,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryPerformActionOnProtectionGroupRun,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -129,7 +129,7 @@ func ResourceIbmBaasPerformActionOnProtectionGroupRunRequest() *schema.Resource 
 	}
 }
 
-func checkDiffResourceIbmBaasPerformActionOnProtectionGroupRun(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func checkDiffResourceIbmBackupRecoveryPerformActionOnProtectionGroupRun(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
 	// 	return nil
@@ -140,7 +140,7 @@ func checkDiffResourceIbmBaasPerformActionOnProtectionGroupRun(context context.C
 		return nil
 	}
 
-	for fieldName := range ResourceIbmBaasPerformActionOnProtectionGroupRunRequest().Schema {
+	for fieldName := range ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequest().Schema {
 		if d.HasChange(fieldName) {
 			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_perform_action_on_protection_group_run_request cannot be updated.")
 		}
@@ -148,7 +148,7 @@ func checkDiffResourceIbmBaasPerformActionOnProtectionGroupRun(context context.C
 	return nil
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestValidator() *validate.ResourceValidator {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -164,7 +164,7 @@ func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestValidator() *validat
 	return &resourceValidator
 }
 
-func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "initialize-client")
@@ -180,7 +180,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 		var newPauseParams []backuprecoveryv1.PauseProtectionRunActionParams
 		for _, v := range d.Get("pause_params").([]interface{}) {
 			value := v.(map[string]interface{})
-			newPauseParamsItem, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(value)
+			newPauseParamsItem, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(value)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "parse-pause_params").GetDiag()
 			}
@@ -192,7 +192,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 		var newResumeParams []backuprecoveryv1.ResumeProtectionRunActionParams
 		for _, v := range d.Get("resume_params").([]interface{}) {
 			value := v.(map[string]interface{})
-			newResumeParamsItem, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(value)
+			newResumeParamsItem, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(value)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "parse-resume_params").GetDiag()
 			}
@@ -204,7 +204,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 		var newCancelParams []backuprecoveryv1.CancelProtectionGroupRunRequest
 		for _, v := range d.Get("cancel_params").([]interface{}) {
 			value := v.(map[string]interface{})
-			newCancelParamsItem, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(value)
+			newCancelParamsItem, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(value)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_perform_action_on_protection_group_run_request", "create", "parse-cancel_params").GetDiag()
 			}
@@ -220,14 +220,14 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(resourceIbmBaasProtectionRunActionID(d))
+	d.SetId(resourceIbmBackupRecoveryProtectionRunActionID(d))
 
 	d.Set("action", performRunActionResponse.Action)
 
 	if !core.IsNil(performRunActionResponse.PauseParams) {
 		pauseParams := []map[string]interface{}{}
 		for _, pauseParamsItem := range performRunActionResponse.PauseParams {
-			pauseParamsItemMap, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestPauseProtectionRunActionParamsToMap(&pauseParamsItem)
+			pauseParamsItemMap, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestPauseProtectionRunActionParamsToMap(&pauseParamsItem)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "pause_params-to-map").GetDiag()
 			}
@@ -241,7 +241,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 	if !core.IsNil(performRunActionResponse.ResumeParams) {
 		resumeParams := []map[string]interface{}{}
 		for _, resumeParamsItem := range performRunActionResponse.ResumeParams {
-			resumeParamsItemMap, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestResumeProtectionRunActionParamsToMap(&resumeParamsItem) // #nosec G601
+			resumeParamsItemMap, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestResumeProtectionRunActionParamsToMap(&resumeParamsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "resume_params-to-map").GetDiag()
 			}
@@ -256,7 +256,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 	if !core.IsNil(performRunActionResponse.CancelParams) {
 		cancelParams := []map[string]interface{}{}
 		for _, cancelParamsItem := range performRunActionResponse.CancelParams {
-			cancelParamsItemMap, err := ResourceIbmBaasPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(&cancelParamsItem) // #nosec G601
+			cancelParamsItemMap, err := ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(&cancelParamsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "cancel_params-to-map").GetDiag()
 			}
@@ -267,18 +267,18 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestCreate(context conte
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_perform_action_on_protection_group_run_request", "read", "set-cancel_params").GetDiag()
 		}
 	}
-	return resourceIbmBaasPerformActionOnProtectionGroupRunRequestRead(context, d, meta)
+	return resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestRead(context, d, meta)
 }
 
-func resourceIbmBaasProtectionRunActionID(d *schema.ResourceData) string {
+func resourceIbmBackupRecoveryProtectionRunActionID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func resourceIbmBaasPerformActionOnProtectionGroupRunRequestRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceIbmBaasPerformActionOnProtectionGroupRunRequestDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 
 	var diags diag.Diagnostics
@@ -292,7 +292,7 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestDelete(context conte
 	return diags
 }
 
-func resourceIbmBaasPerformActionOnProtectionGroupRunRequestUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "update" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
@@ -305,19 +305,19 @@ func resourceIbmBaasPerformActionOnProtectionGroupRunRequestUpdate(context conte
 	return diags
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(modelMap map[string]interface{}) (*backuprecoveryv1.PauseProtectionRunActionParams, error) {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestMapToPauseProtectionRunActionParams(modelMap map[string]interface{}) (*backuprecoveryv1.PauseProtectionRunActionParams, error) {
 	model := &backuprecoveryv1.PauseProtectionRunActionParams{}
 	model.RunID = core.StringPtr(modelMap["run_id"].(string))
 	return model, nil
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(modelMap map[string]interface{}) (*backuprecoveryv1.ResumeProtectionRunActionParams, error) {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestMapToResumeProtectionRunActionParams(modelMap map[string]interface{}) (*backuprecoveryv1.ResumeProtectionRunActionParams, error) {
 	model := &backuprecoveryv1.ResumeProtectionRunActionParams{}
 	model.RunID = core.StringPtr(modelMap["run_id"].(string))
 	return model, nil
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(modelMap map[string]interface{}) (*backuprecoveryv1.CancelProtectionGroupRunRequest, error) {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestMapToCancelProtectionGroupRunRequest(modelMap map[string]interface{}) (*backuprecoveryv1.CancelProtectionGroupRunRequest, error) {
 	model := &backuprecoveryv1.CancelProtectionGroupRunRequest{}
 	model.RunID = core.StringPtr(modelMap["run_id"].(string))
 	if modelMap["local_task_id"] != nil && modelMap["local_task_id"].(string) != "" {
@@ -354,19 +354,19 @@ func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestMapToCancelProtectio
 	return model, nil
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestPauseProtectionRunActionParamsToMap(model *backuprecoveryv1.PauseProtectionRunActionResponseParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestPauseProtectionRunActionParamsToMap(model *backuprecoveryv1.PauseProtectionRunActionResponseParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["run_id"] = *model.RunID
 	return modelMap, nil
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestResumeProtectionRunActionParamsToMap(model *backuprecoveryv1.ResumeProtectionRunActionResponseParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestResumeProtectionRunActionParamsToMap(model *backuprecoveryv1.ResumeProtectionRunActionResponseParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["run_id"] = *model.RunID
 	return modelMap, nil
 }
 
-func ResourceIbmBaasPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(model *backuprecoveryv1.CancelProtectionGroupRunResponseParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestCancelProtectionGroupRunRequestToMap(model *backuprecoveryv1.CancelProtectionGroupRunResponseParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["run_id"] = *model.RunID
 	return modelMap, nil
