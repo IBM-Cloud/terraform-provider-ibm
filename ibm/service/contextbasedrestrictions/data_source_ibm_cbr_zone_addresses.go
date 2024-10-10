@@ -109,7 +109,7 @@ func dataSourceIBMCbrZoneAddressesRead(context context.Context, d *schema.Resour
 	}
 
 	var addresses []map[string]interface{}
-	addresses, err = dataSourceDecodeAddressList(zone.Addresses, addressesId)
+	addresses, err = DataSourceDecodeAddressList(zone.Addresses, addressesId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
