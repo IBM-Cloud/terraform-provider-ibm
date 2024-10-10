@@ -296,13 +296,13 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	getTektonPipelineTriggerOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	getTektonPipelineTriggerOptions.SetTriggerID(d.Get("trigger_id").(string))
 
-	TriggerIntf, _, err := cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+	triggerIntf, _, err := cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTektonPipelineTriggerWithContext failed: %s", err.Error()), "(Data) ibm_cd_tekton_pipeline_trigger", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	trigger := TriggerIntf.(*cdtektonpipelinev2.Trigger)
+	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
 
 	d.SetId(fmt.Sprintf("%s/%s", *getTektonPipelineTriggerOptions.PipelineID, *getTektonPipelineTriggerOptions.TriggerID))
 

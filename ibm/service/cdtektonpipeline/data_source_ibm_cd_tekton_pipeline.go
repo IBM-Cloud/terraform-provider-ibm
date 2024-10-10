@@ -537,7 +537,7 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 
 	getTektonPipelineOptions := &cdtektonpipelinev2.GetTektonPipelineOptions{}
 
-	getTektonPipelineOptions.SetID(d.Get("cd_tekton_pipeline_id").(string))
+	getTektonPipelineOptions.SetID(d.Get("pipeline_id").(string))
 
 	tektonPipeline, _, err := cdTektonPipelineClient.GetTektonPipelineWithContext(context, getTektonPipelineOptions)
 	if err != nil {
@@ -609,12 +609,14 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 	}
 
 	triggers := []map[string]interface{}{}
-	for _, triggersItem := range tektonPipeline.Triggers {
-		triggersItemMap, err := DataSourceIBMCdTektonPipelineTriggerToMap(&triggersItem) // #nosec G601
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cd_tekton_pipeline", "read", "triggers-to-map").GetDiag()
+	if tektonPipeline.Triggers != nil {
+		for _, triggersItem := range tektonPipeline.Triggers {
+			triggersItemMap, err := DataSourceIBMCdTektonPipelineTriggerToMap(triggersItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_cd_tekton_pipeline", "read", "triggers-to-map").GetDiag()
+			}
+			triggers = append(triggers, triggersItemMap)
 		}
-		triggers = append(triggers, triggersItemMap)
 	}
 	if err = d.Set("triggers", triggers); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting triggers: %s", err), "(Data) ibm_cd_tekton_pipeline", "read", "set-triggers").GetDiag()

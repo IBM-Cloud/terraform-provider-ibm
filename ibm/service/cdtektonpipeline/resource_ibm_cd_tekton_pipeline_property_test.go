@@ -74,9 +74,10 @@ func TestAccIBMCdTektonPipelinePropertyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property",
+				ResourceName:      "ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"pipeline_id"},
 			},
 		},
 	})

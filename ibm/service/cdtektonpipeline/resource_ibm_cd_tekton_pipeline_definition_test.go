@@ -39,9 +39,10 @@ func TestAccIBMCdTektonPipelineDefinitionBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition",
+				ResourceName:      "ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"pipeline_id"},
 			},
 		},
 	})
