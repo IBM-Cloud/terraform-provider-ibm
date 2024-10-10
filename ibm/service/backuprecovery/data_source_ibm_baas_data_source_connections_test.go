@@ -21,7 +21,7 @@ const (
 	tenantId string = "nhvbcdlnp8/"
 )
 
-func TestAccIbmBaasDataSourceConnectionsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryDataSourceConnectionsDataSourceBasic(t *testing.T) {
 	dataSourceConnectionConnectionName := fmt.Sprintf("tf_connection_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -30,7 +30,7 @@ func TestAccIbmBaasDataSourceConnectionsDataSourceBasic(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmBaasDataSourceConnectionsDataSourceConfigBasic(dataSourceConnectionConnectionName),
+				Config: testAccCheckIbmBackupRecoveryDataSourceConnectionsDataSourceConfigBasic(dataSourceConnectionConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connections.baas_data_source_connections_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_data_source_connections.baas_data_source_connections_instance", "x_ibm_tenant_id", tenantId),
@@ -44,7 +44,7 @@ func TestAccIbmBaasDataSourceConnectionsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasDataSourceConnectionsDataSourceConfigBasic(connectionName string) string {
+func testAccCheckIbmBackupRecoveryDataSourceConnectionsDataSourceConfigBasic(connectionName string) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {

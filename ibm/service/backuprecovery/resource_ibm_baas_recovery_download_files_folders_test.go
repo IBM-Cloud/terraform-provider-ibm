@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-func TestAccIbmBaasRecoveryDownloadFilesFoldersBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryRecoveryDownloadFilesFoldersBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_download_files_folders_name_%d", acctest.RandIntRange(10, 100))
 	objectId := 72
 	resource.Test(t, resource.TestCase{
@@ -25,9 +25,9 @@ func TestAccIbmBaasRecoveryDownloadFilesFoldersBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmBaasRecoveryDownloadFilesFoldersConfigBasic(name, objectId),
+				Config: testAccCheckIbmBackupRecoveryRecoveryDownloadFilesFoldersConfigBasic(name, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasRecoveryDownloadFilesFoldersExists("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance"),
+					testAccCheckIbmBackupRecoveryRecoveryDownloadFilesFoldersExists("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance"),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "name", name),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance", "id"),
@@ -42,7 +42,7 @@ func TestAccIbmBaasRecoveryDownloadFilesFoldersBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasRecoveryDownloadFilesFoldersConfigBasic(name string, objectId int) string {
+func testAccCheckIbmBackupRecoveryRecoveryDownloadFilesFoldersConfigBasic(name string, objectId int) string {
 	return fmt.Sprintf(`
 	
 	data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
@@ -63,7 +63,7 @@ func testAccCheckIbmBaasRecoveryDownloadFilesFoldersConfigBasic(name string, obj
 	`, tenantId, objectId, tenantId, name)
 }
 
-func testAccCheckIbmBaasRecoveryDownloadFilesFoldersExists(n string) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryRecoveryDownloadFilesFoldersExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

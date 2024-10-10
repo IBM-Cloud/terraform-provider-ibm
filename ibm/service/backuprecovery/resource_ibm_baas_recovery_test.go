@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasRecoveryBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryRecoveryBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
 	objectId := 72
@@ -31,9 +31,9 @@ func TestAccIbmBaasRecoveryBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Destroy: false,
-				Config:  testAccCheckIbmBaasRecoveryConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
+				Config:  testAccCheckIbmBackupRecoveryRecoveryConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasRecoveryExists("ibm_backup_recovery_recovery.baas_recovery_instance"),
+					testAccCheckIbmBackupRecoveryRecoveryExists("ibm_backup_recovery_recovery.baas_recovery_instance"),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery.baas_recovery_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery.baas_recovery_instance", "name", name),
 				),
@@ -42,7 +42,7 @@ func TestAccIbmBaasRecoveryBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasRecoveryConfigBasic(objectId int, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction string) string {
+func testAccCheckIbmBackupRecoveryRecoveryConfigBasic(objectId int, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
@@ -77,7 +77,7 @@ func testAccCheckIbmBaasRecoveryConfigBasic(objectId int, name, snapshotEnvironm
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)
 }
 
-func testAccCheckIbmBaasRecoveryExists(n string) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryRecoveryExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

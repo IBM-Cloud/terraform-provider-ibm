@@ -17,7 +17,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasDataSourceConnectionBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryDataSourceConnectionBasic(t *testing.T) {
 	var conf backuprecoveryv1.DataSourceConnection
 	connectionName := fmt.Sprintf("tf_connection_name_%d", acctest.RandIntRange(10, 100))
 	connectionNameUpdate := fmt.Sprintf("tf_connection_name_%d", acctest.RandIntRange(10, 100))
@@ -25,12 +25,12 @@ func TestAccIbmBaasDataSourceConnectionBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasDataSourceConnectionDestroy,
+		CheckDestroy: testAccCheckIbmBackupRecoveryDataSourceConnectionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasDataSourceConnectionConfigBasic(connectionName),
+				Config: testAccCheckIbmBackupRecoveryDataSourceConnectionConfigBasic(connectionName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasDataSourceConnectionExists("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", conf, connectionName),
+					testAccCheckIbmBackupRecoveryDataSourceConnectionExists("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", conf, connectionName),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "connection_name", connectionName),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "registration_token"),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "connection_id"),
@@ -38,7 +38,7 @@ func TestAccIbmBaasDataSourceConnectionBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmBaasDataSourceConnectionConfigBasic(connectionNameUpdate),
+				Config: testAccCheckIbmBackupRecoveryDataSourceConnectionConfigBasic(connectionNameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "connection_name", connectionNameUpdate),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "registration_token"),
@@ -50,7 +50,7 @@ func TestAccIbmBaasDataSourceConnectionBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasDataSourceConnectionConfigBasic(connectionName string) string {
+func testAccCheckIbmBackupRecoveryDataSourceConnectionConfigBasic(connectionName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
 		x_ibm_tenant_id = "%s"
@@ -59,7 +59,7 @@ func testAccCheckIbmBaasDataSourceConnectionConfigBasic(connectionName string) s
 	`, tenantId, connectionName)
 }
 
-func testAccCheckIbmBaasDataSourceConnectionExists(resource string, obj backuprecoveryv1.DataSourceConnection, connName string) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryDataSourceConnectionExists(resource string, obj backuprecoveryv1.DataSourceConnection, connName string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resource]
@@ -90,7 +90,7 @@ func testAccCheckIbmBaasDataSourceConnectionExists(resource string, obj backupre
 	}
 }
 
-func testAccCheckIbmBaasDataSourceConnectionDestroy(s *terraform.State) error {
+func testAccCheckIbmBackupRecoveryDataSourceConnectionDestroy(s *terraform.State) error {
 	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		return err

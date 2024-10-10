@@ -17,7 +17,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasProtectionPolicyBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryProtectionPolicyBasic(t *testing.T) {
 	var conf backuprecoveryv1.ProtectionPolicyResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	duration := 1
@@ -26,18 +26,18 @@ func TestAccIbmBaasProtectionPolicyBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasProtectionPolicyDestroy,
+		CheckDestroy: testAccCheckIbmBackupRecoveryProtectionPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionPolicyConfigBasic(name, duration),
+				Config: testAccCheckIbmBackupRecoveryProtectionPolicyConfigBasic(name, duration),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasProtectionPolicyExists("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", conf),
+					testAccCheckIbmBackupRecoveryProtectionPolicyExists("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", conf),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionPolicyConfigBasic(name, durationUpdate),
+				Config: testAccCheckIbmBackupRecoveryProtectionPolicyConfigBasic(name, durationUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_policy.baas_protection_policy_instance", "name", name),
@@ -47,7 +47,7 @@ func TestAccIbmBaasProtectionPolicyBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasProtectionPolicyConfigBasic(name string, duration int) string {
+func testAccCheckIbmBackupRecoveryProtectionPolicyConfigBasic(name string, duration int) string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
@@ -79,7 +79,7 @@ func testAccCheckIbmBaasProtectionPolicyConfigBasic(name string, duration int) s
 	`, tenantId, name, duration)
 }
 
-func testAccCheckIbmBaasProtectionPolicyExists(n string, obj backuprecoveryv1.ProtectionPolicyResponse) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryProtectionPolicyExists(n string, obj backuprecoveryv1.ProtectionPolicyResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -107,7 +107,7 @@ func testAccCheckIbmBaasProtectionPolicyExists(n string, obj backuprecoveryv1.Pr
 	}
 }
 
-func testAccCheckIbmBaasProtectionPolicyDestroy(s *terraform.State) error {
+func testAccCheckIbmBackupRecoveryProtectionPolicyDestroy(s *terraform.State) error {
 	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		return err

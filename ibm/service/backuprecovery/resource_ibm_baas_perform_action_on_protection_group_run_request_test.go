@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 	objectId := 72
 	runType := "kRegular"
 	groupName := "tf-pg-10" //"tf-group-5"
@@ -28,14 +28,14 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Destroy: false,
-				Config:  testAccCheckIbmBaasProtectionGroupRunRequest(groupName, runType, objectId),
+				Config:  testAccCheckIbmBackupRecoveryProtectionGroupRunRequest(groupName, runType, objectId),
 				Check: resource.ComposeTestCheckFunc(
 					testPerformRunExists("ibm_backup_recovery_protection_group_run_request.baas_protection_group_run_request_instance"),
 				),
 			},
 			{
 				Destroy: false,
-				Config:  testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(objectId, groupName),
+				Config:  testAccCheckIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestConfigBasic(objectId, groupName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckProtectionRunPerformActionCancelled("ibm_backup_recovery_perform_action_on_protection_group_run_request.baas_perform_action_on_protection_group_run_request_instance"),
 				),
@@ -44,7 +44,7 @@ func TestAccIbmBaasPerformActionOnProtectionGroupRunRequestBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasProtectionGroupRunRequest(groupName, runType string, objectID int) string {
+func testAccCheckIbmBackupRecoveryProtectionGroupRunRequest(groupName, runType string, objectID int) string {
 	return fmt.Sprintf(`
 
 		data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
@@ -101,7 +101,7 @@ func testPerformRunExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIbmBaasPerformActionOnProtectionGroupRunRequestConfigBasic(objectId int, groupName string) string {
+func testAccCheckIbmBackupRecoveryPerformActionOnProtectionGroupRunRequestConfigBasic(objectId int, groupName string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {

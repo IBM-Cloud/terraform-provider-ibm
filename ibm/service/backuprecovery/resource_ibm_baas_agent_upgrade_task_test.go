@@ -17,7 +17,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasAgentUpgradeTaskBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryAgentUpgradeTaskBasic(t *testing.T) {
 	var conf backuprecoveryv1.AgentUpgradeTaskStates
 	name := fmt.Sprintf("tf_name_upgarde_task_%d", acctest.RandIntRange(10, 100))
 	agentId := 73
@@ -25,12 +25,12 @@ func TestAccIbmBaasAgentUpgradeTaskBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasAgentUpgradeTaskDestroy,
+		CheckDestroy: testAccCheckIbmBackupRecoveryAgentUpgradeTaskDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasAgentUpgradeTaskConfigBasic(name, agentId),
+				Config: testAccCheckIbmBackupRecoveryAgentUpgradeTaskConfigBasic(name, agentId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasAgentUpgradeTaskExists("ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance", conf),
+					testAccCheckIbmBackupRecoveryAgentUpgradeTaskExists("ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance", conf),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_agent_upgrade_task.baas_agent_upgrade_task_instance", "x_ibm_tenant_id", tenantId),
 				),
 				Destroy: false,
@@ -39,7 +39,7 @@ func TestAccIbmBaasAgentUpgradeTaskBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasAgentUpgradeTaskConfigBasic(name string, agentId int) string {
+func testAccCheckIbmBackupRecoveryAgentUpgradeTaskConfigBasic(name string, agentId int) string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 			x_ibm_tenant_id = "%s"
@@ -49,7 +49,7 @@ func testAccCheckIbmBaasAgentUpgradeTaskConfigBasic(name string, agentId int) st
 	`, tenantId, agentId, name)
 }
 
-func testAccCheckIbmBaasAgentUpgradeTaskExists(n string, obj backuprecoveryv1.AgentUpgradeTaskStates) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryAgentUpgradeTaskExists(n string, obj backuprecoveryv1.AgentUpgradeTaskStates) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -80,6 +80,6 @@ func testAccCheckIbmBaasAgentUpgradeTaskExists(n string, obj backuprecoveryv1.Ag
 	}
 }
 
-func testAccCheckIbmBaasAgentUpgradeTaskDestroy(s *terraform.State) error {
+func testAccCheckIbmBackupRecoveryAgentUpgradeTaskDestroy(s *terraform.State) error {
 	return nil
 }

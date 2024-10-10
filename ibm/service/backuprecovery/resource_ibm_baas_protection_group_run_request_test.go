@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasProtectionGroupRunRequestBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryProtectionGroupRunRequestBasic(t *testing.T) {
 	objectId := 72
 	runType := "kRegular"
 	groupName := "tf-pg-10" //"tf-group-5"
@@ -129,7 +129,7 @@ func testAccCreateIbmBaasProtectionGroupRunCancelRequestConfigBasic(runType, gro
 	`, tenantId, groupName)
 }
 
-func testAccCheckIbmBaasProtectionGroupRunRequestExists(n string, obj backuprecoveryv1.ProtectionGroupRunsResponse) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryProtectionGroupRunRequestExists(n string, obj backuprecoveryv1.ProtectionGroupRunsResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

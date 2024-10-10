@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasUpdateProtectionGroupRunRequestBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryUpdateProtectionGroupRunRequestBasic(t *testing.T) {
 	objectId := 72
 	runType := "kRegular"
 	groupName := "tf-pg-10" // or can use "tf-group-5" //id: 5901263190628181:1725393921826:9414

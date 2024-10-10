@@ -16,13 +16,13 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryConnectorsMetadataDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoveryConnectorsMetadataDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "x_ibm_tenant_id", tenantId),
@@ -36,7 +36,7 @@ func TestAccIbmBaasConnectorsMetadataDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasConnectorsMetadataDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryConnectorsMetadataDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_connectors_metadata" "baas_connectors_metadata_instance" {
 		x_ibm_tenant_id = "%s"

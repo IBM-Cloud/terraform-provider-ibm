@@ -17,7 +17,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasProtectionPoliciesDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryProtectionPoliciesDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_policyname_%d", acctest.RandIntRange(10, 100))
 	duration := 1
 
@@ -26,7 +26,7 @@ func TestAccIbmBaasProtectionPoliciesDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionPoliciesDataSourceConfigBasic(name, duration),
+				Config: testAccCheckIbmBackupRecoveryProtectionPoliciesDataSourceConfigBasic(name, duration),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_policies.baas_protection_policies_instance", "x_ibm_tenant_id"),
@@ -39,7 +39,7 @@ func TestAccIbmBaasProtectionPoliciesDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasProtectionPoliciesDataSourceConfigBasic(name string, duration int) string {
+func testAccCheckIbmBackupRecoveryProtectionPoliciesDataSourceConfigBasic(name string, duration int) string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"

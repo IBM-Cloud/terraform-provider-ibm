@@ -18,7 +18,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasAgentUpgradeTasksDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryAgentUpgradeTasksDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_name_upgarde_task_%d", acctest.RandIntRange(10, 100))
 	agentId := 73
 	resource.Test(t, resource.TestCase{
@@ -26,7 +26,7 @@ func TestAccIbmBaasAgentUpgradeTasksDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config:  testAccCheckIbmBaasAgentUpgradeTasksDataSourceConfigBasic(name, agentId),
+				Config:  testAccCheckIbmBackupRecoveryAgentUpgradeTasksDataSourceConfigBasic(name, agentId),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_agent_upgrade_tasks.baas_agent_upgrade_tasks_instance", "id"),
@@ -43,7 +43,7 @@ func TestAccIbmBaasAgentUpgradeTasksDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasAgentUpgradeTasksDataSourceConfigBasic(name string, agentId int) string {
+func testAccCheckIbmBackupRecoveryAgentUpgradeTasksDataSourceConfigBasic(name string, agentId int) string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_agent_upgrade_task" "baas_agent_upgrade_task_instance" {
 			x_ibm_tenant_id = "%s"

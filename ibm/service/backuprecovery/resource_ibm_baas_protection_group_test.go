@@ -17,7 +17,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 	var conf backuprecoveryv1.ProtectionGroupResponse
 	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
 	policyName := fmt.Sprintf("tf_name_policy_%d", acctest.RandIntRange(10, 100))
@@ -30,18 +30,18 @@ func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasProtectionGroupDestroy,
+		CheckDestroy: testAccCheckIbmBackupRecoveryProtectionGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
+				Config: testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasProtectionGroupExists("ibm_backup_recovery_protection_group.baas_protection_group_instance", conf),
+					testAccCheckIbmBackupRecoveryProtectionGroupExists("ibm_backup_recovery_protection_group.baas_protection_group_instance", conf),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "name", groupName),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupConfigBasic(groupName, environment, includedPathUpdate, protectionType, policyName, objectId),
+				Config: testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(groupName, environment, includedPathUpdate, protectionType, policyName, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "name", groupName),
@@ -51,7 +51,7 @@ func TestAccIbmBaasProtectionGroupBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
+func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
 			resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 				x_ibm_tenant_id = "%s"
@@ -101,7 +101,7 @@ func testAccCheckIbmBaasProtectionGroupConfigBasic(name, environment, includedPa
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)
 }
 
-func testAccCheckIbmBaasProtectionGroupExists(n string, obj backuprecoveryv1.ProtectionGroupResponse) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryProtectionGroupExists(n string, obj backuprecoveryv1.ProtectionGroupResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -129,7 +129,7 @@ func testAccCheckIbmBaasProtectionGroupExists(n string, obj backuprecoveryv1.Pro
 	}
 }
 
-func testAccCheckIbmBaasProtectionGroupDestroy(s *terraform.State) error {
+func testAccCheckIbmBackupRecoveryProtectionGroupDestroy(s *terraform.State) error {
 	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		return err

@@ -18,7 +18,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasProtectionGroupDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryProtectionGroupDataSourceBasic(t *testing.T) {
 	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
 	policyName := fmt.Sprintf("tf_policyname_%d", acctest.RandIntRange(10, 100))
 	objectId := 72
@@ -30,7 +30,7 @@ func TestAccIbmBaasProtectionGroupDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupDataSourceConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
+				Config: testAccCheckIbmBackupRecoveryProtectionGroupDataSourceConfigBasic(groupName, environment, includedPath, protectionType, policyName, objectId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group.baas_protection_group_instance", "name"),
@@ -46,7 +46,7 @@ func TestAccIbmBaasProtectionGroupDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasProtectionGroupDataSourceConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
+func testAccCheckIbmBackupRecoveryProtectionGroupDataSourceConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"

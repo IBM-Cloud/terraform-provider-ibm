@@ -19,14 +19,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasDownloadAgentDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryDownloadAgentDataSourceBasic(t *testing.T) {
 	filePath := "./temp/Cohesity_Agent_ibm_rm_20240824_Win_x64_Installer_test_datasource.exe"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasDownloadAgentDataSourceConfigBasic(filePath),
+				Config: testAccCheckIbmBackupRecoveryDownloadAgentDataSourceConfigBasic(filePath),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckFileNameExists(filePath),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_download_agent.baas_download_agent_instance", "id"),
@@ -60,7 +60,7 @@ func testCheckFileNameExists(path string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIbmBaasDownloadAgentDataSourceConfigBasic(filePath string) string {
+func testAccCheckIbmBackupRecoveryDownloadAgentDataSourceConfigBasic(filePath string) string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_download_agent" "baas_download_agent_instance" {
 			x_ibm_tenant_id = "%s"

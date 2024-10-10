@@ -16,13 +16,13 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasSearchObjectsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoverySearchObjectsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasSearchObjectsDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoverySearchObjectsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_search_objects.baas_search_objects_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_objects.baas_search_objects_instance", "x_ibm_tenant_id", tenantId),
@@ -33,7 +33,7 @@ func TestAccIbmBaasSearchObjectsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasSearchObjectsDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoverySearchObjectsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_search_objects" "baas_search_objects_instance" {
 			x_ibm_tenant_id = "%s"

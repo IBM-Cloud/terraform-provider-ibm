@@ -16,7 +16,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasDataSourceConnectorsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryDataSourceConnectorsDataSourceBasic(t *testing.T) {
 	dataSourceConnectorConnectionId := "4980716806983529472"
 
 	resource.Test(t, resource.TestCase{
@@ -24,7 +24,7 @@ func TestAccIbmBaasDataSourceConnectorsDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasDataSourceConnectorsDataSourceConfigBasic(dataSourceConnectorConnectionId),
+				Config: testAccCheckIbmBackupRecoveryDataSourceConnectorsDataSourceConfigBasic(dataSourceConnectorConnectionId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "x_ibm_tenant_id", tenantId),
@@ -41,7 +41,7 @@ func TestAccIbmBaasDataSourceConnectorsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasDataSourceConnectorsDataSourceConfigBasic(dataSourceConnectorConnectioID string) string {
+func testAccCheckIbmBackupRecoveryDataSourceConnectorsDataSourceConfigBasic(dataSourceConnectorConnectioID string) string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_data_source_connectors" "baas_data_source_connectors_instance" {
 			x_ibm_tenant_id = "%s"

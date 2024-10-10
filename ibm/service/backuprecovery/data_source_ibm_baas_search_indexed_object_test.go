@@ -13,7 +13,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasSearchIndexedObjectDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoverySearchIndexedObjectDataSourceBasic(t *testing.T) {
 	objectType := "Files"
 	objectId := 72
 	resource.Test(t, resource.TestCase{
@@ -21,7 +21,7 @@ func TestAccIbmBaasSearchIndexedObjectDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasSearchIndexedObjectConfigBasic(objectType, objectId),
+				Config: testAccCheckIbmBackupRecoverySearchIndexedObjectConfigBasic(objectType, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_indexed_object.baas_search_indexed_object_instance", "x_ibm_tenant_id", tenantId),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_search_indexed_object.baas_search_indexed_object_instance", "object_type", objectType),
@@ -32,7 +32,7 @@ func TestAccIbmBaasSearchIndexedObjectDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasSearchIndexedObjectConfigBasic(objectType string, objectId int) string {
+func testAccCheckIbmBackupRecoverySearchIndexedObjectConfigBasic(objectType string, objectId int) string {
 	return fmt.Sprintf(`
 
 		data "ibm_backup_recovery_search_indexed_object" "baas_search_indexed_object_instance" {

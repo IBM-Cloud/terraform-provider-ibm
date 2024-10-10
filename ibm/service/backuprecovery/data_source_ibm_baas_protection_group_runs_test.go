@@ -16,14 +16,14 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasProtectionGroupRunsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryProtectionGroupRunsDataSourceBasic(t *testing.T) {
 	groupName := "tf-pg-10"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(groupName),
+				Config: testAccCheckIbmBackupRecoveryProtectionGroupRunsDataSourceConfigBasic(groupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_group_runs.baas_protection_group_runs_instance", "x_ibm_tenant_id"),
@@ -47,7 +47,7 @@ func TestAccIbmBaasProtectionGroupRunsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasProtectionGroupRunsDataSourceConfigBasic(groupName string) string {
+func testAccCheckIbmBackupRecoveryProtectionGroupRunsDataSourceConfigBasic(groupName string) string {
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 		x_ibm_tenant_id = "%s"

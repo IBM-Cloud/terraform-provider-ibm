@@ -16,7 +16,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBaasSourceRegistrationsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoverySourceRegistrationsDataSourceBasic(t *testing.T) {
 	// environment := "kPhysical"
 	// connectionId := "4980716806983529472"
 	// endpoint := "172.26.1.24"
@@ -29,7 +29,7 @@ func TestAccIbmBaasSourceRegistrationsDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasSourceRegistrationsDataSourceConfigBasic(objectId),
+				Config: testAccCheckIbmBackupRecoverySourceRegistrationsDataSourceConfigBasic(objectId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "id"),
 					resource.TestCheckResourceAttr("data.ibm_backup_recovery_source_registrations.baas_source_registrations_instance", "x_ibm_tenant_id", tenantId),
@@ -59,7 +59,7 @@ func TestAccIbmBaasSourceRegistrationsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasSourceRegistrationsDataSourceConfigBasic(objectId int) string {
+func testAccCheckIbmBackupRecoverySourceRegistrationsDataSourceConfigBasic(objectId int) string {
 	return fmt.Sprintf(`
 
 			data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {

@@ -20,7 +20,7 @@ var (
 	tenantIdRegister = "dmb083pq5n/"
 )
 
-func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
+func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 	var conf backuprecoveryv1.SourceRegistrationReponseParams
 
 	environment := "kPhysical"
@@ -35,12 +35,12 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmBaasSourceRegistrationDestroy,
+		CheckDestroy: testAccCheckIbmBackupRecoverySourceRegistrationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType, connectionId),
+				Config: testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType, connectionId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBaasSourceRegistrationExists("ibm_backup_recovery_source_registration.baas_source_registration_instance", conf),
+					testAccCheckIbmBackupRecoverySourceRegistrationExists("ibm_backup_recovery_source_registration.baas_source_registration_instance", conf),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "environment", environment),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "id"),
@@ -58,7 +58,7 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applicationsUpdate, endpoint, hostType, physicalType, connectionId),
+				Config: testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, applicationsUpdate, endpoint, hostType, physicalType, connectionId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "environment", environment),
@@ -68,7 +68,7 @@ func TestAccIbmBaasSourceRegistrationBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType string, connectionId string) string {
+func testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType string, connectionId string) string {
 	return fmt.Sprintf(`
 			resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
 				x_ibm_tenant_id = "%s"
@@ -84,7 +84,7 @@ func testAccCheckIbmBaasSourceRegistrationConfigBasic(environment, applications,
 	`, tenantIdRegister, environment, connectionId, endpoint, hostType, physicalType, applications)
 }
 
-func testAccCheckIbmBaasSourceRegistrationExists(n string, obj backuprecoveryv1.SourceRegistrationReponseParams) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoverySourceRegistrationExists(n string, obj backuprecoveryv1.SourceRegistrationReponseParams) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -113,7 +113,7 @@ func testAccCheckIbmBaasSourceRegistrationExists(n string, obj backuprecoveryv1.
 	}
 }
 
-func testAccCheckIbmBaasSourceRegistrationDestroy(s *terraform.State) error {
+func testAccCheckIbmBackupRecoverySourceRegistrationDestroy(s *terraform.State) error {
 	backupRecoveryClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		return err

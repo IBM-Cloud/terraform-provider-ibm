@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasRestorePointsBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryRestorePointsBasic(t *testing.T) {
 	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
 	endTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
 	startTimeUsecs := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
@@ -26,19 +26,19 @@ func TestAccIbmBaasRestorePointsBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasRestorePointsConfigBasic(xIbmTenantID, endTimeUsecs, startTimeUsecs),
+				Config: testAccCheckIbmBackupRecoveryRestorePointsConfigBasic(xIbmTenantID, endTimeUsecs, startTimeUsecs),
 				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBaasRestorePointsConfigBasic(xIbmTenantID string, endTimeUsecs string, startTimeUsecs string) string {
+func testAccCheckIbmBackupRecoveryRestorePointsConfigBasic(xIbmTenantID string, endTimeUsecs string, startTimeUsecs string) string {
 	return fmt.Sprintf(`
 	`)
 }
 
-func testAccCheckIbmBaasRestorePointsExists(n string, obj backuprecoveryv1.GetRestorePointsInTimeRangeResponse) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryRestorePointsExists(n string, obj backuprecoveryv1.GetRestorePointsInTimeRangeResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		_, ok := s.RootModule().Resources[n]

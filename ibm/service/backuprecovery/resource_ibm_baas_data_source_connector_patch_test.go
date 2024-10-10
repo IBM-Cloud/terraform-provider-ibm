@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBaasDataSourceConnectorPatchBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryDataSourceConnectorPatchBasic(t *testing.T) {
 	connectorID := fmt.Sprintf("tf_connector_id_%d", acctest.RandIntRange(10, 100))
 	xIbmTenantID := fmt.Sprintf("tf_x_ibm_tenant_id_%d", acctest.RandIntRange(10, 100))
 	connectorName := fmt.Sprintf("tf_connector_name_%d", acctest.RandIntRange(10, 100))
@@ -26,19 +26,19 @@ func TestAccIbmBaasDataSourceConnectorPatchBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBaasDataSourceConnectorPatchConfigBasic(connectorID, xIbmTenantID, connectorName),
+				Config: testAccCheckIbmBackupRecoveryDataSourceConnectorPatchConfigBasic(connectorID, xIbmTenantID, connectorName),
 				Check:  resource.ComposeAggregateTestCheckFunc(),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBaasDataSourceConnectorPatchConfigBasic(connectorID string, xIbmTenantID, connectorName string) string {
+func testAccCheckIbmBackupRecoveryDataSourceConnectorPatchConfigBasic(connectorID string, xIbmTenantID, connectorName string) string {
 	return fmt.Sprintf(`
 	`)
 }
 
-func testAccCheckIbmBaasDataSourceConnectorPatchExists(n string, obj backuprecoveryv1.DataSourceConnectorList) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryDataSourceConnectorPatchExists(n string, obj backuprecoveryv1.DataSourceConnectorList) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
