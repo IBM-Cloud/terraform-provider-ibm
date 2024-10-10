@@ -214,6 +214,7 @@ var (
 	Pi_image_bucket_name            string
 	Pi_image_bucket_region          string
 	Pi_image_bucket_secret_key      string
+	Pi_image_id                     string
 	Pi_instance_name                string
 	Pi_key_name                     string
 	Pi_network_name                 string
@@ -1047,7 +1048,13 @@ func init() {
 	Pi_image_bucket_region = os.Getenv("PI_IMAGE_BUCKET_REGION")
 	if Pi_image_bucket_region == "" {
 		Pi_image_bucket_region = "us-east"
-		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image_export resource else it is set to default value 'us-east'")
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image resource else it is set to default value 'us-east'")
+	}
+
+	Pi_image_id = os.Getenv("PI_IMAGE_ID")
+	if Pi_image_id == "" {
+		Pi_image_id = "IBMi-72-09-2924-11"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_ID for testing ibm_pi_image resource else it is set to default value 'IBMi-72-09-2924-11'")
 	}
 
 	Pi_key_name = os.Getenv("PI_KEY_NAME")
