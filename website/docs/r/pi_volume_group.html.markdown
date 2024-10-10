@@ -59,8 +59,10 @@ Review the argument references that you can specify for your resource.
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `auxiliary` - (Boolean) Indicates if the volume group is auxiliary.
 - `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
 - `id` - (String) The unique identifier of the volume group. The ID is composed of `<pi_cloud_instance_id>/<volume_group_id>`.
+- `replication_sites` - (List) Indicates the replication sites of the volume group.
 - `replication_status` - (String) The replication status of volume group.
 - `status_description_errors` - (Set) The status details of the volume group.
   
@@ -68,6 +70,7 @@ In addition to all argument reference list, you can access the following attribu
   - `key` - (String) The volume group error key.
   - `message` - (String) The failure message providing more details about the error key.
   - `volume_ids` - (List of String) List of volume IDs, which failed to be added to or removed from the volume group, with the given error.
+- `storage_pool` - (String) Storage pool of the volume group.
 - `volume_group_id` - (String) The unique identifier of the volume group.
 - `volume_group_status` - (String) The status of the volume group.
 

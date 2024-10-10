@@ -61,6 +61,7 @@ const (
 	Arg_ReplicationEnabled                  = "pi_replication_enabled"
 	Arg_ReplicationPolicy                   = "pi_replication_policy"
 	Arg_ReplicationScheme                   = "pi_replication_scheme"
+	Arg_ReplicationSites                    = "pi_replication_sites"
 	Arg_ResourceGroupID                     = "pi_resource_group_id"
 	Arg_SAP                                 = "sap"
 	Arg_SAPDeploymentType                   = "pi_sap_deployment_type"

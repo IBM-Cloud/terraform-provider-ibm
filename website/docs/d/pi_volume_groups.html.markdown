@@ -43,9 +43,11 @@ In addition to all argument reference list, you can access the following attribu
 - `volume_groups`: List of all volume groups.
   
   Nested scheme for `volume_groups`:
+  - `auxiliary` - (Boolean) Indicates if the volume group is auxiliary.
   - `consistency_group_name` - (String) The name of consistency group at storage controller level.
   - `id` - (String) The unique identifier of the volume group.
   - `replication_status` - (String) The replication status of volume group.
+  - `replication_sites` - (List) Indicates the replication sites of the volume group.
   - `status` - (String) The status of the volume group.
   - `status_description_errors` - (List) The status details of the volume group.
 
@@ -53,4 +55,5 @@ In addition to all argument reference list, you can access the following attribu
       - `key` - (String) The volume group error key.
       - `message` - (String) The failure message providing more details about the error key.
       - `volume_ids` - (List) List of volume IDs, which failed to be added/removed to/from the volume group, with the given error.
+  - `storage_pool` - (String) Storage pool of the volume group.
   - `volume_group_name` - (String) The name of the volume group.
