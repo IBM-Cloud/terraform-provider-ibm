@@ -1351,7 +1351,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 		patchProtectionSourceRegistrationOptions.SetID(int64(id))
 		_, _, err = backupRecoveryClient.PatchProtectionSourceRegistrationWithContext(context, patchProtectionSourceRegistrationOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "patch")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PatchProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "patch")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -1375,7 +1375,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 			if _, ok := d.GetOk("connection_id"); ok {
 				connId, err := strconv.ParseInt(d.Get("connection_id").(string), 10, 64)
 				if err != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("setting connection_id failed: %s", err.Error()), "ibm_source_registration", "update")
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("setting connection_id failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}
@@ -1393,7 +1393,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 				value := v.(map[string]interface{})
 				connectionsItem, err := ResourceIbmBackupRecoverySourceRegistrationMapToConnectionConfig(value)
 				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-connections").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "update", "parse-connections").GetDiag()
 				}
 				connections = append(connections, *connectionsItem)
 			}
@@ -1408,7 +1408,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 				value := v.(map[string]interface{})
 				advancedConfigsItem, err := ResourceIbmBackupRecoverySourceRegistrationMapToKeyValuePair(value)
 				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-advanced_configs").GetDiag()
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "update", "parse-advanced_configs").GetDiag()
 				}
 				advancedConfigs = append(advancedConfigs, *advancedConfigsItem)
 			}
@@ -1418,14 +1418,14 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 		if _, ok := d.GetOk("physical_params"); ok {
 			physicalParams, err := ResourceIbmBackupRecoverySourceRegistrationMapToPhysicalSourceRegistrationParams(d.Get("physical_params.0").(map[string]interface{}))
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_source_registration", "update", "parse-physical_params").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "update", "parse-physical_params").GetDiag()
 			}
 			updateProtectionSourceRegistrationOptions.SetPhysicalParams(physicalParams)
 		}
 		updateProtectionSourceRegistrationOptions.SetID(int64(id))
 		_, _, err = backupRecoveryClient.UpdateProtectionSourceRegistrationWithContext(context, updateProtectionSourceRegistrationOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_source_registration", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProtectionSourceRegistrationWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
