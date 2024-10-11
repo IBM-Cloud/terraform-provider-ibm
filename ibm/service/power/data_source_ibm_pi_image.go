@@ -5,9 +5,11 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -35,6 +37,11 @@ func DataSourceIBMPIImage() *schema.Resource {
 			Attr_Architecture: {
 				Computed:    true,
 				Description: "The CPU architecture that the image is designed for. ",
+				Type:        schema.TypeString,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_Hypervisor: {
@@ -77,6 +84,13 @@ func DataSourceIBMPIImage() *schema.Resource {
 				Description: "The storage type for this image.",
 				Type:        schema.TypeString,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 		},
 	}
 }
@@ -97,6 +111,14 @@ func dataSourceIBMPIImagesRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(*imagedata.ImageID)
 	d.Set(Attr_Architecture, imagedata.Specifications.Architecture)
+	if imagedata.Crn != "" {
+		d.Set(Attr_CRN, imagedata.Crn)
+		tags, err := flex.GetTagsUsingCRN(meta, string(imagedata.Crn))
+		if err != nil {
+			log.Printf("Error on get of pi image (%s) user_tags: %s", *imagedata.ImageID, err)
+		}
+		d.Set(Attr_UserTags, tags)
+	}
 	d.Set(Attr_Hypervisor, imagedata.Specifications.HypervisorType)
 	d.Set(Attr_ImageType, imagedata.Specifications.ImageType)
 	d.Set(Attr_OperatingSystem, imagedata.Specifications.OperatingSystem)

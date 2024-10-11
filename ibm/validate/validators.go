@@ -79,6 +79,24 @@ func ValidBucketLifecycleTimestamp(v interface{}, k string) (ws []string, errors
 	return
 }
 
+func ValidateUTCFormat(v interface{}, k string) (ws []string, errors []error) {
+	// Assert v to be a string
+	value, ok := v.(string)
+	if !ok {
+		errors = append(errors, fmt.Errorf("value must be a string, got %T", v))
+		return
+	}
+
+	// Parse the string as RFC3339 time format
+	_, err := time.Parse(time.RFC3339, value)
+	if err != nil {
+		errors = append(errors, fmt.Errorf("value must be in RFC3339 format %q. Example: %s", time.RFC3339, err))
+		return
+	}
+
+	return
+}
+
 func validateRegexpLen(min, max int, regex string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(string)

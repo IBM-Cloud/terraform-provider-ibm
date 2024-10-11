@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccIBMPINetworksDataSource_basic(t *testing.T) {
+	networksResData := "data.ibm_pi_networks.testacc_ds_networks"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -20,7 +21,7 @@ func TestAccIBMPINetworksDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPINetworksDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_networks.testacc_ds_networks", "id"),
+					resource.TestCheckResourceAttrSet(networksResData, "id"),
 				),
 			},
 		},

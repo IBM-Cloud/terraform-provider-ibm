@@ -195,9 +195,7 @@ func testAccCheckIbmSchematicsAgentDestroy(s *terraform.State) error {
 		// Try to find the key
 		_, response, err := schematicsClient.GetAgentData(getAgentDataOptions)
 		if err == nil {
-			return nil
-			// TODO: uncomment the following lines of code once the agent delete actually deletes agentdoc
-			// return fmt.Errorf("schematics_agent still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("schematics_agent still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("Error checking for schematics_agent (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}

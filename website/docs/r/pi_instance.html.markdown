@@ -67,6 +67,7 @@ Review the argument references that you can specify for your resource.
 - `pi_affinity_volume`- (Optional, String) Volume (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_instance` is not provided.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
+- `pi_boot_volume_replication_enabled` - (Optional, Boolean) Indicates if the boot volume should be replication enabled or not.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_deployment_target` - (Optional, List) The deployment of a dedicated host. Max items: 1.
   
@@ -106,6 +107,7 @@ Review the argument references that you can specify for your resource.
 - `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
 - `pi_replication_policy` - (Optional, String) The replication policy that you want to use, either `affinity`, `anti-affinity` or `none`. If this parameter is not set, `none` is used by default.
 - `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
+- `pi_replication_sites` - (Optional, List) Indicates the replication sites of the boot volume.
 - `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
   - Required only when creating SAP instances.
 - `pi_sap_deployment_type` - (Optional, String) Custom SAP deployment type information (For Internal Use Only).
@@ -117,6 +119,7 @@ Review the argument references that you can specify for your resource.
 - `pi_sys_type` - (Optional, String) The type of system on which to create the VM (e880/e980/e1080/s922/s1022).
   - Supported SAP system types are (e880/e980/e1080).
 - `pi_user_data` - (Optional, String) The user data `cloud-init` to pass to the instance during creation. It can be a base64 encoded or an unencoded string. If it is an unencoded string, the provider will encode it before it passing it down.
+- `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
 - `pi_virtual_optical_device` - (Optional, String) Virtual Machine's Cloud Initialization Virtual Optical Device.
 - `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
@@ -125,6 +128,7 @@ Review the argument references that you can specify for your resource.
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of this resource.
 - `fault` - (Map) Fault information, if any.
   
    Nested scheme for `fault`:

@@ -49,7 +49,8 @@ In addition to all argument reference list, you can access the following attribu
 - `image_info` - (List) List of all supported images.
 
   Nested scheme for `image_info`:
-  - `href` - (String) The hyper link of an image.
+  - `crn` - (String) The CRN of this resource.
+  - `href` - (String) The hyper link of an image. 
   - `id` - (String) The unique identifier of an image.
   - `image_type` - (String) The identifier of this image type.
   - `name`-  (String) The name of an image.
@@ -57,3 +58,4 @@ In addition to all argument reference list, you can access the following attribu
   - `state` - (String) The state of an image.
   - `storage_pool` - (String) Storage pool where image resides.
   - `storage_type` - (String) The storage type of an image.
+  - `user_tags` - (List) List of user tags attached to the resource.

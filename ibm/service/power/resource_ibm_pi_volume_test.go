@@ -21,6 +21,7 @@ import (
 
 func TestAccIBMPIVolumebasic(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	volumeRes := "ibm_pi_volume.power_volume"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -29,19 +30,16 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIVolumeConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					testAccCheckIBMPIVolumeExists(volumeRes),
+					resource.TestCheckResourceAttr(volumeRes, "pi_volume_name", name),
 				),
 			},
 			{
 				Config: testAccCheckIBMPIVolumeSizeConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_volume.power_volume", "pi_volume_name", name),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_volume.power_volume", "pi_volume_size", "30"),
+					testAccCheckIBMPIVolumeExists(volumeRes),
+					resource.TestCheckResourceAttr(volumeRes, "pi_volume_name", name),
+					resource.TestCheckResourceAttr(volumeRes, "pi_volume_size", "30"),
 				),
 			},
 		},
@@ -259,4 +257,51 @@ func testAccCheckIBMPIVolumeUpdateBasicConfig(name, piCloudInstanceId, piStorage
 			pi_volume_size         	= 20
 			pi_volume_type       	= "%[4]v"
 		}`, name, piCloudInstanceId, piStoragePool, piStorageType)
+}
+
+func TestAccIBMPIVolumeUserTags(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	volumeRes := "ibm_pi_volume.power_volume"
+	userTagsString := `["env:dev","test_tag"]`
+	userTagsStringUpdated := `["env:dev","test_tag","test_tag2"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIVolumeUserTagsConfig(name, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists(volumeRes),
+					resource.TestCheckResourceAttr(volumeRes, "pi_volume_name", name),
+					resource.TestCheckResourceAttr(volumeRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(volumeRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(volumeRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIVolumeUserTagsConfig(name, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists(volumeRes),
+					resource.TestCheckResourceAttr(volumeRes, "pi_volume_name", name),
+					resource.TestCheckResourceAttr(volumeRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(volumeRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(volumeRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(volumeRes, "pi_user_tags.*", "test_tag2"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIVolumeUserTagsConfig(name string, userTagsString string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_volume" "power_volume" {
+			pi_cloud_instance_id	= "%[2]s"
+			pi_volume_name       	= "%[1]s"
+			pi_volume_shareable  	= true
+			pi_volume_size       	= 20
+			pi_volume_type       	= "tier1"
+			pi_user_tags            = %[3]s
+		}`, name, acc.Pi_cloud_instance_id, userTagsString)
 }

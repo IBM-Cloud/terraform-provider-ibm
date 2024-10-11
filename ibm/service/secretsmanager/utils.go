@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
 	"github.com/go-openapi/strfmt"
@@ -26,6 +27,32 @@ const (
 	ImportedCertSecretType       = "imported_cert"
 	PublicCertSecretType         = "public_cert"
 	PrivateCertSecretType        = "private_cert"
+
+	ArbitrarySecretResourceName          = "ibm_sm_arbitrary_secret"
+	UsernamePasswordSecretResourceName   = "ibm_sm_username_password_secret"
+	IAMCredentialsSecretResourceName     = "ibm_sm_iam_credentials_secret"
+	ServiceCredentialsSecretResourceName = "ibm_sm_service_credentials_secret"
+	KvSecretResourceName                 = "ibm_sm_kv_secret"
+	ImportedCertSecretResourceName       = "ibm_sm_imported_certificate"
+	PublicCertSecretResourceName         = "ibm_sm_public_certificate"
+	PrivateCertSecretResourceName        = "ibm_sm_private_certificate"
+
+	EnRegistrationResourceName                           = "ibm_sm_en_registration"
+	IAMCredentialsConfigResourceName                     = "ibm_sm_iam_credentials_configuration"
+	ConfigurationsResourceName                           = "ibm_sm_configurations"
+	PrivateCertConfigIntermediateCAResourceName          = "ibm_sm_private_certificate_configuration_intermediate_ca"
+	PrivateCertConfigRootCAResourceName                  = "ibm_sm_private_certificate_configuration_root_ca"
+	PrivateCertConfigTemplateResourceName                = "ibm_sm_private_certificate_configuration_template"
+	PrivateCertConfigActionSetSigned                     = "ibm_sm_private_certificate_configuration_action_set_signed"
+	PrivateCertConfigActionSignCsr                       = "ibm_sm_private_certificate_configuration_action_sign_csr"
+	PublicCertConfigCALetsEncryptResourceName            = "ibm_sm_public_certificate_configuration_ca_lets_encrypt"
+	PublicCertConfigDnsCISResourceName                   = "ibm_sm_public_certificate_configuration_dns_cis"
+	PublicCertConfigDnsClassicInfrastructureResourceName = "ibm_sm_public_certificate_configuration_dns_classic_infrastructure"
+	PublicCertConfigActionValidateManualDNSResourceName  = "ibm_sm_public_certificate_action_validate_manual_dns"
+
+	SecretGroupResourceName  = "ibm_sm_secret_group"
+	SecretGroupsResourceName = "ibm_sm_secret_groups"
+	SecretsResourceName      = "ibm_sm_secrets"
 )
 
 func getRegion(originalClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) string {
@@ -134,11 +161,12 @@ func DateTimeToRFC3339(dt *strfmt.DateTime) (s string) {
 	return
 }
 
-func getSecretByIdOrByName(context context.Context, d *schema.ResourceData, meta interface{}, secretType string) (secretsmanagerv2.SecretIntf, string, string, diag.Diagnostics) {
+func getSecretByIdOrByName(context context.Context, d *schema.ResourceData, meta interface{}, secretType string, dataSourceName string) (secretsmanagerv2.SecretIntf, string, string, diag.Diagnostics) {
 
 	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
 	if err != nil {
-		return nil, "", "", diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", dataSourceName), "read")
+		return nil, "", "", tfErr.GetDiag()
 	}
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
@@ -160,7 +188,8 @@ func getSecretByIdOrByName(context context.Context, d *schema.ResourceData, meta
 		secretIntf, response, err = secretsManagerClient.GetSecretWithContext(context, getSecretOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetSecretWithContext failed %s\n%s", err, response)
-			return nil, "", "", diag.FromErr(fmt.Errorf("GetSecretWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", dataSourceName), "read")
+			return nil, "", "", tfErr.GetDiag()
 		}
 		return secretIntf, region, instanceId, nil
 	}
@@ -176,12 +205,14 @@ func getSecretByIdOrByName(context context.Context, d *schema.ResourceData, meta
 		secretIntf, response, err = secretsManagerClient.GetSecretByNameTypeWithContext(context, getSecretByNameOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetSecretByNameTypeWithContext failed %s\n%s", err, response)
-			return nil, "", "", diag.FromErr(fmt.Errorf("GetSecretByNameTypeWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretByNameTypeWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", dataSourceName), "read")
+			return nil, "", "", tfErr.GetDiag()
 		}
 		return secretIntf, region, instanceId, nil
 	}
 
-	return nil, "", "", diag.FromErr(fmt.Errorf("Missing required arguments. Please make sure that either \"secret_id\" or \"name\" and \"secret_group_name\" are provided\n"))
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Missing required arguments. Please make sure that either \"secret_id\" or \"name\" and \"secret_group_name\" are provided\n"), fmt.Sprintf("(Data) %s", dataSourceName), "read")
+	return nil, "", "", tfErr.GetDiag()
 }
 
 func secretVersionMetadataAsPatchFunction(secretVersionMetadataPatch *secretsmanagerv2.SecretVersionMetadataPatch) (_patch map[string]interface{}, err error) {

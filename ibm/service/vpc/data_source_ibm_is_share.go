@@ -778,7 +778,7 @@ func dataSourceShareTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (t
 	return targetsMap
 }
 
-func dataSourceShareTargetsDeletedToMap(deletedItem vpcv1.ShareMountTargetReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareTargetsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -868,7 +868,7 @@ func dataSourceShareReplicaShareToMap(replicaShareItem vpcv1.ShareReference) (re
 	return replicaShareMap
 }
 
-func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcv1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareReplicaShareDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -938,7 +938,7 @@ func dataSourceShareSourceShareToMap(sourceShareItem vpcv1.ShareReference) (sour
 	return sourceShareMap
 }
 
-func dataSourceShareSourceShareDeletedToMap(deletedItem vpcv1.ShareReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceShareSourceShareDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

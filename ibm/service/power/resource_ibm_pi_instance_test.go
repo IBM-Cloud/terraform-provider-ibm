@@ -256,6 +256,50 @@ func testAccCheckIBMPIInstanceDeplomentTargetConfig(name string) string {
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
 }
 
+func testAccCheckIBMPIInstanceUserTagsConfig(name, instanceHealthStatus string, userTagsString string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_key" "key" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_key_name          = "%[2]s"
+		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+	  }
+	  data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_key_pair_name      = ibm_pi_key.key.name
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s922"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_user_tags          = %[7]s
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, userTagsString)
+}
+
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -780,6 +824,99 @@ func TestAccIBMPIInstanceDeploymentTypeNoStorage(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPIInstanceDeploymentGRS(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	bootVolumeData := "data.ibm_pi_volume.power_boot_volume_data"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceGRSConfig(name, power.OK, "2", "0.25"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(bootVolumeData, "replication_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceGRSConfig(name string, instanceHealthStatus string, memory string, proc string) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_image_name        = "%[3]s"
+		pi_cloud_instance_id = "%[1]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}  
+	data "ibm_pi_volume" "power_boot_volume_data" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = data.ibm_pi_instance_volumes.power_instance_volumes_data.instance_volumes[0].name
+	}
+	data "ibm_pi_instance_volumes" "power_instance_volumes_data" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_instance_name     = ibm_pi_instance.power_instance.pi_instance_name
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_boot_volume_replication_enabled = true
+		pi_memory            			   = "%[7]s"
+		pi_processors        			   = "%[6]s"
+		pi_instance_name                           = "%[2]s"
+		pi_proc_type          			   = "shared"
+		pi_image_id           			   = data.ibm_pi_image.power_image.id
+		pi_sys_type          			   = "e980"
+		pi_cloud_instance_id  			   = "%[1]s"
+		pi_storage_pool       			   = data.ibm_pi_image.power_image.storage_pool		
+		pi_pin_policy        			   = "none"
+		pi_health_status      			   = "%[5]s"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory)
+}
+
+func TestAccIBMPIInstanceUserTags(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	userTagsString := `["env:dev", "test_tag"]`
+	userTagsStringUpdated := `["env:dev", "test_tag", "test_tag2"]`
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceUserTagsConfig(name, power.OK, userTagsString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_user_tags.#", "2"),
+					resource.TestCheckTypeSetElemAttr(instanceRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(instanceRes, "pi_user_tags.*", "test_tag"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceUserTagsConfig(name, power.OK, userTagsStringUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_user_tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr(instanceRes, "pi_user_tags.*", "env:dev"),
+					resource.TestCheckTypeSetElemAttr(instanceRes, "pi_user_tags.*", "test_tag"),
+					resource.TestCheckTypeSetElemAttr(instanceRes, "pi_user_tags.*", "test_tag2"),
 				),
 			},
 		},
