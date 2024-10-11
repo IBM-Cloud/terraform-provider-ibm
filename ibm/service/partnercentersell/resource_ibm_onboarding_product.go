@@ -176,7 +176,9 @@ func resourceIbmOnboardingProductCreate(context context.Context, d *schema.Resou
 	}
 
 	createOnboardingProductOptions := &partnercentersellv1.CreateOnboardingProductOptions{}
-
+	if _, ok := d.GetOk("env"); ok {
+		createOnboardingProductOptions.SetEnv(d.Get("env").(string))
+	}
 	createOnboardingProductOptions.SetType(d.Get("type").(string))
 	primaryContactModel, err := ResourceIbmOnboardingProductMapToPrimaryContact(d.Get("primary_contact.0").(map[string]interface{}))
 	if err != nil {
@@ -226,6 +228,9 @@ func resourceIbmOnboardingProductRead(context context.Context, d *schema.Resourc
 	getOnboardingProductOptions := &partnercentersellv1.GetOnboardingProductOptions{}
 
 	getOnboardingProductOptions.SetProductID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		getOnboardingProductOptions.SetEnv(d.Get("env").(string))
+	}
 
 	onboardingProduct, response, err := partnerCenterSellClient.GetOnboardingProductWithContext(context, getOnboardingProductOptions)
 	if err != nil {
@@ -341,6 +346,9 @@ func resourceIbmOnboardingProductUpdate(context context.Context, d *schema.Resou
 	updateOnboardingProductOptions := &partnercentersellv1.UpdateOnboardingProductOptions{}
 
 	updateOnboardingProductOptions.SetProductID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		updateOnboardingProductOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
@@ -410,6 +418,9 @@ func resourceIbmOnboardingProductDelete(context context.Context, d *schema.Resou
 	deleteOnboardingProductOptions := &partnercentersellv1.DeleteOnboardingProductOptions{}
 
 	deleteOnboardingProductOptions.SetProductID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		deleteOnboardingProductOptions.SetEnv(d.Get("env").(string))
+	}
 
 	_, err = partnerCenterSellClient.DeleteOnboardingProductWithContext(context, deleteOnboardingProductOptions)
 	if err != nil {

@@ -141,6 +141,9 @@ func resourceIbmOnboardingRegistrationCreate(context context.Context, d *schema.
 	}
 
 	createRegistrationOptions := &partnercentersellv1.CreateRegistrationOptions{}
+	if _, ok := d.GetOk("env"); ok {
+		createRegistrationOptions.SetEnv(d.Get("env").(string))
+	}
 
 	createRegistrationOptions.SetAccountID(d.Get("account_id").(string))
 	createRegistrationOptions.SetCompanyName(d.Get("company_name").(string))
@@ -179,6 +182,9 @@ func resourceIbmOnboardingRegistrationRead(context context.Context, d *schema.Re
 	getRegistrationOptions := &partnercentersellv1.GetRegistrationOptions{}
 
 	getRegistrationOptions.SetRegistrationID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		getRegistrationOptions.SetEnv(d.Get("env").(string))
+	}
 
 	registration, response, err := partnerCenterSellClient.GetRegistrationWithContext(context, getRegistrationOptions)
 	if err != nil {
@@ -246,6 +252,9 @@ func resourceIbmOnboardingRegistrationUpdate(context context.Context, d *schema.
 	updateRegistrationOptions := &partnercentersellv1.UpdateRegistrationOptions{}
 
 	updateRegistrationOptions.SetRegistrationID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		updateRegistrationOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
@@ -302,6 +311,9 @@ func resourceIbmOnboardingRegistrationDelete(context context.Context, d *schema.
 	deleteRegistrationOptions := &partnercentersellv1.DeleteRegistrationOptions{}
 
 	deleteRegistrationOptions.SetRegistrationID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		deleteRegistrationOptions.SetEnv(d.Get("env").(string))
+	}
 
 	_, err = partnerCenterSellClient.DeleteRegistrationWithContext(context, deleteRegistrationOptions)
 	if err != nil {

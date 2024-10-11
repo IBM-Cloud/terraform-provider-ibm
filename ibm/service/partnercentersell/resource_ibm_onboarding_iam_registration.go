@@ -1368,6 +1368,9 @@ func resourceIbmOnboardingIamRegistrationUpdate(context context.Context, d *sche
 
 	updateIamRegistrationOptions.SetProductID(parts[0])
 	updateIamRegistrationOptions.SetProgrammaticName(parts[1])
+	if _, ok := d.GetOk("env"); ok {
+		updateIamRegistrationOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 

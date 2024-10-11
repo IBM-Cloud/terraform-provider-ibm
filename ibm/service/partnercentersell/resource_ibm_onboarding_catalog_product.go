@@ -840,6 +840,9 @@ func resourceIbmOnboardingCatalogProductUpdate(context context.Context, d *schem
 
 	updateCatalogProductOptions.SetProductID(parts[0])
 	updateCatalogProductOptions.SetCatalogProductID(parts[1])
+	if _, ok := d.GetOk("env"); ok {
+		updateCatalogProductOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 

@@ -629,6 +629,9 @@ func resourceIbmOnboardingCatalogPlanUpdate(context context.Context, d *schema.R
 	updateCatalogPlanOptions.SetProductID(parts[0])
 	updateCatalogPlanOptions.SetCatalogProductID(parts[1])
 	updateCatalogPlanOptions.SetCatalogPlanID(parts[2])
+	if _, ok := d.GetOk("env"); ok {
+		updateCatalogPlanOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 

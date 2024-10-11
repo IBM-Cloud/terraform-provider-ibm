@@ -470,6 +470,9 @@ func resourceIbmOnboardingResourceBrokerUpdate(context context.Context, d *schem
 	updateResourceBrokerOptions := &partnercentersellv1.UpdateResourceBrokerOptions{}
 
 	updateResourceBrokerOptions.SetBrokerID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		createResourceBrokerOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 

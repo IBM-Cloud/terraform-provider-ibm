@@ -483,6 +483,9 @@ func resourceIbmOnboardingCatalogDeploymentCreate(context context.Context, d *sc
 	createCatalogDeploymentOptions.SetActive(d.Get("active").(bool))
 	createCatalogDeploymentOptions.SetDisabled(d.Get("disabled").(bool))
 	createCatalogDeploymentOptions.SetKind(d.Get("kind").(string))
+	if _, ok := d.GetOk("env"); ok {
+		createCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
+	}
 	var tags []string
 	for _, v := range d.Get("tags").([]interface{}) {
 		tagsItem := v.(string)
@@ -659,6 +662,9 @@ func resourceIbmOnboardingCatalogDeploymentUpdate(context context.Context, d *sc
 	updateCatalogDeploymentOptions.SetCatalogProductID(parts[1])
 	updateCatalogDeploymentOptions.SetCatalogPlanID(parts[2])
 	updateCatalogDeploymentOptions.SetCatalogDeploymentID(parts[3])
+	if _, ok := d.GetOk("env"); ok {
+		updateCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
