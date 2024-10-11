@@ -256,6 +256,102 @@ func TestAccIBMDatabaseInstancePostgresPITR(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
+	t.Parallel()
+
+	databaseResourceGroup := "default"
+
+	var sourceInstanceCRN string
+	var replicaInstanceCRN string
+
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	readReplicaName := serviceName + "-replica"
+
+	sourceResource := "ibm_database." + serviceName
+	replicaReplicaResource := "ibm_database." + readReplicaName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(sourceResource, &sourceInstanceCRN),
+					resource.TestCheckResourceAttr(sourceResource, "name", serviceName),
+					resource.TestCheckResourceAttr(sourceResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(sourceResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(sourceResource, "location", acc.Region()),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup, readReplicaName, sourceInstanceCRN),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "name", readReplicaName),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "location", acc.Region()),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "remote_leader_id", sourceInstanceCRN),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourceGroup, readReplicaName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "name", readReplicaName),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "location", acc.Region()),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "remote_leader_id", ""),
+					resource.TestCheckResourceAttr(replicaReplicaResource, "skip_initial_backup", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup string, name string, sourceInstanceCRN string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s"
+		service             = "databases-for-postgresql"
+		plan                = "standard"
+		location            = "%[3]s"
+		service_endpoints   = "public-and-private"
+		remote_leader_id    = "%[4]s"
+		skip_initial_backup = true
+	}
+				`, databaseResourceGroup, name, acc.Region(), sourceInstanceCRN)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourceGroup string, readReplicaName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id   = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s"
+		service             = "databases-for-postgresql"
+		plan                = "standard"
+		location            = "%[3]s"
+		service_endpoints   = "public-and-private"
+		remote_leader_id    = ""
+		skip_initial_backup = true
+	}
+				`, databaseResourceGroup, readReplicaName, acc.Region())
+}
+
 func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -735,46 +831,4 @@ func testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup s
 		service_endpoints                     = "public-and-private"
 	}
 				`, databaseResourceGroup, name, acc.Region())
-}
-
-func TestAccIBMDatabaseInstancePostgresPromoteReadReplica(t *testing.T) {
-	// TODO lorna: I would have to create an instance, then rr, then promote?
-	// Have to provide a valid rr crn to run tests?
-	t.Parallel()
-	databaseResourceGroup := "default"
-	var databaseInstanceOne string
-	var databaseInstanceTwo string
-	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
-
-	promoteServiceName := serviceName + "-promote-read-replica"
-	resourceName := "ibm_database." + serviceName
-	promoteResource := "ibm_database." + promoteServiceName
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
-					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", acc.Region()),
-				),
-			},
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_PITR(databaseResourceGroup, serviceName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(promoteResource, &databaseInstanceTwo),
-					resource.TestCheckResourceAttr(promoteResource, "name", promoteServiceName),
-					resource.TestCheckResourceAttr(promoteResource, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(promoteResource, "plan", "standard"),
-					resource.TestCheckResourceAttr(promoteResource, "location", acc.Region()),
-				),
-			},
-		},
-	})
 }
