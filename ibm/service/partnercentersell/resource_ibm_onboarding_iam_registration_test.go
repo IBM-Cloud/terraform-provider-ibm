@@ -142,7 +142,6 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(env string, name string, ena
 					hidden = true
 				}
 			}
-			additional_policy_scopes = "FIXME"
 			display_name {
 				default = "default"
 				en = "en"
@@ -156,7 +155,6 @@ func testAccCheckIbmOnboardingIamRegistrationConfig(env string, name string, ena
 				zh_tw = "zh_tw"
 				zh_cn = "zh_cn"
 			}
-			parent_ids = "FIXME"
 			resource_hierarchy_attribute {
 				key = "key"
 				value = "value"
