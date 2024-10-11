@@ -296,6 +296,7 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 			p := make(map[string]interface{})
 			p[Attr_ExternalIP] = pvmip.ExternalIP
 			p[Attr_IP] = pvmip.IPAddress
+			p[Attr_Macaddress] = pvmip.MacAddress
 			p[Attr_MacAddress] = pvmip.MacAddress
 			p[Attr_NetworkID] = pvmip.NetworkID
 			p[Attr_NetworkName] = pvmip.NetworkName
