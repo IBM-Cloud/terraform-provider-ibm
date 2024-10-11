@@ -1001,7 +1001,7 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 		patch["favorite"] = nil
 	}
 	path = "enable_events_from_forks"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_events_from_forks"] = nil
 	}
 
