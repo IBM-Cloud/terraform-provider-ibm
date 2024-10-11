@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
  */
 
 package partnercentersell
@@ -1218,17 +1218,11 @@ func resourceIbmOnboardingIamRegistrationRead(context context.Context, d *schema
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-product_id").GetDiag()
 		}
 	}
-	if parts[1] != "" {
-		if err = d.Set("programmatic_name", parts[1]); err != nil {
-			err = fmt.Errorf("Error setting product_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-programmatic_name").GetDiag()
-		}
-	}
+
 	if err = d.Set("name", iamServiceRegistration.Name); err != nil {
-		err = fmt.Errorf("Error setting programmatic_name: %s", err)
+		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_iam_registration", "read", "set-name").GetDiag()
 	}
-
 	if !core.IsNil(iamServiceRegistration.Enabled) {
 		if err = d.Set("enabled", iamServiceRegistration.Enabled); err != nil {
 			err = fmt.Errorf("Error setting enabled: %s", err)

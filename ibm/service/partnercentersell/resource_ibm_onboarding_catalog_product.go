@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.96.0-d6dec9d7-20241008-212902
  */
 
 package partnercentersell
@@ -1102,13 +1102,23 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogHighlightItem(modelMap map[s
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["description_i18n"] != nil {
-		// TODO: handle DescriptionI18n, map with entry type 'string'
+		model.DescriptionI18n = make(map[string]string)
+		for key, value := range modelMap["description_i18n"].(map[string]interface{}) {
+			if str, ok := value.(string); ok {
+				model.DescriptionI18n[key] = str
+			}
+		}
 	}
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
 	}
 	if modelMap["title_i18n"] != nil {
-		// TODO: handle TitleI18n, map with entry type 'string'
+		model.TitleI18n = make(map[string]string)
+		for key, value := range modelMap["title_i18n"].(map[string]interface{}) {
+			if str, ok := value.(string); ok {
+				model.TitleI18n[key] = str
+			}
+		}
 	}
 	return model, nil
 }
@@ -1117,7 +1127,12 @@ func ResourceIbmOnboardingCatalogProductMapToCatalogProductMediaItem(modelMap ma
 	model := &partnercentersellv1.CatalogProductMediaItem{}
 	model.Caption = core.StringPtr(modelMap["caption"].(string))
 	if modelMap["caption_i18n"] != nil {
-		// TODO: handle CaptionI18n, map with entry type 'string'
+		model.CaptionI18n = make(map[string]string)
+		for key, value := range modelMap["description_i18n"].(map[string]interface{}) {
+			if str, ok := value.(string); ok {
+				model.CaptionI18n[key] = str
+			}
+		}
 	}
 	if modelMap["thumbnail"] != nil && modelMap["thumbnail"].(string) != "" {
 		model.Thumbnail = core.StringPtr(modelMap["thumbnail"].(string))
@@ -1230,7 +1245,12 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherPC
 		model.Process = core.StringPtr(modelMap["process"].(string))
 	}
 	if modelMap["process_i18n"] != nil {
-		// TODO: handle ProcessI18n, map with entry type 'string'
+		model.ProcessI18n = make(map[string]string)
+		for key, value := range modelMap["description_i18n"].(map[string]interface{}) {
+			if str, ok := value.(string); ok {
+				model.ProcessI18n[key] = str
+			}
+		}
 	}
 	if modelMap["support_type"] != nil && modelMap["support_type"].(string) != "" {
 		model.SupportType = core.StringPtr(modelMap["support_type"].(string))
