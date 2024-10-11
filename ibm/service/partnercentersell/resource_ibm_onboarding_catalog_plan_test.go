@@ -138,7 +138,7 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
 			metadata {
                 rc_compatible =	 false
                 pricing {
-                    type = "Paid"
+                    type = "paid"
                     origin = "pricing_catalog"
                 }
             }

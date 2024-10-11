@@ -917,7 +917,7 @@ func ResourceIbmOnboardingCatalogPlanMapToCatalogProductMediaItem(modelMap map[s
 	model.Caption = core.StringPtr(modelMap["caption"].(string))
 	if modelMap["caption_i18n"] != nil {
 		model.CaptionI18n = make(map[string]string)
-		for key, value := range modelMap["description_i18n"].(map[string]interface{}) {
+		for key, value := range modelMap["caption_i18n"].(map[string]interface{}) {
 			if str, ok := value.(string); ok {
 				model.CaptionI18n[key] = str
 			}
