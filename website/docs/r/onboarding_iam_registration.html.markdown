@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_iam_registration
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_iam_registrations with this resource.
 
 ## Example Usage
@@ -62,7 +60,8 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		zh_tw = "zh_tw"
 		zh_cn = "zh_cn"
   }
-  product_id = "product_id"
+  name = "name"
+  product_id = ibm_onboarding_product.onboarding_product_instance.id
   resource_hierarchy_attribute {
 		key = "key"
 		value = "value"
@@ -198,7 +197,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 			zh_cn = "zh_cn"
 		}
 		options {
-			access_policy = { "key" = "inner" }
+			access_policy = true
 			policy_type = [ "access" ]
 			account_type = "enterprise"
 		}
@@ -297,7 +296,7 @@ Nested schema for **display_name**:
 * `enabled` - (Optional, Boolean) Whether the service is enabled or disabled for IAM.
 * `env` - (Optional, String) The environment to fetch this object from.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
-* `name` - (Optional, String) The IAM registration name, which must be the programmatic name of the product.
+* `name` - (Required, String) The IAM registration name, which must be the programmatic name of the product.
   * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
 * `parent_ids` - (Optional, List) The list of parent IDs for product access management.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-.]+$/`. The maximum length is `100` items. The minimum length is `0` items.
@@ -522,7 +521,7 @@ Nested schema for **supported_roles**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 	* `options` - (Optional, List) The supported role options.
 	Nested schema for **options**:
-		* `access_policy` - (Optional, Map) Optional opt-in to require access control on the role.
+		* `access_policy` - (Required, Boolean) Optional opt-in to require access control on the role.
 		* `account_type` - (Optional, String) Optional opt-in to require checking account type when applying the role.
 		  * Constraints: Allowable values are: `enterprise`.
 		* `policy_type` - (Optional, List) Optional opt-in to require checking policy type when applying the role.
@@ -548,5 +547,5 @@ The `name` property can be formed from `product_id`, and `name` in the following
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_iam_registration.onboarding_iam_registration <productid>/<name>;
+$ terraform import ibm_onboarding_iam_registration.onboarding_iam_registration product_id/name;
 </pre>

@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccIBMPIInstanceDataSource_basic(t *testing.T) {
+	instanceResData := "data.ibm_pi_instance.testacc_ds_instance"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -20,7 +21,7 @@ func TestAccIBMPIInstanceDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIInstanceDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_instance.testacc_ds_instance", "id"),
+					resource.TestCheckResourceAttrSet(instanceResData, "id"),
 				),
 			},
 		},
