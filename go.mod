@@ -245,7 +245,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-// remove it if its not local.
-
-replace github.com/IBM/platform-services-go-sdk v0.69.1 => ../platform-services-go-sdk
