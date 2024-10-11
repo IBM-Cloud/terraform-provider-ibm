@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_iam_registration
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
+
 Create, update, and delete onboarding_iam_registrations with this resource.
 
 ## Example Usage
