@@ -61,6 +61,11 @@ func DataSourceIBMPIImages() *schema.Resource {
 							Description: "The name of an image.",
 							Type:        schema.TypeString,
 						},
+						Attr_SourceChecksum: {
+							Computed:    true,
+							Description: "Checksum of the image.",
+							Type:        schema.TypeString,
+						},
 						Attr_State: {
 							Computed:    true,
 							Description: "The state of an image.",
@@ -116,13 +121,14 @@ func flattenStockImages(list []*models.ImageReference, meta interface{}) []map[s
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			Attr_Href:        *i.Href,
-			Attr_ID:          *i.ImageID,
-			Attr_ImageType:   i.Specifications.ImageType,
-			Attr_Name:        *i.Name,
-			Attr_State:       *i.State,
-			Attr_StoragePool: *i.StoragePool,
-			Attr_StorageType: *i.StorageType,
+			Attr_Href:           *i.Href,
+			Attr_ID:             *i.ImageID,
+			Attr_ImageType:      i.Specifications.ImageType,
+			Attr_Name:           *i.Name,
+			Attr_SourceChecksum: i.Specifications.SourceChecksum,
+			Attr_State:          *i.State,
+			Attr_StoragePool:    *i.StoragePool,
+			Attr_StorageType:    *i.StorageType,
 		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn

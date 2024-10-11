@@ -339,6 +339,7 @@ const (
 	Attr_SharedProcessorPoolStatusDetail             = "status_detail"
 	Attr_Size                                        = "size"
 	Attr_SnapshotID                                  = "snapshot_id"
+	Attr_SourceChecksum                              = "source_checksum"
 	Attr_SourceVolumeID                              = "source_volume_id"
 	Attr_SourceVolumeName                            = "source_volume_name"
 	Attr_Speed                                       = "speed"
