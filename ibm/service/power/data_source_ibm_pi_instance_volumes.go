@@ -51,9 +51,19 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Description: "Indicates if the volume is boot capable.",
 							Type:        schema.TypeBool,
 						},
+						Attr_CreationDate: {
+							Computed:    true,
+							Description: "Date volume was created.",
+							Type:        schema.TypeString,
+						},
 						Attr_CRN: {
 							Computed:    true,
 							Description: "The CRN of this resource.",
+							Type:        schema.TypeString,
+						},
+						Attr_FreezeTime: {
+							Computed:    true,
+							Description: "The freeze time of remote copy.",
 							Type:        schema.TypeString,
 						},
 						Attr_Href: {
@@ -66,6 +76,11 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Description: "The unique identifier of the volume.",
 							Type:        schema.TypeString,
 						},
+						Attr_LastUpdateDate: {
+							Computed:    true,
+							Description: "The last updated date of the volume.",
+							Type:        schema.TypeString,
+						},
 						Attr_Name: {
 							Computed:    true,
 							Description: "The name of the volume.",
@@ -75,6 +90,17 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Computed:    true,
 							Description: "Volume pool, name of storage pool where the volume is located.",
 							Type:        schema.TypeString,
+						},
+						Attr_ReplicationEnabled: {
+							Computed:    true,
+							Description: "Indicates if the volume should be replication enabled or not.",
+							Type:        schema.TypeBool,
+						},
+						Attr_ReplicationSites: {
+							Computed:    true,
+							Description: "List of replication sites for volume replication.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Shareable: {
 							Computed:    true,
@@ -136,16 +162,20 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 func flattenVolumesInstances(list []*models.VolumeReference, meta interface{}) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
+
 		l := map[string]interface{}{
-			Attr_Bootable:  *i.Bootable,
-			Attr_Href:      *i.Href,
-			Attr_ID:        *i.VolumeID,
-			Attr_Name:      *i.Name,
-			Attr_Pool:      i.VolumePool,
-			Attr_Shareable: *i.Shareable,
-			Attr_Size:      *i.Size,
-			Attr_State:     *i.State,
-			Attr_Type:      *i.DiskType,
+			Attr_Bootable:           *i.Bootable,
+			Attr_CreationDate:       i.CreationDate.String(),
+			Attr_Href:               *i.Href,
+			Attr_ID:                 *i.VolumeID,
+			Attr_LastUpdateDate:     i.LastUpdateDate.String(),
+			Attr_Name:               *i.Name,
+			Attr_Pool:               i.VolumePool,
+			Attr_ReplicationEnabled: i.ReplicationEnabled,
+			Attr_Shareable:          *i.Shareable,
+			Attr_Size:               *i.Size,
+			Attr_State:              *i.State,
+			Attr_Type:               *i.DiskType,
 		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn
@@ -155,6 +185,13 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta interface{}) [
 			}
 			l[Attr_UserTags] = tags
 		}
+		if i.FreezeTime != nil {
+			l[Attr_FreezeTime] = i.FreezeTime.String()
+		}
+		if len(i.ReplicationSites) > 0 {
+			l[Attr_ReplicationSites] = i.ReplicationSites
+		}
+
 		result = append(result, l)
 	}
 	return result
