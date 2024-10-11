@@ -146,7 +146,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 				service {
 				  	rc_provisionable = true
   					iam_compatible = true
-				}
+		}
                 rc_compatible =	false
             }
 		}
@@ -155,7 +155,6 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 
 func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogProductID string, catalogPlanID string, env string, name string, active string, disabled string, kind string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
 			product_id = "%s"
 			catalog_product_id = "%s"
@@ -1091,13 +1090,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]string{"key1": "testString"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1140,13 +1139,13 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataUIStrin
 
 	catalogHighlightItemModel := make(map[string]interface{})
 	catalogHighlightItemModel["description"] = "testString"
-	catalogHighlightItemModel["description_i18n"] = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogHighlightItemModel["title"] = "testString"
-	catalogHighlightItemModel["title_i18n"] = map[string]string{"key1": "testString"}
+	catalogHighlightItemModel["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	catalogProductMediaItemModel := make(map[string]interface{})
 	catalogProductMediaItemModel["caption"] = "testString"
-	catalogProductMediaItemModel["caption_i18n"] = map[string]string{"key1": "testString"}
+	catalogProductMediaItemModel["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	catalogProductMediaItemModel["thumbnail"] = "testString"
 	catalogProductMediaItemModel["type"] = "image"
 	catalogProductMediaItemModel["url"] = "testString"
@@ -1174,9 +1173,9 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(t *test
 
 	model := make(map[string]interface{})
 	model["description"] = "testString"
-	model["description_i18n"] = map[string]string{"key1": "testString"}
+	model["description_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["title"] = "testString"
-	model["title_i18n"] = map[string]string{"key1": "testString"}
+	model["title_i18n"] = map[string]interface{}{"key1": "testString"}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToCatalogHighlightItem(model)
 	assert.Nil(t, err)
@@ -1197,7 +1196,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogProductMediaItem(t *t
 
 	model := make(map[string]interface{})
 	model["caption"] = "testString"
-	model["caption_i18n"] = map[string]string{"key1": "testString"}
+	model["caption_i18n"] = map[string]interface{}{"key1": "testString"}
 	model["thumbnail"] = "testString"
 	model["type"] = "image"
 	model["url"] = "testString"

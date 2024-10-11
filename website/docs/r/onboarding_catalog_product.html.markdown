@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_product
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_products with this resource.
 
 ## Example Usage
@@ -29,13 +27,13 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 				en {
 					bullets {
 						description = "description"
-						description_i18n = { "key" = "anything as a string" }
+						description_i18n = { "key" = "inner" }
 						title = "title"
-						title_i18n = { "key" = "anything as a string" }
+						title_i18n = { "key" = "inner" }
 					}
 					media {
 						caption = "caption"
-						caption_i18n = { "key" = "anything as a string" }
+						caption_i18n = { "key" = "inner" }
 						thumbnail = "thumbnail"
 						type = "image"
 						url = "url"
@@ -70,7 +68,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 					locations = [ "locations" ]
 					languages = [ "languages" ]
 					process = "process"
-					process_i18n = { "key" = "anything as a string" }
+					process_i18n = { "key" = "inner" }
 					support_type = "community"
 					support_escalation {
 						contact = "contact"
@@ -300,5 +298,5 @@ The `id` property can be formed from `product_id`, and `catalog_product_id` in t
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product product_id/catalog_product_id;
+$ terraform import ibm_onboarding_catalog_product.onboarding_catalog_product &lt;product_id&gt;/&lt;catalog_product_id&gt;
 </pre>
