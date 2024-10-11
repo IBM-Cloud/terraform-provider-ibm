@@ -71,11 +71,12 @@ Review the argument references that you can specify for your resource.
 - `pi_capture_cloud_storage_access_key`- (Optional,String) Cloud Storage Access key
 - `pi_capture_cloud_storage_secret_key`- (Optional,String) Cloud Storage Secret key
 - `pi_capture_storage_image_path` - (Optional,String) Cloud Storage Image Path (bucket-name [/folder/../..])
-
+- `pi_user_tags` - (Optional, List) List of user tags attached to the resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The CRN of the resource.
 - `id` - (String) The image id of the capture instance. The ID is composed of `<pi_cloud_instance_id>/<pi_capture_name>/<pi_capture_destination>`.
 - `image_id` - (String) The image id of the capture instance.
 

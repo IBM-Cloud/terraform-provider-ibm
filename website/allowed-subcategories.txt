@@ -9,6 +9,7 @@ Cloud Foundry
 Cloudant Databases
 Code Engine
 Container Registry
+Configuration Aggregator
 Context Based Restrictions
 CD Tekton Pipeline
 Direct Link Gateway
