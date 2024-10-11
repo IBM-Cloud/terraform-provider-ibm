@@ -30,6 +30,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/configurationaggregator"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
@@ -230,12 +231,15 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway":        apigateway.DataSourceIBMApiGateway(),
-			"ibm_account":            cloudfoundry.DataSourceIBMAccount(),
-			"ibm_app":                cloudfoundry.DataSourceIBMApp(),
-			"ibm_app_domain_private": cloudfoundry.DataSourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":  cloudfoundry.DataSourceIBMAppDomainShared(),
-			"ibm_app_route":          cloudfoundry.DataSourceIBMAppRoute(),
+			"ibm_api_gateway":                      apigateway.DataSourceIBMApiGateway(),
+			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
+			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
+			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":                cloudfoundry.DataSourceIBMAppDomainShared(),
+			"ibm_app_route":                        cloudfoundry.DataSourceIBMAppRoute(),
+			"ibm_config_aggregator_configurations": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorConfigurations()),
+			"ibm_config_aggregator_settings":       configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorSettings()),
+			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -977,6 +981,7 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":                cloudfoundry.ResourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
 			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
+			"ibm_config_aggregator_settings":        configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
 
 			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),
@@ -1818,6 +1823,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_keystore":                            hpcs.ResourceIbmKeystoreValidator(),
 				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
+				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
 				// MQ on Cloud
 				"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
