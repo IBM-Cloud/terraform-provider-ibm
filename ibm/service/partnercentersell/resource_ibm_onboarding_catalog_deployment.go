@@ -627,7 +627,7 @@ func resourceIbmOnboardingCatalogDeploymentRead(context context.Context, d *sche
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_product_id").GetDiag()
 		}
 	}
-	if !parts[2] != nil {
+	if parts[2] != "" {
 		if err = d.Set("catalog_plan_id", parts[2]); err != nil {
 			err = fmt.Errorf("Error setting catalog_plan_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_deployment", "read", "set-catalog_plan_id").GetDiag()
