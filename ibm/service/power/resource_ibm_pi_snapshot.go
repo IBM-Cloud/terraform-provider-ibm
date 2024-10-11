@@ -58,6 +58,13 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_UserTags: {
+				Description: "The user tags attached to this resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			Arg_VolumeIDs: {
 				Description:      "A list of volume IDs of the instance that will be part of the snapshot. If none are provided, then all the volumes of the instance will be part of the snapshot.",
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -71,6 +78,11 @@ func ResourceIBMPISnapshot() *schema.Resource {
 			Attr_CreationDate: {
 				Computed:    true,
 				Description: "Creation date of the snapshot.",
+				Type:        schema.TypeString,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
 			Attr_LastUpdateDate: {
@@ -123,6 +135,10 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 		log.Printf("no volumeids provided. Will snapshot the entire instance")
 	}
 
+	if v, ok := d.GetOk(Arg_UserTags); ok {
+		snapshotBody.UserTags = flex.FlattenSet(v.(*schema.Set))
+	}
+
 	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)
@@ -135,6 +151,16 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	_, err = isWaitForPIInstanceSnapshotAvailable(ctx, piSnapClient, *snapshotResponse.SnapshotID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if _, ok := d.GetOk(Arg_UserTags); ok {
+		if snapshotResponse.Crn != "" {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(snapshotResponse.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi snapshot (%s) pi_user_tags during creation: %s", *snapshotResponse.SnapshotID, err)
+			}
+		}
 	}
 
 	return resourceIBMPISnapshotRead(ctx, d, meta)
@@ -160,6 +186,14 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.Set(Arg_SnapShotName, snapshotdata.Name)
 	d.Set(Attr_CreationDate, snapshotdata.CreationDate.String())
+	if snapshotdata.Crn != "" {
+		d.Set(Attr_CRN, snapshotdata.Crn)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, string(snapshotdata.Crn), "", UserTagType)
+		if err != nil {
+			log.Printf("Error on get of pi snapshot (%s) pi_user_tags: %s", *snapshotdata.SnapshotID, err)
+		}
+		d.Set(Arg_UserTags, tags)
+	}
 	d.Set(Attr_LastUpdateDate, snapshotdata.LastUpdateDate.String())
 	d.Set(Attr_SnapshotID, *snapshotdata.SnapshotID)
 	d.Set(Attr_Status, snapshotdata.Status)
@@ -195,6 +229,16 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 		_, err = isWaitForPIInstanceSnapshotAvailable(ctx, client, snapshotID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(Arg_UserTags) {
+		if crn, ok := d.GetOk(Attr_CRN); ok {
+			oldList, newList := d.GetChange(Arg_UserTags)
+			err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, crn.(string), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on update of pi snapshot (%s) pi_user_tags: %s", snapshotID, err)
+			}
 		}
 	}
 

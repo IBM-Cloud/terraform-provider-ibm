@@ -10,6 +10,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,6 +51,11 @@ func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 							Description: "Date of snapshot creation.",
 							Type:        schema.TypeString,
 						},
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The CRN of this resource.",
+							Type:        schema.TypeString,
+						},
 						Attr_Description: {
 							Computed:    true,
 							Description: "The description of the snapshot.",
@@ -80,6 +86,13 @@ func DataSourceIBMPIPVMSnapshot() *schema.Resource {
 							Description: "The status of the Power Virtual Machine instance snapshot.",
 							Type:        schema.TypeString,
 						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
+						},
 						Attr_VolumeSnapshots: {
 							Computed:    true,
 							Description: "A map of volume snapshots included in the Power Virtual Machine instance snapshot.",
@@ -109,12 +122,12 @@ func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, me
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set(Attr_PVMSnapshots, flattenPVMSnapshotInstances(snapshotData.Snapshots))
+	d.Set(Attr_PVMSnapshots, flattenPVMSnapshotInstances(snapshotData.Snapshots, meta))
 
 	return nil
 }
 
-func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface{} {
+func flattenPVMSnapshotInstances(list []*models.Snapshot, meta interface{}) []map[string]interface{} {
 	log.Printf("Calling the flattenPVMSnapshotInstances call with list %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
@@ -128,6 +141,14 @@ func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface
 			Attr_PercentComplete: i.PercentComplete,
 			Attr_Status:          i.Status,
 			Attr_VolumeSnapshots: i.VolumeSnapshots,
+		}
+		if i.Crn != "" {
+			l[Attr_CRN] = i.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(i.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of pi pvm snapshot (%s) user_tags: %s", *i.SnapshotID, err)
+			}
+			l[Attr_UserTags] = tags
 		}
 		result = append(result, l)
 	}

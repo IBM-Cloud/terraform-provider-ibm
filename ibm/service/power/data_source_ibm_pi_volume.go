@@ -5,9 +5,11 @@ package power
 
 import (
 	"context"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -46,6 +48,11 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates if the volume is boot capable.",
 				Type:        schema.TypeBool,
+			},
+			Attr_CRN: {
+				Computed:    true,
+				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
 			},
 			Attr_ConsistencyGroupName: {
 				Computed:    true,
@@ -112,6 +119,13 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Description: "The state of the volume.",
 				Type:        schema.TypeString,
 			},
+			Attr_UserTags: {
+				Computed:    true,
+				Description: "List of user tags attached to the resource.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Type:        schema.TypeSet,
+			},
 			Attr_VolumePool: {
 				Computed:    true,
 				Description: "Volume pool, name of storage pool where the volume is located.",
@@ -144,6 +158,14 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_AuxiliaryVolumeName, volumedata.AuxVolumeName)
 	d.Set(Attr_Bootable, volumedata.Bootable)
 	d.Set(Attr_ConsistencyGroupName, volumedata.ConsistencyGroupName)
+	if volumedata.Crn != "" {
+		d.Set(Attr_CRN, volumedata.Crn)
+		tags, err := flex.GetTagsUsingCRN(meta, string(volumedata.Crn))
+		if err != nil {
+			log.Printf("Error on get of pi volume (%s) user_tags: %s", *volumedata.VolumeID, err)
+		}
+		d.Set(Attr_UserTags, tags)
+	}
 	d.Set(Attr_DiskType, volumedata.DiskType)
 	d.Set(Attr_GroupID, volumedata.GroupID)
 	d.Set(Attr_IOThrottleRate, volumedata.IoThrottleRate)

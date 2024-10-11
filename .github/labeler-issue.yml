@@ -46,6 +46,8 @@ service/Classic Infrastructure:
   - '((\*|-) ?`?|(data|resource) "?)(ibm_compute|ibm_cdn|ibm_firewall|ibm_lb|ibm_lbaas|ibm_network|ibm_storage|ibm_security|ibm_subnet|ibm_hardware|ibm_ipsec)'
 service/Cloud Databases:
   - '((\*|-) ?`?|(data|resource) "?)ibm_(cloudant|database)'
+service/Cloud Logs:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_logs_'
 service/Cloud Foundry:
   - '((\*|-) ?`?|(data|resource) "?)(ibm_account|ibm_org|ibm_space|ibm_service|ibm_app_domain_private|ibm_app_domain_shared|ibm_app_route)'
 service/CBR:
