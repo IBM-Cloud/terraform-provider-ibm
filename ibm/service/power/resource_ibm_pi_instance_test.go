@@ -830,6 +830,64 @@ func TestAccIBMPIInstanceDeploymentTypeNoStorage(t *testing.T) {
 	})
 }
 
+func TestAccIBMPIInstanceDeploymentGRS(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	bootVolumeData := "data.ibm_pi_volume.power_boot_volume_data"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceGRSConfig(name, power.OK, "2", "0.25"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(bootVolumeData, "replication_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceGRSConfig(name string, instanceHealthStatus string, memory string, proc string) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_image_name        = "%[3]s"
+		pi_cloud_instance_id = "%[1]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	}  
+	data "ibm_pi_volume" "power_boot_volume_data" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = data.ibm_pi_instance_volumes.power_instance_volumes_data.instance_volumes[0].name
+	}
+	data "ibm_pi_instance_volumes" "power_instance_volumes_data" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_instance_name     = ibm_pi_instance.power_instance.pi_instance_name
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_boot_volume_replication_enabled = true
+		pi_memory            			   = "%[7]s"
+		pi_processors        			   = "%[6]s"
+		pi_instance_name                           = "%[2]s"
+		pi_proc_type          			   = "shared"
+		pi_image_id           			   = data.ibm_pi_image.power_image.id
+		pi_sys_type          			   = "e980"
+		pi_cloud_instance_id  			   = "%[1]s"
+		pi_storage_pool       			   = data.ibm_pi_image.power_image.storage_pool		
+		pi_pin_policy        			   = "none"
+		pi_health_status      			   = "%[5]s"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory)
+}
+
 func TestAccIBMPIInstanceUserTags(t *testing.T) {
 	instanceRes := "ibm_pi_instance.power_instance"
 	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
