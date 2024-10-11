@@ -1322,6 +1322,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
 			"ibm_pi_volume_onboarding":               power.ResourceIBMPIVolumeOnboarding(),
 			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
+			"ibm_pi_volumes_attach":                  power.ResourceIBMPIVolumesAttach(),
+			"ibm_pi_volumes_detach":                  power.ResourceIBMPIVolumesDetach(),
 			"ibm_pi_vpn_connection":                  power.ResourceIBMPIVPNConnection(),
 			"ibm_pi_workspace":                       power.ResourceIBMPIWorkspace(),
 
