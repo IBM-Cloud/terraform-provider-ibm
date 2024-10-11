@@ -687,6 +687,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_onboarding":                      power.DataSourceIBMPIVolumeOnboarding(),
 			"ibm_pi_volume_onboardings":                     power.DataSourceIBMPIVolumeOnboardings(),
 			"ibm_pi_volume_remote_copy_relationship":        power.DataSourceIBMPIVolumeRemoteCopyRelationship(),
+			"ibm_pi_volume_snapshot":                        power.DataSourceIBMPIVolumeSnapshot(),
+			"ibm_pi_volume_snapshots":                       power.DataSourceIBMPIVolumeSnapshots(),
 			"ibm_pi_volume":                                 power.DataSourceIBMPIVolume(),
 			"ibm_pi_workspace":                              power.DatasourceIBMPIWorkspace(),
 			"ibm_pi_workspaces":                             power.DatasourceIBMPIWorkspaces(),
