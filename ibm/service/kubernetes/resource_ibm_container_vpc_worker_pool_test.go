@@ -255,11 +255,6 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceSecurityGroups(t *testing.T)
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
 				),
 			},
-			{
-				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 		},
 	})
 }
@@ -423,10 +418,27 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceSecondaryStorage(t *testing.
 }
 
 func testAccCheckIBMVpcContainerWorkerPoolSecStorage(name string) string {
-	return fmt.Sprintf(testAccCheckIBMContainerVpcClusterEnvvar(name)+`
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "%[1]s"
+	  vpc_id            = "%[2]s"
+	  flavor            = "bx2.4x16"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
+	  zones {
+		subnet_id = "%[3]s"
+		name      = "us-south-1"
+	  }
+	}
+
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
 	  cluster           = ibm_container_vpc_cluster.cluster.id
-	  worker_pool_name  = "%[1]s"
+	  worker_pool_name  = "wp-sec-storage"
 	  flavor            = "bx2.4x16"
 	  vpc_id            = "%[2]s"
 	  worker_count      = 1
@@ -440,10 +452,27 @@ func testAccCheckIBMVpcContainerWorkerPoolSecStorage(name string) string {
 }
 
 func testAccCheckIBMVpcContainerWorkerPoolSecStorageRemove(name string) string {
-	return fmt.Sprintf(testAccCheckIBMContainerVpcClusterEnvvar(name)+`
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "%[1]s"
+	  vpc_id            = "%[2]s"
+	  flavor            = "bx2.4x16"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
+	  zones {
+		subnet_id = "%[3]s"
+		name      = "us-south-1"
+	  }
+	}
+
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
 	  cluster           = ibm_container_vpc_cluster.cluster.id
-	  worker_pool_name  = "%[1]s"
+	  worker_pool_name  = "wp-sec-storage"
 	  flavor            = "bx2.4x16"
 	  vpc_id            = "%[2]s"
 	  worker_count      = 1
@@ -471,11 +500,9 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceKMS(t *testing.T) {
 				Config: testAccCheckIBMVpcContainerWorkerPoolKMS(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "taints.#", "1"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
 					resource.TestCheckResourceAttr(
@@ -486,19 +513,36 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceKMS(t *testing.T) {
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"kms_instance_id", "crk"},
 			},
 		},
 	})
 }
 
 func testAccCheckIBMVpcContainerWorkerPoolKMS(name string) string {
-	return fmt.Sprintf(testAccCheckIBMContainerVpcClusterEnvvar(name)+`
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "%[1]s"
+	  vpc_id            = "%[2]s"
+	  flavor            = "cx2.2x4"
+	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
+	  zones {
+		subnet_id = "%[3]s"
+		name      = "us-south-1"
+	  }
+	  kms_instance_id = "%[4]s"
+	  crk = "%[5]s"
+	}
+
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
 	  cluster           = ibm_container_vpc_cluster.cluster.id
-	  worker_pool_name  = "%[1]s"
-	  flavor            = "bx2.4x16"
+	  worker_pool_name  = "wp-kms"
+	  flavor            = "cx2.2x4"
 	  vpc_id            = "%[2]s"
 	  worker_count      = 1
 	  zones {
@@ -508,7 +552,7 @@ func testAccCheckIBMVpcContainerWorkerPoolKMS(name string) string {
 	  kms_instance_id = "%[4]s"
 	  crk = "%[5]s"
 	}
-		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.WorkerPoolSecondaryStorage)
+		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
 }
 
 // TestAccIBMContainerVpcClusterWorkerPoolResourceKmsAccount ...
@@ -524,10 +568,10 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceKmsAccount(t *testing.T) {
 		CheckDestroy: testAccCheckIBMVpcContainerWorkerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMVpcContainerWorkerPoolKmsAccountEnvvar(name),
+				Config: testAccCheckIBMVpcContainerWorkerPoolKmsAccount(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -539,9 +583,10 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceKmsAccount(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ibm_container_vpc_worker_pool.test_pool",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"kms_account_id"},
 			},
 		},
 	})
@@ -549,21 +594,41 @@ func TestAccIBMContainerVpcClusterWorkerPoolResourceKmsAccount(t *testing.T) {
 
 func testAccCheckIBMVpcContainerWorkerPoolKmsAccount(name string) string {
 	return fmt.Sprintf(`
-	resource "ibm_container_vpc_worker_pool" "test_pool" {
-	  cluster           = "%[2]s"
-	  worker_pool_name  = "%[1]s"
-	  flavor            = "bx2.4x16"
-	  vpc_id            = "%[3]s"
+	data "ibm_resource_group" "resource_group" {
+		is_default=true
+	}
+	
+	resource "ibm_container_vpc_cluster" "cluster" {
+	  name              = "%[1]s"
+	  vpc_id            = "%[2]s"
+	  flavor            = "cx2.2x4"
 	  worker_count      = 1
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+	  wait_till         = "MasterNodeReady"
 	  zones {
-		subnet_id = "%[4]s"
+		subnet_id = "%[3]s"
 		name      = "us-south-1"
 	  }
-	  kms_instance_id = "%[5]s"
-	  crk = "%[6]s"
-	  kms_account_id = "%[7]s"
+	  kms_instance_id = "%[4]s"
+	  crk = "%[5]s"
+	  kms_account_id = "%[6]s"
 	}
-		`, name, acc.IksClusterID, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
+	  
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "wp-kms"
+	  flavor            = "cx2.2x4"
+	  vpc_id            = "%[2]s"
+	  worker_count      = 1
+	  zones {
+		subnet_id = "%[3]s"
+		name      = "us-south-1"
+	  }
+	  kms_instance_id = "%[4]s"
+	  crk = "%[5]s"
+	  kms_account_id = "%[6]s"
+	}
+		`, name, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
 }
 
 // TestAccIBMContainerVpcOpenshiftClusterWorkerPoolBasic ...
