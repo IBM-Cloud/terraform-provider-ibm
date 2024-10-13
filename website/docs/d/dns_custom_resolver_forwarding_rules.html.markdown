@@ -34,7 +34,7 @@ In addition to the argument references list, you can access the following attrib
 
   Nested scheme for `forwarding_rules`:
   - `description` - (String) Descriptive text of the forwarding rule.
-  - `forward_to` - (String) The upstream DNS servers will be forwarded to.
+  - `forward_to` - (List) List of the upstream DNS that the servers will be forwarded to.
   - `match` - (String) The matching zone or hostname.
   - `rule_id` - (String) Identifier of the forwarding rule.
   - `type` - (String) Type of the forwarding rule.
@@ -44,4 +44,4 @@ In addition to the argument references list, you can access the following attrib
     - `name` - (String) Name of the view.
     - `description` - (String) Description of the view.
     - `expression` - (String) Expression of the view.
-    - `forward_to` - (List) List of the upstream DNS servers will be forwarded to.
+    - `forward_to` - (List) List of the upstream DNS that the servers will be forwarded to.

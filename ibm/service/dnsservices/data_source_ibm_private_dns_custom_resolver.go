@@ -61,7 +61,7 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "Whether disruptive update is allowed for the custom resolver",
+							Description: "Whether a disruptive update is allowed for the custom resolver",
 						},
 						pdnsCustomResolverLocations: {
 							Type:        schema.TypeList,

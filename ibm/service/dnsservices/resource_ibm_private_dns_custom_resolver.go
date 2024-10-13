@@ -146,7 +146,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Whether disruptive update is allowed for the custom resolver",
+				Description: "Whether a disruptive update is allowed for the custom resolver",
 			},
 			pdnsCRForwardRules: {
 				Type:     schema.TypeList,

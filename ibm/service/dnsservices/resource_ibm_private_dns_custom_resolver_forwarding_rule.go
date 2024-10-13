@@ -157,7 +157,7 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 
 	} else {
 		if _, ok := d.GetOk(pdnsCRFRViews); !ok {
-			return diag.FromErr(fmt.Errorf("[ERROR] Can not create the forwarding rules. One of the field from forward_to or views must be provided."))
+			return diag.FromErr(fmt.Errorf("[ERROR] Cannot create the forwarding rules. One of the fields from forward_to or views must be provided."))
 		}
 	}
 

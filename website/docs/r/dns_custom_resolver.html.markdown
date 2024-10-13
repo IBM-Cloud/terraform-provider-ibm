@@ -97,7 +97,8 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `rules`:
   - `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
   - `description`- (String) Descriptive text of the forwarding rule.
-  - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
+  - `type` - (String) Type of the forwarding rule.
+    - Constraints: Allowable values are: `zone`, `hostname`.
   - `match` - (String) The matching zone or hostname.
   - `forward_to` - (List) The upstream DNS servers will be forwarded to.
   - `views` (List) List of views attached to the custom resolver.
