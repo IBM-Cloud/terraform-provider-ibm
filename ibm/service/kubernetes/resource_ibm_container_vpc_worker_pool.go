@@ -721,12 +721,12 @@ func resourceIBMContainerVpcWorkerPoolDelete(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	var orphan_resource bool = false
+	var orphan_on_delete bool = false
 	if orod, ok := d.GetOk("orphan_on_delete"); ok {
-		orphan_resource = orod.(bool)
+		orphan_on_delete = orod.(bool)
 	}
 
-	if orphan_resource {
+	if orphan_on_delete {
 		log.Printf("[WARN] orphaning %s workerpool", workerPoolNameorID)
 	} else {
 		err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
