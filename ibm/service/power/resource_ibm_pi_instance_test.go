@@ -96,7 +96,6 @@ func testAccCheckIBMPIInstanceDeploymentTypeConfig(name, instanceHealthStatus, e
 		pi_network {
 			network_id = data.ibm_pi_network.power_networks.id
 		}
-		
 	  }
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, epic, systype, acc.PiStorageType)
 }
@@ -133,7 +132,6 @@ func testAccCheckIBMPIInstanceIBMiLicense(name, instanceHealthStatus string, IBM
 			pi_network {
 				network_id = data.ibm_pi_network.power_networks.id
 			}
-			
 		  }`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, IBMiCSS, IBMiRDSUsers)
 }
 
@@ -300,6 +298,31 @@ func testAccCheckIBMPIInstanceUserTagsConfig(name, instanceHealthStatus string, 
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, userTagsString)
 }
 
+func testAccCheckIBMPIInstanceStorageConnectionConfig(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_size       = 1
+		pi_volume_name       = "%[2]s"
+		pi_volume_type        = "tier3"
+	  }
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_memory            = "2"
+		pi_processors        = "1"
+		pi_instance_name     = "%[2]s"
+		pi_proc_type         = "shared"
+		pi_image_id          = "%[3]s"
+		pi_sys_type          = "s922"
+		pi_network {
+		  network_id = "%[4]s"
+		}
+		pi_storage_connection = "%[5]s"
+		pi_health_status      = "%[6]s"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, acc.Pi_storage_connection, instanceHealthStatus)
+}
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -375,6 +398,25 @@ func TestAccIBMPIInstanceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceStorageConnectionConfig(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_storage_connection", acc.Pi_storage_connection),
 				),
 			},
 		},
@@ -570,7 +612,7 @@ func testAccIBMPISAPInstanceConfig(name, sapProfile string) string {
 		pi_storage_type			= "tier1"
 		pi_network {
 			network_id = resource.ibm_pi_network.power_network.network_id
-		}	
+		}
 	}
 	`, acc.Pi_cloud_instance_id, name, sapProfile, acc.Pi_sap_image)
 }
@@ -747,7 +789,7 @@ func testAccCheckIBMPIStoppedInstanceConfigUpdate(name, instanceHealthStatus, pr
 		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
 		pi_volume_shareable  = true
 		pi_volume_size       = 20
-	}	  
+	}
 	resource "ibm_pi_instance" "power_instance" {
 		pi_cloud_instance_id  = "%[1]s"
 		pi_health_status      = "%[5]s"

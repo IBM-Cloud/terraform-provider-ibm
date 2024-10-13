@@ -227,6 +227,7 @@ var (
 	Pi_shared_processor_pool_id     string
 	Pi_snapshot_id                  string
 	Pi_spp_placement_group_id       string
+	Pi_storage_connection           string
 	Pi_target_storage_tier          string
 	Pi_volume_clone_task_id         string
 	Pi_volume_group_id              string
@@ -1208,7 +1209,10 @@ func init() {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
-
+	Pi_storage_connection = os.Getenv("PI_STORAGE_CONNECTION")
+	if Pi_storage_connection == "" {
+		fmt.Println("[WARN] Set the environment variable PI_STORAGE_CONNECTION for testing pi_storage_connection resource else it is empty")
+	}
 	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
 	if Pi_target_storage_tier == "" {
 		Pi_target_storage_tier = "terraform-test-tier"
