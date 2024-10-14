@@ -20,7 +20,9 @@ locals {
 }
 
 output "ibm_config_aggregator_configurations" {
-  value = local.entries
+  value = {
+    configs=local.entries
+  }
 }
 output "config_aggregator_settings" {
   value = {
