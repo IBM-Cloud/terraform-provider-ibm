@@ -16,6 +16,7 @@ const (
 	Arg_CloudConnectionName                 = "pi_cloud_connection_name"
 	Arg_CloudInstanceID                     = "pi_cloud_instance_id"
 	Arg_ConsistencyGroupName                = "pi_consistency_group_name"
+	Arg_Count                               = "pi_count"
 	Arg_Datacenter                          = "pi_datacenter"
 	Arg_DatacenterZone                      = "pi_datacenter_zone"
 	Arg_DeploymentTarget                    = "pi_deployment_target"

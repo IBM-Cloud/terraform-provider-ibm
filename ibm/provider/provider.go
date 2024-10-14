@@ -1319,6 +1319,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_snapshot":                        power.ResourceIBMPISnapshot(),
 			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
 			"ibm_pi_volume_attach":                   power.ResourceIBMPIVolumeAttach(),
+			"ibm_pi_volume_bulk":                     power.ResourceIBMPIVolumeBulk(),
 			"ibm_pi_volume_clone":                    power.ResourceIBMPIVolumeClone(),
 			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
 			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
