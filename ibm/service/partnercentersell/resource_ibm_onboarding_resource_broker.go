@@ -470,14 +470,13 @@ func resourceIbmOnboardingResourceBrokerUpdate(context context.Context, d *schem
 	updateResourceBrokerOptions := &partnercentersellv1.UpdateResourceBrokerOptions{}
 
 	updateResourceBrokerOptions.SetBrokerID(d.Id())
+	if _, ok := d.GetOk("env"); ok {
+		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
+	}
 
 	hasChange := false
 
 	patchVals := &partnercentersellv1.BrokerPatch{}
-	if d.HasChange("env") {
-		updateResourceBrokerOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
-	}
 	if d.HasChange("auth_username") {
 		newAuthUsername := d.Get("auth_username").(string)
 		patchVals.AuthUsername = &newAuthUsername

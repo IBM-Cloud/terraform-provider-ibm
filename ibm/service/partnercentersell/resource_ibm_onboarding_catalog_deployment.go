@@ -684,10 +684,6 @@ func resourceIbmOnboardingCatalogDeploymentUpdate(context context.Context, d *sc
 			" The resource must be re-created to update this property.", "catalog_plan_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_catalog_deployment", "update", "catalog_plan_id-forces-new").GetDiag()
 	}
-	if d.HasChange("env") {
-		updateCatalogDeploymentOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
-	}
 	if d.HasChange("active") {
 		newActive := d.Get("active").(bool)
 		patchVals.Active = &newActive

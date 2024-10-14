@@ -1380,10 +1380,6 @@ func resourceIbmOnboardingIamRegistrationUpdate(context context.Context, d *sche
 			" The resource must be re-created to update this property.", "product_id")
 		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_onboarding_iam_registration", "update", "product_id-forces-new").GetDiag()
 	}
-	if d.HasChange("env") {
-		updateIamRegistrationOptions.SetEnv(d.Get("env").(string))
-		hasChange = true
-	}
 	if d.HasChange("enabled") {
 		newEnabled := d.Get("enabled").(bool)
 		patchVals.Enabled = &newEnabled
