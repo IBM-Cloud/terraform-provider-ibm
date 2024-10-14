@@ -58,6 +58,7 @@ In addition to all argument references listed, you can access the following attr
         **&#x2022;** `direct_link` (requires `route_direct_link_ingress` be set to `true`)</br>
         **&#x2022;** `transit_gateway` (requires `route_transit_gateway_ingress` be set to `true`)
 - `created_at` - (String) The date and time that this routing table was created.
+- `crn` -  (String) The crn for this routing table.
 - `href` - (String) The URL for this routing table.
 - `id` - (String) The unique identifier of the RoutingTable.
 - `is_default` - (Boolean) Indicates whether this is the default routing table for this VPC.
