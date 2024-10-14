@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -26,9 +27,9 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 		DeleteContext: resourceIbmSchematicsAgentDelete,
 		Importer:      &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -266,6 +267,11 @@ func ResourceIbmSchematicsAgent() *schema.Resource {
 						},
 					},
 				},
+			},
+			"run_destroy_resources": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Argument which helps to run destroy resources job. Increment the value to destroy resources associated with agent deployment.",
 			},
 			"user_state": &schema.Schema{
 				Type:        schema.TypeList,
@@ -766,7 +772,35 @@ func resourceIbmSchematicsAgentRead(context context.Context, d *schema.ResourceD
 
 	return nil
 }
+func isWaitForAgentDestroyResources(context context.Context, schematicsClient *schematicsv1.SchematicsV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for agent (%s) resources to be destroyed.", id)
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", agentProvisioningStatusCodeJobInProgress, agentProvisioningStatusCodeJobPending, agentProvisioningStatusCodeJobReadyToExecute, agentProvisioningStatusCodeJobStopInProgress},
+		Target:     []string{agentProvisioningStatusCodeJobFinished, agentProvisioningStatusCodeJobFailed, agentProvisioningStatusCodeJobCancelled, agentProvisioningStatusCodeJobStopped, ""},
+		Refresh:    agentDestroyRefreshFunc(schematicsClient, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(context)
+}
+func agentDestroyRefreshFunc(schematicsClient *schematicsv1.SchematicsV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
+			AgentID: core.StringPtr(id),
+			Profile: core.StringPtr("detailed"),
+		}
 
+		agent, response, err := schematicsClient.GetAgentData(getAgentDataOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error Getting Agent: %s\n%s", err, response)
+		}
+		if agent.RecentDestroyJob.StatusCode != nil {
+			return agent, *agent.RecentDestroyJob.StatusCode, nil
+		}
+		return agent, agentProvisioningStatusCodeJobPending, nil
+	}
+}
 func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
@@ -778,8 +812,10 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	iamAccessToken := session.Config.IAMAccessToken
 	iamRefreshToken := session.Config.IAMRefreshToken
 	ff := map[string]string{
+		"Authorization": iamAccessToken,
 		"refresh_token": iamRefreshToken,
 	}
 	updateAgentDataOptions.Headers = ff
@@ -882,7 +918,23 @@ func resourceIbmSchematicsAgentUpdate(context context.Context, d *schema.Resourc
 		updateAgentDataOptions.SetAgentMetadata(agentMetadata)
 		hasChange = true
 	}
+	if d.HasChange("run_destroy_resources") {
+		deleteAgentResourcesOptions := &schematicsv1.DeleteAgentResourcesOptions{}
+		deleteAgentResourcesOptions.Headers = ff
 
+		deleteAgentResourcesOptions.SetAgentID(d.Id())
+		deleteAgentResourcesOptions.SetRefreshToken(iamRefreshToken)
+
+		response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
+		if err != nil {
+			log.Printf("[DEBUG] DeleteAgentResourcesWithContext failed %s\n%s", err, response)
+		} else {
+			_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				log.Printf("[DEBUG] waiting for agent deploy resources to be destroyed has failed %s", err)
+			}
+		}
+	}
 	if hasChange {
 		_, response, err := schematicsClient.UpdateAgentDataWithContext(context, updateAgentDataOptions)
 		if err != nil {
@@ -907,18 +959,40 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	iamAccessToken := session.Config.IAMAccessToken
 	iamRefreshToken := session.Config.IAMRefreshToken
 	ff := map[string]string{
+		"Authorization": iamAccessToken,
 		"refresh_token": iamRefreshToken,
 	}
 	deleteAgentDataOptions.Headers = ff
 
 	deleteAgentDataOptions.SetAgentID(d.Id())
 
-	response, err := schematicsClient.DeleteAgentDataWithContext(context, deleteAgentDataOptions)
+	// first try destroying resources associated with agent deploy and then delete the agent
+
+	deleteAgentResourcesOptions := &schematicsv1.DeleteAgentResourcesOptions{}
+	deleteAgentResourcesOptions.Headers = ff
+
+	deleteAgentResourcesOptions.SetAgentID(d.Id())
+	deleteAgentResourcesOptions.SetRefreshToken(iamRefreshToken)
+
+	response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteAgentDataWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteAgentDataWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] DeleteAgentResourcesWithContext failed %s\n%s", err, response)
+	} else {
+		_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			log.Printf("[DEBUG] waiting for agent deploy resources to be destroyed has failed %s", err)
+		}
+	}
+
+	// After deploy associated resources are destroyed, now attempt to delete the agent
+
+	deleteresponse, err := schematicsClient.DeleteAgentDataWithContext(context, deleteAgentDataOptions)
+	if err != nil {
+		log.Printf("[DEBUG] DeleteAgentDataWithContext failed %s\n%s", err, deleteresponse)
+		return diag.FromErr(fmt.Errorf("DeleteAgentDataWithContext failed %s\n%s", err, deleteresponse))
 	}
 
 	d.SetId("")

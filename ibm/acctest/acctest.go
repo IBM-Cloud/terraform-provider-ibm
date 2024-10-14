@@ -214,9 +214,12 @@ var (
 	Pi_image_bucket_name            string
 	Pi_image_bucket_region          string
 	Pi_image_bucket_secret_key      string
+	Pi_image_id                     string
 	Pi_instance_name                string
 	Pi_key_name                     string
 	Pi_network_name                 string
+	Pi_network_id                   string
+	Pi_network_interface_id         string
 	Pi_placement_group_name         string
 	Pi_replication_volume_name      string
 	Pi_resource_group_id            string
@@ -224,6 +227,7 @@ var (
 	Pi_shared_processor_pool_id     string
 	Pi_snapshot_id                  string
 	Pi_spp_placement_group_id       string
+	Pi_storage_connection           string
 	Pi_target_storage_tier          string
 	Pi_volume_clone_task_id         string
 	Pi_volume_group_id              string
@@ -1047,7 +1051,13 @@ func init() {
 	Pi_image_bucket_region = os.Getenv("PI_IMAGE_BUCKET_REGION")
 	if Pi_image_bucket_region == "" {
 		Pi_image_bucket_region = "us-east"
-		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image_export resource else it is set to default value 'us-east'")
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image resource else it is set to default value 'us-east'")
+	}
+
+	Pi_image_id = os.Getenv("PI_IMAGE_ID")
+	if Pi_image_id == "" {
+		Pi_image_id = "IBMi-72-09-2924-11"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_ID for testing ibm_pi_image resource else it is set to default value 'IBMi-72-09-2924-11'")
 	}
 
 	Pi_key_name = os.Getenv("PI_KEY_NAME")
@@ -1061,7 +1071,16 @@ func init() {
 		Pi_network_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_NETWORK_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
 	}
-
+	Pi_network_id = os.Getenv("PI_NETWORK_ID")
+	if Pi_network_id == "" {
+		Pi_network_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+	Pi_network_interface_id = os.Getenv("PI_NETWORK_INTERFACE_ID")
+	if Pi_network_interface_id == "" {
+		Pi_network_interface_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_INTERFACE_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
 	Pi_volume_name = os.Getenv("PI_VOLUME_NAME")
 	if Pi_volume_name == "" {
 		Pi_volume_name = "terraform-test-power"
@@ -1190,7 +1209,10 @@ func init() {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
-
+	Pi_storage_connection = os.Getenv("PI_STORAGE_CONNECTION")
+	if Pi_storage_connection == "" {
+		fmt.Println("[WARN] Set the environment variable PI_STORAGE_CONNECTION for testing pi_storage_connection resource else it is empty")
+	}
 	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
 	if Pi_target_storage_tier == "" {
 		Pi_target_storage_tier = "terraform-test-tier"
@@ -1213,12 +1235,12 @@ func init() {
 		Pi_host_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
 	}
-
 	Pi_host_id = os.Getenv("PI_HOST_ID")
 	if Pi_host_id == "" {
 		Pi_host_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_ID for testing ibm_pi_host resource else it is set to default value ''")
 	}
+
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if WorkspaceID == "" {
 		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -1514,6 +1536,16 @@ func init() {
 	Satellite_Resource_instance_id = os.Getenv("SATELLITE_RESOURCE_INSTANCE_ID")
 	if Satellite_Resource_instance_id == "" {
 		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	ConfigAggregatorEndpoint := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT")
+	if ConfigAggregatorEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT with a VALID SCC API ENDPOINT")
+	}
+
+	ConfigAggregatorInstanceID := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID")
+	if ConfigAggregatorInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID with a VALID SCC INSTANCE ID")
 	}
 
 	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")

@@ -30,6 +30,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/configurationaggregator"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
@@ -230,12 +231,15 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"ibm_api_gateway":        apigateway.DataSourceIBMApiGateway(),
-			"ibm_account":            cloudfoundry.DataSourceIBMAccount(),
-			"ibm_app":                cloudfoundry.DataSourceIBMApp(),
-			"ibm_app_domain_private": cloudfoundry.DataSourceIBMAppDomainPrivate(),
-			"ibm_app_domain_shared":  cloudfoundry.DataSourceIBMAppDomainShared(),
-			"ibm_app_route":          cloudfoundry.DataSourceIBMAppRoute(),
+			"ibm_api_gateway":                      apigateway.DataSourceIBMApiGateway(),
+			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
+			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
+			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
+			"ibm_app_domain_shared":                cloudfoundry.DataSourceIBMAppDomainShared(),
+			"ibm_app_route":                        cloudfoundry.DataSourceIBMAppRoute(),
+			"ibm_config_aggregator_configurations": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorConfigurations()),
+			"ibm_config_aggregator_settings":       configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorSettings()),
+			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -355,6 +359,7 @@ func Provider() *schema.Provider {
 			"ibm_event_streams_topic":                      eventstreams.DataSourceIBMEventStreamsTopic(),
 			"ibm_event_streams_schema":                     eventstreams.DataSourceIBMEventStreamsSchema(),
 			"ibm_event_streams_schema_global_rule":         eventstreams.DataSourceIBMEventStreamsSchemaGlobalCompatibilityRule(),
+			"ibm_event_streams_quota":                      eventstreams.DataSourceIBMEventStreamsQuota(),
 			"ibm_hpcs":                                     hpcs.DataSourceIBMHPCS(),
 			"ibm_hpcs_managed_key":                         hpcs.DataSourceIbmManagedKey(),
 			"ibm_hpcs_key_template":                        hpcs.DataSourceIbmKeyTemplate(),
@@ -652,6 +657,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_instances":                              power.DataSourceIBMPIInstances(),
 			"ibm_pi_key":                                    power.DataSourceIBMPIKey(),
 			"ibm_pi_keys":                                   power.DataSourceIBMPIKeys(),
+			"ibm_pi_network_interface":                      power.DataSourceIBMPINetworkInterface(),
+			"ibm_pi_network_interfaces":                     power.DataSourceIBMPINetworkInterfaces(),
 			"ibm_pi_network_port":                           power.DataSourceIBMPINetworkPort(),
 			"ibm_pi_network":                                power.DataSourceIBMPINetwork(),
 			"ibm_pi_networks":                               power.DataSourceIBMPINetworks(),
@@ -667,6 +674,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_spp_placement_groups":                   power.DataSourceIBMPISPPPlacementGroups(),
 			"ibm_pi_storage_pool_capacity":                  power.DataSourceIBMPIStoragePoolCapacity(),
 			"ibm_pi_storage_pools_capacity":                 power.DataSourceIBMPIStoragePoolsCapacity(),
+			"ibm_pi_storage_tiers":                          power.DataSourceIBMPIStorageTiers(),
 			"ibm_pi_storage_type_capacity":                  power.DataSourceIBMPIStorageTypeCapacity(),
 			"ibm_pi_storage_types_capacity":                 power.DataSourceIBMPIStorageTypesCapacity(),
 			"ibm_pi_system_pools":                           power.DataSourceIBMPISystemPools(),
@@ -682,6 +690,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_onboarding":                      power.DataSourceIBMPIVolumeOnboarding(),
 			"ibm_pi_volume_onboardings":                     power.DataSourceIBMPIVolumeOnboardings(),
 			"ibm_pi_volume_remote_copy_relationship":        power.DataSourceIBMPIVolumeRemoteCopyRelationship(),
+			"ibm_pi_volume_snapshot":                        power.DataSourceIBMPIVolumeSnapshot(),
+			"ibm_pi_volume_snapshots":                       power.DataSourceIBMPIVolumeSnapshots(),
 			"ibm_pi_volume":                                 power.DataSourceIBMPIVolume(),
 			"ibm_pi_workspace":                              power.DatasourceIBMPIWorkspace(),
 			"ibm_pi_workspaces":                             power.DatasourceIBMPIWorkspaces(),
@@ -978,6 +988,7 @@ func Provider() *schema.Provider {
 			"ibm_app_domain_private":                cloudfoundry.ResourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":                 cloudfoundry.ResourceIBMAppDomainShared(),
 			"ibm_app_route":                         cloudfoundry.ResourceIBMAppRoute(),
+			"ibm_config_aggregator_settings":        configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.ResourceIbmConfigAggregatorSettings()),
 
 			// AppID
 			"ibm_appid_action_url":               appid.ResourceIBMAppIDActionURL(),
@@ -1104,6 +1115,7 @@ func Provider() *schema.Provider {
 			"ibm_event_streams_topic":                      eventstreams.ResourceIBMEventStreamsTopic(),
 			"ibm_event_streams_schema":                     eventstreams.ResourceIBMEventStreamsSchema(),
 			"ibm_event_streams_schema_global_rule":         eventstreams.ResourceIBMEventStreamsSchemaGlobalCompatibilityRule(),
+			"ibm_event_streams_quota":                      eventstreams.ResourceIBMEventStreamsQuota(),
 			"ibm_firewall":                                 classicinfrastructure.ResourceIBMFirewall(),
 			"ibm_firewall_policy":                          classicinfrastructure.ResourceIBMFirewallPolicy(),
 			"ibm_hpcs":                                     hpcs.ResourceIBMHPCS(),
@@ -1301,6 +1313,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
 			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
+			"ibm_pi_network_interface":               power.ResourceIBMPINetworkInterface(),
 			"ibm_pi_network_port_attach":             power.ResourceIBMPINetworkPortAttach(),
 			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
@@ -1644,6 +1657,26 @@ func wrapFunction(
 ) func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics {
 	if function != nil {
 		return func(context context.Context, schema *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+			// only allow deletion if the resource is not marked as protected
+			if operationName == "delete" && schema.Get("deletion_protection") != nil {
+				// we check the value in state, not current config. Current config will always be null for a delete
+
+				if schema.Get("deletion_protection") == true {
+					log.Printf("[DEBUG] Resource has deletion protection turned on %s", resourceName)
+					var diags diag.Diagnostics
+					summary := fmt.Sprintf("Deletion protection is enabled for resource %s to prevent accidential deletion", schema.Get("name"))
+					return append(
+						diags,
+						diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  summary,
+							Detail:   "Set deletion_protection to false, apply and then destroy if deletion should proceed",
+						},
+					)
+				}
+			}
+
 			return function(context, schema, meta)
 		}
 	} else if fallback != nil {
@@ -1800,6 +1833,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_keystore":                            hpcs.ResourceIbmKeystoreValidator(),
 				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
+				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
 
 				// MQ on Cloud
 				"ibm_mqcloud_queue_manager":          mqcloud.ResourceIbmMqcloudQueueManagerValidator(),
