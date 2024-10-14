@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func DataSourceIBMEnSlackTemplate() *schema.Resource {
+func DataSourceIBMEnWebhookTemplate() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnSlackTemplateRead,
+		ReadContext: dataSourceIBMEnWebhookTemplateRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -42,7 +42,7 @@ func DataSourceIBMEnSlackTemplate() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Template type slack.notification.",
+				Description: "Template type webhook.notification.",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
@@ -66,7 +66,7 @@ func DataSourceIBMEnSlackTemplate() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnWebhookTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)

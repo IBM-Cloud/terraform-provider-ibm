@@ -16,12 +16,12 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func ResourceIBMEnSlackTemplate() *schema.Resource {
+func ResourceIBMEnWebhookTemplate() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnSlackTemplateCreate,
-		ReadContext:   resourceIBMEnSlackTemplateRead,
-		UpdateContext: resourceIBMEnSlackTemplateUpdate,
-		DeleteContext: resourceIBMEnSlackTemplateDelete,
+		CreateContext: resourceIBMEnWebhookTemplateCreate,
+		ReadContext:   resourceIBMEnWebhookTemplateRead,
+		UpdateContext: resourceIBMEnWebhookTemplateUpdate,
+		DeleteContext: resourceIBMEnWebhookTemplateDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -56,7 +56,7 @@ func ResourceIBMEnSlackTemplate() *schema.Resource {
 						"body": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The Slack Template body.",
+							Description: "The Webhook Template body.",
 						},
 					},
 				},
@@ -86,7 +86,7 @@ func ResourceIBMEnSlackTemplate() *schema.Resource {
 	}
 }
 
-func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -103,7 +103,7 @@ func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.Resourc
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	params := SlackTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
+	params := WebhookTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
 	options.SetParams(&params)
 
 	result, response, err := enClient.CreateTemplateWithContext(context, options)
@@ -113,10 +113,10 @@ func resourceIBMEnSlackTemplateCreate(context context.Context, d *schema.Resourc
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnSlackTemplateRead(context, d, meta)
+	return resourceIBMEnWebhookTemplateRead(context, d, meta)
 }
 
-func resourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -177,7 +177,7 @@ func resourceIBMEnSlackTemplateRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -200,7 +200,7 @@ func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.Resourc
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		params := SlackTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
+		params := WebhookTemplateParamsMap(d.Get("params.0").(map[string]interface{}))
 		options.SetParams(&params)
 
 		_, response, err := enClient.ReplaceTemplateWithContext(context, options)
@@ -208,13 +208,13 @@ func resourceIBMEnSlackTemplateUpdate(context context.Context, d *schema.Resourc
 			return diag.FromErr(fmt.Errorf("ReplaceTemplateWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnSlackTemplateRead(context, d, meta)
+		return resourceIBMEnWebhookTemplateRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnSlackTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -244,7 +244,7 @@ func resourceIBMEnSlackTemplateDelete(context context.Context, d *schema.Resourc
 	return nil
 }
 
-func SlackTemplateParamsMap(configParams map[string]interface{}) en.TemplateConfigOneOf {
+func WebhookTemplateParamsMap(configParams map[string]interface{}) en.TemplateConfigOneOf {
 	params := new(en.TemplateConfigOneOf)
 	if configParams["body"] != nil {
 		params.Body = core.StringPtr(configParams["body"].(string))
