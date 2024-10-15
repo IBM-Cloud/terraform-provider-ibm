@@ -140,7 +140,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
-			validateUsersDiff),
+			validateUsersDiff,
+			validateRemoteLeaderIDDiff),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -1602,10 +1603,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
-
-		if remoteLeaderId, ok := instance.Parameters["remote_leader_id"]; ok {
-			d.Set("remote_leader_id", remoteLeaderId)
-		}
 	}
 
 	d.Set(flex.ResourceName, *instance.Name)
@@ -2145,9 +2142,9 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("remote_leader_id") {
-		remoteLeaderId := d.Get("remote_leader_id").(string)
+		oldValue, newValue := d.GetChange("remote_leader_id")
 
-		if remoteLeaderId == "" {
+		if oldValue != "" && newValue == "" {
 			skipInitialBackup := false
 			if skip, ok := d.GetOk("skip_initial_backup"); ok {
 				skipInitialBackup = skip.(bool)
@@ -2175,6 +2172,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		} else {
 			return diag.FromErr(fmt.Errorf("[ERROR] Electing a new database source for replication is not allowed"))
 		}
+
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
@@ -3078,6 +3076,22 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 	}
 
 	return userChanges
+}
+
+func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
+
+	if !remoteLeaderIdOk {
+		return nil
+	}
+
+	service := diff.Get("service").(string)
+
+	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
+		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	}
+
+	return nil
 }
 
 func (c *userChange) isDelete() bool {
