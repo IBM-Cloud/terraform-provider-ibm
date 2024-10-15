@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryDataSourceConnectorsDataSourceBasic(t *testing.T) {
-	dataSourceConnectorConnectionId := "4980716806983529472"
+	dataSourceConnectorConnectionId := "530243354208762051"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -34,7 +34,7 @@ func TestAccIbmBackupRecoveryDataSourceConnectorsDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.tenant_side_ip"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.cluster_side_ip"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.software_version"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connector_status.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_data_source_connectors.baas_data_source_connectors_instance", "connectors.0.connectivity_status.#"),
 				),
 			},
 		},

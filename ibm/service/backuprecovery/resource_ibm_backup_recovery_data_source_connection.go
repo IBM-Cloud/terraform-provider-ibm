@@ -52,36 +52,6 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 				Description: "Specifies the IDs of the connectors in this connection.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"network_settings": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Specifies the common network settings for the connectors associated with this connection.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"cluster_fqdn": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Specifies the FQDN for the cluster as visible to the connectors in this connection.",
-						},
-						"dns": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Specifies the DNS servers to be used by the connectors in this connection.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"network_gateway": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Specifies the network gateway to be used by the connectors in this connection.",
-						},
-						"ntp": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Specifies the NTP server to be used by the connectors in this connection.",
-						},
-					},
-				},
-			},
 			"registration_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -91,6 +61,11 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specifies the tenant ID of the connection.",
+			},
+			"upgrading_connector_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Specifies the connector ID that is currently in upgrade.",
 			},
 		},
 	}
@@ -167,21 +142,6 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-connector_ids").GetDiag()
 		}
 	}
-	if !core.IsNil(dataSourceConnectionList.Connections[0].NetworkSettings) {
-		networkSettingsMap, err := ResourceIbmBackupRecoveryDataSourceConnectionNetworkSettingsToMap(dataSourceConnectionList.Connections[0].NetworkSettings)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "network_settings-to-map").GetDiag()
-		}
-		if err = d.Set("network_settings", []map[string]interface{}{networkSettingsMap}); err != nil {
-			err = fmt.Errorf("Error setting network_settings: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-network_settings").GetDiag()
-		}
-	} else {
-		if err = d.Set("network_settings", []interface{}{}); err != nil {
-			err = fmt.Errorf("Error setting network_settings: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-network_settings").GetDiag()
-		}
-	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].RegistrationToken) {
 		if err = d.Set("registration_token", dataSourceConnectionList.Connections[0].RegistrationToken); err != nil {
 			err = fmt.Errorf("Error setting registration_token: %s", err)
@@ -192,6 +152,12 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 		if err = d.Set("tenant_id", dataSourceConnectionList.Connections[0].TenantID); err != nil {
 			err = fmt.Errorf("Error setting tenant_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-tenant_id").GetDiag()
+		}
+	}
+	if !core.IsNil(dataSourceConnectionList.Connections[0].UpgradingConnectorID) {
+		if err = d.Set("upgrading_connector_id", dataSourceConnectionList.Connections[0].UpgradingConnectorID); err != nil {
+			err = fmt.Errorf("Error setting upgrading_connector_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-upgrading_connector_id").GetDiag()
 		}
 	}
 
@@ -252,21 +218,4 @@ func resourceIbmBackupRecoveryDataSourceConnectionDelete(context context.Context
 
 	d.SetId("")
 	return nil
-}
-
-func ResourceIbmBackupRecoveryDataSourceConnectionNetworkSettingsToMap(model *backuprecoveryv1.NetworkSettings) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ClusterFqdn != nil {
-		modelMap["cluster_fqdn"] = *model.ClusterFqdn
-	}
-	if model.Dns != nil {
-		modelMap["dns"] = model.Dns
-	}
-	if model.NetworkGateway != nil {
-		modelMap["network_gateway"] = *model.NetworkGateway
-	}
-	if model.Ntp != nil {
-		modelMap["ntp"] = *model.Ntp
-	}
-	return modelMap, nil
 }

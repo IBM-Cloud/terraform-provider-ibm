@@ -102,8 +102,6 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 									},
 									"object_info": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the information about the object for which the snapshot is taken.",
 										Elem: &schema.Resource{
@@ -176,7 +174,6 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												},
 												"sharepoint_site_summary": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the common parameters for Sharepoint site objects.",
@@ -185,6 +182,7 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"site_web_url": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the web url for the Sharepoint site.",
 															},
 														},
@@ -206,68 +204,80 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"id": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies object id.",
 															},
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the name of the object.",
 															},
 															"source_id": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies registered source id to which object belongs.",
 															},
 															"source_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies registered source name to which object belongs.",
 															},
 															"environment": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the environment of the object.",
 															},
 															"object_hash": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the hash identifier of the object.",
 															},
 															"object_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the type of the object.",
 															},
 															"logical_size_bytes": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the logical size of object in bytes.",
 															},
 															"uuid": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the uuid which is a unique identifier of the object.",
 															},
 															"global_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the global id which is a unique identifier of the object.",
 															},
 															"protection_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the protection type of the object if any.",
 															},
 															"sharepoint_site_summary": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the common parameters for Sharepoint site objects.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"site_web_url": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies the web url for the Sharepoint site.",
 																		},
 																	},
@@ -276,11 +286,13 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"os_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the operating system type of the object.",
 															},
 															"child_objects": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies child object details.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{},
@@ -288,13 +300,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"v_center_summary": &schema.Schema{
 																Type:     schema.TypeList,
-																MaxItems: 1,
 																Optional: true,
+																Computed: true,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"is_cloud_env": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
 																		},
 																	},
@@ -302,13 +315,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"windows_cluster_summary": &schema.Schema{
 																Type:     schema.TypeList,
-																MaxItems: 1,
 																Optional: true,
+																Computed: true,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"cluster_source_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies the type of cluster resource this source represents.",
 																		},
 																	},
@@ -319,7 +333,6 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												},
 												"v_center_summary": &schema.Schema{
 													Type:     schema.TypeList,
-													MaxItems: 1,
 													Optional: true,
 													Computed: true,
 													Elem: &schema.Resource{
@@ -327,6 +340,7 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"is_cloud_env": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
 															},
 														},
@@ -334,7 +348,6 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												},
 												"windows_cluster_summary": &schema.Schema{
 													Type:     schema.TypeList,
-													MaxItems: 1,
 													Optional: true,
 													Computed: true,
 													Elem: &schema.Resource{
@@ -342,6 +355,7 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"cluster_source_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the type of cluster resource this source represents.",
 															},
 														},
@@ -355,15 +369,8 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the snapshot target type.",
 									},
-									"storage_domain_id": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the ID of the Storage Domain where this snapshot is stored.",
-									},
 									"archival_target_info": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
 										Computed:    true,
 										Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
 										Elem: &schema.Resource{
@@ -406,7 +413,6 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												},
 												"tier_settings": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
 													Computed:    true,
 													Description: "Specifies the tier info for archival.",
@@ -414,8 +420,8 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"aws_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies aws tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -450,14 +456,15 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"azure_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies Azure tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"tiers": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
@@ -486,13 +493,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"cloud_platform": &schema.Schema{
 																Type:        schema.TypeString,
-																Required:    true,
+																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the cloud platform to enable tiering.",
 															},
 															"google_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies Google tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -527,8 +535,8 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"oracle_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies Oracle tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -564,6 +572,7 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"current_tier_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.",
 															},
 														},
@@ -1182,76 +1191,87 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 									},
 									"object_info": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the information about the object for which the snapshot is taken.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies object id.",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the name of the object.",
 												},
 												"source_id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies registered source id to which object belongs.",
 												},
 												"source_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies registered source name to which object belongs.",
 												},
 												"environment": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the environment of the object.",
 												},
 												"object_hash": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the hash identifier of the object.",
 												},
 												"object_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the type of the object.",
 												},
 												"logical_size_bytes": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the logical size of object in bytes.",
 												},
 												"uuid": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the uuid which is a unique identifier of the object.",
 												},
 												"global_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the global id which is a unique identifier of the object.",
 												},
 												"protection_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the protection type of the object if any.",
 												},
 												"sharepoint_site_summary": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the common parameters for Sharepoint site objects.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"site_web_url": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the web url for the Sharepoint site.",
 															},
 														},
@@ -1260,79 +1280,93 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												"os_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the operating system type of the object.",
 												},
 												"child_objects": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies child object details.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"id": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies object id.",
 															},
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the name of the object.",
 															},
 															"source_id": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies registered source id to which object belongs.",
 															},
 															"source_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies registered source name to which object belongs.",
 															},
 															"environment": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the environment of the object.",
 															},
 															"object_hash": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the hash identifier of the object.",
 															},
 															"object_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the type of the object.",
 															},
 															"logical_size_bytes": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the logical size of object in bytes.",
 															},
 															"uuid": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the uuid which is a unique identifier of the object.",
 															},
 															"global_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the global id which is a unique identifier of the object.",
 															},
 															"protection_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the protection type of the object if any.",
 															},
 															"sharepoint_site_summary": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the common parameters for Sharepoint site objects.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"site_web_url": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies the web url for the Sharepoint site.",
 																		},
 																	},
@@ -1341,11 +1375,13 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"os_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the operating system type of the object.",
 															},
 															"child_objects": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies child object details.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{},
@@ -1353,13 +1389,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"v_center_summary": &schema.Schema{
 																Type:     schema.TypeList,
-																MaxItems: 1,
 																Optional: true,
+																Computed: true,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"is_cloud_env": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
 																		},
 																	},
@@ -1367,13 +1404,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"windows_cluster_summary": &schema.Schema{
 																Type:     schema.TypeList,
-																MaxItems: 1,
 																Optional: true,
+																Computed: true,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"cluster_source_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies the type of cluster resource this source represents.",
 																		},
 																	},
@@ -1384,13 +1422,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												},
 												"v_center_summary": &schema.Schema{
 													Type:     schema.TypeList,
-													MaxItems: 1,
 													Optional: true,
+													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"is_cloud_env": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
 															},
 														},
@@ -1398,13 +1437,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 												},
 												"windows_cluster_summary": &schema.Schema{
 													Type:     schema.TypeList,
-													MaxItems: 1,
 													Optional: true,
+													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"cluster_source_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the type of cluster resource this source represents.",
 															},
 														},
@@ -1418,59 +1458,59 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the snapshot target type.",
 									},
-									"storage_domain_id": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the ID of the Storage Domain where this snapshot is stored.",
-									},
 									"archival_target_info": &schema.Schema{
 										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
+										Computed:    true,
 										Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"target_id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival target ID.",
 												},
 												"archival_task_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.",
 												},
 												"target_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival target name.",
 												},
 												"target_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the archival target type.",
 												},
 												"usage_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the usage type for the target.",
 												},
 												"ownership_context": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the ownership context for the target.",
 												},
 												"tier_settings": &schema.Schema{
 													Type:        schema.TypeList,
-													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Specifies the tier info for archival.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"aws_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies aws tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -1505,14 +1545,15 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"azure_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies Azure tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"tiers": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
+																			Computed:    true,
 																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
 																			Elem: &schema.Resource{
 																				Schema: map[string]*schema.Schema{
@@ -1541,13 +1582,14 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"cloud_platform": &schema.Schema{
 																Type:        schema.TypeString,
-																Required:    true,
+																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the cloud platform to enable tiering.",
 															},
 															"google_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies Google tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -1582,8 +1624,8 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															},
 															"oracle_tiering": &schema.Schema{
 																Type:        schema.TypeList,
-																MaxItems:    1,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies Oracle tiers.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
@@ -1619,6 +1661,7 @@ func ResourceIbmBackupRecoveryRecovery() *schema.Resource {
 															"current_tier_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
+																Computed:    true,
 																Description: "Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.",
 															},
 														},
@@ -2361,7 +2404,7 @@ func checkDiffResourceIbmBackupRecoveryRecovery(context context.Context, d *sche
 
 	for fieldName := range ResourceIbmBackupRecoveryRecovery().Schema {
 		if d.HasChange(fieldName) {
-			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_recovery cannot be updated.")
+			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_recovery cannot be updated. Field: %s", fieldName)
 		}
 	}
 	return nil
@@ -2708,9 +2751,6 @@ func ResourceIbmBackupRecoveryRecoveryMapToCommonRecoverObjectSnapshotParams(mod
 	}
 	if modelMap["snapshot_target_type"] != nil && modelMap["snapshot_target_type"].(string) != "" {
 		model.SnapshotTargetType = core.StringPtr(modelMap["snapshot_target_type"].(string))
-	}
-	if modelMap["storage_domain_id"] != nil && modelMap["storage_domain_id"].(int) != 0 {
-		model.StorageDomainID = core.Int64Ptr(int64(modelMap["storage_domain_id"].(int)))
 	}
 	if modelMap["archival_target_info"] != nil && len(modelMap["archival_target_info"].([]interface{})) > 0 {
 		ArchivalTargetInfoModel, err := ResourceIbmBackupRecoveryRecoveryMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap["archival_target_info"].([]interface{})[0].(map[string]interface{}))
@@ -3510,9 +3550,6 @@ func ResourceIbmBackupRecoveryRecoveryMapToRecoverSqlAppParams(modelMap map[stri
 	if modelMap["snapshot_target_type"] != nil && modelMap["snapshot_target_type"].(string) != "" {
 		model.SnapshotTargetType = core.StringPtr(modelMap["snapshot_target_type"].(string))
 	}
-	if modelMap["storage_domain_id"] != nil {
-		model.StorageDomainID = core.Int64Ptr(int64(modelMap["storage_domain_id"].(int)))
-	}
 	if modelMap["archival_target_info"] != nil && len(modelMap["archival_target_info"].([]interface{})) > 0 {
 		ArchivalTargetInfoModel, err := ResourceIbmBackupRecoveryRecoveryMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap["archival_target_info"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3848,9 +3885,6 @@ func ResourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(mod
 	}
 	if model.SnapshotTargetType != nil {
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
-	}
-	if model.StorageDomainID != nil {
-		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
 	}
 	if model.ArchivalTargetInfo != nil {
 		archivalTargetInfoMap, err := ResourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
@@ -4637,9 +4671,6 @@ func ResourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupreco
 	}
 	if model.SnapshotTargetType != nil {
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
-	}
-	if model.StorageDomainID != nil {
-		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
 	}
 	if model.ArchivalTargetInfo != nil {
 		archivalTargetInfoMap, err := ResourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)

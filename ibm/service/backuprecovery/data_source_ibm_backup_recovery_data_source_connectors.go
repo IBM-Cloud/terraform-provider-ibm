@@ -78,7 +78,7 @@ func DataSourceIbmBackupRecoveryDataSourceConnectors() *schema.Resource {
 							Computed:    true,
 							Description: "Specifies the name of the connector. The name of a connector need not be unique within a tenant or across tenants. The name of the connector can be updated as needed.",
 						},
-						"connector_status": &schema.Schema{
+						"connectivity_status": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Specifies status information for the data-source connector. For example if it's currently connected to the cluster, when it last connected to the cluster successfully, etc.",
@@ -111,6 +111,35 @@ func DataSourceIbmBackupRecoveryDataSourceConnectors() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies the IP of the connector's NIC facing the sources of the tenant to which the connector belongs.",
+						},
+						"upgrade_status": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies upgrade status for the data-source connector. For example when the upgrade started, current status of the upgrade, errors for upgrade failure etc.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"last_status_fetched_timestamp_msecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the last timestamp in UNIX time (milliseconds) when the connector upgrade status was fetched.",
+									},
+									"message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies error message for upgrade failure.",
+									},
+									"start_timestamp_m_secs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the last timestamp in UNIX time (milliseconds) when the connector upgrade was triggered.",
+									},
+									"status": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the last fetched upgrade status of the connector.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -195,12 +224,12 @@ func DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorToMap(mod
 	if model.ConnectorName != nil {
 		modelMap["connector_name"] = *model.ConnectorName
 	}
-	if model.ConnectorStatus != nil {
-		connectorStatusMap, err := DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorStatusToMap(model.ConnectorStatus)
+	if model.ConnectivityStatus != nil {
+		connectivityStatusMap, err := DataSourceIbmBackupRecoveryDataSourceConnectorsConnectorConnectivityStatusToMap(model.ConnectivityStatus)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["connector_status"] = []map[string]interface{}{connectorStatusMap}
+		modelMap["connectivity_status"] = []map[string]interface{}{connectivityStatusMap}
 	}
 	if model.SoftwareVersion != nil {
 		modelMap["software_version"] = *model.SoftwareVersion
@@ -208,10 +237,17 @@ func DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorToMap(mod
 	if model.TenantSideIp != nil {
 		modelMap["tenant_side_ip"] = *model.TenantSideIp
 	}
+	if model.UpgradeStatus != nil {
+		upgradeStatusMap, err := DataSourceIbmBackupRecoveryDataSourceConnectorsConnectorUpgradeStatusToMap(model.UpgradeStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["upgrade_status"] = []map[string]interface{}{upgradeStatusMap}
+	}
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorStatusToMap(model *backuprecoveryv1.DataSourceConnectorStatus) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryDataSourceConnectorsConnectorConnectivityStatusToMap(model *backuprecoveryv1.DataSourceConnectorConnectivityStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["is_connected"] = *model.IsConnected
 	if model.LastConnectedTimestampSecs != nil {
@@ -220,5 +256,20 @@ func DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorStatusToM
 	if model.Message != nil {
 		modelMap["message"] = *model.Message
 	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryDataSourceConnectorsConnectorUpgradeStatusToMap(model *backuprecoveryv1.DataSourceConnectorUpgradeStatus) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.LastStatusFetchedTimestampMsecs != nil {
+		modelMap["last_status_fetched_timestamp_msecs"] = flex.IntValue(model.LastStatusFetchedTimestampMsecs)
+	}
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
+	}
+	if model.StartTimestampMSecs != nil {
+		modelMap["start_timestamp_m_secs"] = flex.IntValue(model.StartTimestampMSecs)
+	}
+	modelMap["status"] = *model.Status
 	return modelMap, nil
 }

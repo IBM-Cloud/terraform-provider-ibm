@@ -635,11 +635,6 @@ func DataSourceIbmBackupRecoveryRecovery() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the snapshot target type.",
 									},
-									"storage_domain_id": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the ID of the Storage Domain where this snapshot is stored.",
-									},
 									"archival_target_info": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -1648,11 +1643,6 @@ func DataSourceIbmBackupRecoveryRecovery() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Specifies the snapshot target type.",
-									},
-									"storage_domain_id": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the ID of the Storage Domain where this snapshot is stored.",
 									},
 									"archival_target_info": &schema.Schema{
 										Type:        schema.TypeList,
@@ -2664,9 +2654,6 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(m
 	if model.SnapshotTargetType != nil {
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
-	if model.StorageDomainID != nil {
-		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
-	}
 	if model.ArchivalTargetInfo != nil {
 		archivalTargetInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
@@ -3452,9 +3439,6 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupre
 	}
 	if model.SnapshotTargetType != nil {
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
-	}
-	if model.StorageDomainID != nil {
-		modelMap["storage_domain_id"] = flex.IntValue(model.StorageDomainID)
 	}
 	if model.ArchivalTargetInfo != nil {
 		archivalTargetInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)

@@ -71,38 +71,6 @@ func DataSourceIbmBackupRecoveryDataSourceConnections() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"network_settings": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Specifies the common network settings for the connectors associated with this connection.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cluster_fqdn": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the FQDN for the cluster as visible to the connectors in this connection.",
-									},
-									"dns": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Specifies the DNS servers to be used by the connectors in this connection.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"network_gateway": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the network gateway to be used by the connectors in this connection.",
-									},
-									"ntp": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the NTP server to be used by the connectors in this connection.",
-									},
-								},
-							},
-						},
 						"registration_token": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -111,7 +79,12 @@ func DataSourceIbmBackupRecoveryDataSourceConnections() *schema.Resource {
 						"tenant_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Specifies a tenantId",
+							Description: "Specifies the tenant ID of the connection.",
+						},
+						"upgrading_connector_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the connector ID that is currently in upgrade.",
 						},
 					},
 				},
@@ -188,36 +161,14 @@ func DataSourceIbmBackupRecoveryDataSourceConnectionsDataSourceConnectionToMap(m
 	if model.ConnectorIds != nil {
 		modelMap["connector_ids"] = model.ConnectorIds
 	}
-	if model.NetworkSettings != nil {
-		networkSettingsMap, err := DataSourceIbmBackupRecoveryDataSourceConnectionsNetworkSettingsToMap(model.NetworkSettings)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["network_settings"] = []map[string]interface{}{networkSettingsMap}
-	}
 	if model.RegistrationToken != nil {
 		modelMap["registration_token"] = *model.RegistrationToken
 	}
 	if model.TenantID != nil {
 		modelMap["tenant_id"] = *model.TenantID
 	}
-
-	return modelMap, nil
-}
-
-func DataSourceIbmBackupRecoveryDataSourceConnectionsNetworkSettingsToMap(model *backuprecoveryv1.NetworkSettings) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.ClusterFqdn != nil {
-		modelMap["cluster_fqdn"] = *model.ClusterFqdn
-	}
-	if model.Dns != nil {
-		modelMap["dns"] = model.Dns
-	}
-	if model.NetworkGateway != nil {
-		modelMap["network_gateway"] = *model.NetworkGateway
-	}
-	if model.Ntp != nil {
-		modelMap["ntp"] = *model.Ntp
+	if model.UpgradingConnectorID != nil {
+		modelMap["upgrading_connector_id"] = *model.UpgradingConnectorID
 	}
 	return modelMap, nil
 }
