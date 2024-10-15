@@ -313,6 +313,8 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 }
 
 func testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup string, name string, sourceInstanceCRN string) string {
+
+	// todo add pg leader config
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
