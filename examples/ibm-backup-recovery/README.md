@@ -7,12 +7,12 @@ The following resources are supported:
 * ibm_backup_recovery_agent_upgrade_task
 * ibm_backup_recovery_protection_group_run_request
 * ibm_backup_recovery_data_source_connection
-* ibm_backup_recovery_recovery_download_files_folders
+* ibm_backup_recovery_download_files_folders
 * ibm_backup_recovery_restore_points
 * ibm_backup_recovery_perform_action_on_protection_group_run_request
 * ibm_backup_recovery_protection_group
 * ibm_backup_recovery_protection_policy
-* ibm_backup_recovery_recovery
+* ibm_backup_recovery
 * ibm_backup_recovery_source_registration
 * ibm_backup_recovery_update_protection_group_run_request
 
@@ -29,9 +29,9 @@ The following data sources are supported:
 * ibm_backup_recovery_protection_groups
 * ibm_backup_recovery_protection_policies
 * ibm_backup_recovery_protection_policy
-* ibm_backup_recovery_recoveries
-* ibm_backup_recovery_recovery_download_files
-* ibm_backup_recovery_recovery
+* ibm_backup_recoveries
+* ibm_backup_recovery_download_files
+* ibm_backup_recovery
 * ibm_backup_recovery_search_indexed_object
 * ibm_backup_recovery_search_objects
 * ibm_backup_recovery_search_protected_objects
@@ -146,17 +146,17 @@ resource "ibm_backup_recovery_data_source_connection" "backup_recovery_data_sour
 | registration_token | Specifies a token that can be used to register a connector against this connection. |
 | tenant_id | Specifies the tenant ID of the connection. |
 
-### Resource: ibm_backup_recovery_recovery_download_files_folders
+### Resource: ibm_backup_recovery_download_files_folders
 
 ```hcl
-resource "ibm_backup_recovery_recovery_download_files_folders" "backup_recovery_recovery_download_files_folders_instance" {
-  x_ibm_tenant_id = var.backup_recovery_recovery_download_files_folders_x_ibm_tenant_id
-  documents = var.backup_recovery_recovery_download_files_folders_documents
-  name = var.backup_recovery_recovery_download_files_folders_name
-  object = var.backup_recovery_recovery_download_files_folders_object
-  parent_recovery_id = var.backup_recovery_recovery_download_files_folders_parent_recovery_id
-  files_and_folders = var.backup_recovery_recovery_download_files_folders_files_and_folders
-  glacier_retrieval_type = var.backup_recovery_recovery_download_files_folders_glacier_retrieval_type
+resource "ibm_backup_recovery_download_files_folders" "backup_recovery_download_files_folders_instance" {
+  x_ibm_tenant_id = var.backup_recovery_download_files_folders_x_ibm_tenant_id
+  documents = var.backup_recovery_download_files_folders_documents
+  name = var.backup_recovery_download_files_folders_name
+  object = var.backup_recovery_download_files_folders_object
+  parent_recovery_id = var.backup_recovery_download_files_folders_parent_recovery_id
+  files_and_folders = var.backup_recovery_download_files_folders_files_and_folders
+  glacier_retrieval_type = var.backup_recovery_download_files_folders_glacier_retrieval_type
 }
 ```
 
@@ -335,16 +335,16 @@ resource "ibm_backup_recovery_protection_policy" "backup_recovery_protection_pol
 | num_protection_groups | Specifies the number of protection groups using the protection policy. |
 | num_protected_objects | Specifies the number of protected objects using the protection policy. |
 
-### Resource: ibm_backup_recovery_recovery
+### Resource: ibm_backup_recovery
 
 ```hcl
-resource "ibm_backup_recovery_recovery" "backup_recovery_recovery_instance" {
-  x_ibm_tenant_id = var.backup_recovery_recovery_x_ibm_tenant_id
-  request_initiator_type = var.backup_recovery_recovery_request_initiator_type
-  name = var.backup_recovery_recovery_name
-  snapshot_environment = var.backup_recovery_recovery_snapshot_environment
-  physical_params = var.backup_recovery_recovery_physical_params
-  mssql_params = var.backup_recovery_recovery_mssql_params
+resource "ibm_backup_recovery" "backup_recovery_instance" {
+  x_ibm_tenant_id = var.backup_recovery_x_ibm_tenant_id
+  request_initiator_type = var.backup_recovery_request_initiator_type
+  name = var.backup_recovery_name
+  snapshot_environment = var.backup_recovery_snapshot_environment
+  physical_params = var.backup_recovery_physical_params
+  mssql_params = var.backup_recovery_mssql_params
 }
 ```
 
@@ -1121,12 +1121,12 @@ data "ibm_backup_recovery_protection_policy" "backup_recovery_protection_policy_
 | num_protection_groups | Specifies the number of protection groups using the protection policy. |
 | num_protected_objects | Specifies the number of protected objects using the protection policy. |
 
-### Data source: ibm_backup_recovery_recovery
+### Data source: ibm_backup_recovery
 
 ```hcl
-data "ibm_backup_recovery_recovery" "backup_recovery_recovery_instance" {
-  recovery_id = var.data_backup_recovery_recovery_backup_recovery_recovery_id
-  x_ibm_tenant_id = var.data_backup_recovery_recovery_x_ibm_tenant_id
+data "ibm_backup_recovery" "backup_recovery_instance" {
+  recovery_id = var.data_backup_recovery_backup_recovery_id
+  x_ibm_tenant_id = var.data_backup_recovery_x_ibm_tenant_id
 }
 ```
 
@@ -1163,12 +1163,12 @@ data "ibm_backup_recovery_recovery" "backup_recovery_recovery_instance" {
 
 
 
-### Data source: ibm_backup_recovery_recovery_download_files
+### Data source: ibm_backup_recovery_download_files
 
 ```hcl
-data "ibm_backup_recovery_recovery_download_files" "backup_recovery_recovery_download_files_instance" {
+data "ibm_backup_recovery_download_files" "backup_recovery_download_files_instance" {
   recovery_download_files_id = "recovery_download_files_id"
-  x_ibm_tenant_id = var.data_backup_recovery_recovery_x_ibm_tenant_id
+  x_ibm_tenant_id = var.data_backup_recovery_x_ibm_tenant_id
   start_offset = 0
   length = 0
   file_type = "file_type"
@@ -1191,20 +1191,20 @@ data "ibm_backup_recovery_recovery_download_files" "backup_recovery_recovery_dow
 | start_time | Specifies the start time of restore task. | `string` | false |
 | include_tenants | Specifies if objects of all the organizations under the hierarchy of the logged in user's organization should be returned.| `bool` | false |
 
-### Data source: ibm_backup_recovery_recoveries
+### Data source: ibm_backup_recoveries
 
 ```hcl
-data "ibm_backup_recovery_recoveries" "backup_recovery_recoveries_instance" {
-  x_ibm_tenant_id = var.backup_recovery_recoveries_x_ibm_tenant_id
-  ids = var.backup_recovery_recoveries_ids
-  return_only_child_recoveries = var.backup_recovery_recoveries_return_only_child_recoveries
-  start_time_usecs = var.backup_recovery_recoveries_start_time_usecs
-  end_time_usecs = var.backup_recovery_recoveries_end_time_usecs
-  snapshot_target_type = var.backup_recovery_recoveries_snapshot_target_type
-  archival_target_type = var.backup_recovery_recoveries_archival_target_type
-  snapshot_environments = var.backup_recovery_recoveries_snapshot_environments
-  status = var.backup_recovery_recoveries_status
-  recovery_actions = var.backup_recovery_recoveries_recovery_actions
+data "ibm_backup_recoveries" "backup_recoveries_instance" {
+  x_ibm_tenant_id = var.backup_recoveries_x_ibm_tenant_id
+  ids = var.backup_recoveries_ids
+  return_only_child_recoveries = var.backup_recoveries_return_only_child_recoveries
+  start_time_usecs = var.backup_recoveries_start_time_usecs
+  end_time_usecs = var.backup_recoveries_end_time_usecs
+  snapshot_target_type = var.backup_recoveries_snapshot_target_type
+  archival_target_type = var.backup_recoveries_archival_target_type
+  snapshot_environments = var.backup_recoveries_snapshot_environments
+  status = var.backup_recoveries_status
+  recovery_actions = var.backup_recoveries_recovery_actions
 }
 ```
 
@@ -1366,12 +1366,12 @@ Note that the `ibm_backup_recovery_protection_group_run_request` and `ibm_backup
 
 Some resources in this service do not support update or delete operations due to the absence of corresponding API endpoints. As a result, Terraform cannot manage these operations for those resources. Users should be aware that removing these resources from the configuration (main.tf) will only remove them from the Terraform state and will not affect the actual resources in the backend. Similarly updating these resources will throw an error in the plan phase stating that the resource cannot be updated.
 - ibm_backup_recovery_perform_action_on_protection_group_run_request
-- ibm_backup_recovery_recovery_download_files_folders
+- ibm_backup_recovery_download_files_folders
 - ibm_backup_recovery_agent_upgrade_task
 - ibm_backup_recovery_protection_group_state
 - ibm_backup_recovery_connection_registration_token
 - ibm_backup_recovery_restore_points
-- ibm_backup_recovery_recovery
+- ibm_backup_recovery
 - ibm_backup_recovery_data_source_connector_patch
 - ibm_backup_recovery_data_source_connector_registration
 - ibm_backup_recovery_update_protection_group_run_request

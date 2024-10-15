@@ -16,11 +16,11 @@ output "ibm_backup_recovery_data_source_connection" {
   value       = ibm_backup_recovery_data_source_connection.backup_recovery_data_source_connection_instance
   description = "backup_recovery_data_source_connection resource instance"
 }
-// This output allows backup_recovery_recovery_download_files_folders data to be referenced by other resources and the terraform CLI
+// This output allows backup_recovery_download_files_folders data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_backup_recovery_recovery_download_files_folders" {
-  value       = ibm_backup_recovery_recovery_download_files_folders.backup_recovery_recovery_download_files_folders_instance
-  description = "backup_recovery_recovery_download_files_folders resource instance"
+output "ibm_backup_recovery_download_files_folders" {
+  value       = ibm_backup_recovery_download_files_folders.backup_recovery_download_files_folders_instance
+  description = "backup_recovery_download_files_folders resource instance"
 }
 // This output allows backup_recovery_restore_points data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
@@ -46,11 +46,11 @@ output "ibm_backup_recovery_protection_policy" {
   value       = ibm_backup_recovery_protection_policy.backup_recovery_protection_policy_instance
   description = "backup_recovery_protection_policy resource instance"
 }
-// This output allows backup_recovery_recovery data to be referenced by other resources and the terraform CLI
+// This output allows backup_recovery data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed
-output "ibm_backup_recovery_recovery" {
-  value       = ibm_backup_recovery_recovery.backup_recovery_recovery_instance
-  description = "backup_recovery_recovery resource instance"
+output "ibm_backup_recovery" {
+  value       = ibm_backup_recovery.backup_recovery_instance
+  description = "backup_recovery resource instance"
 }
 // This output allows backup_recovery_search_indexed_object data to be referenced by other resources and the terraform CLI
 // Modify this output if only certain data should be exposed

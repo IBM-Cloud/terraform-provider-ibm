@@ -39,23 +39,23 @@ variable "backup_recovery_data_source_connection_connection_name" {
   default     = "connection_name"
 }
 
-// Resource arguments for backup_recovery_recovery_download_files_folders
-variable "backup_recovery_recovery_download_files_folders_x_ibm_tenant_id" {
+// Resource arguments for backup_recovery_download_files_folders
+variable "backup_recovery_download_files_folders_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
   type        = string
   default     = "x_ibm_tenant_id"
 }
-variable "backup_recovery_recovery_download_files_folders_name" {
+variable "backup_recovery_download_files_folders_name" {
   description = "Specifies the name of the recovery task. This field must be set and must be a unique name."
   type        = string
   default     = "name"
 }
-variable "backup_recovery_recovery_download_files_folders_parent_recovery_id" {
+variable "backup_recovery_download_files_folders_parent_recovery_id" {
   description = "If current recovery is child task triggered through another parent recovery operation, then this field will specify the id of the parent recovery."
   type        = string
   default     = "parent_recovery_id"
 }
-variable "backup_recovery_recovery_download_files_folders_glacier_retrieval_type" {
+variable "backup_recovery_download_files_folders_glacier_retrieval_type" {
   description = "Specifies the glacier retrieval type when restoring or downloding files or folders from a Glacier-based cloud snapshot."
   type        = string
   default     = "kStandard"
@@ -209,23 +209,23 @@ variable "backup_recovery_protection_policy_template_id" {
   default     = "template_id"
 }
 
-// Resource arguments for backup_recovery_recovery
-variable "backup_recovery_recovery_x_ibm_tenant_id" {
+// Resource arguments for backup_recovery
+variable "backup_recovery_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
   type        = string
   default     = "x_ibm_tenant_id"
 }
-variable "backup_recovery_recovery_request_initiator_type" {
+variable "backup_recovery_request_initiator_type" {
   description = "Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests."
   type        = string
   default     = "UIUser"
 }
-variable "backup_recovery_recovery_name" {
+variable "backup_recovery_name" {
   description = "Specifies the name of the Recovery."
   type        = string
   default     = "name"
 }
-variable "backup_recovery_recovery_snapshot_environment" {
+variable "backup_recovery_snapshot_environment" {
   description = "Specifies the type of snapshot environment for which the Recovery was performed."
   type        = string
   default     = "kPhysical"
@@ -1103,65 +1103,65 @@ variable "data_backup_recovery_protection_policy_request_initiator_type" {
   default     = "placeholder"
 }
 
-// Data source arguments for backup_recovery_recovery
-variable "data_backup_recovery_recovery_backup_recovery_recovery_id" {
+// Data source arguments for backup_recovery
+variable "data_backup_recovery_backup_recovery_id" {
   description = "Specifies the id of a Recovery."
   type        = string
-  default     = "backup_recovery_recovery_id"
+  default     = "backup_recovery_id"
 }
-variable "data_backup_recovery_recovery_x_ibm_tenant_id" {
+variable "data_backup_recovery_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
   type        = string
   default     = "x_ibm_tenant_id"
 }
 
-// Data source arguments for backup_recovery_recoveries
-variable "backup_recovery_recoveries_x_ibm_tenant_id" {
+// Data source arguments for backup_recoveries
+variable "backup_recoveries_x_ibm_tenant_id" {
   description = "Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified."
   type        = string
   default     = "x_ibm_tenant_id"
 }
-variable "backup_recovery_recoveries_ids" {
+variable "backup_recoveries_ids" {
   description = "Filter Recoveries for given ids."
   type        = list(string)
   default     = [ "placeholder" ]
 }
-variable "backup_recovery_recoveries_return_only_child_recoveries" {
+variable "backup_recoveries_return_only_child_recoveries" {
   description = "Returns only child recoveries if passed as true. This filter should always be used along with 'ids' filter."
   type        = bool
   default     = false
 }
-variable "backup_recovery_recoveries_start_time_usecs" {
+variable "backup_recoveries_start_time_usecs" {
   description = "Returns the recoveries which are started after the specific time. This value should be in Unix timestamp epoch in microseconds."
   type        = number
   default     = 0
 }
-variable "backup_recovery_recoveries_end_time_usecs" {
+variable "backup_recoveries_end_time_usecs" {
   description = "Returns the recoveries which are started before the specific time. This value should be in Unix timestamp epoch in microseconds."
   type        = number
   default     = 0
 }
-variable "backup_recovery_recoveries_snapshot_target_type" {
+variable "backup_recoveries_snapshot_target_type" {
   description = "Specifies the snapshot's target type from which recovery has been performed."
   type        = list(string)
   default     = [ "placeholder" ]
 }
-variable "backup_recovery_recoveries_archival_target_type" {
+variable "backup_recoveries_archival_target_type" {
   description = "Specifies the snapshot's archival target type from which recovery has been performed. This parameter applies only if 'snapshotTargetType' is 'Archival'."
   type        = list(string)
   default     = [ "placeholder" ]
 }
-variable "backup_recovery_recoveries_snapshot_environments" {
+variable "backup_recoveries_snapshot_environments" {
   description = "Specifies the list of snapshot environment types to filter Recoveries. If empty, Recoveries related to all environments will be returned."
   type        = list(string)
   default     = [ "placeholder" ]
 }
-variable "backup_recovery_recoveries_status" {
+variable "backup_recoveries_status" {
   description = "Specifies the list of run status to filter Recoveries. If empty, Recoveries with all run status will be returned."
   type        = list(string)
   default     = [ "placeholder" ]
 }
-variable "backup_recovery_recoveries_recovery_actions" {
+variable "backup_recoveries_recovery_actions" {
   description = "Specifies the list of recovery actions to filter Recoveries. If empty, Recoveries related to all actions will be returned."
   type        = list(string)
   default     = [ "placeholder" ]
