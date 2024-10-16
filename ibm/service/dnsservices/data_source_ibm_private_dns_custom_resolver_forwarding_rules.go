@@ -114,16 +114,16 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 	}
 
 	forwardRules := make([]interface{}, 0)
-	for _, instance := range result.ForwardingRules {
-		fwdRule := map[string]interface{}{}
-		fwdRule[pdnsCRFRRuleID] = *instance.ID
-		fwdRule[pdnsCRFRDesctiption] = *instance.Description
-		fwdRule[pdnsCRFRType] = *instance.Type
-		fwdRule[pdnsCRFRMatch] = *instance.Match
-		fwdRule[pdnsCRFRForwardTo] = instance.ForwardTo
-		fwdRule[pdnsCRFRViews] = flattenPDNSFRViews(instance.Views)
+	for _, rule := range result.ForwardingRules {
+		forwardRule := map[string]interface{}{}
+		forwardRule[pdnsCRFRRuleID] = *rule.ID
+		forwardRule[pdnsCRFRDesctiption] = *rule.Description
+		forwardRule[pdnsCRFRType] = *rule.Type
+		forwardRule[pdnsCRFRMatch] = *rule.Match
+		forwardRule[pdnsCRFRForwardTo] = rule.ForwardTo
+		forwardRule[pdnsCRFRViews] = flattenPDNSFRViews(rule.Views)
 
-		forwardRules = append(forwardRules, fwdRule)
+		forwardRules = append(forwardRules, forwardRule)
 	}
 	d.SetId(dataSourceIBMPrivateDNSForwardrulesID())
 	d.Set(pdnsInstanceID, instanceID)
