@@ -181,6 +181,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The status of the instance.",
 							Type:        schema.TypeString,
 						},
+						Attr_StorageConnection: {
+							Computed:    true,
+							Description: "The storage connection type.",
+							Type:        schema.TypeString,
+						},
 						Attr_StoragePool: {
 							Computed:    true,
 							Description: "The storage Pool where server is deployed.",
@@ -261,6 +266,7 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta interface{}) 
 			Attr_SharedProcessorPool:       i.SharedProcessorPool,
 			Attr_SharedProcessorPoolID:     i.SharedProcessorPoolID,
 			Attr_Status:                    *i.Status,
+			Attr_StorageConnection:         i.StorageConnection,
 			Attr_StoragePool:               i.StoragePool,
 			Attr_StoragePoolAffinity:       i.StoragePoolAffinity,
 			Attr_StorageType:               i.StorageType,
@@ -296,6 +302,7 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 			p := make(map[string]interface{})
 			p[Attr_ExternalIP] = pvmip.ExternalIP
 			p[Attr_IP] = pvmip.IPAddress
+			p[Attr_Macaddress] = pvmip.MacAddress
 			p[Attr_MacAddress] = pvmip.MacAddress
 			p[Attr_NetworkID] = pvmip.NetworkID
 			p[Attr_NetworkName] = pvmip.NetworkName

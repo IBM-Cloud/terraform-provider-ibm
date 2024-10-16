@@ -7,7 +7,7 @@ toolchain go1.22.5
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM-Cloud/power-go-client v1.8.1
+	github.com/IBM-Cloud/power-go-client v1.8.3
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -219,7 +219,11 @@ require (
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
+<<<<<<< HEAD
 	golang.org/x/sys v0.26.0 // indirect
+=======
+	golang.org/x/sys v0.25.0 // indirect
+>>>>>>> 839fe1dc1199839840162c768f4571d26dfd6a1f
 	golang.org/x/term v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

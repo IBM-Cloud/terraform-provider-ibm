@@ -59,6 +59,10 @@ Review the argument references that you can specify for your resource.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base volume anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_replication_enabled` - (Optional, Boolean) Indicates if the volume should be replication enabled or not.
+
+  **Note:** `replication_sites` will be populated automatically with default sites if set to true and sites are not specified.
+
+- `pi_replication_sites` - (Optional, List) List of replication sites for volume replication. Must set `pi_replication_enabled` to true to use.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_volume_name` - (Required, String) The name of the volume.
 - `pi_volume_pool` - (Optional, String) Volume pool where the volume will be created; if provided then `pi_affinity_policy` values will be ignored.
@@ -82,6 +86,7 @@ In addition to all argument reference list, you can access the following attribu
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
 - `replication_status` - (String) The replication status of the volume.
+- `replication_sites` - (List) List of replication sites for volume replication.
 - `replication_type` - (String) The replication type of the volume `metro` or `global`.
 - `volume_id` - (String) The unique identifier of the volume.
 - `volume_status` - (String) The status of the volume.

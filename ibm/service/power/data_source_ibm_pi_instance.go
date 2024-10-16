@@ -200,6 +200,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The status of the instance.",
 				Type:        schema.TypeString,
 			},
+			Attr_StorageConnection: {
+				Computed:    true,
+				Description: "The storage connection type.",
+				Type:        schema.TypeString,
+			},
 			Attr_StoragePool: {
 				Computed:    true,
 				Description: "The storage Pool where server is deployed.",
@@ -278,6 +283,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_SharedProcessorPool, powervmdata.SharedProcessorPool)
 	d.Set(Attr_SharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 	d.Set(Attr_Status, powervmdata.Status)
+	d.Set(Attr_StorageConnection, powervmdata.StorageConnection)
 	d.Set(Attr_StorageType, powervmdata.StorageType)
 	d.Set(Attr_StoragePool, powervmdata.StoragePool)
 	d.Set(Attr_StoragePoolAffinity, powervmdata.StoragePoolAffinity)
