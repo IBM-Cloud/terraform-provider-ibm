@@ -226,6 +226,5 @@ func DataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(model *config
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(jsonData))
 	return string(jsonData), nil
 }
