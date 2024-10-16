@@ -218,6 +218,7 @@ var (
 	Pi_instance_id                  string
 	Pi_instance_name                string
 	Pi_key_name                     string
+	Pi_network_address_group_id     string
 	Pi_network_id                   string
 	Pi_network_interface_id         string
 	Pi_network_name                 string
@@ -228,6 +229,7 @@ var (
 	Pi_shared_processor_pool_id     string
 	Pi_snapshot_id                  string
 	Pi_spp_placement_group_id       string
+	Pi_storage_connection           string
 	Pi_target_storage_tier          string
 	Pi_volume_clone_task_id         string
 	Pi_volume_group_id              string
@@ -1214,7 +1216,10 @@ func init() {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
-
+	Pi_storage_connection = os.Getenv("PI_STORAGE_CONNECTION")
+	if Pi_storage_connection == "" {
+		fmt.Println("[WARN] Set the environment variable PI_STORAGE_CONNECTION for testing pi_storage_connection resource else it is empty")
+	}
 	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
 	if Pi_target_storage_tier == "" {
 		Pi_target_storage_tier = "terraform-test-tier"
@@ -1241,6 +1246,11 @@ func init() {
 	if Pi_host_id == "" {
 		Pi_host_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
+	Pi_network_address_group_id = os.Getenv("PI_NETWORK_ADDRESS_GROUP_ID")
+	if Pi_network_address_group_id == "" {
+		Pi_network_address_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ADDRESS_GROUP_ID for testing ibm_pi_network_address_group data source else it is set to default value 'terraform-test-power'")
 	}
 
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
