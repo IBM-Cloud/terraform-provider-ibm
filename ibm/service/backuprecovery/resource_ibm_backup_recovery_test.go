@@ -16,7 +16,7 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func TestAccIbmBackupRecoveryRecoveryBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
 	objectId := 23
@@ -31,18 +31,18 @@ func TestAccIbmBackupRecoveryRecoveryBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Destroy: false,
-				Config:  testAccCheckIbmBackupRecoveryRecoveryConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
+				Config:  testAccCheckIbmBackupRecoveryConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmBackupRecoveryRecoveryExists("ibm_backup_recovery_recovery.baas_recovery_instance"),
-					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery.baas_recovery_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("ibm_backup_recovery_recovery.baas_recovery_instance", "name", name),
+					testAccCheckIbmBackupRecoveryExists("ibm_backup_recovery.baas_recovery_instance"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery.baas_recovery_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("ibm_backup_recovery.baas_recovery_instance", "name", name),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryRecoveryConfigBasic(objectId int, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction string) string {
+func testAccCheckIbmBackupRecoveryConfigBasic(objectId int, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_backup_recovery_object_snapshots" "object_snapshot" {
@@ -50,7 +50,7 @@ func testAccCheckIbmBackupRecoveryRecoveryConfigBasic(objectId int, name, snapsh
 		object_id = %d
 	  }
 
-	resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
+	resource "ibm_backup_recovery" "baas_recovery_instance" {
 		x_ibm_tenant_id = "%s"
 		snapshot_environment = "%s"
 		name = "%s"
@@ -77,7 +77,7 @@ func testAccCheckIbmBackupRecoveryRecoveryConfigBasic(objectId int, name, snapsh
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)
 }
 
-func testAccCheckIbmBackupRecoveryRecoveryExists(n string) resource.TestCheckFunc {
+func testAccCheckIbmBackupRecoveryExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

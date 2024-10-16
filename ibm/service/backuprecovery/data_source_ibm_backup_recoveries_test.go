@@ -17,7 +17,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBackupRecoveryRecoveriesDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveriesDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
 	objectId := 23
@@ -32,20 +32,20 @@ func TestAccIbmBackupRecoveryRecoveriesDataSourceBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Destroy: false,
-				Config:  testAccCheckIbmBackupRecoveryRecoveriesDataSourceConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
+				Config:  testAccCheckIbmBackupRecoveriesDataSourceConfigBasic(objectId, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "recoveries.#", "1"),
-					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "recoveries.0.name", name),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recoveries.baas_recoveries_instance", "recoveries.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recoveries.baas_recoveries_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recoveries.baas_recoveries_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttr("data.ibm_backup_recoveries.baas_recoveries_instance", "recoveries.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recoveries.baas_recoveries_instance", "recoveries.0.name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recoveries.baas_recoveries_instance", "recoveries.0.id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryRecoveriesDataSourceConfigBasic(objectId int, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction string) string {
+func testAccCheckIbmBackupRecoveriesDataSourceConfigBasic(objectId int, name, snapshotEnvironment, targetenvironment, absolutePath, restoreEntityType, recoveryAction string) string {
 
 	return fmt.Sprintf(`
 
@@ -54,7 +54,7 @@ func testAccCheckIbmBackupRecoveryRecoveriesDataSourceConfigBasic(objectId int, 
 		object_id = %d
 	  }
 
-	resource "ibm_backup_recovery_recovery" "baas_recovery_instance" {
+	resource "ibm_backup_recovery" "baas_recovery_instance" {
 		x_ibm_tenant_id = "%s"
 		snapshot_environment = "%s"
 		name = "%s"
@@ -79,9 +79,9 @@ func testAccCheckIbmBackupRecoveryRecoveriesDataSourceConfigBasic(objectId int, 
 		}
 	  }
 
-	  data "ibm_backup_recovery_recoveries" "baas_recoveries_instance" {
+	  data "ibm_backup_recoveries" "baas_recoveries_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		ids = [ ibm_backup_recovery_recovery.baas_recovery_instance.id ]
+		ids = [ ibm_backup_recovery.baas_recovery_instance.id ]
 	}
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)
 

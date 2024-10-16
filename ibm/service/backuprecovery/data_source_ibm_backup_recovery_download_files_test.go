@@ -27,9 +27,9 @@ func TestAccIbmRecoveryDownloadFilesDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name, objectId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recovery_download_files.recovery_download_files_instance", "id"),
-					resource.TestCheckResourceAttr("data.ibm_backup_recovery_recovery_download_files.recovery_download_files_instance", "x_ibm_tenant_id", tenantId),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_download_files.recovery_download_files_instance", "id"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_download_files.recovery_download_files_instance", "x_ibm_tenant_id", tenantId),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_download_files.recovery_download_files_instance", "recovery_download_files_id"),
 				),
 			},
 		},
@@ -43,7 +43,7 @@ func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, obje
 		object_id = %d
 	  }
 
-	resource "ibm_backup_recovery_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
+	resource "ibm_backup_recovery_download_files_folders" "baas_recovery_download_files_folders_instance" {
 		x_ibm_tenant_id = "%s"
 		name = "%s"
 		object {
@@ -53,9 +53,9 @@ func testAccCheckIbmRecoveryDownloadFilesDataSourceConfigBasic(name string, obje
 			absolute_path = "/data/"
 		}
 	  }
-	  data "ibm_backup_recovery_recovery_download_files" "recovery_download_files_instance" {
+	  data "ibm_backup_recovery_download_files" "recovery_download_files_instance" {
 		x_ibm_tenant_id = "%[1]s"
-		recovery_download_files_id = ibm_backup_recovery_recovery_download_files_folders.baas_recovery_download_files_folders_instance.id
+		recovery_download_files_id = ibm_backup_recovery_download_files_folders.baas_recovery_download_files_folders_instance.id
 	}
 	`, tenantId, objectId, tenantId, name)
 
