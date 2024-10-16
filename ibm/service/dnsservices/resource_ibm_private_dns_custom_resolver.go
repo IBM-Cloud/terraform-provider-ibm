@@ -182,7 +182,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 							},
 						},
 						pdnsCRFRViews: {
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Description: "An array of views used by forwarding rules",
 							Optional:    true,
 							Elem: &schema.Resource{

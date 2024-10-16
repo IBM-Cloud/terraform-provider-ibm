@@ -83,7 +83,7 @@ func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
 				Description: "the time when a forwarding rule ID is created, RFC3339 format.",
 			},
 			pdnsCRFRViews: {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Description: "An array of views used by forwarding rules",
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -142,26 +142,37 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 
 	ruleType := d.Get(pdnsCRFRType).(string)
 	ruleMatch := d.Get(pdnsCRFRMatch).(string)
+	ruleDescription := d.Get(pdnsCRFRDesctiption).(string)
 
-	views := d.Get(pdnsCRFRViews).(*schema.Set)
+	views := d.Get(pdnsCRFRViews).([]interface{})
 
 	var forwardingRuleInp dns.ForwardingRuleInputIntf
+	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID, forwardingRuleInp)
 
+	// If forward_to field is present then we check if views are also present or not.
+	// We call the respective functions depending upon the availibility of the views.
+	// We follow the same approach when forward_to is not present. In this case if views are also not present then we throw an error.
 	if forward, ok := d.GetOk(pdnsCRFRForwardTo); ok {
 		if _, ok := d.GetOk(pdnsCRFRViews); ok {
-			forwardingRuleInp = new(dns.ForwardingRuleInputForwardingRuleBoth)
-			forwardingRuleInp, _ = dnsSvcsClient.NewForwardingRuleInputForwardingRuleBoth(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})), expandPDNSFRViews(views))
-		} else {
-			forwardingRuleInp, _ = dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyForward(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})))
-		}
+			forwardingRuleInpBoth, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleBoth(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})), expandPDNSFRViews(views))
+			forwardingRuleInpBoth.Description = &ruleDescription
+			opt.SetForwardingRuleInput(forwardingRuleInpBoth)
 
+		} else {
+			forwardingRuleInpOnlyRule, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyForward(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})))
+			forwardingRuleInpOnlyRule.Description = &ruleDescription
+			opt.SetForwardingRuleInput(forwardingRuleInpOnlyRule)
+		}
+		// forward_to not present
 	} else {
-		if _, ok := d.GetOk(pdnsCRFRViews); !ok {
+		if _, ok := d.GetOk(pdnsCRFRViews); ok {
+			forwardingRuleInpOnlyView, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyView(ruleType, ruleMatch, expandPDNSFRViews(views))
+			forwardingRuleInpOnlyView.Description = &ruleDescription
+			opt.SetForwardingRuleInput(forwardingRuleInpOnlyView)
+		} else {
 			return diag.FromErr(fmt.Errorf("[ERROR] Cannot create the forwarding rules. One of the fields from forward_to or views must be provided."))
 		}
 	}
-
-	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID, forwardingRuleInp)
 
 	result, resp, err := dnsSvcsClient.CreateForwardingRuleWithContext(context, opt)
 
@@ -233,7 +244,7 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 			}
 		}
 		if view, ok := d.GetOk(pdnsCRFRViews); ok {
-			opt.SetViews(expandPDNSFRViews(view.(*schema.Set)))
+			opt.SetViews(expandPDNSFRViews(view.([]interface{})))
 		}
 		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
@@ -262,8 +273,8 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 	return nil
 }
 
-func expandPDNSFRViews(viewsList *schema.Set) (views []dns.ViewConfig) {
-	for _, viewElem := range viewsList.List() {
+func expandPDNSFRViews(viewsList []interface{}) (views []dns.ViewConfig) {
+	for _, viewElem := range viewsList {
 		viewItem := viewElem.(map[string]interface{})
 		view := dns.ViewConfig{
 			Name:        core.StringPtr(viewItem[pdnsCRFRVName].(string)),
