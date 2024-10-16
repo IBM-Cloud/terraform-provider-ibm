@@ -2242,7 +2242,7 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 			rt = "crl"
 		}
 
-		apiEndpoint, _, _ := cos.SelectCosApi(rt, region, false)
+		apiEndpoint, _, _ := cos.SelectCosApi(rt, region)
 
 		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixSession()
 		if err != nil {
