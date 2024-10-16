@@ -40,6 +40,11 @@ You can access the following attribute references after your data source is crea
 - `lb_profiles` - (List) List of all load balancer profiles in the IBM Cloud Infrastructure.
 
   Nested scheme for `lb_profiles`:
+	- `access_modes` - (List) The instance groups support for a load balancer with this profile
+
+		Nested scheme for `access_modes`:
+		- `type` - (String) The type of access mode.
+		- `value` - (String) Access modes for this profile.
 	- `availability` - (List) The availability mode for a load balancer with this profile
 
 		Nested scheme for `availability`:

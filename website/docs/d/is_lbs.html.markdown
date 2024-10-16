@@ -34,6 +34,7 @@ Review the attribute references that you can access after you retrieve your data
 - `load_balancers` - (List) The Collection of load balancers.
 
 	Nested scheme for `load_balancers`:
+	- `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 	- `access_tags`  - (String) Access management tags associated for the load balancer.
 	- `availability` - (String) The availability of this load balancer
 	- `id` - (String) The unique identifier of the load balancer.

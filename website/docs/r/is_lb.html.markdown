@@ -112,6 +112,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 - `availability` - (String) The availability of this load balancer
 - `crn` - (String) The CRN for this load balancer.
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.

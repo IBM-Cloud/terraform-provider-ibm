@@ -24,6 +24,25 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 				Required:    true,
 				Description: "The name for this load balancer profile",
 			},
+			isLBAccessModes: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The access mode for a load balancer with this profile",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for access mode",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Access modes for this profile",
+						},
+					},
+				},
+			},
 			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -76,6 +95,19 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 	d.Set("name", *lbProfile.Name)
 	d.Set("href", *lbProfile.Href)
 	d.Set("family", *lbProfile.Family)
+	if lbProfile.AccessModes != nil {
+		accessModes := lbProfile.AccessModes
+		AccessModesMap := map[string]interface{}{}
+		AccessModesList := []map[string]interface{}{}
+		if accessModes.Type != nil {
+			AccessModesMap["type"] = *accessModes.Type
+		}
+		if len(accessModes.Values) > 0 {
+			AccessModesMap["value"] = accessModes.Values
+		}
+		AccessModesList = append(AccessModesList, AccessModesMap)
+		d.Set(isLBAccessModes, AccessModesList)
+	}
 	log.Printf("[INFO] lbprofile udp %v", lbProfile.UDPSupported)
 	if lbProfile.UDPSupported != nil {
 		udpSupport := lbProfile.UDPSupported

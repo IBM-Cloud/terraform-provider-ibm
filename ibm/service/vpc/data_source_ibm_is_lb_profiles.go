@@ -34,6 +34,25 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isLBAccessModes: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The access mode for a load balancer with this profile",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for access mode",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Access modes for this profile",
+									},
+								},
+							},
+						},
 						"availability": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -231,6 +250,20 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 					}
 				}
 			}
+		}
+
+		if profileCollector.AccessModes != nil {
+			accessModes := profileCollector.AccessModes
+			AccessModesMap := map[string]interface{}{}
+			AccessModesList := []map[string]interface{}{}
+			if accessModes.Type != nil {
+				AccessModesMap["type"] = *accessModes.Type
+			}
+			if len(accessModes.Values) > 0 {
+				AccessModesMap["value"] = accessModes.Values
+			}
+			AccessModesList = append(AccessModesList, AccessModesMap)
+			l[isLBAccessModes] = AccessModesList
 		}
 		if profileCollector.Availability != nil {
 			availabilitySupport := profileCollector.Availability.(*vpcv1.LoadBalancerProfileAvailability)
