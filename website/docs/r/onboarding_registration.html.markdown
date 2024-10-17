@@ -16,8 +16,8 @@ Create, update, and delete onboarding_registrations with this resource.
 
 ```hcl
 resource "ibm_onboarding_registration" "onboarding_registration_instance" {
-  account_id = "account_id"
-  company_name = "company_name"
+  account_id = "4a5c3c51b97a446fbb1d0e1ef089823b"
+  company_name = "Beautiful Company"
   primary_contact {
 		name = "name"
 		email = "email"
@@ -49,8 +49,6 @@ Nested schema for **primary_contact**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the onboarding_registration.
-* `account_dpa_id` - (String) The ID of the IBM Digital Provider Agreement.
-* `account_dra_id` - (String) The ID of the IBM Digital Platform Reseller Agreement.
 * `created_at` - (String) The time when the registration was created.
 * `updated_at` - (String) The time when the registration was updated.
 
@@ -61,5 +59,5 @@ You can import the `ibm_onboarding_registration` resource by using `id`. The ID 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_registration.onboarding_registration <id>;
+$ terraform import ibm_onboarding_registration.onboarding_registration id;
 </pre>

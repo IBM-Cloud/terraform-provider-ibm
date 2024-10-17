@@ -22,13 +22,13 @@ import (
 func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 	var conf partnercentersellv1.Broker
 	authUsername := "apikey"
-	authPassword := "random1234"
+	authPassword := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authScheme := "bearer"
 	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	typeVar := "provision_through"
 	name := "broker-petra-1"
 	authUsernameUpdate := "apikey"
-	authPasswordUpdate := "random1234"
+	authPasswordUpdate := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authSchemeUpdate := "bearer"
 	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "provision_behind"
@@ -70,7 +70,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	var conf partnercentersellv1.Broker
 	env := "current"
 	authUsername := "apikey"
-	authPassword := "random1234"
+	authPassword := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authScheme := "bearer"
 	state := "active"
 	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
@@ -81,7 +81,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	region := "global"
 	envUpdate := "current"
 	authUsernameUpdate := "apikey"
-	authPasswordUpdate := "random1234"
+	authPasswordUpdate := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authSchemeUpdate := "bearer"
 	stateUpdate := "active"
 	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
@@ -134,7 +134,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"env",
+					"env", "auth_password",
 				},
 			},
 		},
