@@ -553,7 +553,7 @@ func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGateway
 	log.Printf("Waiting for virtual endpoint gateway (%s) to be available.", endPointGatewayId)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"waiting", "updating", "pending"},
+		Pending:    []string{"waiting", "pending", "updating"},
 		Target:     []string{"stable", "failed", ""},
 		Refresh:    isVirtualEndpointGatewayRefreshFunc(sess, endPointGatewayId),
 		Timeout:    timeout,
