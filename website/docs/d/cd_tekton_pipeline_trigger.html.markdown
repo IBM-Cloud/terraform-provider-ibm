@@ -8,20 +8,20 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline_trigger
 
-Provides a read-only data source for cd_tekton_pipeline_trigger. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source to retrieve information about a cd_tekton_pipeline_trigger. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
-	pipeline_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.pipeline_id
-	trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.trigger_id
+	pipeline_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.pipeline_id
+	trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.trigger_id
 }
 ```
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your data source.
+You can specify the following arguments for this data source.
 
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
@@ -30,35 +30,26 @@ Review the argument reference that you can specify for your data source.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your data source is created.
+After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_trigger.
 * `cron` - (String) Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
-
 * `enable_events_from_forks` - (Boolean) When enabled, pull request events from forks of the selected repository will trigger a pipeline run.
   * Constraints: The default value is `false`.
-
 * `enabled` - (Boolean) Flag to check if the trigger is enabled.
   * Constraints: The default value is `true`.
-
 * `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-
 * `events` - (List) Either 'events' or 'filter' is required specifically for Git triggers. Stores a list of events that a Git trigger listens to. Choose one or more from 'push', 'pull_request', and 'pull_request_closed'. If SCM repositories use the 'merge request' term, they correspond to the generic term i.e. 'pull request'.
   * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The maximum length is `3` items. The minimum length is `0` items.
-
 * `favorite` - (Boolean) Mark the trigger as a favorite.
   * Constraints: The default value is `false`.
-
 * `filter` - (String) Either 'events' or 'filter' can be used. Stores the CEL (Common Expression Language) expression value which is used for event filtering against the Git webhook payloads.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-
 * `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
 * `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
-
 * `name` - (String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.
 * `properties` - (List) Optional trigger properties are used to override or supplement the pipeline properties when triggering a pipeline run.
@@ -108,16 +99,12 @@ Nested schema for **source**:
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
-
 * `tags` - (List) Optional trigger tags array.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
-
 * `timezone` - (String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the CRON activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z+_., \/]{1,253}$/`.
-
 * `type` - (String) Trigger type.
   * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
-
 * `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `worker` - (List) Details of the worker used to run the trigger.
