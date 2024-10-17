@@ -34,8 +34,11 @@ Review the attribute references that you can access after you retrieve your data
 - `load_balancers` - (List) The Collection of load balancers.
 
 	Nested scheme for `load_balancers`:
+	- `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 	- `access_tags`  - (String) Access management tags associated for the load balancer.
+	- `availability` - (String) The availability of this load balancer
 	- `id` - (String) The unique identifier of the load balancer.
+	- `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.
 	- `created_at` - (String) The date and time this load balancer was created.
 	- `crn` - (String) The load balancer's CRN.
 	- `dns` - (List) The DNS configuration for this load balancer.
@@ -83,6 +86,7 @@ Review the attribute references that you can access after you retrieve your data
 	- `public_ips` - (String) The public IP addresses assigned to this load balancer.
 	- `resource_group` - (String) The resource group id, where the load balancer is created.
 	- `route_mode` - (Bool) Indicates whether route mode is enabled for this load balancer.
+	- `source_ip_session_persistence_supported` - (Boolean) Indicates whether this load balancer supports source IP session persistence.
 	- `status` - (String) The status of the load balancers.
 	- `type` - (String) The type of the load balancer.
 	- `tags` - (String) Tags associated with the load balancer.

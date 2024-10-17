@@ -113,6 +113,11 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 							Computed:    true,
 							Description: "The target name",
 						},
+						isVirtualEndpointGatewayTargetCRN: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The target crn",
+						},
 						isVirtualEndpointGatewayTargetResourceType: {
 							Type:        schema.TypeString,
 							Computed:    true,

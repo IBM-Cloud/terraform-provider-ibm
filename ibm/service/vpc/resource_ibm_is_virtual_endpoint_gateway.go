@@ -179,6 +179,7 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 						isVirtualEndpointGatewayTargetName: {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 							ForceNew: true,
 							AtLeastOneOf: []string{
 								targetNameFmt,
@@ -263,7 +264,7 @@ func ResourceIBMISEndpointGatewayValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "provider_cloud_service, provider_infrastructure_service"})
+			AllowedValues:              "provider_cloud_service, provider_infrastructure_service, private_path_service_gateway"})
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -354,9 +355,16 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(*endpointGateway.ID)
 
-	_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return err
+	if d.Get(targetResourceTypeFmt).(string) == "private_path_service_gateway" {
+		_, err = isWaitForVirtualEndpointGatewayForPPSGAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
 	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVirtualEndpointGatewayTags); ok || v != "" {
@@ -385,6 +393,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
+
 	// create option
 	endpointGatewayPatchModel := new(vpcv1.EndpointGatewayPatch)
 	if d.HasChange(isVirtualEndpointGatewayName) {
@@ -550,6 +559,22 @@ func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGateway
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isWaitForVirtualEndpointGatewayForPPSGAvailable(sess *vpcv1.VpcV1, endPointGatewayId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for virtual endpoint gateway (%s) to be available.", endPointGatewayId)
+	// When the target is PPSG, pending is a valid state when the endpoint gateway binding is not permitted within the terraform configuration.
+	stateConf := &resource.StateChangeConf{
+		Pending:                   []string{"waiting", "updating"},
+		Target:                    []string{"stable", "failed", "pending", ""},
+		Refresh:                   isVirtualEndpointGatewayRefreshFunc(sess, endPointGatewayId),
+		Timeout:                   timeout,
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 5,
 	}
 
 	return stateConf.WaitForState()
