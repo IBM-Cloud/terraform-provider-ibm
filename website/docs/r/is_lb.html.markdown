@@ -58,7 +58,7 @@ resource "ibm_is_lb" "example" {
 }
 
 ```
-## An example to create a load balancer with private DNS.
+## An example to create a private path load balancer.
 ```terraform
 resource "ibm_is_lb" "example" {
   name    = "example-load-balancer"

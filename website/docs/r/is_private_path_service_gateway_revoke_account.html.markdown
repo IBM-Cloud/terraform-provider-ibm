@@ -6,7 +6,7 @@ description: |-
 subcategory: "VPC infrastructure"
 ---
 
-# ibm_is_private_path_service_gateway_operations
+# ibm_is_private_path_service_gateway_revoke_account
 
 Provides a resource for ibm_is_private_path_service_gateway_revoke_account. This revokes the access to provided account.
 

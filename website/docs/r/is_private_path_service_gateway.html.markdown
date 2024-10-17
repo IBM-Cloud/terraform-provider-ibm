@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_is_private_path_service_gateway_account_policy"
+page_title: "IBM : ibm_is_private_path_service_gateway"
 description: |-
-  Manages PrivatePathServiceGatewayAccountPolicy.
+  Manages PrivatePathServiceGateway.
 subcategory: "VPC infrastructure"
 ---
 
-# ibm_is_private_path_service_gateway_account_policy
+# ibm_is_private_path_service_gateway
 
-Provides a resource for PrivatePathServiceGatewayAccountPolicy. This allows PrivatePathServiceGatewayAccountPolicy to be created, updated and deleted.
+Provides a resource for PrivatePathServiceGateway. This allows PrivatePathServiceGateway to be created, updated and deleted.
 
 ## Example Usage
 
