@@ -97,6 +97,7 @@ func resourceIBMIsPrivatePathServiceGatewayOperationsUpdate(context context.Cont
 		response, err := vpcClient.PublishPrivatePathServiceGatewayWithContext(context, publishPrivatePathServiceGatewayOptions)
 		if err != nil {
 			log.Printf("[DEBUG] PublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
+			resetPublishedSchemaValue(context, d)
 			return diag.FromErr(fmt.Errorf("PublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
 		}
 
@@ -108,13 +109,21 @@ func resourceIBMIsPrivatePathServiceGatewayOperationsUpdate(context context.Cont
 		response, err := vpcClient.UnpublishPrivatePathServiceGatewayWithContext(context, unpublishPrivatePathServiceGatewayOptions)
 		if err != nil {
 			log.Printf("[DEBUG] unpublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
+			resetPublishedSchemaValue(context, d)
 			return diag.FromErr(fmt.Errorf("unpublishublishPrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
 		}
 
 	}
 	return nil
 }
-
+func resetPublishedSchemaValue(context context.Context, d *schema.ResourceData) {
+	if d.HasChange("published") {
+		oldIntf, newIntf := d.GetChange("published")
+		if oldIntf.(bool) != newIntf.(bool) {
+			d.Set("published", oldIntf.(bool))
+		}
+	}
+}
 func resourceIBMIsPrivatePathServiceGatewayOperationsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	d.SetId("")

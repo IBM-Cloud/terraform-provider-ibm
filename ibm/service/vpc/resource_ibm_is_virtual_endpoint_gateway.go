@@ -355,7 +355,7 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(*endpointGateway.ID)
 
-	_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d.Get(targetResourceTypeFmt).(string), d.IsNewResource())
 	if err != nil {
 		return err
 	}
@@ -386,6 +386,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 	if err != nil {
 		return err
 	}
+	targetType := d.Get(isVirtualEndpointGatewayTargetResourceType).(string)
 	// create option
 	endpointGatewayPatchModel := new(vpcv1.EndpointGatewayPatch)
 	if d.HasChange(isVirtualEndpointGatewayName) {
@@ -420,7 +421,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 				if err != nil {
 					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
 				}
-				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), targetType, d.IsNewResource())
 				if err != nil {
 					return err
 				}
@@ -444,7 +445,7 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 				if err != nil {
 					return fmt.Errorf("Error Deleting Security Group Target for this endpoint gateway : %s\n%s", err, response)
 				}
-				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), targetType, d.IsNewResource())
 				if err != nil {
 					return err
 				}
@@ -541,11 +542,15 @@ func flattenDataSourceSecurityGroups(securityGroupList []vpcv1.SecurityGroupRefe
 	return securitygroupList
 }
 
-func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGatewayId string, timeout time.Duration) (interface{}, error) {
+func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGatewayId string, timeout time.Duration, targetResourceType string, isNewResource bool) (interface{}, error) {
 	log.Printf("Waiting for virtual endpoint gateway (%s) to be available.", endPointGatewayId)
+	pendingStatuses := []string{"waiting", "updating"}
 
+	if targetResourceType != "private_path_service_gateway" || !isNewResource {
+		pendingStatuses = append(pendingStatuses, "pending")
+	}
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"waiting", "pending", "updating"},
+		Pending:    pendingStatuses,
 		Target:     []string{"stable", "failed", ""},
 		Refresh:    isVirtualEndpointGatewayRefreshFunc(sess, endPointGatewayId),
 		Timeout:    timeout,
