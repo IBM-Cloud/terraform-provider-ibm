@@ -21,9 +21,9 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBackupRecoveryRecovery() *schema.Resource {
+func DataSourceIbmBackupRecovery() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBackupRecoveryRecoveryRead,
+		ReadContext: dataSourceIbmBackupRecoveryRead,
 
 		Schema: map[string]*schema.Schema{
 			"recovery_id": &schema.Schema{
@@ -2201,7 +2201,7 @@ func DataSourceIbmBackupRecoveryRecovery() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmBackupRecoveryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "initialize-client")
@@ -2268,7 +2268,7 @@ func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.
 	if !core.IsNil(recovery.Permissions) {
 		permissions := []map[string]interface{}{}
 		for _, permissionsItem := range recovery.Permissions {
-			permissionsItemMap, err := DataSourceIbmBackupRecoveryRecoveryTenantToMap(&permissionsItem) // #nosec G601
+			permissionsItemMap, err := DataSourceIbmBackupRecoveryTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "permissions-to-map").GetDiag()
 			}
@@ -2281,7 +2281,7 @@ func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.
 
 	if !core.IsNil(recovery.CreationInfo) {
 		creationInfo := []map[string]interface{}{}
-		creationInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCreationInfoToMap(recovery.CreationInfo)
+		creationInfoMap, err := DataSourceIbmBackupRecoveryCreationInfoToMap(recovery.CreationInfo)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "creation_info-to-map").GetDiag()
 		}
@@ -2334,7 +2334,7 @@ func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.
 	if !core.IsNil(recovery.RetrieveArchiveTasks) {
 		retrieveArchiveTasks := []map[string]interface{}{}
 		for _, retrieveArchiveTasksItem := range recovery.RetrieveArchiveTasks {
-			retrieveArchiveTasksItemMap, err := DataSourceIbmBackupRecoveryRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
+			retrieveArchiveTasksItemMap, err := DataSourceIbmBackupRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "retrieve_archive_tasks-to-map").GetDiag()
 			}
@@ -2353,7 +2353,7 @@ func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.
 
 	if !core.IsNil(recovery.PhysicalParams) {
 		physicalParams := []map[string]interface{}{}
-		physicalParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "physical_params-to-map").GetDiag()
 		}
@@ -2365,7 +2365,7 @@ func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.
 
 	if !core.IsNil(recovery.MssqlParams) {
 		mssqlParams := []map[string]interface{}{}
-		mssqlParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
+		mssqlParamsMap, err := DataSourceIbmBackupRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_recovery", "read", "mssql_params-to-map").GetDiag()
 		}
@@ -2378,7 +2378,7 @@ func dataSourceIbmBackupRecoveryRecoveryRead(context context.Context, d *schema.
 	return nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryTenantToMap(model *backuprecoveryv1.Tenant) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CreatedAtTimeMsecs != nil && *(model.CreatedAtTimeMsecs) != 0 {
 		modelMap["created_at_time_msecs"] = flex.IntValue(model.CreatedAtTimeMsecs)
@@ -2390,7 +2390,7 @@ func DataSourceIbmBackupRecoveryRecoveryTenantToMap(model *backuprecoveryv1.Tena
 		modelMap["description"] = *model.Description
 	}
 	if model.ExternalVendorMetadata != nil {
-		externalVendorMetadataMap, err := DataSourceIbmBackupRecoveryRecoveryExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
+		externalVendorMetadataMap, err := DataSourceIbmBackupRecoveryExternalVendorTenantMetadataToMap(model.ExternalVendorMetadata)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2409,7 +2409,7 @@ func DataSourceIbmBackupRecoveryRecoveryTenantToMap(model *backuprecoveryv1.Tena
 		modelMap["name"] = *model.Name
 	}
 	if model.Network != nil {
-		networkMap, err := DataSourceIbmBackupRecoveryRecoveryTenantNetworkToMap(model.Network)
+		networkMap, err := DataSourceIbmBackupRecoveryTenantNetworkToMap(model.Network)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2421,10 +2421,10 @@ func DataSourceIbmBackupRecoveryRecoveryTenantToMap(model *backuprecoveryv1.Tena
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryExternalVendorTenantMetadataToMap(model *backuprecoveryv1.ExternalVendorTenantMetadata) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IbmTenantMetadataParams != nil {
-		ibmTenantMetadataParamsMap, err := DataSourceIbmBackupRecoveryRecoveryIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
+		ibmTenantMetadataParamsMap, err := DataSourceIbmBackupRecoveryIbmTenantMetadataParamsToMap(model.IbmTenantMetadataParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2434,7 +2434,7 @@ func DataSourceIbmBackupRecoveryRecoveryExternalVendorTenantMetadataToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryIbmTenantMetadataParamsToMap(model *backuprecoveryv1.IbmTenantMetadataParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AccountID != nil {
 		modelMap["account_id"] = *model.AccountID
@@ -2445,7 +2445,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantMetadataParamsToMap(model *back
 	if model.CustomProperties != nil {
 		customProperties := []map[string]interface{}{}
 		for _, customPropertiesItem := range model.CustomProperties {
-			customPropertiesItemMap, err := DataSourceIbmBackupRecoveryRecoveryExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
+			customPropertiesItemMap, err := DataSourceIbmBackupRecoveryExternalVendorCustomPropertiesToMap(&customPropertiesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2457,7 +2457,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantMetadataParamsToMap(model *back
 		modelMap["liveness_mode"] = *model.LivenessMode
 	}
 	if model.MetricsConfig != nil {
-		metricsConfigMap, err := DataSourceIbmBackupRecoveryRecoveryIbmTenantMetricsConfigToMap(model.MetricsConfig)
+		metricsConfigMap, err := DataSourceIbmBackupRecoveryIbmTenantMetricsConfigToMap(model.MetricsConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2478,7 +2478,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantMetadataParamsToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryExternalVendorCustomPropertiesToMap(model *backuprecoveryv1.ExternalVendorCustomProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Key != nil {
 		modelMap["key"] = *model.Key
@@ -2489,24 +2489,24 @@ func DataSourceIbmBackupRecoveryRecoveryExternalVendorCustomPropertiesToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryIbmTenantMetricsConfigToMap(model *backuprecoveryv1.IbmTenantMetricsConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CosResourceConfig != nil {
-		cosResourceConfigMap, err := DataSourceIbmBackupRecoveryRecoveryIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
+		cosResourceConfigMap, err := DataSourceIbmBackupRecoveryIbmTenantCOSResourceConfigToMap(model.CosResourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["cos_resource_config"] = []map[string]interface{}{cosResourceConfigMap}
 	}
 	if model.IamMetricsConfig != nil {
-		iamMetricsConfigMap, err := DataSourceIbmBackupRecoveryRecoveryIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
+		iamMetricsConfigMap, err := DataSourceIbmBackupRecoveryIbmTenantIAMMetricsConfigToMap(model.IamMetricsConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["iam_metrics_config"] = []map[string]interface{}{iamMetricsConfigMap}
 	}
 	if model.MeteringConfig != nil {
-		meteringConfigMap, err := DataSourceIbmBackupRecoveryRecoveryIbmTenantMeteringConfigToMap(model.MeteringConfig)
+		meteringConfigMap, err := DataSourceIbmBackupRecoveryIbmTenantMeteringConfigToMap(model.MeteringConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2515,7 +2515,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantMetricsConfigToMap(model *backu
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryIbmTenantCOSResourceConfigToMap(model *backuprecoveryv1.IbmTenantCOSResourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ResourceURL != nil {
 		modelMap["resource_url"] = *model.ResourceURL
@@ -2523,7 +2523,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantCOSResourceConfigToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryIbmTenantIAMMetricsConfigToMap(model *backuprecoveryv1.IbmTenantIAMMetricsConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IAMURL != nil {
 		modelMap["iam_url"] = *model.IAMURL
@@ -2534,7 +2534,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantIAMMetricsConfigToMap(model *ba
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryIbmTenantMeteringConfigToMap(model *backuprecoveryv1.IbmTenantMeteringConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.PartIds != nil {
 		modelMap["part_ids"] = model.PartIds
@@ -2548,7 +2548,7 @@ func DataSourceIbmBackupRecoveryRecoveryIbmTenantMeteringConfigToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryTenantNetworkToMap(model *backuprecoveryv1.TenantNetwork) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["connector_enabled"] = *model.ConnectorEnabled
 	if model.ClusterHostname != nil {
@@ -2560,7 +2560,7 @@ func DataSourceIbmBackupRecoveryRecoveryTenantNetworkToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryCreationInfoToMap(model *backuprecoveryv1.CreationInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryCreationInfoToMap(model *backuprecoveryv1.CreationInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UserName != nil {
 		modelMap["user_name"] = *model.UserName
@@ -2568,7 +2568,7 @@ func DataSourceIbmBackupRecoveryRecoveryCreationInfoToMap(model *backuprecoveryv
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRetrieveArchiveTaskToMap(model *backuprecoveryv1.RetrieveArchiveTask) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRetrieveArchiveTaskToMap(model *backuprecoveryv1.RetrieveArchiveTask) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TaskUid != nil {
 		modelMap["task_uid"] = *model.TaskUid
@@ -2579,11 +2579,11 @@ func DataSourceIbmBackupRecoveryRecoveryRetrieveArchiveTaskToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsToMap(model *backuprecoveryv1.RecoverPhysicalParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalParamsToMap(model *backuprecoveryv1.RecoverPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	objects := []map[string]interface{}{}
 	for _, objectsItem := range model.Objects {
-		objectsItemMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(&objectsItem) // #nosec G601
+		objectsItemMap, err := DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsToMap(&objectsItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2592,35 +2592,35 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsToMap(model *backup
 	modelMap["objects"] = objects
 	modelMap["recovery_action"] = *model.RecoveryAction
 	if model.RecoverVolumeParams != nil {
-		recoverVolumeParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model.RecoverVolumeParams)
+		recoverVolumeParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model.RecoverVolumeParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["recover_volume_params"] = []map[string]interface{}{recoverVolumeParamsMap}
 	}
 	if model.MountVolumeParams != nil {
-		mountVolumeParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model.MountVolumeParams)
+		mountVolumeParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model.MountVolumeParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["mount_volume_params"] = []map[string]interface{}{mountVolumeParamsMap}
 	}
 	if model.RecoverFileAndFolderParams != nil {
-		recoverFileAndFolderParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model.RecoverFileAndFolderParams)
+		recoverFileAndFolderParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model.RecoverFileAndFolderParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["recover_file_and_folder_params"] = []map[string]interface{}{recoverFileAndFolderParamsMap}
 	}
 	if model.DownloadFileAndFolderParams != nil {
-		downloadFileAndFolderParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model.DownloadFileAndFolderParams)
+		downloadFileAndFolderParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model.DownloadFileAndFolderParams)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["download_file_and_folder_params"] = []map[string]interface{}{downloadFileAndFolderParamsMap}
 	}
 	if model.SystemRecoveryParams != nil {
-		systemRecoveryParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model.SystemRecoveryParams)
+		systemRecoveryParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model.SystemRecoveryParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2629,7 +2629,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsToMap(model *backup
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["snapshot_id"] = *model.SnapshotID
 	if model.PointInTimeUsecs != nil {
@@ -2645,7 +2645,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(m
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.ObjectInfo != nil {
-		objectInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
+		objectInfoMap, err := DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2655,7 +2655,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(m
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
 	if model.ArchivalTargetInfo != nil {
-		archivalTargetInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
+		archivalTargetInfoMap, err := DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2685,7 +2685,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsToMap(m
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -2721,7 +2721,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectI
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoveryRecoverySharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoverySharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2733,7 +2733,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectI
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := DataSourceIbmBackupRecoveryObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2742,14 +2742,14 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectI
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := DataSourceIbmBackupRecoveryRecoveryObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := DataSourceIbmBackupRecoveryObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoveryRecoveryObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoveryObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2758,7 +2758,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectI
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoverySharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SiteWebURL != nil {
 		modelMap["site_web_url"] = *model.SiteWebURL
@@ -2766,7 +2766,7 @@ func DataSourceIbmBackupRecoveryRecoverySharepointObjectParamsToMap(model *backu
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -2802,7 +2802,7 @@ func DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(model *backuprecovery
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoveryRecoverySharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := DataSourceIbmBackupRecoverySharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2814,7 +2814,7 @@ func DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(model *backuprecovery
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := DataSourceIbmBackupRecoveryObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2823,14 +2823,14 @@ func DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(model *backuprecovery
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := DataSourceIbmBackupRecoveryRecoveryObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := DataSourceIbmBackupRecoveryObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoveryRecoveryObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := DataSourceIbmBackupRecoveryObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2839,7 +2839,7 @@ func DataSourceIbmBackupRecoveryRecoveryObjectSummaryToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsCloudEnv != nil {
 		modelMap["is_cloud_env"] = *model.IsCloudEnv
@@ -2847,7 +2847,7 @@ func DataSourceIbmBackupRecoveryRecoveryObjectTypeVCenterParamsToMap(model *back
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterSourceType != nil {
 		modelMap["cluster_source_type"] = *model.ClusterSourceType
@@ -2855,7 +2855,7 @@ func DataSourceIbmBackupRecoveryRecoveryObjectTypeWindowsClusterParamsToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
@@ -2876,7 +2876,7 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchiva
 		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := DataSourceIbmBackupRecoveryRecoveryArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := DataSourceIbmBackupRecoveryArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2885,17 +2885,17 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchiva
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := DataSourceIbmBackupRecoveryRecoveryAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := DataSourceIbmBackupRecoveryAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := DataSourceIbmBackupRecoveryRecoveryAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := DataSourceIbmBackupRecoveryAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2905,14 +2905,14 @@ func DataSourceIbmBackupRecoveryRecoveryArchivalTargetTierInfoToMap(model *backu
 		modelMap["cloud_platform"] = *model.CloudPlatform
 	}
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := DataSourceIbmBackupRecoveryRecoveryGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := DataSourceIbmBackupRecoveryGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := DataSourceIbmBackupRecoveryRecoveryOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := DataSourceIbmBackupRecoveryOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -2924,11 +2924,11 @@ func DataSourceIbmBackupRecoveryRecoveryArchivalTargetTierInfoToMap(model *backu
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBackupRecoveryRecoveryAWSTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2938,7 +2938,7 @@ func DataSourceIbmBackupRecoveryRecoveryAWSTiersToMap(model *backuprecoveryv1.AW
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -2950,12 +2950,12 @@ func DataSourceIbmBackupRecoveryRecoveryAWSTierToMap(model *backuprecoveryv1.AWS
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Tiers != nil {
 		tiers := []map[string]interface{}{}
 		for _, tiersItem := range model.Tiers {
-			tiersItemMap, err := DataSourceIbmBackupRecoveryRecoveryAzureTierToMap(&tiersItem) // #nosec G601
+			tiersItemMap, err := DataSourceIbmBackupRecoveryAzureTierToMap(&tiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -2966,7 +2966,7 @@ func DataSourceIbmBackupRecoveryRecoveryAzureTiersToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -2978,11 +2978,11 @@ func DataSourceIbmBackupRecoveryRecoveryAzureTierToMap(model *backuprecoveryv1.A
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBackupRecoveryRecoveryGoogleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryGoogleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -2992,7 +2992,7 @@ func DataSourceIbmBackupRecoveryRecoveryGoogleTiersToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3004,11 +3004,11 @@ func DataSourceIbmBackupRecoveryRecoveryGoogleTierToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := DataSourceIbmBackupRecoveryRecoveryOracleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := DataSourceIbmBackupRecoveryOracleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3018,7 +3018,7 @@ func DataSourceIbmBackupRecoveryRecoveryOracleTiersToMap(model *backuprecoveryv1
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3030,11 +3030,11 @@ func DataSourceIbmBackupRecoveryRecoveryOracleTierToMap(model *backuprecoveryv1.
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverVolumeParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalParamsRecoverVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverVolumeParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_environment"] = *model.TargetEnvironment
 	if model.PhysicalTargetParams != nil {
-		physicalTargetParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
+		physicalTargetParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3043,16 +3043,16 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverVolumeParams
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	mountTargetMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model.MountTarget)
+	mountTargetMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model.MountTarget)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["mount_target"] = []map[string]interface{}{mountTargetMap}
 	volumeMapping := []map[string]interface{}{}
 	for _, volumeMappingItem := range model.VolumeMapping {
-		volumeMappingItemMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverVolumeMappingToMap(&volumeMappingItem) // #nosec G601
+		volumeMappingItemMap, err := DataSourceIbmBackupRecoveryRecoverVolumeMappingToMap(&volumeMappingItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3063,7 +3063,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalVolumeParamsPhysicalTarge
 		modelMap["force_unmount_volume"] = *model.ForceUnmountVolume
 	}
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3072,7 +3072,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalVolumeParamsPhysicalTarge
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeMountTarget) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverVolumeMountTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeMountTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
@@ -3081,14 +3081,14 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverVolumeMoun
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverVolumeMappingToMap(model *backuprecoveryv1.RecoverVolumeMapping) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverVolumeMappingToMap(model *backuprecoveryv1.RecoverVolumeMapping) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["source_volume_guid"] = *model.SourceVolumeGuid
 	modelMap["destination_volume_guid"] = *model.DestinationVolumeGuid
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverVolumeVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3102,11 +3102,11 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverVolumeVlan
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsMountVolumeParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalParamsMountVolumeParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsMountVolumeParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_environment"] = *model.TargetEnvironment
 	if model.PhysicalTargetParams != nil {
-		physicalTargetParamsMap, err := DataSourceIbmBackupRecoveryRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
+		physicalTargetParamsMap, err := DataSourceIbmBackupRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3115,18 +3115,18 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsMountVolumeParamsTo
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.MountPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryMountPhysicalVolumeParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.MountPhysicalVolumeParamsPhysicalTargetParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mount_to_original_target"] = *model.MountToOriginalTarget
 	if model.OriginalTargetConfig != nil {
-		originalTargetConfigMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model.OriginalTargetConfig)
+		originalTargetConfigMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model.OriginalTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["original_target_config"] = []map[string]interface{}{originalTargetConfigMap}
 	}
 	if model.NewTargetConfig != nil {
-		newTargetConfigMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model.NewTargetConfig)
+		newTargetConfigMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model.NewTargetConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3141,7 +3141,7 @@ func DataSourceIbmBackupRecoveryRecoveryMountPhysicalVolumeParamsPhysicalTargetP
 	if model.MountedVolumeMapping != nil {
 		mountedVolumeMapping := []map[string]interface{}{}
 		for _, mountedVolumeMappingItem := range model.MountedVolumeMapping {
-			mountedVolumeMappingItemMap, err := DataSourceIbmBackupRecoveryRecoveryMountedVolumeMappingToMap(&mountedVolumeMappingItem) // #nosec G601
+			mountedVolumeMappingItemMap, err := DataSourceIbmBackupRecoveryMountedVolumeMappingToMap(&mountedVolumeMappingItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3150,7 +3150,7 @@ func DataSourceIbmBackupRecoveryRecoveryMountPhysicalVolumeParamsPhysicalTargetP
 		modelMap["mounted_volume_mapping"] = mountedVolumeMapping
 	}
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3159,10 +3159,10 @@ func DataSourceIbmBackupRecoveryRecoveryMountPhysicalVolumeParamsPhysicalTargetP
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeOriginalTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForMountVolumeOriginalTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeOriginalTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ServerCredentials != nil {
-		serverCredentialsMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model.ServerCredentials)
+		serverCredentialsMap, err := DataSourceIbmBackupRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model.ServerCredentials)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3171,22 +3171,22 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeOrigin
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesOriginalTargetConfigServerCredentials) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalMountVolumesOriginalTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesOriginalTargetConfigServerCredentials) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["username"] = *model.Username
 	modelMap["password"] = *model.Password
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeNewTargetConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForMountVolumeNewTargetConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeNewTargetConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	mountTargetMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverTargetToMap(model.MountTarget)
+	mountTargetMap, err := DataSourceIbmBackupRecoveryRecoverTargetToMap(model.MountTarget)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["mount_target"] = []map[string]interface{}{mountTargetMap}
 	if model.ServerCredentials != nil {
-		serverCredentialsMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model.ServerCredentials)
+		serverCredentialsMap, err := DataSourceIbmBackupRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model.ServerCredentials)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3195,7 +3195,7 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeNewTar
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverTargetToMap(model *backuprecoveryv1.RecoverTarget) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverTargetToMap(model *backuprecoveryv1.RecoverTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
@@ -3210,14 +3210,14 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverTargetToMap(model *backuprecovery
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesNewTargetConfigServerCredentials) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalMountVolumesNewTargetConfigServerCredentialsToMap(model *backuprecoveryv1.PhysicalMountVolumesNewTargetConfigServerCredentials) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["username"] = *model.Username
 	modelMap["password"] = *model.Password
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryMountedVolumeMappingToMap(model *backuprecoveryv1.MountedVolumeMapping) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryMountedVolumeMappingToMap(model *backuprecoveryv1.MountedVolumeMapping) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.OriginalVolume != nil {
 		modelMap["original_volume"] = *model.OriginalVolume
@@ -3231,7 +3231,7 @@ func DataSourceIbmBackupRecoveryRecoveryMountedVolumeMappingToMap(model *backupr
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForMountVolumeVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForMountVolumeVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3245,11 +3245,11 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForMountVolumeVlanCo
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverFileAndFolderParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalParamsRecoverFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsRecoverFileAndFolderParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	filesAndFolders := []map[string]interface{}{}
 	for _, filesAndFoldersItem := range model.FilesAndFolders {
-		filesAndFoldersItemMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
+		filesAndFoldersItemMap, err := DataSourceIbmBackupRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3258,7 +3258,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverFileAndFolde
 	modelMap["files_and_folders"] = filesAndFolders
 	modelMap["target_environment"] = *model.TargetEnvironment
 	if model.PhysicalTargetParams != nil {
-		physicalTargetParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
+		physicalTargetParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model.PhysicalTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3267,7 +3267,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsRecoverFileAndFolde
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryCommonRecoverFileAndFolderInfoToMap(model *backuprecoveryv1.CommonRecoverFileAndFolderInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryCommonRecoverFileAndFolderInfoToMap(model *backuprecoveryv1.CommonRecoverFileAndFolderInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["absolute_path"] = *model.AbsolutePath
 	if model.DestinationDir != nil {
@@ -3288,9 +3288,9 @@ func DataSourceIbmBackupRecoveryRecoveryCommonRecoverFileAndFolderInfoToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalFileAndFolderParamsPhysicalTargetParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalFileAndFolderParamsPhysicalTargetParamsToMap(model *backuprecoveryv1.RecoverPhysicalFileAndFolderParamsPhysicalTargetParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	recoverTargetMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model.RecoverTarget)
+	recoverTargetMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model.RecoverTarget)
 	if err != nil {
 		return modelMap, err
 	}
@@ -3320,7 +3320,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalFileAndFolderParamsPhysic
 		modelMap["save_success_files"] = *model.SaveSuccessFiles
 	}
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3332,7 +3332,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalFileAndFolderParamsPhysic
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderRecoverTarget) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverFileAndFolderRecoverTargetToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderRecoverTarget) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
@@ -3347,7 +3347,7 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverFileAndFol
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryPhysicalTargetParamsForRecoverFileAndFolderVlanConfigToMap(model *backuprecoveryv1.PhysicalTargetParamsForRecoverFileAndFolderVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3361,7 +3361,7 @@ func DataSourceIbmBackupRecoveryRecoveryPhysicalTargetParamsForRecoverFileAndFol
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsDownloadFileAndFolderParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalParamsDownloadFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsDownloadFileAndFolderParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ExpiryTimeUsecs != nil {
 		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
@@ -3369,7 +3369,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsDownloadFileAndFold
 	if model.FilesAndFolders != nil {
 		filesAndFolders := []map[string]interface{}{}
 		for _, filesAndFoldersItem := range model.FilesAndFolders {
-			filesAndFoldersItemMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
+			filesAndFoldersItemMap, err := DataSourceIbmBackupRecoveryCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3383,7 +3383,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsDownloadFileAndFold
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsSystemRecoveryParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverPhysicalParamsSystemRecoveryParamsToMap(model *backuprecoveryv1.RecoverPhysicalParamsSystemRecoveryParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.FullNasPath != nil {
 		modelMap["full_nas_path"] = *model.FullNasPath
@@ -3391,12 +3391,12 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsSystemRecoveryParam
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverSqlParamsToMap(model *backuprecoveryv1.RecoverSqlParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverSqlParamsToMap(model *backuprecoveryv1.RecoverSqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RecoverAppParams != nil {
 		recoverAppParams := []map[string]interface{}{}
 		for _, recoverAppParamsItem := range model.RecoverAppParams {
-			recoverAppParamsItemMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(&recoverAppParamsItem) // #nosec G601
+			recoverAppParamsItemMap, err := DataSourceIbmBackupRecoveryRecoverSqlAppParamsToMap(&recoverAppParamsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3406,7 +3406,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlParamsToMap(model *backuprecov
 	}
 	modelMap["recovery_action"] = *model.RecoveryAction
 	if model.VlanConfig != nil {
-		vlanConfigMap, err := DataSourceIbmBackupRecoveryRecoveryRecoveryVlanConfigToMap(model.VlanConfig)
+		vlanConfigMap, err := DataSourceIbmBackupRecoveryVlanConfigToMap(model.VlanConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3415,7 +3415,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlParamsToMap(model *backuprecov
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backuprecoveryv1.RecoverSqlAppParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverSqlAppParamsToMap(model *backuprecoveryv1.RecoverSqlAppParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["snapshot_id"] = *model.SnapshotID
 	if model.PointInTimeUsecs != nil {
@@ -3431,7 +3431,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupre
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.ObjectInfo != nil {
-		objectInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
+		objectInfoMap, err := DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3441,7 +3441,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupre
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
 	if model.ArchivalTargetInfo != nil {
-		archivalTargetInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
+		archivalTargetInfoMap, err := DataSourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3469,14 +3469,14 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupre
 		modelMap["bytes_restored"] = flex.IntValue(model.BytesRestored)
 	}
 	if model.AagInfo != nil {
-		aagInfoMap, err := DataSourceIbmBackupRecoveryRecoveryAAGInfoToMap(model.AagInfo)
+		aagInfoMap, err := DataSourceIbmBackupRecoveryAAGInfoToMap(model.AagInfo)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aag_info"] = []map[string]interface{}{aagInfoMap}
 	}
 	if model.HostInfo != nil {
-		hostInfoMap, err := DataSourceIbmBackupRecoveryRecoveryHostInformationToMap(model.HostInfo)
+		hostInfoMap, err := DataSourceIbmBackupRecoveryHostInformationToMap(model.HostInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3486,7 +3486,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupre
 		modelMap["is_encrypted"] = *model.IsEncrypted
 	}
 	if model.SqlTargetParams != nil {
-		sqlTargetParamsMap, err := DataSourceIbmBackupRecoveryRecoverySqlTargetParamsForRecoverSqlAppToMap(model.SqlTargetParams)
+		sqlTargetParamsMap, err := DataSourceIbmBackupRecoverySqlTargetParamsForRecoverSqlAppToMap(model.SqlTargetParams)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3496,7 +3496,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppParamsToMap(model *backupre
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryAAGInfoToMap(model *backuprecoveryv1.AAGInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -3507,7 +3507,7 @@ func DataSourceIbmBackupRecoveryRecoveryAAGInfoToMap(model *backuprecoveryv1.AAG
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryHostInformationToMap(model *backuprecoveryv1.HostInformation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -3521,17 +3521,17 @@ func DataSourceIbmBackupRecoveryRecoveryHostInformationToMap(model *backuprecove
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoverySqlTargetParamsForRecoverSqlAppToMap(model *backuprecoveryv1.SqlTargetParamsForRecoverSqlApp) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySqlTargetParamsForRecoverSqlAppToMap(model *backuprecoveryv1.SqlTargetParamsForRecoverSqlApp) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.NewSourceConfig != nil {
-		newSourceConfigMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppNewSourceConfigToMap(model.NewSourceConfig)
+		newSourceConfigMap, err := DataSourceIbmBackupRecoveryRecoverSqlAppNewSourceConfigToMap(model.NewSourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["new_source_config"] = []map[string]interface{}{newSourceConfigMap}
 	}
 	if model.OriginalSourceConfig != nil {
-		originalSourceConfigMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppOriginalSourceConfigToMap(model.OriginalSourceConfig)
+		originalSourceConfigMap, err := DataSourceIbmBackupRecoveryRecoverSqlAppOriginalSourceConfigToMap(model.OriginalSourceConfig)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3541,13 +3541,13 @@ func DataSourceIbmBackupRecoveryRecoverySqlTargetParamsForRecoverSqlAppToMap(mod
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppNewSourceConfigToMap(model *backuprecoveryv1.RecoverSqlAppNewSourceConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverSqlAppNewSourceConfigToMap(model *backuprecoveryv1.RecoverSqlAppNewSourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.KeepCdc != nil {
 		modelMap["keep_cdc"] = *model.KeepCdc
 	}
 	if model.MultiStageRestoreOptions != nil {
-		multiStageRestoreOptionsMap, err := DataSourceIbmBackupRecoveryRecoveryMultiStageRestoreOptionsToMap(model.MultiStageRestoreOptions)
+		multiStageRestoreOptionsMap, err := DataSourceIbmBackupRecoveryMultiStageRestoreOptionsToMap(model.MultiStageRestoreOptions)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3571,7 +3571,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppNewSourceConfigToMap(model 
 	if model.SecondaryDataFilesDirList != nil {
 		secondaryDataFilesDirList := []map[string]interface{}{}
 		for _, secondaryDataFilesDirListItem := range model.SecondaryDataFilesDirList {
-			secondaryDataFilesDirListItemMap, err := DataSourceIbmBackupRecoveryRecoveryFilenamePatternToDirectoryToMap(&secondaryDataFilesDirListItem) // #nosec G601
+			secondaryDataFilesDirListItemMap, err := DataSourceIbmBackupRecoveryFilenamePatternToDirectoryToMap(&secondaryDataFilesDirListItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3586,7 +3586,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppNewSourceConfigToMap(model 
 	if model.DatabaseName != nil {
 		modelMap["database_name"] = *model.DatabaseName
 	}
-	hostMap, err := DataSourceIbmBackupRecoveryRecoveryRecoveryObjectIdentifierToMap(model.Host)
+	hostMap, err := DataSourceIbmBackupRecoveryObjectIdentifierToMap(model.Host)
 	if err != nil {
 		return modelMap, err
 	}
@@ -3596,7 +3596,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppNewSourceConfigToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryMultiStageRestoreOptionsToMap(model *backuprecoveryv1.MultiStageRestoreOptions) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryMultiStageRestoreOptionsToMap(model *backuprecoveryv1.MultiStageRestoreOptions) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableAutoSync != nil {
 		modelMap["enable_auto_sync"] = *model.EnableAutoSync
@@ -3607,7 +3607,7 @@ func DataSourceIbmBackupRecoveryRecoveryMultiStageRestoreOptionsToMap(model *bac
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryFilenamePatternToDirectoryToMap(model *backuprecoveryv1.FilenamePatternToDirectory) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryFilenamePatternToDirectoryToMap(model *backuprecoveryv1.FilenamePatternToDirectory) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Directory != nil {
 		modelMap["directory"] = *model.Directory
@@ -3618,7 +3618,7 @@ func DataSourceIbmBackupRecoveryRecoveryFilenamePatternToDirectoryToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoveryObjectIdentifierToMap(model *backuprecoveryv1.RecoveryObjectIdentifier) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryObjectIdentifierToMap(model *backuprecoveryv1.RecoveryObjectIdentifier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
 	if model.Name != nil {
@@ -3627,13 +3627,13 @@ func DataSourceIbmBackupRecoveryRecoveryRecoveryObjectIdentifierToMap(model *bac
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppOriginalSourceConfigToMap(model *backuprecoveryv1.RecoverSqlAppOriginalSourceConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryRecoverSqlAppOriginalSourceConfigToMap(model *backuprecoveryv1.RecoverSqlAppOriginalSourceConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.KeepCdc != nil {
 		modelMap["keep_cdc"] = *model.KeepCdc
 	}
 	if model.MultiStageRestoreOptions != nil {
-		multiStageRestoreOptionsMap, err := DataSourceIbmBackupRecoveryRecoveryMultiStageRestoreOptionsToMap(model.MultiStageRestoreOptions)
+		multiStageRestoreOptionsMap, err := DataSourceIbmBackupRecoveryMultiStageRestoreOptionsToMap(model.MultiStageRestoreOptions)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3657,7 +3657,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppOriginalSourceConfigToMap(m
 	if model.SecondaryDataFilesDirList != nil {
 		secondaryDataFilesDirList := []map[string]interface{}{}
 		for _, secondaryDataFilesDirListItem := range model.SecondaryDataFilesDirList {
-			secondaryDataFilesDirListItemMap, err := DataSourceIbmBackupRecoveryRecoveryFilenamePatternToDirectoryToMap(&secondaryDataFilesDirListItem) // #nosec G601
+			secondaryDataFilesDirListItemMap, err := DataSourceIbmBackupRecoveryFilenamePatternToDirectoryToMap(&secondaryDataFilesDirListItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3683,7 +3683,7 @@ func DataSourceIbmBackupRecoveryRecoveryRecoverSqlAppOriginalSourceConfigToMap(m
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryRecoveryRecoveryVlanConfigToMap(model *backuprecoveryv1.RecoveryVlanConfig) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryVlanConfigToMap(model *backuprecoveryv1.RecoveryVlanConfig) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)

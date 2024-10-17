@@ -23,14 +23,14 @@ import (
 	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFolders() *schema.Resource {
+func ResourceIbmBackupRecoveryDownloadFilesFolders() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCreate,
-		ReadContext:   resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead,
-		DeleteContext: resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersDelete,
-		UpdateContext: resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersUpdate,
+		CreateContext: resourceIbmBackupRecoveryDownloadFilesFoldersCreate,
+		ReadContext:   resourceIbmBackupRecoveryDownloadFilesFoldersRead,
+		DeleteContext: resourceIbmBackupRecoveryDownloadFilesFoldersDelete,
+		UpdateContext: resourceIbmBackupRecoveryDownloadFilesFoldersUpdate,
 		Importer:      &schema.ResourceImporter{},
-		CustomizeDiff: checkDiffResourceIbmBackupRecoveryRecoveryDownloadFilesFolders,
+		CustomizeDiff: checkDiffResourceIbmBackupRecoveryDownloadFilesFolders,
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -2836,7 +2836,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFolders() *schema.Resource {
 	}
 }
 
-func checkDiffResourceIbmBackupRecoveryRecoveryDownloadFilesFolders(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func checkDiffResourceIbmBackupRecoveryDownloadFilesFolders(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// oldId, _ := d.GetChange("x_ibm_tenant_id")
 	// if oldId == "" {
 	// 	return nil
@@ -2847,7 +2847,7 @@ func checkDiffResourceIbmBackupRecoveryRecoveryDownloadFilesFolders(context cont
 		return nil
 	}
 
-	for fieldName := range ResourceIbmBackupRecoveryRecoveryDownloadFilesFolders().Schema {
+	for fieldName := range ResourceIbmBackupRecoveryDownloadFilesFolders().Schema {
 		if d.HasChange(fieldName) {
 			return fmt.Errorf("[ERROR] Resource ibm_backup_recovery_recovery_download_files_folders cannot be updated.")
 		}
@@ -2855,7 +2855,7 @@ func checkDiffResourceIbmBackupRecoveryRecoveryDownloadFilesFolders(context cont
 	return nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersValidator() *validate.ResourceValidator {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -2878,7 +2878,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersValidator() *validate.
 	return &resourceValidator
 }
 
-func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDownloadFilesFoldersCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "initialize-client")
@@ -2890,7 +2890,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCreate(context context
 
 	createDownloadFilesAndFoldersRecoveryOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
 	createDownloadFilesAndFoldersRecoveryOptions.SetName(d.Get("name").(string))
-	objectModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParams(d.Get("object.0").(map[string]interface{}))
+	objectModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParams(d.Get("object.0").(map[string]interface{}))
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "parse-object").GetDiag()
 	}
@@ -2898,7 +2898,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCreate(context context
 	var filesAndFolders []backuprecoveryv1.FilesAndFoldersObject
 	for _, v := range d.Get("files_and_folders").([]interface{}) {
 		value := v.(map[string]interface{})
-		filesAndFoldersItem, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToFilesAndFoldersObject(value)
+		filesAndFoldersItem, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToFilesAndFoldersObject(value)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "parse-files_and_folders").GetDiag()
 		}
@@ -2909,7 +2909,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCreate(context context
 		var documents []backuprecoveryv1.DocumentObject
 		for _, v := range d.Get("documents").([]interface{}) {
 			value := v.(map[string]interface{})
-			documentsItem, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToDocumentObject(value)
+			documentsItem, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToDocumentObject(value)
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "create", "parse-documents").GetDiag()
 			}
@@ -2933,10 +2933,10 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCreate(context context
 
 	d.SetId(*recovery.ID)
 
-	return resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context, d, meta)
+	return resourceIbmBackupRecoveryDownloadFilesFoldersRead(context, d, meta)
 }
 
-func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDownloadFilesFoldersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_recovery_download_files_folders", "read", "initialize-client")
@@ -3007,7 +3007,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.C
 	if !core.IsNil(recovery.Permissions) {
 		permissions := []map[string]interface{}{}
 		for _, permissionsItem := range recovery.Permissions {
-			permissionsItemMap, err := DataSourceIbmBackupRecoveryRecoveryTenantToMap(&permissionsItem) // #nosec G601
+			permissionsItemMap, err := DataSourceIbmBackupRecoveryTenantToMap(&permissionsItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "permissions-to-map").GetDiag()
 			}
@@ -3020,7 +3020,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.C
 
 	if !core.IsNil(recovery.CreationInfo) {
 		creationInfo := []map[string]interface{}{}
-		creationInfoMap, err := DataSourceIbmBackupRecoveryRecoveryCreationInfoToMap(recovery.CreationInfo)
+		creationInfoMap, err := DataSourceIbmBackupRecoveryCreationInfoToMap(recovery.CreationInfo)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "creation_info-to-map").GetDiag()
 		}
@@ -3077,7 +3077,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.C
 	if !core.IsNil(recovery.RetrieveArchiveTasks) {
 		retrieveArchiveTasks := []map[string]interface{}{}
 		for _, retrieveArchiveTasksItem := range recovery.RetrieveArchiveTasks {
-			retrieveArchiveTasksItemMap, err := DataSourceIbmBackupRecoveryRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
+			retrieveArchiveTasksItemMap, err := DataSourceIbmBackupRecoveryRetrieveArchiveTaskToMap(&retrieveArchiveTasksItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "retrieve_archive_tasks-to-map").GetDiag()
 			}
@@ -3100,7 +3100,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.C
 
 	if !core.IsNil(recovery.PhysicalParams) {
 		physicalParams := []map[string]interface{}{}
-		physicalParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
+		physicalParamsMap, err := DataSourceIbmBackupRecoveryRecoverPhysicalParamsToMap(recovery.PhysicalParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "physical_params-to-map").GetDiag()
 		}
@@ -3112,7 +3112,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.C
 
 	if !core.IsNil(recovery.MssqlParams) {
 		mssqlParams := []map[string]interface{}{}
-		mssqlParamsMap, err := DataSourceIbmBackupRecoveryRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
+		mssqlParamsMap, err := DataSourceIbmBackupRecoveryRecoverSqlParamsToMap(recovery.MssqlParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_recovery", "read", "mssql_params-to-map").GetDiag()
 		}
@@ -3129,7 +3129,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersRead(context context.C
 	return nil
 }
 
-func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDownloadFilesFoldersDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
@@ -3142,7 +3142,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersDelete(context context
 	return diags
 }
 
-func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmBackupRecoveryDownloadFilesFoldersUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "update" operation.
 	var diags diag.Diagnostics
 	warning := diag.Diagnostic{
@@ -3154,7 +3154,7 @@ func resourceIbmBackupRecoveryRecoveryDownloadFilesFoldersUpdate(context context
 	return diags
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParams(modelMap map[string]interface{}) (*backuprecoveryv1.CommonRecoverObjectSnapshotParams, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParams(modelMap map[string]interface{}) (*backuprecoveryv1.CommonRecoverObjectSnapshotParams, error) {
 	model := &backuprecoveryv1.CommonRecoverObjectSnapshotParams{}
 	model.SnapshotID = core.StringPtr(modelMap["snapshot_id"].(string))
 	if modelMap["point_in_time_usecs"] != nil {
@@ -3170,7 +3170,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 		model.SnapshotCreationTimeUsecs = core.Int64Ptr(int64(modelMap["snapshot_creation_time_usecs"].(int)))
 	}
 	if modelMap["object_info"] != nil && len(modelMap["object_info"].([]interface{})) > 0 {
-		ObjectInfoModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsObjectInfo(modelMap["object_info"].([]interface{})[0].(map[string]interface{}))
+		ObjectInfoModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsObjectInfo(modelMap["object_info"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3180,7 +3180,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 		model.SnapshotTargetType = core.StringPtr(modelMap["snapshot_target_type"].(string))
 	}
 	if modelMap["archival_target_info"] != nil && len(modelMap["archival_target_info"].([]interface{})) > 0 {
-		ArchivalTargetInfoModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap["archival_target_info"].([]interface{})[0].(map[string]interface{}))
+		ArchivalTargetInfoModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap["archival_target_info"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3214,7 +3214,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsObjectInfo(modelMap map[string]interface{}) (*backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsObjectInfo(modelMap map[string]interface{}) (*backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo, error) {
 	model := &backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo{}
 	if modelMap["id"] != nil {
 		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
@@ -3250,7 +3250,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 		model.ProtectionType = core.StringPtr(modelMap["protection_type"].(string))
 	}
 	if modelMap["sharepoint_site_summary"] != nil && len(modelMap["sharepoint_site_summary"].([]interface{})) > 0 {
-		SharepointSiteSummaryModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToSharepointObjectParams(modelMap["sharepoint_site_summary"].([]interface{})[0].(map[string]interface{}))
+		SharepointSiteSummaryModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToSharepointObjectParams(modelMap["sharepoint_site_summary"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3262,7 +3262,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 	if modelMap["child_objects"] != nil {
 		childObjects := []backuprecoveryv1.ObjectSummary{}
 		for _, childObjectsItem := range modelMap["child_objects"].([]interface{}) {
-			childObjectsItemModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(childObjectsItem.(map[string]interface{}))
+			childObjectsItemModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectSummary(childObjectsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -3271,14 +3271,14 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 		model.ChildObjects = childObjects
 	}
 	if modelMap["v_center_summary"] != nil && len(modelMap["v_center_summary"].([]interface{})) > 0 {
-		VCenterSummaryModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeVCenterParams(modelMap["v_center_summary"].([]interface{})[0].(map[string]interface{}))
+		VCenterSummaryModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectTypeVCenterParams(modelMap["v_center_summary"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.VCenterSummary = VCenterSummaryModel
 	}
 	if modelMap["windows_cluster_summary"] != nil && len(modelMap["windows_cluster_summary"].([]interface{})) > 0 {
-		WindowsClusterSummaryModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeWindowsClusterParams(modelMap["windows_cluster_summary"].([]interface{})[0].(map[string]interface{}))
+		WindowsClusterSummaryModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectTypeWindowsClusterParams(modelMap["windows_cluster_summary"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3287,7 +3287,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToSharepointObjectParams(modelMap map[string]interface{}) (*backuprecoveryv1.SharepointObjectParams, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToSharepointObjectParams(modelMap map[string]interface{}) (*backuprecoveryv1.SharepointObjectParams, error) {
 	model := &backuprecoveryv1.SharepointObjectParams{}
 	if modelMap["site_web_url"] != nil && modelMap["site_web_url"].(string) != "" {
 		model.SiteWebURL = core.StringPtr(modelMap["site_web_url"].(string))
@@ -3295,7 +3295,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToSharepointObjectP
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(modelMap map[string]interface{}) (*backuprecoveryv1.ObjectSummary, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectSummary(modelMap map[string]interface{}) (*backuprecoveryv1.ObjectSummary, error) {
 	model := &backuprecoveryv1.ObjectSummary{}
 	if modelMap["id"] != nil {
 		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
@@ -3331,7 +3331,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(mod
 		model.ProtectionType = core.StringPtr(modelMap["protection_type"].(string))
 	}
 	if modelMap["sharepoint_site_summary"] != nil && len(modelMap["sharepoint_site_summary"].([]interface{})) > 0 {
-		SharepointSiteSummaryModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToSharepointObjectParams(modelMap["sharepoint_site_summary"].([]interface{})[0].(map[string]interface{}))
+		SharepointSiteSummaryModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToSharepointObjectParams(modelMap["sharepoint_site_summary"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3343,7 +3343,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(mod
 	if modelMap["child_objects"] != nil {
 		childObjects := []backuprecoveryv1.ObjectSummary{}
 		for _, childObjectsItem := range modelMap["child_objects"].([]interface{}) {
-			childObjectsItemModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(childObjectsItem.(map[string]interface{}))
+			childObjectsItemModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectSummary(childObjectsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -3352,14 +3352,14 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(mod
 		model.ChildObjects = childObjects
 	}
 	if modelMap["v_center_summary"] != nil && len(modelMap["v_center_summary"].([]interface{})) > 0 {
-		VCenterSummaryModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeVCenterParams(modelMap["v_center_summary"].([]interface{})[0].(map[string]interface{}))
+		VCenterSummaryModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectTypeVCenterParams(modelMap["v_center_summary"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.VCenterSummary = VCenterSummaryModel
 	}
 	if modelMap["windows_cluster_summary"] != nil && len(modelMap["windows_cluster_summary"].([]interface{})) > 0 {
-		WindowsClusterSummaryModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeWindowsClusterParams(modelMap["windows_cluster_summary"].([]interface{})[0].(map[string]interface{}))
+		WindowsClusterSummaryModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectTypeWindowsClusterParams(modelMap["windows_cluster_summary"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3368,7 +3368,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectSummary(mod
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeVCenterParams(modelMap map[string]interface{}) (*backuprecoveryv1.ObjectTypeVCenterParams, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectTypeVCenterParams(modelMap map[string]interface{}) (*backuprecoveryv1.ObjectTypeVCenterParams, error) {
 	model := &backuprecoveryv1.ObjectTypeVCenterParams{}
 	if modelMap["is_cloud_env"] != nil {
 		model.IsCloudEnv = core.BoolPtr(modelMap["is_cloud_env"].(bool))
@@ -3376,7 +3376,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeVCenter
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeWindowsClusterParams(modelMap map[string]interface{}) (*backuprecoveryv1.ObjectTypeWindowsClusterParams, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToObjectTypeWindowsClusterParams(modelMap map[string]interface{}) (*backuprecoveryv1.ObjectTypeWindowsClusterParams, error) {
 	model := &backuprecoveryv1.ObjectTypeWindowsClusterParams{}
 	if modelMap["cluster_source_type"] != nil && modelMap["cluster_source_type"].(string) != "" {
 		model.ClusterSourceType = core.StringPtr(modelMap["cluster_source_type"].(string))
@@ -3384,7 +3384,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToObjectTypeWindows
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap map[string]interface{}) (*backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap map[string]interface{}) (*backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo, error) {
 	model := &backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo{}
 	if modelMap["target_id"] != nil {
 		model.TargetID = core.Int64Ptr(int64(modelMap["target_id"].(int)))
@@ -3405,7 +3405,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 		model.OwnershipContext = core.StringPtr(modelMap["ownership_context"].(string))
 	}
 	if modelMap["tier_settings"] != nil && len(modelMap["tier_settings"].([]interface{})) > 0 {
-		TierSettingsModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToArchivalTargetTierInfo(modelMap["tier_settings"].([]interface{})[0].(map[string]interface{}))
+		TierSettingsModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToArchivalTargetTierInfo(modelMap["tier_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3414,17 +3414,17 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToCommonRecoverObje
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToArchivalTargetTierInfo(modelMap map[string]interface{}) (*backuprecoveryv1.ArchivalTargetTierInfo, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToArchivalTargetTierInfo(modelMap map[string]interface{}) (*backuprecoveryv1.ArchivalTargetTierInfo, error) {
 	model := &backuprecoveryv1.ArchivalTargetTierInfo{}
 	if modelMap["aws_tiering"] != nil && len(modelMap["aws_tiering"].([]interface{})) > 0 {
-		AwsTieringModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAWSTiers(modelMap["aws_tiering"].([]interface{})[0].(map[string]interface{}))
+		AwsTieringModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAWSTiers(modelMap["aws_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.AwsTiering = AwsTieringModel
 	}
 	if modelMap["azure_tiering"] != nil && len(modelMap["azure_tiering"].([]interface{})) > 0 {
-		AzureTieringModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAzureTiers(modelMap["azure_tiering"].([]interface{})[0].(map[string]interface{}))
+		AzureTieringModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAzureTiers(modelMap["azure_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3434,14 +3434,14 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToArchivalTargetTie
 		model.CloudPlatform = core.StringPtr(modelMap["cloud_platform"].(string))
 	}
 	if modelMap["google_tiering"] != nil && len(modelMap["google_tiering"].([]interface{})) > 0 {
-		GoogleTieringModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToGoogleTiers(modelMap["google_tiering"].([]interface{})[0].(map[string]interface{}))
+		GoogleTieringModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToGoogleTiers(modelMap["google_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.GoogleTiering = GoogleTieringModel
 	}
 	if modelMap["oracle_tiering"] != nil && len(modelMap["oracle_tiering"].([]interface{})) > 0 {
-		OracleTieringModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToOracleTiers(modelMap["oracle_tiering"].([]interface{})[0].(map[string]interface{}))
+		OracleTieringModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToOracleTiers(modelMap["oracle_tiering"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3453,11 +3453,11 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToArchivalTargetTie
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAWSTiers(modelMap map[string]interface{}) (*backuprecoveryv1.AWSTiers, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAWSTiers(modelMap map[string]interface{}) (*backuprecoveryv1.AWSTiers, error) {
 	model := &backuprecoveryv1.AWSTiers{}
 	tiers := []backuprecoveryv1.AWSTier{}
 	for _, tiersItem := range modelMap["tiers"].([]interface{}) {
-		tiersItemModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAWSTier(tiersItem.(map[string]interface{}))
+		tiersItemModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAWSTier(tiersItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3467,7 +3467,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAWSTiers(modelMap
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAWSTier(modelMap map[string]interface{}) (*backuprecoveryv1.AWSTier, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAWSTier(modelMap map[string]interface{}) (*backuprecoveryv1.AWSTier, error) {
 	model := &backuprecoveryv1.AWSTier{}
 	if modelMap["move_after_unit"] != nil && modelMap["move_after_unit"].(string) != "" {
 		model.MoveAfterUnit = core.StringPtr(modelMap["move_after_unit"].(string))
@@ -3479,12 +3479,12 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAWSTier(modelMap 
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAzureTiers(modelMap map[string]interface{}) (*backuprecoveryv1.AzureTiers, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAzureTiers(modelMap map[string]interface{}) (*backuprecoveryv1.AzureTiers, error) {
 	model := &backuprecoveryv1.AzureTiers{}
 	if modelMap["tiers"] != nil {
 		tiers := []backuprecoveryv1.AzureTier{}
 		for _, tiersItem := range modelMap["tiers"].([]interface{}) {
-			tiersItemModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAzureTier(tiersItem.(map[string]interface{}))
+			tiersItemModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAzureTier(tiersItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -3495,7 +3495,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAzureTiers(modelM
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAzureTier(modelMap map[string]interface{}) (*backuprecoveryv1.AzureTier, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToAzureTier(modelMap map[string]interface{}) (*backuprecoveryv1.AzureTier, error) {
 	model := &backuprecoveryv1.AzureTier{}
 	if modelMap["move_after_unit"] != nil && modelMap["move_after_unit"].(string) != "" {
 		model.MoveAfterUnit = core.StringPtr(modelMap["move_after_unit"].(string))
@@ -3507,11 +3507,11 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToAzureTier(modelMa
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToGoogleTiers(modelMap map[string]interface{}) (*backuprecoveryv1.GoogleTiers, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToGoogleTiers(modelMap map[string]interface{}) (*backuprecoveryv1.GoogleTiers, error) {
 	model := &backuprecoveryv1.GoogleTiers{}
 	tiers := []backuprecoveryv1.GoogleTier{}
 	for _, tiersItem := range modelMap["tiers"].([]interface{}) {
-		tiersItemModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToGoogleTier(tiersItem.(map[string]interface{}))
+		tiersItemModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToGoogleTier(tiersItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3521,7 +3521,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToGoogleTiers(model
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToGoogleTier(modelMap map[string]interface{}) (*backuprecoveryv1.GoogleTier, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToGoogleTier(modelMap map[string]interface{}) (*backuprecoveryv1.GoogleTier, error) {
 	model := &backuprecoveryv1.GoogleTier{}
 	if modelMap["move_after_unit"] != nil && modelMap["move_after_unit"].(string) != "" {
 		model.MoveAfterUnit = core.StringPtr(modelMap["move_after_unit"].(string))
@@ -3533,11 +3533,11 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToGoogleTier(modelM
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToOracleTiers(modelMap map[string]interface{}) (*backuprecoveryv1.OracleTiers, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToOracleTiers(modelMap map[string]interface{}) (*backuprecoveryv1.OracleTiers, error) {
 	model := &backuprecoveryv1.OracleTiers{}
 	tiers := []backuprecoveryv1.OracleTier{}
 	for _, tiersItem := range modelMap["tiers"].([]interface{}) {
-		tiersItemModel, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToOracleTier(tiersItem.(map[string]interface{}))
+		tiersItemModel, err := ResourceIbmBackupRecoveryDownloadFilesFoldersMapToOracleTier(tiersItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -3547,7 +3547,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToOracleTiers(model
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToOracleTier(modelMap map[string]interface{}) (*backuprecoveryv1.OracleTier, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToOracleTier(modelMap map[string]interface{}) (*backuprecoveryv1.OracleTier, error) {
 	model := &backuprecoveryv1.OracleTier{}
 	if modelMap["move_after_unit"] != nil && modelMap["move_after_unit"].(string) != "" {
 		model.MoveAfterUnit = core.StringPtr(modelMap["move_after_unit"].(string))
@@ -3559,7 +3559,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToOracleTier(modelM
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToFilesAndFoldersObject(modelMap map[string]interface{}) (*backuprecoveryv1.FilesAndFoldersObject, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToFilesAndFoldersObject(modelMap map[string]interface{}) (*backuprecoveryv1.FilesAndFoldersObject, error) {
 	model := &backuprecoveryv1.FilesAndFoldersObject{}
 	model.AbsolutePath = core.StringPtr(modelMap["absolute_path"].(string))
 	if modelMap["is_directory"] != nil {
@@ -3568,7 +3568,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToFilesAndFoldersOb
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToDocumentObject(modelMap map[string]interface{}) (*backuprecoveryv1.DocumentObject, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersMapToDocumentObject(modelMap map[string]interface{}) (*backuprecoveryv1.DocumentObject, error) {
 	model := &backuprecoveryv1.DocumentObject{}
 	if modelMap["is_directory"] != nil {
 		model.IsDirectory = core.BoolPtr(modelMap["is_directory"].(bool))
@@ -3577,7 +3577,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersMapToDocumentObject(mo
 	return model, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersDocumentObjectToMap(model *backuprecoveryv1.DocumentObject) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersDocumentObjectToMap(model *backuprecoveryv1.DocumentObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsDirectory != nil {
 		modelMap["is_directory"] = *model.IsDirectory
@@ -3586,7 +3586,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersDocumentObjectToMap(mo
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["snapshot_id"] = *model.SnapshotID
 	if model.PointInTimeUsecs != nil {
@@ -3602,7 +3602,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
 	}
 	if model.ObjectInfo != nil {
-		objectInfoMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
+		objectInfoMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3612,7 +3612,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
 	}
 	if model.ArchivalTargetInfo != nil {
-		archivalTargetInfoMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
+		archivalTargetInfoMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3642,7 +3642,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsObjectInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsObjectInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsObjectInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3678,7 +3678,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3690,7 +3690,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3699,14 +3699,14 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3715,7 +3715,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersSharepointObjectParamsToMap(model *backuprecoveryv1.SharepointObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.SiteWebURL != nil {
 		modelMap["site_web_url"] = *model.SiteWebURL
@@ -3723,7 +3723,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersSharepointObjectParams
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersObjectSummaryToMap(model *backuprecoveryv1.ObjectSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -3759,7 +3759,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(mod
 		modelMap["protection_type"] = *model.ProtectionType
 	}
 	if model.SharepointSiteSummary != nil {
-		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersSharepointObjectParamsToMap(model.SharepointSiteSummary)
+		sharepointSiteSummaryMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersSharepointObjectParamsToMap(model.SharepointSiteSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3771,7 +3771,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(mod
 	if model.ChildObjects != nil {
 		childObjects := []map[string]interface{}{}
 		for _, childObjectsItem := range model.ChildObjects {
-			childObjectsItemMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(&childObjectsItem) // #nosec G601
+			childObjectsItemMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersObjectSummaryToMap(&childObjectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3780,14 +3780,14 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(mod
 		modelMap["child_objects"] = childObjects
 	}
 	if model.VCenterSummary != nil {
-		vCenterSummaryMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeVCenterParamsToMap(model.VCenterSummary)
+		vCenterSummaryMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersObjectTypeVCenterParamsToMap(model.VCenterSummary)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["v_center_summary"] = []map[string]interface{}{vCenterSummaryMap}
 	}
 	if model.WindowsClusterSummary != nil {
-		windowsClusterSummaryMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
+		windowsClusterSummaryMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersObjectTypeWindowsClusterParamsToMap(model.WindowsClusterSummary)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3796,7 +3796,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectSummaryToMap(mod
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersObjectTypeVCenterParamsToMap(model *backuprecoveryv1.ObjectTypeVCenterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.IsCloudEnv != nil {
 		modelMap["is_cloud_env"] = *model.IsCloudEnv
@@ -3804,7 +3804,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeVCenterParam
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersObjectTypeWindowsClusterParamsToMap(model *backuprecoveryv1.ObjectTypeWindowsClusterParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterSourceType != nil {
 		modelMap["cluster_source_type"] = *model.ClusterSourceType
@@ -3812,7 +3812,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersObjectTypeWindowsClust
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParamsArchivalTargetInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetID != nil {
 		modelMap["target_id"] = flex.IntValue(model.TargetID)
@@ -3833,7 +3833,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 		modelMap["ownership_context"] = *model.OwnershipContext
 	}
 	if model.TierSettings != nil {
-		tierSettingsMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersArchivalTargetTierInfoToMap(model.TierSettings)
+		tierSettingsMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersArchivalTargetTierInfoToMap(model.TierSettings)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3842,17 +3842,17 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersCommonRecoverObjectSna
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersArchivalTargetTierInfoToMap(model *backuprecoveryv1.ArchivalTargetTierInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AwsTiering != nil {
-		awsTieringMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAWSTiersToMap(model.AwsTiering)
+		awsTieringMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersAWSTiersToMap(model.AwsTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["aws_tiering"] = []map[string]interface{}{awsTieringMap}
 	}
 	if model.AzureTiering != nil {
-		azureTieringMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAzureTiersToMap(model.AzureTiering)
+		azureTieringMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersAzureTiersToMap(model.AzureTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3862,14 +3862,14 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersArchivalTargetTierInfo
 		modelMap["cloud_platform"] = *model.CloudPlatform
 	}
 	if model.GoogleTiering != nil {
-		googleTieringMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersGoogleTiersToMap(model.GoogleTiering)
+		googleTieringMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersGoogleTiersToMap(model.GoogleTiering)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["google_tiering"] = []map[string]interface{}{googleTieringMap}
 	}
 	if model.OracleTiering != nil {
-		oracleTieringMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersOracleTiersToMap(model.OracleTiering)
+		oracleTieringMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersOracleTiersToMap(model.OracleTiering)
 		if err != nil {
 			return modelMap, err
 		}
@@ -3881,11 +3881,11 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersArchivalTargetTierInfo
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersAWSTiersToMap(model *backuprecoveryv1.AWSTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAWSTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersAWSTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3895,7 +3895,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAWSTiersToMap(model *b
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersAWSTierToMap(model *backuprecoveryv1.AWSTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3907,12 +3907,12 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAWSTierToMap(model *ba
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersAzureTiersToMap(model *backuprecoveryv1.AzureTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Tiers != nil {
 		tiers := []map[string]interface{}{}
 		for _, tiersItem := range model.Tiers {
-			tiersItemMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAzureTierToMap(&tiersItem) // #nosec G601
+			tiersItemMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersAzureTierToMap(&tiersItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -3923,7 +3923,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAzureTiersToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersAzureTierToMap(model *backuprecoveryv1.AzureTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3935,11 +3935,11 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersAzureTierToMap(model *
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersGoogleTiersToMap(model *backuprecoveryv1.GoogleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersGoogleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersGoogleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3949,7 +3949,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersGoogleTiersToMap(model
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersGoogleTierToMap(model *backuprecoveryv1.GoogleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3961,11 +3961,11 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersGoogleTierToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersOracleTiersToMap(model *backuprecoveryv1.OracleTiers) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	tiers := []map[string]interface{}{}
 	for _, tiersItem := range model.Tiers {
-		tiersItemMap, err := ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersOracleTierToMap(&tiersItem) // #nosec G601
+		tiersItemMap, err := ResourceIbmBackupRecoveryDownloadFilesFoldersOracleTierToMap(&tiersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -3975,7 +3975,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersOracleTiersToMap(model
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersOracleTierToMap(model *backuprecoveryv1.OracleTier) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MoveAfterUnit != nil {
 		modelMap["move_after_unit"] = *model.MoveAfterUnit
@@ -3987,7 +3987,7 @@ func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersOracleTierToMap(model 
 	return modelMap, nil
 }
 
-func ResourceIbmBackupRecoveryRecoveryDownloadFilesFoldersFilesAndFoldersObjectToMap(model *backuprecoveryv1.FilesAndFoldersObject) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDownloadFilesFoldersFilesAndFoldersObjectToMap(model *backuprecoveryv1.FilesAndFoldersObject) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["absolute_path"] = *model.AbsolutePath
 	if model.IsDirectory != nil {
