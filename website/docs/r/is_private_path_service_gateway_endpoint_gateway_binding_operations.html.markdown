@@ -10,6 +10,9 @@ subcategory: "VPC infrastructure"
 
 Provides a resource for ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations. This allows permitting or denying endpoint gateway bindings.
 
+**NOTE:** 
+Private path service gateway is a select availability feature.
+
 ## Example Usage. Permit all the pending endpoint gateway bindings
 
 ```hcl

@@ -10,6 +10,9 @@ subcategory: "VPC infrastructure"
 
 Provides a resource for ibm_is_private_path_service_gateway_operations. This allows publishing or unpublishing the PPSG.
 
+**NOTE:** 
+Private path service gateway is a select availability feature.
+
 ## Example Usage. Publish a PPSG.
 
 ```hcl

@@ -10,6 +10,9 @@ subcategory: "VPC infrastructure"
 
 Provides a resource for ibm_is_private_path_service_gateway_revoke_account. This revokes the access to provided account.
 
+**NOTE:** 
+Private path service gateway is a select availability feature.
+
 ## Example Usage.
 ```hcl
 resource "ibm_is_private_path_service_gateway" "example" {
