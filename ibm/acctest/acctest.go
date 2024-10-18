@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	AccountId                       string
 	AppIDTenantID                   string
 	AppIDTestUserEmail              string
 	BackupPolicyJobID               string
@@ -763,6 +764,17 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
 
+	AccountId = os.Getenv("IS_ACCOUNT_ID")
+	if AccountId == "" {
+		AccountId = "fee82deba12e4c0fb69c3b09d1f12345"
+		fmt.Println("[INFO] Set the environment variable IS_ACCOUNT_ID for testing private_path_service_gateway_account_policy else it is set to default value 'fee82deba12e4c0fb69c3b09d1f12345'")
+	}
+
+	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
+	if ISAddressPrefixCIDR == "" {
+		ISAddressPrefixCIDR = "10.120.0.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	}
 	ISCIDR2 = os.Getenv("SL_CIDR_2")
 	if ISCIDR2 == "" {
 		ISCIDR2 = "10.240.64.0/24"

@@ -29,6 +29,9 @@ func TestAccIBMISLBDatasource_basic(t *testing.T) {
 						"data.ibm_is_lb.ds_lb", "name", name),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_lb.ds_lb", "route_mode", routeMode),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "availability"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "instance_groups_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "source_ip_persistence_supported"),
 				),
 			},
 		},
