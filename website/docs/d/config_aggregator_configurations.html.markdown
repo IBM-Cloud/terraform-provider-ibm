@@ -43,7 +43,7 @@ After your data source is created, you can read values from the following attrib
 * `configs` - (List) Array of resource configurations.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **configs**:
-	* `about` - (List) The basic metadata fetched from the query API.
+	* `about` - (Map) The basic metadata fetched from the query API.
 	Nested schema for **about**:
 		* `account_id` - (String) The account ID in which the resource exists.
 		  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
@@ -64,7 +64,7 @@ Nested schema for **configs**:
 		Nested schema for **tags**:
 			* `tag` - (String) The name of the tag.
 			  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
-	* `config` - (List) The configuration of the resource.
+	* `config` - (String) The configuration of the resource.
 	Nested schema for **config**:
 * `prev` - (List) The reference to the previous page of entries.
 Nested schema for **prev**:
