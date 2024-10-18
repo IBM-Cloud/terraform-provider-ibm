@@ -10,7 +10,7 @@ resource "ibm_config_aggregator_settings" "config_aggregator_settings_instance" 
   resource_collection_regions                    = var.config_aggregator_settings_regions
 }
 
-data "ibm_config_aggregator_configurations" "config_aggregator_configurations_instance" {
+data "ibm_config_aggregator_configurations" "example" {
   instance_id=var.instance_id
   region =var.region
 

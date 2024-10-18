@@ -77,6 +77,18 @@ resource "ibm_is_virtual_endpoint_gateway" "example4" {
   resource_group = data.ibm_resource_group.example.id
   security_groups = [ibm_is_security_group.example.id]
 }
+
+// Create endpoint gateway with target as private path service gateway
+resource "ibm_is_virtual_endpoint_gateway" "example5" {
+  name = "example-endpoint-gateway-4"
+  target {
+    crn           = "crn:v1:bluemix:public:is:us-south:a/123456::private-path-service-gateway:r134-fb880975-db45-4459-8548-64e3995ac213"
+    resource_type = "private_path_service_gateway"
+  }
+  vpc            = ibm_is_vpc.example.id
+  resource_group = data.ibm_resource_group.example.id
+  security_groups = [ibm_is_security_group.example.id]
+}
 ```
 
 ## Argument reference
@@ -113,7 +125,9 @@ Review the argument references that you can specify for your resource.
   - `name` - (Optional, Forces new resource, String) The endpoint gateway target name.
 
       -> **NOTE:** If `name` is not specified, `crn` must be specified. 
-  - `resource_type` - (Required, String) The endpoint gateway target resource type. The possible values are `provider_cloud_service`, `provider_infrastructure_service`.
+  - `resource_type` - (Required, String) The endpoint gateway target resource type. The possible values are `provider_cloud_service`, `provider_infrastructure_service` and `private_path_service_gateway`.
+
+  ~> **NOTE** The option `private_path_service_gateway` for the argument `target.resource_type` is a select availability feature.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 
 ~> **NOTE:** `ips` configured inline in this resource are not modifiable. Prefer using `ibm_is_virtual_endpoint_gateway_ip` resource to bind/unbind new reserved IPs to endpoint gateways and use the resource `ibm_is_subnet_reserved_ip` to create new reserved IP.

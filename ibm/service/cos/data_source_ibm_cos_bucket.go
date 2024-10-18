@@ -700,7 +700,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		keyProtectFlag = true
 	}
 
-	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
+	var satlc_id, apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if satlc, ok := d.GetOk("satellite_location_id"); ok {
 		satlc_id = satlc.(string)
@@ -714,7 +714,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		apiEndpoint = SelectSatlocCosApi(bucketType, serviceID, satlc_id)
 
 	} else {
-		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion, false)
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
 		visibility = endpointType
 		if endpointType == "private" {
 			apiEndpoint = apiEndpointPrivate
@@ -811,10 +811,16 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion, strings.Contains(apiEndpoint, "test"))
-	d.Set("s3_endpoint_public", apiEndpoint)
-	d.Set("s3_endpoint_private", apiEndpointPrivate)
-	d.Set("s3_endpoint_direct", directApiEndpoint)
+
+	testEnv := strings.Contains(apiEndpoint, ".test.")
+	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	if testEnv {
+		d.Set(fmt.Sprintf("s3_endpoint_%s", endpointType), apiEndpoint)
+	} else {
+		d.Set("s3_endpoint_public", apiEndpointPublic)
+		d.Set("s3_endpoint_private", apiEndpointPrivate)
+		d.Set("s3_endpoint_direct", directApiEndpoint)
+	}
 	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err

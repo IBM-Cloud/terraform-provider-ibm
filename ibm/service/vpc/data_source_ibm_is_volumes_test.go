@@ -42,6 +42,24 @@ func TestAccIBMIsVolumesDataSourceBasic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMIsVolumesDataSourceSdpBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsVolumesDataSourceSdpConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.0.adjustable_iops_states.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.0.adjustable_capacity_states.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_volumes.is_volumes", "volumes.0.profile.0.name", "sdp"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMIsVolumesFromSnapshotDataSourceBasic(t *testing.T) {
 	resName := "data.ibm_is_volumes.is_volumes"
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -141,6 +159,12 @@ func testAccCheckIBMIsVolumesFromSnapshotDataSourceConfigBasic(vpcname, subnetna
 	`)
 }
 func testAccCheckIBMIsVolumesDataSourceConfigBasic() string {
+	return fmt.Sprintf(`
+		data "ibm_is_volumes" "is_volumes" {
+		}
+	`)
+}
+func testAccCheckIBMIsVolumesDataSourceSdpConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_is_volumes" "is_volumes" {
 		}
