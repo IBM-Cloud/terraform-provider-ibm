@@ -3039,11 +3039,11 @@ func ResourceVolumeValidate(diff *schema.ResourceDiff) error {
 		}
 	}
 
-	if profile != "custom" {
+	if profile != "custom" && profile != "sdp" {
 		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
-			return fmt.Errorf("VolumeError : iops is applicable for only custom volume profiles")
+			return fmt.Errorf("VolumeError : iops is applicable for only custom/sdp volume profiles")
 		}
-	} else {
+	} else if profile != "sdp" {
 		if capacity == 0 {
 			capacity = int64(100)
 		}
