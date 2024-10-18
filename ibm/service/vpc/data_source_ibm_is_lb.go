@@ -404,7 +404,7 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			if *lb.IsPublic {
 				d.Set(isLBType, "public")
-			} else if *lb.IsPrivatePath {
+			} else if lb.IsPrivatePath != nil && *lb.IsPrivatePath {
 				d.Set(isLBType, "private_path")
 			} else {
 				d.Set(isLBType, "private")
