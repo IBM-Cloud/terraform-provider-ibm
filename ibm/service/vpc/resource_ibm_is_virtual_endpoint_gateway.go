@@ -514,9 +514,11 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayResourceGroupID, endpointGateway.ResourceGroup.ID)
 	d.Set(isVirtualEndpointGatewayTarget,
 		flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget)))
+	serviceEndpoints := []string{}
 	if len(endpointGateway.ServiceEndpoints) > 0 {
-		d.Set(isVirtualEndpointGatewayServiceEndpoints, endpointGateway.ServiceEndpoints)
+		serviceEndpoints = endpointGateway.ServiceEndpoints
 	}
+	d.Set(isVirtualEndpointGatewayServiceEndpoints, serviceEndpoints)
 	d.Set(isVirtualEndpointGatewayVpcID, endpointGateway.VPC.ID)
 	if endpointGateway.SecurityGroups != nil {
 		d.Set(isVirtualEndpointGatewaySecurityGroups, flattenDataSourceSecurityGroups(endpointGateway.SecurityGroups))
@@ -574,7 +576,7 @@ func isWaitForVirtualEndpointGatewayForPPSGAvailable(sess *vpcv1.VpcV1, endPoint
 		Timeout:                   timeout,
 		Delay:                     10 * time.Second,
 		MinTimeout:                10 * time.Second,
-		ContinuousTargetOccurence: 5,
+		ContinuousTargetOccurence: 6,
 	}
 
 	return stateConf.WaitForState()

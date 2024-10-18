@@ -61,7 +61,7 @@ func testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, 
 			name = "%s"
 			load_balancer = ibm_is_lb.testacc_LB.id
 			zonal_affinity = true
-			service_endpoints = ["mytestfqdn"]
+			service_endpoints = ["mytestfqdn.internal"]
 		}
 	`, accessPolicy, name)
 }

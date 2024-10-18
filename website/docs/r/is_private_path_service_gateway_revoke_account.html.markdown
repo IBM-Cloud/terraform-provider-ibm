@@ -16,7 +16,7 @@ Private path service gateway is a select availability feature.
 ## Example Usage.
 ```hcl
 resource "ibm_is_private_path_service_gateway" "example" {
-  default_access_policy = "review"
+  default_access_policy = "permit"
   name = "my-example-ppsg"
   load_balancer = ibm_is_lb.testacc_LB.id
   zonal_affinity = true

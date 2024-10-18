@@ -44,7 +44,7 @@ func TestAccIBMISVirtualEndpointGateway_PPSG(t *testing.T) {
 	lbname := fmt.Sprintf("tf-test-lb%dd", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tf-test-ppsg%d", acctest.RandIntRange(10, 100))
 	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
-	targetName := fmt.Sprintf("tf-egw-target%d", acctest.RandIntRange(10, 100))
+	// targetName := fmt.Sprintf("tf-egw-target%d", acctest.RandIntRange(10, 100))
 	egwName := fmt.Sprintf("tf-egw%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -54,8 +54,8 @@ func TestAccIBMISVirtualEndpointGateway_PPSG(t *testing.T) {
 				Config: testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name1, egwName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
-					resource.TestCheckResourceAttr(name, "name", name1),
-					resource.TestCheckResourceAttr(name, "target.0.name", targetName),
+					resource.TestCheckResourceAttr(name, "name", egwName),
+					resource.TestCheckResourceAttr(name, "target.0.name", name1),
 					resource.TestCheckResourceAttr(name, "target.0.resource_type", "private_path_service_gateway"),
 				),
 			},
@@ -344,6 +344,9 @@ func testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name
 
 func testAccCheckisVirtualEndpointGatewayConfigPPSG(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, egwName string) string {
 	return testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name) + fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default=true
+    }
 	resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
 		name = "%s"
 		target {

@@ -24,9 +24,9 @@ resource "ibm_is_private_path_service_gateway" "example" {
   service_endpoints = ["myexamplefqdn"]
 }
 data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "bindings" {
-    account = "7f75c7b025e54bc5635f754b2f888665"
-    status = "pending"
-    private_path_service_gateway = ibm_is_private_path_service_gateway.ppsg.id
+  account = "7f75c7b025e54bc5635f754b2f888665"
+  status = "pending"
+  private_path_service_gateway = ibm_is_private_path_service_gateway.ppsg.id
 }
 resource "ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations" "policy" {
   count = length(data.ibm_is_private_path_service_gateway_endpoint_gateway_bindings.bindings.endpoint_gateway_bindings)
