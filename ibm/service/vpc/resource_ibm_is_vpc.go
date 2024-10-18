@@ -34,6 +34,7 @@ const (
 	isVPCDefaultSecurityGroupName             = "default_security_group_name"
 	isVPCDefaultSecurityGroupCRN              = "default_security_group_crn"
 	isVPCDefaultRoutingTableName              = "default_routing_table_name"
+	isVPCDefaultRoutingTableCRN               = "default_routing_table_crn"
 	isVPCResourceGroup                        = "resource_group"
 	isVPCStatus                               = "status"
 	isVPCDeleting                             = "deleting"
@@ -354,6 +355,12 @@ func ResourceIBMISVPC() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_vpc", isVPCDefaultRoutingTableName),
 				Description:  "Default routing table name",
+			},
+
+			isVPCDefaultRoutingTableCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default routing table CRN",
 			},
 
 			isVPCResourceGroup: {
@@ -951,6 +958,9 @@ func vpcGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if vpc.DefaultRoutingTable != nil {
 		d.Set(isVPCDefaultRoutingTable, *vpc.DefaultRoutingTable.ID)
 		d.Set(isVPCDefaultRoutingTableName, *vpc.DefaultRoutingTable.Name)
+		if vpc.DefaultRoutingTable.CRN != nil {
+			d.Set(isVPCDefaultRoutingTableCRN, *vpc.DefaultRoutingTable.CRN)
+		}
 	}
 	healthReasons := []map[string]interface{}{}
 	if vpc.HealthReasons != nil {
