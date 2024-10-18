@@ -77,6 +77,8 @@ Review the argument references that you can specify for your resource.
   - `key` - (Required, String) Key for taint.
   - `value` - (Required, String) Value for taint.
   - `effect` - (Required, String) Effect for taint. Accepted values are `NoSchedule`, `PreferNoSchedule`, and `NoExecute`.
+- `import_on_create` - (Optional, Bool) Import an existing WorkerPool from the cluster, instead of creating a new.
+- `orphan_on_delete` - (Optional, Bool) Orphan the Worker Pool resource, instead of deleting it. The argument allows the user to remove the worker pool from the state, without deleting the actual cloud resource. The worker pool can be re-imported into the state using the `import_on_create` argument.
  
 
 **Deprecated reference**
