@@ -7,8 +7,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -242,6 +244,10 @@ func resourceIBMIsPrivatePathServiceGatewayCreate(context context.Context, d *sc
 	}
 
 	d.SetId(*privatePathServiceGateway.ID)
+	_, err = isWaitForPPSGAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIBMIsPrivatePathServiceGatewayUpdate(context, d, meta)
 }
@@ -393,8 +399,97 @@ func resourceIBMIsPrivatePathServiceGatewayDelete(context context.Context, d *sc
 		log.Printf("[DEBUG] DeletePrivatePathServiceGatewayWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeletePrivatePathServiceGatewayWithContext failed %s\n%s", err, response))
 	}
-
+	_, err = isWaitForPPSGDeleted(vpcClient, d.Id(), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId("")
 
 	return nil
+}
+
+func isWaitForPPSGDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("[DEBUG] Retrying PPSG (%s) delete", id)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"ppsg_in_use"},
+		Target:  []string{"deleting", "done", ""},
+		Refresh: func() (interface{}, string, error) {
+			deletePrivatePathServiceGatewayOptions := &vpcv1.DeletePrivatePathServiceGatewayOptions{}
+			deletePrivatePathServiceGatewayOptions.SetID(id)
+			log.Printf("[DEBUG] Retrying PPSG (%s) delete", id)
+			response, err := vpcClient.DeletePrivatePathServiceGateway(deletePrivatePathServiceGatewayOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 409 {
+					return response, "ppsg_in_use", nil
+				} else if response != nil && response.StatusCode == 404 {
+					return response, "done", nil
+				}
+				return response, "", fmt.Errorf("[ERROR] Error deleting ppsg: %s\n%s", err, response)
+			}
+			return response, "deleting", nil
+		},
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+func isWaitForPPSGDeleted(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for ppsg (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"retry", "deleting", "stable"},
+		Target:     []string{"deleted", ""},
+		Refresh:    isPPSGDeleteRefreshFunc(vpcClient, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isPPSGDeleteRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		log.Printf("[DEBUG] is ppsg delete function here")
+		getPPSGOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{
+			ID: &id,
+		}
+		ppsg, response, err := vpcClient.GetPrivatePathServiceGateway(getPPSGOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return ppsg, "deleted", nil
+			}
+			return ppsg, "", fmt.Errorf("[ERROR] The ppsg %s failed to delete: %s\n%s", id, err, response)
+		}
+		return ppsg, "deleting", err
+	}
+}
+func isWaitForPPSGAvailable(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for ppsg (%s) to be available.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "updating"},
+		Target:     []string{"stable", "failed", "suspended"},
+		Refresh:    isPPSGRefreshFunc(vpcClient, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isPPSGRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getPPSGOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{
+			ID: &id,
+		}
+		ppsg, response, err := vpcClient.GetPrivatePathServiceGateway(getPPSGOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error getting ppsg : %s\n%s", err, response)
+		}
+
+		return ppsg, *ppsg.LifecycleState, nil
+	}
 }
