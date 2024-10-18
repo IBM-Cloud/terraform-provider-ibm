@@ -165,7 +165,6 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 			"secondary_storage": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
 				Description: "The secondary storage option for the workers in the worker pool.",
 			},
