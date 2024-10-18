@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline_definition
 
-Provides a resource for cd_tekton_pipeline_definition. This allows cd_tekton_pipeline_definition to be created, updated and deleted.
+Create, update, and delete cd_tekton_pipeline_definitions with this resource.
 
 ## Example Usage
 
@@ -32,7 +32,7 @@ resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_inst
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
@@ -57,7 +57,7 @@ Nested schema for **source**:
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_definition.
 * `definition_id` - (String) The aggregated definition ID.
@@ -75,9 +75,9 @@ The `id` property can be formed from `pipeline_id`, and `definition_id` in the f
 &lt;pipeline_id&gt;/&lt;definition_id&gt;
 </pre>
 * `pipeline_id`: A string in the format `94619026-912b-4d92-8f51-6c74f0692d90`. The Tekton pipeline ID.
-* `definition_id`: A string in the format `94299034-d45f-4e9a-8ed5-6bd5c7bb7ada`. The definition ID.
+* `definition_id`: A string. The aggregated definition ID.
 
 # Syntax
-```
-$ terraform import ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition <pipeline_id>/<definition_id>
-```
+<pre>
+$ terraform import ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition &lt;pipeline_id&gt;/&lt;definition_id&gt;
+</pre>
