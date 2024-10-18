@@ -155,11 +155,14 @@ func TestAccIBMEventStreamsEnterprise(t *testing.T) {
 	topicName := fmt.Sprintf("es_topic_%d", acctest.RandInt())
 	partitions := 1
 	parameters := map[string]string{
-		"service-endpoints":    "public-and-private",
-		"private_ip_allowlist": "[9.0.0.0/8]", // allowing jenkins access
-		"throughput":           "150",
-		"storage_size":         "2048",
-		"kms_key_crn":          "crn:v1:staging:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:0aa69b09-941b-41b2-bbf9-9f9f0f6a6f79:key:dd37a0b6-eff4-4708-8459-e29ae0a8f256", //preprod-byok-customer-key from KMS instance keyprotect-preprod-customer-keys
+		"service-endpoints": "public",
+		"throughput":        "150",
+		"storage_size":      "2048",
+		"kms_key_crn":       "crn:v1:staging:public:kms:us-south:a/6db1b0d0b5c54ee5c201552547febcd8:0aa69b09-941b-41b2-bbf9-9f9f0f6a6f79:key:dd37a0b6-eff4-4708-8459-e29ae0a8f256", //preprod-byok-customer-key from KMS instance keyprotect-preprod-customer-keys
+		//ES Preprod Pipeline Mirror E2E
+		"source_crn":   "crn:v1:staging:public:messagehub:eu-gb:a/6db1b0d0b5c54ee5c201552547febcd8:4414aa6e-237a-495d-b0b1-1b69d64d874b::",
+		"target_alias": "target-cluster",
+		"source_alias": "source-cluster",
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -177,6 +180,9 @@ func TestAccIBMEventStreamsEnterprise(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_event_streams_topic.es_topic", "id"),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "name", topicName),
 					resource.TestCheckResourceAttr("ibm_event_streams_topic.es_topic", "partitions", strconv.Itoa(partitions)),
+					testAccCheckIBMEventStreamsMirroringConfigProperties("ibm_event_streams_mirroring_config.es_mirroring_config"),
+					resource.TestCheckResourceAttr("ibm_event_streams_mirroring_config.es_mirroring_config", "mirroring_topic_patterns.#", "1"),
+					resource.TestCheckResourceAttr("ibm_event_streams_mirroring_config.es_mirroring_config", "mirroring_topic_patterns.0", ".*"),
 				),
 			},
 		},
@@ -197,7 +203,8 @@ func testAccCheckIBMEventStreamsTopicWithConfig(instanceName, serviceName, planI
 
 func testAccCheckIBMEventStreamsEnterpriseWithParameters(instanceName, serviceName, planID, location, topicName string, partitions int, params map[string]string) string {
 	return createPlatformResources(instanceName, serviceName, planID, location, params) + "\n" +
-		createEventStreamsTopicResourceWithoutConfig(true, topicName, partitions)
+		createEventStreamsTopicResourceWithoutConfig(true, topicName, partitions) + "\n" +
+		createEventStreamsMirroringConfig(serviceName, params["source_crn"])
 }
 
 func testAccCheckIBMEventStreamsTopicWithExistingInstanceWithoutConfig(instanceName,
@@ -239,29 +246,54 @@ func createPlatformResources(instanceName, serviceName, planID, location string,
 	}
 	// create enterprise instance
 	return fmt.Sprintf(`
-	data "ibm_resource_group" "group" {
-		is_default=true
-	  }
-	resource "ibm_resource_instance" "es_instance" {
-		name              = "%s"
-		service           = "%s"
-		plan              = "%s"
-		location          = "%s"
-		resource_group_id = data.ibm_resource_group.group.id
-		parameters = {
-		  service-endpoints    = "%s"
-		  private_ip_allowlist = "%s"
-		  throughput           = "%s"
-		  storage_size         = "%s"
-		  kms_key_crn          = "%s"
-		}
-		timeouts {
-		  create = "3h"
-		  update = "1h"
-		  delete = "15m"
-		}
-	  }`, instanceName, serviceName, planID, location,
-		parameters["service-endpoints"], parameters["private_ip_allowlist"], parameters["throughput"], parameters["storage_size"], parameters["kms_key_crn"])
+data "ibm_resource_group" "group" {
+  is_default = true
+}
+resource "ibm_resource_instance" "es_instance" {
+  name              = "%s"
+  service           = "%s"
+  plan              = "%s"
+  location          = "%s"
+  resource_group_id = data.ibm_resource_group.group.id
+  parameters_json = jsonencode(
+    {
+      service-endpoints = "%s"
+      throughput        = "%s"
+      storage_size      = "%s"
+      kms_key_crn       = "%s"
+      mirroring = {
+        source_crn   = "%s"
+        source_alias = "%s"
+        target_alias = "%s"
+      }
+    }
+  )
+  timeouts {
+    create = "3h"
+    update = "1h"
+    delete = "15m"
+  }
+}`, instanceName, serviceName, planID, location,
+		parameters["service-endpoints"], parameters["throughput"], parameters["storage_size"], parameters["kms_key_crn"], parameters["source_crn"], parameters["source_alias"], parameters["target_alias"])
+}
+
+func createEventStreamsMirroringConfig(serviceName, targetCrn string) string {
+	//get target guid from target crn
+	targetGuid := strings.Split(targetCrn, ":")[7]
+	return fmt.Sprintf(`
+resource "ibm_iam_authorization_policy" "instance_policy" {
+  source_service_name         = "%s"
+  source_resource_instance_id = ibm_resource_instance.es_instance.guid
+  target_service_name         = "%s"
+  target_resource_instance_id = "%s"
+  roles                       = ["Reader"]
+  description                 = "test mirroring setup via terraform"
+}
+
+resource "ibm_event_streams_mirroring_config" "es_mirroring_config" {
+  resource_instance_id     = ibm_resource_instance.es_instance.id
+  mirroring_topic_patterns = [".*"]
+}`, serviceName, serviceName, targetGuid)
 }
 
 func createEventStreamsTopicResourceWithoutConfig(createInstance bool, topicName string, partitions int) string {
@@ -307,21 +339,42 @@ func testAccCheckIBMEventStreamsInstanceDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_resource_instance" {
+		if rs.Type != "ibm_resource_instance" && rs.Type != "ibm_iam_authorization_policy" {
 			continue
 		}
-		instanceID := rs.Primary.ID
-		instance, err := rsContClient.ResourceServiceInstanceV2().GetInstance(instanceID)
-		if err != nil {
-			if strings.Contains(err.Error(), "404") {
-				return nil
+		// adding authotization policy check for mirroring instance
+		if rs.Type == "ibm_iam_authorization_policy" {
+			iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
+			if err != nil {
+				return err
 			}
-			return fmt.Errorf("[ERROR] Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
-		}
+			authPolicyID := rs.Primary.ID
 
-		if !reflect.DeepEqual(instance, models.ServiceInstanceV2{}) &&
-			instance.State != "removed" && instance.State != "pending_reclamation" {
-			return fmt.Errorf("[ERROR] Instance (%s) is not removed", rs.Primary.ID)
+			getPolicyOptions := iamPolicyManagementClient.NewGetPolicyOptions(
+				authPolicyID,
+			)
+			destroyedPolicy, response, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
+
+			if err == nil && *destroyedPolicy.State != "deleted" {
+				return fmt.Errorf("Authorization policy still exists: %s\n", rs.Primary.ID)
+			} else if response.StatusCode != 404 && destroyedPolicy.State != nil && *destroyedPolicy.State != "deleted" {
+				return fmt.Errorf("[ERROR] Error waiting for authorization policy (%s) to be destroyed: %s", rs.Primary.ID, err)
+			}
+		}
+		if rs.Type == "ibm_resource_instance" {
+			instanceID := rs.Primary.ID
+			instance, err := rsContClient.ResourceServiceInstanceV2().GetInstance(instanceID)
+			if err != nil {
+				if strings.Contains(err.Error(), "404") {
+					return nil
+				}
+				return fmt.Errorf("[ERROR] Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			}
+
+			if !reflect.DeepEqual(instance, models.ServiceInstanceV2{}) &&
+				instance.State != "removed" && instance.State != "pending_reclamation" {
+				return fmt.Errorf("[ERROR] Instance (%s) is not removed", rs.Primary.ID)
+			}
 		}
 	}
 	return nil
