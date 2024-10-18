@@ -48,6 +48,106 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolume_sdp(t *testing.T) {
+	var vol string
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol-upd-%d", acctest.RandIntRange(10, 100))
+	capacity1 := 16000
+	capacity2 := 32000
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeSdpConfig(name, capacity1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity1)),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISVolumeSdpConfig(name1, capacity2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity2)),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISVolume_sdpUpdate(t *testing.T) {
+	var vol string
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol-upd-%d", acctest.RandIntRange(10, 100))
+	capacity1 := 16000
+	capacity2 := 32000
+	iops1 := 10000
+	iops2 := 28000
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeSdpUpdateConfig(name, iops1, capacity1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity1)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "iops", fmt.Sprintf("%d", iops1)),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVolumeSdpUpdateConfig(name1, iops1, capacity1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity1)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "iops", fmt.Sprintf("%d", iops1)),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVolumeSdpUpdateConfig(name1, iops1, capacity2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity2)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "iops", fmt.Sprintf("%d", iops1)),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISVolumeSdpUpdateConfig(name1, iops2, capacity2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity2)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "iops", fmt.Sprintf("%d", iops2)),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISVolume_snapshot(t *testing.T) {
 	var vol string
@@ -373,12 +473,38 @@ func testAccCheckIBMISVolumeConfig(name string) string {
 	return fmt.Sprintf(
 		`
 	resource "ibm_is_volume" "storage"{
-		name = "%s"
-		profile = "10iops-tier"
-		zone = "us-south-1"
+		name 			= "%s"
+		profile 		= "10iops-tier"
+		zone 			= "us-south-1"
 		# capacity= 200
 	}
 `, name)
+
+}
+
+func testAccCheckIBMISVolumeSdpConfig(name string, capacity int) string {
+	return fmt.Sprintf(
+		`
+	resource "ibm_is_volume" "storage"{
+		name 			= "%s"
+		profile 		= "sdp"
+		zone 			= "eu-gb-1"
+		capacity		= %d
+	}
+`, name, capacity)
+
+}
+func testAccCheckIBMISVolumeSdpUpdateConfig(name string, iops, capacity int) string {
+	return fmt.Sprintf(
+		`
+	resource "ibm_is_volume" "storage"{
+		name 			= "%s"
+		profile 		= "sdp"
+		iops			= %d
+		zone 			= "eu-gb-1"
+		capacity		= %d
+	}
+`, name, iops, capacity)
 
 }
 

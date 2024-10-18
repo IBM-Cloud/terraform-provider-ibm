@@ -29,6 +29,29 @@ func TestAccIBMISVolumeProfilesDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolumeProfilesDataSource_Sdp(t *testing.T) {
+	resName := "data.ibm_is_volume_profiles.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeProfilesDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.adjustable_capacity_states.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.adjustable_iops_states.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.boot_capacity.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.capacity.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.iops.#"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMISVolumeProfilesDataSourceConfig() string {
 	// status filter defaults to empty

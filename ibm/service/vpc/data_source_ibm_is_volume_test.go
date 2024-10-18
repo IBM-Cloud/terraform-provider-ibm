@@ -49,6 +49,47 @@ func TestAccIBMISVolumeDatasource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolumeDatasource_Sdp(t *testing.T) {
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	zone := "eu-gb-1"
+	resName := "data.ibm_is_volume.testacc_dsvol"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeDataSourceSdpConfig(name, zone),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", name),
+					resource.TestCheckResourceAttr(
+						resName, "zone", zone),
+					resource.TestCheckResourceAttrSet(
+						resName, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName, "profile"),
+					resource.TestCheckResourceAttrSet(
+						resName, "adjustable_capacity_states.#"),
+					resource.TestCheckResourceAttrSet(
+						resName, "adjustable_iops_states.#"),
+					resource.TestCheckResourceAttr(
+						resName, "profile", "sdp"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVolumeDatasource_from_snapshot(t *testing.T) {
 
 	resName := "data.ibm_is_volume.testacc_dsvol"
@@ -147,6 +188,17 @@ func testAccCheckIBMISVolumeDataSourceConfig(name, zone string) string {
 		name = "%s"
 		profile = "10iops-tier"
 		zone = "%s"
+	}
+	data "ibm_is_volume" "testacc_dsvol" {
+		name = ibm_is_volume.testacc_volume.name
+	}`, name, zone)
+}
+func testAccCheckIBMISVolumeDataSourceSdpConfig(name, zone string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_volume" "testacc_volume"{
+		name 		= "%s"
+		profile 	= "sdp"
+		zone 		= "%s"
 	}
 	data "ibm_is_volume" "testacc_dsvol" {
 		name = ibm_is_volume.testacc_volume.name
