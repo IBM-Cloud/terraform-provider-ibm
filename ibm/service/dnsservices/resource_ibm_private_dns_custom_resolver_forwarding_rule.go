@@ -163,7 +163,6 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 			forwardingRuleInpOnlyRule.Description = &ruleDescription
 			opt.SetForwardingRuleInput(forwardingRuleInpOnlyRule)
 		}
-		// forward_to not present
 	} else {
 		if _, ok := d.GetOk(pdnsCRFRViews); ok {
 			forwardingRuleInpOnlyView, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyView(ruleType, ruleMatch, expandPDNSFRViews(views))
@@ -231,9 +230,18 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 			frdesc := des.(string)
 			opt.SetDescription(frdesc)
 		}
-		if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
-			opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
+
+		// Update logic is changed. Now we can have empty forward_to field if views are present. The only constraint is both the fields should not be empty.
+		if _, ok := d.GetOk(pdnsCRFRForwardTo); !ok {
+			if _, ok := d.GetOk(pdnsCRFRViews); !ok {
+				return diag.FromErr(fmt.Errorf("[ERROR] Cannot update the forwarding rules. One of the fields from forward_to or views must be provided."))
+			}
 		}
+
+		// Once we make sure the one of the field from forward_to or views is present we can allow empty fields to be updated.
+		opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
+		opt.SetViews(expandPDNSFRViews(d.Get(pdnsCRFRViews).([]interface{})))
+
 		if ty, ok := d.GetOk(pdnsCRFRType); ok {
 			crtype := ty.(string)
 			if strings.ToLower(crtype) == "Default" {
@@ -243,9 +251,7 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 				}
 			}
 		}
-		if view, ok := d.GetOk(pdnsCRFRViews); ok {
-			opt.SetViews(expandPDNSFRViews(view.([]interface{})))
-		}
+
 		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error updating the forwarding rule %s:%s", err, resp))
@@ -273,7 +279,8 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 	return nil
 }
 
-func expandPDNSFRViews(viewsList []interface{}) (views []dns.ViewConfig) {
+func expandPDNSFRViews(viewsList []interface{}) []dns.ViewConfig {
+	views := []dns.ViewConfig{}
 	for _, viewElem := range viewsList {
 		viewItem := viewElem.(map[string]interface{})
 		view := dns.ViewConfig{
@@ -284,7 +291,7 @@ func expandPDNSFRViews(viewsList []interface{}) (views []dns.ViewConfig) {
 		}
 		views = append(views, view)
 	}
-	return
+	return views
 }
 
 func flattenPDNSFRViews(list []dns.ViewConfig) []map[string]interface{} {
