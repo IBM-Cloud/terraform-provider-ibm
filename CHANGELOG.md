@@ -1,3 +1,7 @@
+# 1.70.1 (Oct 19, 2024)
+BugFixes
+* Fix test bucket endpoints ([5695](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5695))
+
 # 1.70.0 (Oct 06, 2024)
 
 Breaking Changes
