@@ -286,7 +286,7 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup, readReplicaName, sourceInstanceCRN),
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup, serviceName, sourceInstanceCRN),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
 					resource.TestCheckResourceAttr(replicaReplicaResource, "name", readReplicaName),
@@ -314,7 +314,6 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 
 func testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup string, name string, sourceInstanceCRN string) string {
 
-	// todo add pg leader config
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -323,13 +322,21 @@ func testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResource
 
 	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
-		name                = "%[2]s"
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[3]s"
+		service_endpoints = "public-and-private"
+	}
+
+	resource "ibm_database" "%[2]s-replica" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s-replica"
 		service             = "databases-for-postgresql"
 		plan                = "standard"
 		location            = "%[3]s"
 		service_endpoints   = "public-and-private"
 		remote_leader_id    = "%[4]s"
-		skip_initial_backup = true
 	}
 				`, databaseResourceGroup, name, acc.Region(), sourceInstanceCRN)
 }
@@ -348,7 +355,6 @@ func testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourc
 		plan                = "standard"
 		location            = "%[3]s"
 		service_endpoints   = "public-and-private"
-		remote_leader_id    = ""
 		skip_initial_backup = true
 	}
 				`, databaseResourceGroup, readReplicaName, acc.Region())

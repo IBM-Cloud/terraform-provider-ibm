@@ -2142,9 +2142,9 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("remote_leader_id") {
-		oldValue, newValue := d.GetChange("remote_leader_id")
+		remoteLeaderId := d.Get("remote_leader_id").(string)
 
-		if oldValue != "" && newValue == "" {
+		if remoteLeaderId == "" {
 			skipInitialBackup := false
 			if skip, ok := d.GetOk("skip_initial_backup"); ok {
 				skipInitialBackup = skip.(bool)
@@ -2169,10 +2169,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s", err))
 			}
-		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] Electing a new database source for replication is not allowed"))
 		}
-
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
@@ -3080,15 +3077,17 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 
 func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
-
-	if !remoteLeaderIdOk {
-		return nil
-	}
-
 	service := diff.Get("service").(string)
+	crn := diff.Get("resource_crn").(string)
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	}
+
+	oldValue, newValue := diff.GetChange("remote_leader_id")
+
+	if crn != "" && oldValue == "" && newValue != "" {
+		return fmt.Errorf("[ERROR] You cannot convert an existing instance to a read replica")
 	}
 
 	return nil
