@@ -73,6 +73,13 @@ resource "ibm_is_vpc_routing_table" "example" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the routing table.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `advertise_routes_to` - (Optional, List) The ingress sources to advertise routes to. Routes in the table with `advertise` enabled will be advertised to these sources.
 
   ->**Options** An ingress source that routes can be advertised to:</br>
@@ -85,6 +92,7 @@ Review the argument references that you can specify for your resource.
 - `route_internet_ingress` - (Optional, Bool) If set to **true**, this routing table will be used to route traffic that originates from the internet. For this to succeed, the VPC must not already have a routing table with this property set to **true**.
 - `route_transit_gateway_ingress` - (Optional, Bool) If set to **true**, the routing table is used to route traffic that originates from Transit Gateway to the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
 - `route_vpc_zone_ingress` - (Optional, Bool) If set to true, the routing table is used to route traffic that originates from subnets in other zones in the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
+- `tags` - (Optional, Array of Strings) Enter any tags that you want to associate with your routing table. Tags might help you find your routing table more easily after it is created. Separate multiple tags with a comma (`,`).
 - `vpc` - (Required, Forces new resource, String) The VPC ID. 
 
 ## Attribute reference
@@ -96,6 +104,12 @@ In addition to all argument reference list, you can access the following attribu
 - `is_default` - (String)  Indicates the default routing table for this VPC.
 - `lifecycle_state` - (String) The lifecycle state of the routing table.
 - `resource_type` - (String) The resource type.
+- `resource_group` - (List) The resource group for this routing table. 
+
+  Nested scheme for `resource_group`:
+  - `href` - (String) The URL for this resource group.
+  - `id` - (String) The unique identifier for this resource group.
+  - `name` - (String) The name for this resource group. 
 - `routing_table` - (String) The unique routing table identifier.
 - `routes` - (List) The routes for the routing table.
 

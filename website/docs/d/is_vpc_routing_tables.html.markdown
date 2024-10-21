@@ -45,6 +45,7 @@ In addition to the argument reference list, you can access the following attribu
 - `routing_tables` (List) List of all the routing tables in a VPC.
 
   Nested scheme for `routing_tables`:
+    - `access_tags`  - (List) Access management tags associated for the routing table.
 	- `accept_routes_from` - (List) The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.
 		Nested scheme for **accept_routes_from**:
 		- `resource_type` - (String) The resource type.		
@@ -60,6 +61,11 @@ In addition to the argument reference list, you can access the following attribu
 	- `lifecycle_state` - (String) The lifecycle state of the routing table.
 	- `name` - (String) The name for the default routing tables.
 	- `resource_type` - (String) The type of resource referenced.
+	- `resource_group` - (List) The resource group for this routing table.
+		Nested scheme for `resource_group`:
+		- `href` - (String) The URL for this resource group.
+		- `id` - (String) The unique identifier for this resource group.
+		- `name` - (String) The name for this resource group.
 	- `route_table` - (String) The unique ID for the routing table.
 	- `route_direct_link_ingress` - (String) Indicates if the routing table is used to route traffic that originates from Direct Link to the VPC.
 	- `route_internet_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from the internet.
@@ -73,3 +79,4 @@ In addition to the argument reference list, you can access the following attribu
 		Nested scheme for `subnets`:
 		- `id` - (String) The unique ID of the subnet.
 		- `name` - (String) The user-defined name of the subnet.
+	- `tags` - (String) Tags associated with the routing table.
