@@ -17,12 +17,10 @@ variable "instance_id"{
 variable "config_aggregator_settings_resource_collection_enabled" {
   description = "The field denoting if the resource collection is enabled."
   type        = bool
-  default     = true
 }
 variable "config_aggregator_settings_trusted_profile_id" {
   description = "The trusted profile id that provides Reader access to the App Configuration instance to collect resource metadata."
   type        = string
-  default="Profile-2546925a-7b46-40dd-81ff-48015a49ff43"
 }
 variable "config_aggregator_settings_regions" {
   description = "The list of regions across which the resource collection is enabled."
