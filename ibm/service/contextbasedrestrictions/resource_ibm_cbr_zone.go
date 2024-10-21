@@ -331,7 +331,7 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 
 	zone, response, found, err := getZone(contextBasedRestrictionsClient, context, d.Id())
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getZone failed: %s", err.Error()), "ibm_cbr_zone", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s", err.Error()), "ibm_cbr_zone", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -364,7 +364,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 
 	currentZone, response, found, err := getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getZone failed: %s", err.Error()), "ibm_cbr_zone", "update")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s", err.Error()), "ibm_cbr_zone", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -421,7 +421,7 @@ func resourceIBMCbrZoneUpdate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if err := ResourceIBMCbrZoneSetData(zone, response, d); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "read", "ResourceIBMCbrZoneSetData").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cbr_zone", "update", "ResourceIBMCbrZoneSetData").GetDiag()
 	}
 
 	return nil
@@ -508,9 +508,6 @@ func ResourceIBMCbrZoneSetData(zone *contextbasedrestrictionsv1.Zone, response *
 	}
 	if err = d.Set("last_modified_by_id", zone.LastModifiedByID); err != nil {
 		return fmt.Errorf("Error setting last_modified_by_id: %s", err)
-	}
-	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
-		return fmt.Errorf("Error setting etag: %s", err)
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
 		return fmt.Errorf("Error setting etag: %s", err)

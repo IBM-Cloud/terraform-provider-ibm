@@ -277,8 +277,8 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("description"); ok {
 		createRuleOptions.SetDescription(d.Get("description").(string))
 	}
+	contexts := []contextbasedrestrictionsv1.RuleContext{}
 	if _, ok := d.GetOk("contexts"); ok {
-		var contexts []contextbasedrestrictionsv1.RuleContext
 		for _, v := range d.Get("contexts").([]interface{}) {
 			value := v.(map[string]interface{})
 			contextsItem, err := ResourceIBMCbrRuleMapToRuleContext(value)
@@ -287,8 +287,8 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 			}
 			contexts = append(contexts, *contextsItem)
 		}
-		createRuleOptions.SetContexts(contexts)
 	}
+	createRuleOptions.SetContexts(contexts)
 	if _, ok := d.GetOk("resources"); ok {
 		var resources []contextbasedrestrictionsv1.Resource
 		for _, v := range d.Get("resources").([]interface{}) {
@@ -384,8 +384,8 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("description"); ok {
 		replaceRuleOptions.SetDescription(d.Get("description").(string))
 	}
+	contexts := []contextbasedrestrictionsv1.RuleContext{}
 	if _, ok := d.GetOk("contexts"); ok {
-		var contexts []contextbasedrestrictionsv1.RuleContext
 		for _, v := range d.Get("contexts").([]interface{}) {
 			value := v.(map[string]interface{})
 			contextsItem, err := ResourceIBMCbrRuleMapToRuleContext(value)
@@ -394,8 +394,8 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 			}
 			contexts = append(contexts, *contextsItem)
 		}
-		replaceRuleOptions.SetContexts(contexts)
 	}
+	replaceRuleOptions.SetContexts(contexts)
 	if _, ok := d.GetOk("resources"); ok {
 		var resources []contextbasedrestrictionsv1.Resource
 		for _, v := range d.Get("resources").([]interface{}) {
@@ -464,8 +464,8 @@ func ResourceIBMCbrRuleSetData(rule *contextbasedrestrictionsv1.Rule, response *
 			return fmt.Errorf("Error setting description: %s", err)
 		}
 	}
+	contexts := []map[string]interface{}{}
 	if !core.IsNil(rule.Contexts) {
-		contexts := []map[string]interface{}{}
 		for _, contextsItem := range rule.Contexts {
 			contextsItemMap, err := ResourceIBMCbrRuleRuleContextToMap(&contextsItem) // #nosec G601
 			if err != nil {
@@ -473,9 +473,9 @@ func ResourceIBMCbrRuleSetData(rule *contextbasedrestrictionsv1.Rule, response *
 			}
 			contexts = append(contexts, contextsItemMap)
 		}
-		if err := d.Set("contexts", contexts); err != nil {
-			return fmt.Errorf("Error setting contexts: %s", err)
-		}
+	}
+	if err := d.Set("contexts", contexts); err != nil {
+		return fmt.Errorf("Error setting contexts: %s", err)
 	}
 	if !core.IsNil(rule.Resources) {
 		resources := []map[string]interface{}{}

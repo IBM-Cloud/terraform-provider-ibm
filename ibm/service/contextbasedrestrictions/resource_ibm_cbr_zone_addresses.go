@@ -176,7 +176,7 @@ func resourceIBMCbrZoneAddressesRead(context context.Context, d *schema.Resource
 	var found bool
 	zone, _, found, err = getZone(contextBasedRestrictionsClient, context, zoneId)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("getZone failed: %s", err.Error()), "ibm_cbr_zone_addresses", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s", err.Error()), "ibm_cbr_zone_addresses", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
