@@ -1,25 +1,25 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_slack_template'
+page_title: 'IBM : ibm_en_webhook_template'
 description: |-
-  Manages Event Notification Slack Templates.
+  Manages Event Notification Webhook Templates.
 ---
 
-# ibm_en_slack_template
+# ibm_en_webhook_template
 
-Create, update, or delete Slack Template by using IBM Cloud™ Event Notifications.
+Create, update, or delete Webhook Template by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_slack_template" "slack_template" {
+resource "ibm_en_webhook_template" "webhook_template" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
   name                  = "Notification Template"
-  type                  = "slack.notification"
-  description           = "Slakc template for event notification"
+  type                  = "webhook.notification"
+  description           = "Webhook Template for Notifications"
       params {
-        body="ewogICJib2R5IjogIjxodG1sPmhlbGxvIERpdnlhPC9odG1sPiIsCiAgInN1YmplY3QiOiAiSGkgdGhpcyBpcyBpbnZpdGF0aW9uIGZvciBpbnZpdGF0aW9uIG1lc3NhZ2UiCn0="
+        body="ewoJImJsb2NrcyI6IFsKCQl7CgkJCSJ0eXBlIjogInNlY3Rpb24iLAoJCQkidGV4dCI6IHsKCQkJCSJ0eXBlIjogIm1ya2R3biIsCgkJCQkidGV4dCI6ICJOZXcgUGFpZCBUaW1lIE9mZiByZXF1ZXN0IGZyb20gPGV4YW1wbGUuY29tfEZyZWQgRW5yaXF1ZXo+XG5cbjxodHRwczovL2V4YW1wbGUuY29tfFZpZXcgcmVxdWVzdD4iCgkJCX0KCQl9CgldCn0="
     }
 }
 ```         
@@ -34,19 +34,19 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Template description.
 
-- `type` - (Required, String) slack.notification
+- `type` - (Required, String) webhook.notification
 
 - `params` - (Required, List) Payload describing a template configuration
 
   Nested scheme for **params**:
 
-  - `body` - (Required, String) The Body for Slack Template in base64 encoded format.
+  - `body` - (Required, String) The Body for Webhook Template in base64 encoded format.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `slack_template`.
+- `id` - (String) The unique identifier of the `webhook_template`.
 - `template_id` - (String) The unique identifier of the created Template.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -55,7 +55,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_slack_template` resource by using `id`.
+You can import the `ibm_en_webhook_template` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `template_id` in the following format:
 
@@ -70,5 +70,5 @@ The `id` property can be formed from `instance_guid`, and `template_id` in the f
 **Example**
 
 ```
-$ terraform import ibm_en_slack_template.slack_template <instance_guid>/<template_id>
+$ terraform import ibm_en_webhook_template.webhook_template <instance_guid>/<template_id>
 ```

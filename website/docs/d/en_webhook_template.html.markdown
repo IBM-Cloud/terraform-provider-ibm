@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_slack_template'
+page_title: 'IBM : ibm_en_webhook_template'
 description: |-
-  Get information about a Slack Template
+  Get information about a Webhook Template
 ---
 
-# ibm_en_slack_template
+# ibm_en_webhook_template
 
-Provides a read-only data source for Slack template. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Webhook template. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_slack_template" "slack_template" {
+data "ibm_en_webhook_template" "webhook_template" {
   instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
-  template_id = ibm_en_slack_template.en_slack_template.template_id
+  template_id = ibm_en_webhook_template.en_webhook_template.template_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `slack_template`.
+- `id` - The unique identifier of the `webhook_template`.
 
 - `name` - (String) The Template name.
 
@@ -41,6 +41,6 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Template type slack.notification.
+- `type` - (String) Template type webhook.notification.
 
 - `updated_at` - (String) Last updated time.
