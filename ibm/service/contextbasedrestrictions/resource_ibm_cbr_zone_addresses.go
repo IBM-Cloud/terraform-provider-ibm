@@ -153,7 +153,7 @@ func resourceIBMCbrZoneAddressesCreate(context context.Context, d *schema.Resour
 	addressesId := fmt.Sprintf("TF-%s", newUuid)
 	err := resourceReplaceZoneAddresses(context, d, meta, zoneId, addressesId, false)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(" resourceReplaceZoneAddresses failed: %s", err.Error()), "ibm_cbr_zone_addresses", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s", err.Error()), "ibm_cbr_zone_addresses", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -210,7 +210,7 @@ func resourceIBMCbrZoneAddressesUpdate(context context.Context, d *schema.Resour
 	zoneId, addressesId := decomposeZoneAddressesId(d.Id())
 	err := resourceReplaceZoneAddresses(context, d, meta, zoneId, addressesId, false)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceReplaceZoneAddresses failed: %s", err.Error()), "ibm_cbr_zone_addresses", "update")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s", err.Error()), "ibm_cbr_zone_addresses", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -225,7 +225,7 @@ func resourceIBMCbrZoneAddressesDelete(context context.Context, d *schema.Resour
 	}
 	err = resourceReplaceZoneAddresses(context, d, meta, zoneId, addressesId, true)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceReplaceZoneAddresses failed: %s", err.Error()), "ibm_cbr_zone_addresses", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("%s", err.Error()), "ibm_cbr_zone_addresses", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
