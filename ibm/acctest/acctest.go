@@ -1667,7 +1667,7 @@ func init() {
 	}
 
 	KmsAccountID = os.Getenv("IBM_KMS_ACCOUNT_ID")
-	if CrkID == "" {
+	if KmsAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_KMS_ACCOUNT_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
 	}
 
