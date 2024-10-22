@@ -8,8 +8,6 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_catalog_deployment
 
-**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
-
 Create, update, and delete onboarding_catalog_deployments with this resource.
 
 ## Example Usage
@@ -28,13 +26,13 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 				en {
 					bullets {
 						description = "description"
-						description_i18n = { "key" = "anything as a string" }
+						description_i18n = { "key" = "inner" }
 						title = "title"
-						title_i18n = { "key" = "anything as a string" }
+						title_i18n = { "key" = "inner" }
 					}
 					media {
 						caption = "caption"
-						caption_i18n = { "key" = "anything as a string" }
+						caption_i18n = { "key" = "inner" }
 						thumbnail = "thumbnail"
 						type = "image"
 						url = "url"
@@ -174,6 +172,7 @@ Nested schema for **metadata**:
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `0` characters.
 * `name` - (Required, String) The programmatic name of this deployment.
   * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+* `object_id` - (Optional, String) The desired ID of the global catalog object.
 * `object_provider` - (Required, List) The provider or owner of the product.
 Nested schema for **object_provider**:
 	* `email` - (Optional, String) The email address of the provider.
@@ -214,5 +213,5 @@ The `id` property can be formed from `product_id`, `catalog_product_id`, `catalo
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment product_id/catalog_product_id/catalog_plan_id/catalog_deployment_id
+$ terraform import ibm_onboarding_catalog_deployment.onboarding_catalog_deployment &lt;product_id&gt;/&lt;catalog_product_id&gt;/&lt;catalog_plan_id&gt;/&lt;catalog_deployment_id&gt;
 </pre>

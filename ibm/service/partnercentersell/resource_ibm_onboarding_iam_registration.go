@@ -338,13 +338,19 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"account_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "An account id.",
 									},
 									"service_name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The name of the service.",
+									},
+									"additional_properties": &schema.Schema{
+										Type:        schema.TypeMap,
+										Required:    true,
+										Description: "Additional properties the key must come from supported attributes.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
 							},
@@ -1701,10 +1707,10 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAno
 func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes, error) {
 	model := &partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes{}
 	if modelMap["account_id"] != nil && modelMap["account_id"].(string) != "" {
-		model.AccountID = core.StringPtr(modelMap["account_id"].(string))
+	model.AccountID = core.StringPtr(modelMap["account_id"].(string))
 	}
 	if modelMap["service_name"] != nil && modelMap["service_name"].(string) != "" {
-		model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
 	}
 	return model, nil
 }
@@ -2185,11 +2191,15 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymou
 func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesToMap(model *partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AccountID != nil {
-		modelMap["account_id"] = *model.AccountID
+	modelMap["account_id"] = *model.AccountID
 	}
 	if model.ServiceName != nil {
-		modelMap["service_name"] = *model.ServiceName
+	modelMap["service_name"] = *model.ServiceName
+	additionalProperties := make(map[string]interface{})
+	for k, v := range model.AdditionalProperties {
+		additionalProperties[k] = flex.Stringify(v)
 	}
+	modelMap["additional_properties"] = additionalProperties
 	return modelMap, nil
 }
 
@@ -2885,25 +2895,10 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymou
 	path = "supported_anonymous_accesses.0.attributes"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["attributes"] = nil
-	} else if exists && patch["attributes"] != nil {
-		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesAsPatch(patch["attributes"].(map[string]interface{}), d)
 	}
 	path = "supported_anonymous_accesses.0.roles"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["roles"] = nil
-	}
-}
-
-func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
-	var path string
-
-	path = "supported_anonymous_accesses.0.attributes.0.account_id"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["account_id"] = nil
-	}
-	path = "supported_anonymous_accesses.0.attributes.0.service_name"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["service_name"] = nil
 	}
 }
 
