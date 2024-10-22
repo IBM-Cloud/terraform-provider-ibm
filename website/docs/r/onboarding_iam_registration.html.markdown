@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_iam_registration
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
+
 Create, update, and delete onboarding_iam_registrations with this resource.
 
 ## Example Usage
@@ -200,6 +202,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		}
 		options {
 			access_policy = true
+			additional_properties_for_access_policy = { "key" = "inner" }
 			policy_type = [ "access" ]
 			account_type = "enterprise"
 		}
@@ -527,6 +530,7 @@ Nested schema for **supported_roles**:
 		* `access_policy` - (Required, Boolean) Optional opt-in to require access control on the role.
 		* `account_type` - (Optional, String) Optional opt-in to require checking account type when applying the role.
 		  * Constraints: Allowable values are: `enterprise`.
+		* `additional_properties_for_access_policy` - (Optional, Map) Additional properties for access policy.
 		* `policy_type` - (Optional, List) Optional opt-in to require checking policy type when applying the role.
 		  * Constraints: Allowable list items are: `access`, `authorization`, `authorization-delegated`. The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 

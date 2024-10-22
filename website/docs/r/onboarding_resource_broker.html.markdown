@@ -8,6 +8,8 @@ subcategory: "Partner Center Sell"
 
 # ibm_onboarding_resource_broker
 
+**Note - Intended for internal use only. This resource is strictly experimental and subject to change without notice.**
+
 Create, update, and delete onboarding_resource_brokers with this resource.
 
 ## Example Usage
@@ -82,5 +84,5 @@ You can import the `ibm_onboarding_resource_broker` resource by using `id`. The 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker &lt;id&gt;
+$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker id;
 </pre>
