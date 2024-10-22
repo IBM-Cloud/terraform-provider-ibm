@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -385,6 +386,26 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	if d.Get(targetResourceTypeFmt).(string) == "private_path_service_gateway" {
 		_, err = isWaitForVirtualEndpointGatewayForPPSGAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
+			if err != nil {
+				isAccessPending := false
+				if strings.Contains(err.Error(), "timeout while waiting for state to become") {
+					opt := sess.NewGetEndpointGatewayOptions(d.Id())
+					endpointGateway, response, err := sess.GetEndpointGateway(opt)
+					if err != nil {
+						log.Printf("Get Endpoint Gateway failed: %v", response)
+						return fmt.Errorf("[ERROR] Get Endpoint Gateway failed %s\n%s", err, response)
+					}
+					if len(endpointGateway.LifecycleReasons) > 0 {
+						if endpointGateway.LifecycleReasons[0].Code != nil && *endpointGateway.LifecycleReasons[0].Code == "access_pending" {
+							isAccessPending = true
+						}
+					}
+				}
+				if !isAccessPending {
+					return err
+				}
+			}
+
 			return err
 		}
 	} else {
