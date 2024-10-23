@@ -79,4 +79,4 @@ In addition to the argument reference list, you can access the following attribu
 		Nested scheme for `subnets`:
 		- `id` - (String) The unique ID of the subnet.
 		- `name` - (String) The user-defined name of the subnet.
-	- `tags` - (String) Tags associated with the routing table.
+	- `tags` - (List) Tags associated with the routing table.
