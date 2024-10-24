@@ -17,13 +17,13 @@ const (
 // 		F: func(region string) error {
 // 			rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 // 			if err != nil {
-// 				return fmt.Errorf("Error getting client: %s", err)
+// 				return flex.FmtErrorf("Error getting client: %s", err)
 // 			}
 // 			conn := client.(*ExampleClient)
 
 // 			instances, err := conn.DescribeComputeInstances()
 // 			if err != nil {
-// 				return fmt.Errorf("Error getting instances: %s", err)
+// 				return flex.FmtErrorf("Error getting instances: %s", err)
 // 			}
 // 			for _, instance := range instances {
 // 				if strings.HasPrefix(instance.Name, "test-acc") {
