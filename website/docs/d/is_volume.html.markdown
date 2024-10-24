@@ -37,7 +37,8 @@ data "ibm_is_volume" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `name` - (Required, String) The name of the volume.
+- `identifier` - (Optional, String) The id of the volume. (one of `identifier`, `name` is required)
+- `name` - (Optional, String) The name of the volume. (one of `identifier`, `name` is required)
 - `zone` - (Optional, String) The zone name of the volume.
 
 ## Attribute reference
