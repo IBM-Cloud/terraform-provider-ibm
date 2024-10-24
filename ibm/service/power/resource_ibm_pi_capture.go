@@ -198,11 +198,13 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		if err != nil {
 			log.Printf("Error on get of ibm pi capture (%s) while applying pi_user_tags: %s", capturename, err)
 		}
-		if imagedata.Crn != "" {
-			oldList, newList := d.GetChange(Arg_UserTags)
-			err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(imagedata.Crn), "", UserTagType)
-			if err != nil {
-				log.Printf("Error on update of pi capture (%s) pi_user_tags during creation: %s", *imagedata.ImageID, err)
+		if imagedata != nil {
+			if imagedata.Crn != "" {
+				oldList, newList := d.GetChange(Arg_UserTags)
+				err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, string(imagedata.Crn), "", UserTagType)
+				if err != nil {
+					log.Printf("Error on update of pi capture (%s) pi_user_tags during creation: %s", *imagedata.ImageID, err)
+				}
 			}
 		}
 	}
