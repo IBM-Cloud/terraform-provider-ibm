@@ -334,7 +334,7 @@ func DataSourceIBMISVolumeValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 isSubnetName,
+			Identifier:                 isVolumeName,
 			ValidateFunctionIdentifier: validate.ValidateNoZeroValues,
 			Type:                       validate.TypeString})
 
