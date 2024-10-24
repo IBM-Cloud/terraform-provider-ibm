@@ -506,7 +506,9 @@ func TestAccIBMISVPNGatewayConnection_routeDistributeTraffic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "distribute_traffic"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "distribute_traffic", fmt.Sprintf("%t", dt)),
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "distribute_traffic", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "distribute_traffic", fmt.Sprintf("%t", dt)),
 				),
 			},
 			{
@@ -542,7 +544,9 @@ func TestAccIBMISVPNGatewayConnection_routeDistributeTraffic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "distribute_traffic"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "distribute_traffic", fmt.Sprintf("%t", dt2)),
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "distribute_traffic", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection2", "distribute_traffic", fmt.Sprintf("%t", dt2)),
 				),
 			},
 		},
