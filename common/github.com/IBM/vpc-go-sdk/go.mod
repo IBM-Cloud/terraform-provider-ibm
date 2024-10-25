@@ -1,4 +1,4 @@
-module github.ibm.com/ibmcloud/vpc-go-sdk
+module github.com/IBM/vpc-go-sdk
 
 go 1.16
 
