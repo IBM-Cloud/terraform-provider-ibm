@@ -739,6 +739,7 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 
 	if d.HasChange("distribute_traffic") {
 		vpnGatewayConnectionPatchModel.DistributeTraffic = core.BoolPtr(d.Get("distribute_traffic").(bool))
+		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionName) {
