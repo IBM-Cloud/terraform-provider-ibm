@@ -107,6 +107,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 			  allocation_mb = 20480
 			}
 		}
+		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
 		users {
 		  name     = "user123"

@@ -26,12 +26,19 @@ func TestAccIBMContainerClusterDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_container_cluster.testacc_ds_cluster", "id"),
+					resource.TestCheckResourceAttrWith("data.ibm_container_cluster.testacc_ds_cluster", "state", func(value string) error {
+						switch value {
+						case "deploying", "deployed":
+							return nil
+						}
+						return fmt.Errorf("state is not deploying, it was %s", value)
+					}),
 					resource.TestCheckResourceAttr(
-						"data.ibm_container_cluster.testacc_ds_cluster", "state", "deploying"),
+						"data.ibm_container_cluster.testacc_ds_cluster", "worker_pools.#", "1"),
 				),
 			},
 			{
-				Config: testAccCheckIBMContainerClusterDataSourceBasic_update(clusterName),
+				Config: testAccCheckIBMContainerClusterDataSourceBasic_waitTillNormal(clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						"data.ibm_container_cluster.testacc_ds_cluster", "id"),
@@ -86,7 +93,7 @@ func testAccIBMClusterVlansCheck(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckIBMContainerClusterDataSourceBasic(clusterName string) string {
-	return testAccCheckIBMContainerClusterBasic(clusterName, "IngressReady") + `
+	return testAccCheckIBMContainerClusterBasic(clusterName, "MasterNodeReady") + `
 	data "ibm_container_cluster" "testacc_ds_cluster" {
 		cluster_name_id       = ibm_container_cluster.testacc_cluster.id
 		list_bounded_services = "false"
@@ -94,8 +101,8 @@ func testAccCheckIBMContainerClusterDataSourceBasic(clusterName string) string {
 	`
 }
 
-func testAccCheckIBMContainerClusterDataSourceBasic_update(clusterName string) string {
-	return testAccCheckIBMContainerClusterBasic(clusterName, "IngressReady") + `
+func testAccCheckIBMContainerClusterDataSourceBasic_waitTillNormal(clusterName string) string {
+	return testAccCheckIBMContainerClusterBasic(clusterName, "MasterNodeReady") + `
 	data "ibm_container_cluster" "testacc_ds_cluster" {
 		cluster_name_id       = ibm_container_cluster.testacc_cluster.id
 		list_bounded_services = "false"

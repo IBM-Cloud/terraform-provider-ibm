@@ -159,7 +159,6 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The operating system of the workers in the worker pool.",
 			},
 
@@ -212,7 +211,13 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "Import an existing WorkerPool from the cluster, instead of creating a new",
+				Description:      "Import an existing workerpool from the cluster instead of creating a new",
+			},
+
+			"orphan_on_delete": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Orphan the workerpool resource instead of deleting it",
 			},
 
 			"autoscale_enabled": {
@@ -515,6 +520,30 @@ func resourceIBMContainerVpcWorkerPoolUpdate(d *schema.ResourceData, meta interf
 		}
 	}
 
+	if d.HasChange("operating_system") {
+		clusterNameOrID := d.Get("cluster").(string)
+		workerPoolName := d.Get("worker_pool_name").(string)
+		operatingSystem := d.Get("operating_system").(string)
+		targetEnv, err := getVpcClusterTargetHeader(d)
+		if err != nil {
+			return err
+		}
+		ClusterClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+		if err != nil {
+			return err
+		}
+		Env := v2.ClusterTargetHeader{ResourceGroup: targetEnv.ResourceGroup}
+
+		err = ClusterClient.WorkerPools().SetWorkerPoolOperatingSystem(v2.SetWorkerPoolOperatingSystem{
+			Cluster:         clusterNameOrID,
+			WorkerPool:      workerPoolName,
+			OperatingSystem: operatingSystem,
+		}, Env)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating the operating_system %s: %s", operatingSystem, err)
+		}
+	}
+
 	return resourceIBMContainerVpcWorkerPoolRead(d, meta)
 }
 
@@ -692,14 +721,22 @@ func resourceIBMContainerVpcWorkerPoolDelete(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-
-	err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
-	if err != nil {
-		return err
+	var orphan_on_delete bool = false
+	if orod, ok := d.GetOk("orphan_on_delete"); ok {
+		orphan_on_delete = orod.(bool)
 	}
-	_, err = WaitForVpcWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutDelete), targetEnv)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
+
+	if orphan_on_delete {
+		log.Printf("[WARN] orphaning %s workerpool", workerPoolNameorID)
+	} else {
+		err = workerPoolsAPI.DeleteWorkerPool(clusterNameorID, workerPoolNameorID, targetEnv)
+		if err != nil {
+			return err
+		}
+		_, err = WaitForVpcWorkerDelete(clusterNameorID, workerPoolNameorID, meta, d.Timeout(schema.TimeoutDelete), targetEnv)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error waiting for removing workers of worker pool (%s) of cluster (%s): %s", workerPoolNameorID, clusterNameorID, err)
+		}
 	}
 	d.SetId("")
 	return nil
@@ -765,7 +802,7 @@ func WaitForWorkerPoolAvailable(d *schema.ResourceData, meta interface{}, cluste
 
 func vpcWorkerPoolStateRefreshFunc(client v2.Workers, instanceID string, workerPoolNameOrID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		workerFields, err := client.ListByWorkerPool(instanceID, "", false, target)
+		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
 		}

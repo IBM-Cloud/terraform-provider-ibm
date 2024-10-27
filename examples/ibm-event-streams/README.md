@@ -160,7 +160,34 @@ resource "ibm_resource_tag" "tag_example_on_es" {
 }
 ```
 
-#### Scenario 6: Connect to an existing Event Streams instance and its topics.
+#### Scenario 6: Set default and user quotas on an existing Event Streams instance.
+
+This code sets the default quota to 32768 bytes/second for producers and 16384 bytes/second for consumers.
+It sets a quota for user `iam-ServiceId-00001111-2222-3333-4444-555566667777` to 65536 bytes/second for producers and no limit (-1) for consumers.
+For more information on quotas, see [Setting Kafka quotas](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-enabling_kafka_quotas).
+
+```terraform
+data "ibm_resource_instance" "es_instance_6" {
+  name              = "terraform-integration-6"
+  resource_group_id = data.ibm_resource_group.group.id
+}
+
+resource "ibm_event_streams_quota" "default_quota" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_6.id
+  entity               = "default"
+  producer_byte_rate   = 32768
+  consumer_byte_rate   = 16384
+}
+
+resource "ibm_event_streams_quota" "user00001111_quota" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_6.id
+  entity               = "iam-ServiceId-00001111-2222-3333-4444-555566667777"
+  producer_byte_rate   = 65536
+  consumer_byte_rate   = -1
+}
+```
+
+#### Scenario 7: Connect to an existing Event Streams instance and its topics.
 
 This scenario uses a fictitious `"kafka_consumer_app"` resource to demonstrate how a consumer application could be configured.
 The resource uses three configuration properties:
@@ -177,22 +204,22 @@ The topic names can be provided as strings, or can be taken from topic data sour
 
 ```terraform
 # Use an existing instance
-data "ibm_resource_instance" "es_instance_6" {
-  name              = "terraform-integration-6"
+data "ibm_resource_instance" "es_instance_7" {
+  name              = "terraform-integration-7"
   resource_group_id = data.ibm_resource_group.group.id
 }
 
 # Use an existing topic on that instance
-data "ibm_event_streams_topic" "es_topic_6" {
-  resource_instance_id = data.ibm_resource_instance.es_instance_6.id
+data "ibm_event_streams_topic" "es_topic_7" {
+  resource_instance_id = data.ibm_resource_instance.es_instance_7.id
   name                 = "my-es-topic"
 }
 
 # The FICTITIOUS consumer application, configured with brokers, API key, and topics
 resource "kafka_consumer_app" "es_kafka_app" {
-  bootstrap_server = lookup(data.ibm_resource_instance.es_instance_4.extensions, "kafka_brokers_sasl", [])
+  bootstrap_server = lookup(data.ibm_resource_instance.es_instance_7.extensions, "kafka_brokers_sasl", [])
   apikey           = var.es_reader_api_key
-  topics           = [data.ibm_event_streams_topic.es_topic_4.name]
+  topics           = [data.ibm_event_streams_topic.es_topic_7.name]
 }
 ```
 

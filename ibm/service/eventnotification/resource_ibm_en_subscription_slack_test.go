@@ -85,7 +85,8 @@ func testAccCheckIBMEnSlackSubscriptionConfig(instanceName, name, description st
 		description = "tf_destinatios_description_0364"
 		config {
 			params {
-				"url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk""
+			    type = "incoming_webhook"
+				url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
 			}
 		}
 	}
