@@ -86,7 +86,7 @@ func testAccCheckIbmDnsCrForwardingRuleConfig(vpcname, subnetname, zone, cidr, t
                 name = "%s"
                 description = "%s"
                 expression = "%s"
-                forward_to = ["10.240.2.${count.index}"]
+                forward_to = ["10.240.2.1"]
         }
 	}		
 	`, vpcname, subnetname, zone, cidr, typeVar, match, viewName, viewDesc, viewExpression)
