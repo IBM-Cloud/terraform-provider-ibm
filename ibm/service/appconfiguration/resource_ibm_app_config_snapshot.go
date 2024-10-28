@@ -2,11 +2,13 @@ package appconfiguration
 
 import (
 	"fmt"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMIbmAppConfigSnapshot() *schema.Resource {
@@ -22,6 +24,12 @@ func ResourceIBMIbmAppConfigSnapshot() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Region of the App Configuration service.",
 			},
 			"git_config_id": {
 				Type:        schema.TypeString,
@@ -134,7 +142,8 @@ func ResourceIBMIbmAppConfigSnapshot() *schema.Resource {
 func resourceIbmIbmAppConfigSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 
 	guid := d.Get("guid").(string)
-	appconfigClient, err := getAppConfigClient(meta, guid)
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, guid, region)
 	if err != nil {
 		return err
 	}
@@ -164,7 +173,8 @@ func resourceIbmIbmAppConfigSnapshotUpdate(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}
@@ -219,7 +229,8 @@ func resourceIbmIbmAppConfigSnapshotRead(d *schema.ResourceData, meta interface{
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}
@@ -285,7 +296,8 @@ func resourceIbmIbmAppConfigSnapshotDelete(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}

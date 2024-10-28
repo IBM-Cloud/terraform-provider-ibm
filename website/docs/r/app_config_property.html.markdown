@@ -15,6 +15,7 @@ Provides a resource for `property`. This allows property to be created, updated 
 ```hcl
 resource "ibm_app_config_property" "app_config_property" {
   guid = "guid"
+  region="region"
   environment_id = "environment_id"
   name = "name"
   property_id = "property_id"
@@ -29,7 +30,8 @@ resource "ibm_app_config_property" "app_config_property" {
 
 The following arguments are supported:
 
-- `guid` - (Required, string) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `region` - (Required, String)The region of the App Configuration Instance
 - `environment_id` - (Required, string) Environment Id.
 - `name` - (Required, string) Property name.
 - `property_id` - (Required, string) Property id.

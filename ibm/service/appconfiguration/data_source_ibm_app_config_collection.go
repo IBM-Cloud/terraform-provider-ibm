@@ -4,6 +4,7 @@ package appconfiguration
 
 import (
 	"fmt"
+
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -17,6 +18,12 @@ func DataSourceIBMAppConfigCollection() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Region of the App Configuration service.",
 			},
 			"collection_id": {
 				Type:        schema.TypeString,
@@ -118,8 +125,9 @@ func DataSourceIBMAppConfigCollection() *schema.Resource {
 
 func dataSourceIbmAppConfigCollectionRead(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+	region := d.Get("region").(string)
 
-	appconfigClient, err := getAppConfigClient(meta, guid)
+	appconfigClient, err := getAppConfigClient(meta, guid, region)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}

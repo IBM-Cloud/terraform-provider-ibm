@@ -15,6 +15,7 @@ Configure push notifications resource for Chrome web platform. For more informat
 ```terraform
 resource "ibm_pn_application_chrome" "application_chrome" {
   guid = "guid"
+  region="region"
   server_key = "server_key"
   web_site_url = "web_site_url"
 }

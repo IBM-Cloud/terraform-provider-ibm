@@ -15,6 +15,7 @@ Retrieve information about an existing IBM Cloud App Configuration feature. You 
 ```terraform
 data "ibm_app_config_feature" "app_config_feature" {
   guid = "guid"
+  region="region"
   feature_id = "feature_id"
   includes = "includes"
   environment_id = "environment_id"
@@ -26,6 +27,7 @@ data "ibm_app_config_feature" "app_config_feature" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `region` - (Required, String)The region of the App Configuration Instance
 - `feature_id` - (Required, String) The feature ID.
 - `environment_id` - (Required, String) The environment ID.
 - `includes` - (Optional, String) Include the associated collections in the response.

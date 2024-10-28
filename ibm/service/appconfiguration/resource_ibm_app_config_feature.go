@@ -30,6 +30,12 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Region of the App Configuration service.",
+			},
 			"environment_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -170,7 +176,8 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 
 func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
-	appconfigClient, err := getAppConfigClient(meta, guid)
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, guid, region)
 	if err != nil {
 		return err
 	}
@@ -231,7 +238,8 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}
@@ -291,7 +299,8 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}
@@ -334,7 +343,7 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 		}
 	}
 	if result.Format != nil {
-		if err = d.Set("format", result.RolloutPercentage); err != nil {
+		if err = d.Set("format", result.Format); err != nil {
 			return fmt.Errorf("[ERROR] Error setting format: %s", err)
 		}
 	}
@@ -423,7 +432,8 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}

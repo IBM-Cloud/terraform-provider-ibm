@@ -22,6 +22,12 @@ func DataSourceIBMAppConfigSegments() *schema.Resource {
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Region of the App Configuration service.",
+			},
 			"tags": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -172,8 +178,8 @@ func DataSourceIBMAppConfigSegments() *schema.Resource {
 
 func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
-
-	appconfigClient, err := getAppConfigClient(meta, guid)
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, guid, region)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}

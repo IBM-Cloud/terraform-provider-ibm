@@ -15,6 +15,7 @@ Retrieve information about an existing IBM Cloud App Configuration environments.
 ```terraform
 data "ibm_app_config_environments" "app_config_environments" {
   guid = "guid"
+  region="region"
   tags = "tags"
   expand = "expand"
   limit = "limit"
@@ -26,7 +27,8 @@ data "ibm_app_config_environments" "app_config_environments" {
 
 The following arguments are supported:
 
-- `guid` - (Required, String) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `region` - (Required, String)The region of the App Configuration Instance
 - `tags` - (Optional, String) Filter the resources to be returned based on the associated tags. Returns resources associated with any of the specified tags.
 - `expand` - (Optional, Bool) If set to `true`, returns expanded view of the resource details.
 - `limit` - (Optional, Integer) The number of records to retrieve. By default, the list operation return the first 10 records. To retrieve different set of records, use `limit` with `offset` to page through the available records.

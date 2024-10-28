@@ -27,6 +27,12 @@ func ResourceIBMAppConfigEnvironment() *schema.Resource {
 				ForceNew:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Region of the App Configuration service.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -71,7 +77,7 @@ func ResourceIBMAppConfigEnvironment() *schema.Resource {
 	}
 }
 
-func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppConfigurationV1, error) {
+func getAppConfigClient(meta interface{}, guid string, region string) (*appconfigurationv1.AppConfigurationV1, error) {
 	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
 	if err != nil {
 		return nil, err
@@ -80,7 +86,8 @@ func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppC
 	if err != nil {
 		return nil, err
 	}
-	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", bluemixSession.Config.Region, guid)
+	fmt.Println("Session Region Test : ", bluemixSession.Config.Region)
+	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", region, guid)
 	url := conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL)
 	appconfigClient.Service.Options.URL = url
 	return appconfigClient, nil
@@ -88,7 +95,8 @@ func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppC
 
 func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
-	appconfigClient, err := getAppConfigClient(meta, guid)
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, guid, region)
 	if err != nil {
 		return err
 	}
@@ -121,7 +129,8 @@ func resourceEnvironmentUpdate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return nil
 		}
-		appconfigClient, err := getAppConfigClient(meta, parts[0])
+		region := d.Get("region").(string)
+		appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 		if err != nil {
 			return err
 		}
@@ -154,7 +163,8 @@ func resourceEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}
@@ -218,8 +228,8 @@ func resourceEnvironmentDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return nil
 	}
-
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return err
 	}

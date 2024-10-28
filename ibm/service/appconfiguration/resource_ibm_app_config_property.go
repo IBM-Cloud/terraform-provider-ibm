@@ -5,9 +5,10 @@ package appconfiguration
 
 import (
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"log"
 	"strconv"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -27,6 +28,12 @@ func ResourceIBMIbmAppConfigProperty() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Region of the App Configuration service.",
 			},
 			"environment_id": {
 				Type:        schema.TypeString,
@@ -147,7 +154,8 @@ func ResourceIBMIbmAppConfigProperty() *schema.Resource {
 
 func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
-	appconfigClient, err := getAppConfigClient(meta, guid)
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, guid, region)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
@@ -209,8 +217,8 @@ func resourceIbmIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{
 	if len(parts) != 3 {
 		return fmt.Errorf("Kindly check the id")
 	}
-
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
@@ -317,7 +325,8 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 		if err != nil {
 			return nil
 		}
-		appconfigClient, err := getAppConfigClient(meta, parts[0])
+		region := d.Get("region").(string)
+		appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 		if err != nil {
 			return fmt.Errorf("getAppConfigClient failed %s", err)
 		}
@@ -371,7 +380,8 @@ func resourceIbmIbmAppConfigPropertyDelete(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return nil
 	}
-	appconfigClient, err := getAppConfigClient(meta, parts[0])
+	region := d.Get("region").(string)
+	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
