@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -24,6 +25,7 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := acc.PcsOnboardingCatalogPlanId
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
 	name := "test-deployment-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -39,7 +41,7 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
@@ -52,7 +54,7 @@ func TestAccIbmOnboardingCatalogDeploymentBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID, catalogProductID, catalogPlanID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
@@ -72,6 +74,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
 	catalogPlanID := acc.PcsOnboardingCatalogPlanId
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := "test-deployment-name-terraform"
 	active := "true"
@@ -89,7 +92,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogDeploymentExists("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
@@ -103,7 +106,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogDeploymentConfig(productID, catalogProductID, catalogPlanID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_deployment.onboarding_catalog_deployment_instance", "catalog_product_id", catalogProductID),
@@ -127,7 +130,7 @@ func TestAccIbmOnboardingCatalogDeploymentAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, catalogProductID string, catalogPlanID string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, catalogProductID string, catalogPlanID string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
 			product_id = "%s"
@@ -137,6 +140,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			tags = ["sample"]
 			object_provider {
 				name = "name"
@@ -150,10 +154,10 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfigBasic(productID string, cat
                 rc_compatible =	false
             }
 		}
-	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind)
+	`, productID, catalogProductID, catalogPlanID, name, active, disabled, kind, objectId)
 }
 
-func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogProductID string, catalogPlanID string, env string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogProductID string, catalogPlanID string, env string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_instance" {
 			product_id = "%s"
@@ -164,6 +168,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			overview_ui {
 				en {
 					display_name = "display_name"
@@ -197,7 +202,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 				}
 			}
 		}
-	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind)
+	`, productID, catalogProductID, catalogPlanID, env, name, active, disabled, kind, objectId)
 }
 
 func testAccCheckIbmOnboardingCatalogDeploymentExists(n string, obj partnercentersellv1.GlobalCatalogDeployment) resource.TestCheckFunc {
