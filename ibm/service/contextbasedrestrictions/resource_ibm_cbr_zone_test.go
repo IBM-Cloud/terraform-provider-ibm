@@ -28,7 +28,7 @@ func TestAccIBMCbrZoneBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCbrZoneConfigBasic(accountID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCbrZoneExists("ibm_cbr_zone.cbr_zone", conf),
+					testAccCheckIBMCbrZoneExists("ibm_cbr_zone.cbr_zone_instance", conf),
 				),
 			},
 		},
@@ -52,22 +52,22 @@ func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMCbrZoneConfig(name, accountID, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMCbrZoneExists("ibm_cbr_zone.cbr_zone", conf),
-					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "name", name),
-					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "account_id", accountID),
-					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "description", description),
+					testAccCheckIBMCbrZoneExists("ibm_cbr_zone.cbr_zone_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone_instance", "account_id", accountID),
+					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone_instance", "description", description),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMCbrZoneConfig(nameUpdate, accountIDUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "account_id", accountIDUpdate),
-					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone_instance", "account_id", accountIDUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone_instance", "description", descriptionUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_cbr_zone.cbr_zone",
+				ResourceName:      "ibm_cbr_zone.cbr_zone_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -77,7 +77,7 @@ func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 
 func testAccCheckIBMCbrZoneConfigBasic(accountID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cbr_zone" "cbr_zone" {
+		resource "ibm_cbr_zone" "cbr_zone_instance" {
 			name = "Test Zone Resource Config Basic"
 			description = "Test Zone Resource Config Basic"
 			account_id = "%s"
@@ -91,7 +91,7 @@ func testAccCheckIBMCbrZoneConfigBasic(accountID string) string {
 
 func testAccCheckIBMCbrZoneConfig(name string, accountID string, description string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cbr_zone" "cbr_zone" {
+		resource "ibm_cbr_zone" "cbr_zone_instance" {
 			name = "%s"
 			description = "%s"
 			account_id = "%s"

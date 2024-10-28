@@ -44,6 +44,12 @@ func ResourceIbmSmIamCredentialsConfiguration() *schema.Resource {
 				Sensitive:   true,
 				Description: "An IBM Cloud API key that can create and manage service IDs. The API key must be assigned the Editor platform role on the Access Groups Service and the Operator platform role on the IAM Identity Service. For more information, see the [docs](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-configure-iam-engine).",
 			},
+			"disabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "This attribute indicates whether the API key configuration is disabled. If it is set to `true`, the IAM credentials engine doesn't use the configured API key for credentials management.",
+			},
 			"secret_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -166,6 +172,10 @@ func resourceIbmSmIamCredentialsConfigurationRead(context context.Context, d *sc
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting api_key"), IAMCredentialsConfigResourceName, "read")
 		return tfErr.GetDiag()
 	}
+	if err = d.Set("disabled", configuration.Disabled); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting disabled"), IAMCredentialsConfigResourceName, "read")
+		return tfErr.GetDiag()
+	}
 
 	return nil
 }
@@ -194,6 +204,11 @@ func resourceIbmSmIamCredentialsConfigurationUpdate(context context.Context, d *
 
 	if d.HasChange("api_key") {
 		patchVals.ApiKey = core.StringPtr(d.Get("api_key").(string))
+		hasChange = true
+	}
+
+	if d.HasChange("disabled") {
+		patchVals.Disabled = core.BoolPtr(d.Get("disabled").(bool))
 		hasChange = true
 	}
 
@@ -248,6 +263,9 @@ func resourceIbmSmIamCredentialsConfigurationMapToConfigurationPrototype(d *sche
 	}
 	if _, ok := d.GetOk("api_key"); ok {
 		model.ApiKey = core.StringPtr(d.Get("api_key").(string))
+	}
+	if _, ok := d.GetOk("disabled"); ok {
+		model.Disabled = core.BoolPtr(d.Get("disabled").(bool))
 	}
 	return model, nil
 }

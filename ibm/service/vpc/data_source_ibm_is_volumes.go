@@ -392,6 +392,25 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
+
+						// defined_performance changes
+
+						"adjustable_capacity_states": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The attachment states that support adjustable capacity for this volume.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"adjustable_iops_states": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The attachment states that support adjustable IOPS for this volume.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 						isVolumesStatus: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -806,6 +825,8 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta inter
 		}
 		volumesMap[isVolumeHealthReasons] = healthReasonsList
 	}
+	volumesMap["adjustable_capacity_states"] = volumesItem.AdjustableCapacityStates
+	volumesMap["adjustable_iops_states"] = volumesItem.AdjustableIopsStates
 	if volumesItem.CatalogOffering != nil {
 		versionCrn := ""
 		if volumesItem.CatalogOffering.Version != nil && volumesItem.CatalogOffering.Version.CRN != nil {
@@ -952,7 +973,7 @@ func dataSourceVolumeCollectionVolumesSourceImageToMap(sourceImageItem vpcv1.Ima
 	return sourceImageMap
 }
 
-func dataSourceVolumeCollectionSourceImageDeletedToMap(deletedItem vpcv1.ImageReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionSourceImageDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -990,7 +1011,7 @@ func dataSourceVolumeCollectionVolumesSourceSnapshotToMap(sourceSnapshotItem vpc
 	return sourceSnapshotMap
 }
 
-func dataSourceVolumeCollectionSourceSnapshotDeletedToMap(deletedItem vpcv1.SnapshotReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionSourceSnapshotDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -1072,7 +1093,7 @@ func dataSourceVolumeCollectionVolumesVolumeAttachmentsToMap(volumeAttachmentsIt
 	return volumeAttachmentsMap
 }
 
-func dataSourceVolumeCollectionVolumeAttachmentsDeletedToMap(deletedItem vpcv1.VolumeAttachmentReferenceVolumeContextDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionVolumeAttachmentsDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
@@ -1117,7 +1138,7 @@ func dataSourceVolumeCollectionVolumeAttachmentsInstanceToMap(instanceItem vpcv1
 	return instanceMap
 }
 
-func dataSourceVolumeCollectionInstanceDeletedToMap(deletedItem vpcv1.InstanceReferenceDeleted) (deletedMap map[string]interface{}) {
+func dataSourceVolumeCollectionInstanceDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {

@@ -106,6 +106,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				brokers = [ "kafka-x:9094" ]
 				topic = "my-topic"
 				api_key = "%s" // pragma: allowlist secret
+				service_to_service_enabled = false
 			}
 			cloudlogs_endpoint {
 				target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"

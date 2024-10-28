@@ -37,7 +37,10 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
-
+- `access_modes` - (List) The instance groups support for a load balancer with this profile
+  Nested scheme for `access_modes`:
+  - `type` - (String) The type of access mode.
+  - `value` - (String) Access modes for this profile.
 - `family` - (String) The product family this load balancer profile belongs to.
 - `href` - (String) The URL for this load balancer profile.
 - `id` - (String) The id(`name`) for this load balancer profile.

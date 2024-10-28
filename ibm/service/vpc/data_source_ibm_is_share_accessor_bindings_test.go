@@ -91,7 +91,7 @@ func TestDataSourceIBMIsShareAccessorBindingsShareAccessorBindingToMap(t *testin
 		assert.Equal(t, result, model)
 	}
 
-	shareReferenceDeletedModel := new(vpcv1.ShareReferenceDeleted)
+	shareReferenceDeletedModel := new(vpcv1.Deleted)
 	shareReferenceDeletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
 
 	accountReferenceModel := new(vpcv1.AccountReference)
@@ -157,7 +157,7 @@ func TestDataSourceIBMIsShareAccessorBindingsShareAccessorBindingAccessorToMap(t
 		assert.Equal(t, result, model)
 	}
 
-	shareReferenceDeletedModel := new(vpcv1.ShareReferenceDeleted)
+	shareReferenceDeletedModel := new(vpcv1.Deleted)
 	shareReferenceDeletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
 
 	accountReferenceModel := new(vpcv1.AccountReference)
@@ -194,7 +194,7 @@ func TestDataSourceIBMIsShareAccessorBindingsShareReferenceDeletedToMap(t *testi
 		assert.Equal(t, result, model)
 	}
 
-	model := new(vpcv1.ShareReferenceDeleted)
+	model := new(vpcv1.Deleted)
 	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
 
 	result, err := vpc.DataSourceIBMIsShareAccessorBindingsShareReferenceDeletedToMap(model)
@@ -301,7 +301,7 @@ func TestDataSourceIBMIsShareAccessorBindingsShareAccessorBindingAccessorShareRe
 		assert.Equal(t, result, model)
 	}
 
-	shareReferenceDeletedModel := new(vpcv1.ShareReferenceDeleted)
+	shareReferenceDeletedModel := new(vpcv1.Deleted)
 	shareReferenceDeletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
 
 	accountReferenceModel := new(vpcv1.AccountReference)

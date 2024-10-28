@@ -333,7 +333,9 @@ func lbpmemberGet(d *schema.ResourceData, meta interface{}, lbID, lbPoolID, lbPo
 	if target.ID != nil {
 		d.Set(isLBPoolMemberTargetID, *target.ID)
 	}
-	d.Set(isLBPoolMemberWeight, *lbPoolMem.Weight)
+	if lbPoolMem.Weight != nil {
+		d.Set(isLBPoolMemberWeight, *lbPoolMem.Weight)
+	}
 	d.Set(isLBPoolMemberProvisioningStatus, *lbPoolMem.ProvisioningStatus)
 	d.Set(isLBPoolMemberHealth, *lbPoolMem.Health)
 	d.Set(isLBPoolMemberHref, *lbPoolMem.Href)

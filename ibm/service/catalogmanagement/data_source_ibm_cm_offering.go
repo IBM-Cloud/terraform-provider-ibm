@@ -2450,7 +2450,7 @@ func dataSourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData
 	getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
 	getOfferingOptions.SetOfferingID(d.Get("offering_id").(string))
 
-	offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
+	offering, response, err := FetchOfferingWithAllVersions(context, catalogManagementClient, getOfferingOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetOfferingWithContext failed %s\n%s", err, response), "(Data) ibm_cm_object", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

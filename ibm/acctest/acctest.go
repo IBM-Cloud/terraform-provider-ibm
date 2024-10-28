@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	AccountId                       string
 	AppIDTenantID                   string
 	AppIDTestUserEmail              string
 	BackupPolicyJobID               string
@@ -203,39 +204,48 @@ var (
 // For Power Colo
 
 var (
-	Pi_auxiliary_volume_name        string
-	Pi_cloud_instance_id            string
-	Pi_dhcp_id                      string
-	Pi_host_group_id                string
-	Pi_host_id                      string
-	Pi_image                        string
-	Pi_image_bucket_access_key      string
-	Pi_image_bucket_file_name       string
-	Pi_image_bucket_name            string
-	Pi_image_bucket_region          string
-	Pi_image_bucket_secret_key      string
-	Pi_instance_name                string
-	Pi_key_name                     string
-	Pi_network_name                 string
-	Pi_placement_group_name         string
-	Pi_replication_volume_name      string
-	Pi_resource_group_id            string
-	Pi_sap_image                    string
-	Pi_shared_processor_pool_id     string
-	Pi_snapshot_id                  string
-	Pi_spp_placement_group_id       string
-	Pi_target_storage_tier          string
-	Pi_volume_clone_task_id         string
-	Pi_volume_group_id              string
-	Pi_volume_group_name            string
-	Pi_volume_id                    string
-	Pi_volume_name                  string
-	Pi_volume_onboarding_id         string
-	Pi_volume_onboarding_source_crn string
-	PiCloudConnectionName           string
-	PiSAPProfileID                  string
-	PiStoragePool                   string
-	PiStorageType                   string
+	Pi_auxiliary_volume_name          string
+	Pi_cloud_instance_id              string
+	Pi_dhcp_id                        string
+	Pi_host_group_id                  string
+	Pi_host_id                        string
+	Pi_image                          string
+	Pi_image_bucket_access_key        string
+	Pi_image_bucket_file_name         string
+	Pi_image_bucket_name              string
+	Pi_image_bucket_region            string
+	Pi_image_bucket_secret_key        string
+	Pi_image_id                       string
+	Pi_instance_name                  string
+	Pi_key_name                       string
+	Pi_network_address_group_id       string
+	Pi_network_id                     string
+	Pi_network_interface_id           string
+	Pi_network_name                   string
+	Pi_network_security_group_id      string
+	Pi_network_security_group_rule_id string
+	Pi_placement_group_name           string
+	Pi_remote_id                      string
+	Pi_remote_type                    string
+	Pi_replication_volume_name        string
+	Pi_resource_group_id              string
+	Pi_sap_image                      string
+	Pi_shared_processor_pool_id       string
+	Pi_snapshot_id                    string
+	Pi_spp_placement_group_id         string
+	Pi_storage_connection             string
+	Pi_target_storage_tier            string
+	Pi_volume_clone_task_id           string
+	Pi_volume_group_id                string
+	Pi_volume_group_name              string
+	Pi_volume_id                      string
+	Pi_volume_name                    string
+	Pi_volume_onboarding_id           string
+	Pi_volume_onboarding_source_crn   string
+	PiCloudConnectionName             string
+	PiSAPProfileID                    string
+	PiStoragePool                     string
+	PiStorageType                     string
 )
 
 var (
@@ -393,7 +403,8 @@ var (
 
 // For IAM Access Management
 var (
-	TargetAccountId string
+	TargetAccountId    string
+	TargetEnterpriseId string
 )
 
 // For Partner Center Sell
@@ -753,6 +764,17 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
 
+	AccountId = os.Getenv("IS_ACCOUNT_ID")
+	if AccountId == "" {
+		AccountId = "fee82deba12e4c0fb69c3b09d1f12345"
+		fmt.Println("[INFO] Set the environment variable IS_ACCOUNT_ID for testing private_path_service_gateway_account_policy else it is set to default value 'fee82deba12e4c0fb69c3b09d1f12345'")
+	}
+
+	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
+	if ISAddressPrefixCIDR == "" {
+		ISAddressPrefixCIDR = "10.120.0.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
+	}
 	ISCIDR2 = os.Getenv("SL_CIDR_2")
 	if ISCIDR2 == "" {
 		ISCIDR2 = "10.240.64.0/24"
@@ -1046,7 +1068,13 @@ func init() {
 	Pi_image_bucket_region = os.Getenv("PI_IMAGE_BUCKET_REGION")
 	if Pi_image_bucket_region == "" {
 		Pi_image_bucket_region = "us-east"
-		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image_export resource else it is set to default value 'us-east'")
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image resource else it is set to default value 'us-east'")
+	}
+
+	Pi_image_id = os.Getenv("PI_IMAGE_ID")
+	if Pi_image_id == "" {
+		Pi_image_id = "IBMi-72-09-2924-11"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_ID for testing ibm_pi_image resource else it is set to default value 'IBMi-72-09-2924-11'")
 	}
 
 	Pi_key_name = os.Getenv("PI_KEY_NAME")
@@ -1059,6 +1087,40 @@ func init() {
 	if Pi_network_name == "" {
 		Pi_network_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_NETWORK_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
+	}
+	Pi_network_id = os.Getenv("PI_NETWORK_ID")
+	if Pi_network_id == "" {
+		Pi_network_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+	Pi_network_interface_id = os.Getenv("PI_NETWORK_INTERFACE_ID")
+	if Pi_network_interface_id == "" {
+		Pi_network_interface_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_INTERFACE_ID for testing ibm_pi_network_interface resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_ID")
+	if Pi_network_security_group_id == "" {
+		Pi_network_security_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_rule_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_RULE_ID")
+	if Pi_network_security_group_rule_id == "" {
+		Pi_network_security_group_rule_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_RULE_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_ID")
+	if Pi_network_security_group_id == "" {
+		Pi_network_security_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_network_security_group_rule_id = os.Getenv("PI_NETWORK_SECURITY_GROUP_RULE_ID")
+	if Pi_network_security_group_rule_id == "" {
+		Pi_network_security_group_rule_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_SECURITY_GROUP_RULE_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_volume_name = os.Getenv("PI_VOLUME_NAME")
@@ -1150,21 +1212,37 @@ func init() {
 		Pi_placement_group_name = "tf-pi-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
+
+	Pi_remote_id = os.Getenv("PI_REMOTE_ID")
+	if Pi_remote_id == "" {
+		Pi_remote_id = "terraform-test-power"
+		fmt.Println("[WARN] Set the environment variable PI_REMOTE_ID for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_remote_type = os.Getenv("PI_REMOTE_TYPE")
+	if Pi_remote_type == "" {
+		Pi_remote_type = "terraform-test-power"
+		fmt.Println("[WARN] Set the environment variable PI_REMOTE_TYPE for testing ibm_pi_network_security_group resource else it is set to default value 'terraform-test-power'")
+	}
+
 	Pi_spp_placement_group_id = os.Getenv("PI_SPP_PLACEMENT_GROUP_ID")
 	if Pi_spp_placement_group_id == "" {
 		Pi_spp_placement_group_id = "tf-pi-spp-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_SPP_PLACEMENT_GROUP_ID for testing ibm_pi_spp_placement_group resource else it is set to default value 'tf-pi-spp-placement-group'")
 	}
+
 	PiStoragePool = os.Getenv("PI_STORAGE_POOL")
 	if PiStoragePool == "" {
 		PiStoragePool = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_STORAGE_POOL for testing ibm_pi_storage_pool_capacity else it is set to default value 'terraform-test-power'")
 	}
+
 	PiStorageType = os.Getenv("PI_STORAGE_TYPE")
 	if PiStorageType == "" {
 		PiStorageType = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_STORAGE_TYPE for testing ibm_pi_storage_type_capacity else it is set to default value 'terraform-test-power'")
 	}
+
 	// Added for resource capture instance testing
 	Pi_capture_storage_image_path = os.Getenv("PI_CAPTURE_STORAGE_IMAGE_PATH")
 	if Pi_capture_storage_image_path == "" {
@@ -1189,7 +1267,10 @@ func init() {
 		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
 		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
-
+	Pi_storage_connection = os.Getenv("PI_STORAGE_CONNECTION")
+	if Pi_storage_connection == "" {
+		fmt.Println("[WARN] Set the environment variable PI_STORAGE_CONNECTION for testing pi_storage_connection resource else it is empty")
+	}
 	Pi_target_storage_tier = os.Getenv("PI_TARGET_STORAGE_TIER")
 	if Pi_target_storage_tier == "" {
 		Pi_target_storage_tier = "terraform-test-tier"
@@ -1212,12 +1293,17 @@ func init() {
 		Pi_host_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
 	}
-
 	Pi_host_id = os.Getenv("PI_HOST_ID")
 	if Pi_host_id == "" {
 		Pi_host_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_ID for testing ibm_pi_host resource else it is set to default value ''")
 	}
+	Pi_network_address_group_id = os.Getenv("PI_NETWORK_ADDRESS_GROUP_ID")
+	if Pi_network_address_group_id == "" {
+		Pi_network_address_group_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_NETWORK_ADDRESS_GROUP_ID for testing ibm_pi_network_address_group data source else it is set to default value 'terraform-test-power'")
+	}
+
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if WorkspaceID == "" {
 		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -1513,6 +1599,16 @@ func init() {
 	Satellite_Resource_instance_id = os.Getenv("SATELLITE_RESOURCE_INSTANCE_ID")
 	if Satellite_Resource_instance_id == "" {
 		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	ConfigAggregatorEndpoint := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT")
+	if ConfigAggregatorEndpoint == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_ENDPOINT with a VALID SCC API ENDPOINT")
+	}
+
+	ConfigAggregatorInstanceID := os.Getenv("IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID")
+	if ConfigAggregatorInstanceID == "" {
+		fmt.Println("[WARN] Set the environment variable IBMCLOUD_CONFIG_AGGREGATOR_INSTANCE_ID with a VALID SCC INSTANCE ID")
 	}
 
 	SccInstanceID = os.Getenv("IBMCLOUD_SCC_INSTANCE_ID")
@@ -1868,6 +1964,11 @@ func init() {
 	TargetAccountId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID")
 	if TargetAccountId == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ACCOUNT_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
+	}
+
+	TargetEnterpriseId = os.Getenv("IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID")
+	if TargetEnterpriseId == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_POLICY_ASSIGNMENT_TARGET_ENTERPRISE_ID for testing ibm_iam_policy_assignment resource else tests will fail if this is not set correctly")
 	}
 
 	PcsRegistrationAccountId = os.Getenv("PCS_REGISTRATION_ACCOUNT_ID")
