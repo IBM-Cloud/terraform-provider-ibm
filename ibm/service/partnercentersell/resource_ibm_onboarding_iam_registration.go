@@ -1707,10 +1707,10 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAno
 func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes, error) {
 	model := &partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes{}
 	if modelMap["account_id"] != nil && modelMap["account_id"].(string) != "" {
-	model.AccountID = core.StringPtr(modelMap["account_id"].(string))
+		model.AccountID = core.StringPtr(modelMap["account_id"].(string))
 	}
 	if modelMap["service_name"] != nil && modelMap["service_name"].(string) != "" {
-	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+		model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
 	}
 	return model, nil
 }
@@ -2190,10 +2190,7 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymou
 
 func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedAnonymousAccessAttributesToMap(model *partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.AccountID != nil {
 	modelMap["account_id"] = *model.AccountID
-	}
-	if model.ServiceName != nil {
 	modelMap["service_name"] = *model.ServiceName
 	additionalProperties := make(map[string]interface{})
 	for k, v := range model.AdditionalProperties {
