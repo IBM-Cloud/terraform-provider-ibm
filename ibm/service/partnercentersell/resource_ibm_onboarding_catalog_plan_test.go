@@ -145,6 +145,10 @@ func testAccCheckIbmOnboardingCatalogPlanConfigBasic(productID string, catalogPr
                     type = "paid"
                     origin = "pricing_catalog"
                 }
+				plan {
+					allow_internal_users = true
+					bindable = false
+				}
             }
 		}
 	`, productID, catalogProductID, name, active, disabled, kind, objectId)
@@ -180,16 +184,9 @@ func testAccCheckIbmOnboardingCatalogPlanConfig(productID string, catalogProduct
 					type = "paid"
 					origin = "global_catalog"
 				}
-				service {
-					rc_provisionable = true
-					iam_compatible = true
-					bindable = true
-					plan_updateable = true
-					service_key_supported = true
-				}
 				plan {
 					allow_internal_users = true
-					bindable = true
+					bindable = false
 				}
 			}
 		}
