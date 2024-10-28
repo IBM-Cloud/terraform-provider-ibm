@@ -1706,11 +1706,15 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAno
 
 func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedAnonymousAccessAttributes(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes, error) {
 	model := &partnercentersellv1.IamServiceRegistrationSupportedAnonymousAccessAttributes{}
-	if modelMap["account_id"] != nil && modelMap["account_id"].(string) != "" {
-		model.AccountID = core.StringPtr(modelMap["account_id"].(string))
-	}
-	if modelMap["service_name"] != nil && modelMap["service_name"].(string) != "" {
-		model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+	model.AccountID = core.StringPtr(modelMap["account_id"].(string))
+	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+	if modelMap["additional_properties"] != nil {
+		model.AdditionalProperties = make(map[string]string)
+		for key, value := range modelMap["additional_properties"].(map[string]interface{}) {
+			if str, ok := value.(string); ok {
+				model.AdditionalProperties[key] = str
+			}
+		}
 	}
 	return model, nil
 }
