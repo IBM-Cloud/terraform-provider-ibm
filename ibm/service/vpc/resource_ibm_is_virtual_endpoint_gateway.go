@@ -383,10 +383,9 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 
 	d.SetId(*endpointGateway.ID)
 
-	if d.Get(targetResourceTypeFmt).(string) == "private_path_service_gateway" {
-		_, err = isWaitForVirtualEndpointGatewayForPPSGAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
-
-		if err != nil {
+	_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		if d.Get(targetResourceTypeFmt).(string) == "private_path_service_gateway" {
 			isAccessPending := false
 			if strings.Contains(err.Error(), "timeout while waiting for state to become") {
 				opt := sess.NewGetEndpointGatewayOptions(d.Id())
@@ -396,7 +395,7 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 					return fmt.Errorf("[ERROR] Get Endpoint Gateway failed %s\n%s", err, response)
 				}
 				if len(endpointGateway.LifecycleReasons) > 0 {
-					if endpointGateway.LifecycleReasons[0].Code != nil && *endpointGateway.LifecycleReasons[0].Code == "access_pending" {
+					if endpointGateway.LifecycleReasons[0].Code != nil && strings.Compare(*endpointGateway.LifecycleReasons[0].Code, "access_pending") == 0 {
 						isAccessPending = true
 					}
 				}
@@ -404,19 +403,11 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 			if !isAccessPending {
 				return err
 			}
-		}
-		return err
-	} else {
-		_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			if d.Get(targetResourceTypeFmt).(string) == "private_path_service_gateway" {
-
-			} else {
-				return err
-			}
-
+		} else {
+			return err
 		}
 	}
+
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVirtualEndpointGatewayTags); ok || v != "" {
 		oldList, newList := d.GetChange(isVirtualEndpointGatewayTags)
