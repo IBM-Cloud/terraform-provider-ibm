@@ -15,7 +15,6 @@ Provides a resource for `snapshot`. This allows snapshot to be created, updated 
 ```terraform
 resource "ibm_app_config_snapshot" "app_config_snapshot" {
   guid = "guid"
-  region = "region"
   collection_id = "collection_id"
   environment_id = "environment_id"
   git_config_id = "git_config_id"

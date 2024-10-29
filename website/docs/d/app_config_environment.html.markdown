@@ -26,7 +26,7 @@ data "ibm_app_config_environment" "app_config_environment" {
 The following arguments are supported:
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `region` - (Required, String)The region of the App Configuration Instance
+
 - `environment_id` - (Required, String) Environment ID.
 - `expand` - (optional, Bool) If set to `true`, returns expanded view of the resource details.
 

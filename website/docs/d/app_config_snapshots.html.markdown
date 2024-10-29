@@ -14,7 +14,6 @@ Retrieve information about an existing IBM Cloud App Configuration snapshots. Yo
 ```terraform
 data "ibm_app_config_snapshots" "app_config_snapshots" {
   guid = "guid"
-  region = "region"
   sort = "sort"
   collection_id = "collection_id"
   environment_id = "environment_id"
@@ -28,7 +27,7 @@ data "ibm_app_config_snapshots" "app_config_snapshots" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `region` - (Required, String)The region of the App Configuration Instance
+
 - `collection_id` - (Optional, String) Filters the response based on the specified collection_id.
 - `environment_id` - (Optional, String) Filters the response based on the specified environment_id.
 - `limit` - (Optional, String) The number of records to retrieve. By default, the list operation return the first 10 records.

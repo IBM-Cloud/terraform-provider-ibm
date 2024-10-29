@@ -15,7 +15,6 @@ Retrieve information about an existing IBM Cloud App Configuration segments. You
 ```terraform
 data "ibm_app_config_segments" "app_config_segments" {
   guid = "guid"
-  region = "region"
   tags = "tags"
   expand = "expand"
   limit = "limit"
@@ -29,7 +28,7 @@ data "ibm_app_config_segments" "app_config_segments" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `region` - (Required, String)The region of the App Configuration Instance
+
 - `tags` - (optional, String) Filter the resources to be returned based on the associated tags. Specify the parameter as a list of comma separated tags. Returns resources associated with any of the specified tags.
 - `expand` - (optional, String) If set to `true`, returns expanded view of the resource details.
 - `limit` - (optional, Integer) The number of records to retrieve. By default, the list operation return the first 10 records. To retrieve different set of records, use `limit` with `offset` to page through the available records.

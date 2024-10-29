@@ -23,12 +23,7 @@ func ResourceIBMAppConfigCollection() *schema.Resource {
 				ForceNew:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
-			"region": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Region of the App Configuration service.",
-			},
+
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -81,8 +76,7 @@ func ResourceIBMAppConfigCollection() *schema.Resource {
 func resourceIbmIbmAppConfigCollectiontCreate(d *schema.ResourceData, meta interface{}) error {
 
 	guid := d.Get("guid").(string)
-	region := d.Get("region").(string)
-	appconfigClient, err := getAppConfigClient(meta, guid, region)
+	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
@@ -115,8 +109,7 @@ func resourceIbmIbmAppConfigCollectiontRead(d *schema.ResourceData, meta interfa
 	if len(parts) != 2 {
 		return fmt.Errorf("Kindly check the id")
 	}
-	region := d.Get("region").(string)
-	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
+	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
@@ -243,8 +236,7 @@ func resourceIbmIbmAppConfigCollectionUpdate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return nil
 	}
-	region := d.Get("region").(string)
-	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
+	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
@@ -278,8 +270,7 @@ func resourceIbmIbmAppConfigCollectionDelete(d *schema.ResourceData, meta interf
 	if err != nil {
 		return nil
 	}
-	region := d.Get("region").(string)
-	appconfigClient, err := getAppConfigClient(meta, parts[0], region)
+	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}

@@ -14,7 +14,6 @@ Retrieve information about an existing IBM Cloud App Configuration snapshot. You
 ```terraform
 data "ibm_app_config_snapshot" "app_config_snapshot_read" {
   guid = "guid"
-  region = "region"
   git_config_id = "git_config_id"
 }
 ```
@@ -24,7 +23,7 @@ data "ibm_app_config_snapshot" "app_config_snapshot_read" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `region` - (Required, String)The region of the App Configuration Instance
+
 - `git_config_id` - (Required, String) The Git Config Id.
 
 

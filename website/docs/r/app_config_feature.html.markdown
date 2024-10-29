@@ -15,7 +15,6 @@ Create, update, or delete an environment by using IBM Cloud™ App Configuration
 ```terraform
 resource "ibm_app_config_feature" "app_config_feature" {
   guid = "guid"
-  region = "region"
   name = "name"
   type = "type"
   tags = "tags"

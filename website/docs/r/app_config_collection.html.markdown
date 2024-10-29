@@ -15,7 +15,6 @@ Provides a resource for `collection`. This allows collection to be created, upda
 ```hcl
 resource "ibm_app_config_collection" "app_config_collection" {
   guid = "guid"
-  region = "region"
   name = "name"
   tags = "tags"
   description = "description"
@@ -28,7 +27,7 @@ resource "ibm_app_config_collection" "app_config_collection" {
 The following arguments are supported:
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `region` - (Required, String)The region of the App Configuration Instance
+
 - `name` - (Required, string) Collection name.
 - `collection_id` - (Required, string) Collection Id.
 - `description` - (Optional, string) Collection description.

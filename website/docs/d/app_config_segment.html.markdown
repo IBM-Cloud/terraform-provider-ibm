@@ -14,7 +14,6 @@ Retrieve information about an existing IBM Cloud App Configuration segment. You 
 ```terraform
 data "ibm_app_config_segment" "app_config_segment" {
   guid = "guid"
-  region = "region"
   segment_id = "segment_id"
   includes = "includes"
 }
@@ -25,7 +24,7 @@ data "ibm_app_config_segment" "app_config_segment" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-- `region` - (Required, String)The region of the App Configuration Instance
+
 - `segment_id` - (Required, String) The segment ID.
 - `includes` - (Optional, String) Include feature and property details in the response.
 

@@ -15,7 +15,6 @@ Create, update, or delete an segment by using IBM Cloud™ App Configuration. Fo
 ```terraform
 resource "ibm_app_config_segment" "app_config_segment" {
   guid = "guid"
-  region = "region"
   name = "name"
   description = "description"
   tags = "tags"
