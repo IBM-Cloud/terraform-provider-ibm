@@ -21,7 +21,6 @@ func DataSourceIBMAppConfigSnapshots() *schema.Resource {
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
-
 			"collection_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -150,6 +149,7 @@ func DataSourceIBMAppConfigSnapshots() *schema.Resource {
 
 func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)

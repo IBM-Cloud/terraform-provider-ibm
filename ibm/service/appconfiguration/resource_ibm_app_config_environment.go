@@ -27,7 +27,6 @@ func ResourceIBMAppConfigEnvironment() *schema.Resource {
 				ForceNew:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
-
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -89,6 +88,7 @@ func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppC
 
 func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return err
@@ -155,6 +155,7 @@ func resourceEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return nil
 	}
+
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err
@@ -219,6 +220,7 @@ func resourceEnvironmentDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return nil
 	}
+
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err

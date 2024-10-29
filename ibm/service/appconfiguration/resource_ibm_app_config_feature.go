@@ -30,7 +30,6 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 				Required:    true,
 				Description: "GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.",
 			},
-
 			"environment_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -166,6 +165,7 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 
 func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return err
@@ -227,6 +227,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return nil
 	}
+
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err
@@ -287,6 +288,7 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return nil
 	}
+
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err
@@ -419,6 +421,7 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	if err != nil {
 		return nil
 	}
+
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err
