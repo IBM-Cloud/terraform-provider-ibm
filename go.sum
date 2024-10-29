@@ -113,8 +113,6 @@ github.com/DataDog/datadog-go v2.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/DataDog/datadog-go v3.2.0+incompatible h1:qSG2N4FghB1He/r2mFrWKCaL7dXCilEuNEeAn20fdD4=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/zstd v1.4.4/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062 h1:VCFztsAnZBuzyVeOrpFEJFPiKDyx6tVOLe+p3VBsfWk=
-github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062/go.mod h1:/7hMjdZA6fEpd/dQAOEABxKEwN0t72P3PlpEDu0Y7bE=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113 h1:f2Erqfea1dKpaTFagTJM6W/wnD3JGq/Vn9URh8nuRwk=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
@@ -735,6 +733,8 @@ github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8l
 github.com/golang/snappy v0.0.1/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.4 h1:yAGX7huGHXlcLOEtBnF4w7FQwA26wojNCwOYAEhLjQM=
 github.com/golang/snappy v0.0.4/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
+github.com/golibali/bluemix-go v0.0.0-20241025125601-938969bd5ada h1:L483hAKbBM3l65R+aWROa7rjaDkqb9jGMWqajcpbeb4=
+github.com/golibali/bluemix-go v0.0.0-20241025125601-938969bd5ada/go.mod h1:/7hMjdZA6fEpd/dQAOEABxKEwN0t72P3PlpEDu0Y7bE=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/btree v1.0.0/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/btree v1.0.1/go.mod h1:xXMiIv4Fb/0kKde4SpL7qlzvu5cMJDRkFDxJfI9uaxA=

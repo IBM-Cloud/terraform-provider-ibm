@@ -53,7 +53,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version v1.7.0
-	github.com/hashicorp/hcl/v2 v2.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
 	github.com/jinzhu/copier v0.3.2
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
@@ -143,6 +142,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hc-install v0.6.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
+	github.com/hashicorp/hcl/v2 v2.18.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.19.0 // indirect
 	github.com/hashicorp/terraform-json v0.17.1 // indirect
@@ -245,3 +245,5 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
+
+replace github.com/IBM-Cloud/bluemix-go => github.com/golibali/bluemix-go v0.0.0-20241025125601-938969bd5ada
