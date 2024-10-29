@@ -15,7 +15,7 @@ Retrieve information about an existing IBM Cloud App Configuration features flag
 ```terraform
 data "ibm_app_config_features" "app_config_features" {
   guid = "guid"
-  region="region"
+  region = "region"
   tags = "tags"
   expand = "expand"
   limit = "limit"

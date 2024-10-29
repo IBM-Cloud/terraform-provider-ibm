@@ -15,7 +15,7 @@ Retrieve information about an existing IBM Cloud App Configuration environment. 
 ```terraform
 data "ibm_app_config_environment" "app_config_environment" {
 	guid = "guid"
-    region="region"
+    region = "region"
 	expand = "expand"
 	environment_id = "environment_id"
 }

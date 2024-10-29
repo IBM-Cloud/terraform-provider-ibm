@@ -15,7 +15,7 @@ Retrieve information about an existing IBM Cloud App Configuration property. You
 ```terraform
 data "ibm_app_config_property" "app_config_property" {
 	guid = "guid"
-    region="region"
+    region = "region"
 	environment_id = "environment_id"
 	property_id = "property_id"
 }

@@ -14,7 +14,7 @@ Retrieve information about an existing IBM Cloud App Configuration snapshots. Yo
 ```terraform
 data "ibm_app_config_snapshots" "app_config_snapshots" {
   guid = "guid"
-  region="region"
+  region = "region"
   sort = "sort"
   collection_id = "collection_id"
   environment_id = "environment_id"

@@ -15,7 +15,7 @@ Provides a resource for `collection`. This allows collection to be created, upda
 ```hcl
 resource "ibm_app_config_collection" "app_config_collection" {
   guid = "guid"
-  region="region"
+  region = "region"
   name = "name"
   tags = "tags"
   description = "description"

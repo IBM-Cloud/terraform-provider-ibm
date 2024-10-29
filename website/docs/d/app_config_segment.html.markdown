@@ -14,7 +14,7 @@ Retrieve information about an existing IBM Cloud App Configuration segment. You 
 ```terraform
 data "ibm_app_config_segment" "app_config_segment" {
   guid = "guid"
-  region="region"
+  region = "region"
   segment_id = "segment_id"
   includes = "includes"
 }

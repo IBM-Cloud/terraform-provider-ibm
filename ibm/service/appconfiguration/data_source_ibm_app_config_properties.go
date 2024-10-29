@@ -72,6 +72,7 @@ func DataSourceIBMAppConfigProperties() *schema.Resource {
 				Optional:    true,
 				Description: "The number of records to retrieve. By default, the list operation return the first 10 records. To retrieve different set of records, use `limit` with `offset` to page through the available records.",
 			},
+
 			"offset": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -112,6 +113,11 @@ func DataSourceIBMAppConfigProperties() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Tags associated with the property.",
+						},
+						"format": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Format of the feature (TEXT, JSON, YAML) and it is a required attribute when `type` is `STRING`. It is not required for `BOOLEAN` and `NUMERIC` types. This property is populated in the response body of `POST, PUT and GET` calls if the type `STRING` is used and not populated for `BOOLEAN` and `NUMERIC` types.",
 						},
 						"segment_rules": {
 							Type:        schema.TypeList,
@@ -378,6 +384,9 @@ func dataSourcePropertiesListPropertiesToMap(property appconfigurationv1.Propert
 	}
 	if property.Href != nil {
 		propertyMap["href"] = property.Href
+	}
+	if property.Format != nil {
+		propertyMap["format"] = property.Format
 	}
 	if property.Collections != nil {
 		collectionsList := []map[string]interface{}{}

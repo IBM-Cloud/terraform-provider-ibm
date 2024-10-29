@@ -82,11 +82,9 @@ func getAppConfigClient(meta interface{}, guid string, region string) (*appconfi
 	if err != nil {
 		return nil, err
 	}
-	bluemixSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Session Region Test : ", bluemixSession.Config.Region)
 	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", region, guid)
 	url := conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL)
 	appconfigClient.Service.Options.URL = url

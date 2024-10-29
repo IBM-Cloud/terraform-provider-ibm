@@ -15,7 +15,7 @@ Provides a resource for `property`. This allows property to be created, updated 
 ```hcl
 resource "ibm_app_config_property" "app_config_property" {
   guid = "guid"
-  region="region"
+  region = "region"
   environment_id = "environment_id"
   name = "name"
   property_id = "property_id"

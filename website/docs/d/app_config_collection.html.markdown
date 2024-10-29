@@ -15,7 +15,7 @@ Provides a read-only data source for `collection`. You can then reference the fi
 ```hcl
 data "ibm_app_config_collection" "app_config_collection" {
 	guid = "guid"
-    region="region"
+    region = "region"
 	expand = "expand"
 	collection_id = "collection_id"
 }

@@ -15,7 +15,7 @@ Retrieve information about an existing IBM Cloud App Configuration feature. You 
 ```terraform
 data "ibm_app_config_feature" "app_config_feature" {
   guid = "guid"
-  region="region"
+  region = "region"
   feature_id = "feature_id"
   includes = "includes"
   environment_id = "environment_id"

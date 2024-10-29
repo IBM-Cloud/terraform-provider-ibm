@@ -15,7 +15,7 @@ Provides a read-only data source for `collection`. You can then reference the fi
 ```hcl
 data "app_config_collections" "app_config_collections" {
 	guid = "guid"
-  region="region"
+  region = "region"
   tags = "tags"
   expand = "expand"
   limit = "limit"
