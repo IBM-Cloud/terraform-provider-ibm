@@ -88,7 +88,6 @@ func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppC
 
 func resourceEnvironmentCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
-
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return err

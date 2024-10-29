@@ -148,7 +148,6 @@ func ResourceIBMIbmAppConfigProperty() *schema.Resource {
 
 func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
-
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
