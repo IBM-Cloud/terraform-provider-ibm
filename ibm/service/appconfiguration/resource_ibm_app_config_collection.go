@@ -236,7 +236,6 @@ func resourceIbmIbmAppConfigCollectionUpdate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return nil
 	}
-
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
@@ -271,7 +270,6 @@ func resourceIbmIbmAppConfigCollectionDelete(d *schema.ResourceData, meta interf
 	if err != nil {
 		return nil
 	}
-
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)

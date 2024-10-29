@@ -66,7 +66,6 @@ func DataSourceIBMAppConfigProperties() *schema.Resource {
 				Optional:    true,
 				Description: "The number of records to retrieve. By default, the list operation return the first 10 records. To retrieve different set of records, use `limit` with `offset` to page through the available records.",
 			},
-
 			"offset": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -202,6 +201,7 @@ func DataSourceIBMAppConfigProperties() *schema.Resource {
 
 func dataSourceIbmAppConfigPropertiesRead(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)

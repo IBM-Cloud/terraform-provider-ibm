@@ -154,7 +154,6 @@ func resourceEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return nil
 	}
-
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err

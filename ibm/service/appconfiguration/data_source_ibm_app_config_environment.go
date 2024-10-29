@@ -74,6 +74,7 @@ func DataSourceIBMAppConfigEnvironment() *schema.Resource {
 
 func dataSourceIbmAppConfigEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return err

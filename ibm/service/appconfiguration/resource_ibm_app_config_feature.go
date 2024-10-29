@@ -226,7 +226,6 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return nil
 	}
-
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err
@@ -287,7 +286,6 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return nil
 	}
-
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err
@@ -420,7 +418,6 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	if err != nil {
 		return nil
 	}
-
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
 		return err

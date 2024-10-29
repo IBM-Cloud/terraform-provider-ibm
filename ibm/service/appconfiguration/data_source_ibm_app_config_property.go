@@ -145,6 +145,7 @@ func DataSourceIBMAppConfigProperty() *schema.Resource {
 
 func dataSourceIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{}) error {
 	guid := d.Get("guid").(string)
+
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
 		return fmt.Errorf("getAppConfigClient failed %s", err)
