@@ -15,7 +15,6 @@ Provides a read-only data source for `collection`. You can then reference the fi
 ```hcl
 data "ibm_app_config_collection" "app_config_collection" {
 	guid = "guid"
-    region = "region"
 	expand = "expand"
 	collection_id = "collection_id"
 }
@@ -25,7 +24,7 @@ data "ibm_app_config_collection" "app_config_collection" {
 
 Review the argument reference that you can specify for your data source.
 
-- `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `guid` - (Required, string) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
 - `collection_id` - (Required, string) Collection Id of the collection.
 - `expand` - (optional, bool) If set to `true`, returns expanded view of the resource details.
 

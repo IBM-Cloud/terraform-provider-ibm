@@ -15,7 +15,6 @@ Retrieve information about an existing IBM Cloud App Configuration property. You
 ```terraform
 data "ibm_app_config_property" "app_config_property" {
 	guid = "guid"
-    region = "region"
 	environment_id = "environment_id"
 	property_id = "property_id"
 }
@@ -25,7 +24,7 @@ data "ibm_app_config_property" "app_config_property" {
 
 The following arguments are supported:
 
-- `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `guid` - (Required, string) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
 - `environment_id` - (Required, String) Environment Id.
 - `property_id` - (Required, String) Property Id.
 - `include` - (Optional, String) Include the associated collections in the response.

@@ -15,7 +15,6 @@ Provides a read-only data source for `collection`. You can then reference the fi
 ```hcl
 data "app_config_collections" "app_config_collections" {
 	guid = "guid"
-  region = "region"
   tags = "tags"
   expand = "expand"
   limit = "limit"
@@ -27,7 +26,7 @@ data "app_config_collections" "app_config_collections" {
 
 The following arguments are supported:
 
-- `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `guid` - (Required, string) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
 - `sort` - (optional, string) Sort the collection details based on the specified attribute.
 - `tags` - (optional, string) Flter the resources to be returned based on the associated tags. Returns resources associated with any of the specified tags.
 - `expand` - (optional, bool) If set to `true`, returns expanded view of the resource details.

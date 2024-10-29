@@ -26,7 +26,7 @@ resource "ibm_app_config_collection" "app_config_collection" {
 
 The following arguments are supported:
 
-- `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
+- `guid` - (Required, string) guid of the App Configuration service. Get it from the service instance credentials section of the dashboard.
 - `name` - (Required, string) Collection name.
 - `collection_id` - (Required, string) Collection Id.
 - `description` - (Optional, string) Collection description.
