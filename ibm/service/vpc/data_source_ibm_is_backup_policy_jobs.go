@@ -409,7 +409,7 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 
 	// Support for pagination
 	start := ""
-	allrecs := []vpcv1.BackupPolicyJob{}
+	allrecs := []vpcv1.BackupPolicyJobIntf{}
 
 	for {
 
@@ -450,7 +450,7 @@ func dataSourceIBMIsBackupPolicyJobsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceBackupPolicyJobCollectionFlattenJobs(result []vpcv1.BackupPolicyJob) (jobs []map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionFlattenJobs(result []vpcv1.BackupPolicyJobIntf) (jobs []map[string]interface{}) {
 	for _, jobsItem := range result {
 		jobs = append(jobs, dataSourceBackupPolicyJobCollectionJobsToMap(jobsItem))
 	}
@@ -458,7 +458,7 @@ func dataSourceBackupPolicyJobCollectionFlattenJobs(result []vpcv1.BackupPolicyJ
 	return jobs
 }
 
-func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItem vpcv1.BackupPolicyJob) (jobsMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItem vpcv1.BackupPolicyJobIntf) (jobsMap map[string]interface{}) {
 	// log.Println("Hi I am inside dataSourceBackupPolicyJobCollectionJobsToMap")
 	jobsMap = map[string]interface{}{}
 

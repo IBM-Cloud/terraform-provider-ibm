@@ -330,12 +330,12 @@ func dataSourceIBMIsBackupPolicyJobRead(context context.Context, d *schema.Resou
 	getBackupPolicyJobOptions.SetBackupPolicyID(d.Get("backup_policy_id").(string))
 	getBackupPolicyJobOptions.SetID(d.Get("identifier").(string))
 
-	backupPolicyJob, response, err := vpcClient.GetBackupPolicyJobWithContext(context, getBackupPolicyJobOptions)
+	backupPolicyJobIntf, response, err := vpcClient.GetBackupPolicyJobWithContext(context, getBackupPolicyJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetBackupPolicyJobWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetBackupPolicyJobWithContext failed %s\n%s", err, response))
 	}
-
+	backupPolicyJob := backupPolicyJobIntf.(*vpcv1.BackupPolicyJob)
 	d.SetId(*backupPolicyJob.ID)
 	if err = d.Set("auto_delete", backupPolicyJob.AutoDelete); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting auto_delete: %s", err))
@@ -612,7 +612,7 @@ func dataSourceBackupPolicyJobStatusReasonsToMap(statusReasonsItem vpcv1.BackupP
 	return statusReasonsMap
 }
 
-func dataSourceBackupPolicyJobFlattenTargetSnapshot(result []vpcv1.SnapshotReference) (finalList []map[string]interface{}) {
+func dataSourceBackupPolicyJobFlattenTargetSnapshot(result []vpcv1.BackupPolicyTargetSnapshotIntf) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	for _, snapshotReferenceItem := range result {
 		finalMap := dataSourceBackupPolicyJobTargetSnapshotToMap(snapshotReferenceItem)
@@ -622,9 +622,9 @@ func dataSourceBackupPolicyJobFlattenTargetSnapshot(result []vpcv1.SnapshotRefer
 	return finalList
 }
 
-func dataSourceBackupPolicyJobTargetSnapshotToMap(targetSnapshotItem vpcv1.SnapshotReference) (targetSnapshotMap map[string]interface{}) {
+func dataSourceBackupPolicyJobTargetSnapshotToMap(targetSnapshotItemIntf vpcv1.BackupPolicyTargetSnapshotIntf) (targetSnapshotMap map[string]interface{}) {
 	targetSnapshotMap = map[string]interface{}{}
-
+	targetSnapshotItem := targetSnapshotItemIntf.(*vpcv1.BackupPolicyTargetSnapshot)
 	if targetSnapshotItem.CRN != nil {
 		targetSnapshotMap["crn"] = targetSnapshotItem.CRN
 	}
