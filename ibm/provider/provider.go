@@ -358,7 +358,9 @@ func Provider() *schema.Provider {
 			"ibm_dns_secondary":                            classicinfrastructure.DataSourceIBMDNSSecondary(),
 			"ibm_event_streams_topic":                      eventstreams.DataSourceIBMEventStreamsTopic(),
 			"ibm_event_streams_schema":                     eventstreams.DataSourceIBMEventStreamsSchema(),
+			"ibm_event_streams_schema_global_rule":         eventstreams.DataSourceIBMEventStreamsSchemaGlobalCompatibilityRule(),
 			"ibm_event_streams_quota":                      eventstreams.DataSourceIBMEventStreamsQuota(),
+			"ibm_event_streams_mirroring_config":           eventstreams.DataSourceIBMEventStreamsMirroringConfig(),
 			"ibm_hpcs":                                     hpcs.DataSourceIBMHPCS(),
 			"ibm_hpcs_managed_key":                         hpcs.DataSourceIbmManagedKey(),
 			"ibm_hpcs_key_template":                        hpcs.DataSourceIbmKeyTemplate(),
@@ -912,6 +914,7 @@ func Provider() *schema.Provider {
 			"ibm_en_slack_template":            eventnotification.DataSourceIBMEnSlackTemplate(),
 			"ibm_en_metrics":                   eventnotification.DataSourceIBMEnMetrics(),
 			"ibm_en_smtp_allowed_ips":          eventnotification.DataSourceIBMEnSMTPAllowedIps(),
+			"ibm_en_webhook_template":          eventnotification.DataSourceIBMEnWebhookTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1123,7 +1126,9 @@ func Provider() *schema.Provider {
 			"ibm_dns_record":                               classicinfrastructure.ResourceIBMDNSRecord(),
 			"ibm_event_streams_topic":                      eventstreams.ResourceIBMEventStreamsTopic(),
 			"ibm_event_streams_schema":                     eventstreams.ResourceIBMEventStreamsSchema(),
+			"ibm_event_streams_schema_global_rule":         eventstreams.ResourceIBMEventStreamsSchemaGlobalCompatibilityRule(),
 			"ibm_event_streams_quota":                      eventstreams.ResourceIBMEventStreamsQuota(),
+			"ibm_event_streams_mirroring_config":           eventstreams.ResourceIBMEventStreamsMirroringConfig(),
 			"ibm_firewall":                                 classicinfrastructure.ResourceIBMFirewall(),
 			"ibm_firewall_policy":                          classicinfrastructure.ResourceIBMFirewallPolicy(),
 			"ibm_hpcs":                                     hpcs.ResourceIBMHPCS(),
@@ -1531,6 +1536,7 @@ func Provider() *schema.Provider {
 			"ibm_en_smtp_user":                 eventnotification.ResourceIBMEnSMTPUser(),
 			"ibm_en_slack_template":            eventnotification.ResourceIBMEnSlackTemplate(),
 			"ibm_en_smtp_setting":              eventnotification.ResourceIBMEnSMTPSetting(),
+			"ibm_en_webhook_template":          eventnotification.ResourceIBMEnWebhookTemplate(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),

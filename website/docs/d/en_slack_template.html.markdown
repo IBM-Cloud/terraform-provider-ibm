@@ -41,6 +41,6 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Template type smtp_custom.notification/smtp_custom.invitation.
+- `type` - (String) Template type slack.notification.
 
 - `updated_at` - (String) Last updated time.
