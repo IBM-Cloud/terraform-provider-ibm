@@ -24,7 +24,6 @@ data "ibm_app_config_segment" "app_config_segment" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-
 - `segment_id` - (Required, String) The segment ID.
 - `includes` - (Optional, String) Include feature and property details in the response.
 

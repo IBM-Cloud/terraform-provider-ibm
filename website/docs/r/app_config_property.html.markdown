@@ -30,7 +30,6 @@ resource "ibm_app_config_property" "app_config_property" {
 The following arguments are supported:
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-
 - `environment_id` - (Required, string) Environment Id.
 - `name` - (Required, string) Property name.
 - `property_id` - (Required, string) Property id.

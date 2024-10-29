@@ -25,7 +25,6 @@ data "ibm_app_config_properties" "app_config_properties" {
 The following arguments are supported:
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-
 - `environment_id` - (Required, String) Environment Id.
 - `tags` - (optional, String) Flter the resources to be returned based on the associated tags. Returns resources associated with any of the specified tags.
 - `expand` - (optional, bool) If set to `true`, returns expanded view of the resource details.

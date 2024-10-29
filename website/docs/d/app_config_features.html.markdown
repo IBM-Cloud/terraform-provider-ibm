@@ -28,7 +28,6 @@ data "ibm_app_config_features" "app_config_features" {
 Review the argument reference that you can specify for your data source.
 
 - `guid` - (Required, String) The GUID of the App Configuration service. Get it from the service instance credentials section of the dashboard.
-
 - `environment_id` - (Required, String)  Environment ID.
 - `tags` - (optional, String) Flter the resources to be returned based on the associated tags. Returns resources associated with any of the specified tags.
 - `expand` - (optional, Bool) If set to `true`, returns expanded view of the resource details.
