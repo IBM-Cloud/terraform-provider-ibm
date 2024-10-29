@@ -79,5 +79,5 @@ You can import the `ibm_onboarding_product` resource by using `id`. The ID of a 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_product.onboarding_product &lt;id&gt;
+$ terraform import ibm_onboarding_product.onboarding_product id;
 </pre>

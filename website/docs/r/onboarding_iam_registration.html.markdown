@@ -554,5 +554,5 @@ The `name` property can be formed from `product_id`, and `name` in the following
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_iam_registration.onboarding_iam_registration &lt;product_id&gt;/&lt;name&gt;
+$ terraform import ibm_onboarding_iam_registration.onboarding_iam_registration product_id/name;
 </pre>
