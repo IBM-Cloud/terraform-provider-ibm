@@ -1001,33 +1001,114 @@ func flattenLifecycleRuleFilter(filter *s3.LifecycleRuleFilter) []interface{} {
 		return []interface{}{}
 	}
 	m := make(map[string]interface{})
+	if filter.And != nil {
+		m["and"] = flattenLifecycleRuleFilterMemberAnd(filter.And)
+
+	}
+	if filter.ObjectSizeGreaterThan != nil && int(aws.Int64Value(filter.ObjectSizeGreaterThan)) > 0 {
+
+		m["object_size_greater_than"] = int(aws.Int64Value(filter.ObjectSizeGreaterThan))
+
+	}
+	if filter.ObjectSizeLessThan != nil && int(aws.Int64Value(filter.ObjectSizeLessThan)) > 0 {
+
+		m["object_size_less_than"] = int(aws.Int64Value(filter.ObjectSizeLessThan))
+
+	}
+	if filter.Tag != nil {
+		m["tag"] = flattenLifecycleRuleFilterMemberTag(filter.Tag)
+
+	}
 	if filter.Prefix != nil {
 		m["prefix"] = aws.String(*filter.Prefix)
 	}
 	return []interface{}{m}
 }
-
-func flattenAbortIncompleteMultipartUpload(abortIncompleteMultipartUploadInput *s3.AbortIncompleteMultipartUpload) []interface{} {
-	if abortIncompleteMultipartUploadInput == nil {
+func flattenLifecycleRuleFilterMemberAnd(andOp *s3.LifecycleRuleAndOperator) []interface{} {
+	if andOp == nil {
 		return []interface{}{}
 	}
-	abortIncompleteMultipartUploadMap := make(map[string]interface{})
-	if abortIncompleteMultipartUploadInput.DaysAfterInitiation != nil {
-		abortIncompleteMultipartUploadMap["days_after_initiation"] = int(aws.Int64Value(abortIncompleteMultipartUploadInput.DaysAfterInitiation))
+	m := map[string]interface{}{
+		"object_size_greater_than": andOp.ObjectSizeGreaterThan,
+		"object_size_less_than":    andOp.ObjectSizeLessThan,
 	}
-	return []interface{}{abortIncompleteMultipartUploadMap}
+
+	if v := andOp.Prefix; v != nil {
+		m["prefix"] = aws.StringValue(v)
+	}
+
+	if v := andOp.Tags; v != nil {
+		m["tags"] = flattenMultipleTags(v)
+	}
+
+	return []interface{}{m}
 }
 
-func LifecylceRuleGet(lifecycleRuleInput []*s3.LifecycleRule) []map[string]interface{} {
-	rules := make([]map[string]interface{}, 0, len(lifecycleRuleInput))
-	if lifecycleRuleInput != nil {
-		for _, lifecyclerule := range lifecycleRuleInput {
+func flattenMultipleTags(in []*s3.Tag) []map[string]interface{} {
+	println("Inside lifecycle rule get")
+	tagSet := make([]map[string]interface{}, 0, len(in))
+	if in != nil {
+		for _, tagSetValue := range in {
+			tag := make(map[string]interface{})
+			if tagSetValue.Key != nil {
+				tag["key"] = *tagSetValue.Key
+			}
+			if tagSetValue.Value != nil {
+				tag["value"] = *tagSetValue.Value
+			}
+
+			tagSet = append(tagSet, tag)
+
+		}
+
+	}
+
+	return tagSet
+}
+
+func flattenLifecycleRuleFilterMemberTag(op *s3.Tag) []interface{} {
+	if op == nil {
+		return nil
+	}
+
+	m := make(map[string]interface{})
+
+	if v := op.Key; v != nil {
+		m["key"] = aws.StringValue(v)
+	}
+
+	if v := op.Value; v != nil {
+		m["value"] = aws.StringValue(v)
+	}
+
+	return []interface{}{m}
+}
+
+func flattenAbortIncompleteMultipartUpload(u *s3.AbortIncompleteMultipartUpload) []interface{} {
+	if u == nil {
+		return []interface{}{}
+	}
+
+	m := make(map[string]interface{})
+
+	if u.DaysAfterInitiation != nil {
+		m["days_after_initiation"] = int(aws.Int64Value(u.DaysAfterInitiation))
+	}
+
+	return []interface{}{m}
+}
+
+func LifecylceRuleGet(in []*s3.LifecycleRule) []map[string]interface{} {
+	rules := make([]map[string]interface{}, 0, len(in))
+	if in != nil {
+		for _, lifecyclerule := range in {
 			lifecycleRuleConfig := make(map[string]interface{})
 			if lifecyclerule.Status != nil {
 				if *lifecyclerule.Status == "Enabled" {
 					lifecycleRuleConfig["status"] = "enable"
-				} else {
+				} else if *lifecyclerule.Status == "Disabled" {
 					lifecycleRuleConfig["status"] = "disable"
+
 				}
 			}
 			if lifecyclerule.ID != nil {
