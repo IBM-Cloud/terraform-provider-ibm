@@ -17,7 +17,7 @@ resource "ibm_en_slack_template" "slack_template" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
   name                  = "Notification Template"
   type                  = "slack.notification"
-  description           = "Destination Custom Email for event notification"
+  description           = "Slakc template for event notification"
       params {
         body="ewogICJib2R5IjogIjxodG1sPmhlbGxvIERpdnlhPC9odG1sPiIsCiAgInN1YmplY3QiOiAiSGkgdGhpcyBpcyBpbnZpdGF0aW9uIGZvciBpbnZpdGF0aW9uIG1lc3NhZ2UiCn0="
     }
@@ -40,7 +40,7 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `body` - (Required, String) The Body for Email Template in base64 encoded format.
+  - `body` - (Required, String) The Body for Slack Template in base64 encoded format.
 
 ## Attribute reference
 
@@ -70,5 +70,5 @@ The `id` property can be formed from `instance_guid`, and `template_id` in the f
 **Example**
 
 ```
-$ terraform import ibm_en_email_template.email_template <instance_guid>/<template_id>
+$ terraform import ibm_en_slack_template.slack_template <instance_guid>/<template_id>
 ```

@@ -1,3 +1,212 @@
+# 1.71.0-beta1(Oct 27, 2024)
+Features
+* Support Power System
+    - **Resources**
+        - ibm_pi_network_interface
+        - ibm_pi_storage_tiers
+        - ibm_pi_network_address_group
+        - ibm_pi_network_address_group_member
+        - ibm_pi_network_security_group_action
+        - ibm_pi_network_security_group_member
+        - ibm_pi_network_security_group_rule
+        - ibm_pi_network_security_group
+    - **Datasources**
+        - ibm_pi_network_interface
+        - ibm_pi_network_interfaces
+        - ibm_pi_volume_snapshot
+        - ibm_pi_volume_snapshots
+        - ibm_pi_network_address_group
+        - ibm_pi_network_address_groups
+        - ibm_pi_network_security_group
+        - ibm_pi_network_security_groups
+* Support Event Notification
+    - **Resources**
+        - ibm_en_webhook_template
+    - **Datasources**
+        - ibm_en_webhook_template
+* Support Event Streams
+    - **Resources**
+        - ibm_event_streams_quota
+        - ibm_event_streams_schema_global_rule
+        - ibm_event_streams_mirroring_config
+    - **Datasources**
+        - ibm_event_streams_quota
+        - ibm_event_streams_schema_global_rule
+        - ibm_event_streams_mirroring_config
+* Support VPC
+    - **Datasources**
+        - ibm_is_private_path_service_gateway
+        - ibm_is_private_path_service_gateway_account_policy
+        - ibm_is_private_path_service_gateway_account_policies
+        - ibm_is_private_path_service_gateways
+        - ibm_is_private_path_service_gateway_endpoint_gateway_binding
+        - ibm_is_private_path_service_gateway_endpoint_gateway_bindings
+    - **Resources**
+        - ibm_is_private_path_service_gateway_account_policy
+        - ibm_is_private_path_service_gateway
+        - ibm_is_private_path_service_gateway_revoke_account
+        - ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations
+        - ibm_is_private_path_service_gateway_operations
+
+Enhancements
+* Granular CRN for images ([5646](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5646))
+* Granular CRN for instance resources ([5647](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5647))
+* granular CRN for volumes ([5651](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5651))
+* Add GRS for volume data sources ([5671](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5671))
+* Add GRS Attributes/Arguments to pi_volume resource ([5668](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5668))
+* Add replication_pool_map to disaster recovery data sources ([5664](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5664))
+* Add GRS ([5665](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5665))
+* Add source checksum field to image data source ([5663](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5663))
+* Add datacenter capability details ([5666](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5666))
+* Update Storage Connection ([5667](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5667))
+* Add support_systems for sap profile ([5670](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5670))
+* Add GRS attributes to pi volume group data sources and related ([5673](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5673))
+* Update documentation for ibm_resource_tag ([5700](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5700))
+* Add Workspace NSG ([5727](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5727))
+* Update database.html.markdown ([5717](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5717))
+* Update partnercentersell service ([5721](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5721))
+* add orphan_resource_on_delete argument to worker pool resources ([5705](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5705))
+* Tekton pipeline re-generated with latest SDK generator ([5715](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5715))
+* Added support for vpn gateway connection distribute traffic ([5733](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5733))
+* feat(PPS): Add support for private path service gateway and private path load balancer ([5712](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5712))
+* Added support for defined_performance changes in is_volume ([5694](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5694))
+* feat(routing-table-crn): UI 37487 routing table crn and SDK migration PR ([5708](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5708))
+* feat: CBR regenerate provider ([5724](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5724))
+* added support for identifier in volume datasource ([5742](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5742))
+* re-ordered catalog offering on is_snapshot(s) ([5741](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5741))
+* fix on vpn gateway connection ([5737](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5737))
+* update kp operations to use flex logger ([5732](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5732))
+
+Bugfixes
+* Fix Config Aggregator ([5723](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5723))
+* fix rule_group resource panic ([5744](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5744))
+
+# 1.71.0-beta0(Oct 20, 2024)
+Features
+* Support Power System
+    - **Resources**
+        - ibm_pi_network_interface
+        - ibm_pi_storage_tiers
+        - ibm_pi_network_address_group
+        - ibm_pi_network_address_group_member
+        - ibm_pi_network_security_group_action
+        - ibm_pi_network_security_group_member
+        - ibm_pi_network_security_group_rule
+        - ibm_pi_network_security_group
+    - **Datasources**
+        - ibm_pi_network_interface
+        - ibm_pi_network_interfaces
+        - ibm_pi_volume_snapshot
+        - ibm_pi_volume_snapshots
+        - ibm_pi_network_address_group
+        - ibm_pi_network_address_groups
+        - ibm_pi_network_security_group
+        - ibm_pi_network_security_groups
+* Support Event Streams
+    - **Resources**
+        - ibm_event_streams_quota
+    - **Datasources**
+        - ibm_event_streams_quota
+* Support VPC
+    - **Datasources**
+        - ibm_is_private_path_service_gateway
+        - ibm_is_private_path_service_gateway_account_policy
+        - ibm_is_private_path_service_gateway_account_policies
+        - ibm_is_private_path_service_gateways
+        - ibm_is_private_path_service_gateway_endpoint_gateway_binding
+        - ibm_is_private_path_service_gateway_endpoint_gateway_bindings
+    - **Resources**
+        - ibm_is_private_path_service_gateway_account_policy
+        - ibm_is_private_path_service_gateway
+        - ibm_is_private_path_service_gateway_revoke_account
+        - ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations
+        - ibm_is_private_path_service_gateway_operations
+
+Enhancements
+* Granular CRN for images ([5646](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5646))
+* Granular CRN for instance resources ([5647](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5647))
+* granular CRN for volumes ([5651](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5651))
+* Add GRS for volume data sources ([5671](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5671))
+* Add GRS Attributes/Arguments to pi_volume resource ([5668](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5668))
+* Add replication_pool_map to disaster recovery data sources ([5664](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5664))
+* Add GRS ([5665](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5665))
+* Add source checksum field to image data source ([5663](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5663))
+* Add datacenter capability details ([5666](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5666))
+* Update Storage Connection ([5667](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5667))
+* Add support_systems for sap profile ([5670](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5670))
+* Add GRS attributes to pi volume group data sources and related ([5673](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5673))
+* Update documentation for ibm_resource_tag ([5700](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5700))
+* Add Workspace NSG ([5727](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5727))
+* Update database.html.markdown ([5717](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5717))
+* Update partnercentersell service ([5721](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5721))
+* add orphan_resource_on_delete argument to worker pool resources ([5705](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5705))
+* Tekton pipeline re-generated with latest SDK generator ([5715](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5715))
+* Added support for vpn gateway connection distribute traffic ([5733](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5733))
+* feat(PPS): Add support for private path service gateway and private path load balancer ([5712](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5712))
+* Added support for defined_performance changes in is_volume ([5694](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5694))
+* feat(routing-table-crn): UI 37487 routing table crn and SDK migration PR ([5708](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5708))
+
+Bugfixes
+* Fix Config Aggregator ([5723](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5723))
+
+# 1.70.1 (Oct 19, 2024)
+BugFixes
+* Fix test bucket endpoints ([5695](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5695))
+
+# 1.70.0 (Oct 06, 2024)
+
+Breaking Changes
+* update(cloud-databases): Make Service Endpoints as Required argument([5615](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5615))
+
+Features
+* Support IAM Access tag
+    - **Resources**
+        - ibm_iam_access_tag
+* Support VPC
+    - **Resources**
+        - ibm_is_subnet_reserved_ip_patch
+* Support code Engine
+    - **Resources**
+        - ibm_code_engine_function
+* Support Configuration Aggregator
+     - **Resources**
+        - ibm_config_aggregator_settings
+     - **Datasources**
+        - ibm_config_aggregator_configurations
+        - ibm_config_aggregator_settings
+        - ibm_config_aggregator_resource_collection_status
+
+Enhancements
+* add service_to_service_enabled field to atracker event streams endpoint ([5605](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5605))
+* Deprecated ibm_resource_access_tag and replaced it with ibm_iam_access_tag ([5567](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5567))
+* SM New error formatting + crypto_key label name changes ([5562](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5562))
+* Deprecating alias and bindings APIs and schema items ([5612](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5612))
+* update(cloud-databases): Make Service Endpoints Required and send warning when public endpoints are in use ([5402](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5402))
+* discourage use of ibm_container_bind_service ([5588](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5588))
+* updated resources, data source and documentation for Slack Direct destination support ([5615](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5615))
+* IAM Policy Assignment: S2S Policy Assignments ET and AG ([5624](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5624))
+* fix for context and history parameter of template assignment ([5640](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5640))
+* Updating to latest schematics sdk and updating sch_agent resource to enable force deletion by default ([5660](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5660))
+* add support for 4th zone ([5644](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5644))
+* add support for CRN attribute for Power Network ([5649](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5649))
+* add support for CRN attribute for Power Shared Processor ([5650](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5650))
+* add support for CRN attribute for Power Snapshot ([5650](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5650))
+* Secrets Manager IAM credentials secrets with S2S ([5678](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5678))
+* fix: update error diagnostic reporting in existing Event Streams code ([5685](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5685))
+* feat(Catalog Management): support new offering version limit ([5688](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5688))
+* sch Agent resource updated to accommodate agent destroy resources ([5691](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5691))
+* feat(tekton): add support for fork feature ([5693](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5693))
+
+BugFixes
+* The ibm_resource_tag do not detach if tag_type is access or service ([5566](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5566))
+* fix(is_share): added empty check and moved source_share_crn outside ([5632](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5632))
+* Add test bucket endpoints ([5636](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5636))
+* The ibm_resource_tag does not check the response on api tags calls ([5641](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5641))
+* Fix incorrect handling of trusted profile static CRN identities ([5681](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5681))
+* Fix multibyte character and optional attributes fix for Cloud logs ([5679](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5679))
+* fix(lb-pool-member): Add a nil check before accessing member weight ([5682](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5682))
+* Fix unicode characters for name fields in cloud logs resources ([5698](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5698))
+
 # 1.70.0-beta0(Sep 22, 2024)
 
 Breaking Changes

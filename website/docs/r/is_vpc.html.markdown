@@ -191,6 +191,7 @@ In addition to all argument reference list, you can access the following attribu
 - `default_network_acl_crn`-  (String) CRN of the default network ACL ID created and attached to the VPC.
 - `default_network_acl`-  (String) The default network ACL ID created and attached to the VPC.
 - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
+- `default_routing_table_crn`-  (String) CRN of the default routing table.
 - `health_reasons` - (List) The reasons for the current `health_state` (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.
   Nested schema for **health_reasons**:
 	- `code` - (String) A snake case string succinctly identifying the reason for this health state.
