@@ -8,7 +8,7 @@ description:
 ---
 
 # ibm_cos_bucket_lifecycle_configuration
-This is the recommended way of managing the lifecycle configuration for a bucket. This provides an independent resource to manage the lifecycle configuration for a bucket.A lifecycle configuration consists of an lifecycle rule , each rule has a unique id , status and an action. Action can be of 2 types - [transition](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-archive) and [expiration](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-expiry).It also consists of noncurrent version expiration and abort incomplete multipart upload.A lifecycle sonfiguration can have multiple expiration rules but only one transition rule.
+Provides the recommended way of managing the lifecycle configuration for a bucket/. This provides an independent resource to manage the lifecycle configuration for a bucket.A lifecycle configuration consists of an lifecycle rule , each rule has a unique id , status and an action. Action can be of 2 types - [transition](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-archive) and [expiration](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-expiry).It also consists of noncurrent version expiration and abort incomplete multipart upload.A lifecycle configuration can have multiple expiration rules but only one transition rule.
 
 
 ## Example usage
@@ -174,13 +174,149 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 ```
 
+# Adding lifecycle configuration for object expiration with filter based on object size.
+
+```terraform
+
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      object_size_greater_than = 1000
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+```
+
+# Adding lifecycle configuration for object expiration with filter based on tag.
+
+```terraform
+
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      tag{
+        key = "MyObjectTagKey"
+        value = "MyObjectTagValue"
+      }
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+```
+# Adding lifecycle configuration for object expiration with multiple filter.
+
+```terraform
+
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      and{
+				prefix = "%s"
+				tags{
+					key = "MyObjectTagKey"
+					value = "MyObjectTagValue"
+				}
+				object_size_greater_than = "%d"
+				object_size_less_than = "%d"
+			}
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+```
+
+# Adding lifecycle configuration for object expiration with filter based on multiple tags.
+
+```terraform
+
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      and{
+				tags{
+					key = "MyObjectTagKey1"
+					value = "MyObjectTagValue1"
+				}
+				tags{
+					key = "MyObjectTagKey2"
+					value = "MyObjectTagValue2"
+				}
+				
+			}
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+```
+
 # Switching from legacy lifecycle rules to ibm_cos_bucket_lifecycle_configuration :
 
 
 **Note:**
 If you use legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`  on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the bucket, treating additional Lifecycle rules as drift. For this reason, legacy rules cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given cos bucket.Users that want to continue using the legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`. 
 
-In case you want to switch from the legacy lifecycle rules to the new resource for an existing cos bucket with existing legacy lifecycle rules , please follow the steps below
+In case you want to switch from using legacy lifecycle rules in the definition of an existing bucket to using a bucket lifecycle configuration resource for the existing bucket, please follow the steps below
 
 ## Example usage
 For example if there is a cos bucket existing in the `.tfstate` file with `expire_rule` applied.
@@ -301,6 +437,12 @@ Review the argument references that you can specify for your resource.
 
  Nested scheme for `abort_incomplete_multipart_upload`:
   - `days_after_initiation` - Number of days after which incomplete multipart uploads are aborted.
+
+ Nested scheme for `filter`:
+  - `prefix`- (Optional) Prefix identifying one or more objects to which the rule applies.
+  - `tag`- (Optional) Key-value map of resource tags.
+  - `object_size_greater_than`- (Optional) inimum object size to which the rule applies. Value must be at least 0 if specified.
+  - `object_size_less_than`- (Optional) Maximum object size to which the rule applies. Value must be at least 1 if specified.
  
 
  ## Import IBM COS lifecycle configuration
