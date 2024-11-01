@@ -14,7 +14,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
 )
 
 func TestAccIBMCdTektonPipelineTriggerPropertyBasic(t *testing.T) {

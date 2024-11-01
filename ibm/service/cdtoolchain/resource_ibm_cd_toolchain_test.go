@@ -13,7 +13,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
+	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
 )
 
 func TestAccIBMCdToolchainBasic(t *testing.T) {
