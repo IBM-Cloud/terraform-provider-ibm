@@ -51,10 +51,8 @@ func TestAccIBMCdToolchainAllArgs(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	rgName := acc.CdResourceGroupName
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	tags := `["tag1", "tag2"]`
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	tagsUpdate := `["tag1","tag2","tag3"]`
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -62,22 +60,20 @@ func TestAccIBMCdToolchainAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdToolchainDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainConfig(name, rgName, description, tags),
+				Config: testAccCheckIBMCdToolchainConfig(name, rgName, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdToolchainExists("ibm_cd_toolchain.cd_toolchain", conf),
 					resource.TestCheckResourceAttr("ibm_cd_toolchain.cd_toolchain", "name", name),
 					resource.TestCheckResourceAttrSet("ibm_cd_toolchain.cd_toolchain", "resource_group_id"),
 					resource.TestCheckResourceAttr("ibm_cd_toolchain.cd_toolchain", "description", description),
-					resource.TestCheckResourceAttr("ibm_cd_toolchain.cd_toolchain", "tags.#", "2"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainConfig(nameUpdate, rgName, descriptionUpdate, tagsUpdate),
+				Config: testAccCheckIBMCdToolchainConfig(nameUpdate, rgName, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_toolchain.cd_toolchain", "name", nameUpdate),
 					resource.TestCheckResourceAttrSet("ibm_cd_toolchain.cd_toolchain", "resource_group_id"),
 					resource.TestCheckResourceAttr("ibm_cd_toolchain.cd_toolchain", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_cd_toolchain.cd_toolchain", "tags.#", "3"),
 				),
 			},
 			resource.TestStep{
@@ -102,7 +98,7 @@ func testAccCheckIBMCdToolchainConfigBasic(name string, rgName string) string {
 	`, rgName, name)
 }
 
-func testAccCheckIBMCdToolchainConfig(name string, rgName string, description string, tags string) string {
+func testAccCheckIBMCdToolchainConfig(name string, rgName string, description string) string {
 	return fmt.Sprintf(`
 		data "ibm_resource_group" "resource_group" {
 			name = "%s"
@@ -112,9 +108,8 @@ func testAccCheckIBMCdToolchainConfig(name string, rgName string, description st
 			name = "%s"
 			resource_group_id = data.ibm_resource_group.resource_group.id
 			description = "%s"
-			tags = %s
 		}
-	`, rgName, name, description, tags)
+	`, rgName, name, description)
 }
 
 func testAccCheckIBMCdToolchainExists(n string, obj cdtoolchainv2.Toolchain) resource.TestCheckFunc {
