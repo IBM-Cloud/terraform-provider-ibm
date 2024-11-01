@@ -142,6 +142,8 @@ github.com/IBM/continuous-delivery-go-sdk v1.8.2 h1:L2hyoJSxgCa0/HKviHKtut1z4Mn2
 github.com/IBM/continuous-delivery-go-sdk v1.8.2/go.mod h1:5umVUaXEoTP2ULARgXRBPcR3vWDCmKD66P6XgNqpzZk=
 github.com/IBM/event-notifications-go-admin-sdk v0.10.0 h1:SbEG6Z9lJWQxNYexYmLRzF+seFokOW7bRKBgiyfYsls=
 github.com/IBM/event-notifications-go-admin-sdk v0.10.0/go.mod h1:za2mdfBpox6hdsKaYTbE5ooCv2im8BYPq5yuKc7x5Ao=
+github.com/IBM/event-notifications-go-admin-sdk v0.11.0 h1:X/GhBE6dGRx8s79xYrdmv88ljD/8hSCyh9jMSUPCcCc=
+github.com/IBM/event-notifications-go-admin-sdk v0.11.0/go.mod h1:za2mdfBpox6hdsKaYTbE5ooCv2im8BYPq5yuKc7x5Ao=
 github.com/IBM/eventstreams-go-sdk v1.4.0 h1:yS/Ns29sBOe8W2tynQmz9HTKqQZ0ckse4Py5Oy/F2rM=
 github.com/IBM/eventstreams-go-sdk v1.4.0/go.mod h1:2tuAxaYLctfqfr5jvyqSrxxEQGMwYPm3yJGWSj85YVQ=
 github.com/IBM/go-sdk-core v1.1.0 h1:pV73lZqr9r1xKb3h08c1uNG3AphwoV5KzUzhS+pfEqY=
