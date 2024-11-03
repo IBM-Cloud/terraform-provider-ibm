@@ -24,6 +24,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
   catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
   env = var.onboarding_catalog_deployment_env
+  object_id = var.onboarding_catalog_deployment_object_id
   name = var.onboarding_catalog_deployment_name
   active = var.onboarding_catalog_deployment_active
   disabled = var.onboarding_catalog_deployment_disabled
@@ -97,6 +98,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
   product_id = ibm_onboarding_product.onboarding_product_instance.id
   catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   env = var.onboarding_catalog_plan_env
+  object_id = var.onboarding_catalog_plan_object_id
   name = var.onboarding_catalog_plan_name
   active = var.onboarding_catalog_plan_active
   disabled = var.onboarding_catalog_plan_disabled
@@ -168,6 +170,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
   product_id = ibm_onboarding_product.onboarding_product_instance.id
   env = var.onboarding_catalog_product_env
+  object_id = var.onboarding_catalog_product_object_id
   name = var.onboarding_catalog_product_name
   active = var.onboarding_catalog_product_active
   disabled = var.onboarding_catalog_product_disabled
@@ -342,6 +345,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
     attributes {
       account_id = "account_id"
       service_name = "service_name"
+      additional_properties = { "key" = "inner" }
     }
     roles = [ "roles" ]
   }

@@ -1697,41 +1697,41 @@ func init() {
 	}
 
 	CdSlackChannelName = os.Getenv("IBM_CD_SLACK_CHANNEL_NAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSlackChannelName == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_CHANNEL_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdSlackTeamName = os.Getenv("IBM_CD_SLACK_TEAM_NAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSlackTeamName == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_TEAM_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdSlackWebhook = os.Getenv("IBM_CD_SLACK_WEBHOOK")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSlackWebhook == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_WEBHOOK for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	CdJiraProjectKey = os.Getenv("IBM_CD_JIRA_PROJECT_KEY")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraProjectKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_PROJECT_KEY for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdJiraApiUrl = os.Getenv("IBM_CD_JIRA_API_URL")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraApiUrl == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_API_URL for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdJiraUsername = os.Getenv("IBM_CD_JIRA_USERNAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraUsername == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_USERNAME for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdJiraApiToken = os.Getenv("IBM_CD_JIRA_API_TOKEN")
-	if CdSecretsManagerInstanceName == "" {
+	if CdJiraApiToken == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_API_TOKEN for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	CdSaucelabsAccessKey = os.Getenv("IBM_CD_SAUCELABS_ACCESS_KEY")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSaucelabsAccessKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_ACCESS_KEY for testing CD resources, CD tests will fail if this is not set")
 	}
 	CdSaucelabsUsername = os.Getenv("IBM_CD_SAUCELABS_USERNAME")
-	if CdSecretsManagerInstanceName == "" {
+	if CdSaucelabsUsername == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_USERNAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
