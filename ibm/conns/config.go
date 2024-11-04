@@ -124,6 +124,7 @@ import (
 	"github.com/IBM/logs-go-sdk/logsv0"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -232,6 +233,7 @@ type ClientSession interface {
 	ResourceManagementAPIv2() (managementv2.ResourceManagementAPIv2, error)
 	ResourceControllerAPI() (controller.ResourceControllerAPI, error)
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
+	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -547,8 +549,13 @@ type clientSession struct {
 	enterpriseManagementClientErr error
 
 	// Resource Controller Option
-	resourceControllerErr   error
-	resourceControllerAPI   *resourcecontroller.ResourceControllerV2
+	resourceControllerErr error
+	resourceControllerAPI *resourcecontroller.ResourceControllerV2
+
+	// BAAS service
+	backupRecoveryClient    *backuprecoveryv1.BackupRecoveryV1
+	backupRecoveryClientErr error
+
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -1110,6 +1117,10 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 	return sess.resourceControllerAPI, sess.resourceControllerErr
 }
 
+func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error) {
+	return session.backupRecoveryClient, session.backupRecoveryClientErr
+}
+
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1287,6 +1298,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErrv2 = errEmptyBluemixCredentials
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
+		session.backupRecoveryClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
@@ -1381,7 +1393,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 				return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
 			}
 		}
-
 	}
 	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
@@ -1548,6 +1559,30 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct the service options.
+	backupRecoveryURL := "https://brs-stage-us-south-02.backup-recovery.test.cloud.ibm.com/v2"
+
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
+	}
+
+	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
+	}
+	// Construct the service client.
+	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.backupRecoveryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.backupRecoveryClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
 	}
 
 	projectEndpoint := project.DefaultServiceURL

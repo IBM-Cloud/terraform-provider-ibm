@@ -21,6 +21,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
+
+	// "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
@@ -228,12 +231,35 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+
 			"ibm_api_gateway":        apigateway.DataSourceIBMApiGateway(),
 			"ibm_account":            cloudfoundry.DataSourceIBMAccount(),
 			"ibm_app":                cloudfoundry.DataSourceIBMApp(),
 			"ibm_app_domain_private": cloudfoundry.DataSourceIBMAppDomainPrivate(),
 			"ibm_app_domain_shared":  cloudfoundry.DataSourceIBMAppDomainShared(),
 			"ibm_app_route":          cloudfoundry.DataSourceIBMAppRoute(),
+
+			// // BackupAndRecovery
+			"ibm_backup_recovery_agent_upgrade_tasks":      backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasks(),
+			"ibm_backup_recovery_download_agent":           backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent(),
+			"ibm_backup_recovery_search_indexed_object":    backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject(),
+			"ibm_backup_recovery_object_snapshots":         backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots(),
+			"ibm_backup_recovery_connectors_metadata":      backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata(),
+			"ibm_backup_recovery_data_source_connections":  backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnections(),
+			"ibm_backup_recovery_data_source_connectors":   backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectors(),
+			"ibm_backup_recovery_search_objects":           backuprecovery.DataSourceIbmBackupRecoverySearchObjects(),
+			"ibm_backup_recovery_search_protected_objects": backuprecovery.DataSourceIbmBackupRecoverySearchProtectedObjects(),
+			"ibm_backup_recovery_protection_group":         backuprecovery.DataSourceIbmBackupRecoveryProtectionGroup(),
+			"ibm_backup_recovery_protection_groups":        backuprecovery.DataSourceIbmBackupRecoveryProtectionGroups(),
+			"ibm_backup_recovery_protection_group_runs":    backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupRuns(),
+			"ibm_backup_recovery_protection_policies":      backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicies(),
+			"ibm_backup_recovery_protection_policy":        backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicy(),
+			"ibm_backup_recovery":                          backuprecovery.DataSourceIbmBackupRecovery(),
+			"ibm_backup_recoveries":                        backuprecovery.DataSourceIbmBackupRecoveries(),
+			"ibm_backup_recovery_download_files":           backuprecovery.DataSourceIbmBackupRecoveryDownloadFiles(),
+			"ibm_backup_recovery_source_registrations":     backuprecovery.DataSourceIbmBackupRecoverySourceRegistrations(),
+			"ibm_backup_recovery_source_registration":      backuprecovery.DataSourceIbmBackupRecoverySourceRegistration(),
+			"ibm_backup_recovery_download_indexed_files":   backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles(),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -962,6 +988,20 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"ibm_backup_recovery_agent_upgrade_task":                             backuprecovery.ResourceIbmBackupRecoveryAgentUpgradeTask(),
+			"ibm_backup_recovery_protection_group_run_request":                   backuprecovery.ResourceIbmBackupRecoveryProtectionGroupRunRequest(),
+			"ibm_backup_recovery_data_source_connection":                         backuprecovery.ResourceIbmBackupRecoveryDataSourceConnection(),
+			"ibm_backup_recovery_data_source_connector_patch":                    backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectorPatch(),
+			"ibm_backup_recovery_download_files_folders":                         backuprecovery.ResourceIbmBackupRecoveryDownloadFilesFolders(),
+			"ibm_backup_recovery_restore_points":                                 backuprecovery.ResourceIbmBackupRecoveryRestorePoints(),
+			"ibm_backup_recovery_perform_action_on_protection_group_run_request": backuprecovery.ResourceIbmBackupRecoveryPerformActionOnProtectionGroupRunRequest(),
+			"ibm_backup_recovery_protection_group":                               backuprecovery.ResourceIbmBackupRecoveryProtectionGroup(),
+			"ibm_backup_recovery_protection_policy":                              backuprecovery.ResourceIbmBackupRecoveryProtectionPolicy(),
+			"ibm_backup_recovery":                                                backuprecovery.ResourceIbmBackupRecovery(),
+			"ibm_backup_recovery_source_registration":                            backuprecovery.ResourceIbmBackupRecoverySourceRegistration(),
+			"ibm_backup_recovery_update_protection_group_run_request":            backuprecovery.ResourceIbmBackupRecoveryUpdateProtectionGroupRunRequest(),
+			"ibm_backup_recovery_connection_registration_token":                  backuprecovery.ResourceIbmBackupRecoveryConnectionRegistrationToken(),
+
 			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
 			"ibm_app":                               cloudfoundry.ResourceIBMApp(),
