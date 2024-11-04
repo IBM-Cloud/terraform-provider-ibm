@@ -85,7 +85,7 @@ func DataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 									pdnsCRFRVForwardTo: {
 										Type:        schema.TypeList,
 										Required:    true,
-										Description: "The upstream DNS servers will be forwarded to.",
+										Description: "The upstream DNS servers that the matching DNS queries will be forwarded to.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},

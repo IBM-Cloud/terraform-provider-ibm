@@ -100,14 +100,14 @@ In addition to all argument reference list, you can access the following attribu
   - `type` - (String) Type of the forwarding rule.
     - Constraints: Allowable values are: `zone`, `hostname`.
   - `match` - (String) The matching zone or hostname.
-  - `forward_to` - (List) The upstream DNS servers will be forwarded to.
+  - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
   - `views` (List) List of views attached to the custom resolver.
 
     Nested scheme for `views`:
     - `name` - (String) Name of the view.
     - `description` - (String) Description of the view.
     - `expression` - (String) Expression of the view.
-    - `forward_to` - (List) List of the upstream DNS servers will be forwarded to.
+    - `forward_to` - (List) List of the upstream DNS servers that the matching DNS queries will be forwarded to
 
 ## Import
 

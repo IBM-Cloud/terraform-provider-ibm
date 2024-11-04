@@ -81,14 +81,14 @@ Review the argument reference that you can specify for your resource.
 * `type` - (Optional, String) Type of the forwarding rule.
   * Constraints: Allowable values is: `zone`.
 * `match` - (Optional, String) The matching zone or hostname.
-* `forward_to` - (Optional, List) The upstream DNS servers will be forwarded to.
+* `forward_to` - (Optional, List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
 * `views` (Optional, List) List of views attached to the custom resolver.
 
   Nested scheme for `views`:
   * `name` - (Required, String) Name of the view.
   * `description` - (optional, String) Description of the view.
   * `expression` - (Required, String) Expression of the view.
-  * `forward_to` - (Required, List) List of the upstream DNS servers will be forwarded to.
+  * `forward_to` - (Required, List) List of the upstream DNS servers that the matching DNS queries will be forwarded to.
 
 ## Attribute reference
 
