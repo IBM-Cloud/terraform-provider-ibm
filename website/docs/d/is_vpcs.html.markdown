@@ -44,7 +44,7 @@ You can access the following attribute references after your data source is crea
     - `classic_access`- (Bool) Indicates whether this VPC is connected to the Classic Infrastructure.
     
       ~> **Note:** 
-        `classic_access` is deprecated. Use Transit Gateway with Classic as a spoke/connection.
+        `classic_access` is deprecated. Use [Transit Gateway](https://cloud.ibm.com/docs/transit-gateway) with Classic as a spoke/connection.
     - `crn` - (String) The CRN of the VPC.
     - `cse_source_addresses`- (List of Cloud Service Endpoints) A list of the cloud service endpoints that are associated with your VPC, including their source IP address and zone.
 
