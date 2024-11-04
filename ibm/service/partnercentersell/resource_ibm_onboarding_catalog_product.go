@@ -44,6 +44,11 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_onboarding_catalog_product", "env"),
 				Description:  "The environment to fetch this object from.",
 			},
+			"object_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The desired ID of the global catalog object.",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -674,6 +679,9 @@ func resourceIbmOnboardingCatalogProductCreate(context context.Context, d *schem
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "create", "parse-object_provider").GetDiag()
 	}
 	createCatalogProductOptions.SetObjectProvider(objectProviderModel)
+	if _, ok := d.GetOk("object_id"); ok {
+		createCatalogProductOptions.SetObjectID(d.Get("object_id").(string))
+	}
 	if _, ok := d.GetOk("overview_ui"); ok {
 		overviewUiModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogOverviewUI(d.Get("overview_ui.0").(map[string]interface{}))
 		if err != nil {
@@ -743,6 +751,12 @@ func resourceIbmOnboardingCatalogProductRead(context context.Context, d *schema.
 		return tfErr.GetDiag()
 	}
 
+	if !core.IsNil(globalCatalogProduct.ObjectID) {
+		if err = d.Set("object_id", globalCatalogProduct.ObjectID); err != nil {
+			err = fmt.Errorf("Error setting object_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-object_id").GetDiag()
+		}
+	}
 	if err = d.Set("name", globalCatalogProduct.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_catalog_product", "read", "set-name").GetDiag()

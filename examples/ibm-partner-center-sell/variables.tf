@@ -86,6 +86,11 @@ variable "onboarding_catalog_deployment_env" {
   type        = string
   default     = "env"
 }
+variable "onboarding_catalog_deployment_object_id" {
+  description = "The desired ID of the global catalog object."
+  type        = string
+  default     = "object_id"
+}
 variable "onboarding_catalog_deployment_name" {
   description = "The programmatic name of this deployment."
   type        = string
@@ -128,6 +133,11 @@ variable "onboarding_catalog_plan_env" {
   type        = string
   default     = "env"
 }
+variable "onboarding_catalog_plan_object_id" {
+  description = "The desired ID of the global catalog object."
+  type        = string
+  default     = "object_id"
+}
 variable "onboarding_catalog_plan_name" {
   description = "The programmatic name of this plan."
   type        = string
@@ -164,6 +174,11 @@ variable "onboarding_catalog_product_env" {
   description = "The environment to fetch this object from."
   type        = string
   default     = "env"
+}
+variable "onboarding_catalog_product_object_id" {
+  description = "The desired ID of the global catalog object."
+  type        = string
+  default     = "object_id"
 }
 variable "onboarding_catalog_product_name" {
   description = "The programmatic name of this product."
@@ -205,7 +220,7 @@ variable "onboarding_iam_registration_env" {
 variable "onboarding_iam_registration_name" {
   description = "The IAM registration name, which must be the programmatic name of the product."
   type        = string
-  default     = "name"
+  default     = "pet-store"
 }
 variable "onboarding_iam_registration_enabled" {
   description = "Whether the service is enabled or disabled for IAM."
@@ -220,12 +235,12 @@ variable "onboarding_iam_registration_service_type" {
 variable "onboarding_iam_registration_additional_policy_scopes" {
   description = "List of additional policy scopes."
   type        = list(string)
-  default     = [ "additional_policy_scopes" ]
+  default     = ["pet-store"]
 }
 variable "onboarding_iam_registration_parent_ids" {
   description = "The list of parent IDs for product access management."
   type        = list(string)
-  default     = [ "parent_ids" ]
+  default     = []
 }
 
 // Resource arguments for onboarding_product
