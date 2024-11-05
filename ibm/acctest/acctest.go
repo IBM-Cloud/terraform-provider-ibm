@@ -112,6 +112,7 @@ var (
 	SourceShareCRN                  string
 	ShareEncryptionKey              string
 	VNIId                           string
+	FloatingIpID                    string
 	VolumeProfileName               string
 	VSIUnattachedBootVolumeID       string
 	VSIDataVolumeID                 string
@@ -990,6 +991,11 @@ func init() {
 	if VNIId == "" {
 		VNIId = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable IS_VIRTUAL_NETWORK_INTERFACE for testing ibm_is_virtual_network_interface else it is set to default value 'c93dc4c6-e85a-4da2-9ea6-f24576256122'")
+	}
+	FloatingIpID = os.Getenv("IS_FLOATING_IP")
+	if FloatingIpID == "" {
+		FloatingIpID = "r006-9fc3948f-1b01-406c-baa5-e86b185e559f"
+		fmt.Println("[INFO] Set the environment variable IS_FLOATING_IP for testing ibm_is_virtual_network_interface else it is set to default value 'r006-9fc3948f-1b01-406c-baa5-e86b185e559f'")
 	}
 
 	VSIUnattachedBootVolumeID = os.Getenv("IS_VSI_UNATTACHED_BOOT_VOLUME_ID")
