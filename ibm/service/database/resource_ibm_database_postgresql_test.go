@@ -278,9 +278,10 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 			{
 				Config: acc.ConfigCompose(
 					testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
-					testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup, serviceName)),
+					testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup, serviceName, sourceInstanceCRN)),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(sourceResource, &sourceInstanceCRN),
+					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
 					resource.TestCheckResourceAttr(sourceResource, "name", serviceName),
 					resource.TestCheckResourceAttr(sourceResource, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(sourceResource, "plan", "standard"),
@@ -290,7 +291,7 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourceGroup, readReplicaName),
+				Config: testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(replicaReplicaResource, &replicaInstanceCRN),
 					resource.TestCheckResourceAttr(replicaReplicaResource, "name", readReplicaName),
@@ -305,33 +306,37 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresMinimal_ReadReplica(databaseResourceGroup string, name string, sourceInstanceCRN string) string {
 	return fmt.Sprintf(`
 	resource "ibm_database" "%[2]s-replica" {
-		depends_on      = [ibm_database.%[2]s]
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name                = "%[2]s-replica"
 		service             = "databases-for-postgresql"
 		plan                = "standard"
 		location            = "%[3]s"
 		service_endpoints   = "public-and-private"
-		remote_leader_id    = ibm_database.%[2]s.id
+		remote_leader_id    = "%[4]s"
 	}
-				`, databaseResourceGroup, name, acc.Region())
+				`, databaseResourceGroup, name, acc.Region(), sourceInstanceCRN)
 }
 
-func testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourceGroup string, readReplicaName string) string {
+func testAccCheckIBMDatabaseInstancePostgresReadReplicaPromotion(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
-	resource "ibm_database" "%[2]s" {
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s-replica" {
 		resource_group_id   = data.ibm_resource_group.test_acc.id
-		name                = "%[2]s"
+		name                = "%[2]s-replica"
 		service             = "databases-for-postgresql"
 		plan                = "standard"
 		location            = "%[3]s"
 		service_endpoints   = "public-and-private"
 		skip_initial_backup = true
 	}
-				`, databaseResourceGroup, readReplicaName, acc.Region())
+				`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
