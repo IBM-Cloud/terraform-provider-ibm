@@ -574,7 +574,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set("dns", nil)
 	}
 	d.Set(isLBName, *lb.Name)
-	if *lb.IsPublic {
+	if lb.IsPublic != nil && *lb.IsPublic {
 		d.Set(isLBType, "public")
 	} else {
 		if lb.IsPrivatePath != nil && *lb.IsPrivatePath {
