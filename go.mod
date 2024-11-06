@@ -37,6 +37,7 @@ require (
 	github.com/IBM/sarama v1.41.2
 	github.com/IBM/scc-go-sdk/v5 v5.4.1
 	github.com/IBM/schematics-go-sdk v0.3.0
+	github.com/IBM/sds-go-sdk v0.0.0
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.7
 	github.com/IBM/vmware-go-sdk v0.1.2
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
@@ -102,8 +103,8 @@ require (
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/frankban/quicktest v1.14.3 // indirect
-	github.com/fsnotify/fsnotify v1.8.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.6 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -206,7 +207,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.1 // indirect
-	go.mongodb.org/mongo-driver v1.16.1 // indirect
+	go.mongodb.org/mongo-driver v1.17.1 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
