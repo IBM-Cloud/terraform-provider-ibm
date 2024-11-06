@@ -86,6 +86,7 @@ import (
 	project "github.com/IBM/project-go-sdk/projectv1"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
+	"github.com/IBM/sds-go-sdk/sdsaasv1"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
 	vpcbeta "github.com/IBM/vpc-beta-go-sdk/vpcbetav1"
 	"github.com/IBM/vpc-go-sdk/common"
@@ -319,6 +320,7 @@ type ClientSession interface {
 	MqcloudV1() (*mqcloudv1.MqcloudV1, error)
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
+	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 }
 
 type clientSession struct {
@@ -677,9 +679,15 @@ type clientSession struct {
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
 
+<<<<<<< HEAD
 	// db2 saas
 	db2saasClient    *db2saasv1.Db2saasV1
 	db2saasClientErr error
+=======
+	// Software Defined Storage
+	sdsaasClient    *sdsaasv1.SdsaasV1
+	sdsaasClientErr error
+>>>>>>> f12d12b17 (Add SDSaaS to terraform provider)
 }
 
 // Usage Reports
@@ -1284,7 +1292,16 @@ func (session clientSession) ProjectV1() (*project.ProjectV1, error) {
 	return session.projectClient, session.projectClientErr
 }
 
+<<<<<<< HEAD
 // MQaaS
+=======
+// sdsaas
+func (session clientSession) SdsaasV1() (*sdsaasv1.SdsaasV1, error) {
+	return session.sdsaasClient, session.sdsaasClientErr
+}
+
+// MQ on Cloud
+>>>>>>> f12d12b17 (Add SDSaaS to terraform provider)
 func (session clientSession) MqcloudV1() (*mqcloudv1.MqcloudV1, error) {
 	if session.mqcloudClientErr != nil {
 		sessionMqcloudClient := session.mqcloudClient
@@ -3593,6 +3610,28 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.codeEngineClientErr = fmt.Errorf("Error occurred while configuring Code Engine service: %q", err)
+	}
+
+	// Construct an instance of the 'sdsaas' service.
+	if session.sdsaasClientErr == nil {
+		// Construct the service options.
+		sdsaasClientOptions := &sdsaasv1.SdsaasV1Options{
+			URL:           EnvFallBack([]string{"IBMCLOUD_SDS_ENDPOINT"}, ""),
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.sdsaasClient, err = sdsaasv1.NewSdsaasV1(sdsaasClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.sdsaasClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.sdsaasClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.sdsaasClientErr = fmt.Errorf("Error occurred while constructing 'sdsaas' service client: %q", err)
+		}
 	}
 
 	if os.Getenv("TF_LOG") != "" {
