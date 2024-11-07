@@ -46,12 +46,9 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 										Description: "The type for access mode",
 									},
 									"value": {
-										Type:        schema.TypeList,
+										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Access modes for this profile",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
 									},
 								},
 							},
