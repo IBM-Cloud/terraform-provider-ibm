@@ -50,6 +50,14 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 										Computed:    true,
 										Description: "Access modes for this profile",
 									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Access modes for this profile",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
 								},
 							},
 						},
@@ -260,7 +268,7 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 				AccessModesMap["type"] = *accessModes.Type
 			}
 			if len(accessModes.Values) > 0 {
-				AccessModesMap["value"] = accessModes.Values
+				AccessModesMap["values"] = accessModes.Values
 			}
 			AccessModesList = append(AccessModesList, AccessModesMap)
 			l[isLBAccessModes] = AccessModesList
