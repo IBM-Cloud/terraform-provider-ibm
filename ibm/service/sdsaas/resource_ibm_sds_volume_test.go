@@ -16,8 +16,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/sdsaas"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/stretchr/testify/assert"
 	"github.com/IBM/sds-go-sdk/sdsaasv1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMSdsVolumeBasic(t *testing.T) {
