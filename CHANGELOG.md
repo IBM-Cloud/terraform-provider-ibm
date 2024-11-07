@@ -1,3 +1,10 @@
+# 1.71.1(Nov 07, 2024)
+Bugfixes
+* Add error if image not found ([5730](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5730))
+* fix(lb): fix for lb data source collection ([5763](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5763))
+* 404 error fix on ibm_is_virtual_network_interface_floating_ip datasource ([5762](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5762))
+* LB profile datasource access mode value support ([5773](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5773))
+
 # 1.71.0
 Features
 * Support Power System
