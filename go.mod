@@ -1,8 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.22.4
-
-toolchain go1.22.5
+go 1.23.0
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062
