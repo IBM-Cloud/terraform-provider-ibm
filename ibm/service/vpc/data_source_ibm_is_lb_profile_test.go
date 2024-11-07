@@ -22,10 +22,11 @@ func TestAccIBMISLBProfileDatasource_basic(t *testing.T) {
 				Config: testDSCheckIBMISLBProfileBasicConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_is_lb_profile.test_profile", "name", "network-fixed"),
-					resource.TestCheckResourceAttr("data.ibm_is_lb_profile.test_profile", "family", "Network"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_profile.test_profile", "family", "network"),
 					resource.TestCheckResourceAttr("data.ibm_is_lb_profile.test_profile", "route_mode_supported", "true"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_profile", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_profile", "udp_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_profile", "access_modes.0.values.#"),
 				),
 			},
 		},
