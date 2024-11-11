@@ -118,7 +118,7 @@ resource "ibm_backup_recovery_protection_group_run_request" "backup_recovery_pro
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | run_type | Type of protection run. 'kRegular' indicates an incremental (CBT) backup. Incremental backups utilizing CBT (if supported) are captured of the target protection objects. The first run of a kRegular schedule captures all the blocks. 'kFull' indicates a full (no CBT) backup. A complete backup (all blocks) of the target protection objects are always captured and Change Block Tracking (CBT) is not utilized. 'kLog' indicates a Database Log backup. Capture the database transaction logs to allow rolling back to a specific point in time. 'kSystem' indicates system volume backup. It produces an image for bare metal recovery. | `string` | true |
 | objects | Specifies the list of objects to be protected by this Protection Group run. These can be leaf objects or non-leaf objects in the protection hierarchy. This must be specified only if a subset of objects from the Protection Groups needs to be protected. | `list()` | false |
-| targets_config | Specifies the replication and archival targets. | `` | false |
+| targets_config | Specifies the replication and archival targets. | `object` | false |
 
 ### Resource: ibm_backup_recovery_data_source_connection
 
@@ -168,7 +168,7 @@ resource "ibm_backup_recovery_download_files_folders" "backup_recovery_download_
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | documents | Specifies the list of documents to download using item ids. Only one of filesAndFolders or documents should be used. Currently only files are supported by documents. | `list()` | false |
 | name | Specifies the name of the recovery task. This field must be set and must be a unique name. | `string` | true |
-| object | Specifies the common snapshot parameters for a protected object. | `` | true |
+| object | Specifies the common snapshot parameters for a protected object. | `object` | true |
 | parent_recovery_id | If current recovery is child task triggered through another parent recovery operation, then this field will specify the id of the parent recovery. | `string` | false |
 | files_and_folders | Specifies the list of files and folders to download. | `list()` | true |
 | glacier_retrieval_type | Specifies the glacier retrieval type when restoring or downloding files or folders from a Glacier-based cloud snapshot. | `string` | false |
@@ -256,10 +256,10 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
 | policy_id | Specifies the unique id of the Protection Policy associated with the Protection Group. The Policy provides retry settings Protection Schedules, Priority, SLA, etc. | `string` | true |
 | priority | Specifies the priority of the Protection Group. | `string` | false |
 | description | Specifies a description of the Protection Group. | `string` | false |
-| start_time | Specifies the time of day. Used for scheduling purposes. | `` | false |
+| start_time | Specifies the time of day. Used for scheduling purposes. | `object` | false |
 | end_time_usecs | Specifies the end time in micro seconds for this Protection Group. If this is not specified, the Protection Group won't be ended. | `number` | false |
 | last_modified_timestamp_usecs | Specifies the last time this protection group was updated. If this is passed into a PUT request, then the backend will validate that the timestamp passed in matches the time that the protection group was actually last modified. If the two timestamps do not match, then the request will be rejected with a stale error. | `number` | false |
-| alert_policy | Specifies a policy for alerting users of the status of a Protection Group. | `` | false |
+| alert_policy | Specifies a policy for alerting users of the status of a Protection Group. | `object` | false |
 | sla | Specifies the SLA parameters for this Protection Group. | `list()` | false |
 | qos_policy | Specifies whether the Protection Group will be written to HDD or SSD. | `string` | false |
 | abort_in_blackouts | Specifies whether currently executing jobs should abort if a blackout period specified by a policy starts. Available only if the selected policy has at least one blackout period. Default value is false. | `bool` | false |
@@ -267,8 +267,8 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
 | is_paused | Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted. | `bool` | false |
 | environment | Specifies the environment of the Protection Group. | `string` | true |
 | advanced_configs | Specifies the advanced configuration for a protection job. | `list()` | false |
-| physical_params | Specifies the parameters for Physical object. | `` | false |
-| mssql_params | Specifies the parameters specific to MSSQL Protection Group. | `` | false |
+| physical_params | Specifies the parameters for Physical object. | `object` | false |
+| mssql_params | Specifies the parameters specific to MSSQL Protection Group. | `object` | false |
 
 #### Outputs
 
@@ -313,13 +313,13 @@ resource "ibm_backup_recovery_protection_policy" "backup_recovery_protection_pol
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | name | Specifies the name of the Protection Policy. | `string` | true |
-| backup_policy | Specifies the backup schedule and retentions of a Protection Policy. | `` | true |
+| backup_policy | Specifies the backup schedule and retentions of a Protection Policy. | `object` | true |
 | description | Specifies the description of the Protection Policy. | `string` | false |
 | blackout_window | List of Blackout Windows. If specified, this field defines blackout periods when new Group Runs are not started. If a Group Run has been scheduled but not yet executed and the blackout period starts, the behavior depends on the policy field AbortInBlackoutPeriod. | `list()` | false |
 | extended_retention | Specifies additional retention policies that should be applied to the backup snapshots. A backup snapshot will be retained up to a time that is the maximum of all retention policies that are applicable to it. | `list()` | false |
-| remote_target_policy | Specifies the replication, archival and cloud spin targets of Protection Policy. | `` | false |
+| remote_target_policy | Specifies the replication, archival and cloud spin targets of Protection Policy. | `object` | false |
 | cascaded_targets_config | Specifies the configuration for cascaded replications. Using cascaded replication, replication cluster(Rx) can further replicate and archive the snapshot copies to further targets. Its recommended to create cascaded configuration where protection group will be created. | `list()` | false |
-| retry_options | Retry Options of a Protection Policy when a Protection Group run fails. | `` | false |
+| retry_options | Retry Options of a Protection Policy when a Protection Group run fails. | `object` | false |
 | data_lock | This field is now deprecated. Please use the DataLockConfig in the backup retention. | `string` | false |
 | version | Specifies the current policy verison. Policy version is incremented for optionally supporting new features and differentialting across releases. | `number` | false |
 | is_cbs_enabled | Specifies true if Calender Based Schedule is supported by client. Default value is assumed as false for this feature. | `bool` | false |
@@ -357,8 +357,8 @@ resource "ibm_backup_recovery" "backup_recovery_instance" {
 | request_initiator_type | Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests. | `string` | false |
 | name | Specifies the name of the Recovery. | `string` | true |
 | snapshot_environment | Specifies the type of snapshot environment for which the Recovery was performed. | `string` | true |
-| physical_params | Specifies the recovery options specific to Physical environment. | `` | false |
-| mssql_params | Specifies the recovery options specific to Sql environment. | `` | false |
+| physical_params | Specifies the recovery options specific to Physical environment. | `object` | false |
+| mssql_params | Specifies the recovery options specific to Sql environment. | `object` | false |
 
 #### Outputs
 
@@ -438,22 +438,22 @@ resource "ibm_backup_recovery_search_indexed_object" "backup_recovery_search_ind
 | count | Specifies the number of indexed objects to be fetched for the specified pagination cookie. | `number` | false |
 | object_type | Specifies the object type to be searched for. | `string` | true |
 | use_cached_data | Specifies whether we can serve the GET request from the read replica cache. There is a lag of 15 seconds between the read replica and primary data source. | `bool` | false |
-| cassandra_params | Parameters required to search Cassandra on a cluster. | `` | false |
-| couchbase_params | Parameters required to search CouchBase on a cluster. | `` | false |
-| email_params | Specifies the request parameters to search for emails and email folders. | `` | false |
-| exchange_params | Specifies the parameters which are specific for searching Exchange mailboxes. | `` | false |
-| file_params | Specifies the request parameters to search for files and file folders. | `` | false |
-| hbase_params | Parameters required to search Hbase on a cluster. | `` | false |
-| hdfs_params | Parameters required to search HDFS on a cluster. | `` | false |
-| hive_params | Parameters required to search Hive on a cluster. | `` | false |
-| mongodb_params | Parameters required to search Mongo DB on a cluster. | `` | false |
-| ms_groups_params | Specifies the request params to search for Groups items. | `` | false |
-| ms_teams_params | Specifies the request params to search for Teams items. | `` | false |
-| one_drive_params | Specifies the request parameters to search for files/folders in document libraries. | `` | false |
-| public_folder_params | Specifies the request parameters to search for Public Folder items. | `` | false |
-| sfdc_params | Specifies the parameters which are specific for searching Salesforce records. | `` | false |
-| sharepoint_params | Specifies the request parameters to search for files/folders in document libraries. | `` | false |
-| uda_params | Parameters required to search Universal Data Adapter objects. | `` | false |
+| cassandra_params | Parameters required to search Cassandra on a cluster. | `object` | false |
+| couchbase_params | Parameters required to search CouchBase on a cluster. | `object` | false |
+| email_params | Specifies the request parameters to search for emails and email folders. | `object` | false |
+| exchange_params | Specifies the parameters which are specific for searching Exchange mailboxes. | `object` | false |
+| file_params | Specifies the request parameters to search for files and file folders. | `object` | false |
+| hbase_params | Parameters required to search Hbase on a cluster. | `object` | false |
+| hdfs_params | Parameters required to search HDFS on a cluster. | `object` | false |
+| hive_params | Parameters required to search Hive on a cluster. | `object` | false |
+| mongodb_params | Parameters required to search Mongo DB on a cluster. | `object` | false |
+| ms_groups_params | Specifies the request params to search for Groups items. | `object` | false |
+| ms_teams_params | Specifies the request params to search for Teams items. | `object` | false |
+| one_drive_params | Specifies the request parameters to search for files/folders in document libraries. | `object` | false |
+| public_folder_params | Specifies the request parameters to search for Public Folder items. | `object` | false |
+| sfdc_params | Specifies the parameters which are specific for searching Salesforce records. | `object` | false |
+| sharepoint_params | Specifies the request parameters to search for files/folders in document libraries. | `object` | false |
+| uda_params | Parameters required to search Universal Data Adapter objects. | `object` | false |
 
 ### Resource: ibm_backup_recovery_source_registration
 
@@ -484,7 +484,7 @@ resource "ibm_backup_recovery_source_registration" "backup_recovery_source_regis
 | connector_group_id | Specifies the connector group id of connector groups. | `number` | false |
 | data_source_connection_id | Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision. | `string` | false |
 | advanced_configs | Specifies the advanced configuration for a protection source. | `list()` | false |
-| physical_params | Specifies parameters to register physical server. | `` | false |
+| physical_params | Specifies parameters to register physical server. | `object` | false |
 
 #### Outputs
 
@@ -626,7 +626,7 @@ data "ibm_backup_recovery_download_agent" "backup_recovery_download_agent_instan
 | x_ibm_tenant_id | Specifies the key to be used to encrypt the source credential. If includeSourceCredentials is set to true this key must be specified. | `string` | true |
 | file_path | Specifies file path. | `string` | true |
 | platform | Specifies the platform for which agent needs to be downloaded. | `string` | true |
-| linux_params | Linux agent parameters. | `` | false |
+| linux_params | Linux agent parameters. | `object` | false |
 
 ### Data source: ibm_backup_recovery_object_snapshots
 
