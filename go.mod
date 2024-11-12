@@ -55,7 +55,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook v1.11.4
 	github.com/softlayer/softlayer-go v1.0.3
-	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.1-0.20241015071835-0db50c9f60eb
+	github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20241111132827-1cdd68dc95a5
 	golang.org/x/crypto v0.23.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
