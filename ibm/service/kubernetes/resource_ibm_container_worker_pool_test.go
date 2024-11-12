@@ -44,6 +44,12 @@ func TestAccIBMContainerWorkerPoolBasic(t *testing.T) {
 						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.default_pool", "size_per_zone", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.default_pool", "labels.%", "0"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.default_pool", "hardware", "shared"),
 				),
 			},
 			{
@@ -61,6 +67,12 @@ func TestAccIBMContainerWorkerPoolBasic(t *testing.T) {
 						"ibm_container_worker_pool.test_pool", "disk_encryption", "true"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.default_pool", "size_per_zone", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.default_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_worker_pool.default_pool", "hardware", "shared"),
 				),
 			},
 			{
@@ -181,14 +193,28 @@ func testAccCheckIBMContainerWorkerPoolBasic(clusterName, workerPoolName string)
 	return fmt.Sprintf(`
 
 resource "ibm_container_cluster" "testacc_cluster" {
-  name            = "%s"
-  datacenter      = "%s"
-  machine_type    = "%s"
-  hardware        = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
-  kube_version    = "%s"
-  wait_till         = "OneWorkerNodeReady"
+  name             = "%[1]s"
+  datacenter       = "%[2]s"
+  machine_type     = "%[3]s"
+  hardware         = "shared"
+  public_vlan_id   = "%[4]s"
+  private_vlan_id  = "%[5]s"
+  kube_version     = "%[6]s"
+  wait_till        = "OneWorkerNodeReady"
+  operating_system = "UBUNTU_20_64"
+  taints {
+	key    = "key1"
+	value  = "value1"
+	effect = "NoSchedule"
+  }
+}
+
+resource "ibm_container_worker_pool" "default_pool" {
+  worker_pool_name = "default"
+  machine_type     = "%[3]s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 1
+  import_on_create = "true"
   taints {
 	key    = "key1"
 	value  = "value1"
@@ -197,8 +223,8 @@ resource "ibm_container_cluster" "testacc_cluster" {
 }
 
 resource "ibm_container_worker_pool" "test_pool" {
-  worker_pool_name = "%s"
-  machine_type     = "%s"
+  worker_pool_name = "%[7]s"
+  machine_type     = "%[8]s"
   cluster          = ibm_container_cluster.testacc_cluster.id
   size_per_zone    = 1
   hardware         = "shared"
@@ -219,23 +245,45 @@ func testAccCheckIBMContainerWorkerPoolUpdate(clusterName, workerPoolName string
 	return fmt.Sprintf(`
 
 resource "ibm_container_cluster" "testacc_cluster" {
-  name            = "%s"
-  datacenter      = "%s"
-  machine_type    = "%s"
+  name            = "%[1]s"
+  datacenter      = "%[2]s"
+  machine_type    = "%[3]s"
   hardware        = "shared"
-  public_vlan_id  = "%s"
-  private_vlan_id = "%s"
-  kube_version    = "%s"
+  public_vlan_id  = "%[4]s"
+  private_vlan_id = "%[5]s"
+  kube_version    = "%[6]s"
   wait_till         = "OneWorkerNodeReady"
 }
 
+resource "ibm_container_worker_pool" "default_pool" {
+  worker_pool_name = "default"
+  machine_type     = "%[3]s"
+  cluster          = ibm_container_cluster.testacc_cluster.id
+  size_per_zone    = 2
+  import_on_create = "true"
+  taints {
+	key    = "key1"
+	value  = "value1"
+	effect = "NoSchedule"
+  }
+  labels = {
+    "test"  = "test-pool"
+    "test1" = "test-pool1"
+  }
+  depends_on = [
+		  ibm_container_worker_pool.test_pool
+	  ]
+  orphan_on_delete = "true"
+}
+
 resource "ibm_container_worker_pool" "test_pool" {
-  worker_pool_name = "%s"
-  machine_type     = "%s"
+  worker_pool_name = "%[7]s"
+  machine_type     = "%[8]s"
   cluster          = ibm_container_cluster.testacc_cluster.id
   size_per_zone    = 2
   hardware         = "shared"
   disk_encryption  = true
+  operating_system = "UBUNTU_24_64"
   labels = {
     "test"  = "test-pool"
     "test1" = "test-pool1"
@@ -324,140 +372,4 @@ resource "ibm_container_worker_pool" "test_pool" {
     "test1" = "test-pool1"
   }
 }`, workerPoolName, acc.MachineType, clusterName)
-}
-
-func TestAccIBMContainerWorkerPoolImportOnCreate(t *testing.T) {
-
-	clusterName := fmt.Sprintf("tf-cluster-worker-%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMContainerWorkerPoolDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMContainerWorkerPoolImportOnCreate(clusterName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "worker_pool_name", "default"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "size_per_zone", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
-				),
-			},
-			{
-				Config: testAccCheckIBMContainerWorkerPoolImportOnCreateClusterUpdate(clusterName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "worker_pool_name", "default"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "size_per_zone", "1"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
-				),
-			},
-			{
-				Config: testAccCheckIBMContainerWorkerPoolImportOnCreateWPUpdate(clusterName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "worker_pool_name", "default"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "size_per_zone", "3"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "labels.%", "2"),
-					resource.TestCheckResourceAttr(
-						"ibm_container_worker_pool.test_pool", "hardware", "shared"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckIBMContainerWorkerPoolImportOnCreate(clusterName string) string {
-	return fmt.Sprintf(`
-
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-  kube_version      = "%s"
-  wait_till         = "OneWorkerNodeReady"
-  default_pool_size = 1
-  labels = {
-    "test"  = "test-pool"
-    "test1" = "test-pool1"
-  }
-}
-
-resource "ibm_container_worker_pool" "test_pool" {
-  worker_pool_name = "default"
-  machine_type     = "%[3]s"
-  cluster          = ibm_container_cluster.testacc_cluster.id
-  size_per_zone    = 1
-  import_on_create = "true"
-}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion)
-}
-
-func testAccCheckIBMContainerWorkerPoolImportOnCreateClusterUpdate(clusterName string) string {
-	return fmt.Sprintf(`
-
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-  kube_version      = "%s"
-  wait_till         = "OneWorkerNodeReady"
-  default_pool_size = 3
-  labels = {
-    "test"  = "test-pool"
-    "test1" = "test-pool1"
-  }
-}
-
-resource "ibm_container_worker_pool" "test_pool" {
-  worker_pool_name = "default"
-  machine_type     = "%[3]s"
-  cluster          = ibm_container_cluster.testacc_cluster.id
-  size_per_zone    = 1
-  import_on_create = "true"
-}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion)
-}
-
-func testAccCheckIBMContainerWorkerPoolImportOnCreateWPUpdate(clusterName string) string {
-	return fmt.Sprintf(`
-
-resource "ibm_container_cluster" "testacc_cluster" {
-  name              = "%s"
-  datacenter        = "%s"
-  machine_type      = "%s"
-  hardware          = "shared"
-  public_vlan_id    = "%s"
-  private_vlan_id   = "%s"
-  kube_version      = "%s"
-  wait_till         = "OneWorkerNodeReady"
-  default_pool_size = 1
-  labels = {
-    "test"  = "test-pool"
-    "test1" = "test-pool1"
-  }
-}
-
-resource "ibm_container_worker_pool" "test_pool" {
-  worker_pool_name = "default"
-  machine_type     = "%[3]s"
-  cluster          = ibm_container_cluster.testacc_cluster.id
-  size_per_zone    = 3
-  import_on_create = "true"
-}`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.KubeVersion)
 }

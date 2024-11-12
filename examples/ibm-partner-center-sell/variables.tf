@@ -12,7 +12,7 @@ variable "onboarding_resource_broker_env" {
 variable "onboarding_resource_broker_auth_username" {
   description = "The authentication username to reach the broker."
   type        = string
-  default     = "auth_username"
+  default     = "apikey"
 }
 variable "onboarding_resource_broker_auth_password" {
   description = "The authentication password to reach the broker."
@@ -22,32 +22,32 @@ variable "onboarding_resource_broker_auth_password" {
 variable "onboarding_resource_broker_auth_scheme" {
   description = "The supported authentication scheme for the broker."
   type        = string
-  default     = "auth_scheme"
+  default     = "bearer"
 }
 variable "onboarding_resource_broker_resource_group_crn" {
   description = "The cloud resource name of the resource group."
   type        = string
-  default     = "resource_group_crn"
+  default     = "crn:v1:bluemix:public:resource-controller::a/4a5c3c51b97a446fbb1d0e1ef089823b::resource-group:4fae20bd538a4a738475350dfdc1596f"
 }
 variable "onboarding_resource_broker_state" {
   description = "The state of the broker."
   type        = string
-  default     = "removed"
+  default     = "active"
 }
 variable "onboarding_resource_broker_broker_url" {
   description = "The URL associated with the broker application."
   type        = string
-  default     = "broker_url"
+  default     = "https://broker-url-for-my-service.com"
 }
 variable "onboarding_resource_broker_allow_context_updates" {
   description = "Whether the resource controller will call the broker for any context changes to the instance. Currently, the only context related change is an instance name update."
   type        = bool
-  default     = true
+  default     = false
 }
 variable "onboarding_resource_broker_catalog_type" {
   description = "To enable the provisioning of your broker, set this parameter value to `service`."
   type        = string
-  default     = "catalog_type"
+  default     = "service"
 }
 variable "onboarding_resource_broker_type" {
   description = "The type of the provisioning model."
@@ -57,12 +57,12 @@ variable "onboarding_resource_broker_type" {
 variable "onboarding_resource_broker_name" {
   description = "The name of the broker."
   type        = string
-  default     = "name"
+  default     = "brokername"
 }
 variable "onboarding_resource_broker_region" {
   description = "The region where the pricing plan is available."
   type        = string
-  default     = "region"
+  default     = "global"
 }
 
 // Resource arguments for onboarding_catalog_deployment
@@ -86,10 +86,15 @@ variable "onboarding_catalog_deployment_env" {
   type        = string
   default     = "env"
 }
+variable "onboarding_catalog_deployment_object_id" {
+  description = "The desired ID of the global catalog object."
+  type        = string
+  default     = "object_id"
+}
 variable "onboarding_catalog_deployment_name" {
   description = "The programmatic name of this deployment."
   type        = string
-  default     = "name"
+  default     = "deployment-eu-de"
 }
 variable "onboarding_catalog_deployment_active" {
   description = "Whether the service is active."
@@ -99,7 +104,7 @@ variable "onboarding_catalog_deployment_active" {
 variable "onboarding_catalog_deployment_disabled" {
   description = "Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled."
   type        = bool
-  default     = true
+  default     = false
 }
 variable "onboarding_catalog_deployment_kind" {
   description = "The kind of the global catalog object."
@@ -109,7 +114,7 @@ variable "onboarding_catalog_deployment_kind" {
 variable "onboarding_catalog_deployment_tags" {
   description = "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog."
   type        = list(string)
-  default     = [ "tags" ]
+  default     = ["eu-gb"]
 }
 
 // Resource arguments for onboarding_catalog_plan
@@ -128,10 +133,15 @@ variable "onboarding_catalog_plan_env" {
   type        = string
   default     = "env"
 }
+variable "onboarding_catalog_plan_object_id" {
+  description = "The desired ID of the global catalog object."
+  type        = string
+  default     = "object_id"
+}
 variable "onboarding_catalog_plan_name" {
   description = "The programmatic name of this plan."
   type        = string
-  default     = "name"
+  default     = "free-plan2"
 }
 variable "onboarding_catalog_plan_active" {
   description = "Whether the service is active."
@@ -141,7 +151,7 @@ variable "onboarding_catalog_plan_active" {
 variable "onboarding_catalog_plan_disabled" {
   description = "Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled."
   type        = bool
-  default     = true
+  default     = false
 }
 variable "onboarding_catalog_plan_kind" {
   description = "The kind of the global catalog object."
@@ -151,7 +161,7 @@ variable "onboarding_catalog_plan_kind" {
 variable "onboarding_catalog_plan_tags" {
   description = "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog."
   type        = list(string)
-  default     = [ "tags" ]
+  default     = ["ibm_created"]
 }
 
 // Resource arguments for onboarding_catalog_product
@@ -165,10 +175,15 @@ variable "onboarding_catalog_product_env" {
   type        = string
   default     = "env"
 }
+variable "onboarding_catalog_product_object_id" {
+  description = "The desired ID of the global catalog object."
+  type        = string
+  default     = "object_id"
+}
 variable "onboarding_catalog_product_name" {
   description = "The programmatic name of this product."
   type        = string
-  default     = "name"
+  default     = "1p-service-08-06"
 }
 variable "onboarding_catalog_product_active" {
   description = "Whether the service is active."
@@ -178,7 +193,7 @@ variable "onboarding_catalog_product_active" {
 variable "onboarding_catalog_product_disabled" {
   description = "Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled."
   type        = bool
-  default     = true
+  default     = false
 }
 variable "onboarding_catalog_product_kind" {
   description = "The kind of the global catalog object."
@@ -188,7 +203,7 @@ variable "onboarding_catalog_product_kind" {
 variable "onboarding_catalog_product_tags" {
   description = "A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog."
   type        = list(string)
-  default     = [ "tags" ]
+  default     = ["keyword","support_ibm"]
 }
 
 // Resource arguments for onboarding_iam_registration
@@ -205,7 +220,7 @@ variable "onboarding_iam_registration_env" {
 variable "onboarding_iam_registration_name" {
   description = "The IAM registration name, which must be the programmatic name of the product."
   type        = string
-  default     = "name"
+  default     = "pet-store"
 }
 variable "onboarding_iam_registration_enabled" {
   description = "Whether the service is enabled or disabled for IAM."
@@ -220,19 +235,19 @@ variable "onboarding_iam_registration_service_type" {
 variable "onboarding_iam_registration_additional_policy_scopes" {
   description = "List of additional policy scopes."
   type        = list(string)
-  default     = [ "additional_policy_scopes" ]
+  default     = ["pet-store"]
 }
 variable "onboarding_iam_registration_parent_ids" {
   description = "The list of parent IDs for product access management."
   type        = list(string)
-  default     = [ "parent_ids" ]
+  default     = []
 }
 
 // Resource arguments for onboarding_product
 variable "onboarding_product_type" {
   description = "The type of the product."
   type        = string
-  default     = "software"
+  default     = "service"
 }
 variable "onboarding_product_eccn_number" {
   description = "The Export Control Classification Number of your product."
@@ -259,12 +274,12 @@ variable "onboarding_product_tax_assessment" {
 variable "onboarding_registration_account_id" {
   description = "The ID of your account."
   type        = string
-  default     = "account_id"
+  default     = "4a5c3c51b97a446fbb1d0e1ef089823b"
 }
 variable "onboarding_registration_company_name" {
   description = "The name of your company that is displayed in the IBM Cloud catalog."
   type        = string
-  default     = "company_name"
+  default     = "Beautiful Company"
 }
 variable "onboarding_registration_default_private_catalog_id" {
   description = "The default private catalog in which products are created."
