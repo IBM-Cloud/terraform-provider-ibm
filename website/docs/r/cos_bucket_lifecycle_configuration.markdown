@@ -257,8 +257,8 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
       and{
 				prefix = "%s"
 				tags{
-					key = "MyObjectTagKey"
-					value = "MyObjectTagValue"
+          key = "MyObjectTagKey"
+          value = "MyObjectTagValue"
 				}
 				object_size_greater_than = "%d"
 				object_size_less_than = "%d"
@@ -293,12 +293,12 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
     filter {
       and{
 				tags{
-					key = "MyObjectTagKey1"
-					value = "MyObjectTagValue1"
+          key = "MyObjectTagKey1"
+          value = "MyObjectTagValue1"
 				}
 				tags{
-					key = "MyObjectTagKey2"
-					value = "MyObjectTagValue2"
+          key = "MyObjectTagKey2"
+          value = "MyObjectTagValue2"
 				}
 				
 			}

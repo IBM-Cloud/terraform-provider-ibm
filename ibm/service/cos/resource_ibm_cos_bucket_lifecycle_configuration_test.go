@@ -1556,9 +1556,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		   status = "enable"
 	
 		 }
-	  }
-	
-	 
+	  } 
 	`, cosServiceName, bucketName, region, storageClass, days, prefix)
 }
 
@@ -1597,11 +1595,9 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		   }  
 		   rule_id = "id"
 		   status = "enable"
-	
 		 }
 	  }
-	
-	 
+		 
 	`, cosServiceName, bucketName, region, storageClass, days, key, value)
 }
 func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Greater_Than(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, object_size_greater_than int) string {

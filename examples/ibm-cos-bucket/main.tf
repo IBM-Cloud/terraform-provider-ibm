@@ -725,15 +725,15 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
     }
     filter {
       and{
-				prefix = "%s"
-				tags{
-					key = "%s"
-					value = "%s"
-				}
-				object_size_greater_than = "%d"
-				object_size_less_than = "%d"
-			}
-    }  
+        prefix = "%s"
+        tags{
+          key = "%s"
+          value = "%s"
+          }
+        object_size_greater_than = "%d"
+        object_size_less_than = "%d"
+      }
+    }
     rule_id = "id"
     status = "enable"
   }
@@ -758,14 +758,14 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
     }
     filter {
       and{
-				tags{
-					key = "%s"
-					value = "%s"
-				}
-				tags{
-					key = "%s"
-					value = "%s"
-				}
+        tags{
+          key = "%s"
+          value = "%s"
+          }
+			  tags{
+          key = "%s"
+          value = "%s"
+			  }
 				
 			}
     }  
