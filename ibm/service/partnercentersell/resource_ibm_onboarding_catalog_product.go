@@ -1955,7 +1955,7 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherComposi
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["children"] = nil
 	} else if exists && patch["children"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch["children"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch["children"].([]map[string]interface{})[0], d)
 	}
 }
 
