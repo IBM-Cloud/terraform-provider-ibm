@@ -53,14 +53,12 @@ func DataSourceIBMPrivateDNSCustomResolver() *schema.Resource {
 						},
 						pdnsCRProfile: {
 							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "essential",
+							Computed:    true,
 							Description: "The profile name of the custom resolver.",
 						},
 						pdnsCRAllowDisruptiveUpdates: {
 							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
+							Computed:    true,
 							Description: "Whether a disruptive update is allowed for the custom resolver",
 						},
 						pdnsCustomResolverLocations: {

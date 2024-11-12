@@ -64,27 +64,27 @@ func DataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 						pdnsCRFRViews: {
 							Type:        schema.TypeList,
 							Description: "An array of views used by forwarding rules",
-							Optional:    true,
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									pdnsCRFRVName: {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Unique name of the view.",
 									},
 									pdnsCRFRVDescription: {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Description of the view.",
 									},
 									pdnsCRFRVExpression: {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Expression of the view.",
 									},
 									pdnsCRFRVForwardTo: {
 										Type:        schema.TypeList,
-										Required:    true,
+										Computed:    true,
 										Description: "The upstream DNS servers that the matching DNS queries will be forwarded to.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
