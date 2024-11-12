@@ -1458,13 +1458,13 @@ func ResourceIbmOnboardingCatalogPlanGlobalCatalogMetadataUIStringsContentAsPatc
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bullets"] = nil
 	} else if exists && patch["bullets"] != nil {
-		ResourceIbmOnboardingCatalogPlanCatalogHighlightItemAsPatch(patch["bullets"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanCatalogHighlightItemAsPatch(patch["bullets"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.ui.0.strings.0.en.0.media"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["media"] = nil
 	} else if exists && patch["media"] != nil {
-		ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch["media"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogPlanCatalogProductMediaItemAsPatch(patch["media"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.ui.0.strings.0.en.0.embeddable_dashboard"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
