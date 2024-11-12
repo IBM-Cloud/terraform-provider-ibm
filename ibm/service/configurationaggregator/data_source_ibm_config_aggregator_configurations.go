@@ -27,43 +27,63 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 		ReadContext: dataSourceIbmConfigAggregatorConfigurationsRead,
 
 		Schema: map[string]*schema.Schema{
-			"config_type": &schema.Schema{
+			"config_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The type of resource configuration that are to be retrieved.",
 			},
-			"service_name": &schema.Schema{
+			"service_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The name of the IBM Cloud service for which resources are to be retrieved.",
 			},
-			"resource_group_id": &schema.Schema{
+			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The resource group id of the resources.",
 			},
-			"location": &schema.Schema{
+			"location": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The location or region in which the resources are created.",
 			},
-			"resource_crn": &schema.Schema{
+			"resource_crn": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The crn of the resource.",
 			},
-			"prev": &schema.Schema{
+			"sub_account": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filter the resource configurations from the specified sub-account in an enterprise hierarchy.",
+			},
+			"access_tags": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filter the resource configurations attached with the specified access tags.",
+			},
+			"user_tags": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filter the resource configurations attached with the specified user tags.",
+			},
+			"service_tags": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filter the resource configurations attached with the specified access tags.",
+			},
+			"prev": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The reference to the previous page of entries.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The reference to the previous page of entries.",
 						},
-						"start": &schema.Schema{
+						"start": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "the start string for the query to view the page.",
@@ -71,21 +91,18 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 					},
 				},
 			},
-			"configs": &schema.Schema{
+			"configs": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Array of resource configurations.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"about": &schema.Schema{
-							Type:        schema.TypeMap,
+						"about": {
+							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The basic metadata fetched from the query API.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
 						},
-						"config": &schema.Schema{
+						"config": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The configuration of the resource.",
@@ -126,6 +143,18 @@ func dataSourceIbmConfigAggregatorConfigurationsRead(context context.Context, d 
 	}
 	if _, ok := d.GetOk("resource_crn"); ok {
 		listConfigsOptions.SetResourceCrn(d.Get("resource_crn").(string))
+	}
+	if _, ok := d.GetOk("sub_account"); ok {
+		listConfigsOptions.SetSubAccount(d.Get("sub_account").(string))
+	}
+	if _, ok := d.GetOk("access_tags"); ok {
+		listConfigsOptions.SetAccessTags(d.Get("access_tags").(string))
+	}
+	if _, ok := d.GetOk("user_tags"); ok {
+		listConfigsOptions.SetUserTags(d.Get("user_tags").(string))
+	}
+	if _, ok := d.GetOk("service_tags"); ok {
+		listConfigsOptions.SetServiceTags(d.Get("service_tags").(string))
 	}
 
 	var pager *configurationaggregatorv1.ConfigsPager
@@ -194,7 +223,7 @@ func DataSourceIbmConfigAggregatorConfigurationsConfigToMap(model *configuration
 	return modelMap, nil
 }
 
-func DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model *configurationaggregatorv1.About) (map[string]interface{}, error) {
+func DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model *configurationaggregatorv1.About) (string, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["account_id"] = *model.AccountID
 	modelMap["config_type"] = *model.ConfigType
@@ -204,17 +233,24 @@ func DataSourceIbmConfigAggregatorConfigurationsAboutToMap(model *configurationa
 	modelMap["resource_name"] = *model.ResourceName
 	modelMap["last_config_refresh_time"] = model.LastConfigRefreshTime.String()
 	modelMap["location"] = *model.Location
+	modelMap["access_tags"] = model.AccessTags
+	modelMap["user_tags"] = model.UserTags
+	modelMap["service_tags"] = model.ServiceTags
+	jsonData, err := json.Marshal(modelMap)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonData), nil
 	// modelMap["tags"] = make(map[string]interface{})
-	return modelMap, nil
 }
 
-func DataSourceIbmConfigAggregatorConfigurationsTagsToMap(model *configurationaggregatorv1.Tags) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Tag != nil {
-		modelMap["tag"] = *model.Tag
-	}
-	return modelMap, nil
-}
+// func DataSourceIbmConfigAggregatorConfigurationsTagsToMap(model *configurationaggregatorv1.Tags) (map[string]interface{}, error) {
+// 	modelMap := make(map[string]interface{})
+// 	if model.Tag != nil {
+// 		modelMap["tag"] = *model.Tag
+// 	}
+// 	return modelMap, nil
+// }
 
 func DataSourceIbmConfigAggregatorConfigurationsConfigurationToMap(model *configurationaggregatorv1.Configuration) (string, error) {
 	checkMap := model.GetProperties()

@@ -114,9 +114,13 @@ func ResourceIbmConfigAggregatorSettingsValidator() *validate.ResourceValidator 
 
 func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	configurationAggregatorClient, err := meta.(conns.ClientSession).ConfigurationAggregatorV1()
+	fmt.Println("printing the config aggregator Client ", configurationAggregatorClient)
 	region := getConfigurationInstanceRegion(configurationAggregatorClient, d)
+	fmt.Println("Printing the region ", region)
 	instanceId := d.Get("instance_id").(string)
+	fmt.Println("Printing the instance ID : ", instanceId)
 	configurationAggregatorClient = getClientWithConfigurationInstanceEndpoint(configurationAggregatorClient, instanceId, region)
+	fmt.Println("Printing the resource collection enabled value : ", d.Get("resource_collection_enabled").(bool))
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_config_aggregator_settings", "create")
@@ -148,6 +152,7 @@ func resourceIbmConfigAggregatorSettingsCreate(context context.Context, d *schem
 		}
 		replaceSettingsOptions.SetAdditionalScope(additionalScope)
 	}
+	_, _, err = configurationAggregatorClient.ReplaceSettings(replaceSettingsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSettingsWithContext failed: %s", err.Error()), "ibm_config_aggregator_settings", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
