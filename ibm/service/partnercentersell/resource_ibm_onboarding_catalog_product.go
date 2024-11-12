@@ -1210,7 +1210,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(m
 		}
 		model.PC = PCModel
 	}
-	if modelMap["composite"] != nil && len(modelMap["composite"].([]interface{})) > 0 {
+	if modelMap["composite"] != nil && len(modelMap["composite"].([]interface{})) > 0 && modelMap["composite"].([]interface{})[0] != nil {
 		CompositeModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherComposite(modelMap["composite"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err

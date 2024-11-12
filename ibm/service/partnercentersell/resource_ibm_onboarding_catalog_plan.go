@@ -818,7 +818,7 @@ func ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadata(modelMap map
 		}
 		model.Pricing = PricingModel
 	}
-	if modelMap["plan"] != nil && len(modelMap["plan"].([]interface{})) > 0 {
+	if modelMap["plan"] != nil && len(modelMap["plan"].([]interface{})) > 0 && modelMap["plan"].([]interface{})[0] != nil {
 		PlanModel, err := ResourceIbmOnboardingCatalogPlanMapToGlobalCatalogPlanMetadataPlan(modelMap["plan"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
