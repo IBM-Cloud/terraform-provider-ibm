@@ -34,7 +34,7 @@ You can specify the following arguments for this data source.
   * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
 * `service_name` - (Optional, String) The name of the IBM Cloud service for which resources are to be retrieved.
   * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 ,\\-_]+$/`.
-* `sub_account` - (Optional, String) Filter the resource configurations from the specified sub-account in an enterprise hierarchy.
+* `sub_account` - (Optional, String) Filter the resource configurations from the specified sub-account in an enterprise hierarchy. Used for fetching enterprise child accounts configurations.
   * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `[a-zA-Z0-9]`.
 * `access_tags` - (Optional, String) Filter the resource configurations attached with the specified access tags.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `[a-zA-Z0-9]`.
