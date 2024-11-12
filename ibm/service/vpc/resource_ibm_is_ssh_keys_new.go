@@ -2,12 +2,9 @@ package vpc
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"regexp"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -15,8 +12,9 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -26,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -62,7 +61,14 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"public_key": schema.StringAttribute{
 				MarkdownDescription: "A unique public SSH key to import, in OpenSSH format (consisting of three space-separated fields: the algorithm name, base64-encoded key, and a comment). The algorithm and comment fields may be omitted, as only the key field is imported. Keys of type rsa may be 2048 or 4096 bits in length, however 4096 is recommended. Keys of type ed25519 are 256 bits in length.",
 				Required:            true,
+				// PlanModifiers: []planmodifier.String{
+				// 	stringplanmodifier.RequiresReplace(),
+				// },
+				CustomType: SSHPublicKeyType{},
 				PlanModifiers: []planmodifier.String{
+					// Add the custom plan modifier
+					// SuppressPublicKeyDiff(),
+					// Since public_key changes should force a new resource
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -70,10 +76,10 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				MarkdownDescription: "Tags for the ssh key",
 				Optional:            true,
 				ElementType:         types.StringType,
-				Validators: []validator.List{
-					listvalidator.UniqueValues(),
-					listvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile("read|write|read and write"), "Must be either of read|write|read and write")),
-				},
+				// Validators: []validator.List{
+				// 	listvalidator.UniqueValues(),
+				// 	listvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile("read|write|read and write"), "Must be either of read|write|read and write")),
+				// },
 			},
 			"access_tags": schema.ListAttribute{
 				MarkdownDescription: "Access list for this ssh key",
@@ -208,7 +214,10 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
 
 	plan.Name = basetypes.NewStringValue(*key.Name)
-	plan.PublicKey = basetypes.NewStringValue(*key.PublicKey)
+
+	if !plan.PublicKey.IsNull() {
+		plan.PublicKey = NewSSHPublicKeyValue(*key.PublicKey)
+	}
 	plan.Type = basetypes.NewStringValue(*key.Type)
 	plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
 	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
@@ -276,7 +285,7 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	state.Name = basetypes.NewStringValue(*key.Name)
-	state.PublicKey = basetypes.NewStringValue(*key.PublicKey)
+	state.PublicKey = NewSSHPublicKeyValue(*key.PublicKey)
 	state.Type = basetypes.NewStringValue(*key.Type)
 	state.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
 	state.Length = basetypes.NewInt64Value(int64(*key.Length))
@@ -383,20 +392,20 @@ func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 type SSHKeyResourceModel struct {
-	Name                  types.String `tfsdk:"name"`
-	PublicKey             types.String `tfsdk:"public_key"`
-	Id                    types.String `tfsdk:"id"`
-	Type                  types.String `tfsdk:"type"`
-	Length                types.Int64  `tfsdk:"length"`
-	Fingerprint           types.String `tfsdk:"fingerprint"`
-	ResourceGroup         types.String `tfsdk:"resource_group"`
-	ResourceControllerURL types.String `tfsdk:"resource_controller_url"`
-	ResourceName          types.String `tfsdk:"resource_name"`
-	ResourceCRN           types.String `tfsdk:"resource_crn"`
-	Crn                   types.String `tfsdk:"crn"`
-	ResourceGroupName     types.String `tfsdk:"resource_group_name"`
-	Tags                  types.List   `tfsdk:"tags"`
-	AccessTags            types.List   `tfsdk:"access_tags"`
+	Name                  types.String      `tfsdk:"name"`
+	PublicKey             SSHPublicKeyValue `tfsdk:"public_key"`
+	Id                    types.String      `tfsdk:"id"`
+	Type                  types.String      `tfsdk:"type"`
+	Length                types.Int64       `tfsdk:"length"`
+	Fingerprint           types.String      `tfsdk:"fingerprint"`
+	ResourceGroup         types.String      `tfsdk:"resource_group"`
+	ResourceControllerURL types.String      `tfsdk:"resource_controller_url"`
+	ResourceName          types.String      `tfsdk:"resource_name"`
+	ResourceCRN           types.String      `tfsdk:"resource_crn"`
+	Crn                   types.String      `tfsdk:"crn"`
+	ResourceGroupName     types.String      `tfsdk:"resource_group_name"`
+	Tags                  types.List        `tfsdk:"tags"`
+	AccessTags            types.List        `tfsdk:"access_tags"`
 }
 
 func convertStringSliceToListValue(stringSlice []string) (attr.Type, []attr.Value) {
@@ -410,41 +419,172 @@ func convertStringSliceToListValue(stringSlice []string) (attr.Type, []attr.Valu
 	return valueType, values
 }
 
-func parseKeySshNew(s string) (ssh.PublicKey, error) {
-	keyBytes := []byte(s)
-
-	// Accepts formats of PublicKey:
-	// - <base64 key>
-	// - ssh-rsa/ssh-ed25519 <base64 key>
-	// - ssh-rsa/ssh-ed25519 <base64 key> <comment>
-	// if PublicKey provides other than just base64 key, then first part must be "ssh-rsa" or "ssh-ed25519"
-	if subStrs := strings.Split(s, " "); len(subStrs) > 1 && subStrs[0] != "ssh-rsa" && subStrs[0] != "ssh-ed25519" {
-		return nil, errors.New("not an RSA key OR ED25519 key")
-	}
-
-	pk, _, _, _, e := ssh.ParseAuthorizedKey(keyBytes)
-	if e == nil {
-		return pk, nil
-	}
-
-	decodedKey := make([]byte, base64.StdEncoding.DecodedLen(len(keyBytes)))
-	n, e := base64.StdEncoding.Decode(decodedKey, keyBytes)
-	if e != nil {
-		return nil, e
-	}
-	decodedKey = decodedKey[:n]
-
-	pk, e = ssh.ParsePublicKey(decodedKey)
-	if e == nil {
-		return pk, nil
-	}
-	return nil, e
-}
-
 func BeautifyResponse(response interface{}) string {
 	output, err := json.MarshalIndent(response, "", "    ")
 	if err == nil {
 		return fmt.Sprintf("%+v\n", string(output))
 	}
 	return fmt.Sprintf("Error : %#v", response)
+}
+
+// to suppress any change shown when keys are same
+func suppressSshKeyPublicKeyDiff(old, new string) bool {
+	// if there are extra spaces or new lines, suppress that change
+	if strings.Compare(strings.TrimSpace(old), strings.TrimSpace(new)) != 0 {
+		// if old is empty
+		if old != "" {
+			//create a new piblickey object from the string
+			usePK, error := parseKey(new)
+			if error != nil {
+				return false
+			}
+			// returns the key in byte format with an extra added new line at the end
+			newkey := strings.TrimRight(string(ssh.MarshalAuthorizedKey(usePK)), "\n")
+			// check if both keys are same, if yes suppress the change
+			return strings.TrimSpace(strings.TrimPrefix(newkey, old)) == ""
+		} else {
+			return strings.TrimSpace(strings.TrimPrefix(new, old)) == ""
+		}
+	} else {
+		return true
+	}
+}
+
+// SSHPublicKeyValue is a custom string value type that implements semantic equality
+type SSHPublicKeyValue struct {
+	basetypes.StringValue
+}
+
+// Type returns the type of the value
+func (v SSHPublicKeyValue) Type(_ context.Context) attr.Type {
+	return SSHPublicKeyType{}
+}
+
+// Equal returns true if the other value is equal
+func (v SSHPublicKeyValue) Equal(other attr.Value) bool {
+	o, ok := other.(SSHPublicKeyValue)
+	if !ok {
+		return false
+	}
+
+	return v.StringValue.Equal(o.StringValue)
+}
+
+// StringSemanticEquals implements semantic equality for SSH public keys
+func (v SSHPublicKeyValue) StringSemanticEquals(ctx context.Context, newValuable basetypes.StringValuable) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	newValue, ok := newValuable.(SSHPublicKeyValue)
+	if !ok {
+		diags.AddError(
+			"Semantic Equality Check Error",
+			"An unexpected value type was received while performing semantic equality checks. "+
+				"Please report this to the provider developers.\n\n"+
+				"Expected Value Type: "+fmt.Sprintf("%T", v)+"\n"+
+				"Got Value Type: "+fmt.Sprintf("%T", newValuable),
+		)
+		return false, diags
+	}
+
+	return suppressSshKeyPublicKeyDiff(v.StringValue.ValueString(), newValue.StringValue.ValueString()), diags
+}
+
+// SSHPublicKeyType is the type for SSHPublicKeyValue
+type SSHPublicKeyType struct {
+	basetypes.StringType
+}
+
+func (t SSHPublicKeyType) ValueFromString(ctx context.Context, in basetypes.StringValue) (basetypes.StringValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	return SSHPublicKeyValue{
+		StringValue: in,
+	}, diags
+}
+
+func (t SSHPublicKeyType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	val, err := t.StringType.ValueFromTerraform(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	stringVal, ok := val.(basetypes.StringValue)
+	if !ok {
+		return nil, fmt.Errorf("unexpected value type %T", val)
+	}
+
+	return SSHPublicKeyValue{
+		StringValue: stringVal,
+	}, nil
+}
+
+// String returns a human readable string
+func (t SSHPublicKeyType) String() string {
+	return "SSHPublicKeyType"
+}
+
+// Equal returns true if the other type is the same
+func (t SSHPublicKeyType) Equal(o attr.Type) bool {
+	other, ok := o.(SSHPublicKeyType)
+	if !ok {
+		return false
+	}
+
+	return t.StringType.Equal(other.StringType)
+}
+
+// Type returns the underlying type
+func (t SSHPublicKeyType) Type() attr.Type {
+	return t
+}
+
+// ValueType returns the value type
+func (t SSHPublicKeyType) ValueType(_ context.Context) attr.Value {
+	return SSHPublicKeyValue{}
+}
+
+// Validate implements type validation
+func (t SSHPublicKeyType) Validate(ctx context.Context, value tftypes.Value, valuePath path.Path) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if value.IsNull() || !value.IsKnown() {
+		return diags
+	}
+
+	var valueString string
+
+	if err := value.As(&valueString); err != nil {
+		diags.AddAttributeError(
+			valuePath,
+			"Invalid SSH Public Key Value",
+			"String value expected, received: "+value.String(),
+		)
+		return diags
+	}
+
+	return diags
+}
+
+var (
+	_ attr.Type                = SSHPublicKeyType{}
+	_ basetypes.StringValuable = SSHPublicKeyValue{}
+)
+
+// Helper functions to create new values
+func NewSSHPublicKeyNull() SSHPublicKeyValue {
+	return SSHPublicKeyValue{
+		StringValue: basetypes.NewStringNull(),
+	}
+}
+
+func NewSSHPublicKeyUnknown() SSHPublicKeyValue {
+	return SSHPublicKeyValue{
+		StringValue: basetypes.NewStringUnknown(),
+	}
+}
+
+func NewSSHPublicKeyValue(value string) SSHPublicKeyValue {
+	return SSHPublicKeyValue{
+		StringValue: basetypes.NewStringValue(value),
+	}
 }
