@@ -70,7 +70,7 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 			"service_tags": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Filter the resource configurations attached with the specified access tags.",
+				Description: "Filter the resource configurations attached with the specified service tags.",
 			},
 			"prev": {
 				Type:        schema.TypeList,
