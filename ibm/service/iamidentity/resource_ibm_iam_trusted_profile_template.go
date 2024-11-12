@@ -122,7 +122,7 @@ func ResourceIBMTrustedProfileTemplate() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"iam_id": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "IAM ID of the identity.",
 									},
 									"identifier": {
