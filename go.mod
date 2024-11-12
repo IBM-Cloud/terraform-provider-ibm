@@ -240,6 +240,9 @@ replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
 
+// TODO: remove once bluemix PR is merged, only replaced to show how it's supposed to work
+replace github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062 => ../bluemix-go
+
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
