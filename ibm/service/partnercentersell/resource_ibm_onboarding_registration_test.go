@@ -26,7 +26,7 @@ func TestAccIbmOnboardingRegistrationBasic(t *testing.T) {
 	companyNameUpdate := "Test_company_up"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingRegistrationDestroy,
 		Steps: []resource.TestStep{
@@ -61,7 +61,7 @@ func TestAccIbmOnboardingRegistrationAllArgs(t *testing.T) {
 	providerAccessGroupUpdate := "AccessGroupId-b08e7bb5-d480-4c26-b193-d57dd9311608"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingRegistrationDestroy,
 		Steps: []resource.TestStep{

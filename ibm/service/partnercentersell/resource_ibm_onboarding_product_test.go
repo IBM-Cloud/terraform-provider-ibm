@@ -24,7 +24,7 @@ func TestAccIbmOnboardingProductBasic(t *testing.T) {
 	typeVarUpdate := "service"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingProductDestroy,
 		Steps: []resource.TestStep{
@@ -57,7 +57,7 @@ func TestAccIbmOnboardingProductAllArgs(t *testing.T) {
 	taxAssessmentUpdate := "PAAS"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckPartnerCenterSell(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmOnboardingProductDestroy,
 		Steps: []resource.TestStep{
@@ -81,7 +81,7 @@ func TestAccIbmOnboardingProductAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_onboarding_product.onboarding_product_instance",
+				ResourceName:      "ibm_onboarding_product.onboarding_product",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -94,8 +94,8 @@ func testAccCheckIbmOnboardingProductConfigBasic(typeVar string) string {
 		resource "ibm_onboarding_product" "onboarding_product_instance" {
 			type = "%s"
 			primary_contact {
-				name = "petra"
-				email = "petra@ibm.com"
+				name = "name"
+				email = "email"
 			}
 		}
 	`, typeVar)
@@ -108,12 +108,19 @@ func testAccCheckIbmOnboardingProductConfig(typeVar string, eccnNumber string, e
 			type = "%s"
 			primary_contact {
 				name = "name"
-				email = "petra@email.com"
+				email = "email"
 			}
 			eccn_number = "%s"
 			ero_class = "%s"
-			unspsc = "25191503"
+			unspsc = "FIXME"
 			tax_assessment = "%s"
+			support {
+				escalation_contacts {
+					name = "name"
+					email = "email"
+					role = "role"
+				}
+			}
 		}
 	`, typeVar, eccnNumber, eroClass, taxAssessment)
 }
