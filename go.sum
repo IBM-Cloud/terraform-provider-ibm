@@ -154,10 +154,9 @@ github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3bt
 github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.9.5/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2ywAPwW4VJjdI=
-github.com/IBM/go-sdk-core/v5 v5.17.3/go.mod h1:GatGZpxlo1KaxiRN6E10/rNgWtUtx1hN/GoHSCaSPKA=
 github.com/IBM/go-sdk-core/v5 v5.17.4/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
-github.com/IBM/go-sdk-core/v5 v5.18.0 h1:ZB3qaLEsN4fccQWzMblfXeqLx5VztiVi+HfyIqmqask=
-github.com/IBM/go-sdk-core/v5 v5.18.0/go.mod h1:3ywpylZ41WhWPusqtpJZWopYlt2brebcphV7mA2JncU=
+github.com/IBM/go-sdk-core/v5 v5.18.1 h1:wdftQO8xejECTWTKF3FGXyW0McKxxDAopH7MKwA187c=
+github.com/IBM/go-sdk-core/v5 v5.18.1/go.mod h1:3ywpylZ41WhWPusqtpJZWopYlt2brebcphV7mA2JncU=
 github.com/IBM/ibm-cos-sdk-go v1.10.3 h1:YfZSLqMiCrqDPbr3r+amY2sicIXlrd+3L5pok6QRXIQ=
 github.com/IBM/ibm-cos-sdk-go v1.10.3/go.mod h1:T9x7pC47DUd5jD/TMFzlvly39P6EdW5wOemA78XEo2g=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.1.0 h1:U7EmXSfv7jtugRpTpOkPUmgS/xiNKtGfKVH3BGyC1hg=
@@ -195,6 +194,8 @@ github.com/IBM/vmware-go-sdk v0.1.2 h1:5lKWFyInWz9e2hwGsoFTEoLa1jYkD30SReN0fQ10w
 github.com/IBM/vmware-go-sdk v0.1.2/go.mod h1:2UGPBJju3jiv5VKKBBm9a5L6bzF/aJdKOKAzJ7HaOjA=
 github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5Jt9eE=
 github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
+github.com/IBM/vpc-go-sdk v0.62.0 h1:Xga74D70ziD7nzm51ue3othHz1epMLVkGP/L6/Be+/0=
+github.com/IBM/vpc-go-sdk v0.62.0/go.mod h1:VBR6bAznHsNCFA89Ue4JFQpqCcFp8F5neqbCFCyks4Q=
 github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=
 github.com/Jeffail/gabs v1.1.1/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
@@ -913,7 +914,6 @@ github.com/hashicorp/go-retryablehttp v0.6.2/go.mod h1:gEx6HMUGxYYhJScX7W1Il64m6
 github.com/hashicorp/go-retryablehttp v0.6.6/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
 github.com/hashicorp/go-retryablehttp v0.7.0/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
 github.com/hashicorp/go-retryablehttp v0.7.1/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
-github.com/hashicorp/go-retryablehttp v0.7.5/go.mod h1:Jy/gPYAdjqffZ/yFGCFV2doI5wjtH1ewM9u8iYVjtX8=
 github.com/hashicorp/go-retryablehttp v0.7.7 h1:C8hUCYzor8PIfXHa4UrZkU4VvK8o9ISHxT2Q8+VepXU=
 github.com/hashicorp/go-retryablehttp v0.7.7/go.mod h1:pkQpWZeYWskR+D1tR2O5OcBFOxfA7DoAO6xtkuQnHTk=
 github.com/hashicorp/go-rootcerts v1.0.0/go.mod h1:K6zTfqpRlCUIjkwsN4Z+hiSfzSTQa6eBIzfwKfwNnHU=
