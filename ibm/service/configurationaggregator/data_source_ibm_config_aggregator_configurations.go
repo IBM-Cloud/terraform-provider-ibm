@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -21,6 +22,30 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 )
+
+var alphanumericRegex = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
+
+func tagValidator(val interface{}, key string) ([]string, []error) {
+	v := val.(string)
+	if len(v) < 1 || len(v) > 128 {
+		return nil, []error{fmt.Errorf("%q must be between 1 and 128 characters", key)}
+	}
+	if !alphanumericRegex.MatchString(v) {
+		return nil, []error{fmt.Errorf("%q must contain only alphanumeric characters", key)}
+	}
+	return nil, nil
+}
+
+func subAccountValidator(val interface{}, key string) ([]string, []error) {
+	v := val.(string)
+	if len(v) != 32 {
+		return nil, []error{fmt.Errorf("%q must be 32 characters", key)}
+	}
+	if !alphanumericRegex.MatchString(v) {
+		return nil, []error{fmt.Errorf("%q must contain only alphanumeric characters", key)}
+	}
+	return nil, nil
+}
 
 func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 	return &schema.Resource{
@@ -53,24 +78,28 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 				Description: "The crn of the resource.",
 			},
 			"sub_account": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filter the resource configurations from the specified sub-account in an enterprise hierarchy.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Filter the resource configurations from the specified sub-account in an enterprise hierarchy.",
+				ValidateFunc: subAccountValidator,
 			},
 			"access_tags": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filter the resource configurations attached with the specified access tags.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Filter the resource configurations attached with the specified access tags.",
+				ValidateFunc: tagValidator,
 			},
 			"user_tags": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filter the resource configurations attached with the specified user tags.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Filter the resource configurations attached with the specified user tags.",
+				ValidateFunc: tagValidator,
 			},
 			"service_tags": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Filter the resource configurations attached with the specified service tags.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Filter the resource configurations attached with the specified service tags.",
+				ValidateFunc: tagValidator,
 			},
 			"prev": {
 				Type:        schema.TypeList,
