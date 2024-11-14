@@ -458,10 +458,10 @@ func dataSourceBackupPolicyJobCollectionFlattenJobs(result []vpcv1.BackupPolicyJ
 	return jobs
 }
 
-func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItem vpcv1.BackupPolicyJobIntf) (jobsMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItemIntf vpcv1.BackupPolicyJobIntf) (jobsMap map[string]interface{}) {
 	// log.Println("Hi I am inside dataSourceBackupPolicyJobCollectionJobsToMap")
 	jobsMap = map[string]interface{}{}
-
+	jobsItem := jobsItemIntf.(*vpcv1.BackupPolicyJob)
 	if jobsItem.AutoDelete != nil {
 		jobsMap["auto_delete"] = jobsItem.AutoDelete
 	}
@@ -529,7 +529,7 @@ func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItem vpcv1.BackupPolicyJob
 	if jobsItem.TargetSnapshots != nil {
 		targetSnapshotList := []map[string]interface{}{}
 		for _, targetSnapshotsItem := range jobsItem.TargetSnapshots {
-			targetSnapshotMap := dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotsItem)
+			targetSnapshotMap := dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotsItem.(*vpcv1.BackupPolicyTargetSnapshot))
 			targetSnapshotList = append(targetSnapshotList, targetSnapshotMap)
 		}
 		jobsMap["target_snapshot"] = targetSnapshotList
@@ -712,7 +712,7 @@ func dataSourceBackupPolicyJobCollectionTargetSnapshotDeletedToMap(deletedItem v
 	return deletedMap
 }
 
-func dataSourceBackupPolicyJobCollectionNextToMap(nextItem vpcv1.BackupPolicyJobCollectionNext) (nextMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionNextToMap(nextItem vpcv1.PageLink) (nextMap map[string]interface{}) {
 	nextMap = map[string]interface{}{}
 
 	if nextItem.Href != nil {
