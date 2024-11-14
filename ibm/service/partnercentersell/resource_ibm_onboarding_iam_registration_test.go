@@ -51,6 +51,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	enabled := "true"
 	serviceType := "platform_service"
 	envUpdate := "current"
+	roleDisplayNameUpdate := fmt.Sprintf("random-%d", acctest.RandIntRange(10, 100))
 	nameUpdate := acc.PcsIamServiceRegistrationId
 	enabledUpdate := "true"
 	serviceTypeUpdate := "service"
@@ -72,7 +73,7 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate, iamRegistrationRole, roleDisplayName, acc.PcsIamServiceRegistrationId),
+				Config: testAccCheckIbmOnboardingIamRegistrationConfig(productID, envUpdate, nameUpdate, enabledUpdate, serviceTypeUpdate, iamRegistrationRole, roleDisplayNameUpdate, acc.PcsIamServiceRegistrationId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_iam_registration.onboarding_iam_registration_instance", "env", envUpdate),
