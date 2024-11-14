@@ -5,7 +5,7 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20241113164343-2c8987e9d7fc
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.8.3
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
@@ -239,9 +239,6 @@ replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
-
-// TODO: remove once bluemix PR is merged, only replaced to show how it's supposed to work
-replace github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062 => ../bluemix-go
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
