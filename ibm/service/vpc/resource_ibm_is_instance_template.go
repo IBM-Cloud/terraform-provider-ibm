@@ -2341,12 +2341,12 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			switch reflect.TypeOf(instance.DefaultTrustedProfile.Target).String() {
 			case "*vpcv1.TrustedProfileIdentityTrustedProfileByID":
 				{
-					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByID)
+					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityByID)
 					d.Set(isInstanceDefaultTrustedProfileTarget, target.ID)
 				}
 			case "*vpcv1.TrustedProfileIdentityTrustedProfileByCRN":
 				{
-					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByCRN)
+					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityByCRN)
 					d.Set(isInstanceDefaultTrustedProfileTarget, target.CRN)
 				}
 			}
