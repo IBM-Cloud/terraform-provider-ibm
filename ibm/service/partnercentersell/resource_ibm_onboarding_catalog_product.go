@@ -1210,7 +1210,7 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(m
 		}
 		model.PC = PCModel
 	}
-	if modelMap["composite"] != nil && len(modelMap["composite"].([]interface{})) > 0 {
+	if modelMap["composite"] != nil && len(modelMap["composite"].([]interface{})) > 0 && modelMap["composite"].([]interface{})[0] != nil {
 		CompositeModel, err := ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherComposite(modelMap["composite"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -1955,7 +1955,7 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherComposi
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["children"] = nil
 	} else if exists && patch["children"] != nil {
-		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch["children"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildAsPatch(patch["children"].([]map[string]interface{})[0], d)
 	}
 }
 
@@ -2024,7 +2024,7 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherPCSuppo
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["support_details"] = nil
 	} else if exists && patch["support_details"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportDetailsItemAsPatch(patch["support_details"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductSupportDetailsItemAsPatch(patch["support_details"].([]map[string]interface{})[0], d)
 	}
 }
 
@@ -2060,7 +2060,7 @@ func ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityAsPatch(pa
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["times"] = nil
 	} else if exists && patch["times"] != nil {
-		ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeAsPatch(patch["times"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductSupportDetailsItemAvailabilityTimeAsPatch(patch["times"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.other.0.pc.0.support.0.support_details.0.availability.0.timezone"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
@@ -2222,13 +2222,13 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogMetadataUIStringsContentAsP
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["bullets"] = nil
 	} else if exists && patch["bullets"] != nil {
-		ResourceIbmOnboardingCatalogProductCatalogHighlightItemAsPatch(patch["bullets"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductCatalogHighlightItemAsPatch(patch["bullets"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.ui.0.strings.0.en.0.media"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["media"] = nil
 	} else if exists && patch["media"] != nil {
-		ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch["media"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingCatalogProductCatalogProductMediaItemAsPatch(patch["media"].([]map[string]interface{})[0], d)
 	}
 	path = "metadata.0.ui.0.strings.0.en.0.embeddable_dashboard"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
