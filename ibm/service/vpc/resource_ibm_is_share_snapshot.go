@@ -310,7 +310,7 @@ func resourceIBMIsShareSnapshotCreate(context context.Context, d *schema.Resourc
 }
 
 func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -440,7 +440,7 @@ func resourceIBMIsShareSnapshotRead(context context.Context, d *schema.ResourceD
 }
 
 func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -505,7 +505,7 @@ func resourceIBMIsShareSnapshotUpdate(context context.Context, d *schema.Resourc
 }
 
 func resourceIBMIsShareSnapshotDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_share_snapshot", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -521,8 +521,6 @@ func resourceIBMIsShareSnapshotDelete(context context.Context, d *schema.Resourc
 
 	deleteShareSnapshotOptions.SetShareID(parts[0])
 	deleteShareSnapshotOptions.SetID(parts[1])
-
-	deleteShareSnapshotOptions.SetIfMatch(d.Get("etag").(string))
 
 	_, _, err = vpcClient.DeleteShareSnapshotWithContext(context, deleteShareSnapshotOptions)
 	if err != nil {

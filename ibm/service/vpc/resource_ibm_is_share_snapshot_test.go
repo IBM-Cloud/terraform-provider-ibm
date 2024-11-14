@@ -102,7 +102,7 @@ func testAccCheckIBMIsShareSnapshotExists(n string, obj vpcv1.ShareSnapshot) res
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 		if err != nil {
 			return err
 		}
@@ -128,7 +128,7 @@ func testAccCheckIBMIsShareSnapshotExists(n string, obj vpcv1.ShareSnapshot) res
 }
 
 func testAccCheckIBMIsShareSnapshotDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return err
 	}

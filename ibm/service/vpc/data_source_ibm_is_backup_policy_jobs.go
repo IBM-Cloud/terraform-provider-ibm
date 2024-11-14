@@ -346,6 +346,53 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 										Computed:    true,
 										Description: "The user-defined name for this snapshot.",
 									},
+									"remote": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"account": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates that the referenced resource is remote to thisaccount, and identifies the owning account.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unique identifier for this account.",
+															},
+															"resource_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The resource type.",
+															},
+														},
+													},
+												},
+												"region": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates that the referenced resource is remote to thisregion, and identifies the native region.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The URL for this region.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The globally unique name for this region.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
 									"resource_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -529,14 +576,26 @@ func dataSourceBackupPolicyJobCollectionJobsToMap(jobsItemIntf vpcv1.BackupPolic
 	if jobsItem.TargetSnapshots != nil {
 		targetSnapshotList := []map[string]interface{}{}
 		for _, targetSnapshotsItem := range jobsItem.TargetSnapshots {
-			targetSnapshotMap := dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotsItem.(*vpcv1.BackupPolicyTargetSnapshot))
+			targetSnapshotMap := dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotsItem)
 			targetSnapshotList = append(targetSnapshotList, targetSnapshotMap)
 		}
 		jobsMap["target_snapshot"] = targetSnapshotList
 	}
-	// log.Println("jobsItem")
-	// log.Println(jobsItem)
 	return jobsMap
+}
+
+func AccountReferenceToMap(model *vpcv1.AccountReference) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = *model.ID
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap
+}
+
+func RegionReferenceToMap(model *vpcv1.RegionReference) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
+	return modelMap
 }
 
 func dataSourceBackupPolicyJobCollectionJobsBackupPolicyPlanToMap(backupPolicyPlanItem vpcv1.BackupPolicyPlanReference) (backupPolicyPlanMap map[string]interface{}) {
@@ -674,9 +733,38 @@ func dataSourceBackupPolicyJobCollectionJobsStatusReasonsToMap(statusReasonsItem
 	return statusReasonsMap
 }
 
-func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotItem vpcv1.SnapshotReference) (targetSnapshotMap map[string]interface{}) {
+func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotRefToMap(targetSnapshotItem vpcv1.BackupPolicyTargetSnapshotSnapshotReference) (targetSnapshotMap map[string]interface{}) {
 	targetSnapshotMap = map[string]interface{}{}
+	if targetSnapshotItem.CRN != nil {
+		targetSnapshotMap["crn"] = targetSnapshotItem.CRN
+	}
+	if targetSnapshotItem.Deleted != nil {
+		deletedList := []map[string]interface{}{}
+		deletedMap := dataSourceBackupPolicyJobCollectionTargetSnapshotDeletedToMap(*targetSnapshotItem.Deleted)
+		deletedList = append(deletedList, deletedMap)
+		targetSnapshotMap["deleted"] = deletedList
+	}
+	if targetSnapshotItem.Href != nil {
+		targetSnapshotMap["href"] = targetSnapshotItem.Href
+	}
+	if targetSnapshotItem.ID != nil {
+		targetSnapshotMap["id"] = targetSnapshotItem.ID
+	}
+	if targetSnapshotItem.Name != nil {
+		targetSnapshotMap["name"] = targetSnapshotItem.Name
+	}
+	if targetSnapshotItem.ResourceType != nil {
+		targetSnapshotMap["resource_type"] = targetSnapshotItem.ResourceType
+	}
+	if targetSnapshotItem.Remote != nil {
+		remoteMap := DataSourceIBMISRemoteAccountRegionToMap(targetSnapshotItem.Remote)
+		targetSnapshotMap["remote"] = []map[string]interface{}{remoteMap}
+	}
+	return targetSnapshotMap
+}
 
+func dataSourceBackupPolicyJobCollectionJobsTargetShareSnapshotRefToMap(targetSnapshotItem vpcv1.BackupPolicyTargetSnapshotShareSnapshotReference) (targetSnapshotMap map[string]interface{}) {
+	targetSnapshotMap = map[string]interface{}{}
 	if targetSnapshotItem.CRN != nil {
 		targetSnapshotMap["crn"] = targetSnapshotItem.CRN
 	}
@@ -699,6 +787,34 @@ func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotIt
 		targetSnapshotMap["resource_type"] = targetSnapshotItem.ResourceType
 	}
 
+	return targetSnapshotMap
+}
+func DataSourceIBMISRemoteAccountRegionToMap(model *vpcv1.SnapshotRemote) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	if model.Account != nil {
+		accountMap := AccountReferenceToMap(model.Account)
+		modelMap["account"] = []map[string]interface{}{accountMap}
+	}
+	if model.Region != nil {
+		regionMap := RegionReferenceToMap(model.Region)
+		modelMap["region"] = []map[string]interface{}{regionMap}
+	}
+	return modelMap
+}
+func dataSourceBackupPolicyJobCollectionJobsTargetSnapshotToMap(targetSnapshotItemIntf vpcv1.BackupPolicyTargetSnapshotIntf) (targetSnapshotMap map[string]interface{}) {
+	targetSnapshotMap = map[string]interface{}{}
+	switch reflect.TypeOf(targetSnapshotItemIntf).String() {
+	case "*vpcv1.BackupPolicyTargetSnapshotSnapshotReference":
+		{
+			targetSnapshotItem := targetSnapshotItemIntf.(*vpcv1.BackupPolicyTargetSnapshotSnapshotReference)
+			targetSnapshotMap = dataSourceBackupPolicyJobCollectionJobsTargetSnapshotRefToMap(*targetSnapshotItem)
+		}
+	case "*vpcv1.BackupPolicyTargetSnapshotShareSnapshotReference":
+		{
+			targetSnapshotItem := targetSnapshotItemIntf.(*vpcv1.BackupPolicyTargetSnapshotShareSnapshotReference)
+			targetSnapshotMap = dataSourceBackupPolicyJobCollectionJobsTargetShareSnapshotRefToMap(*targetSnapshotItem)
+		}
+	}
 	return targetSnapshotMap
 }
 

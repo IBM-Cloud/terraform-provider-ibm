@@ -262,7 +262,7 @@ func DataSourceIBMIsShareSnapshots() *schema.Resource {
 }
 
 func dataSourceIBMIsShareSnapshotsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_share_snapshots", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
