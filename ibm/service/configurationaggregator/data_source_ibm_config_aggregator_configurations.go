@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,32 +19,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 )
-
-var alphanumericRegex = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
-
-func tagValidator(val interface{}, key string) ([]string, []error) {
-	v := val.(string)
-	if len(v) < 1 || len(v) > 128 {
-		return nil, []error{fmt.Errorf("%q must be between 1 and 128 characters", key)}
-	}
-	if !alphanumericRegex.MatchString(v) {
-		return nil, []error{fmt.Errorf("%q must contain only alphanumeric characters", key)}
-	}
-	return nil, nil
-}
-
-func subAccountValidator(val interface{}, key string) ([]string, []error) {
-	v := val.(string)
-	if len(v) != 32 {
-		return nil, []error{fmt.Errorf("%q must be 32 characters", key)}
-	}
-	if !alphanumericRegex.MatchString(v) {
-		return nil, []error{fmt.Errorf("%q must contain only alphanumeric characters", key)}
-	}
-	return nil, nil
-}
 
 func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 	return &schema.Resource{
@@ -81,25 +57,25 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Filter the resource configurations from the specified sub-account in an enterprise hierarchy.",
-				ValidateFunc: subAccountValidator,
+				ValidateFunc: validate.InvokeValidator("ibm_config_aggregator_configurations", "sub_account"),
 			},
 			"access_tags": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Filter the resource configurations attached with the specified access tags.",
-				ValidateFunc: tagValidator,
+				ValidateFunc: validate.InvokeValidator("ibm_config_aggregator_configurations", "access_tags"),
 			},
 			"user_tags": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Filter the resource configurations attached with the specified user tags.",
-				ValidateFunc: tagValidator,
+				ValidateFunc: validate.InvokeValidator("ibm_config_aggregator_configurations", "user_tags"),
 			},
 			"service_tags": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Filter the resource configurations attached with the specified service tags.",
-				ValidateFunc: tagValidator,
+				ValidateFunc: validate.InvokeValidator("ibm_config_aggregator_configurations", "service_tags"),
 			},
 			"prev": {
 				Type:        schema.TypeList,
@@ -141,6 +117,41 @@ func DataSourceIbmConfigAggregatorConfigurations() *schema.Resource {
 			},
 		},
 	}
+}
+func DataSourceIbmConfigAggregatorValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 4)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "sub_account",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Regexp:                     `^[a-zA-Z0-9]+$`,
+			MinValueLength:             32,
+			MaxValueLength:             32,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "access_tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Regexp:                     `^[a-zA-Z0-9]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "user_tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Regexp:                     `^[a-zA-Z0-9]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "service_tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Regexp:                     `^[a-zA-Z0-9]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+	)
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_config_aggregator_configurations", Schema: validateSchema}
+	return &resourceValidator
 }
 
 func dataSourceIbmConfigAggregatorConfigurationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
