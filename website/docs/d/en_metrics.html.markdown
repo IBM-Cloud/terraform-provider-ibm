@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_metrics"
 description: |-
   Get information about en_metrics
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_metrics

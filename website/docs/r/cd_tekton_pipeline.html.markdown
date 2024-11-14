@@ -8,7 +8,7 @@ subcategory: "Continuous Delivery"
 
 # ibm_cd_tekton_pipeline
 
-Provides a resource for cd_tekton_pipeline. This allows cd_tekton_pipeline to be created, updated and deleted.
+Create, update, and delete cd_tekton_pipelines with this resource.
 
 ## Example Usage
 
@@ -23,24 +23,26 @@ resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `pipeline_id` - (Required, String) ID of the pipeline tool in your toolchain. Can be referenced from your `ibm_cd_toolchain_tool_pipeline` resource, e.g. `pipeline_id = ibm_cd_toolchain_tool_pipeline.my_pipeline.tool_id`
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `enable_notifications` - (Optional, Boolean) Flag to enable notifications for this pipeline. If enabled, the Tekton pipeline run events will be published to all the destinations specified by the Slack and Event Notifications integrations in the parent toolchain.
-  * Constraints: The default value is `false`.
-* `enable_partial_cloning` - (Optional, Boolean) Flag to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work.
-  * Constraints: The default value is `false`.
-* `next_build_number` - (Optional, Integer) Specify the build number that will be used for the next pipeline run. Build numbers can be any positive whole number between 0 and 100000000000000.
+* `enable_notifications` - (Optional, Boolean) Flag to enable notifications for this pipeline. If enabled, the Tekton pipeline run events will be published to all the destinations specified by the Slack and Event Notifications integrations in the parent toolchain. If omitted, this feature is disabled by default.
+* `enable_partial_cloning` - (Optional, Boolean) Flag to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.
+* `next_build_number` - (Optional, Integer) The build number that will be used for the next pipeline run.
   * Constraints: The maximum value is `99999999999999`. The minimum value is `1`.
-* `worker` - (Optional, List) Specify the worker that is to be used to run the trigger, indicated by a worker object with only the worker ID. If not specified or set as `worker: { id: 'public' }`, the IBM Managed shared workers are used.
+* `worker` - (Optional, List) Details of the worker used to run the pipeline.
 Nested schema for **worker**:
 	* `id` - (Required, String) ID of the worker.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
+	* `name` - (Computed, String) Name of the worker. Computed based on the worker ID.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.
+	* `type` - (Computed, String) Type of the worker. Computed based on the worker ID.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the cd_tekton_pipeline.
 * `build_number` - (Integer) The latest pipeline run build number. If this property is absent, the pipeline hasn't had any pipeline runs.
@@ -105,13 +107,15 @@ Nested schema for **resource_group**:
 Nested schema for **toolchain**:
 	* `crn` - (String) The CRN for the toolchain that contains the Tekton pipeline.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
-	* `id` - (String) UUID.
+	* `id` - (String) Universally Unique Identifier.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `triggers` - (List) Tekton pipeline triggers list.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested schema for **triggers**:
 	* `cron` - (String) Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
+	* `enable_events_from_forks` - (Boolean) When enabled, pull request events from forks of the selected repository will trigger a pipeline run.
+	  * Constraints: The default value is `false`.
 	* `enabled` - (Boolean) Flag to check if the trigger is enabled.
 	  * Constraints: The default value is `true`.
 	* `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
@@ -197,9 +201,9 @@ Nested schema for **triggers**:
 
 ## Import
 
-You can import the `ibm_cd_tekton_pipeline` resource by using `id`. UUID.
+You can import the `ibm_cd_tekton_pipeline` resource by using `id`. Universally Unique Identifier.
 
 # Syntax
-```
-$ terraform import ibm_cd_tekton_pipeline.cd_tekton_pipeline <id>
-```
+<pre>
+$ terraform import ibm_cd_tekton_pipeline.cd_tekton_pipeline &lt;id&gt;
+</pre>

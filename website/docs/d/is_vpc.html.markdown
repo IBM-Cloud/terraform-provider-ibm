@@ -40,6 +40,9 @@ In addition to all argument reference list, you can access the following attribu
 - `access_tags`  - (List) Access management tags associated for the volume.
 - `available_ipv4_address_count`- (Integer) The number of IPv4 addresses in the subnet that are available for you to be used.
 - `classic_access`- (Bool) Indicates whether this VPC is connected to Classic Infrastructure.
+
+  ~> **Note:** 
+    `classic_access` is deprecated. Use [Transit Gateway](https://cloud.ibm.com/docs/transit-gateway) with Classic as a spoke/connection.
 - `crn` - (String) The CRN of the VPC.
 - `cse_source_addresses`-List of Cloud Service Endpoints-A list of the cloud service endpoints that are associated with your VPC, including their source IP address and zone.
 

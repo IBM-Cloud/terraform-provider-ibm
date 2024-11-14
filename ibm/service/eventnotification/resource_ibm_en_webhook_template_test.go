@@ -18,8 +18,8 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnCFDestinationAllArgs(t *testing.T) {
-	var config en.Destination
+func TestAccIBMEnWebhookTemplateAllArgs(t *testing.T) {
+	var params en.Template
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -29,29 +29,27 @@ func TestAccIBMEnCFDestinationAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnCFDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnEmailTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnCFDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnWebhookTemplateConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnCFDestinationExists("ibm_en_destination_cf.en_destination_resource_1", config),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "type", "ibmcf"),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "collect_failed_events", "false"),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "description", description),
+					testAccCheckIBMEnWebhookTemplateExists("ibm_en_webhook_template.en_template_resource_1", params),
+					resource.TestCheckResourceAttr("ibm_en_webhook_template.en_template_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_webhook_template.en_template_resource_1", "type", "webhook.notification"),
+					resource.TestCheckResourceAttr("ibm_en_webhook_template.en_template_resource_1", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnCFDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnWebhookTemplateConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "type", "ibmcf"),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "collect_failed_events", "false"),
-					resource.TestCheckResourceAttr("ibm_en_destination_cf.en_destination_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_webhook_template.en_template_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_webhook_template.en_template_resource_1", "type", "webhook.notification"),
+					resource.TestCheckResourceAttr("ibm_en_webhook_template.en_template_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination_cf.en_destination_resource_1",
+				ResourceName:      "ibm_en_webhook_template.en_template_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -59,31 +57,28 @@ func TestAccIBMEnCFDestinationAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnCFDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnWebhookTemplateConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "en_destination_resource" {
+	resource "ibm_resource_instance" "en_template_resource" {
 		name     = "%s"
 		location = "us-south"
 		plan     = "standard"
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination_cf" "en_destination_resource_1" {
-		instance_guid = ibm_resource_instance.en_destination_resource.guid
+	resource "ibm_en_webhook_template" "en_template_resource_1" {
+		instance_guid = ibm_resource_instance.en_template_resource.guid
 		name        = "%s"
-		type        = "ibmcf"
+		type        = "webhook.notification"
 		description = "%s"
-		config {
-			params {
-				url  = "https://www.ibmcfendpoint.com/"
-				api_key = "ddgheueiinbjjkeoeooejbbsvwye2wu"
-			}
+		params {
+			body  = "ewoJImJsb2NrcyI6IFsKCQl7CgkJCSJ0eXBlIjogInNlY3Rpb24iLAoJCQkidGV4dCI6IHsKCQkJCSJ0eXBlIjogIm1ya2R3biIsCgkJCQkidGV4dCI6ICJOZXcgUGFpZCBUaW1lIE9mZiByZXF1ZXN0IGZyb20gPGV4YW1wbGUuY29tfEZyZWQgRW5yaXF1ZXo+XG5cbjxodHRwczovL2V4YW1wbGUuY29tfFZpZXcgcmVxdWVzdD4iCgkJCX0KCQl9CgldCn0="
 		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnCFDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnWebhookTemplateExists(n string, obj en.Template) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -96,7 +91,7 @@ func testAccCheckIBMEnCFDestinationExists(n string, obj en.Destination) resource
 			return err
 		}
 
-		options := &en.GetDestinationOptions{}
+		options := &en.GetTemplateOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -106,7 +101,7 @@ func testAccCheckIBMEnCFDestinationExists(n string, obj en.Destination) resource
 		options.SetInstanceID(parts[0])
 		options.SetID(parts[1])
 
-		result, _, err := enClient.GetDestination(options)
+		result, _, err := enClient.GetTemplate(options)
 		if err != nil {
 			return err
 		}
@@ -116,17 +111,17 @@ func testAccCheckIBMEnCFDestinationExists(n string, obj en.Destination) resource
 	}
 }
 
-func testAccCheckIBMEnCFDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnWebhookTemplateDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_destination_resource_1" {
+		if rs.Type != "en_template_resource_1" {
 			continue
 		}
 
-		options := &en.GetDestinationOptions{}
+		options := &en.GetTemplateOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -137,12 +132,12 @@ func testAccCheckIBMEnCFDestinationDestroy(s *terraform.State) error {
 		options.SetID(parts[1])
 
 		// Try to find the key
-		_, response, err := enClient.GetDestination(options)
+		_, response, err := enClient.GetTemplate(options)
 
 		if err == nil {
 			return fmt.Errorf("en_destination still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for en_destination (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for en_template_resource_1 (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

@@ -16,11 +16,15 @@ Create, update, and delete onboarding_resource_brokers with this resource.
 
 ```hcl
 resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" {
-  auth_password = "auth_password"
-  auth_scheme = "auth_scheme"
-  auth_username = "auth_username"
-  broker_url = "broker_url"
-  name = "name"
+  allow_context_updates = false
+  auth_scheme = "bearer"
+  auth_username = "apikey"
+  broker_url = "https://broker-url-for-my-service.com"
+  catalog_type = "service"
+  name = "brokername"
+  region = "global"
+  resource_group_crn = "crn:v1:bluemix:public:resource-controller::a/4a5c3c51b97a446fbb1d0e1ef089823b::resource-group:4fae20bd538a4a738475350dfdc1596f"
+  state = "active"
   type = "provision_through"
 }
 ```
@@ -30,9 +34,11 @@ resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" 
 You can specify the following arguments for this resource.
 
 * `allow_context_updates` - (Optional, Boolean) Whether the resource controller will call the broker for any context changes to the instance. Currently, the only context related change is an instance name update.
-* `auth_password` - (Required, String) The authentication password to reach the broker.
+* `auth_password` - (Optional, String) The authentication password to reach the broker.
 * `auth_scheme` - (Required, String) The supported authentication scheme for the broker.
-* `auth_username` - (Required, String) The authentication username to reach the broker.
+  * Constraints: Allowable values are: `bearer`, `bearer-crn`.
+* `auth_username` - (Optional, String) The authentication username to reach the broker.
+  * Constraints: Allowable values are: `apikey`.
 * `broker_url` - (Required, String) The URL associated with the broker application.
 * `catalog_type` - (Optional, String) To enable the provisioning of your broker, set this parameter value to `service`.
 * `env` - (Optional, String) The environment to fetch this object from.
@@ -78,5 +84,5 @@ You can import the `ibm_onboarding_resource_broker` resource by using `id`. The 
 
 # Syntax
 <pre>
-$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker <id>;
+$ terraform import ibm_onboarding_resource_broker.onboarding_resource_broker id;
 </pre>

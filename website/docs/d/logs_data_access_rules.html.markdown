@@ -43,7 +43,7 @@ Nested schema for **data_access_rules**:
 	* `description` - (String) Optional Data Access Rule Description.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\-\\s]+$/`.
 	* `display_name` - (String) Data Access Rule Display Name.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_\\.,\\-"{}()\\[\\]=!:#\/$|' ]+$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 	* `filters` - (List) List of filters that the Data Access Rule is composed of.
 	  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 	Nested schema for **filters**:
