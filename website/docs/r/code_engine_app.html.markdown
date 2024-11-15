@@ -124,6 +124,7 @@ Nested schema for **run_volume_mounts**:
 * `scale_concurrency` - (Optional, Integer) Optional maximum number of requests that can be processed concurrently per instance.
   * Constraints: The default value is `100`.
 * `scale_concurrency_target` - (Optional, Integer) Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.
+	* Constraints: The default value is `100`. The maximum value is `1000`. The minimum value is `1`.
 * `scale_cpu_limit` - (Optional, String) Optional number of CPU set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).
   * Constraints: The default value is `1`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_down_delay` - (Optional, Integer) Optional amount of time in seconds that delays the scale-down behavior for an app instance.
