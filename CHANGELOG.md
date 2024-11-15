@@ -1,3 +1,8 @@
+# 1.71.2(Nov 15, 2024)
+Bugfixes
+* Tags support config aggregator & Bug fix for settings api ([5783](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5783))
+* fix(partner center sell): fix patch nested fields ([5785](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5785))
+
 # 1.71.1(Nov 07, 2024)
 Bugfixes
 * Add error if image not found ([5730](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/5730))
