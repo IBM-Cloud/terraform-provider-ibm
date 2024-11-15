@@ -363,12 +363,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:    true,
 				Description: "Enable Secure-by-default on existing clusters (note: can be used on existing clusters)",
 				ValidateFunc: func(i interface{}, s string) (warnings []string, errors []error) {
-					v, ok := i.(bool)
-					if !ok {
-						errors = append(errors, fmt.Errorf("expected type of %s to be bool", s))
-						return warnings, errors
-					}
-
+					v := i.(bool)
 					if !v {
 						// The field can only be true
 						errors = append(errors, fmt.Errorf("%s can be only true", s))
