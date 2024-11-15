@@ -540,6 +540,127 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
   }
 }
 ```
+
+
+## ibm_cos_backup_vault
+
+Provides an independent resource to manage the backup vault for a cos bucket backup policy.
+
+## Example usage
+
+```terraform
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+    object_versioning {
+    enable  = true
+  }
+
+}
+
+resource "ibm_cos_backup_vault" "backup-vault" {
+  backup_vault_name           = "backup_vault_name"
+  service_instance_id  = "cos_instance_id to create backup vault"
+  region  = "us"
+  activity_tracking_management_events = true
+  metrics_monitoring_usage_metrics = true
+  kms_key_crn = "key_crn_of_kp_root_key"
+}
+```
+
+## ibm_cos_backup_policy
+
+Provides an independent resource to manage the backup policy.
+
+## Example usage
+
+```terraform
+
+resource "ibm_cos_bucket" "backup-source-bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = "cos_instance_id"
+  cross_region_location =  "us"
+  storage_class          = "standard"
+  object_versioning {
+    enable  = true
+  }
+
+}
+
+
+resource "ibm_cos_backup_vault" "backup-vault" {
+  backup_vault_name           = "backup_vault_name"
+  service_instance_id  = "cos_instance_id to create backup vault"
+  region  = "us"
+  activity_tracking_management_events = true
+  metrics_monitoring_usage_metrics = true
+  kms_key_crn = "crn:v1:staging:public:kms:us-south:a/997xxxxxxxxxxxxxxxxxxxxxx54:5xxxxxxxa-fxxb-4xx8-9xx4-f1xxxxxxxxx5:key:af5667d5-dxx5-4xxf-8xxf-exxxxxxxf1d"
+}
+
+
+resource "ibm_iam_authorization_policy" "policy" {
+		roles                  = [
+			"Backup Manager", "Writer"
+		]
+		subject_attributes {
+		  name  = "accountId"
+		  value = "account_id of the cos account"
+		}
+		subject_attributes {
+		  name  = "serviceName"
+		  value = "cloud-object-storage"
+		}
+		subject_attributes {
+		  name  = "serviceInstance"
+		  value = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+		}
+		subject_attributes {
+		  name  = "resource"
+		  value = "source-bucket-name"
+		}
+		subject_attributes {
+		  name  = "resourceType"
+		  value = "bucket"
+		}
+		resource_attributes {
+		  name     = "accountId"
+		  operator = "stringEquals"
+		  value    = "account id of the cos account of backup vault"
+		}
+		resource_attributes {
+		  name     = "serviceName"
+		  operator = "stringEquals"
+		  value    = "cloud-object-storage"
+		}
+		resource_attributes { 
+		  name  =  "serviceInstance"
+		  operator = "stringEquals"
+		  value =  "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+		}
+		resource_attributes { 
+		  name  =  "resource"
+		  operator = "stringEquals"
+		  value =  "backup-vault-name"
+		}
+		resource_attributes { 
+		  name  =  "resourceType"
+		  operator = "stringEquals"
+		  value =  "backup-vault" 
+		}
+	}
+
+resource "ibm_cos_backup_policy" "policy" {
+  bucket_crn      = ibm_cos_bucket.bucket.crn
+  policy_name = "policy_name"
+  target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+  backup_type = "continuous"
+}
+```
+
+
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
@@ -621,6 +742,15 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 | noncurrent_days | Number of days an object is noncurrent before lifecycle action is performed. | `int` | No
 | days_after_initiatiob | Number of days after which incomplete multipart uploads are aborted. | `int` | No
 | id | Unique identifier for lifecycle rule. | `int` | Yes
-| status | Whether the rule is currently being applied. | `int` | Yes
+| backup_vault_name | Name of the backup vault. | `string` | Yes
+| service_instance_id | Instance id used to create the backup vault. | `string` | Yes
+| region | Location where the backup vault to be created. | `string` | Yes
+| activity_tracking_management_events | Whether to send notification for the management events for backup vault. | `bool` | No
+| metrics_monitoring_usage_metrics | Whether usage metrics are collected for this BackupVault. | `bool` | No
+| kms_key_crn | Crn of the Key protect root key. | `string` | No
+| bucket_crn | CRN of the source bucket. | `string` | Yes
+| policy_name | Name of the policy. | `string` | Yes
+| target_backup_vault_crn | CRN of the backuo vault. | `string` | Yes
+| backup_type | Type of backup supported. | `string` | Yes
 
 {: caption="inputs"}
