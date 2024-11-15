@@ -24,6 +24,7 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
 	baseName := fmt.Sprintf("test-name-terraform-%d", acctest.RandIntRange(10, 100))
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
 	name := baseName
 	active := "true"
 	disabled := "false"
@@ -39,7 +40,7 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogProductDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(productID, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(productID, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogProductExists("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
@@ -50,7 +51,7 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(productID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogProductConfigBasic(productID, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "name", nameUpdate),
@@ -67,6 +68,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName2
 	baseName := fmt.Sprintf("test-name-terraform-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-%d", acctest.RandIntRange(10, 100))
 	env := "current"
 	name := baseName
 	active := "true"
@@ -84,7 +86,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingCatalogProductDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfig(productID, env, name, active, disabled, kind),
+				Config: testAccCheckIbmOnboardingCatalogProductConfig(productID, env, name, active, disabled, kind, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingCatalogProductExists("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
@@ -96,7 +98,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingCatalogProductConfig(productID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate),
+				Config: testAccCheckIbmOnboardingCatalogProductConfig(productID, envUpdate, nameUpdate, activeUpdate, disabledUpdate, kindUpdate, objectId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "product_id", productID),
 					resource.TestCheckResourceAttr("ibm_onboarding_catalog_product.onboarding_catalog_product_instance", "env", envUpdate),
@@ -118,7 +120,7 @@ func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
 			product_id = "%s"
@@ -126,6 +128,7 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			tags = ["tag", "support_ibm"]
 			object_provider {
 				name = "name"
@@ -135,10 +138,10 @@ func testAccCheckIbmOnboardingCatalogProductConfigBasic(productID string, name s
 				rc_compatible = false
 			}
 		}
-	`, productID, name, active, disabled, kind)
+	`, productID, name, active, disabled, kind, objectId)
 }
 
-func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string, name string, active string, disabled string, kind string) string {
+func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string, name string, active string, disabled string, kind string, objectId string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
@@ -148,6 +151,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 			active = %s
 			disabled = %s
 			kind = "%s"
+			object_id = "%s"
 			overview_ui {
 				en {
 					display_name = "display_name"
@@ -181,6 +185,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 					pc {
 						support {
 							url = "url"
+							process_i18n = {}
 							status_url = "status_url"
 							locations = [ "locations" ]
 							languages = [ "languages" ]
@@ -218,7 +223,7 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
 				}
 			}
 		}
-	`, productID, env, name, active, disabled, kind)
+	`, productID, env, name, active, disabled, kind, objectId)
 }
 
 func testAccCheckIbmOnboardingCatalogProductExists(n string, obj partnercentersellv1.GlobalCatalogProduct) resource.TestCheckFunc {

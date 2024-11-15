@@ -140,7 +140,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
-			validateUsersDiff),
+			validateUsersDiff,
+			validateVersionDiff,
+			validateRemoteLeaderIDDiff),
 
 		Importer: &schema.ResourceImporter{},
 
@@ -240,11 +242,11 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "The configuration schema in JSON format",
 			},
 			"version": {
-				Description: "The database version to provision if specified",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
+				Description:      "The database version to provision if specified",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
@@ -258,10 +260,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"remote_leader_id": {
-				Description:      "The CRN of leader database",
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				Description: "The CRN of leader database",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"skip_initial_backup": {
+				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
+				Type:        schema.TypeBool,
+				Optional:    true,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
@@ -840,6 +846,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		},
 	}
 }
+
 func ResourceIBMICDValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
@@ -1597,7 +1604,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
-
 	}
 
 	d.Set(flex.ResourceName, *instance.Name)
@@ -2132,6 +2138,37 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 					return diag.FromErr(fmt.Errorf(
 						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteLogicalReplicationSlotOptions.Name, err))
 				}
+			}
+		}
+	}
+
+	if d.HasChange("remote_leader_id") {
+		remoteLeaderId := d.Get("remote_leader_id").(string)
+
+		if remoteLeaderId == "" {
+			skipInitialBackup := false
+			if skip, ok := d.GetOk("skip_initial_backup"); ok {
+				skipInitialBackup = skip.(bool)
+			}
+
+			promoteReadOnlyReplicaOptions := &clouddatabasesv5.PromoteReadOnlyReplicaOptions{
+				ID: &instanceID,
+				Promotion: map[string]interface{}{
+					"skip_initial_backup": skipInitialBackup,
+				},
+			}
+
+			promoteReadReplicaResponse, response, err := cloudDatabasesClient.PromoteReadOnlyReplica(promoteReadOnlyReplicaOptions)
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s\n%s", err, response))
+			}
+
+			taskID := *promoteReadReplicaResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s", err))
 			}
 		}
 	}
@@ -2920,6 +2957,16 @@ func getCpuEnforcementRatios(service string, plan string, hostFlavor string, met
 	return nil, 0, 0
 }
 
+func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	version, configVersion := diff.GetChange("version")
+
+	if version != configVersion {
+		return fmt.Errorf("[ERROR] The version in your configuration file (%s) does not match the version of your remote instance (%s). Make sure that you have the same version in your configuration as the version on the remote instance. Learn more about the versioning policy here: https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-versioning-policy ", configVersion, version)
+	}
+
+	return nil
+}
+
 func validateUsersDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	service := diff.Get("service").(string)
 
@@ -3037,6 +3084,24 @@ func expandUserChanges(_oldUsers []interface{}, _newUsers []interface{}) (userCh
 	}
 
 	return userChanges
+}
+
+func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, remoteLeaderIdOk := diff.GetOk("remote_leader_id")
+	service := diff.Get("service").(string)
+	crn := diff.Get("resource_crn").(string)
+
+	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
+		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	}
+
+	oldValue, newValue := diff.GetChange("remote_leader_id")
+
+	if crn != "" && oldValue == "" && newValue != "" {
+		return fmt.Errorf("[ERROR] You cannot convert an existing instance to a read replica")
+	}
+
+	return nil
 }
 
 func (c *userChange) isDelete() bool {

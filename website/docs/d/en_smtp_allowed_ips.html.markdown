@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_en_smtp_allowed_ips"
 description: |-
   Get information about en_smtp_allowed_ips
-subcategory: "Event Notifications API"
+subcategory: "Event Notifications"
 ---
 
 # ibm_en_smtp_allowed_ips

@@ -198,6 +198,21 @@ func DataSourceIBMISVPCRoutingTables() *schema.Resource {
 								},
 							},
 						},
+
+						rtTags: {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      flex.ResourceIBMVPCHash,
+						},
+
+						rtAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -318,6 +333,20 @@ func dataSourceIBMISVPCRoutingTablesList(d *schema.ResourceData, meta interface{
 			resourceGroupList = append(resourceGroupList, resourceGroupMap)
 		}
 		rtable[rtResourceGroup] = resourceGroupList
+
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *routingTable.CRN, "", rtUserTagType)
+		if err != nil {
+			log.Printf(
+				"An error occured during reading of routing table (%s) tags : %s", d.Id(), err)
+		}
+		rtable[rtTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *routingTable.CRN, "", rtAccessTagType)
+		if err != nil {
+			log.Printf(
+				"An error occured during reading of routing table (%s) access tags: %s", d.Id(), err)
+		}
+		rtable[rtAccessTags] = accesstags
 
 		vpcRoutingTables = append(vpcRoutingTables, rtable)
 	}

@@ -538,7 +538,7 @@ func ResourceIbmOnboardingProductOnboardingProductSupportAsPatch(patch map[strin
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["escalation_contacts"] = nil
 	} else if exists && patch["escalation_contacts"] != nil {
-		ResourceIbmOnboardingProductOnboardingProductSupportEscalationContactItemsAsPatch(patch["escalation_contacts"].([]interface{})[0].(map[string]interface{}), d)
+		ResourceIbmOnboardingProductOnboardingProductSupportEscalationContactItemsAsPatch(patch["escalation_contacts"].([]map[string]interface{})[0], d)
 	}
 }
 

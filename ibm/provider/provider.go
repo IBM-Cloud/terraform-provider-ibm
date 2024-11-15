@@ -885,8 +885,6 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_safari":        eventnotification.DataSourceIBMEnSafariDestination(),
 			"ibm_en_destination_msteams":       eventnotification.DataSourceIBMEnMSTeamsDestination(),
 			"ibm_en_subscription_msteams":      eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_destination_cf":            eventnotification.DataSourceIBMEnCFDestination(),
-			"ibm_en_subscription_cf":           eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_pagerduty":     eventnotification.DataSourceIBMEnPagerDutyDestination(),
 			"ibm_en_subscription_pagerduty":    eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_integration":               eventnotification.DataSourceIBMEnIntegration(),
@@ -1512,8 +1510,6 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_safari":        eventnotification.ResourceIBMEnSafariDestination(),
 			"ibm_en_destination_msteams":       eventnotification.ResourceIBMEnMSTeamsDestination(),
 			"ibm_en_subscription_msteams":      eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_cf":            eventnotification.ResourceIBMEnCFDestination(),
-			"ibm_en_subscription_cf":           eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_pagerduty":     eventnotification.ResourceIBMEnPagerDutyDestination(),
 			"ibm_en_subscription_pagerduty":    eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_integration":               eventnotification.ResourceIBMEnIntegration(),
@@ -2138,7 +2134,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_logpush_jobs":                cis.DataSourceIBMCISLogPushJobsValidator(),
 				"ibm_cis_origin_certificates":         cis.DataIBMCISOriginCertificateOrderValidator(),
 
-				"ibm_cos_bucket": cos.DataSourceIBMCosBucketValidator(),
+				"ibm_config_aggregator_configurations": configurationaggregator.DataSourceIbmConfigAggregatorValidator(),
+				"ibm_cos_bucket":                       cos.DataSourceIBMCosBucketValidator(),
 
 				"ibm_database_backups":                database.DataSourceIBMDatabaseBackupsValidator(),
 				"ibm_database_connection":             database.DataSourceIBMDatabaseConnectionValidator(),

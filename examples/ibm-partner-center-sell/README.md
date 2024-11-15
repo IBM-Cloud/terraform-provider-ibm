@@ -85,6 +85,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
   catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   catalog_plan_id = ibm_onboarding_catalog_plan.onboarding_catalog_plan_instance.onboarding_catalog_plan_id
   env = var.onboarding_catalog_deployment_env
+  object_id = var.onboarding_catalog_deployment_object_id
   name = var.onboarding_catalog_deployment_name
   active = var.onboarding_catalog_deployment_active
   disabled = var.onboarding_catalog_deployment_disabled
@@ -105,6 +106,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 | catalog_product_id | The unique ID of this global catalog product. | `string` | true |
 | catalog_plan_id | The unique ID of this global catalog plan. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
+| object_id | The desired ID of the global catalog object. | `string` | false |
 | name | The programmatic name of this deployment. | `string` | true |
 | active | Whether the service is active. | `bool` | true |
 | disabled | Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled. | `bool` | true |
@@ -128,6 +130,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
   product_id = ibm_onboarding_product.onboarding_product_instance.id
   catalog_product_id = ibm_onboarding_catalog_product.onboarding_catalog_product_instance.onboarding_catalog_product_id
   env = var.onboarding_catalog_plan_env
+  object_id = var.onboarding_catalog_plan_object_id
   name = var.onboarding_catalog_plan_name
   active = var.onboarding_catalog_plan_active
   disabled = var.onboarding_catalog_plan_disabled
@@ -147,6 +150,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 | product_id | The unique ID of the product. | `string` | true |
 | catalog_product_id | The unique ID of this global catalog product. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
+| object_id | The desired ID of the global catalog object. | `string` | false |
 | name | The programmatic name of this plan. | `string` | true |
 | active | Whether the service is active. | `bool` | true |
 | disabled | Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled. | `bool` | true |
@@ -169,6 +173,7 @@ resource "ibm_onboarding_catalog_plan" "onboarding_catalog_plan_instance" {
 resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" {
   product_id = ibm_onboarding_product.onboarding_product_instance.id
   env = var.onboarding_catalog_product_env
+  object_id = var.onboarding_catalog_product_object_id
   name = var.onboarding_catalog_product_name
   active = var.onboarding_catalog_product_active
   disabled = var.onboarding_catalog_product_disabled
@@ -188,6 +193,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | product_id | The unique ID of the product. | `string` | true |
 | env | The environment to fetch this object from. | `string` | false |
+| object_id | The desired ID of the global catalog object. | `string` | false |
 | name | The programmatic name of this product. | `string` | true |
 | active | Whether the service is active. | `bool` | true |
 | disabled | Determines the global visibility for the catalog entry, and its children. If it is not enabled, all plans are disabled. | `bool` | true |
