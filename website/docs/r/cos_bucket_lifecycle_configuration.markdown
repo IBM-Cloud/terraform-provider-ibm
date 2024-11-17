@@ -314,7 +314,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 
 **Note:**
-If you use legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`  on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the bucket, treating additional Lifecycle rules as drift. For this reason, legacy rules cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given cos bucket.Users that want to continue using the legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`. 
+If you use legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days` lifecycle rule features on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the bucket, treating additional Lifecycle rules as drift. For this reason, legacy rules cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given cos bucket.Users that want to continue using the legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`. 
 
 In case you want to switch from using legacy lifecycle rules in the definition of an existing bucket to using a bucket lifecycle configuration resource for the existing bucket, please follow the steps below
 
@@ -339,7 +339,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
 }
 
 ```
-Step 1 : Add new `ibm_cos_bucket_lifecycle_configuration` with same configuration as exisitng.
+Step 1 : Add new `ibm_cos_bucket_lifecycle_configuration` with same configuration as existing.
 
 ```terraform
 
@@ -446,7 +446,7 @@ Review the argument references that you can specify for your resource.
  
 
  ## Import IBM COS lifecycle configuration
-The lifecycle configurations rules for a bucket can be imported into an `ibm_cos_bucket_lifecycle_configuration` resource for a particular bucket using the bucket id.
+The lifecycle configuration rules for a bucket can be imported into an `ibm_cos_bucket_lifecycle_configuration` resource for a particular bucket using the bucket id.
 
 id = `$CRN:meta:$buckettype:$bucketlocation`
 
