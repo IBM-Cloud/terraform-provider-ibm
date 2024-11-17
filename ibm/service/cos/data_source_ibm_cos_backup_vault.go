@@ -68,10 +68,8 @@ func dataSourceIBMCosBackupVaultRead(d *schema.ResourceData, meta interface{}) e
 	vaultID := fmt.Sprintf("%s:%s:%s:meta:%s", strings.Replace(instanceCRN, "::", "", -1), "backup-vault", backupVaultName, region)
 	d.SetId(vaultID)
 	if res != nil {
-		fmt.Println("This is not nil")
 		if res.ActivityTracking != nil {
 			if res.ActivityTracking.ManagementEvents != nil {
-				fmt.Println("it is not nil")
 				d.Set("activity_tracking_management_events", *res.ActivityTracking.ManagementEvents)
 			}
 		} else {

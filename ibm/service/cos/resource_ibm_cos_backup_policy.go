@@ -137,8 +137,6 @@ func resourceIBMCOSBackupPolicyDelete(ctx context.Context, d *schema.ResourceDat
 }
 
 func parseBackupPolicyID(id string, info string) string {
-	// bucketName := strings.Split(id, ":")[0]
-	// meta := strings.Split(id, ":meta:")[1]
 	if info == "bucketName" {
 		return strings.Split(id, ":")[0]
 	}

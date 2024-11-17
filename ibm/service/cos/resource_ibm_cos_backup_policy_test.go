@@ -291,25 +291,24 @@ func testAccCheckIBMCosBackup_Policy_Multiple_Policy_Valid(instance_id string, b
 	return fmt.Sprintf(`
 
 resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"
-		object_versioning {
-		  enable  = true
-		}
-	  
-	  }
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class         = "standard"
+	object_versioning {
+		enable  = true
+	}
+}
 resource "ibm_cos_backup_vault" "backup-vault1" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
+	backup_vault_name    = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
 	}
 
 resource "ibm_cos_backup_vault" "backup-vault2" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
+	backup_vault_name    = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
 	}
 
 resource "ibm_iam_authorization_policy" "policy" {
@@ -598,20 +597,19 @@ func testAccCheckIBMCosBackup_Policy_BV_With_KP_Valid(instance_id string, bucket
 	return fmt.Sprintf(`
 
 	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
+		bucket_name            = "%s"
+		resource_instance_id   = "%s"
+		cross_region_location  =  "us"
 		storage_class          = "standard"
 		object_versioning {
-		  enable  = true
+			enable  = true
 		}
-	  
-	  }
+	}
 	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
+		backup_vault_name    = "%s"
 		service_instance_id  = "%s"
-		region  = "%s"
-		kms_key_crn = "%s"
+		region               = "%s"
+		kms_key_crn          = "%s"
 	}
 
 resource "ibm_iam_authorization_policy" "policy" {
@@ -683,8 +681,7 @@ func testAccCheckIBMCosBackup_Policy_Non_Versioning_Source_Bucket_Invalid(instan
 		bucket_name           = "%s"
 		resource_instance_id  = "%s"
 		cross_region_location =  "us"
-		storage_class          = "standard"
-	  
+		storage_class          = "standard"  
 	  }
 	resource "ibm_cos_backup_vault" "backup-vault" {
 		backup_vault_name           = "%s"

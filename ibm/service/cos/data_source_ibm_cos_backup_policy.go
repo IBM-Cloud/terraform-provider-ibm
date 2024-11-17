@@ -5,9 +5,6 @@ package cos
 
 import (
 	"fmt"
-	// "strings"
-	// "time"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	rc "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
@@ -53,7 +50,6 @@ func dataSourceIBMCosBackupPolicyRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	// bucketCRN := d.Get("bucket_crn").(string)
 	bucketName := d.Get("bucket_name").(string)
 	policySetID := d.Get("policy_id").(string)
 	d.Set("policy_id", policySetID)
@@ -78,7 +74,6 @@ func dataSourceIBMCosBackupPolicyRead(d *schema.ResourceData, meta interface{}) 
 		}
 		if res.BackupType != nil {
 			d.Set("backup_type", aws.String(*res.BackupType))
-			// backup_type = aws.String(*res.BackupType)
 		}
 	}
 	policyID := fmt.Sprintf("%s:%s:%s:target:%s", bucketName, policySetID, policy_name, target_backup_vault_crn)

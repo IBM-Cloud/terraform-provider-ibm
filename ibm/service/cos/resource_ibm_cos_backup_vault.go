@@ -73,10 +73,7 @@ func resourceIBMCOSBackupVaultCreate(ctx context.Context, d *schema.ResourceData
 
 	backupVaultName := d.Get("backup_vault_name").(string)
 	instanceCRN := d.Get("service_instance_id").(string)
-	// instanceCRN := fmt.Sprintf("%s::", strings.Split(bucketCRN, ":bucket:")[0])
 	region := d.Get("region").(string)
-
-	// endpointType := d.Get("endpoint_type").(string)
 	rcClient, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return diag.Errorf("Failed to create rc client %v", err)
