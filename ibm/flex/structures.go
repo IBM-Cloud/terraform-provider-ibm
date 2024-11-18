@@ -1045,7 +1045,7 @@ func flattenLifecycleRuleFilterMemberAnd(andOp *s3.LifecycleRuleAndOperator) []i
 }
 
 func flattenMultipleTags(in []*s3.Tag) []map[string]interface{} {
-	println("Inside lifecycle rule get")
+
 	tagSet := make([]map[string]interface{}, 0, len(in))
 	if in != nil {
 		for _, tagSetValue := range in {

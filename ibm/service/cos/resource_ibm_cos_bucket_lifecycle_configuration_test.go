@@ -1508,8 +1508,8 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 		 }
 		 lifecycle_rule {
 			transition{
-			 days = 3
-			 storage_class = "ACCELERATED"
+			   days = 3
+			   storage_class = "ACCELERATED"
 			 }
 			filter {
 			  prefix = ""
@@ -1589,8 +1589,8 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		   }
 		   filter {
 		     tag{
-				 key = "%s"
-				 value = "%s"
+			key = "%s"
+			value = "%s"
 			 }
 		   }  
 		   rule_id = "id"
@@ -1708,15 +1708,15 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		     days = "%d"
 		   }
 		   filter {
-			and{
-				prefix = "%s"
-				tags{
-					key = "%s"
-					value = "%s"
-				}
-				object_size_greater_than = "%d"
-				object_size_less_than = "%d"
+		      and{
+			prefix = "%s"
+			tags{
+			    key = "%s"
+			    value = "%s"
 			}
+			object_size_greater_than = "%d"
+			object_size_less_than = "%d"
+		   }
 		   }  
 		   rule_id = "id"
 		   status = "enable"
@@ -1756,17 +1756,16 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		     days = "%d"
 		   }
 		   filter {
-			and{
-				tags{
-					key = "%s"
-					value = "%s"
-				}
-				tags{
-					key = "%s"
-					value = "%s"
-				}
-				
+		      and{
+			tags{
+			     key = "%s"
+			     value = "%s"
 			}
+			tags{
+			      key = "%s"
+			      value = "%s"
+			}
+		      }
 		   }  
 		   rule_id = "id"
 		   status = "enable"
@@ -1806,13 +1805,13 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		     days = "%d"
 		   }
 		   filter {
-				prefix = "%s"
-				tag{
-					key = "%s"
-					value = "%s"
+			prefix = "%s"
+			tag{
+				key = "%s"
+				value = "%s"
 				}
-				object_size_greater_than = "%d"
-				object_size_less_than = "%d"
+			object_size_greater_than = "%d"
+			object_size_less_than = "%d"
 		   }  
 		   rule_id = "id"
 		   status = "enable"
