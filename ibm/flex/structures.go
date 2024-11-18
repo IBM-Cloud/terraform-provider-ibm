@@ -1099,7 +1099,7 @@ func flattenAbortIncompleteMultipartUpload(abortIncompleteMultipartUploadInput *
 }
 
 func LifecylceRuleGet(lifecycleRuleInput []*s3.LifecycleRule) []map[string]interface{} {
-	rules := make([]map[string]interface{}, 0, len(in))
+	rules := make([]map[string]interface{}, 0, len(lifecycleRuleInput))
 	if lifecycleRuleInput != nil {
 		for _, lifecyclerule := range lifecycleRuleInput {
 			lifecycleRuleConfig := make(map[string]interface{})
