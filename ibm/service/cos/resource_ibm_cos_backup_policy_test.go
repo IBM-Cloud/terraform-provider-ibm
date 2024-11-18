@@ -209,20 +209,20 @@ func testAccCheckIBMCosBackup_Policy_Basic_Valid(instance_id string, bucketName 
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"
-		object_versioning {
-		  enable  = true
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class          = "standard"
+	object_versioning {
+		enable  = true
 		}
 	  
 	  }
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name           = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
 	}
 
 resource "ibm_iam_authorization_policy" "policy" {
@@ -432,21 +432,20 @@ func testAccCheckIBMCosBackup_Policy_BV_With_Activity_Tracking_Valid(instance_id
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"
-		object_versioning {
-		  enable  = true
-		}
-	  
-	  }
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
-		activity_tracking_management_events = true
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class          = "standard"
+	object_versioning {
+		enable  = true
+	}
+ }
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name           = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
+	activity_tracking_management_events = true
 	}
 
 resource "ibm_iam_authorization_policy" "policy" {
@@ -514,22 +513,22 @@ func testAccCheckIBMCosBackup_Policy_BV_With_Metrics_Monitoring_Valid(instance_i
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"
-		object_versioning {
-		  enable  = true
-		}
-	  
-	  }
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
-		metrics_monitoring_usage_metrics = true
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class          = "standard"
+	object_versioning {
+		enable  = true
 	}
+	  
+}
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name           = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
+	metrics_monitoring_usage_metrics = true
+}
 
 resource "ibm_iam_authorization_policy" "policy" {
 	roles                  = [
@@ -596,21 +595,21 @@ func testAccCheckIBMCosBackup_Policy_BV_With_KP_Valid(instance_id string, bucket
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name            = "%s"
-		resource_instance_id   = "%s"
-		cross_region_location  =  "us"
-		storage_class          = "standard"
-		object_versioning {
-			enable  = true
-		}
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name            = "%s"
+	resource_instance_id   = "%s"
+	cross_region_location  =  "us"
+	storage_class          = "standard"
+	object_versioning {
+		enable  = true
 	}
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name    = "%s"
-		service_instance_id  = "%s"
-		region               = "%s"
-		kms_key_crn          = "%s"
-	}
+}
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name    = "%s"
+	service_instance_id  = "%s"
+	region               = "%s"
+	kms_key_crn          = "%s"
+}
 
 resource "ibm_iam_authorization_policy" "policy" {
 	roles                  = [
@@ -677,17 +676,17 @@ func testAccCheckIBMCosBackup_Policy_Non_Versioning_Source_Bucket_Invalid(instan
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"  
-	  }
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
-	}
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class          = "standard"  
+}
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name           = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
+}
 
 resource "ibm_iam_authorization_policy" "policy" {
 	roles                  = [
@@ -754,22 +753,20 @@ func testAccCheckIBMCosBackup_Policy_Multiple_Invalid(instance_id string, bucket
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"
-		object_versioning {
-		  enable  = true
-		}
-	  
-	  }
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
-	}
-
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class          = "standard"
+	object_versioning {
+		enable  = true
+	}  
+}
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name           = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
+}
 resource "ibm_iam_authorization_policy" "policy" {
 	roles                  = [
 		"Backup Manager", "Writer"
@@ -833,7 +830,7 @@ resource "ibm_cos_backup_policy" "policy2" {
 	policy_name = "%s"
 	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
 	backup_type = "continuous"
-	}
+   }
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName1, policyName2)
 }
 
@@ -841,21 +838,20 @@ func testAccCheckIBMCosBackup_Policy_Invalid_Backup_Type(instance_id string, buc
 
 	return fmt.Sprintf(`
 
-	resource "ibm_cos_bucket" "bucket" {
-		bucket_name           = "%s"
-		resource_instance_id  = "%s"
-		cross_region_location =  "us"
-		storage_class          = "standard"
-		object_versioning {
-		  enable  = true
-		}
-	  
-	  }
-	resource "ibm_cos_backup_vault" "backup-vault" {
-		backup_vault_name           = "%s"
-		service_instance_id  = "%s"
-		region  = "%s"
+resource "ibm_cos_bucket" "bucket" {
+	bucket_name           = "%s"
+	resource_instance_id  = "%s"
+	cross_region_location =  "us"
+	storage_class          = "standard"
+	object_versioning {
+		enable  = true
 	}
+}
+resource "ibm_cos_backup_vault" "backup-vault" {
+	backup_vault_name           = "%s"
+	service_instance_id  = "%s"
+	region  = "%s"
+}
 
 resource "ibm_iam_authorization_policy" "policy" {
 	roles                  = [
