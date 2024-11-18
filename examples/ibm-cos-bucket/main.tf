@@ -604,8 +604,8 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_new" {
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   lifecycle_rule {
     noncurrent_version_expiration{
-			noncurrent_days = "1"
-		}
+    noncurrent_days = "1"
+    }
     filter {
       prefix = ""
     }  
@@ -762,12 +762,11 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
           key = "%s"
           value = "%s"
           }
-			  tags{
+	tags{
           key = "%s"
           value = "%s"
-			  }
-				
-			}
+	}
+      }
     }  
     rule_id = "id"
     status = "enable"
