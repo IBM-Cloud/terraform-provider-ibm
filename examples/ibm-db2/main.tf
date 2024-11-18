@@ -4,7 +4,7 @@ data "ibm_resource_group" "group" {
 
 //Db2 SaaS Instance Creation
 resource "ibm_db2" "db2_instance" {
-  name              = "demo-db2-prasad"
+  name              = "demo-db2"
   service           = "dashdb-for-transactions"
   plan              = "performance" 
   location          = var.region
