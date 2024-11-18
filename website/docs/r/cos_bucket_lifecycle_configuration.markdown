@@ -255,14 +255,14 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
     }
     filter {
       and{
-				prefix = "%s"
-				tags{
+        prefix = "%s"
+	tags{
           key = "MyObjectTagKey"
           value = "MyObjectTagValue"
-				}
-				object_size_greater_than = "%d"
-				object_size_less_than = "%d"
-			}
+	}
+	object_size_greater_than = "%d"
+	object_size_less_than = "%d"
+      }
     }  
     rule_id = "id"
     status = "enable"
@@ -292,16 +292,15 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
     }
     filter {
       and{
-				tags{
+	tags{
           key = "MyObjectTagKey1"
           value = "MyObjectTagValue1"
-				}
-				tags{
+	}
+	tags{
           key = "MyObjectTagKey2"
           value = "MyObjectTagValue2"
-				}
-				
-			}
+	}
+      }
     }  
     rule_id = "id"
     status = "enable"

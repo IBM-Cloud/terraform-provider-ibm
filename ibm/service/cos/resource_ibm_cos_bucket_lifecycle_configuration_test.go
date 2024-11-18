@@ -1758,12 +1758,12 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		   filter {
 		      and{
 			tags{
-			     key = "%s"
-			     value = "%s"
+			  key = "%s"
+			  value = "%s"
 			}
 			tags{
-			      key = "%s"
-			      value = "%s"
+			  key = "%s"
+			  value = "%s"
 			}
 		      }
 		   }  
@@ -1794,7 +1794,7 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 	resource "ibm_cos_bucket" "bucket" {
 		bucket_name           = "%s"
 		resource_instance_id  = ibm_resource_instance.instance.id
-	    region_location = "%s"
+	        region_location = "%s"
 		storage_class         = "%s"
 	}
 	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
@@ -1805,13 +1805,13 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Val
 		     days = "%d"
 		   }
 		   filter {
-			prefix = "%s"
-			tag{
-				key = "%s"
-				value = "%s"
-				}
-			object_size_greater_than = "%d"
-			object_size_less_than = "%d"
+		      prefix = "%s"
+		      tag{
+		         key = "%s"
+		         value = "%s"
+		      }
+		      object_size_greater_than = "%d"
+		      object_size_less_than = "%d"
 		   }  
 		   rule_id = "id"
 		   status = "enable"
