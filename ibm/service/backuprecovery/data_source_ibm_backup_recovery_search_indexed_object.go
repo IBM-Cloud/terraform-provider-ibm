@@ -9827,7 +9827,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectSnapshotTagInfoToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectCassandraIndexedObjectSourceInfoToMap(model *backuprecoveryv1.CassandraIndexedObjectSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectCassandraIndexedObjectSourceInfoToMap(model *backuprecoveryv1.CommonIndexedObjectParamsSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -10319,7 +10319,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectExchangeIndexedObjectToMap(mo
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectExchangeIndexedObjectSourceInfoToMap(model *backuprecoveryv1.ExchangeIndexedObjectSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectExchangeIndexedObjectSourceInfoToMap(model *backuprecoveryv1.CommonIndexedObjectParamsSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -10753,7 +10753,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectTenantNetworkToMap(model *bac
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectObjectMssqlParamsToMap(model *backuprecoveryv1.ObjectMssqlParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectObjectMssqlParamsToMap(model *backuprecoveryv1.FileSourceInfoMssqlParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AagInfo != nil {
 		aagInfoMap, err := DataSourceIbmBackupRecoverySearchIndexedObjectAAGInfoToMap(model.AagInfo)
@@ -10800,7 +10800,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectHostInformationToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectObjectPhysicalParamsToMap(model *backuprecoveryv1.ObjectPhysicalParams) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectObjectPhysicalParamsToMap(model *backuprecoveryv1.FileSourceInfoPhysicalParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.EnableSystemBackup != nil {
 		modelMap["enable_system_backup"] = *model.EnableSystemBackup
@@ -10869,7 +10869,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectHbaseIndexedObjectToMap(model
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectHbaseIndexedObjectSourceInfoToMap(model *backuprecoveryv1.HbaseIndexedObjectSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectHbaseIndexedObjectSourceInfoToMap(model *backuprecoveryv1.CommonIndexedObjectParamsSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -11003,7 +11003,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectHDFSIndexedObjectToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectHDFSIndexedObjectSourceInfoToMap(model *backuprecoveryv1.HDFSIndexedObjectSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectHDFSIndexedObjectSourceInfoToMap(model *backuprecoveryv1.CommonIndexedObjectParamsSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -11467,7 +11467,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectDocumentLibraryItemToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectDocumentLibraryItemSourceInfoToMap(model *backuprecoveryv1.DocumentLibraryItemSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectDocumentLibraryItemSourceInfoToMap(model *backuprecoveryv1.CommonIndexedObjectParamsSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
@@ -11619,7 +11619,7 @@ func DataSourceIbmBackupRecoverySearchIndexedObjectPublicFolderItemToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoverySearchIndexedObjectPublicFolderItemSourceInfoToMap(model *backuprecoveryv1.PublicFolderItemSourceInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoverySearchIndexedObjectPublicFolderItemSourceInfoToMap(model *backuprecoveryv1.CommonIndexedObjectParamsSourceInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)

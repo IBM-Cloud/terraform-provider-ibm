@@ -1670,6 +1670,8 @@ github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.1-0.20241015071
 github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.1-0.20241015071835-0db50c9f60eb/go.mod h1:iN37cyPLgw1Jiil6tlavIj4r5czwfH9CO6Ezt6eR9Tc=
 github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20241111132827-1cdd68dc95a5 h1:VFx4xBfq325Sl40fyJznd7nXndCDwA+DjOyt0NXYx4U=
 github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20241111132827-1cdd68dc95a5/go.mod h1:cL/iOT6i6aT7mvGpYron0sqTDaSJJ6ayIkDobz18PG4=
+github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20241115103525-58ab5f68dc44 h1:Sx5/7FT/gLG4h+X64fz9qWKH0Ldfkx8d7uS4X8zxbv8=
+github.ibm.com/BackupAndRecovery/ibm-backup-recovery-sdk-go v1.0.2-0.20241115103525-58ab5f68dc44/go.mod h1:cL/iOT6i6aT7mvGpYron0sqTDaSJJ6ayIkDobz18PG4=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.5/go.mod h1:G5EMThwa9y8QZGBClrRx5EY+Yw9kAhnjy3bSjsnlVTQ=
