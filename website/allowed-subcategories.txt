@@ -12,6 +12,7 @@ Container Registry
 Configuration Aggregator
 Context Based Restrictions
 CD Tekton Pipeline
+Db2 Database
 Direct Link Gateway
 DNS Services
 Enterprise Management
