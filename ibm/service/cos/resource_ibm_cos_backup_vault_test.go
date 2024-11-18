@@ -163,7 +163,7 @@ func TestAccIBMCosBackup_Vault_Create_Multiple_Valid(t *testing.T) {
 	})
 }
 
-func TestAccIBMCosBackup_Vault_Create_Multiple__Vault_With_Same_Name_Invalid(t *testing.T) {
+func TestAccIBMCosBackup_Vault_Create_Multiple_Vault_With_Same_Name_Invalid(t *testing.T) {
 	backupVaultName := fmt.Sprintf("terraform-backup-vault%d", acctest.RandIntRange(10, 100))
 	region := "us"
 
