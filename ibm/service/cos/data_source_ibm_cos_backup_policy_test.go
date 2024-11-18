@@ -22,6 +22,7 @@ func TestAccIBMCOSBackupPolicyDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cos_backup_policy.policy", "bucket_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_cos_backup_policy.policy", "policy_id"),
+					resource.TestCheckResourceAttr("data.ibm_cos_backup_policy.policy", "backup_type", "continuous"),
 				),
 			},
 		},
