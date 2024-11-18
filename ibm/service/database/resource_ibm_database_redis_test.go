@@ -113,7 +113,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
+					"wait_time_minutes", "deletion_protection"},
 			},
 		},
 	})
