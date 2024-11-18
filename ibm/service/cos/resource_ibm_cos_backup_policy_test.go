@@ -277,10 +277,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "continuous"
 }
 		
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName)
@@ -413,10 +413,10 @@ resource "ibm_iam_authorization_policy" "policy2" {
 }
 
 resource "ibm_cos_backup_policy" "policy1" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault1.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault1.backup_vault_crn
+	backup_type = "continuous"
 }
 	
 resource "ibm_cos_backup_policy" "policy2" {
@@ -500,10 +500,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "continuous"
 }
 		
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName)
@@ -582,10 +582,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "continuous"
 }
 		
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName)
@@ -663,10 +663,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "continuous"
 }
 		
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, key, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName)
@@ -740,10 +740,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "continuous"
 }
 		
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName)
@@ -819,10 +819,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy1" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "continuous"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "continuous"
 }
 	
 resource "ibm_cos_backup_policy" "policy2" {
@@ -905,10 +905,10 @@ resource "ibm_iam_authorization_policy" "policy" {
 }
 
 resource "ibm_cos_backup_policy" "policy" {
-bucket_crn      = ibm_cos_bucket.bucket.crn
-policy_name = "%s"
-target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
-backup_type = "invalid"
+	bucket_crn      = ibm_cos_bucket.bucket.crn
+	policy_name = "%s"
+	target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+	backup_type = "invalid"
 }
 		
 	`, bucketName, instance_id, bucketVaultName, instance_id, region, accountId, guid, bucketName, accountId, guid, bucketVaultName, policyName)
