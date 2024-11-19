@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"slices"
 	"strings"
 	"time"
@@ -305,7 +304,7 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	tenantID := strings.TrimPrefix(strings.Split(adminURL, ".")[0], "https://")
 
 	config := sarama.NewConfig()
-	config.ClientID, _ = os.Hostname()
+	config.ClientID = "terraform-provider-ibm"
 	config.Net.SASL.Enable = true
 	if tenantID != "" && tenantID != "admin" {
 		config.Net.SASL.AuthIdentity = tenantID
