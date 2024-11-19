@@ -24,7 +24,7 @@ resource "ibm_db2" "db2_instance" {
 
   timeouts {
     create = "720m"
-    update = "30m"
+    update = "60m"
     delete = "30m"
   }
 }

@@ -63,8 +63,8 @@ provider "ibm" {
 ## Timeouts
 The following timeouts are defined for this resource.
 
-* `Create` The creation of an instance is considered failed when no response is received for 60 minutes.
-* `Delete` The deletion of an instance is considered failed when no response is received for 10 minutes.
+* `Create` The creation of an instance is considered failed when no response is received for 720 minutes.
+* `Delete` The deletion of an instance is considered failed when no response is received for 30 minutes.
 
 Db2 SaaS create instance typically takes between 30 minutes to 45 minutes. Delete and update takes a minute. Provisioning time are unpredictable, if the apply fails due to a timeout, import the database resource once the create is completed.
 
