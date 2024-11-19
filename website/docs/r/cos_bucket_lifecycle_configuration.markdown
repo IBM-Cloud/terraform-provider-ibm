@@ -8,12 +8,12 @@ description:
 ---
 
 # ibm_cos_bucket_lifecycle_configuration
-Provides the recommended way of managing the lifecycle configuration for a bucket/. This provides an independent resource to manage the lifecycle configuration for a bucket.A lifecycle configuration consists of an lifecycle rule , each rule has a unique id , status and an action. Action can be of 2 types - [transition](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-archive) and [expiration](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-expiry).It also consists of noncurrent version expiration and abort incomplete multipart upload.A lifecycle configuration can have multiple expiration rules but only one transition rule.
+Provides the recommended way of managing the lifecycle configuration for a bucket. This provides an independent resource to manage the lifecycle configuration for a bucket. A lifecycle configuration includes one or more lifecycle rules. Each rule has an unique id,filter, status and an action. There are 4 kinds of actions:  [transition](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-archive), [expiration](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-expiry), noncurrent version expiration and abort incomplete multipart upload. A lifecycle configuration can have multiple expiration rules but only one transition rule.  A given bucket can only have one ibm_cos_bucket_lifecycle_configuration resource.
 
 
-## Example usage
+# Example usage
 
-# Adding lifecycle configuration with expiration.
+## Adding lifecycle configuration with expiration.
 
 Adding lifecycle configuration with expiration and prefix filter.
 
@@ -45,7 +45,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 ```
 
-# Adding lifecycle configuration with transition.
+## Adding lifecycle configuration with transition.
 
 Adding lifecycle configuration with transition.
 
@@ -77,7 +77,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 }
 
 ```
-# Adding lifecycle configuration with abort incomplete multipart upload.
+## Adding lifecycle configuration with abort incomplete multipart upload.
 
 ```terraform
 
@@ -106,7 +106,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 }
 
 ```
-# Adding lifecycle configuration with non current version expiration.
+## Adding lifecycle configuration with non current version expiration.
 
 ```terraform
 
@@ -135,7 +135,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 }
 
 ```
-# Adding lifecycle configuration with multiple rules.
+## Adding lifecycle configuration with multiple rules.
 
 ```terraform
 
@@ -174,7 +174,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 ```
 
-# Adding lifecycle configuration for object expiration with filter based on object size.
+## Adding lifecycle configuration for object expiration with filter based on object size.
 
 ```terraform
 
@@ -203,7 +203,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 ```
 
-# Adding lifecycle configuration for object expiration with filter based on tag.
+## Adding lifecycle configuration for object expiration with filter based on tag.
 
 ```terraform
 
@@ -234,7 +234,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 }
 
 ```
-# Adding lifecycle configuration for object expiration with multiple filter.
+## Adding lifecycle configuration for object expiration with multiple filter.
 
 ```terraform
 
@@ -255,13 +255,13 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
     }
     filter {
       and{
-        prefix = "%s"
+        prefix = "foo"
 	tags{
           key = "MyObjectTagKey"
           value = "MyObjectTagValue"
 	}
-	object_size_greater_than = "%d"
-	object_size_less_than = "%d"
+	object_size_greater_than = "20"
+	object_size_less_than = "40"
       }
     }  
     rule_id = "id"
@@ -271,7 +271,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 ```
 
-# Adding lifecycle configuration for object expiration with filter based on multiple tags.
+## Adding lifecycle configuration for object expiration with filter based on multiple tags.
 
 ```terraform
 
@@ -313,7 +313,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 
 
 **Note:**
-If you use legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days` lifecycle rule features on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the bucket, treating additional Lifecycle rules as drift. For this reason, legacy rules cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given cos bucket.Users that want to continue using the legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`. 
+If you use legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days` lifecycle rule features on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the bucket, treating additional Lifecycle rules as drift. For this reason, legacy rules cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given cos bucket.Users that want to continue using the legacy `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days` lifecycle rule features cannot use all of the filter capabilities available with an ibm_cos_bucket_lifecycle_configuration resource also using the legacy feature one cannot create a single rule with all the actions of lifecycle configuration. 
 
 In case you want to switch from using legacy lifecycle rules in the definition of an existing bucket to using a bucket lifecycle configuration resource for the existing bucket, please follow the steps below
 
@@ -414,11 +414,11 @@ Review the argument references that you can specify for your resource.
   
   Nested scheme for `lifecycle_rule`:
   - `expiration`- (Optional) Configuration block that specifies the expiration for the lifecycle of the object in the form of date, days and, whether the object has a delete marker.
-  - `transition`- (Optional) Configuration block that specifies the transition for of the object.
+  - `transition`- (Optional) Configuration block that specifies the transition for the object.
   - `abort_incomplete_multipart_upload`- (Optional) Configuration block that specifies the days since the initiation of an incomplete multipart upload that Amazon S3 will wait before permanently removing all parts of the upload.
-  - `noncurrent_version`- (Optinal) Configuration block that specifies when noncurrent object versions expire.
+  - `noncurrent_version`- (Optional) Configuration block that specifies when noncurrent object versions expire.
   - `id`- (Required) Unique id for the rule.
-  - `filter`- (Required)  Configuration block used to identify objects that a Lifecycle Rule applies to.If not specified, the rule will default to using prefix.
+  - `filter`- (Required)  Configuration block used to identify objects that a Lifecycle Rule applies to.If not specified, the rule will be applied to all the objects in a bucket.
   - `status`- (Required) Whether the rule is currently being applied. Valid values: enable or disable.
 
  Nested scheme for `expiration`:
