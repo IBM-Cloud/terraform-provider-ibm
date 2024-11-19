@@ -260,8 +260,8 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
           key = "MyObjectTagKey"
           value = "MyObjectTagValue"
 	}
-	object_size_greater_than = "20"
-	object_size_less_than = "40"
+	object_size_greater_than = 20
+	object_size_less_than = 40
       }
     }  
     rule_id = "id"
