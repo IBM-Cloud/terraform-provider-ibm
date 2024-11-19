@@ -701,26 +701,15 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		}
 	}
 
-	_, err = waitForClusterMasterAvailable(d, meta)
+	_, err = waitForClusterMasterAvailable(d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
-	waitForState := strings.ToLower(d.Get("wait_till").(string))
 
-	switch waitForState {
-	case strings.ToLower(oneWorkerNodeReady):
-		_, err = waitForClusterOneWorkerAvailable(d, meta)
-		if err != nil {
-			return err
-		}
-
-	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
-		_, err = waitForClusterState(d, meta, waitForState, pendingStates)
-		if err != nil {
-			return err
-		}
-
+	timeoutStage := strings.ToLower(d.Get("wait_till").(string))
+	err = waitForCluster(d, timeoutStage, d.Timeout(schema.TimeoutCreate), meta)
+	if err != nil {
+		return err
 	}
 
 	d.Set("force_delete_storage", d.Get("force_delete_storage").(bool))
@@ -757,6 +746,31 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	return resourceIBMContainerClusterUpdate(d, meta)
+}
+
+func waitForCluster(d *schema.ResourceData, timeoutStage string, timeout time.Duration, meta interface{}) error {
+	switch timeoutStage {
+	case strings.ToLower(masterNodeReady):
+		_, err := waitForClusterMasterAvailable(d, meta, timeout)
+		if err != nil {
+			return err
+		}
+
+	case strings.ToLower(oneWorkerNodeReady):
+		_, err := waitForClusterOneWorkerAvailable(d, meta, timeout)
+		if err != nil {
+			return err
+		}
+
+	case clusterNormal:
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
+		_, err := waitForClusterState(d, meta, clusterNormal, pendingStates, timeout)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) error {
@@ -966,7 +980,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		// with major and minor updates.
 		updateAllWorkers := d.Get("update_all_workers").(bool)
 		if updateAllWorkers || d.HasChange("patch_version") || d.HasChange("retry_patch_version") {
-			workerFields, err := wrkAPI.List(clusterID, targetEnv)
+			workerFields, err := csClientV2.Workers().ListClassicWorkers(clusterID, false, targetEnvV2)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
 			}
@@ -974,11 +988,16 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, w := range workerFields {
+				workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, w.PoolID, targetEnv)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving worker pool: %s", err)
+				}
+
 				/*kubeversion update done if
 				1. There is a change in Major.Minor version
 				2. Therese is a change in patch_version & Traget kube patch version and patch_version are same
 				*/
-				if w.KubeVersion != w.TargetVersion {
+				if w.KubeVersion.Actual != w.KubeVersion.Target || w.LifeCycle.ActualOperatingSystem != workerPool.OperatingSystem {
 					params := v1.WorkerUpdateParam{
 						Action: "update",
 					}
@@ -1275,46 +1294,8 @@ func waitForClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}
 	return stateConf.WaitForState()
 }
 
-// WaitForClusterAvailable Waits for cluster creation
-func WaitForClusterAvailable(d *schema.ResourceData, meta interface{}, target v1.ClusterTargetHeader) (interface{}, error) {
-	csClient, err := meta.(conns.ClientSession).ContainerAPI()
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("Waiting for cluster (%s) to be available.", d.Id())
-	id := d.Id()
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", clusterProvisioning},
-		Target:     []string{clusterNormal},
-		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, target),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
-func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
-		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] clusterStateRefreshFunc Error retrieving cluster: %s", err)
-		}
-		// Check active transactions
-		log.Println("Checking cluster")
-		//Check for cluster state to be normal
-		log.Println("Checking cluster state", strings.Compare(clusterFields.State, clusterNormal))
-		if strings.Compare(clusterFields.State, clusterNormal) != 0 {
-			return clusterFields, clusterProvisioning, nil
-		}
-		return clusterFields, clusterNormal, nil
-	}
-}
-
 // waitForClusterMasterAvailable Waits for cluster creation
-func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -1339,7 +1320,7 @@ func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (in
 			}
 			return clusterFields, deployInProgress, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1347,7 +1328,7 @@ func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (in
 	return stateConf.WaitForState()
 }
 
-func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
+func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -1376,7 +1357,7 @@ func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState 
 
 			return cls, cls.State, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1385,7 +1366,7 @@ func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState 
 }
 
 // waitForClusterOneWorkerAvailable Waits for cluster creation
-func waitForClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -1435,7 +1416,7 @@ func waitForClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{}) 
 			}
 			return nil, normal, nil
 		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -1481,41 +1462,6 @@ func workerStateRefreshFunc(client v1.Workers, instanceID string, target v1.Clus
 		}
 		return workerFields, workerNormal, nil
 	}
-}
-
-func WaitForClusterCreation(d *schema.ResourceData, meta interface{}, target v1.ClusterTargetHeader) (interface{}, error) {
-	csClient, err := meta.(conns.ClientSession).ContainerAPI()
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("Waiting for cluster (%s) to be available.", d.Id())
-	ClusterID := d.Id()
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"retry", clusterProvisioning},
-		Target:  []string{clusterNormal},
-		Refresh: func() (interface{}, string, error) {
-			workerFields, err := csClient.Workers().List(ClusterID, target)
-			log.Println("Total workers: ", len(workerFields))
-			if err != nil {
-				return nil, "", fmt.Errorf("[ERROR] Error retrieving workers for cluster: %s", err)
-			}
-			log.Println("Checking workers...")
-			//verifying for atleast sing node to be in normal state
-			for _, e := range workerFields {
-				log.Println("Worker node status: ", e.State)
-				if e.State == workerNormal {
-					return workerFields, workerNormal, nil
-				}
-			}
-			return workerFields, workerProvisioning, nil
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-
-	return stateConf.WaitForState()
 }
 
 func WaitForSubnetAvailable(d *schema.ResourceData, meta interface{}, target v1.ClusterTargetHeader) (interface{}, error) {

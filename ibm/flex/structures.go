@@ -19,10 +19,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
+	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
+	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
+	"github.com/IBM-Cloud/bluemix-go/api/schematics"
+	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
@@ -31,8 +36,11 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
+	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
@@ -41,15 +49,7 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
 
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
-	"github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
-	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
-	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
-	"github.com/IBM-Cloud/bluemix-go/api/schematics"
-	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
-	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
 const (
@@ -65,6 +65,8 @@ const (
 	ResourceStatus = "resource_status"
 	//ResourceGroupName ...
 	ResourceGroupName = "resource_group_name"
+	//DeletionProtection ...
+	DeletionProtection = "deletion_protection"
 	//RelatedCRN ...
 	RelatedCRN                                = "related_crn"
 	SystemIBMLabelPrefix                      = "ibm-cloud.kubernetes.io/"
@@ -120,6 +122,22 @@ func ExpandIntList(input []interface{}) []int {
 }
 
 func FlattenIntList(list []int) []interface{} {
+	vs := make([]interface{}, len(list))
+	for i, v := range list {
+		vs[i] = v
+	}
+	return vs
+}
+
+func ExpandInt64List(input []interface{}) []int64 {
+	vs := make([]int64, len(input))
+	for i, v := range input {
+		vs[i] = v.(int64)
+	}
+	return vs
+}
+
+func FlattenInt64List(list []int64) []interface{} {
 	vs := make([]interface{}, len(list))
 	for i, v := range list {
 		vs[i] = v
@@ -930,6 +948,111 @@ func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{
 	return rules
 }
 
+func flattenLifecycleExpiration(expiration *s3.LifecycleExpiration) []interface{} {
+	if expiration == nil {
+		return []interface{}{}
+	}
+	m := make(map[string]interface{})
+	if expiration.Date != nil {
+		m["date"] = expiration.Date.Format(time.RFC3339)
+	}
+	if expiration.Days != nil {
+		m["days"] = int(aws.Int64Value(expiration.Days))
+	}
+	if expiration.ExpiredObjectDeleteMarker != nil {
+		m["expired_object_delete_marker"] = aws.Bool(*expiration.ExpiredObjectDeleteMarker)
+	}
+	return []interface{}{m}
+}
+
+func flattenNoncurrentVersionExpiration(expiration *s3.NoncurrentVersionExpiration) []interface{} {
+	if expiration == nil {
+		return []interface{}{}
+	}
+	m := make(map[string]interface{})
+	if expiration.NoncurrentDays != nil {
+		m["noncurrent_days"] = int(aws.Int64Value(expiration.NoncurrentDays))
+	}
+	return []interface{}{m}
+}
+func flattenTransitions(transitions []*s3.Transition) []interface{} {
+	if len(transitions) == 0 {
+		return []interface{}{}
+	}
+	var results []interface{}
+	for _, transition := range transitions {
+		m := make(map[string]interface{})
+		if transition.StorageClass != nil {
+			m["storage_class"] = transition.StorageClass
+		}
+		if transition.Date != nil {
+			m["date"] = transition.Date.Format(time.RFC3339)
+		}
+		if transition.Days != nil {
+			m["days"] = int(aws.Int64Value(transition.Days))
+		}
+		results = append(results, m)
+	}
+	return results
+}
+
+func flattenLifecycleRuleFilter(filter *s3.LifecycleRuleFilter) []interface{} {
+	if filter == nil {
+		return []interface{}{}
+	}
+	m := make(map[string]interface{})
+	if filter.Prefix != nil {
+		m["prefix"] = aws.String(*filter.Prefix)
+	}
+	return []interface{}{m}
+}
+
+func flattenAbortIncompleteMultipartUpload(abortIncompleteMultipartUploadInput *s3.AbortIncompleteMultipartUpload) []interface{} {
+	if abortIncompleteMultipartUploadInput == nil {
+		return []interface{}{}
+	}
+	abortIncompleteMultipartUploadMap := make(map[string]interface{})
+	if abortIncompleteMultipartUploadInput.DaysAfterInitiation != nil {
+		abortIncompleteMultipartUploadMap["days_after_initiation"] = int(aws.Int64Value(abortIncompleteMultipartUploadInput.DaysAfterInitiation))
+	}
+	return []interface{}{abortIncompleteMultipartUploadMap}
+}
+
+func LifecylceRuleGet(lifecycleRuleInput []*s3.LifecycleRule) []map[string]interface{} {
+	rules := make([]map[string]interface{}, 0, len(lifecycleRuleInput))
+	if lifecycleRuleInput != nil {
+		for _, lifecyclerule := range lifecycleRuleInput {
+			lifecycleRuleConfig := make(map[string]interface{})
+			if lifecyclerule.Status != nil {
+				if *lifecyclerule.Status == "Enabled" {
+					lifecycleRuleConfig["status"] = "enable"
+				} else {
+					lifecycleRuleConfig["status"] = "disable"
+				}
+			}
+			if lifecyclerule.ID != nil {
+				lifecycleRuleConfig["rule_id"] = *lifecyclerule.ID
+			}
+			if lifecyclerule.Expiration != nil {
+				lifecycleRuleConfig["expiration"] = flattenLifecycleExpiration(lifecyclerule.Expiration)
+			}
+			if lifecyclerule.Transitions != nil {
+				lifecycleRuleConfig["transition"] = flattenTransitions(lifecyclerule.Transitions)
+			}
+			if lifecyclerule.AbortIncompleteMultipartUpload != nil {
+				lifecycleRuleConfig["abort_incomplete_multipart_upload"] = flattenAbortIncompleteMultipartUpload(lifecyclerule.AbortIncompleteMultipartUpload)
+			}
+			if lifecyclerule.NoncurrentVersionExpiration != nil {
+				lifecycleRuleConfig["noncurrent_version_expiration"] = flattenNoncurrentVersionExpiration(lifecyclerule.NoncurrentVersionExpiration)
+			}
+			if lifecyclerule.Filter != nil {
+				lifecycleRuleConfig["filter"] = flattenLifecycleRuleFilter(lifecyclerule.Filter)
+			}
+			rules = append(rules, lifecycleRuleConfig)
+		}
+	}
+	return rules
+}
 func ObjectLockConfigurationGet(in *s3.ObjectLockConfiguration) []map[string]interface{} {
 	configuration := make([]map[string]interface{}, 0, 1)
 	if in != nil {
@@ -2408,25 +2531,6 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 // }
 
 func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	if err != nil {
-		return nil, err
-	}
-	accountID := userDetails.UserAccount
-	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
-	if resourceID != "" {
-		ListTagsOptions.AttachedTo = &resourceID
-	}
-	if strings.HasPrefix(resourceType, "Softlayer_") {
-		ListTagsOptions.Providers = []string{"ims"}
-	}
-	if len(tagType) > 0 {
-		ListTagsOptions.TagType = PtrToString(tagType)
-
-		if tagType == "service" {
-			ListTagsOptions.AccountID = PtrToString(accountID)
-		}
-	}
 	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
 	if err != nil {
 		return nil, err
@@ -2434,8 +2538,39 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	return taggingResult, nil
 }
 
-func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+func GetTagsUsingResourceCRNFromTaggingApi(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
+	}
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return nil, err
+	}
+	accountID := userDetails.UserAccount
+	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
+	ListTagsOptions.AttachedTo = &resourceID
+	if strings.HasPrefix(resourceType, "Softlayer_") {
+		ListTagsOptions.Providers = []string{"ims"}
+	}
+	if len(tagType) > 0 {
+		ListTagsOptions.TagType = PtrToString(tagType)
+		if tagType == "service" {
+			ListTagsOptions.AccountID = PtrToString(accountID)
+		}
+	}
+	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, *item.Name)
+	}
+	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+}
 
+func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
 	gsClient, err := meta.(conns.ClientSession).GlobalSearchAPIV2()
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error getting global search client settings: %s", err)
@@ -2538,18 +2673,20 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 				detachTagOptions.AccountID = PtrToString(acctID)
 			}
 		}
-
-		_, resp, err := gtClient.DetachTag(detachTagOptions)
+		results, fullResponse, err := gtClient.DetachTag(detachTagOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s\n%s", remove, err, resp)
+			return fmt.Errorf("[ERROR] Error detaching tags calling api %v: %s\n%s", remove, err, fullResponse)
 		}
-		for _, v := range remove {
-			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-				TagName: PtrToString(v),
+		if results != nil {
+			errMap := make([]globaltaggingv1.TagResultsItem, 0)
+			for _, res := range results.Results {
+				if res.IsError != nil && *res.IsError {
+					errMap = append(errMap, res)
+				}
 			}
-			_, resp, err := gtClient.DeleteTag(delTagOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s\n%s", v, err, resp)
+			if len(errMap) > 0 {
+				output, _ := json.MarshalIndent(errMap, "", "    ")
+				return fmt.Errorf("[ERROR] Error detaching tag in results %v: %s\n%s", remove, string(output), fullResponse)
 			}
 		}
 	}
@@ -2631,7 +2768,7 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 }
 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
@@ -2661,23 +2798,74 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 		add = append(add, envTags...)
 	}
 
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: &resourceCRN}
+	resources = append(resources, r)
+
 	if len(remove) > 0 {
-		_, err := gtClient.Tags().DetachTags(resourceCRN, remove)
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
+		detachTagOptions.Resources = resources
+		detachTagOptions.TagNames = remove
+
+		results, fullResponse, err := gtClient.DetachTag(detachTagOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s", remove, err)
+			return fmt.Errorf("[ERROR] Error detaching tags %v: %s", remove, err)
+		}
+		if results != nil {
+			errMap := make([]globaltaggingv1.TagResultsItem, 0)
+			for _, res := range results.Results {
+				if res.IsError != nil && *res.IsError {
+					errMap = append(errMap, res)
+				}
+			}
+			if len(errMap) > 0 {
+				output, _ := json.MarshalIndent(errMap, "", "    ")
+				return fmt.Errorf("[ERROR] Error detaching tag %v: %s\n%s", remove, string(output), fullResponse)
+			}
 		}
 		for _, v := range remove {
-			_, err := gtClient.Tags().DeleteTag(v)
+			delTagOptions := &globaltaggingv1.DeleteTagOptions{
+				TagName: PtrToString(v),
+			}
+			results, fullResponse, err := gtClient.DeleteTag(delTagOptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s", v, err)
+				return fmt.Errorf("[ERROR] Error deleting tag %v: %s\n%s", v, err, fullResponse)
+			}
+
+			if results != nil {
+				errMap := make([]globaltaggingv1.DeleteTagResultsItem, 0)
+				for _, res := range results.Results {
+					if res.IsError != nil && *res.IsError {
+						errMap = append(errMap, res)
+					}
+				}
+				if len(errMap) > 0 {
+					output, _ := json.MarshalIndent(errMap, "", "    ")
+					return fmt.Errorf("[ERROR] Error deleting tag %s: %s\n%s", v, string(output), fullResponse)
+				}
 			}
 		}
 	}
 
 	if len(add) > 0 {
-		_, err := gtClient.Tags().AttachTags(resourceCRN, add)
+		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+		AttachTagOptions.Resources = resources
+		AttachTagOptions.TagNames = add
+		results, fullResponse, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating database tags %v : %s", add, err)
+			return fmt.Errorf("[ERROR] Error updating tags %v : %s", add, err)
+		}
+		if results != nil {
+			errMap := make([]globaltaggingv1.TagResultsItem, 0)
+			for _, res := range results.Results {
+				if res.IsError != nil && *res.IsError {
+					errMap = append(errMap, res)
+				}
+			}
+			if len(errMap) > 0 {
+				output, _ := json.MarshalIndent(errMap, "", "    ")
+				return fmt.Errorf("Error while updating tag: %s - Full response: %s", string(output), fullResponse)
+			}
 		}
 	}
 
@@ -2858,11 +3046,11 @@ func ResourceVolumeValidate(diff *schema.ResourceDiff) error {
 		}
 	}
 
-	if profile != "custom" {
+	if profile != "custom" && profile != "sdp" {
 		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
-			return fmt.Errorf("VolumeError : iops is applicable for only custom volume profiles")
+			return fmt.Errorf("VolumeError : iops is applicable for only custom/sdp volume profiles")
 		}
-	} else {
+	} else if profile != "sdp" {
 		if capacity == 0 {
 			capacity = int64(100)
 		}
@@ -4244,6 +4432,15 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 	}
 
 	return hosts
+}
+
+func FlattenSatelliteCapabilities(capabilities *schema.Set) []kubernetesserviceapiv1.CapabilityManagedBySatellite {
+	result := make([]kubernetesserviceapiv1.CapabilityManagedBySatellite, capabilities.Len())
+	for i, v := range capabilities.List() {
+		result[i] = kubernetesserviceapiv1.CapabilityManagedBySatellite(v.(string))
+	}
+
+	return result
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {

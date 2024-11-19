@@ -556,6 +556,99 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"lifecycle_rule": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"abort_incomplete_multipart_upload": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"days_after_initiation": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"expiration": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"expired_object_delete_marker": {
+										Type:     schema.TypeBool,
+										Computed: true, // API returns false; conflicts with date and days
+									},
+								},
+							},
+						},
+						"filter": {
+							Type:     schema.TypeList,
+							Computed: true,
+							// IBM has filter a required parameter
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"prefix": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"rule_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"noncurrent_version_expiration": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"noncurrent_days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"transition": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"days": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"storag_class": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -607,7 +700,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		keyProtectFlag = true
 	}
 
-	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint, visibility string
+	var satlc_id, apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint, visibility string
 
 	if satlc, ok := d.GetOk("satellite_location_id"); ok {
 		satlc_id = satlc.(string)
@@ -718,9 +811,16 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketCRN := fmt.Sprintf("%s:%s:%s", strings.Replace(serviceID, "::", "", -1), "bucket", bucketName)
 	d.Set("crn", bucketCRN)
 	d.Set("resource_instance_id", serviceID)
-	d.Set("s3_endpoint_public", apiEndpoint)
-	d.Set("s3_endpoint_private", apiEndpointPrivate)
-	d.Set("s3_endpoint_direct", directApiEndpoint)
+
+	testEnv := strings.Contains(apiEndpoint, ".test.")
+	apiEndpointPublic, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	if testEnv {
+		d.Set(fmt.Sprintf("s3_endpoint_%s", endpointType), apiEndpoint)
+	} else {
+		d.Set("s3_endpoint_public", apiEndpointPublic)
+		d.Set("s3_endpoint_private", apiEndpointPrivate)
+		d.Set("s3_endpoint_direct", directApiEndpoint)
+	}
 	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
@@ -729,7 +829,9 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		// User is expected to define both private and direct url type under "private" in endpoints file since visibility type "direct" is not supported.
 		cosConfigURL := conns.FileFallBack(rsConClient.Config.EndpointsFile, "private", "IBMCLOUD_COS_CONFIG_ENDPOINT", bucketRegion, cosConfigUrls[endpointType])
 		cosConfigURL = conns.EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosConfigURL)
-		sess.SetServiceURL(cosConfigURL)
+		if cosConfigURL != "" {
+			sess.SetServiceURL(cosConfigURL)
+		}
 	}
 
 	if bucketType == "sl" {
@@ -791,6 +893,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 			if len(abort_mpuRules) > 0 {
 				d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 			}
+		}
+	}
+
+	//lifecycle configuration new resource read
+	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
+		Bucket: aws.String(bucketName),
+	}
+	var outputLifecycleConfig *s3.GetBucketLifecycleConfigurationOutput
+	outputLifecycleConfig, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
+	var outputLifecycleConfigptr *s3.LifecycleConfiguration
+	outputLifecycleConfigptr = (*s3.LifecycleConfiguration)(outputLifecycleConfig)
+	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
+		return err
+	}
+	if outputLifecycleConfigptr.Rules != nil {
+		lifecycleConfiguration := flex.LifecylceRuleGet(outputLifecycleConfigptr.Rules)
+		if len(lifecycleConfiguration) > 0 {
+			d.Set("lifecycle_rule", lifecycleConfiguration)
 		}
 	}
 

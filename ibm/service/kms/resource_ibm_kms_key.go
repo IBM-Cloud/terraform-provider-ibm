@@ -217,7 +217,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		kp.WithPayload(keyData.Payload, &keyData.EncryptedNonce, &keyData.IV, false),
 		kp.WithDescription(keyData.Description))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating key: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating key: %s", err)
 	}
 
 	d.SetId(key.CRN)
@@ -256,15 +256,15 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	if err1 != nil {
 		registrations := d.Get("registrations").([]interface{})
 		var registrationLog error
-		if registrations != nil && len(registrations) > 0 {
+		if len(registrations) > 0 {
 			resourceCrns := make([]string, 0)
 			for _, registration := range registrations {
 				r := registration.(map[string]interface{})
 				resourceCrns = append(resourceCrns, r["resource_crn"].(string))
 			}
-			registrationLog = fmt.Errorf(". The key has the following active registrations which may interfere with deletion: %v", resourceCrns)
+			registrationLog = flex.FmtErrorf(". The key has the following active registrations which may interfere with deletion: %v", resourceCrns)
 		}
-		return fmt.Errorf("[ERROR] Error while deleting: %s%s", err1, registrationLog)
+		return flex.FmtErrorf("[ERROR] Error while deleting: %s%s", err1, registrationLog)
 	}
 	d.SetId("")
 	return nil
@@ -281,9 +281,10 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
@@ -313,7 +314,7 @@ func populateKPClient(d *schema.ResourceData, meta interface{}, instanceID strin
 
 	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil || instanceData == nil {
-		return nil, nil, fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+		return nil, nil, flex.FmtErrorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 	extensions := instanceData.Extensions
 	kpAPI.URL, err = KmsEndpointURL(kpAPI, endpointType, extensions)
@@ -410,7 +411,7 @@ func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string
 	}
 	u, err := url.Parse(url1)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
+		return nil, flex.FmtErrorf("[ERROR] Error Parsing KMS EndpointURL")
 	}
 	return u, nil
 }
@@ -424,7 +425,7 @@ func ExtractAndValidateKeyDataFromSchema(d *schema.ResourceData, meta interface{
 		// parse string to required time format
 		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
 		if err != nil {
-			return kp.Key{}, "", fmt.Errorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
+			return kp.Key{}, "", flex.FmtErrorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
 		}
 		expiration = &expiration_time
 	} else {
@@ -455,12 +456,13 @@ func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, e
 	ctx := context.Background()
 	key, err := kpAPI.GetKey(ctx, keyid)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
-			d.SetId("")
-			return nil, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+				d.SetId("")
+				return nil, nil
+			}
 		}
-		return nil, fmt.Errorf("[ERROR] Get Key failed with error while reading Key: %s", err)
+		return nil, flex.FmtErrorf("[ERROR] Get Key failed with error while reading Key: %s", err)
 	} else if key.State == 5 { //Refers to Deleted state of the Key
 		d.SetId("")
 		return nil, nil

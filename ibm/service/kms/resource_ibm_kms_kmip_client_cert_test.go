@@ -138,6 +138,9 @@ func TestAccIBMKMSKMIPClientCertResource_InvalidCert(t *testing.T) {
 func TestAccIBMKMSKMIPClientCertResource_DuplicateNameError(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
 	myCert, err := generateSelfSignedCertificate()
+	if err != nil {
+		t.Error(err)
+	}
 	myCert2, err := generateSelfSignedCertificate()
 	if err != nil {
 		t.Error(err)
@@ -223,7 +226,7 @@ func generateSelfSignedCertificate() (string, error) {
 		Type:  "CERTIFICATE",
 		Bytes: certBytes,
 	})
-	certString := string(certPEM.Bytes())
+	certString := certPEM.String()
 	certString = strings.Replace(certString, "\n", "\\n", -1)
 	return certString, nil
 }

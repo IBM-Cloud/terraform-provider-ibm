@@ -939,7 +939,7 @@ func resourceIBMIsLbListenerLoadBalancerListenerReferenceToMap(model *vpcv1.Load
 	modelMap["id"] = model.ID
 	return modelMap, nil
 }
-func resourceIBMIsLbListenerLoadBalancerListenerReferenceDeletedToMap(model *vpcv1.LoadBalancerListenerReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsLbListenerLoadBalancerListenerReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil

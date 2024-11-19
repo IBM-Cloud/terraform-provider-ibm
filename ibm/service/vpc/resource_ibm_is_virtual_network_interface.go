@@ -925,10 +925,14 @@ func resourceIBMIsVirtualNetworkInterfaceDelete(context context.Context, d *sche
 
 	deleteVirtualNetworkInterfacesOptions.SetID(d.Id())
 
-	response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
+	vni, response, err := sess.DeleteVirtualNetworkInterfacesWithContext(context, deleteVirtualNetworkInterfacesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteVirtualNetworkInterfacesWithContext failed %s\n%s", err, response))
+	}
+	_, err = isWaitForVirtualNetworkInterfaceDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete), vni)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")
@@ -992,7 +996,7 @@ func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(model *vpcv1.R
 	return modelMap, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceDeletedToMap(model *vpcv1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -1014,7 +1018,7 @@ func resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceToMap(model *vpcv
 	return modelMap, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceDeletedToMap(model *vpcv1.SecurityGroupReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsVirtualNetworkInterfaceSecurityGroupReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -1055,7 +1059,7 @@ func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetToMap(mode
 	}
 }
 
-func resourceIBMIsVirtualNetworkInterfaceShareMountTargetReferenceDeletedToMap(model *vpcv1.ShareMountTargetReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsVirtualNetworkInterfaceShareMountTargetReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -1102,6 +1106,42 @@ func isVirtualNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, id string) resour
 			return nil, "failed", fmt.Errorf("[ERROR] Error getting vni: %s\n%s", err, response)
 		}
 		if *vni.LifecycleState == "failed" || *vni.LifecycleState == "suspended" {
+			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
+		}
+		return vni, *vni.LifecycleState, nil
+	}
+}
+func isWaitForVirtualNetworkInterfaceDeleted(client *vpcv1.VpcV1, id string, timeout time.Duration, vni *vpcv1.VirtualNetworkInterface) (interface{}, error) {
+	log.Printf("Waiting for VirtualNetworkInterface (%s) to be deleted.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"", "pending", "deleting", "updating", "waiting"},
+		Target:     []string{"done", "failed", "stable", "suspended"},
+		Refresh:    isVirtualNetworkInterfaceDeleteRefreshFunc(client, vni, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVirtualNetworkInterfaceDeleteRefreshFunc(client *vpcv1.VpcV1, vnir *vpcv1.VirtualNetworkInterface, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		vnigetoptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
+			ID: &id,
+		}
+		vni, response, err := client.GetVirtualNetworkInterface(vnigetoptions)
+		if err != nil {
+			if response.StatusCode == 404 {
+				return vnir, "done", nil
+			}
+			return vni, "failed", fmt.Errorf("[ERROR] Error getting vni: %s\n%s", err, response)
+		}
+		if *vni.LifecycleState == "failed" || *vni.LifecycleState == "suspended" {
+			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
+		}
+		if *vni.LifecycleState == "stable" {
 			return vni, *vni.LifecycleState, fmt.Errorf("[ERROR] Error VirtualNetworkInterface in : %s state", *vni.LifecycleState)
 		}
 		return vni, *vni.LifecycleState, nil
@@ -1169,7 +1209,7 @@ func resourceIBMIsVirtualNetworkInterfaceVPCReferenceToMap(model *vpcv1.VPCRefer
 	return modelMap, nil
 }
 
-func resourceIBMIsVirtualNetworkInterfaceVPCReferenceDeletedToMap(model *vpcv1.VPCReferenceDeleted) (map[string]interface{}, error) {
+func resourceIBMIsVirtualNetworkInterfaceVPCReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil

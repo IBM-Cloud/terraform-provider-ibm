@@ -63,12 +63,12 @@ func ResourceIBMKmsKMIPClientCertificate() *schema.Resource {
 				Sensitive:   true,
 				Description: "The PEM-encoded contents of the certificate",
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier that is associated with the entity that created the adapter.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when a resource was created. The date format follows RFC 3339.",
@@ -98,14 +98,12 @@ func resourceIBMKmsKMIPClientCertCreate(d *schema.ResourceData, meta interface{}
 		kp.WithKMIPClientCertName(certToCreate.Name),
 	)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating KMIP client certificate: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating KMIP client certificate: %s", err)
 	}
 	return populateKMIPClientCertSchemaDataFromStruct(d, *cert, adapterID, instanceID)
 }
 
 func resourceIBMKmsKMIPClientCertRead(d *schema.ResourceData, meta interface{}) error {
-	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Get("adapter_id").(string)
 	// use instanceID and adapterID here to support terraform import case
 	instanceID, adapterID, certID, err := splitCertID(d.Id())
 	if err != nil {
@@ -148,8 +146,6 @@ func resourceIBMKmsKMIPClientCertDelete(d *schema.ResourceData, meta interface{}
 }
 
 func resourceIBMKmsKMIPClientCertExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	instanceID := d.Get("instance_id").(string)
-	adapterID := d.Get("adapter_id").(string)
 	// use instanceID and adapterID here to support terraform import case
 	instanceID, adapterID, certID, err := splitCertID(d.Id())
 	if err != nil {
@@ -162,9 +158,10 @@ func resourceIBMKmsKMIPClientCertExists(d *schema.ResourceData, meta interface{}
 	ctx := context.Background()
 	_, err = kpAPI.GetKMIPClientCertificate(ctx, adapterID, certID)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, wrapError(err, "Error checking KMIP Client Certificate existence")
 	}
@@ -179,7 +176,7 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 	if name, ok := d.GetOk("name"); ok {
 		nameStr, ok2 := name.(string)
 		if !ok2 {
-			err = fmt.Errorf("[ERROR] Error converting name to string")
+			err = flex.FmtErrorf("[ERROR] Error converting name to string")
 			return
 		}
 		cert.Name = nameStr
@@ -187,7 +184,7 @@ func ExtractAndValidateKMIPClientCertDataFromSchema(d *schema.ResourceData) (cer
 	if certPayload, ok := d.GetOk("certificate"); ok {
 		certStr, ok2 := certPayload.(string)
 		if !ok2 {
-			err = fmt.Errorf("[ERROR] Error converting certificate to string")
+			err = flex.FmtErrorf("[ERROR] Error converting certificate to string")
 			return
 		}
 		cert.Certificate = certStr
@@ -202,26 +199,26 @@ func populateKMIPClientCertSchemaDataFromStruct(d *schema.ResourceData, cert kp.
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, adapterID, cert.ID))
 
 	if err = d.Set("name", cert.Name); err != nil {
-		return fmt.Errorf("[ERROR] Error setting name: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting name: %s", err)
 	}
 	if err = d.Set("adapter_id", adapterID); err != nil {
-		return fmt.Errorf("[ERROR] Error setting adapter_id: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting adapter_id: %s", err)
 	}
 	if err = d.Set("instance_id", instanceID); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance_id: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting instance_id: %s", err)
 	}
 	if err = d.Set("cert_id", cert.ID); err != nil {
-		return fmt.Errorf("[ERROR] Error setting cert_id: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting cert_id: %s", err)
 	}
 	if err = d.Set("certificate", cert.Certificate); err != nil {
-		return fmt.Errorf("[ERROR] Error setting certificate: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting certificate: %s", err)
 	}
 	if cert.CreatedAt != nil {
 		if err = d.Set("created_at", cert.CreatedAt.String()); err != nil {
-			return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting created_at: %s", err)
 		}
 		if err = d.Set("created_by", cert.CreatedBy); err != nil {
-			return fmt.Errorf("[ERROR] Error setting created_by: %s", err)
+			return flex.FmtErrorf("[ERROR] Error setting created_by: %s", err)
 		}
 	}
 	return nil
@@ -233,11 +230,11 @@ func splitCertID(terraformId string) (instanceID, adapterID, certID string, err 
 		return "", "", "", err
 	}
 	if len(split) != 3 {
-		return "", "", "", fmt.Errorf("[ERROR] The given id %s does not contain all expected sections, should be of format instance_id/adapter_id/cert_id", terraformId)
+		return "", "", "", flex.FmtErrorf("[ERROR] The given id %s does not contain all expected sections, should be of format instance_id/adapter_id/cert_id", terraformId)
 	}
 	for index, id := range split {
 		if uuid.Validate(id) != nil {
-			return "", "", "", fmt.Errorf("[ERROR] The given id %s at index %d of instance_id/adapter_id/cert_id is not a valid UUID", id, index)
+			return "", "", "", flex.FmtErrorf("[ERROR] The given id %s at index %d of instance_id/adapter_id/cert_id is not a valid UUID", id, index)
 		}
 	}
 	return split[0], split[1], split[2], nil

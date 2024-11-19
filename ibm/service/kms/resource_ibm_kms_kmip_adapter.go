@@ -72,22 +72,22 @@ func ResourceIBMKmsKMIPAdapter() *schema.Resource {
 				ForceNew:    true,
 				Description: "The description of the KMIP adapter",
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier that is associated with the entity that created the adapter.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when a resource was created. The date format follows RFC 3339.",
 			},
-			"updated_by": &schema.Schema{
+			"updated_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier that is associated with the entity that updated the adapter.",
 			},
-			"updated_at": &schema.Schema{
+			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date when a resource was updated. The date format follows RFC 3339.",
@@ -125,13 +125,12 @@ func resourceIBMKmsKMIPAdapterCreate(d *schema.ResourceData, meta interface{}) e
 		kp.WithKMIPAdapterDescription(adapterToCreate.Description),
 	)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating KMIP adapter: %s", err)
+		return flex.FmtErrorf("[ERROR] Error while creating KMIP adapter: %s", err)
 	}
 	return populateKMIPAdapterSchemaDataFromStruct(d, *adapter, instanceID)
 }
 
 func resourceIBMKmsKMIPAdapterRead(d *schema.ResourceData, meta interface{}) error {
-	instanceID := d.Get("instance_id").(string)
 	instanceID, adapterID, err := splitAdapterID(d.Id())
 	if err != nil {
 		return err
@@ -165,10 +164,20 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 	}
 	ctx := context.Background()
 	objects, err := kpAPI.GetKMIPObjects(ctx, adapterID, nil)
+	if err != nil {
+		return flex.FmtErrorf("[ERROR] Failed to fetch KMIP objects associated with adapter '%s' for deletion: %v", adapterID, err)
+	}
+
 	for _, object := range objects.Objects {
-		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID)
+		err = kpAPI.DeleteKMIPObject(ctx, adapterID, object.ID, kp.WithForce(true))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Failed to delete KMIP object associated with adapter (%s): %s",
+			if kpError, ok := err.(*kp.Error); ok {
+				if kpError.StatusCode == 404 || kpError.StatusCode == 410 {
+					// if the kmip object is already deleted, do not error out
+					continue
+				}
+			}
+			return flex.FmtErrorf("[ERROR] Failed to delete KMIP object associated with adapter (%s): %s",
 				adapterID,
 				err,
 			)
@@ -180,7 +189,6 @@ func resourceIBMKmsKMIPAdapterDelete(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	instanceID := d.Get("instance_id").(string)
 	instanceID, adapterID, err := splitAdapterID(d.Id())
 	if err != nil {
 		return false, err
@@ -192,9 +200,10 @@ func resourceIBMKmsKMIPAdapterExists(d *schema.ResourceData, meta interface{}) (
 	ctx := context.Background()
 	_, err = kpAPI.GetKMIPAdapter(ctx, adapterID)
 	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 {
-			return false, nil
+		if kpError, ok := err.(*kp.Error); ok {
+			if kpError.StatusCode == 404 {
+				return false, nil
+			}
 		}
 		return false, wrapError(err, "Error checking adapter existence")
 	}
@@ -206,7 +215,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	instanceID = getInstanceIDFromResourceData(d, "instance_id")
 	profile, ok := d.Get("profile").(string)
 	if !ok {
-		err = fmt.Errorf("[ERROR] Error converting profile to string")
+		err = flex.FmtErrorf("[ERROR] Error converting profile to string")
 		return
 	}
 	adapter = kp.KMIPAdapter{
@@ -215,7 +224,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	if name, ok := d.GetOk("name"); ok {
 		nameStr, ok2 := name.(string)
 		if !ok2 {
-			err = fmt.Errorf("[ERROR] Error converting name to string")
+			err = flex.FmtErrorf("[ERROR] Error converting name to string")
 			return
 		}
 		adapter.Name = nameStr
@@ -223,7 +232,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	if desc, ok := d.GetOk("description"); ok {
 		descStr, ok2 := desc.(string)
 		if !ok2 {
-			err = fmt.Errorf("[ERROR] Error converting description to string")
+			err = flex.FmtErrorf("[ERROR] Error converting description to string")
 			return
 		}
 		adapter.Description = descStr
@@ -231,7 +240,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 	if data, ok := d.GetOk("profile_data"); ok {
 		dataMap, ok2 := data.(map[string]interface{})
 		if !ok2 {
-			err = fmt.Errorf("[ERROR] Error converting profile data to map[string]interface{}")
+			err = flex.FmtErrorf("[ERROR] Error converting profile data to map[string]interface{}")
 			return
 		}
 		profileData := map[string]string{}
@@ -239,7 +248,7 @@ func ExtractAndValidateKMIPAdapterDataFromSchema(d *schema.ResourceData) (adapte
 			if val, ok := dataMap[key].(string); ok {
 				profileData[key] = val
 			} else {
-				err = fmt.Errorf("[ERROR] Error converting value with key {%s} into string", key)
+				err = flex.FmtErrorf("[ERROR] Error converting value with key {%s} into string", key)
 				return
 			}
 		}
@@ -252,34 +261,34 @@ func populateKMIPAdapterSchemaDataFromStruct(d *schema.ResourceData, adapter kp.
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, adapter.ID))
 
 	if err = d.Set("name", adapter.Name); err != nil {
-		return fmt.Errorf("[ERROR] Error setting name: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting name: %s", err)
 	}
 	if err = d.Set("adapter_id", adapter.ID); err != nil {
-		return fmt.Errorf("[ERROR] Error setting adapter_id: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting adapter_id: %s", err)
 	}
 	if err = d.Set("instance_id", instanceID); err != nil {
-		return fmt.Errorf("[ERROR] Error setting instance_id: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting instance_id: %s", err)
 	}
 	if err = d.Set("description", adapter.Description); err != nil {
-		return fmt.Errorf("[ERROR] Error setting description: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting description: %s", err)
 	}
 	if err = d.Set("profile", adapter.Profile); err != nil {
-		return fmt.Errorf("[ERROR] Error setting profile: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting profile: %s", err)
 	}
 	if err = d.Set("profile_data", adapter.ProfileData); err != nil {
-		return fmt.Errorf("[ERROR] Error setting profile_data: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting profile_data: %s", err)
 	}
 	if err = d.Set("created_at", adapter.CreatedAt.String()); err != nil {
-		return fmt.Errorf("[ERROR] Error setting created_at: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting created_at: %s", err)
 	}
 	if err = d.Set("created_by", adapter.CreatedBy); err != nil {
-		return fmt.Errorf("[ERROR] Error setting created_by: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting created_by: %s", err)
 	}
 	if err = d.Set("updated_at", adapter.UpdatedAt.String()); err != nil {
-		return fmt.Errorf("[ERROR] Error setting updated_at: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting updated_at: %s", err)
 	}
 	if err = d.Set("updated_by", adapter.UpdatedBy); err != nil {
-		return fmt.Errorf("[ERROR] Error setting updated_by: %s", err)
+		return flex.FmtErrorf("[ERROR] Error setting updated_by: %s", err)
 	}
 	return nil
 }
@@ -290,11 +299,11 @@ func splitAdapterID(terraformId string) (instanceID, adapterID string, err error
 		return "", "", err
 	}
 	if len(split) != 2 {
-		return "", "", fmt.Errorf("[ERROR] The given id %s does not contain all expected sections, should be of format instance_id/adapter_id", terraformId)
+		return "", "", flex.FmtErrorf("[ERROR] The given id %s does not contain all expected sections, should be of format instance_id/adapter_id", terraformId)
 	}
 	for index, id := range split {
 		if uuid.Validate(id) != nil {
-			return "", "", fmt.Errorf("[ERROR] The given id %s at index %d of instance_id/adapter_id is not a valid UUID", id, index)
+			return "", "", flex.FmtErrorf("[ERROR] The given id %s at index %d of instance_id/adapter_id is not a valid UUID", id, index)
 		}
 	}
 	return split[0], split[1], nil

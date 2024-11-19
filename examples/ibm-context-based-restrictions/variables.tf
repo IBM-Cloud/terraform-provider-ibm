@@ -12,9 +12,12 @@ variable "cbr_zone_name" {
 variable "cbr_zone_description" {
   description = "The description of the zone."
   type        = string
-  default     = "this is an example of zone"
+  default     = "A terraform example of network zone"
 }
-
+variable "cbr_zone_vpc" {
+  description = "A vpc of the zone."
+  type        = string
+}
 
 // Resource arguments for cbr_rule
 variable "cbr_rule_description" {

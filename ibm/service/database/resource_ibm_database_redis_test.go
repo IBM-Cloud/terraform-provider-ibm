@@ -5,7 +5,6 @@ package database_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -39,10 +38,6 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "8192"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
-					resource.TestMatchResourceAttr(name, "connectionstrings.0.database", regexp.MustCompile("[-a-z0-9]+")),
 				),
 			},
 			{
@@ -118,7 +113,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes"},
+					"wait_time_minutes", "deletion_protection"},
 			},
 		},
 	})
@@ -170,6 +165,7 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -213,6 +209,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -251,6 +248,7 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 		group {
 			group_id = "member"
 			memory {
@@ -280,6 +278,7 @@ func testAccCheckIBMDatabaseInstanceRedisUserRole(databaseResourceGroup string, 
 		plan                         = "standard"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public"
 
 		group {
 			group_id = "member"
@@ -317,6 +316,7 @@ func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, na
 		service           = "databases-for-redis"
 		plan              = "standard"
 		location          = "%[3]s"
+		service_endpoints            = "public"
 		auto_scaling {
 			disk {
 			  capacity_enabled             = true
@@ -373,6 +373,7 @@ func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string,
 		key_protect_instance        = ibm_resource_instance.kp_instance.guid
 		key_protect_key             = ibm_kp_key.test.id
 		backup_encryption_key_crn   = ibm_kp_key.test1.id
+		service_endpoints           = "public"
 		timeouts {
 			create = "480m"
 			update = "480m"

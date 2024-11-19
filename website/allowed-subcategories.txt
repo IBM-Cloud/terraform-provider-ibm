@@ -9,6 +9,7 @@ Cloud Foundry
 Cloudant Databases
 Code Engine
 Container Registry
+Configuration Aggregator
 Context Based Restrictions
 CD Tekton Pipeline
 Direct Link Gateway
@@ -25,9 +26,11 @@ Identity & Access Management (IAM)
 Internet services
 Key Management Service
 Kubernetes Service
+Logs Routing
 Metrics Router
 MQ on Cloud
 Object Storage
+Partner Center Sell
 Power Systems
 Privileged Access Gateway
 Project

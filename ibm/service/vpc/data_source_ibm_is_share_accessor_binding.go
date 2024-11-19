@@ -251,7 +251,7 @@ func DataSourceIBMIsShareAccessorBindingShareAccessorBindingAccessorToMap(model 
 	}
 }
 
-func DataSourceIBMIsShareAccessorBindingShareReferenceDeletedToMap(model *vpcv1.ShareReferenceDeleted) (map[string]interface{}, error) {
+func DataSourceIBMIsShareAccessorBindingShareReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = *model.MoreInfo
 	return modelMap, nil

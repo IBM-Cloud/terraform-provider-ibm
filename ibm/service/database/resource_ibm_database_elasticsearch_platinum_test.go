@@ -37,10 +37,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
 			{
@@ -53,8 +49,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 				),
 			},
 			{
@@ -69,7 +63,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			{
@@ -84,7 +77,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			// {
@@ -121,10 +113,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
 			{
@@ -137,8 +125,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 				),
 			},
 			{
@@ -151,7 +137,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			{
@@ -164,7 +149,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "location", acc.Region()),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			//{
@@ -201,10 +185,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 
 					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
 			{
@@ -221,8 +201,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 				),
 			},
 			{
@@ -239,7 +217,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "12"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			{
@@ -256,7 +233,6 @@ func TestAccIBMDatabaseInstance_ElasticsearchPlatinum_Group(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "16"),
 					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			//{
@@ -298,7 +274,7 @@ func TestAccIBMDatabaseInstanceElasticsearchPlatinumImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation"},
+					"wait_time_minutes", "plan_validation", "deletion_protection"},
 			},
 		},
 	})
@@ -320,6 +296,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumBasic(databaseResourceG
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 
@@ -362,6 +339,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumFullyspecified(database
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 
@@ -410,6 +388,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumReduced(databaseResourc
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 
@@ -441,6 +420,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupMigration(database
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -476,6 +456,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeBasic(databaseResou
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -521,6 +502,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeFullyspecified(data
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -573,6 +555,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeReduced(databaseRes
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -609,6 +592,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumNodeScaleOut(databaseRe
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 		group {
 			group_id = "member"
 			members {
@@ -645,6 +629,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupBasic(databaseReso
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 			group_id = "member"
@@ -691,6 +676,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupFullyspecified(dat
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -745,6 +731,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupReduced(databaseRe
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -782,6 +769,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumGroupScaleOut(databaseR
 		plan                         = "platinum"
 		location                     = "%[3]s"
 		adminpassword                = "password12345678"
+		service_endpoints            = "public-and-private"
 
 		group {
 		  group_id = "member"
@@ -817,6 +805,7 @@ func testAccCheckIBMDatabaseInstanceElasticsearchPlatinumImport(databaseResource
 		service           = "databases-for-elasticsearch"
 		plan              = "platinum"
 		location          = "%[3]s"
+		service_endpoints            = "public-and-private"
 
 		timeouts {
 			create = "120m"

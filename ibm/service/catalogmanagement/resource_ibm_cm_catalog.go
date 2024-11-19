@@ -283,7 +283,9 @@ func ResourceIBMCmCatalog() *schema.Resource {
 func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createCatalogOptions := &catalogmanagementv1.CreateCatalogOptions{}
@@ -309,7 +311,9 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 			value := e.(map[string]interface{})
 			featuresItem, err := resourceIBMCmCatalogMapToFeature(value)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "create")
+				log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			features = append(features, *featuresItem)
 		}
@@ -327,7 +331,9 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("catalog_filters"); ok {
 		catalogFiltersModel, err := resourceIBMCmCatalogMapToFilters(d.Get("catalog_filters.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "create")
+			log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		createCatalogOptions.SetCatalogFilters(catalogFiltersModel)
 	}
@@ -340,7 +346,9 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 			value := e.(map[string]interface{})
 			targetAccountContextsItem, err := resourceIBMCmCatalogMapToTargetAccountContexts(nil, value)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "create")
+				log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			target_account_contexts = append(target_account_contexts, *targetAccountContextsItem)
 		}
@@ -349,8 +357,9 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 
 	catalog, response, err := catalogManagementClient.CreateCatalogWithContext(context, createCatalogOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateCatalogWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateCatalogWithContext failed %s\n%s", err, response), "ibm_cm_catalog", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*catalog.ID)
@@ -361,7 +370,9 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getCatalogOptions := &catalogmanagementv1.GetCatalogOptions{}
@@ -373,28 +384,41 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetCatalogWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetCatalogWithContext failed %s\n%s", err, response), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("rev", catalog.Rev); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting rev: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("label", catalog.Label); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting label: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("short_description", catalog.ShortDescription); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting short_description: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting short_description: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("catalog_icon_url", catalog.CatalogIconURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting catalog_icon_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting catalog_icon_url: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("catalog_banner_url", catalog.CatalogBannerURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting catalog_banner_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting catalog_banner_url: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if catalog.Tags != nil {
 		if err = d.Set("tags", catalog.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "ibm_cm_catalog", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	features := []map[string]interface{}{}
@@ -402,65 +426,97 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 		for _, featuresItem := range catalog.Features {
 			featuresItemMap, err := resourceIBMCmCatalogFeatureToMap(&featuresItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "read")
+				log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			features = append(features, featuresItemMap)
 		}
 	}
 	if err = d.Set("features", features); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting features: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting features: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("disabled", catalog.Disabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting disabled: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting disabled: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("resource_group_id", catalog.ResourceGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting resource_group_id: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("owning_account", catalog.OwningAccount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting owning_account: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting owning_account: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if catalog.CatalogFilters != nil {
 		catalogFiltersMap, err := resourceIBMCmCatalogFiltersToMap(catalog.CatalogFilters)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "read")
+			log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if err = d.Set("catalog_filters", []map[string]interface{}{catalogFiltersMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting catalog_filters: %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting catalog_filters: %s", err), "ibm_cm_catalog", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if err = d.Set("kind", catalog.Kind); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting kind: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting kind: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("rev", catalog.Rev); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting rev: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("url", catalog.URL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting url: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("crn", catalog.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("offerings_url", catalog.OfferingsURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting offerings_url: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting offerings_url: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("created", flex.DateTimeToString(catalog.Created)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("updated", flex.DateTimeToString(catalog.Updated)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	targetAccountContexts := []map[string]interface{}{}
 	if catalog.TargetAccountContexts != nil {
 		for _, tacItem := range catalog.TargetAccountContexts {
 			tacItemMap, err := resourceIBMCmCatalogTargetAccountContextToMap(&tacItem)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "read")
+				log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			targetAccountContexts = append(targetAccountContexts, tacItemMap)
 		}
 	}
 	if err = d.Set("target_account_contexts", targetAccountContexts); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting target_account_contexts: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting target_account_contexts: %s", err), "ibm_cm_catalog", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
@@ -469,7 +525,9 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "update")
+		log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getCatalogOptions := &catalogmanagementv1.GetCatalogOptions{}
@@ -481,8 +539,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetCatalogWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetCatalogWithContext failed %s\n%s", err, response), "ibm_cm_catalog", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	replaceCatalogOptions := &catalogmanagementv1.ReplaceCatalogOptions{}
@@ -511,7 +570,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 			value := e.(map[string]interface{})
 			featuresItem, err := resourceIBMCmCatalogMapToFeature(value)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "update")
+				log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			features = append(features, *featuresItem)
 		}
@@ -529,7 +590,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("catalog_filters"); ok {
 		catalogFilters, err := resourceIBMCmCatalogMapToFilters(d.Get("catalog_filters.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "update")
+			log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		replaceCatalogOptions.SetCatalogFilters(catalogFilters)
 	}
@@ -542,7 +605,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 			value := e.(map[string]interface{})
 			targetAccountContextsItem, err := resourceIBMCmCatalogMapToTargetAccountContexts(catalog, value)
 			if err != nil {
-				return diag.FromErr(err)
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "update")
+				log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			target_account_contexts = append(target_account_contexts, *targetAccountContextsItem)
 		}
@@ -551,8 +616,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 
 	_, response, err = catalogManagementClient.ReplaceCatalogWithContext(context, replaceCatalogOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ReplaceCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ReplaceCatalogWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceCatalogWithContext failed %s\n%s", err, response), "ibm_cm_catalog", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMCmCatalogRead(context, d, meta)
@@ -561,7 +627,9 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 func resourceIBMCmCatalogDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_catalog", "delete")
+		log.Printf("[DEBUG]\\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteCatalogOptions := &catalogmanagementv1.DeleteCatalogOptions{}
@@ -570,8 +638,9 @@ func resourceIBMCmCatalogDelete(context context.Context, d *schema.ResourceData,
 
 	response, err := catalogManagementClient.DeleteCatalogWithContext(context, deleteCatalogOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteCatalogWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteCatalogWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteCatalogWithContext failed %s\n%s", err, response), "ibm_cm_catalog", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

@@ -14,6 +14,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 )
 
@@ -223,7 +224,7 @@ func testAccCheckIbmSccProfileExists(n string, obj securityandcompliancecenterap
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		securityandcompliancecenterapiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SecurityAndComplianceCenterV3()
@@ -267,9 +268,9 @@ func testAccCheckIbmSccProfileDestroy(s *terraform.State) error {
 		_, response, err := securityandcompliancecenterapiClient.GetProfile(getProfileOptions)
 
 		if err == nil {
-			return fmt.Errorf("scc_profile still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("scc_profile still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for scc_profile (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for scc_profile (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

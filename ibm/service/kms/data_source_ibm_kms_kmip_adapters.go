@@ -5,8 +5,8 @@ package kms
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,9 +68,6 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
 
 	// call GetKMIPAdapters api
 	opts := &kp.ListKmipAdaptersOptions{}
@@ -90,7 +87,7 @@ func dataSourceIBMKMSKmipAdaptersList(d *schema.ResourceData, meta interface{}) 
 
 	adapters, err := api.GetKMIPAdapters(context.Background(), opts)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error listing KMIP adapters: %s", err)
+		return flex.FmtErrorf("[ERROR] Error listing KMIP adapters: %s", err)
 	}
 
 	adaptersList := adapters.Adapters

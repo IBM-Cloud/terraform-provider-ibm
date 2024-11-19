@@ -135,6 +135,13 @@ func resourceIBMEnCOSIntegrationRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
+	if result.Metadata != nil {
+		err = d.Set("metadata", enCOSIntegrationFlattenMetadata(result.Metadata))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting Metadata %s", err))
+		}
+	}
+
 	if err = d.Set("updated_at", flex.DateTimeToString(result.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
 	}

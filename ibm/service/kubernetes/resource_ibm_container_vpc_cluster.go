@@ -5,7 +5,6 @@ package kubernetes
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -655,7 +654,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	_, err = waitForVpcCluster(d, meta, timeoutStage, d.Timeout(schema.TimeoutCreate))
+	err = waitForVpcCluster(d, meta, timeoutStage, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
@@ -829,8 +828,13 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 			waitForWorkerUpdate := d.Get("wait_for_worker_update").(bool)
 
 			for _, worker := range workers {
+				workerPool, err := csClient.WorkerPools().GetWorkerPool(clusterID, worker.PoolID, targetEnv)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving worker pool: %s", err)
+				}
+
 				// check if change is present in MAJOR.MINOR version or in PATCH version
-				if worker.KubeVersion.Actual != worker.KubeVersion.Target {
+				if worker.KubeVersion.Actual != worker.KubeVersion.Target || worker.LifeCycle.ActualOperatingSystem != workerPool.OperatingSystem {
 					_, err := csClient.Workers().ReplaceWokerNode(clusterID, worker.ID, targetEnv)
 					// As API returns http response 204 NO CONTENT, error raised will be exempted.
 					if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
@@ -1094,45 +1098,37 @@ func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFun
 	}
 }
 
-func waitForVpcCluster(d *schema.ResourceData, meta interface{}, timeoutStage string, timeout time.Duration) (*v2.ClusterInfo, error) {
-	var clusterinfo interface{}
+func waitForVpcCluster(d *schema.ResourceData, meta interface{}, timeoutStage string, timeout time.Duration) error {
 	var err error
 	switch timeoutStage {
 
 	case strings.ToLower(clusterNormal):
 		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical, clusterWarning}
-		clusterinfo, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates, timeout)
+		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates, timeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 	case strings.ToLower(masterNodeReady):
-		clusterinfo, err = waitForVpcClusterMasterAvailable(d, meta, timeout)
+		_, err = waitForVpcClusterMasterAvailable(d, meta, timeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 	case strings.ToLower(oneWorkerNodeReady):
-		clusterinfo, err = waitForVpcClusterOneWorkerAvailable(d, meta, timeout)
+		_, err = waitForVpcClusterOneWorkerAvailable(d, meta, timeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 	case strings.ToLower(ingressReady):
-		clusterinfo, err = waitForVpcClusterIngressAvailable(d, meta, timeout)
+		_, err = waitForVpcClusterIngressAvailable(d, meta, timeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
-	default:
-		// silent fallback
-		return nil, nil
 	}
 
-	ci, ok := clusterinfo.(*v2.ClusterInfo)
-	if !ok {
-		return nil, errors.New("[ERROR] cannot convert returned value to ClusterInfo")
-	}
-	return ci, nil
+	return nil
 }
 
 func waitForVpcClusterDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {

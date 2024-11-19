@@ -76,6 +76,31 @@ func TestAccIbmSmPrivateCertificateConfigurationIntermediateCAllArgs(t *testing.
 	})
 }
 
+func TestAccIbmSmPrivateCertificateConfigurationIntermediateCACryptoKey(t *testing.T) {
+	resourceName := "ibm_sm_private_certificate_configuration_intermediate_ca.sm_private_cert_intermediate_ca_crypto_key"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmPrivateCertificateConfigurationIntermediateCADestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: privateCertificateIntermediateCAConfigCryptoKey(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmPrivateCertificateConfigurationIntermediateCAExists(resourceName, 94680000., 259200, false, true, true),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"crl_expiry", "max_ttl", "max_path_length",
+					"permitted_dns_domains", "ttl", "use_csr_values"},
+			},
+		},
+	})
+}
+
 func rootCaConfig() string {
 	return fmt.Sprintf(`
 
@@ -140,6 +165,39 @@ func privateCertificateIntermediateCAConfigAllArgs(maxTtl, crlExpiry, crlDisable
 		}
 	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, maxTtl, crlExpiry, crlDisable,
 		crlDistributionPointsEncoded, issuingCertificatesUrlsEncoded)
+}
+
+func privateCertificateIntermediateCAConfigCryptoKey() string {
+	return privateCertificateRootCAConfigCryptoKey() + fmt.Sprintf(`
+		resource "ibm_sm_private_certificate_configuration_intermediate_ca" "sm_private_cert_intermediate_ca_crypto_key" {
+			depends_on     = [ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key]
+			instance_id   = "%s"
+			region        = "%s"
+			name = "intermediate-ca-terraform-private-cert-test"
+			max_ttl = "26300h"
+			ttl = "2190h"
+			issuing_certificates_urls_encoded = true
+			crl_distribution_points_encoded = true
+			crl_disable = false
+			key_type = "rsa"
+			key_bits = 4096
+			signing_method = "internal"
+			issuer = ibm_sm_private_certificate_configuration_root_ca.sm_private_cert_root_ca_crypto_key.name
+			common_name = "ibm.com"
+			crypto_key {
+				allow_generate_key = true
+				label = "e2e-tf-test"
+				provider {
+					type = "%s"
+					instance_crn = "%s"
+					pin_iam_credentials_secret_id = ibm_sm_iam_credentials_secret.sm_iam_credentials_secret_instance_crypto_key.secret_id
+					private_keystore_id = "%s"
+				}
+			}
+		}`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderType,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderInstanceCrn,
+		acc.SecretsManagerPrivateCertificateConfigurationCryptoKeyProviderPrivateKeystoreId)
 }
 
 func testAccCheckIbmSmPrivateCertificateConfigurationIntermediateCAExists(resourceName string, maxTtl, crlExpiry int, crlDisable,

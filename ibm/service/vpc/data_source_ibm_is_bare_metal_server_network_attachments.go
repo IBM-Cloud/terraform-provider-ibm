@@ -276,7 +276,7 @@ func dataSourceIBMIsBareMetalServerNetworkAttachmentsID(d *schema.ResourceData) 
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMIsBareMetalServerNetworkAttachmentsBareMetalServerNetworkAttachmentCollectionFirstToMap(model *vpcv1.BareMetalServerNetworkAttachmentCollectionFirst) (map[string]interface{}, error) {
+func dataSourceIBMIsBareMetalServerNetworkAttachmentsBareMetalServerNetworkAttachmentCollectionFirstToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = model.Href
 	return modelMap, nil
@@ -346,7 +346,7 @@ func dataSourceIBMIsBareMetalServerNetworkAttachmentsReservedIPReferenceToMap(mo
 	return modelMap, nil
 }
 
-func dataSourceIBMIsBareMetalServerNetworkAttachmentsReservedIPReferenceDeletedToMap(model *vpcv1.ReservedIPReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsBareMetalServerNetworkAttachmentsReservedIPReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -369,7 +369,7 @@ func dataSourceIBMIsBareMetalServerNetworkAttachmentsSubnetReferenceToMap(model 
 	return modelMap, nil
 }
 
-func dataSourceIBMIsBareMetalServerNetworkAttachmentsSubnetReferenceDeletedToMap(model *vpcv1.SubnetReferenceDeleted) (map[string]interface{}, error) {
+func dataSourceIBMIsBareMetalServerNetworkAttachmentsSubnetReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
@@ -446,7 +446,7 @@ func dataSourceIBMIsBareMetalServerNetworkAttachmentsBareMetalServerNetworkAttac
 	return modelMap, nil
 }
 
-func dataSourceIBMIsBareMetalServerNetworkAttachmentsBareMetalServerNetworkAttachmentCollectionNextToMap(model *vpcv1.BareMetalServerNetworkAttachmentCollectionNext) (map[string]interface{}, error) {
+func dataSourceIBMIsBareMetalServerNetworkAttachmentsBareMetalServerNetworkAttachmentCollectionNextToMap(model *vpcv1.PageLink) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = model.Href
 	return modelMap, nil
