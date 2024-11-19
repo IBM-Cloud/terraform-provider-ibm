@@ -19,7 +19,7 @@ import (
 func TestAccIbmBackupRecoveryBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_name_%d", acctest.RandIntRange(10, 100))
 	snapshotEnvironment := "kPhysical"
-	objectId := 23
+	objectId := 217
 	targetenvironment := "kPhysical"
 	absolutePath := "/data/"
 	restoreEntityType := "kRegular"

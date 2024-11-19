@@ -22,10 +22,10 @@ func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
 	policyName := fmt.Sprintf("tf_name_policy_%d", acctest.RandIntRange(10, 100))
 	environment := "kPhysical"
-	includedPath := "/data/"
+	includedPath := "/data2/data/"
 	includedPathUpdate := "/data1/"
 	protectionType := "kFile"
-	objectId := 23
+	objectId := 217
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -61,13 +61,13 @@ func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, 
 							incremental{
 								schedule{
 										day_schedule {
-											frequency = 1
+											frequency = 2
 										}
 										unit = "Days"
 									}
 							}
 							retention {
-								duration = 1
+								duration = 2
 								unit = "Weeks"
 							}
 							primary_backup_target {

@@ -21,7 +21,7 @@ import (
 func TestAccIbmBackupRecoveryProtectionGroupDataSourceBasic(t *testing.T) {
 	groupName := fmt.Sprintf("tf_groupname_%d", acctest.RandIntRange(10, 100))
 	policyName := fmt.Sprintf("tf_policyname_%d", acctest.RandIntRange(10, 100))
-	objectId := 23
+	objectId := 217
 	environment := "kPhysical"
 	includedPath := "/data2/data/"
 	protectionType := "kFile"

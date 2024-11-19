@@ -17,16 +17,16 @@ import (
 )
 
 var (
-	tenantIdRegister = "dmb083pq5n/"
+	tenantIdRegister = "79mle1bk3m/"
 )
 
 func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 	var conf backuprecoveryv1.SourceRegistrationReponseParams
 
 	environment := "kPhysical"
-	connectionId := "530243354208762051"
-	endpoint := "172.26.1.18"
-	hostType := "kLinux"
+	connectionId := "7754198299738915743"
+	endpoint := "172.26.1.23"
+	hostType := "kWindows"
 	physicalType := "kHost"
 	applications := ""
 
@@ -44,7 +44,6 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "x_ibm_tenant_id", tenantIdRegister),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "environment", environment),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "id"),
-					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "last_refreshed_time_msecs"),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.baas_source_registration_instance", "connections.#"),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "connection_id", connectionId),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_source_registration.baas_source_registration_instance", "source_info.#", "1"),

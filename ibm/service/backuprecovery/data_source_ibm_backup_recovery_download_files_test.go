@@ -19,7 +19,7 @@ import (
 
 func TestAccIbmRecoveryDownloadFilesDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tf_recovery_download_files_folders_name_%d", acctest.RandIntRange(10, 100))
-	objectId := 23
+	objectId := 217
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	tenantId string = "dmb083pq5n/"
+	tenantId string = "79mle1bk3m/"
 )
 
 func TestAccIbmBackupRecoveryDataSourceConnectionsDataSourceBasic(t *testing.T) {
