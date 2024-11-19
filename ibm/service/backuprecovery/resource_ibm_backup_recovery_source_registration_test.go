@@ -25,8 +25,8 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 
 	environment := "kPhysical"
 	connectionId := "7754198299738915743"
-	endpoint := "172.26.1.23"
-	hostType := "kWindows"
+	endpoint := "172.26.1.11"
+	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""
 
@@ -96,8 +96,7 @@ func testAccCheckIbmBackupRecoverySourceRegistrationExists(n string, obj backupr
 		}
 
 		getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
-
-		num, _ := strconv.Atoi(rs.Primary.ID)
+		num, _ := strconv.Atoi(rs.Primary.Attributes["source_id"])
 		getProtectionSourceRegistrationOptions.SetID(int64(num))
 		getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantIdRegister)
 

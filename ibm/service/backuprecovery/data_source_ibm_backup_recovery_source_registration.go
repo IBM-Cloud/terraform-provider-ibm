@@ -958,7 +958,8 @@ func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, 
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
 	getProtectionSourceRegistrationOptions.SetID(int64(d.Get("source_registration_id").(int)))
-	getProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
 	if _, ok := d.GetOk("request_initiator_type"); ok {
 		getProtectionSourceRegistrationOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
 	}
@@ -970,7 +971,8 @@ func dataSourceIbmBackupRecoverySourceRegistrationRead(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
+	registrationId := fmt.Sprintf("%s::%s", tenantId, strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
+	d.SetId(registrationId)
 
 	if !core.IsNil(sourceRegistrationReponseParams.SourceID) {
 		if err = d.Set("source_id", flex.IntValue(sourceRegistrationReponseParams.SourceID)); err != nil {

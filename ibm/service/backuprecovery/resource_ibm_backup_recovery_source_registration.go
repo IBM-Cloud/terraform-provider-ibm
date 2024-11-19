@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1091,7 +1092,8 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 
 	registerProtectionSourceOptions := &backuprecoveryv1.RegisterProtectionSourceOptions{}
 
-	registerProtectionSourceOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	registerProtectionSourceOptions.SetXIBMTenantID(tenantId)
 	registerProtectionSourceOptions.SetEnvironment(d.Get("environment").(string))
 	if _, ok := d.GetOk("name"); ok {
 		registerProtectionSourceOptions.SetName(d.Get("name").(string))
@@ -1154,11 +1156,18 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
+	registrationId := fmt.Sprintf("%s::%s", tenantId, strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
+	d.SetId(registrationId)
 	return resourceIbmBackupRecoverySourceRegistrationRead(context, d, meta)
 }
 
 func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	registrationId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseSourceRegistrationId(d.Id(), "tenantId")
+		registrationId = ParseSourceRegistrationId(d.Id(), "registrationId")
+	}
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "initialize-client")
@@ -1168,13 +1177,13 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := strconv.Atoi(registrationId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getProtectionSourceRegistrationOptions.SetID(int64(id))
-	getProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	getProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
 
 	sourceRegistrationReponseParams, response, err := backupRecoveryClient.GetProtectionSourceRegistrationWithContext(context, getProtectionSourceRegistrationOptions)
 	if err != nil {
@@ -1191,6 +1200,12 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 		err = fmt.Errorf("Error setting environment: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-environment").GetDiag()
 	}
+
+	if err = d.Set("x_ibm_tenant_id", tenantId); err != nil {
+		err = fmt.Errorf("Error setting x_ibm_tenant_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "set-x_ibm_tenant_id").GetDiag()
+	}
+
 	if !core.IsNil(sourceRegistrationReponseParams.Name) {
 		if err = d.Set("name", sourceRegistrationReponseParams.Name); err != nil {
 			err = fmt.Errorf("Error setting name: %s", err)
@@ -1319,7 +1334,14 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
-	id, err := strconv.Atoi(d.Id())
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	registrationId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseSourceRegistrationId(d.Id(), "tenantId")
+		registrationId = ParseSourceRegistrationId(d.Id(), "registrationId")
+	}
+
+	id, err := strconv.Atoi(registrationId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1345,7 +1367,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 
 	if patchData && !putData {
 		patchProtectionSourceRegistrationOptions := &backuprecoveryv1.PatchProtectionSourceRegistrationOptions{}
-		patchProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+		patchProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
 
 		patchProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
 		patchProtectionSourceRegistrationOptions.SetID(int64(id))
@@ -1358,7 +1380,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	} else {
 
 		updateProtectionSourceRegistrationOptions := &backuprecoveryv1.UpdateProtectionSourceRegistrationOptions{}
-		updateProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+		updateProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
 
 		updateProtectionSourceRegistrationOptions.SetEnvironment(d.Get("environment").(string))
 		if _, ok := d.GetOk("name"); ok {
@@ -1435,6 +1457,16 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	return resourceIbmBackupRecoverySourceRegistrationRead(context, d, meta)
 }
 
+func ParseSourceRegistrationId(id string, info string) string {
+	if info == "tenantId" {
+		return strings.Split(id, "::")[0]
+	}
+	if info == "registrationId" {
+		return strings.Split(id, "::")[1]
+	}
+	return ""
+}
+
 func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -1445,15 +1477,20 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv1.DeleteProtectionSourceRegistrationOptions{}
 
-	// deleteProtectionSourceRegistrationOptions.SetID(d.Id())
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	registrationId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseSourceRegistrationId(d.Id(), "tenantId")
+		registrationId = ParseSourceRegistrationId(d.Id(), "registrationId")
+	}
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := strconv.Atoi(registrationId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	deleteProtectionSourceRegistrationOptions.SetID(int64(id))
-	deleteProtectionSourceRegistrationOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	deleteProtectionSourceRegistrationOptions.SetXIBMTenantID(tenantId)
 
 	_, err = backupRecoveryClient.DeleteProtectionSourceRegistrationWithContext(context, deleteProtectionSourceRegistrationOptions)
 	if err != nil {
