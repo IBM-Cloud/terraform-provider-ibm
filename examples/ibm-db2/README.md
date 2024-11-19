@@ -1,6 +1,6 @@
-# This example shows how to create an IBM Cloud Db2 SaaS and configure connectivity from a VSI
+# This example shows how to create an instance IBM Db2 SaaS on IBM Cloud and configure connectivity from a VSI
 
-This sample configuration to provision an IBM Db2 SaaS instance. 
+This sample provisions an IBM Db2 SaaS instance on IBM Cloud. 
 
 ## Costs
 
@@ -9,7 +9,7 @@ This sample uses chargable services and **will** incur costs for the time the se
 
 ## Dependencies
 
-- User has IAM security rights to create and configure an IBM Cloud Db2 SaaS Instance.
+- User has IAM permissions to create and configure an IBM Db2 SaaS for IBM Cloud Instance in the resource group specified.
 
 ## Configuration 
 
@@ -27,7 +27,7 @@ The example is deployed in the us-south region. The `region` parameter in main.t
 
 ## Outputs 
 
-The composed connection string of Db2 SaaS Instance CRN.
+The composed connection string of Db2 SaaS Instance CRN. `crn:v1:bluemix:public:dashdb-for-transactions:us-south:a/60970f92286548d8a64cbb45bce39bc1:deae06ff-3966-4534-bfa0-4b42281e7cef::`
 
 
 ## Running the configuration 

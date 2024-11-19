@@ -8,7 +8,7 @@ description: |-
 
 # ibm_db2
 
-Retrieve information about an existing [IBM Cloud Db2 SaaS Instance](https://cloud.ibm.com/docs/cloud-databases).
+Retrieve information about an existing [IBM Db2 SaaS Instance](https://cloud.ibm.com/docs/cloud-databases).
 
 **Note**
 Configuration of an IBM Cloud Db2 SaaS Instance `data_source` requires that the `region` parameter is set for the IBM provider in the `provider.tf`. The region must be the same as the `location` that the IBM Cloud Databases instance is deployed into.A `terraform refresh` of the `data_source` fails if the region and the location differ.

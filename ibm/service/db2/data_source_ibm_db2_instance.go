@@ -17,8 +17,8 @@ func DataSourceIBMDb2Instance() *schema.Resource {
 		Type:        schema.TypeString,
 	}
 
-	riSchema["machine_type"] = &schema.Schema{
-		Description: "Avaialble machine type flavours (default selection will assume dev config of 1 core & 4GB of memory for cost saving)",
+	riSchema["instance_type"] = &schema.Schema{
+		Description: "Available machine type flavours (default selection will assume smallest configuration)",
 		Optional:    true,
 		Type:        schema.TypeString,
 	}

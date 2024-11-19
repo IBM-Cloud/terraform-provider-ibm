@@ -5,12 +5,12 @@ variable "ibmcloud_api_key" {
 
 variable "region" {
   type        = string
-  description = "IBM Cloud region where your Db2 SaaS will be created"
+  description = "IBM Cloud region where your IBM Db2 SaaS will be created"
   default     = "us-south"
 }
 
 variable "resource_group" {
   type        = string
-  description = "Resource group within which Db2 SaaS will be created"
+  description = "Resource group within which IBM Db2 SaaS will be created"
   default     = "Default"
 }
