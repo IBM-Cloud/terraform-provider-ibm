@@ -8,7 +8,7 @@ description: |-
 
 # ibm_db2
 
-Create or delete an IBM Cloud Db2 SaaS instance. The `ibmcloud_api_key` that are used by Terraform should grant IAM rights to create and modify IBM Cloud Db2 Databases and have access to the resource group the Db2 SaaS instance is associated with. For more information, see [documentation](https://cloud.ibm.com/docs/Db2onCloud?topic=Db2onCloud-getting-started) to manage Db2 SaaS instances.
+Create or delete an IBM Db2 SaaS on IBM Cloud instance. The `ibmcloud_api_key` that are used by Terraform should grant IAM rights to create and modify IBM Cloud Db2 Databases and have access to the resource group the Db2 SaaS instance is associated with. For more information, see [documentation](https://cloud.ibm.com/docs/Db2onCloud?topic=Db2onCloud-getting-started) to manage Db2 SaaS instances.
 
 
 Configuration of an Db2 SaaS resource requires that the `region` parameter is set for the IBM provider in the `provider.tf` to be the same as the target Db2 SaaS `location/region`. If the Terraform configuration needs to deploy resources into multiple regions, provider alias can be used. For more information, see [Terraform provider configuration](https://www.terraform.io/docs/configuration/providers.html#multiple-provider-instances).
