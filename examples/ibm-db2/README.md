@@ -1,4 +1,4 @@
-# This example shows how to create an instance IBM Db2 SaaS on IBM Cloud and configure connectivity from a VSI
+# This example shows how to create an instance of IBM Db2 SaaS on IBM Cloud and configure connectivity from a VSI
 
 This sample provisions an IBM Db2 SaaS instance on IBM Cloud. 
 
