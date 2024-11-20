@@ -133,7 +133,8 @@ var (
 // MQ on Cloud
 var (
 	MqcloudConfigEndpoint            string
-	MqcloudInstanceID                string
+	MqcloudDeploymentID              string
+	MqcloudCapacityID                string
 	MqcloudQueueManagerID            string
 	MqcloudKSCertFilePath            string
 	MqcloudTSCertFilePath            string
@@ -1868,9 +1869,13 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT for ibm_mqcloud service else tests will fail if this is not set correctly")
 	}
 
-	MqcloudInstanceID = os.Getenv("IBM_MQCLOUD_INSTANCE_ID")
-	if MqcloudInstanceID == "" {
-		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_INSTANCE_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	MqcloudDeploymentID = os.Getenv("IBM_MQCLOUD_DEPLOYMENT_ID")
+	if MqcloudDeploymentID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_DEPLOYMENT_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqcloudCapacityID = os.Getenv("IBM_MQCLOUD_CAPACITY_ID")
+	if MqcloudCapacityID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_DEPLOYMENT_ID for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
 	MqcloudQueueManagerID = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_ID")
 	if MqcloudQueueManagerID == "" {
@@ -2267,8 +2272,11 @@ func TestAccPreCheckMqcloud(t *testing.T) {
 	if MqcloudConfigEndpoint == "" {
 		t.Fatal("IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT must be set for acceptance tests")
 	}
-	if MqcloudInstanceID == "" {
-		t.Fatal("IBM_MQCLOUD_INSTANCE_ID must be set for acceptance tests")
+	if MqcloudDeploymentID == "" {
+		t.Fatal("IBM_MQCLOUD_DEPLOYMENT_ID must be set for acceptance tests")
+	}
+	if MqcloudCapacityID == "" {
+		t.Fatal("IBM_MQCLOUD_CAPACITY_ID must be set for acceptance tests")
 	}
 	if MqcloudQueueManagerID == "" {
 		t.Fatal("IBM_MQCLOUD_QUEUEMANAGER_ID must be set for acceptance tests")

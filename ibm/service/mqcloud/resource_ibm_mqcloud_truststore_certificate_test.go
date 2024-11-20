@@ -6,6 +6,7 @@ package mqcloud_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,15 +19,17 @@ import (
 )
 
 func TestAccIbmMqcloudTruststoreCertificateBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.TrustStoreCertificateDetails
-	serviceInstanceGuid := acc.MqcloudInstanceID
+	serviceInstanceGuid := acc.MqcloudDeploymentID
 	queueManagerID := acc.MqcloudQueueManagerID
 	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
 	certificateFile := acc.MqcloudTSCertFilePath
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
+		PreCheck: func() {
+			acc.TestAccPreCheckMqcloud(t)
+			time.Sleep(60 * time.Second) //This to allow for completion of certificate processing
+		},
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmMqcloudTruststoreCertificateDestroy,
 		Steps: []resource.TestStep{

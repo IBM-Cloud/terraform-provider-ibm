@@ -28,7 +28,7 @@ Key Management Service
 Kubernetes Service
 Logs Routing
 Metrics Router
-MQ on Cloud
+MQaaS
 Object Storage
 Partner Center Sell
 Power Systems
