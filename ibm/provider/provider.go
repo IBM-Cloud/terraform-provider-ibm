@@ -2134,7 +2134,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_logpush_jobs":                cis.DataSourceIBMCISLogPushJobsValidator(),
 				"ibm_cis_origin_certificates":         cis.DataIBMCISOriginCertificateOrderValidator(),
 
-				"ibm_cos_bucket": cos.DataSourceIBMCosBucketValidator(),
+				"ibm_config_aggregator_configurations": configurationaggregator.DataSourceIbmConfigAggregatorValidator(),
+				"ibm_cos_bucket":                       cos.DataSourceIBMCosBucketValidator(),
 
 				"ibm_database_backups":                database.DataSourceIBMDatabaseBackupsValidator(),
 				"ibm_database_connection":             database.DataSourceIBMDatabaseConnectionValidator(),

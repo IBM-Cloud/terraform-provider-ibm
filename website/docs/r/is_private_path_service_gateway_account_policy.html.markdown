@@ -10,9 +10,6 @@ subcategory: "VPC infrastructure"
 
 Provides a resource for PrivatePathServiceGatewayAccountPolicy. This allows PrivatePathServiceGatewayAccountPolicy to be created, updated and deleted.
 
-**NOTE:** 
-Private path service gateway is a select availability feature.
-
 ## Example Usage
 
 ```hcl
