@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -4190,6 +4191,11 @@ func ResourceIbmBackupRecoveryProtectionPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Specifies the number of protected objects using the protection policy.",
 			},
+			"policy_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "policy ID",
+			},
 		},
 	}
 }
@@ -4218,9 +4224,11 @@ func resourceIbmBackupRecoveryProtectionPolicyCreate(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+
 	createProtectionPolicyOptions := &backuprecoveryv1.CreateProtectionPolicyOptions{}
 
-	createProtectionPolicyOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	createProtectionPolicyOptions.SetXIBMTenantID(tenantId)
 	createProtectionPolicyOptions.SetName(d.Get("name").(string))
 	backupPolicyModel, err := ResourceIbmBackupRecoveryProtectionPolicyMapToBackupPolicy(d.Get("backup_policy.0").(map[string]interface{}))
 	if err != nil {
@@ -4302,13 +4310,19 @@ func resourceIbmBackupRecoveryProtectionPolicyCreate(context context.Context, d 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
-	d.SetId(*protectionPolicyResponse.ID)
+	policyId := fmt.Sprintf("%s::%s", tenantId, *protectionPolicyResponse.ID)
+	d.SetId(policyId)
 
 	return resourceIbmBackupRecoveryProtectionPolicyRead(context, d, meta)
 }
 
 func resourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	policyId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		policyId = ParseId(d.Id(), "id")
+	}
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "read", "initialize-client")
@@ -4318,8 +4332,8 @@ func resourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d *s
 
 	getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
 
-	getProtectionPolicyByIdOptions.SetID(d.Id())
-	getProtectionPolicyByIdOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	getProtectionPolicyByIdOptions.SetID(policyId)
+	getProtectionPolicyByIdOptions.SetXIBMTenantID(tenantId)
 
 	protectionPolicyResponse, response, err := backupRecoveryClient.GetProtectionPolicyByIDWithContext(context, getProtectionPolicyByIdOptions)
 	if err != nil {
@@ -4332,10 +4346,21 @@ func resourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d *s
 		return tfErr.GetDiag()
 	}
 
+	if err = d.Set("x_ibm_tenant_id", tenantId); err != nil {
+		err = fmt.Errorf("Error setting x_ibm_tenant_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "read", "set-x_ibm_tenant_id").GetDiag()
+	}
+
 	if err = d.Set("name", protectionPolicyResponse.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "read", "set-name").GetDiag()
 	}
+
+	if err = d.Set("policy_id", policyId); err != nil {
+		err = fmt.Errorf("Error setting policy_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "read", "set-policy_id").GetDiag()
+	}
+
 	backupPolicyMap, err := ResourceIbmBackupRecoveryProtectionPolicyBackupPolicyToMap(protectionPolicyResponse.BackupPolicy)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_policy", "read", "backup_policy-to-map").GetDiag()
@@ -4478,10 +4503,17 @@ func resourceIbmBackupRecoveryProtectionPolicyUpdate(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	policyId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		policyId = ParseId(d.Id(), "id")
+	}
+
 	updateProtectionPolicyOptions := &backuprecoveryv1.UpdateProtectionPolicyOptions{}
 
-	updateProtectionPolicyOptions.SetID(d.Id())
-	updateProtectionPolicyOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	updateProtectionPolicyOptions.SetID(policyId)
+	updateProtectionPolicyOptions.SetXIBMTenantID(tenantId)
 	updateProtectionPolicyOptions.SetName(d.Get("name").(string))
 	backupPolicy, err := ResourceIbmBackupRecoveryProtectionPolicyMapToBackupPolicy(d.Get("backup_policy.0").(map[string]interface{}))
 	if err != nil {
@@ -4575,10 +4607,17 @@ func resourceIbmBackupRecoveryProtectionPolicyDelete(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	policyId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		policyId = ParseId(d.Id(), "id")
+	}
+
 	deleteProtectionPolicyOptions := &backuprecoveryv1.DeleteProtectionPolicyOptions{}
 
-	deleteProtectionPolicyOptions.SetID(d.Id())
-	deleteProtectionPolicyOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	deleteProtectionPolicyOptions.SetID(policyId)
+	deleteProtectionPolicyOptions.SetXIBMTenantID(tenantId)
 
 	_, err = backupRecoveryClient.DeleteProtectionPolicyWithContext(context, deleteProtectionPolicyOptions)
 	if err != nil {

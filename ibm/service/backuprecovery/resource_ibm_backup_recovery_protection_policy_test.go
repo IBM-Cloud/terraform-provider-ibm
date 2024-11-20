@@ -95,7 +95,7 @@ func testAccCheckIbmBackupRecoveryProtectionPolicyExists(n string, obj backuprec
 		getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
 
 		getProtectionPolicyByIdOptions.SetXIBMTenantID(tenantId)
-		getProtectionPolicyByIdOptions.SetID(rs.Primary.ID)
+		getProtectionPolicyByIdOptions.SetID(rs.Primary.Attributes["policy_id"])
 
 		protectionPolicyResponse, _, err := backupRecoveryClient.GetProtectionPolicyByID(getProtectionPolicyByIdOptions)
 		if err != nil {

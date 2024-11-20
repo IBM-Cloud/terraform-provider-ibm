@@ -1165,8 +1165,8 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	registrationId := d.Id()
 	if strings.Contains(d.Id(), "::") {
-		tenantId = ParseSourceRegistrationId(d.Id(), "tenantId")
-		registrationId = ParseSourceRegistrationId(d.Id(), "registrationId")
+		tenantId = ParseId(d.Id(), "tenantId")
+		registrationId = ParseId(d.Id(), "id")
 	}
 	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
 	if err != nil {
@@ -1337,8 +1337,8 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	registrationId := d.Id()
 	if strings.Contains(d.Id(), "::") {
-		tenantId = ParseSourceRegistrationId(d.Id(), "tenantId")
-		registrationId = ParseSourceRegistrationId(d.Id(), "registrationId")
+		tenantId = ParseId(d.Id(), "tenantId")
+		registrationId = ParseId(d.Id(), "id")
 	}
 
 	id, err := strconv.Atoi(registrationId)
@@ -1457,11 +1457,11 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	return resourceIbmBackupRecoverySourceRegistrationRead(context, d, meta)
 }
 
-func ParseSourceRegistrationId(id string, info string) string {
+func ParseId(id string, info string) string {
 	if info == "tenantId" {
 		return strings.Split(id, "::")[0]
 	}
-	if info == "registrationId" {
+	if info == "id" {
 		return strings.Split(id, "::")[1]
 	}
 	return ""
@@ -1480,8 +1480,8 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
 	registrationId := d.Id()
 	if strings.Contains(d.Id(), "::") {
-		tenantId = ParseSourceRegistrationId(d.Id(), "tenantId")
-		registrationId = ParseSourceRegistrationId(d.Id(), "registrationId")
+		tenantId = ParseId(d.Id(), "tenantId")
+		registrationId = ParseId(d.Id(), "id")
 	}
 
 	id, err := strconv.Atoi(registrationId)

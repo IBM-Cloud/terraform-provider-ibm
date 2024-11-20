@@ -46,6 +46,11 @@ func DataSourceIbmBackupRecoveryProtectionPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Specifies the name of the Protection Policy.",
 			},
+			"policy_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Policy ID",
+			},
 			"backup_policy": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -4010,10 +4015,12 @@ func dataSourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+
 	getProtectionPolicyByIdOptions := &backuprecoveryv1.GetProtectionPolicyByIdOptions{}
 
 	getProtectionPolicyByIdOptions.SetID(d.Get("protection_policy_id").(string))
-	getProtectionPolicyByIdOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	getProtectionPolicyByIdOptions.SetXIBMTenantID(tenantId)
 	if _, ok := d.GetOk("request_initiator_type"); ok {
 		getProtectionPolicyByIdOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
 	}
@@ -4025,10 +4032,14 @@ func dataSourceIbmBackupRecoveryProtectionPolicyRead(context context.Context, d 
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*getProtectionPolicyByIdOptions.ID)
+	policyId := fmt.Sprintf("%s::%s", tenantId, *getProtectionPolicyByIdOptions.ID)
+	d.SetId(policyId)
 
 	if err = d.Set("name", protectionPolicyResponse.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-name").GetDiag()
+	}
+	if err = d.Set("policy_id", *getProtectionPolicyByIdOptions.ID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policy_id: %s", err), "(Data) ibm_backup_recovery_protection_policy", "read", "set-policy_id").GetDiag()
 	}
 
 	backupPolicy := []map[string]interface{}{}
