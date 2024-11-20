@@ -132,15 +132,17 @@ var (
 
 // MQ on Cloud
 var (
-	MqcloudConfigEndpoint            string
-	MqcloudDeploymentID              string
-	MqcloudCapacityID                string
-	MqcloudQueueManagerID            string
-	MqcloudKSCertFilePath            string
-	MqcloudTSCertFilePath            string
-	MqCloudQueueManagerLocation      string
-	MqCloudQueueManagerVersion       string
-	MqCloudQueueManagerVersionUpdate string
+	MqcloudConfigEndpoint                       string
+	MqcloudDeploymentID                         string
+	MqcloudCapacityID                           string
+	MqcloudQueueManagerID                       string
+	MqcloudKSCertFilePath                       string
+	MqcloudTSCertFilePath                       string
+	MqCloudQueueManagerLocation                 string
+	MqCloudQueueManagerVersion                  string
+	MqCloudQueueManagerVersionUpdate            string
+	MqCloudVirtualPrivateEndPointTargetCrn      string
+	MqCloudVirtualPrivateEndPointTrustedProfile string
 )
 
 // Logs
@@ -1900,6 +1902,14 @@ func init() {
 	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
 	if MqCloudQueueManagerVersionUpdate == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudVirtualPrivateEndPointTargetCrn = os.Getenv(("IBM_MQCLOUD_TARGET_CRN"))
+	if MqCloudVirtualPrivateEndPointTargetCrn == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TARGET_CRN for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
+	}
+	MqCloudVirtualPrivateEndPointTrustedProfile = os.Getenv(("IBM_MQCLOUD_TRUSTED_PROFILE"))
+	if MqCloudVirtualPrivateEndPointTrustedProfile == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TRUSTED_PROFILE for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
 	}
 	LogsInstanceId = os.Getenv("IBMCLOUD_LOGS_SERVICE_INSTANCE_ID")
 	if LogsInstanceId == "" {
