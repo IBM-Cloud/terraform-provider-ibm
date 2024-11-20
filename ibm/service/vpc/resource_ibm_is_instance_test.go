@@ -1532,6 +1532,7 @@ func testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, na
 		name       = "%s"
 		public_key = "%s"
 	  }
+		
 	  
 	  resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
