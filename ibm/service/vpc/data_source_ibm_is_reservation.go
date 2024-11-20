@@ -310,7 +310,7 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 	if reservation.Profile != nil {
 		profileList := []map[string]interface{}{}
 		profile := reservation.Profile
-		profileMap := dataSourceReservationProfileToMap(*profile)
+		profileMap := dataSourceReservationProfileToMap(profile)
 		profileList = append(profileList, profileMap)
 		if err = d.Set("profile", profileList); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting profile: %s", err))
@@ -349,9 +349,9 @@ func dataSourceIBMIsReservationRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func dataSourceReservationProfileToMap(profileItem vpcv1.ReservationProfile) (profileMap map[string]interface{}) {
+func dataSourceReservationProfileToMap(profileItemIntf vpcv1.ReservationProfileIntf) (profileMap map[string]interface{}) {
 	profileMap = map[string]interface{}{}
-
+	profileItem := profileItemIntf.(*vpcv1.ReservationProfile)
 	if profileItem.Href != nil {
 		profileMap["href"] = profileItem.Href
 	}

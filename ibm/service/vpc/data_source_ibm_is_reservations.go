@@ -341,7 +341,7 @@ func dataSourceReservationCollectionReservationsToMap(reservationsItem vpcv1.Res
 	if reservationsItem.Profile != nil {
 		profileList := []map[string]interface{}{}
 		profile := reservationsItem.Profile
-		profileMap := dataSourceReservationCollectionReservationsProfileToMap(*profile)
+		profileMap := dataSourceReservationCollectionReservationsProfileToMap(profile)
 		profileList = append(profileList, profileMap)
 		reservationsMap["profile"] = profileList
 	}
@@ -370,9 +370,9 @@ func dataSourceReservationCollectionReservationsToMap(reservationsItem vpcv1.Res
 	return reservationsMap
 }
 
-func dataSourceReservationCollectionReservationsProfileToMap(profileItem vpcv1.ReservationProfile) (profileMap map[string]interface{}) {
+func dataSourceReservationCollectionReservationsProfileToMap(profileItemIntf vpcv1.ReservationProfileIntf) (profileMap map[string]interface{}) {
 	profileMap = map[string]interface{}{}
-
+	profileItem := profileItemIntf.(*vpcv1.ReservationProfile)
 	if profileItem.Href != nil {
 		profileMap["href"] = profileItem.Href
 	}
