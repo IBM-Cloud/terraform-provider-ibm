@@ -31,7 +31,7 @@ func TestAccIBMPISPPPlacementGroupBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPISPPPlacementGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMPICreateSAPInstanceWithSPP(name, policy, "tinytest-1x4"),
+				Config:      testAccCheckIBMPICreateSAPInstanceWithSPP(name, policy),
 				ExpectError: regexp.MustCompile("\"pi_shared_processor_pool\": conflicts with pi_sap_profile_id"),
 			},
 			{
@@ -404,8 +404,7 @@ func testAccCheckIBMPISPPPlacementGroupConfig(name string, policy string) string
 			pi_cloud_instance_id      = "%[1]s"
 			pi_spp_placement_group_name   = "%[2]spg"
 			pi_spp_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy)
+		}`, acc.Pi_cloud_instance_id, name, policy)
 }
 
 func testAccCheckIBMPISPPPlacementGroupAddMemberConfig(name string, policy string) string {
@@ -422,8 +421,7 @@ func testAccCheckIBMPISPPPlacementGroupAddMemberConfig(name string, policy strin
 			pi_cloud_instance_id      = "%[1]s"
 			pi_spp_placement_group_name   = "%[2]spg"
 			pi_spp_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy)
+		}`, acc.Pi_cloud_instance_id, name, policy)
 }
 
 func testAccCheckIBMPISPPPlacementGroupUpdateMemberConfig(name string, policy string) string {
@@ -444,8 +442,7 @@ func testAccCheckIBMPISPPPlacementGroupUpdateMemberConfig(name string, policy st
 			pi_cloud_instance_id      = "%[1]s"
 			pi_spp_placement_group_name   = "%[2]s2pg"
 			pi_spp_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy)
+		}`, acc.Pi_cloud_instance_id, name, policy)
 }
 
 func testAccCheckIBMPISPPPlacementGroupRemoveMemberConfig(name string, policy string) string {
@@ -466,8 +463,7 @@ func testAccCheckIBMPISPPPlacementGroupRemoveMemberConfig(name string, policy st
 			pi_cloud_instance_id      = "%[1]s"
 			pi_spp_placement_group_name   = "%[2]s2pg"
 			pi_spp_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy)
+		}`, acc.Pi_cloud_instance_id, name, policy)
 }
 
 func testAccCheckIBMPICreateSPPInPlacementGroup(name string, policy string) string {
@@ -496,8 +492,7 @@ func testAccCheckIBMPICreateSPPInPlacementGroup(name string, policy string) stri
 			pi_cloud_instance_id      = "%[1]s"
 			pi_spp_placement_group_name   = "%[2]s2pg"
 			pi_spp_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy)
+		}`, acc.Pi_cloud_instance_id, name, policy)
 }
 
 func testAccCheckIBMPIDeleteSPPPlacementGroup(name string, policy string) string {
@@ -523,8 +518,7 @@ func testAccCheckIBMPIDeleteSPPPlacementGroup(name string, policy string) string
 			pi_cloud_instance_id      = "%[1]s"
 			pi_spp_placement_group_name   = "%[2]s2pg"
 			pi_spp_placement_group_policy = "%[3]s"
-		}
-	`, acc.Pi_cloud_instance_id, name, policy)
+		}`, acc.Pi_cloud_instance_id, name, policy)
 }
 
 func testAccCheckIBMPICreateInstanceWithSPP(name string, policy string) string {
@@ -586,11 +580,10 @@ func testAccCheckIBMPICreateInstanceWithSPP(name string, policy string) string {
 				network_id = data.ibm_pi_network.power_networks.id
 			}
 			pi_shared_processor_pool = ibm_pi_shared_processor_pool.spp_pool.pi_shared_processor_pool_name
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name)
 }
 
-func testAccCheckIBMPICreateSAPInstanceWithSPP(name string, policy string, sapProfile string) string {
+func testAccCheckIBMPICreateSAPInstanceWithSPP(name string, policy string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pi_shared_processor_pool" "spp_pool" {
 			pi_cloud_instance_id  = "%[1]s"
@@ -661,6 +654,5 @@ func testAccCheckIBMPICreateSAPInstanceWithSPP(name string, policy string, sapPr
 			}
 			pi_health_status		= "OK"
 			pi_shared_processor_pool = ibm_pi_shared_processor_pool.spp_pool_2.pi_shared_processor_pool_name
-		}
-	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name, acc.Pi_sap_image, sapProfile)
+		}`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image, acc.Pi_network_name, acc.Pi_sap_image, acc.PiSAPProfileID)
 }
