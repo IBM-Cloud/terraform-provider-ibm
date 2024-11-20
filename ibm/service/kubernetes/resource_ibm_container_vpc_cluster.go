@@ -53,6 +53,9 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				return flex.OnlyInUpdateDiff([]string{EnableSecureByDefaultFlag}, diff)
+			},
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -625,10 +628,6 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	}
 
 	disableOutboundTrafficProtection := d.Get(DisableOutboundTrafficProtectionFlag).(bool)
-
-	if _, ok := d.GetOk(EnableSecureByDefaultFlag); ok {
-		return fmt.Errorf("%s can't be used at cluster create", EnableSecureByDefaultFlag)
-	}
 
 	params := v2.ClusterCreateRequest{
 		DisablePublicServiceEndpoint:     disablePublicServiceEndpoint,
