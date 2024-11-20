@@ -5,7 +5,7 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20240926024252-81b3928fd062
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20241113164343-2c8987e9d7fc
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
 	github.com/IBM-Cloud/power-go-client v1.8.3
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
