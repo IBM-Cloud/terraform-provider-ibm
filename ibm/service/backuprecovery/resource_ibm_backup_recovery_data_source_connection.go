@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -107,9 +108,16 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	connectionId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		connectionId = ParseId(d.Id(), "id")
+	}
+
 	getDataSourceConnectionsOptions := &backuprecoveryv1.GetDataSourceConnectionsOptions{}
-	getDataSourceConnectionsOptions.ConnectionIds = []string{d.Id()}
-	getDataSourceConnectionsOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	getDataSourceConnectionsOptions.ConnectionIds = []string{connectionId}
+	getDataSourceConnectionsOptions.SetXIBMTenantID(tenantId)
 
 	dataSourceConnectionList, response, err := backupRecoveryClient.GetDataSourceConnectionsWithContext(context, getDataSourceConnectionsOptions)
 	if err != nil {

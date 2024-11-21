@@ -75,7 +75,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionExists(resource string, ob
 		getDataSourceConnectionsOptions := &backuprecoveryv1.GetDataSourceConnectionsOptions{}
 
 		getDataSourceConnectionsOptions.SetXIBMTenantID(tenantId)
-		getDataSourceConnectionsOptions.SetConnectionIds([]string{rs.Primary.ID})
+		getDataSourceConnectionsOptions.SetConnectionIds([]string{rs.Primary.Attributes["connection_id"]})
 
 		dataSourceConnection, _, err := backupRecoveryClient.GetDataSourceConnections(getDataSourceConnectionsOptions)
 		if err != nil {
