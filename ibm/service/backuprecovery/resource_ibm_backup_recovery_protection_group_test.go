@@ -116,7 +116,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupExists(n string, obj backupreco
 
 		getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
 
-		getProtectionGroupByIdOptions.SetID(rs.Primary.ID)
+		getProtectionGroupByIdOptions.SetID(rs.Primary.Attributes["group_id"])
 		getProtectionGroupByIdOptions.SetXIBMTenantID(tenantId)
 
 		protectionGroupResponse, _, err := backupRecoveryClient.GetProtectionGroupByID(getProtectionGroupByIdOptions)

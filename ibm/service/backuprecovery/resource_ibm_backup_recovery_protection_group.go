@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -45,6 +46,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Specifies the unique id of the Protection Policy associated with the Protection Group. The Policy provides retry settings Protection Schedules, Priority, SLA, etc.",
+			},
+			"group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Group ID",
 			},
 			"priority": &schema.Schema{
 				Type:     schema.TypeString,
@@ -5106,8 +5112,8 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 	}
 
 	createProtectionGroupOptions := &backuprecoveryv1.CreateProtectionGroupOptions{}
-
-	createProtectionGroupOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	createProtectionGroupOptions.SetXIBMTenantID(tenantId)
 	createProtectionGroupOptions.SetName(d.Get("name").(string))
 	createProtectionGroupOptions.SetPolicyID(d.Get("policy_id").(string))
 	createProtectionGroupOptions.SetEnvironment(d.Get("environment").(string))
@@ -5195,7 +5201,8 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*protectionGroupResponse.ID)
+	groupId := fmt.Sprintf("%s::%s", tenantId, *protectionGroupResponse.ID)
+	d.SetId(groupId)
 
 	return resourceIbmBackupRecoveryProtectionGroupRead(context, d, meta)
 }
@@ -5210,8 +5217,15 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 
 	getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
 
-	getProtectionGroupByIdOptions.SetID(d.Id())
-	getProtectionGroupByIdOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	groupId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		groupId = ParseId(d.Id(), "id")
+	}
+
+	getProtectionGroupByIdOptions.SetID(groupId)
+	getProtectionGroupByIdOptions.SetXIBMTenantID(tenantId)
 
 	protectionGroupResponse, response, err := backupRecoveryClient.GetProtectionGroupByIDWithContext(context, getProtectionGroupByIdOptions)
 	if err != nil {
@@ -5231,6 +5245,14 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 	if err = d.Set("policy_id", protectionGroupResponse.PolicyID); err != nil {
 		err = fmt.Errorf("Error setting policy_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-policy_id").GetDiag()
+	}
+	if err = d.Set("group_id", groupId); err != nil {
+		err = fmt.Errorf("Error setting group_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-group_id").GetDiag()
+	}
+	if err = d.Set("x_ibm_tenant_id", tenantId); err != nil {
+		err = fmt.Errorf("Error setting x_ibm_tenant_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-x_ibm_tenant_id").GetDiag()
 	}
 	if !core.IsNil(protectionGroupResponse.Priority) {
 		if err = d.Set("priority", protectionGroupResponse.Priority); err != nil {
@@ -5469,10 +5491,18 @@ func resourceIbmBackupRecoveryProtectionGroupUpdate(context context.Context, d *
 
 	updateProtectionGroupOptions := &backuprecoveryv1.UpdateProtectionGroupOptions{}
 
-	updateProtectionGroupOptions.SetID(d.Id())
-	updateProtectionGroupOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	groupId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		groupId = ParseId(d.Id(), "id")
+	}
+
+	updateProtectionGroupOptions.SetID(groupId)
+	updateProtectionGroupOptions.SetXIBMTenantID(tenantId)
 	updateProtectionGroupOptions.SetName(d.Get("name").(string))
 	updateProtectionGroupOptions.SetPolicyID(d.Get("policy_id").(string))
+	updateProtectionGroupOptions.SetEnvironment(d.Get("environment").(string))
 	updateProtectionGroupOptions.SetEnvironment(d.Get("environment").(string))
 	if _, ok := d.GetOk("priority"); ok {
 		updateProtectionGroupOptions.SetPriority(d.Get("priority").(string))
@@ -5571,8 +5601,15 @@ func resourceIbmBackupRecoveryProtectionGroupDelete(context context.Context, d *
 
 	deleteProtectionGroupOptions := &backuprecoveryv1.DeleteProtectionGroupOptions{}
 
-	deleteProtectionGroupOptions.SetID(d.Id())
-	deleteProtectionGroupOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	tenantId := d.Get("x_ibm_tenant_id").(string)
+	groupId := d.Id()
+	if strings.Contains(d.Id(), "::") {
+		tenantId = ParseId(d.Id(), "tenantId")
+		groupId = ParseId(d.Id(), "id")
+	}
+
+	deleteProtectionGroupOptions.SetID(groupId)
+	deleteProtectionGroupOptions.SetXIBMTenantID(tenantId)
 
 	_, err = backupRecoveryClient.DeleteProtectionGroupWithContext(context, deleteProtectionGroupOptions)
 	if err != nil {

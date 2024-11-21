@@ -61,6 +61,11 @@ func DataSourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 				Computed:    true,
 				Description: "Specifies the name of the Protection Group.",
 			},
+			"group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Group ID",
+			},
 			"cluster_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -4636,11 +4641,11 @@ func dataSourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
+	tenantId := d.Get("x_ibm_tenant_id").(string)
 	getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
 
 	getProtectionGroupByIdOptions.SetID(d.Get("protection_group_id").(string))
-	getProtectionGroupByIdOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
+	getProtectionGroupByIdOptions.SetXIBMTenantID(tenantId)
 	if _, ok := d.GetOk("request_initiator_type"); ok {
 		getProtectionGroupByIdOptions.SetRequestInitiatorType(d.Get("request_initiator_type").(string))
 	}
@@ -4661,7 +4666,12 @@ func dataSourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*getProtectionGroupByIdOptions.ID)
+	groupId := fmt.Sprintf("%s::%s", tenantId, *getProtectionGroupByIdOptions.ID)
+	d.SetId(groupId)
+
+	if err = d.Set("group_id", *getProtectionGroupByIdOptions.ID); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting group_id: %s", err), "(Data) ibm_backup_recovery_protection_group", "read", "set-group_id").GetDiag()
+	}
 
 	if !core.IsNil(protectionGroupResponse.Name) {
 		if err = d.Set("name", protectionGroupResponse.Name); err != nil {
