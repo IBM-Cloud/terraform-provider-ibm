@@ -1033,6 +1033,35 @@ func DataSourceIBMISInstances() *schema.Resource {
 								},
 							},
 						},
+						"health_reasons": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The reasons for the current health_state (if any).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"code": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A snake case string succinctly identifying the reason for this health state.",
+									},
+									"message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An explanation of the reason for this health state.",
+									},
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about the reason for this health state.",
+									},
+								},
+							},
+						},
+						"health_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The health of this resource",
+						},
 						isInstanceReservation: {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -1613,6 +1642,16 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		if instance.Disks != nil {
 			l[isInstanceDisks] = dataSourceInstanceFlattenDisks(instance.Disks)
 		}
+		if instance.HealthReasons != nil {
+			healthReasonsList := []map[string]interface{}{}
+			for _, healthReasonsItem := range instance.HealthReasons {
+				healthReasonsList = append(healthReasonsList, dataSourceInstancesCollectionHealthReasonsToMap(healthReasonsItem))
+			}
+			l["health_reasons"] = healthReasonsList
+		}
+		if instance.HealthState != nil {
+			l["health_state"] = instance.HealthState
+		}
 		if instance.ReservationAffinity != nil {
 			reservationAffinity := []map[string]interface{}{}
 			reservationAffinityMap := map[string]interface{}{}
@@ -1630,7 +1669,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 					res[isReservationResourceType] = *pool.ResourceType
 					if pool.Deleted != nil {
 						deletedList := []map[string]interface{}{}
-						deletedMap := dataSourceInstanceReservationDeletedToMap(*pool.Deleted)
+						deletedMap := dataSourceReservationDeletedToMap(*pool.Deleted)
 						deletedList = append(deletedList, deletedMap)
 						res[isReservationDeleted] = deletedList
 					}
@@ -1652,7 +1691,7 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			res[isReservationResourceType] = *instance.Reservation.ResourceType
 			if instance.Reservation.Deleted != nil {
 				deletedList := []map[string]interface{}{}
-				deletedMap := dataSourceInstanceReservationDeletedToMap(*instance.Reservation.Deleted)
+				deletedMap := dataSourceReservationDeletedToMap(*instance.Reservation.Deleted)
 				deletedList = append(deletedList, deletedMap)
 				res[isReservationDeleted] = deletedList
 			}
@@ -1670,4 +1709,20 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 // dataSourceIBMISInstancesID returns a reasonable ID for a Instance list.
 func dataSourceIBMISInstancesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func dataSourceInstancesCollectionHealthReasonsToMap(statusReasonsItem vpcv1.InstanceHealthReason) (healthReasonsMap map[string]interface{}) {
+	healthReasonsMap = map[string]interface{}{}
+
+	if statusReasonsItem.Code != nil {
+		healthReasonsMap["code"] = statusReasonsItem.Code
+	}
+	if statusReasonsItem.Message != nil {
+		healthReasonsMap["message"] = statusReasonsItem.Message
+	}
+	if statusReasonsItem.MoreInfo != nil {
+		healthReasonsMap["more_info"] = statusReasonsItem.MoreInfo
+	}
+
+	return healthReasonsMap
 }

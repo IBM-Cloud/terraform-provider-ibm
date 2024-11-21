@@ -148,6 +148,13 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory that was allocated to the GPU.
   - `model` - (String) The model of the GPU. 
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 - `image` - (String) The ID of the virtual server image that is used in the instance.
 - `keys`- (List) A list of SSH keys that were added to the instance during creation.

@@ -778,6 +778,13 @@ In addition to all argument reference list, you can access the following attribu
   - `manufacture` - (String) The manufacturer of the GPU.
   - `memory`- (Integer) The amount of memory of the GPU in gigabytes.
   - `model` - (String) The model of the GPU.
+- `health_reasons` - (List) The reasons for the current health_state (if any).
+
+    Nested scheme for `health_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+    - `message` - (String) An explanation of the reason for this health state.
+    - `more_info` - (String) Link to documentation about the reason for this health state.
+- `health_state` - (String) The health of this resource.
 - `placement_target` - The placement restrictions for the virtual server instance.
   - `crn` - The CRN of the placement target
   - `deleted` - If present, this property indicates the referenced resource has been deleted and providessome supplementary information.

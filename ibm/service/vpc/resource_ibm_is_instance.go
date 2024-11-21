@@ -1546,6 +1546,35 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			"health_reasons": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current health_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"code": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this health state.",
+						},
+						"message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this health state.",
+						},
+						"more_info": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this health state.",
+						},
+					},
+				},
+			},
+			"health_state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The health of this resource",
+			},
 			isInstanceReservation: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1933,7 +1962,7 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -2388,7 +2417,7 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -2823,7 +2852,7 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -3233,7 +3262,7 @@ func instanceCreateBySnapshot(d *schema.ResourceData, meta interface{}, profile,
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -3632,7 +3661,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			resAffinity.Policy = &policyStr
 		}
 		poolIntf, okPool := resAff[isReservationAffinityPool]
-		if okPool {
+		if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 			pool := poolIntf.([]interface{})[0].(map[string]interface{})
 			id, okId := pool["id"]
 			if okId {
@@ -4277,6 +4306,24 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		primaryNicList = append(primaryNicList, currentPrimNic)
 		d.Set(isInstancePrimaryNetworkInterface, primaryNicList)
 	}
+	if instance.HealthReasons != nil {
+		healthReasonsList := make([]map[string]interface{}, 0)
+		for _, sr := range instance.HealthReasons {
+			currentSR := map[string]interface{}{}
+			if sr.Code != nil && sr.Message != nil {
+				currentSR["code"] = *sr.Code
+				currentSR["message"] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR["more_info"] = *sr.Message
+				}
+				healthReasonsList = append(healthReasonsList, currentSR)
+			}
+		}
+		d.Set("health_reasons", healthReasonsList)
+	}
+	if err = d.Set("health_state", instance.HealthState); err != nil {
+		return err
+	}
 	if instance.ReservationAffinity != nil {
 		reservationAffinity := []map[string]interface{}{}
 		reservationAffinityMap := map[string]interface{}{}
@@ -4294,7 +4341,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				res[isReservationResourceType] = *pool.ResourceType
 				if pool.Deleted != nil {
 					deletedList := []map[string]interface{}{}
-					deletedMap := dataSourceInstanceReservationDeletedToMap(*pool.Deleted)
+					deletedMap := dataSourceReservationDeletedToMap(*pool.Deleted)
 					deletedList = append(deletedList, deletedMap)
 					res[isReservationDeleted] = deletedList
 				}
@@ -4316,7 +4363,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		res[isReservationResourceType] = *instance.Reservation.ResourceType
 		if instance.Reservation.Deleted != nil {
 			deletedList := []map[string]interface{}{}
-			deletedMap := dataSourceInstanceReservationDeletedToMap(*instance.Reservation.Deleted)
+			deletedMap := dataSourceReservationDeletedToMap(*instance.Reservation.Deleted)
 			deletedList = append(deletedList, deletedMap)
 			res[isReservationDeleted] = deletedList
 		}
@@ -5101,7 +5148,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			if d.HasChange(resPool) {
 				poolIntf, okPool := resAff[isReservationAffinityPool]
-				if okPool {
+				if okPool && poolIntf != nil && poolIntf.([]interface{}) != nil && len(poolIntf.([]interface{})) > 0 {
 					pool := poolIntf.([]interface{})[0].(map[string]interface{})
 					id, okId := pool["id"]
 					if okId {
@@ -6373,15 +6420,6 @@ func resourceIbmIsInstanceInstancePlacementToMap(instancePlacement vpcv1.Instanc
 	instancePlacementMap["resource_type"] = instancePlacement.ResourceType
 
 	return instancePlacementMap
-}
-
-func resourceIbmIsInstanceReservationAffinityPoolToMap(reservationPool vpcv1.ReservationReference) map[string]interface{} {
-	resAffPoolMap := map[string]interface{}{}
-
-	resAffPoolMap["crn"] = reservationPool.CRN
-	resAffPoolMap["href"] = reservationPool.Href
-	resAffPoolMap["id"] = reservationPool.ID
-	return resAffPoolMap
 }
 
 func resourceIbmIsInstanceDedicatedHostGroupReferenceDeletedToMap(dedicatedHostGroupReferenceDeleted vpcv1.Deleted) map[string]interface{} {
